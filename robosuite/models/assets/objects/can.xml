@@ -1,0 +1,21 @@
+<mujoco model="can">
+  <asset>
+    <mesh file="meshes/can.stl" name="can_mesh"/>
+    <texture file="../textures/can.png" name="tex-can"/>
+    <material name="coke" reflectance="0.7" texrepeat="5 5" texture="tex-can" texuniform="true"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="collision">
+        <geom pos="0 0 0" mesh="can_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="100" friction="0.95 0.3 0.1" material="coke" group="1" condim="4"/>
+      </body>
+      <body name="visual">
+        <geom pos="0 0 0" mesh="can_mesh" type="mesh" material="coke"  conaffinity="0" contype="0" group="0" mass="0.0001"/>
+        <geom pos="0 0 0" mesh="can_mesh" type="mesh" material="coke"  conaffinity="0" contype="0" group="1" mass="0.0001"/>
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.06" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.04" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.025 0.025 0" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>
