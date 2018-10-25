@@ -8,7 +8,7 @@ if __name__ == "__main__":
     envs = sorted(suite.environments.ALL_ENVS)
 
     # print info and select an environment
-    print("Welcome to Stanford Robotics Suite v{}!".format(suite.__version__))
+    print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
     print(suite.__logo__)
     print("Here is a list of environments in the suite:\n")
 

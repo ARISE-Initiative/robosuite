@@ -10,7 +10,7 @@ setup(
         "numpy>=1.13.3",
         "mujoco-py<1.50.2,>=1.50.1",
     ],
-    description="Stanford Robotics Suite: Extensive Simulated Benchmarks for Robot Manipulation",
+    description="Surreal Robotics Suite: Standardized and Accessible Robot Manipulation Benchmark in Physics Simulation",
     author="Yuke Zhu, Jiren Zhu, Ajay Mandlekar, Joan Creus-Costa, Anchit Gupta",
     url="https://github.com/StanfordVL/robosuite",
     author_email="yukez@cs.stanford.edu",
