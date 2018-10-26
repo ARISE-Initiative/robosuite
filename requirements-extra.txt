@@ -6,3 +6,6 @@ gym
 
 # Mac OS X only
 hidapi
+
+# required for demonstration utils
+h5py
