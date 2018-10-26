@@ -171,7 +171,9 @@ def postprocess_model_xml(xml_str):
         if old_path is None:
             continue
         old_path_split = old_path.split("/")
-        ind = old_path_split.index("robosuite")
+        ind = max(
+            loc for loc, val in enumerate(old_path_split) if val == "robosuite"
+        )  # last occurrence index
         new_path_split = path_split + old_path_split[ind + 1 :]
         new_path = "/".join(new_path_split)
         elem.set("file", new_path)

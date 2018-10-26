@@ -6,7 +6,7 @@ We collected a large-scale dataset on the `SawyerPickPlace` and `SawyerNutAssemb
 
 We are providing the dataset in the hopes that it will be beneficial to researchers working on imitation learning. Large-scale imitation learning has not been explored much in the community; it will be exciting to see how this data is used.  
 
-You can download the dataset [here](http://vision.stanford.edu/projects/roboturk/RoboTurkPilot.zip).
+You can download the dataset [here](http://cvgl.stanford.edu/projects/roboturk/RoboTurkPilot.zip).
 
 After unzipping the dataset, the following subdirectories can be found within the `RoboTurkPilot` directory. Every directory has the same structure as the demonstrations explained above. 
 
