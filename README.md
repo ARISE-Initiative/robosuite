@@ -17,7 +17,7 @@ This release of Surreal Robotics Suite contains a set of benchmarking manipulati
 * [**human demonstrations**](docs/demonstrations.md): utilities for collecting human demonstrations, replaying demonstration datasets, and leveraging demonstration data for learning.
 
 ## Installation
-Surreal Robotics Suite officially supports Mac OS X and Linux on Python 3.5+. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
+Surreal Robotics Suite officially supports Mac OS X and Linux on Python 3.5 or 3.7. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
 
 The base installation requires the MuJoCo physics engine (with [mujoco-py](https://github.com/openai/mujoco-py), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate`.
 
