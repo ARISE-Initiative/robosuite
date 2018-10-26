@@ -30,7 +30,7 @@ First download MuJoCo 1.5.0 ([Linux](https://www.roboti.us/download/mjpro150_lin
      ```
      Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mjpro150/bin` before proceeding to the next step.
 
-### Install from PyPI
+### Install from pip
 1. After setting up mujoco, robosuite can be installed with
 ```sh
     $ pip install robosuite
