@@ -17,11 +17,11 @@ This release of Surreal Robotics Suite contains a set of benchmarking manipulati
 * [**human demonstrations**](docs/demonstrations.md): utilities for collecting human demonstrations, replaying demonstration datasets, and leveraging demonstration data for learning.
 
 ## Installation
-Surreal Robotics Suite officially supports Mac OS X and Linux on Python 3.5+. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
+Surreal Robotics Suite officially supports Mac OS X and Linux on Python 3.5 or 3.7. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
 
 The base installation requires the MuJoCo physics engine (with [mujoco-py](https://github.com/openai/mujoco-py), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate`.
 
-1. First download MuJoCo 1.5.0 ([Linux](https://www.roboti.us/download/mjpro150_linux.zip) and [Mac OS X](https://www.roboti.us/download/mjpro150_osx.zip)) and place the `mjpro150` folder and your license key `mjkey.txt` in `~/.mujoco`. You can obtain a license key from [here](https://www.roboti.us/license.html).
+First download MuJoCo 1.5.0 ([Linux](https://www.roboti.us/download/mjpro150_linux.zip) and [Mac OS X](https://www.roboti.us/download/mjpro150_osx.zip)) and place the `mjpro150` folder and your license key `mjkey.txt` in `~/.mujoco`. You can obtain a license key from [here](https://www.roboti.us/license.html).
    - For Linux, you will need to install some packages to build `mujoco-py` (sourced from [here](https://github.com/openai/mujoco-py/blob/master/Dockerfile), with a couple missing packages added). If using `apt`, the required installation command is:
      ```sh
      $ sudo apt install curl git libgl1-mesa-dev libgl1-mesa-glx libglew-dev \
@@ -29,6 +29,24 @@ The base installation requires the MuJoCo physics engine (with [mujoco-py](https
              virtualenv wget xpra xserver-xorg-dev libglfw3-dev patchelf
      ```
      Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mjpro150/bin` before proceeding to the next step.
+
+### Install from pip
+1. After setting up mujoco, robosuite can be installed with
+```sh
+    $ pip install robosuite
+```
+
+2. Test your installation with
+```sh
+    $ python -m robosuite.demo
+```
+
+### Install from source
+1. Clone the robosuite repository
+```sh 
+    $ git clone https://github.com/StanfordVL/robosuite.git
+    $ cd robosuite
+```
 
 2. Install the base requirements with
    ```sh
@@ -40,6 +58,11 @@ The base installation requires the MuJoCo physics engine (with [mujoco-py](https
    ```sh
    $ pip3 install -r requirements-extra.txt
    ```
+
+4. Test your installation with
+```sh
+    $ python robosuite/demo.py
+```
 
 ## Quick Start
 The APIs we provide to interact with our environments are simple and similar to the ones used by [OpenAI Gym](https://github.com/openai/gym/). Below is a minimalistic example of how to interact with an environment.
