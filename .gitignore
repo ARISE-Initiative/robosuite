@@ -99,3 +99,16 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# mac
+.DS_Store
+
+# mujoco-key
+mjkey.txt
+
+.mujocomanip_temp_model.xml
+
+*.jpg
+.idea
+
+.pytest_cache/

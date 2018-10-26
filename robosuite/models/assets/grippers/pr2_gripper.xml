@@ -1,0 +1,67 @@
+<mujoco model="base">
+    <actuator>
+        <position ctrllimited="true" ctrlrange="0 0.548" joint="r_gripper_r_finger_joint" kp="10" name="gripper_r_gripper_r_finger_joint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0 0.548" joint="r_gripper_l_finger_joint" kp="10" name="gripper_r_gripper_l_finger_joint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0 0.548" joint="r_gripper_r_finger_tip_joint" kp="10" name="gripper_r_gripper_r_finger_tip_joint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0 0.548" joint="r_gripper_l_finger_tip_joint" kp="10" name="gripper_r_gripper_l_finger_tip_joint" forcelimited="true" forcerange="-20 20"/>
+    </actuator>
+
+    <asset>
+        <mesh name="gripper_palm" file="meshes/pr2_gripper/gripper_palm.stl" />
+        <mesh name="l_finger" file="meshes/pr2_gripper/l_finger.stl" />
+        <mesh name="l_finger_tip" file="meshes/pr2_gripper/l_finger_tip.stl" />
+    </asset>
+    <worldbody>
+        <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" />
+        <body quat="0 0.709 0 0.706" pos="0 0 -0.03">
+            <inertial pos="0.06623 0.00053 -0.00119" quat="-0.0181842 0.706274 0.0160771 0.707523" mass="0.58007" diaginertia="0.000865637 0.000678178 0.000351471" />
+            <geom type="mesh" rgba="0.8 0 0 1" mesh="gripper_palm" contype="0" conaffinity="0" group="1"/>
+            <geom type="mesh" rgba="0.8 0 0 1" mesh="gripper_palm" group="0"/>
+            <body name="r_gripper_led_frame" pos="0.0513 0 0.0244">
+                <inertial pos="0.0513 0 0.0244" mass="0" diaginertia="0 0 0" />
+            </body>
+            <body name="r_gripper_motor_accelerometer_link" pos="0 0 0">
+                <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001" />
+                <geom size="0.0005 0.0005 0.0005" type="box" />
+                <geom size="0.0005 0.0005 0.0005" type="box" contype="0" conaffinity="0" group="1"/>
+            </body>
+            <body name="r_gripper_tool_frame" pos="0.18 0 0">
+                <inertial pos="0.18 0 0" mass="0" diaginertia="0 0 0" />
+            </body>
+            <body name="r_gripper_motor_slider_link" pos="0.16828 0 0">
+                <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
+                <joint name="r_gripper_motor_slider_joint" pos="0 0 0" axis="1 0 0" type="slide" limited="true" range="-0.1 0.1" damping="1"/>
+                <body name="r_gripper_motor_screw_link" pos="0 0 0">
+                    <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
+                    <joint name="r_gripper_motor_screw_joint" pos="0 0 0" axis="0 1 0"  damping="1"/>
+                </body>
+                <site name="grip_site" pos="-0.08 0 0" size="0.01 0.1 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+                <site name="grip_site_cylinder" pos="-0.08 0 0" quat="0.707 0 0.707 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"></site>
+            </body>
+            <body name="r_gripper_l_finger_link" pos="0.07691 0.01 0">
+                <inertial pos="0.03598 0.0173 -0.00164" quat="0.57444 0.429111 0.518782 0.465562" mass="0.17126" diaginertia="0.00019774 0.000181336 7.66239e-05" />
+                <joint name="r_gripper_l_finger_joint" pos="0 0 0" axis="0 0 1" limited="true" range="0 0.548" damping="1"/>
+                <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="l_finger" name="r_gripper_l_finger" group="0"/>
+                <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="l_finger" name="r_gripper_l_finger_visual" contype="0" conaffinity="0" group="1"/>
+                <body name="r_gripper_l_finger_tip_link" pos="0.09137 0.00495 0">
+                    <inertial pos="0.00423 0.00284 0" quat="0.249588 0.661594 -0.249588 0.661594" mass="0.04419" diaginertia="1.54177e-05 1.50049e-05 3.23624e-06" />
+                    <joint name="r_gripper_l_finger_tip_joint" pos="0 0 0" axis="0 0 -1" limited="true" range="0 0.548" damping="1"/>
+                    <geom type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="r_gripper_l_finger_tip" group="0"/>
+                    <geom type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="r_gripper_l_finger_tip_visual" contype="0" conaffinity="0" group="1"/>
+                </body>
+            </body>
+            <body name="r_gripper_r_finger_link" pos="0.07691 -0.01 0">
+                <inertial pos="0.03576 -0.01736 -0.00095" quat="0.474684 0.510909 0.446353 0.560727" mass="0.17389" diaginertia="0.000198903 0.00018134 7.66847e-05" />
+                <joint name="r_gripper_r_finger_joint" pos="0 0 0" axis="0 0 -1" limited="true" range="0 0.548" damping="1"/>
+                <geom quat="0 1 0 0" type="mesh" rgba="0.7 0.7 0.7 1" mesh="l_finger" name="r_gripper_r_finger" group="0"/>
+                <geom quat="0 1 0 0" type="mesh" rgba="0.7 0.7 0.7 1" mesh="l_finger" name="r_gripper_r_finger_visual" contype="0" conaffinity="0" group="1"/>
+                <body name="r_gripper_r_finger_tip_link" pos="0.09137 -0.00495 0">
+                    <inertial pos="0.00423 -0.00284 0" quat="-0.249588 0.661594 0.249588 0.661594" mass="0.04419" diaginertia="1.54177e-05 1.50049e-05 3.23624e-06" />
+                    <joint name="r_gripper_r_finger_tip_joint" pos="0 0 0" axis="0 0 1" limited="true" range="0 0.548" damping="1"/>
+                    <geom quat="0 1 0 0" type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="r_gripper_r_finger_tip" group="0"/>
+                    <geom quat="0 1 0 0" type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="r_gripper_r_finger_tip_visual" contype="0" conaffinity="0" group="1"/>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>

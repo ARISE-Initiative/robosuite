@@ -1,0 +1,1546 @@
+<?xml version="1.0" ?>
+<!-- ============================================================================================== -->
+<!-- |                                                                                            | -->
+<!-- |    baxter.urdf is DEPRECATED. It is included here for backward compatibility.              | -->
+<!-- |    Please use baxter.urdf.xacro by running:                                                | -->
+<!-- |$ rosrun xacro xacro.py - -inorder `rospack find baxter_description`/urdf/baxter.urdf.xacro | -->
+<!-- |                                                                                            | -->
+<!-- ============================================================================================== -->
+<robot name="baxter">
+  <link name="base">
+  </link>
+  <link name="torso">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/torso/base_link.DAE"/>
+      </geometry>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="35.336455"/>
+      <inertia ixx="1.849155" ixy="-0.000354" ixz="-0.154188" iyy="1.662671" iyz="0.003292" izz="0.802239"/>
+    </inertial>
+  </link>
+  <link name="left_torso_itb">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_torso_itb">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="pedestal">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/base/PEDESTAL.DAE"/>
+      </geometry>
+      <material name="darkgray">
+        <color rgba=".2 .2 .2 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="60.86397744"/>
+      <inertia ixx="5.0635929" ixy="0.00103417" ixz="0.80199628" iyy="6.08689388" iyz="0.00105311" izz="4.96191932"/>
+    </inertial>
+  </link>
+  <link name="head">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 .00953"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/head/H0.DAE"/>
+      </geometry>
+      <material name="darkgray">
+        <color rgba=".2 .2 .2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0 0.0"/>
+      <geometry>
+        <sphere radius="0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.547767"/>
+      <inertia ixx="0.004641" ixy="0.000159" ixz="0.000242" iyy="0.003295" iyz="-0.001324" izz="0.003415"/>
+    </inertial>
+  </link>
+  <link name="sonar_ring">
+    <visual>
+      <origin rpy="0 0 0" xyz="-.0347 0 .00953"/>
+      <geometry>
+        <cylinder length="0.01" radius="0.085"/>
+      </geometry>
+      <material name="darkgray">
+        <color rgba=".2 .2 .2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0 0.0"/>
+      <geometry>
+        <sphere radius="0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="screen">
+    <visual>
+      <origin rpy="0 -1.57079632679 0" xyz="0 -.00953 -.0347"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/head/H1.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0 0.0"/>
+      <geometry>
+        <sphere radius="0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.440171"/>
+      <inertia ixx="0.004006" ixy="0.000230" ixz="0.000002" iyy="0.002800" iyz="0.000029" izz="0.001509"/>
+    </inertial>
+  </link>
+  <link name="display">
+    <visual>
+      <origin rpy="0.2617993877991494 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.218 0.16 0.001"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="head_camera">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="dummyhead1">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="collision_head_link_1">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.001"/>
+      </geometry>
+      <material name="red">
+        <color rgba="0.8 0.3 0.3 0.3"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0.0" xyz="-0.07 -0.04 0.0"/>
+      <geometry>
+        <sphere radius="0.22"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="collision_head_link_2">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.001"/>
+      </geometry>
+      <material name="red">
+        <color rgba="0.8 0.3 0.3 0.3"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.07 0.04 0.00"/>
+      <geometry>
+        <sphere radius="0.22"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <joint name="collision_head_1" type="fixed">
+    <origin rpy="0 0 0" xyz="0.11 0 0.75"/>
+    <parent link="base"/>
+    <child link="collision_head_link_1"/>
+  </joint>
+  <joint name="collision_head_2" type="fixed">
+    <origin rpy="0 0 0" xyz="0.11 0 0.75"/>
+    <parent link="base"/>
+    <child link="collision_head_link_2"/>
+  </joint>
+  <joint name="dummy" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="head"/>
+    <child link="dummyhead1"/>
+  </joint>
+  <joint name="torso_t0" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="base"/>
+    <child link="torso"/>
+    <limit effort="50000" lower="-3.01" upper="3.01" velocity="10000"/>
+  </joint>
+  <joint name="left_torso_itb_fixed" type="fixed">
+    <origin rpy="-1.57079632679 3.1415 0" xyz="-0.08897 0.15593 0.389125"/>
+    <parent link="torso"/>
+    <child link="left_torso_itb"/>
+  </joint>
+  <joint name="right_torso_itb_fixed" type="fixed">
+    <origin rpy="1.57079632679 0 0" xyz="-0.08897 -0.15593 0.389125"/>
+    <parent link="torso"/>
+    <child link="right_torso_itb"/>
+  </joint>
+  <joint name="pedestal_fixed" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+    <parent link="torso"/>
+    <child link="pedestal"/>
+  </joint>
+  <joint name="head_pan" type="revolute">
+    <origin rpy="0 0 0" xyz="0.06 0 0.686"/>
+    <axis xyz="0 0 1"/>
+    <parent link="torso"/>
+    <child link="head"/>
+    <limit effort="50000" lower="-1.57079632679" upper="1.57079632679" velocity="10000"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="head_nod" type="fixed">
+    <origin rpy="1.75057 0 1.57079632679" xyz=".1227 0 0"/>
+    <parent link="head"/>
+    <child link="screen"/>
+  </joint>
+  <joint name="head_camera" type="fixed">
+    <origin rpy="1.75057 0 1.57079632679" xyz="0.12839 0 0.06368"/>
+    <parent link="head"/>
+    <child link="head_camera"/>
+  </joint>
+  <joint name="display_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 -0.016 0.0"/>
+    <parent link="screen"/>
+    <child link="display"/>
+  </joint>
+  <joint name="sonar_s0" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0947 0 .817"/>
+    <axis xyz="0 0 1"/>
+    <parent link="torso"/>
+    <child link="sonar_ring"/>
+  </joint>
+  <link name="right_arm_mount">
+    <!-- all defaults -->
+ <gravity>0</gravity>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_upper_shoulder">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/upper_shoulder/S0.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.1361"/>
+      <geometry>
+        <cylinder length="0.2722" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.01783 0.00086 0.19127"/>
+      <mass value="5.70044"/>
+      <inertia ixx="0.04709102262" ixy="0.00012787556" ixz="0.00614870039" iyy="0.03766976455" iyz="0.00078086899" izz="0.03595988478"/>
+    </inertial>
+  </link>
+  <link name="right_lower_shoulder">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/lower_shoulder/S1.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.12" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.06845 0.00269 -0.00529"/>
+      <mass value="3.22698"/>
+      <inertia ixx="0.01175209419" ixy="-0.00030096398" ixz="0.00207675762" iyy="0.0278859752" iyz="-0.00018821993" izz="0.02078749298"/>
+    </inertial>
+  </link>
+  <link name="right_upper_elbow">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/upper_elbow/E0.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.0535"/>
+      <geometry>
+        <cylinder length="0.107" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00276 0.00132 0.18086"/>
+      <mass value="4.31272"/>
+      <inertia ixx="0.02661733557" ixy="0.00029270634" ixz="0.00392189887" iyy="0.02844355207" iyz="0.0010838933" izz="0.01248008322"/>
+    </inertial>
+  </link>
+  <link name="right_upper_elbow_visual">
+ <gravity>0</gravity>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.1365"/>
+      <geometry>
+        <cylinder length="0.273" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_lower_elbow">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/lower_elbow/E1.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <cylinder length="0.10" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.02611 0.00159 -0.01117"/>
+      <mass value="2.07206"/>
+      <inertia ixx="0.00711582686" ixy="0.00036036173" ixz="0.0007459496" iyy="0.01318227876" iyz="-0.00019663418" izz="0.00926852064"/>
+    </inertial>
+  </link>
+  <link name="right_upper_forearm">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/upper_forearm/W0.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.044"/>
+      <geometry>
+        <cylinder length="0.088" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00168 0.0046 0.13952"/>
+      <mass value="2.24665"/>
+      <inertia ixx="0.01667742825" ixy="0.00018403705" ixz="0.00018657629" iyy="0.01675457264" iyz="-0.00064732352" izz="0.0037463115"/>
+    </inertial>
+  </link>
+  <link name="right_upper_forearm_visual">
+ <gravity>0</gravity>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.136"/>
+      <geometry>
+        <cylinder length="0.272" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_arm_itb">
+ <gravity>0</gravity>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_lower_forearm">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/lower_forearm/W1.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.10" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.06041 0.00697 0.006"/>
+      <mass value="1.60979"/>
+      <inertia ixx="0.00387607152" ixy="-0.00044384784" ixz="-0.00021115038" iyy="0.00700537914" iyz="0.00015348067" izz="0.0055275524"/>
+    </inertial>
+  </link>
+  <link name="right_wrist">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/wrist/W2.DAE"/>
+      </geometry>
+      <material name="lightgrey">
+        <color rgba=".1 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.165" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00198 0.00125 0.01855"/>
+      <mass value="0.35093"/>
+      <inertia ixx="0.00025289155" ixy="0.00000575311" ixz="-0.00000159345" iyy="0.0002688601" iyz="-0.00000519818" izz="0.0003074118"/>
+    </inertial>
+  </link>
+  <link name="right_hand">
+ <gravity>0</gravity>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.0232"/>
+      <geometry>
+        <cylinder length="0.0464" radius="0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.01093 0.00042 -0.01532"/>
+      <mass value="0.19125"/>
+      <inertia ixx="0.00017588" ixy="0.00000147073" ixz="0.0000243633" iyy="0.00021166377" iyz="0.00000172689" izz="0.00023745397"/>
+    </inertial>
+  </link>
+  <link name="right_hand_camera">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.01" radius="0.02"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 0.8"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_hand_camera_axis">
+ <gravity>0</gravity>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_hand_range">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.005 .02 .005"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 0.8"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_hand_accelerometer">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_gripper_base">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 -0.02"/>
+      <geometry>
+        <box size="0.025 0.075 0.035"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="right_gripper">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <joint name="right_torso_arm_mount" type="fixed">
+    <origin rpy="0 0 -0.7854" xyz="0.024645 -0.219645 0.118588"/>
+    <parent link="torso"/>
+    <child link="right_arm_mount"/>
+  </joint>
+  <joint name="right_s0" type="revolute">
+    <origin rpy="0 0 0" xyz="0.055695 0 0.011038"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_arm_mount"/>
+    <child link="right_upper_shoulder"/>
+    <limit effort="50.0" lower="-1.70167993878" upper="1.70167993878" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_s1" type="revolute">
+    <origin rpy="-1.57079632679 0 0" xyz="0.069 0 0.27035"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_upper_shoulder"/>
+    <child link="right_lower_shoulder"/>
+    <limit effort="100.0" lower="-2.147" upper="1.047" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_e0" type="revolute">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.102 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_lower_shoulder"/>
+    <child link="right_upper_elbow"/>
+    <limit effort="50.0" lower="-3.05417993878" upper="3.05417993878" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_e0_fixed" type="fixed">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.107 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_lower_shoulder"/>
+    <child link="right_upper_elbow_visual"/>
+  </joint>
+  <joint name="right_e1" type="revolute">
+    <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0.069 0 0.26242"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_upper_elbow"/>
+    <child link="right_lower_elbow"/>
+    <limit effort="50.0" lower="-0.05" upper="2.618" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_w0" type="revolute">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.10359 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_lower_elbow"/>
+    <child link="right_upper_forearm"/>
+    <limit effort="15.0" lower="-3.059" upper="3.059" velocity="4.0"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_w0_fixed" type="fixed">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.088 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_lower_elbow"/>
+    <child link="right_upper_forearm_visual"/>
+  </joint>
+  <joint name="right_w0_to_itb_fixed" type="fixed">
+    <origin rpy="-1.57079632679 0 1.57079632679" xyz="-0.0565 0 0.12"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_upper_forearm"/>
+    <child link="right_arm_itb"/>
+  </joint>
+  <joint name="right_w1" type="revolute">
+    <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0.01 0 0.2707"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_upper_forearm"/>
+    <child link="right_lower_forearm"/>
+    <limit effort="15.0" lower="-1.57079632679" upper="2.094" velocity="4.0"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_w2" type="revolute">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.115975 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_lower_forearm"/>
+    <child link="right_wrist"/>
+    <limit effort="15.0" lower="-3.059" upper="3.059" velocity="4.0"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_hand" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.11355"/>
+    <axis xyz="0 0 1"/>
+    <parent link="right_wrist"/>
+    <child link="right_hand"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="right_hand_camera" type="fixed">
+    <origin rpy="0 0 -1.57079633" xyz="0.03825 0.012 0.015355"/>
+    <parent link="right_hand"/>
+    <child link="right_hand_camera"/>
+  </joint>
+  <joint name="right_hand_camera_axis" type="fixed">
+    <origin rpy="0 0 0" xyz="0.03825 0.012 0.015355"/>
+    <parent link="right_hand"/>
+    <child link="right_hand_camera_axis"/>
+  </joint>
+  <joint name="right_hand_range" type="fixed">
+    <origin rpy="0 -1.57079632679 -1.57079632679" xyz="0.032 -0.020245 0.0288"/>
+    <parent link="right_hand"/>
+    <child link="right_hand_range"/>
+  </joint>
+  <joint name="right_hand_accelerometer" type="fixed">
+    <origin rpy="0 0 0" xyz="0.00198 0.000133 -0.0146"/>
+    <parent link="right_hand"/>
+    <child link="right_hand_accelerometer"/>
+  </joint>
+  <joint name="right_gripper_base" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="right_hand"/>
+    <child link="right_gripper_base"/>
+  </joint>
+  <joint name="right_endpoint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0 0.025"/>
+    <parent link="right_gripper_base"/>
+    <child link="right_gripper"/>
+  </joint>
+  <link name="left_arm_mount">
+    <!-- all defaults -->
+ <gravity>0</gravity>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_upper_shoulder">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/upper_shoulder/S0.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.1361"/>
+      <geometry>
+        <cylinder length="0.2722" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.01783 0.00086 0.19127"/>
+      <mass value="5.70044"/>
+      <inertia ixx="0.04709102262" ixy="0.00012787556" ixz="0.00614870039" iyy="0.03766976455" iyz="0.00078086899" izz="0.03595988478"/>
+    </inertial>
+  </link>
+  <link name="left_lower_shoulder">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/lower_shoulder/S1.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.12" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.06845 0.00269 -0.00529"/>
+      <mass value="3.22698"/>
+      <inertia ixx="0.01175209419" ixy="-0.00030096398" ixz="0.00207675762" iyy="0.0278859752" iyz="-0.00018821993" izz="0.02078749298"/>
+    </inertial>
+  </link>
+  <link name="left_upper_elbow">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/upper_elbow/E0.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.0535"/>
+      <geometry>
+        <cylinder length="0.107" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00276 0.00132 0.18086"/>
+      <mass value="4.31272"/>
+      <inertia ixx="0.02661733557" ixy="0.00029270634" ixz="0.00392189887" iyy="0.02844355207" iyz="0.0010838933" izz="0.01248008322"/>
+    </inertial>
+  </link>
+  <link name="left_upper_elbow_visual">
+ <gravity>0</gravity>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.1365"/>
+      <geometry>
+        <cylinder length="0.273" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_lower_elbow">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/lower_elbow/E1.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <cylinder length="0.10" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.02611 0.00159 -0.01117"/>
+      <mass value="2.07206"/>
+      <inertia ixx="0.00711582686" ixy="0.00036036173" ixz="0.0007459496" iyy="0.01318227876" iyz="-0.00019663418" izz="0.00926852064"/>
+    </inertial>
+  </link>
+  <link name="left_upper_forearm">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/upper_forearm/W0.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.044"/>
+      <geometry>
+        <cylinder length="0.088" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00168 0.0046 0.13952"/>
+      <mass value="2.24665"/>
+      <inertia ixx="0.01667742825" ixy="0.00018403705" ixz="0.00018657629" iyy="0.01675457264" iyz="-0.00064732352" izz="0.0037463115"/>
+    </inertial>
+  </link>
+  <link name="left_upper_forearm_visual">
+ <gravity>0</gravity>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.136"/>
+      <geometry>
+        <cylinder length="0.272" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_arm_itb">
+ <gravity>0</gravity>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_lower_forearm">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/lower_forearm/W1.DAE"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.10" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.06041 0.00697 0.006"/>
+      <mass value="1.60979"/>
+      <inertia ixx="0.00387607152" ixy="-0.00044384784" ixz="-0.00021115038" iyy="0.00700537914" iyz="0.00015348067" izz="0.0055275524"/>
+    </inertial>
+  </link>
+  <link name="left_wrist">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://baxter_description/meshes/wrist/W2.DAE"/>
+      </geometry>
+      <material name="lightgrey">
+        <color rgba=".1 .1 .1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.165" radius="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00198 0.00125 0.01855"/>
+      <mass value="0.35093"/>
+      <inertia ixx="0.00025289155" ixy="0.00000575311" ixz="-0.00000159345" iyy="0.0002688601" iyz="-0.00000519818" izz="0.0003074118"/>
+    </inertial>
+  </link>
+  <link name="left_hand">
+ <gravity>0</gravity>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.0232"/>
+      <geometry>
+        <cylinder length="0.0464" radius="0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.01093 0.00042 -0.01532"/>
+      <mass value="0.19125"/>
+      <inertia ixx="0.00017588" ixy="0.00000147073" ixz="0.0000243633" iyy="0.00021166377" iyz="0.00000172689" izz="0.00023745397"/>
+    </inertial>
+  </link>
+  <link name="left_hand_camera">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.01" radius="0.02"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 0.8"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_hand_camera_axis">
+ <gravity>0</gravity>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_hand_range">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.005 .02 .005"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 0.8"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_hand_accelerometer">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_gripper_base">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 -0.02"/>
+      <geometry>
+        <box size="0.025 0.075 0.035"/>
+      </geometry>
+      <material name="darkred">
+        <color rgba=".5 .1 .1 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <link name="left_gripper">
+ <gravity>0</gravity>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.000000"/>
+      <mass value="0.0001"/>
+      <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+    </inertial>
+  </link>
+  <joint name="left_torso_arm_mount" type="fixed">
+    <origin rpy="0 0 0.7854" xyz="0.024645 0.219645 0.118588"/>
+    <parent link="torso"/>
+    <child link="left_arm_mount"/>
+  </joint>
+  <joint name="left_s0" type="revolute">
+    <origin rpy="0 0 0" xyz="0.055695 0 0.011038"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_arm_mount"/>
+    <child link="left_upper_shoulder"/>
+    <limit effort="50.0" lower="-1.70167993878" upper="1.70167993878" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_s1" type="revolute">
+    <origin rpy="-1.57079632679 0 0" xyz="0.069 0 0.27035"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_upper_shoulder"/>
+    <child link="left_lower_shoulder"/>
+    <limit effort="100.0" lower="-2.147" upper="1.047" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_e0" type="revolute">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.102 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_lower_shoulder"/>
+    <child link="left_upper_elbow"/>
+    <limit effort="50.0" lower="-3.05417993878" upper="3.05417993878" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_e0_fixed" type="fixed">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.107 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_lower_shoulder"/>
+    <child link="left_upper_elbow_visual"/>
+  </joint>
+  <joint name="left_e1" type="revolute">
+    <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0.069 0 0.26242"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_upper_elbow"/>
+    <child link="left_lower_elbow"/>
+    <limit effort="50.0" lower="-0.05" upper="2.618" velocity="1.5"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_w0" type="revolute">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.10359 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_lower_elbow"/>
+    <child link="left_upper_forearm"/>
+    <limit effort="15.0" lower="-3.059" upper="3.059" velocity="4.0"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_w0_fixed" type="fixed">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.088 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_lower_elbow"/>
+    <child link="left_upper_forearm_visual"/>
+  </joint>
+  <joint name="left_w0_to_itb_fixed" type="fixed">
+    <origin rpy="-1.57079632679 0 1.57079632679" xyz="-0.0565 0 0.12"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_upper_forearm"/>
+    <child link="left_arm_itb"/>
+  </joint>
+  <joint name="left_w1" type="revolute">
+    <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0.01 0 0.2707"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_upper_forearm"/>
+    <child link="left_lower_forearm"/>
+    <limit effort="15.0" lower="-1.57079632679" upper="2.094" velocity="4.0"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_w2" type="revolute">
+    <origin rpy="1.57079632679 0 1.57079632679" xyz="0.115975 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_lower_forearm"/>
+    <child link="left_wrist"/>
+    <limit effort="15.0" lower="-3.059" upper="3.059" velocity="4.0"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_hand" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.11355"/>
+    <axis xyz="0 0 1"/>
+    <parent link="left_wrist"/>
+    <child link="left_hand"/>
+    <dynamics damping="0.7" friction="0.0"/>
+  </joint>
+  <joint name="left_hand_camera" type="fixed">
+    <origin rpy="0 0 -1.57079633" xyz="0.03825 0.012 0.015355"/>
+    <parent link="left_hand"/>
+    <child link="left_hand_camera"/>
+  </joint>
+  <joint name="left_hand_camera_axis" type="fixed">
+    <origin rpy="0 0 0" xyz="0.03825 0.012 0.015355"/>
+    <parent link="left_hand"/>
+    <child link="left_hand_camera_axis"/>
+  </joint>
+  <joint name="left_hand_range" type="fixed">
+    <origin rpy="0 -1.57079632679 -1.57079632679" xyz="0.032 -0.020245 0.0288"/>
+    <parent link="left_hand"/>
+    <child link="left_hand_range"/>
+  </joint>
+  <joint name="left_hand_accelerometer" type="fixed">
+    <origin rpy="0 0 0" xyz="0.00198 0.000133 -0.0146"/>
+    <parent link="left_hand"/>
+    <child link="left_hand_accelerometer"/>
+  </joint>
+  <joint name="left_gripper_base" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="left_hand"/>
+    <child link="left_gripper_base"/>
+  </joint>
+  <joint name="left_endpoint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0 0.025"/>
+    <parent link="left_gripper_base"/>
+    <child link="left_gripper"/>
+  </joint>
+
+  <!-- Transmissions -->
+
+  <!-- Right Arm -->
+  <transmission name="right_tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_s0">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="right_tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_s1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="right_tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_e0">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor3">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="right_tran4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_e1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor4">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="right_tran5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_w0">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor5">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="right_tran6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_w1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor6">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="right_tran7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_w2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor7">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- Left Arm -->
+  <transmission name="left_tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_s0">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="left_tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_s1">      
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="left_tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_e0">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor3">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="left_tran4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_e1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor4">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="left_tran5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_w0">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor5">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="left_tran6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_w1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor6">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="left_tran7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_w2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor7">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- Head -->
+  <transmission name="head1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="head_pan">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="head_motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- ros_control plugin -->
+  <gazebo>
+    <plugin name="baxter_ros_control" filename="libbaxter_gazebo_ros_control.so">
+      <robotNamespace>/robot</robotNamespace>
+    </plugin>
+  </gazebo>
+
+  <!-- Gazebo-Specific Link Properties -->
+  <gazebo reference="torso">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="head_pan">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="right_s0">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="right_s1">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="right_e0">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="right_e1">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="right_w0">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="right_w1">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="right_w2">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="left_s0">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="left_s1">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="left_e0">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="left_e1">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="left_w0">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="left_w1">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="left_w2">
+    <implicitSpringDamper>1</implicitSpringDamper>
+  </gazebo>
+  <gazebo reference="head_camera">
+    <sensor name="head_camera" type="camera">
+      <update_rate>30.0</update_rate>
+      <camera name="head_camera">
+        <pose>0.0 0.21 0.0 0.0 -0.8 -1.570796327 </pose>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>head_camera</cameraName>
+        <imageTopicName>image</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>head_camera</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        <robotNamespace>/cameras</robotNamespace>
+      </plugin>
+    </sensor>
+  </gazebo>
+  <gazebo reference="right_hand_camera">
+    <sensor name="right_hand_camera" type="camera">
+      <update_rate>30.0</update_rate>
+      <camera name="right_hand_camera">
+        <pose>0.0 0.0 0.0 0.0 -1.570796327 1.570796327 </pose>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>right_hand_camera</cameraName>
+        <imageTopicName>image</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>right_hand_camera</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        <robotNamespace>/cameras</robotNamespace>
+      </plugin>
+    </sensor>
+  </gazebo>
+  <gazebo reference="left_hand_camera">
+    <sensor name="left_hand_camera" type="camera">
+      <update_rate>30.0</update_rate>
+      <camera name="left_hand_camera">
+        <pose>0.0 0.0 0.0 0.0 -1.570796327 1.570796327 </pose>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>left_hand_camera</cameraName>
+        <imageTopicName>image</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>left_hand_camera</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        <robotNamespace>/cameras</robotNamespace>
+      </plugin>
+    </sensor>
+  </gazebo>
+  <gazebo reference="display">
+    <visual>
+      <plugin name="screen_video_controller" filename="libgazebo_ros_video.so">
+        <height>600</height>
+        <width>1024</width>
+        <topicName>/robot/xdisplay</topicName>
+      </plugin>
+    </visual>
+  </gazebo>
+  <gazebo reference="sonar_ring">
+    <sensor name="sonar" type="ray">
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>12</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-3.14</min_angle>
+            <max_angle>3.14</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-0.001</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.05</min>
+          <max>50.0</max>
+        </range>
+      </ray>
+      <plugin name="sonar_plugin" filename="libgazebo_ros_block_laser.so">
+        <gaussianNoise>0.00</gaussianNoise>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <topicName>/robot/sonar/head_sonar/state</topicName>
+        <frameName>sonar_ring</frameName>
+      </plugin>
+      <always_on>true</always_on>
+      <update_rate>100.0</update_rate>
+    </sensor>
+  </gazebo>
+  <gazebo reference="right_hand_range">
+    <sensor name="ir_right" type="ray">
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-0.5</min_angle>
+            <max_angle>0.5</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.004</min>
+          <max>0.4</max>
+        </range>
+      </ray>
+      <plugin name="plugin_3" filename="libgazebo_ros_laser.so">
+        <gaussianNoise>0.005</gaussianNoise>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100</updateRate>
+        <topicName>/sim/laserscan/right_hand_range/state</topicName>
+        <frameName>right_hand_range</frameName>
+      </plugin>
+      <always_on>true</always_on>
+      <update_rate>100.0</update_rate>
+    </sensor>
+  </gazebo>
+  <gazebo reference="left_hand_range">
+    <sensor name="ir_left" type="ray">
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-0.5</min_angle>
+            <max_angle>0.5</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.004</min>
+          <max>0.4</max>
+        </range>
+      </ray>
+      <plugin name="plugin_4" filename="libgazebo_ros_laser.so">
+        <gaussianNoise>0.005</gaussianNoise>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100</updateRate>
+        <topicName>/sim/laserscan/left_hand_range/state</topicName>
+        <frameName>left_hand_range</frameName>
+      </plugin>
+      <always_on>true</always_on>
+      <update_rate>100.0</update_rate>
+    </sensor>
+  </gazebo>
+</robot>

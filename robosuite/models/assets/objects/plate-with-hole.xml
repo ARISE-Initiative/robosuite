@@ -1,0 +1,21 @@
+<mujoco model="hole">
+  <worldbody>
+    <body>
+      <body name="collision">
+        <geom pos="0 0 0" size="0.06 0.17 0.02" type="box" rgba="1 0 0 1" group="1"/>
+        <geom pos="0.22 0 0" size="0.06 0.17 0.02" type="box" rgba="1 0 0 1" group="1"/>
+        <geom pos="0.11 0.11 0" size="0.05 0.06 0.02" type="box" rgba="1 0 0 1" group="1"/>
+        <geom pos="0.11 -0.11 0" size="0.05 0.06 0.02" type="box" rgba="1 0 0 1" group="1"/>
+      </body>
+      <body name="visual">
+        <!--  <geom pos="0 0 0" size="0.1 0.25 0.02" type="box" rgba="1 0 0 1"/>
+        <geom pos="0.3 0 0" size="0.1 0.25 0.02" type="box" rgba="1 0 0 1"/>
+        <geom pos="0.15 0.15 0" size="0.05 0.1 0.02" type="box" rgba="1 0 0 1"/>
+        <geom pos="0.15 -0.15 0" size="0.05 0.1 0.02" type="box" rgba="1 0 0 1"/>-->
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.02" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.02" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.25 0.25 0.1" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>
