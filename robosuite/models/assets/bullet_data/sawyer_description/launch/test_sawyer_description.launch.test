@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+ <!-- Note: This launch file is used to test the URDF and Meshes
+      PLEASE - DO NOT launch this while networked against
+      a real Sawyer robot. It will crash the onboard
+      robot_state_publisher, and you will need to reboot
+      your robot for it to function properly again -->
+<launch>
+ <!-- Load the URDF into the ROS Parameter Server
+ <param name="robot_description" command="cat '$(find sawyer_description)urdf/sawyer.urdf'" />
+
+ <node pkg="joint_state_publisher" type="joint_state_publisher" name="test_joint_state_publisher" output="screen" args="_use_gui:=true"/>
+
+ <node pkg="tf2_ros" type="static_transform_publisher" name="test_base_to_world" args="0 0 0 0 0 0 1 world base" />
+
+ <node name="test_robot_state_publisher" type="robot_state_publisher" pkg="robot_state_publisher" output="screen"/>
+
+ <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sawyer_description)config/sawyer.rviz" required="true"/>
+ -->
+</launch>
