@@ -536,6 +536,10 @@ class SawyerPickPlace(SawyerEnv):
                 (not self.not_in_bin(obj_pos, i)) and r_reach < 0.6
             )
 
+        # returns True if a single object is in the correct bin
+        if self.single_object_mode == 1 or self.single_object_mode == 2:
+            return np.sum(self.objects_in_bins) > 0
+
         # returns True if all objects are in correct bins
         return np.sum(self.objects_in_bins) == len(self.ob_inits)
 
