@@ -72,11 +72,11 @@ The `demo.hdf5` file is structured as follows.
     (and so on)
 
 
-To see a simple example of how to read demonstrations, please see [playback_demonstrations_from_hdf5](robosuite/scripts/playback_demonstrations_from_hdf5.py).
+To see a simple example of how to read demonstrations, please see [playback_demonstrations_from_hdf5](https://github.com/StanfordVL/robosuite/blob/master/robosuite/scripts/playback_demonstrations_from_hdf5.py).
 
 ## Collecting your own demonstrations
 
-Demonstrations can be collected by either using a keyboard or using a [SpaceNavigator 3D Mouse](https://www.3dconnexion.com/spacemouse_compact/en/) with the [collect_human_demonstrations](robosuite/scripts/collect_human_demonstrations.py) script. It takes the following arguments.
+Demonstrations can be collected by either using a keyboard or using a [SpaceNavigator 3D Mouse](https://www.3dconnexion.com/spacemouse_compact/en/) with the [collect_human_demonstrations](https://github.com/StanfordVL/robosuite/blob/master/robosuite/scripts/collect_human_demonstrations.py) script. It takes the following arguments.
 
 - `directory:` path to a folder for where to store the pickle file of collected demonstrations
 - `environment:` name of the environment you would like to collect the demonstrations for
