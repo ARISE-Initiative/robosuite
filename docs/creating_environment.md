@@ -1,5 +1,5 @@
 # How to build a custom environment
-We provide a variety of templating tools to build an environment in a modular way. Here we break down the creation of `SawyerLift` to demonstrate these functionalities. The code cited ([here](robosuite/environments/sawyer_lift.py#L138)) can be found in `_load_model` methods of classes `SawyerEnv` (creates the robot) and `SawyerLift` (creates the table) plus the code of `TableTopTask`.
+We provide a variety of templating tools to build an environment in a modular way. Here we break down the creation of `SawyerLift` to demonstrate these functionalities. The code cited ([here](../robosuite/environments/sawyer_lift.py#L138)) can be found in `_load_model` methods of classes `SawyerEnv` (creates the robot) and `SawyerLift` (creates the table) plus the code of `TableTopTask`.
 
 # Modeling
 Here we explain step-by-step how to create a model of a manipulation task using our APIs.
