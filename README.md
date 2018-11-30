@@ -2,7 +2,7 @@
 
 ![gallery of_environments](resources/gallery.png)
 
-Surreal Robotics Suite is a tookit and simulation benchmark powered by the [MuJoCo physics engine](http://mujoco.org/) for reproducible robotics research. The current release concentrates on reinforcement learning for robot manipulation.
+Surreal Robotics Suite is a tookit and simulation benchmark powered by the [MuJoCo physics engine](http://mujoco.org/) for reproducible robotics research. The current release concentrates on reinforcement learning for robot manipulation. This library is designed to smoothly interoperate with the [Surreal Distributed Reinforcement Learning Framework](https://github.com/SurrealAI/Surreal).
 
 Reinforcement learning has been a powerful and generic tool in robotics. Reinforcement learning combined with deep neural networks, i.e. *deep reinforcement learning* (DRL), has achieved some exciting successes in a variety of robot control problems. However, the challenges of reproducibility and replicability in DRL and robotics have impaired research progress. Our goal is to provide an accessible set of benchmarking tasks that facilitates a fair and rigorus evaluation and improves our understanding of new methods.
 
@@ -85,6 +85,8 @@ for i in range(1000):
 The `step()` function takes an `action` as input and returns a tuple of `(obs, reward, done, info)` where `obs` is an `OrderedDict` containing observations `[(name_string, np.array), ...]`, `reward` is the immediate reward obtained per step, `done` is a Boolean flag indicating if the episode has terminated and `info` is a dictionary which contains additional metadata.
 
 There are other parameters which can be configured for each environment. They provide functionalities such as headless rendering, getting pixel observations, changing camera settings, using reward shaping, and adding extra low-level observations. Please refer to [this page](robosuite/environments/README.md) and the [environment classes](robosuite/environments) for further details.
+
+Sample scripts that showcase various features of the Surreal Robotics Suite are available at [robosuite/scripts](robosuite/scripts). The purpose of each script and usage instructions can be found at the beginning of each file.
 
 ## Building Your Own Environments
 A manipulation `task` typically involves the participation of a `robot` with `gripper`s as its end-effectors, an `arena` (workspace), and `object`s that the robot interacts with. Our APIs in [Models](robosuite/models) provide a toolkit of composing these modularized elements into a scene, which can be loaded in MuJoCo for simulation. To build your own environments, you are recommended to take a look at the [environment classes](robosuite/environments) which have used these APIs to define a set of standardized manipulation tasks. You can also find detailed documentations about [creating a custom object](docs/creating_object.md) and [creating a custom environment](docs/creating_environment.md).
