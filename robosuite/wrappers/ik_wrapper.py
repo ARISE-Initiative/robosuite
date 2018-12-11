@@ -59,6 +59,11 @@ class IKWrapper(Wrapper):
         """
         return np.array(self.env._joint_positions)
 
+    def reset(self):
+        ret = super().reset()
+        self.controller.sync_state()
+        return ret
+
     def step(self, action):
         """
         Move the end effector(s) according to the input control.
