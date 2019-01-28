@@ -50,10 +50,10 @@ from robosuite.models.objects import BoxObject
 from robosuite.utils.mjcf_utils import new_joint
 
 object_mjcf = BoxObject()
-world.merge_asset(obj_mjcf)
+world.merge_asset(object_mjcf)
 
-obj = obj_mjcf.get_collision(name=obj_name, site=True)
-obj.append(new_joint(name=obj_name, type="free"))
+obj = object_mjcf.get_collision(name="box_object", site=True)
+obj.append(new_joint(name="box_object", type="free"))
 obj.set("pos", [0, 0, 0.5])
 world.worldbody.append(obj)
 ```
