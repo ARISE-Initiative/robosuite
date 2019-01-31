@@ -87,11 +87,15 @@ class DataCollectionWrapper(Wrapper):
         """
         t1, t2 = str(time.time()).split(".")
         state_path = os.path.join(self.ep_directory, "state_{}_{}.npz".format(t1, t2))
+        if hasattr(self.env, "unwrapped"):
+            env_name = self.env.unwrapped.__class__.__name__
+        else:
+            env_name = self.env.__class__.__name__
         np.savez(
             state_path,
             states=np.array(self.states),
             action_infos=self.action_infos,
-            env=self.env.unwrapped.__class__.__name__,
+            env=env_name,
         )
         self.states = []
         self.action_infos = []
