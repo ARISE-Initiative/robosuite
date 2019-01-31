@@ -40,6 +40,8 @@ def collect_human_trajectory(env, device):
     env.viewer.set_camera(camera_id=2)
     env.render()
 
+    is_first = True
+
     # episode terminates on a spacenav reset input or if task is completed
     reset = False
     task_completion_hold_count = -1 # counter to collect 10 timesteps after reaching goal
@@ -61,6 +63,24 @@ def collect_human_trajectory(env, device):
         action = np.concatenate([dpos, dquat, [grasp]])
 
         obs, reward, done, info = env.step(action)
+
+        if is_first:
+            is_first = False
+
+            # We grab the initial model xml and state and reload from those so that
+            # we can support deterministic playback of actions from our demonstrations.
+            # This is necessary due to rounding issues with the model xml and with
+            # env.sim.forward(). We also have to do this after the first action is 
+            # applied because the data collector wrapper only starts recording
+            # after the first action has been played.
+            initial_mjstate = env.sim.get_state().flatten()
+            xml_str = env.model.get_xml()
+            env.reset_from_xml_string(xml_str)
+            env.sim.reset()
+            env.sim.set_state_from_flattened(initial_mjstate)
+            env.sim.forward()
+            env.viewer.set_camera(camera_id=2)
+
         env.render()
 
         if task_completion_hold_count == 0:
@@ -145,19 +165,28 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
         for state_file in sorted(glob(state_paths)):
             dic = np.load(state_file)
             env_name = str(dic["env"])
-            # Note how we index the actions here. This is because when the DataCollector wrapper
-            # recorded the states and actions, the states were recorded AFTER playing that action.
-            for s, ai in zip(dic["states"][:-1], dic["action_infos"][1:]):
-                states.append(s)
+
+            states.extend(dic["states"])
+            for ai in dic["action_infos"]:
                 joint_velocities.append(ai["joint_velocities"])
                 gripper_actuations.append(ai["gripper_actuation"])
                 right_dpos.append(ai.get("right_dpos", []))
                 right_dquat.append(ai.get("right_dquat", []))
                 left_dpos.append(ai.get("left_dpos", []))
                 left_dquat.append(ai.get("left_dquat", []))
-
+                
         if len(states) == 0:
             continue
+
+        # Delete the first actions and the last state. This is because when the DataCollector wrapper
+        # recorded the states and actions, the states were recorded AFTER playing that action.
+        del states[-1]
+        del joint_velocities[0]
+        del gripper_actuations[0]
+        del right_dpos[0]
+        del right_dquat[0]
+        del left_dpos[0]
+        del left_dquat[0]
 
         num_eps += 1
         ep_data_grp = grp.create_group("demo_{}".format(num_eps))
