@@ -43,8 +43,6 @@ The `demo.hdf5` file is structured as follows.
 
   - env (attribute) - environment name on which demos were collected
 
-    
-
   - demo1 (group) - group for the first demonstration (every demonstration has a group)
 
     - model_file (attribute) - name of corresponding model xml in `models` directory
@@ -62,8 +60,6 @@ The `demo.hdf5` file is structured as follows.
     - left_dpos (dataset) - end effector delta position command for left arm (bimanual robot only)
 
     - left_dquat (dataset) - end effector delta rotation command for left arm (bimanual robot only)
-
-      
 
   - demo2 (group) - group for the second demonstration
 
@@ -108,7 +104,32 @@ Note that the rendering window must be active for these commands to work.
 | Twist mouse about an axis | rotate arm about a corresponding axis |
 |      ESC (keyboard)       |                 quit                  |
 
+### Example
 
+First make sure that you have installed cloned and installed robosuite using
 
+```bash
+git clone https://github.com/StanfordVL/robosuite.git
+cd robosuite
+pip install -e .
+```
 
- 
+Next, navigate to the scripts directory and run `collect_human_demonstrations.py` to collect a set of demonstrations using your keyboard, and press the ESC key when you are finished collecting.
+
+```bash
+cd robosuite/scripts
+python collect_human_demonstrations.py
+```
+
+Now we can replay the demonstrations. You should see a new demonstration folder that was created under `robosuite/robosuite/models/assets/demonstrations`. We can use the `playback_demonstrations_from_hdf5.py` script to playback the demonstrations that were collected.
+
+```bash
+python playback_demonstrations_from_hdf5.py --folder PATH_TO_DEMO_FOLDER
+```
+
+This will replay the demonstrations by forcing the collected internal mujoco simulator states one by one. Optionally, you can also replay the collection actions in an open loop fashion by passing the `--use-actions`flag to the script.
+
+```bash
+python playback_demonstrations_from_hdf5.py --folder PATH_TO_DEMO_FOLDER --use-actions
+```
+
