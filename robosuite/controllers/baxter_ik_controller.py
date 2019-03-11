@@ -43,10 +43,12 @@ class BaxterIKController(Controller):
 
         self.sync_state()
 
-    def get_control(self, right, left):
+    def get_control(self, right=None, left=None):
         """
         Returns joint velocities to control the robot after the target end effector 
         positions and orientations are updated from arguments @left and @right.
+        If no arguments are provided, joint velocities will be computed based
+        on the previously recorded target.
 
         Args:
             left (dict): A dictionary to control the left end effector with these keys.
@@ -74,10 +76,11 @@ class BaxterIKController(Controller):
         # Sync joint positions for IK.
         self.sync_ik_robot(self.robot_jpos_getter())
 
-        # Compute target joint positions
-        self.commanded_joint_positions = self.joint_positions_for_eef_command(
-            right, left
-        )
+        # Compute new target joint positions if arguments are provided
+        if (right is not None) and (left is not None):
+            self.commanded_joint_positions = self.joint_positions_for_eef_command(
+                right, left
+            )
 
         # P controller from joint positions (from IK) to velocities
         velocities = np.zeros(14)
