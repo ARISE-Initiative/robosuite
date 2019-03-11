@@ -48,10 +48,12 @@ class SawyerIKController(Controller):
 
         self.sync_state()
 
-    def get_control(self, dpos, rotation):
+    def get_control(self, dpos=None, rotation=None):
         """
         Returns joint velocities to control the robot after the target end effector 
         position and orientation are updated from arguments @dpos and @rotation.
+        If no arguments are provided, joint velocities will be computed based
+        on the previously recorded target.
 
         Args:
             dpos (numpy array): a 3 dimensional array corresponding to the desired
@@ -67,9 +69,11 @@ class SawyerIKController(Controller):
         # Sync joint positions for IK.
         self.sync_ik_robot(self.robot_jpos_getter())
 
-        self.commanded_joint_positions = self.joint_positions_for_eef_command(
-            dpos, rotation
-        )
+        # Compute new target joint positions if arguments are provided
+        if (dpos is not None) and (rotation is not None):
+            self.commanded_joint_positions = self.joint_positions_for_eef_command(
+                dpos, rotation
+            )
 
         # P controller from joint positions (from IK) to velocities
         velocities = np.zeros(7)
