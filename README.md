@@ -21,14 +21,14 @@ Surreal Robotics Suite officially supports Mac OS X and Linux on Python 3.5 or 3
 
 The base installation requires the MuJoCo physics engine (with [mujoco-py](https://github.com/openai/mujoco-py), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate`.
 
-First download MuJoCo 1.5.0 ([Linux](https://www.roboti.us/download/mjpro150_linux.zip) and [Mac OS X](https://www.roboti.us/download/mjpro150_osx.zip)) and place the `mjpro150` folder and your license key `mjkey.txt` in `~/.mujoco`. You can obtain a license key from [here](https://www.roboti.us/license.html).
+First download MuJoCo 2.0 ([Linux](https://www.roboti.us/download/mujoco200_linux.zip) and [Mac OS X](https://www.roboti.us/download/mujoco200_macos.zip)) and place the `mujoco200` folder and your license key `mjkey.txt` in `~/.mujoco`. You can obtain a license key from [here](https://www.roboti.us/license.html).
    - For Linux, you will need to install some packages to build `mujoco-py` (sourced from [here](https://github.com/openai/mujoco-py/blob/master/Dockerfile), with a couple missing packages added). If using `apt`, the required installation command is:
      ```sh
      $ sudo apt install curl git libgl1-mesa-dev libgl1-mesa-glx libglew-dev \
              libosmesa6-dev software-properties-common net-tools unzip vim \
              virtualenv wget xpra xserver-xorg-dev libglfw3-dev patchelf
      ```
-     Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mjpro150/bin` before proceeding to the next step.
+     Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin` before proceeding to the next step.
 
 ### Install from pip
 1. After setting up mujoco, robosuite can be installed with
