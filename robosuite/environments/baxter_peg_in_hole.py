@@ -223,14 +223,14 @@ class BaxterPegInHole(BaxterEnv):
         # low-level object information
         if self.use_object_obs:
             # position and rotation of cylinder and hole
-            hole_pos = self.sim.data.body_xpos[self.hole_body_id]
+            hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
             hole_quat = T.convert_quat(
                 self.sim.data.body_xquat[self.hole_body_id], to="xyzw"
             )
             di["hole_pos"] = hole_pos
             di["hole_quat"] = hole_quat
 
-            cyl_pos = self.sim.data.body_xpos[self.cyl_body_id]
+            cyl_pos = np.array(self.sim.data.body_xpos[self.cyl_body_id])
             cyl_quat = T.convert_quat(
                 self.sim.data.body_xquat[self.cyl_body_id], to="xyzw"
             )
