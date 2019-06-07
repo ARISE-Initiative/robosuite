@@ -265,7 +265,7 @@ class SawyerEnv(MujocoEnv):
                 [self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes]
             )
 
-            di["eef_pos"] = self.sim.data.site_xpos[self.eef_site_id]
+            di["eef_pos"] = np.array(self.sim.data.site_xpos[self.eef_site_id])
             di["eef_quat"] = T.convert_quat(
                 self.sim.data.get_body_xquat("right_hand"), to="xyzw"
             )
