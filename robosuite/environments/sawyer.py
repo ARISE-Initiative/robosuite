@@ -112,7 +112,7 @@ class SawyerEnv(MujocoEnv):
 
         if self.has_gripper:
             self.sim.data.qpos[
-                self._ref_joint_gripper_actuator_indexes
+                self._ref_gripper_joint_pos_indexes
             ] = self.gripper.init_qpos
 
     def _get_reference(self):
