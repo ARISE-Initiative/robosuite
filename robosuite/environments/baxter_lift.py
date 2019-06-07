@@ -245,19 +245,19 @@ class BaxterLift(BaxterEnv):
         # low-level object information
         if self.use_object_obs:
             # position and rotation of object
-            cube_pos = self.sim.data.body_xpos[self.cube_body_id]
+            cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
             cube_quat = T.convert_quat(
                 self.sim.data.body_xquat[self.cube_body_id], to="xyzw"
             )
             di["cube_pos"] = cube_pos
             di["cube_quat"] = cube_quat
 
-            di["l_eef_xpos"] = self._l_eef_xpos
-            di["r_eef_xpos"] = self._r_eef_xpos
-            di["handle_1_xpos"] = self._handle_1_xpos
-            di["handle_2_xpos"] = self._handle_2_xpos
-            di["l_gripper_to_handle"] = self._l_gripper_to_handle
-            di["r_gripper_to_handle"] = self._r_gripper_to_handle
+            di["l_eef_xpos"] = np.array(self._l_eef_xpos)
+            di["r_eef_xpos"] = np.array(self._r_eef_xpos)
+            di["handle_1_xpos"] = np.array(self._handle_1_xpos)
+            di["handle_2_xpos"] = np.array(self._handle_2_xpos)
+            di["l_gripper_to_handle"] = np.array(self._l_gripper_to_handle)
+            di["r_gripper_to_handle"] = np.array(self._r_gripper_to_handle)
 
             di["object-state"] = np.concatenate(
                 [

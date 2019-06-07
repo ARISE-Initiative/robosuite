@@ -430,7 +430,7 @@ class SawyerNutAssembly(SawyerEnv):
                     continue
 
                 obj_str = str(self.item_names_org[i]) + "0"
-                obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
+                obj_pos = np.array(self.sim.data.body_xpos[self.obj_body_id[obj_str]])
                 obj_quat = T.convert_quat(
                     self.sim.data.body_xquat[self.obj_body_id[obj_str]], to="xyzw"
                 )

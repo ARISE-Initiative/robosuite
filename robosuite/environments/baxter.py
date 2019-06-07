@@ -279,7 +279,7 @@ class BaxterEnv(MujocoEnv):
                     for x in self._ref_gripper_right_joint_vel_indexes
                 ]
             )
-            di["right_eef_pos"] = self.sim.data.site_xpos[self.right_eef_site_id]
+            di["right_eef_pos"] = np.array(self.sim.data.site_xpos[self.right_eef_site_id])
             di["right_eef_quat"] = T.convert_quat(
                 self.sim.data.get_body_xquat("right_hand"), to="xyzw"
             )
@@ -300,7 +300,7 @@ class BaxterEnv(MujocoEnv):
                     for x in self._ref_gripper_left_joint_vel_indexes
                 ]
             )
-            di["left_eef_pos"] = self.sim.data.site_xpos[self.left_eef_site_id]
+            di["left_eef_pos"] = np.array(self.sim.data.site_xpos[self.left_eef_site_id])
             di["left_eef_quat"] = T.convert_quat(
                 self.sim.data.get_body_xquat("left_hand"), to="xyzw"
             )
