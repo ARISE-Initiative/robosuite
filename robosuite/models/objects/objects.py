@@ -217,7 +217,7 @@ class MujocoGeneratedObject(MujocoObject):
             size ([float], optional): of size 1 - 3
             rgba (([float, float, float, float]), optional): Color
             density (float, optional): Density
-            friction (float, optional): tangentia friction
+            friction (float, optional): tangential friction
                 see http://www.mujoco.org/book/modeling.html#geom for details
             density_range ([float,float], optional): range for random choice
             friction_range ([float,float], optional): range for random choice
