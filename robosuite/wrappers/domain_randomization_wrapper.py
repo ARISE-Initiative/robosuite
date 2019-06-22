@@ -12,9 +12,9 @@ class DRWrapper(Wrapper):
 
     def __init__(self, env):
         super().__init__(env)
-        # TODO: Do not hardcode SawyerLift env update
-        cube_geom = self.env.model.worldbody.findall("./body/[@name='cube']/geom")[0]
-        cube_geom.set('material', 'arm_mat')
+        # TODO: How to set material for generated objects?
+        # cube_geom = self.env.model.worldbody.findall("./body/[@name='cube']/geom")[0]
+        # cube_geom.set('material', 'arm_mat')
         self.modded_xml = self.env.model.get_xml()
         self.reset()
 
@@ -24,6 +24,6 @@ class DRWrapper(Wrapper):
         self.modder.randomize()
 
     def render(self, **kwargs):
-        self.modder.randomize()
+        # self.modder.randomize()
         super().render(**kwargs)
 
