@@ -12,7 +12,9 @@ class DRWrapper(Wrapper):
 
     def __init__(self, env):
         super().__init__(env)
-        self.reset()
+        self.tex_modder = TextureModder(self.env.sim)
+        self.light_modder = LightingModder(self.env.sim)
+        self.mat_modder = MaterialModder(self.env.sim)
 
     def reset(self):
         super().reset()
