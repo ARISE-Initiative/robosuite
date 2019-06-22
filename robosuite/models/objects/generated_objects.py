@@ -340,6 +340,7 @@ class BoxObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        name="box",
     ):
         size = _get_size(size,
                          size_max,
@@ -358,6 +359,9 @@ class BoxObject(MujocoGeneratedObject):
             density_range=density_range,
             friction_range=friction_range,
         )
+
+        self.name = name
+        self.asset = self._get_asset(self.name)
 
     def sanity_check(self):
         assert len(self.size) == 3, "box size should have length 3"
@@ -396,6 +400,7 @@ class CylinderObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
     ):
+        self.name = "cylinder"
         size = _get_size(size,
                          size_max,
                          size_min,

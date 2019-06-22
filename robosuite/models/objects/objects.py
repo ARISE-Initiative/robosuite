@@ -223,6 +223,7 @@ class MujocoGeneratedObject(MujocoObject):
             friction_range ([float,float], optional): range for random choice
         """
         super().__init__()
+
         if size is None:
             self.size = [0.05, 0.05, 0.05]
         else:
@@ -270,6 +271,12 @@ class MujocoGeneratedObject(MujocoObject):
     def get_visual_attrib_template(self):
         return {"conaffinity": "0", "contype": "0", "group": "1"}
 
+    def get_material_attrib_template(self, name):
+        return {"name": "{}_mat".format(name), "texture": "{}_tex".format(name), "specular": "0.75", "shininess": "0.03"}
+
+    def get_texture_attrib_template(self, name):
+        return {"name": "{}_tex".format(name), "type": "cube", "builtin": "flat", "rgb1": "1 1 1", "width": "32", "height": "192" }
+
     def _get_collision(self, name=None, site=False, ob_type="box"):
         main_body = ET.Element("body")
         if name is not None:
@@ -282,6 +289,7 @@ class MujocoGeneratedObject(MujocoObject):
         template["size"] = array_to_string(self.size)
         template["density"] = str(self.density)
         template["friction"] = array_to_string(self.friction)
+        template["material"] = "{}_mat".format(name)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well
@@ -289,6 +297,7 @@ class MujocoGeneratedObject(MujocoObject):
             if name is not None:
                 template["name"] = name
             main_body.append(ET.Element("site", attrib=template))
+
         return main_body
 
     def _get_visual(self, name=None, site=False, ob_type="box"):
@@ -299,6 +308,7 @@ class MujocoGeneratedObject(MujocoObject):
         template["type"] = ob_type
         template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
+        template["material"] = "{}_mat".format(name)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well
@@ -307,3 +317,13 @@ class MujocoGeneratedObject(MujocoObject):
                 template["name"] = name
             main_body.append(ET.Element("site", attrib=template))
         return main_body
+
+    def _get_asset(self, name):
+        # Add texture and material elements
+        asset = ET.Element("asset")
+
+        tex_template = self.get_texture_attrib_template(name)
+        mat_template = self.get_material_attrib_template(name)
+        asset.append(ET.Element("texture", attrib=tex_template))
+        asset.append(ET.Element("material", attrib=mat_template))
+        return asset
