@@ -1,9 +1,10 @@
 from collections import OrderedDict
 from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
-from mujoco_py.modder import TextureModder
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
+from robosuite.utils.mjmod import TextureModder
+
 
 REGISTERED_ENVS = {}
 
@@ -155,20 +156,14 @@ class MujocoEnv(metaclass=EnvMeta):
         self._load_model()
         self.mjpy_model = self.model.get_model(mode="mujoco_py")
         self.sim = MjSim(self.mjpy_model)
-        self.modder = TextureModder(self.sim)
         cube_geom = self.model.worldbody.findall("./body/[@name='cube']/geom")[0]
-        cube_geom.set('material', 'head_mat')
-        # xml_string = self.model.get_xml()
-        # self.reset_from_xml_string(xml_string)
-        # self.sim.forward()
+        cube_geom.set('material', 'arm_mat')
+        cube_geom.set('rgba', '1 1 1 1')
 
-        for name in self.sim.model.geom_names:
-            print(f"Attempt randomize for {name}")
-            try:
-                self.modder.rand_all(name)
-            except Exception as e:
-                print(e)
+        xml_string = self.model.get_xml()
+        self.reset_from_xml_string(xml_string)
 
+        self.modder = TextureModder(self.sim)
         self.initialize_time(self.control_freq)
 
         # create visualization screen or renderer
@@ -206,6 +201,11 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def step(self, action):
         """Takes a step in simulation with control command @action."""
+
+        self.modder.whiten_materials()
+        self.modder.randomize()
+        self.sim.forward()
+
         if self.done:
             raise ValueError("executing action in terminated episode")
 
