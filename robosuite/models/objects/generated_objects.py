@@ -340,7 +340,7 @@ class BoxObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
-        name="box",
+        name=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -398,7 +398,6 @@ class CylinderObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
     ):
-        self.name = "cylinder"
         size = _get_size(size,
                          size_max,
                          size_min,
