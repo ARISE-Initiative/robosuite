@@ -24,6 +24,10 @@ class DRWrapper(Wrapper):
         self.mat_modder = MaterialModder(self.env.sim)
         self.randomize_all()
 
+    def render(self, **kwargs):
+        self.randomize_all()
+        super().render(**kwargs)
+
     def randomize_all(self):
         for modder in (self.tex_modder, self.light_modder, self.mat_modder):
             modder.randomize()
