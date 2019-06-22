@@ -186,3 +186,7 @@ class TextureModder(modder.TextureModder):
         else:
             self.model.mat_rgba[:] = 1.0
             self.model.geom_rgba[:] = 1.0
+
+    def randomize(self):
+        self.whiten_materials()
+        super().randomize()
