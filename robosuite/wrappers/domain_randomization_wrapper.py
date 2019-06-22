@@ -12,7 +12,7 @@ class DRWrapper(Wrapper):
 
     def __init__(self, env):
         super().__init__(env)
-        # TODO: How to set material for generated objects?
+        # TODO: Move material/texture implementation to objects.py
         cube_geom = self.env.model.worldbody.findall("./body/[@name='cube']/geom")[0]
         cube_geom.set('material', 'arm_mat')
         self.modded_xml = self.env.model.get_xml()
@@ -30,6 +30,4 @@ class DRWrapper(Wrapper):
             modder.randomize()
 
     def render(self, **kwargs):
-        # self.modder.randomize()
         super().render(**kwargs)
-
