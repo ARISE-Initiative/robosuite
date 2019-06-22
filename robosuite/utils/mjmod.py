@@ -160,9 +160,29 @@ class LightingModder(modder.LightModder):
     def whiten_materials(self, *args, **kargs):
         pass
 
+
 class TextureModder(modder.TextureModder):
     """
     Extension of the TextureModder in MujocoPy
     """
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
+
+    def whiten_materials(self, geom_names=None):
+        """
+        Extends modder.TextureModder to also whiten geom_rgba
+
+        Args:
+        - geom_names (list): list of geom names whose materials should be
+            set to white. If omitted, all materials will be changed.
+        """
+        geom_names = geom_names or []
+        if geom_names:
+            for name in geom_names:
+                geom_id = self.model.geom_name2id(name)
+                mat_id = self.model.geom_matid[geom_id]
+                self.model.mat_rgba[mat_id, :] = 1.0
+                self.model.geom_rgba[geom_id, :] = 1.0
+        else:
+            self.model.mat_rgba[:] = 1.0
+            self.model.geom_rgba[:] = 1.0
