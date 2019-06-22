@@ -190,3 +190,4 @@ class TextureModder(modder.TextureModder):
     def randomize(self):
         self.whiten_materials()
         super().randomize()
+        super().rand_all("skybox")
