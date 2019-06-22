@@ -358,10 +358,8 @@ class BoxObject(MujocoGeneratedObject):
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            name=name
         )
-
-        self.name = name
-        self.asset = self._get_asset(self.name)
 
     def sanity_check(self):
         assert len(self.size) == 3, "box size should have length 3"

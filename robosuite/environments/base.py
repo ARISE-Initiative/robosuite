@@ -154,7 +154,6 @@ class MujocoEnv(metaclass=EnvMeta):
         self._load_model()
         self.mjpy_model = self.model.get_model(mode="mujoco_py")
         self.sim = MjSim(self.mjpy_model)
-
         self.initialize_time(self.control_freq)
 
         # create visualization screen or renderer

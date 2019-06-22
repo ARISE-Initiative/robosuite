@@ -202,6 +202,7 @@ class MujocoGeneratedObject(MujocoObject):
         friction=None,
         density_range=None,
         friction_range=None,
+        name=None
     ):
         """
         Provides default initialization of physical attributes:
@@ -255,6 +256,10 @@ class MujocoGeneratedObject(MujocoObject):
             self.friction = friction
         else:
             self.friction = [friction, 0.005, 0.0001]
+
+        if name is not None:
+            self.asset = self._get_asset(name)
+
         self.sanity_check()
 
     def sanity_check(self):
