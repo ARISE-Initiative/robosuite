@@ -1,6 +1,6 @@
 import numpy as np
 import robosuite as suite
-
+from robosuite.wrappers import DRWrapper
 
 if __name__ == "__main__":
 
@@ -34,6 +34,7 @@ if __name__ == "__main__":
         use_camera_obs=False,
         control_freq=100,
     )
+    env = DRWrapper(env)
     env.reset()
     env.viewer.set_camera(camera_id=0)
 
