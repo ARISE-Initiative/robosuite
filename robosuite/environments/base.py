@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
+from mujoco_py.modder import TextureModder
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
 
@@ -154,6 +155,20 @@ class MujocoEnv(metaclass=EnvMeta):
         self._load_model()
         self.mjpy_model = self.model.get_model(mode="mujoco_py")
         self.sim = MjSim(self.mjpy_model)
+        self.modder = TextureModder(self.sim)
+        cube_geom = self.model.worldbody.findall("./body/[@name='cube']/geom")[0]
+        cube_geom.set('material', 'head_mat')
+        # xml_string = self.model.get_xml()
+        # self.reset_from_xml_string(xml_string)
+        # self.sim.forward()
+
+        for name in self.sim.model.geom_names:
+            print(f"Attempt randomize for {name}")
+            try:
+                self.modder.rand_all(name)
+            except Exception as e:
+                print(e)
+
         self.initialize_time(self.control_freq)
 
         # create visualization screen or renderer
