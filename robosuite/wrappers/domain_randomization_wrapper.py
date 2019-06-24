@@ -31,5 +31,19 @@ class DRWrapper(Wrapper):
         super().render(**kwargs)
 
     def randomize_all(self):
-        for modder in (self.tex_modder, self.light_modder, self.mat_modder, self.camera_modder):
-            modder.randomize()
+        self.randomize_texture()
+        self.randomize_light()
+        self.randomize_material()
+        self.randomize_camera()
+
+    def randomize_texture(self):
+        self.tex_modder.randomize()
+
+    def randomize_light(self):
+        self.light_modder.randomize()
+
+    def randomize_material(self):
+        self.mat_modder.randomize()
+
+    def randomize_camera(self):
+        self.camera_modder.randomize()
