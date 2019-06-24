@@ -4,7 +4,7 @@ robosuite environments.
 """
 
 from robosuite.wrappers import Wrapper
-from robosuite.utils.mjmod import TextureModder, LightingModder, MaterialModder
+from robosuite.utils.mjmod import TextureModder, LightingModder, MaterialModder, CameraModder
 
 
 class DRWrapper(Wrapper):
@@ -15,6 +15,7 @@ class DRWrapper(Wrapper):
         self.tex_modder = TextureModder(self.env.sim)
         self.light_modder = LightingModder(self.env.sim)
         self.mat_modder = MaterialModder(self.env.sim)
+        self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name)
 
     def reset(self):
         super().reset()
@@ -22,6 +23,7 @@ class DRWrapper(Wrapper):
         self.tex_modder = TextureModder(self.env.sim)
         self.light_modder = LightingModder(self.env.sim)
         self.mat_modder = MaterialModder(self.env.sim)
+        self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name)
         self.randomize_all()
 
     def render(self, **kwargs):
@@ -29,5 +31,5 @@ class DRWrapper(Wrapper):
         super().render(**kwargs)
 
     def randomize_all(self):
-        for modder in (self.tex_modder, self.light_modder, self.mat_modder):
+        for modder in (self.tex_modder, self.light_modder, self.mat_modder, self.camera_modder):
             modder.randomize()

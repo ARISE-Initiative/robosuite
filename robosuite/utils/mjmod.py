@@ -105,7 +105,7 @@ class CameraModder(modder.CameraModder):
 
     def randomize(self):
         # TODO: Use axis angle to change the rotation of the camera or use quats.
-        dela_pos = np.stack([np.random.uniform(*self.pos_ranges[i]) for i in range(3)])
+        delta_pos = np.stack([np.random.uniform(*self.pos_ranges[i]) for i in range(3)])
         self.set_pos(self.camera_name, self.base_pos + delta_pos)
 
     def whiten_materials(self, *args, **kargs):
