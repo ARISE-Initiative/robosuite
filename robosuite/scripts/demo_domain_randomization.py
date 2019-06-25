@@ -1,9 +1,6 @@
 import numpy as np
 import robosuite as suite
 from robosuite.wrappers import DRWrapper
-from robosuite.environments.sawyer_lift import SawyerLift
-
-from PIL import Image
 
 if __name__ == "__main__":
 
