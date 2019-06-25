@@ -33,10 +33,6 @@ class DRWrapper(Wrapper):
         action += np.random.normal(scale=self.action_noise, size=action.shape)
         return super().step(action)
 
-    def render(self, **kwargs):
-        self.randomize_light()
-        super().render(**kwargs)
-
     def randomize_all(self):
         self.randomize_texture()
         self.randomize_light()

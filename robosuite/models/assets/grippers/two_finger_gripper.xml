@@ -4,13 +4,13 @@
         <mesh name="standard_narrow" file="meshes/two_finger_gripper/standard_narrow.STL" />
         <mesh name="half_round_tip" file="meshes/two_finger_gripper/half_round_tip.STL" />
 
-        <texture type="cube" name="gripper_finger_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
-        <texture type="cube" name="gripper_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
-        <texture type="cube" name="base_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
+        <texture type="cube" name="gripper_finger_tex" builtin="flat" width="32" height="192" />
+        <texture type="cube" name="gripper_tex" builtin="flat" width="32" height="192" />
+        <texture type="cube" name="base_tex" builtin="flat" width="32" height="192" />
 
-        <material name="gripper_finger_mat" texture="gripper_finger_tex" specular="0.75" shininess="0.03" />
-        <material name="gripper_mat" texture="gripper_tex" specular="0.75" shininess="0.03" />
-        <material name="base_mat" texture="base_tex" specular="0.75" shininess="0.03" />
+        <material name="gripper_finger_mat" texture="gripper_finger_tex" />
+        <material name="gripper_mat" texture="gripper_tex" />
+        <material name="base_mat" texture="base_tex" />
 
     </asset>
     <actuator>

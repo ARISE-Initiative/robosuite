@@ -19,22 +19,22 @@
         <velocity ctrllimited="true" ctrlrange="-4.545 4.545" joint="right_j6" kv="0.1" name="vel_right_j6"/>
   </actuator>
   <asset>
-    <texture type="cube" name="texgeom" builtin="flat" rgb1="1 1 1" width="32" height="192" />
-    <material name="geomMat" texture="texgeom" specular="0.75" shininess="0.03" />
+    <texture type="cube" name="texgeom" builtin="flat" width="32" height="192" />
+    <material name="geomMat" texture="texgeom" />
 
      <!-- Custom textures based on body names for domain randomization -->
-    <texture type="cube" name="controller_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
-    <texture type="cube" name="pedestal_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
-    <texture type="cube" name="torso_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
-    <texture type="cube" name="arm_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
-    <texture type="cube" name="head_tex" builtin="flat" rgb1="1 1 1" width="32" height="192" />
+    <texture type="cube" name="controller_tex" builtin="flat" width="32" height="192" />
+    <texture type="cube" name="pedestal_tex" builtin="flat" width="32" height="192" />
+    <texture type="cube" name="torso_tex" builtin="flat" width="32" height="192" />
+    <texture type="cube" name="arm_tex" builtin="flat" width="32" height="192" />
+    <texture type="cube" name="head_tex" builtin="flat" width="32" height="192" />
 
     <!-- Custom mats based on body names for domain randomization -->
-    <material name="controller_mat" texture="controller_tex" specular="0.75" shininess="0.03" />
-    <material name="pedestal_mat" texture="pedestal_tex" specular="0.75" shininess="0.03" />
-    <material name="torso_mat" texture="torso_tex" specular="0.75" shininess="0.03" />
-    <material name="arm_mat" texture="arm_tex" specular="0.75" shininess="0.03" />
-    <material name="head_mat" texture="head_tex" specular="0.75" shininess="0.03" />
+    <material name="controller_mat" texture="controller_tex" />
+    <material name="pedestal_mat" texture="pedestal_tex" />
+    <material name="torso_mat" texture="torso_tex" />
+    <material name="arm_mat" texture="arm_tex" />
+    <material name="head_mat" texture="head_tex" />
 
     <mesh file="meshes/pedestal.stl" name="pedestal"/>
     <mesh file="meshes/base.stl" name="base"/>
