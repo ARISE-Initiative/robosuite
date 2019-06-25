@@ -3,8 +3,8 @@
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
     <texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" type="2d" width="512"/>
     <texture builtin="flat" height="512" name="textable" width="512"/>
-    <material name="floorplane" reflectance="0.5" texrepeat="1 1" texture="texplane" texuniform="true"/>
-    <material name="table_mat" reflectance="0.5" texrepeat="1 1" texture="textable" texuniform="true"/>
+    <material name="floorplane" texture="texplane" />
+    <material name="table_mat" texture="textable" />
   </asset>
   <worldbody>
     <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
