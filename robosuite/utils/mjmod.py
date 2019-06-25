@@ -104,7 +104,9 @@ class CameraModder(modder.CameraModder):
 
 
     def randomize(self):
-        # TODO: Use axis angle to change the rotation of the camera or use quats.
+        # TODO:
+        #  Use axis angle to change the rotation of the camera or use quats.
+        #  Randomize field of view of camera
         delta_pos = np.stack([np.random.uniform(*self.pos_ranges[i]) for i in range(3)])
         self.set_pos(self.camera_name, self.base_pos + delta_pos)
 

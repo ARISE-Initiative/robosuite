@@ -16,6 +16,16 @@
 
     <light name="light1" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
     <light name="light2" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+
+    <!-- Lights for domain randomization -->
+    <!-- TODO: Figure out why active tag does not change on randomization -->
+    <light name="light3" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light4" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light5" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light6" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light7" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light8" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+
     <!-- front view -->
     <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
     <!-- bird view -->

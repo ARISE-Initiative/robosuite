@@ -16,6 +16,7 @@ class DRWrapper(Wrapper):
         self.light_modder = LightingModder(self.env.sim)
         self.mat_modder = MaterialModder(self.env.sim)
         self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name)
+        self.randomize_all()
 
     def reset(self):
         super().reset()
@@ -27,7 +28,7 @@ class DRWrapper(Wrapper):
         self.randomize_all()
 
     def render(self, **kwargs):
-        self.randomize_all()
+        self.randomize_light()
         super().render(**kwargs)
 
     def randomize_all(self):
