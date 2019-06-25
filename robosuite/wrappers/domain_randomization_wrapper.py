@@ -2,6 +2,7 @@
 This file implements a wrapper for facilitating domain randomization over
 robosuite environments.
 """
+import numpy as np
 
 from robosuite.wrappers import Wrapper
 from robosuite.utils.mjmod import TextureModder, LightingModder, MaterialModder, CameraModder
@@ -12,6 +13,7 @@ class DRWrapper(Wrapper):
 
     def __init__(self, env):
         super().__init__(env)
+        self.action_noise = 1  # TODO: Should this be argument
         self.tex_modder = TextureModder(self.env.sim)
         self.light_modder = LightingModder(self.env.sim)
         self.mat_modder = MaterialModder(self.env.sim)
@@ -26,6 +28,10 @@ class DRWrapper(Wrapper):
         self.mat_modder = MaterialModder(self.env.sim)
         self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name)
         self.randomize_all()
+
+    def step(self, action):
+        action += np.random.normal(scale=self.action_noise, size=action.shape)
+        return super().step(action)
 
     def render(self, **kwargs):
         self.randomize_light()
