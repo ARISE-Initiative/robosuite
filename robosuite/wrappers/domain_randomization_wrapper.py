@@ -11,22 +11,22 @@ from robosuite.utils.mjmod import TextureModder, LightingModder, MaterialModder,
 class DRWrapper(Wrapper):
     env = None
 
-    def __init__(self, env):
+    def __init__(self, env, seed=None):
         super().__init__(env)
         self.action_noise = 1  # TODO: Should this be argument
-        self.tex_modder = TextureModder(self.env.sim)
-        self.light_modder = LightingModder(self.env.sim)
-        self.mat_modder = MaterialModder(self.env.sim)
-        self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name)
-        self.randomize_all()
+        self.seed = seed
+        self.tex_modder = TextureModder(self.env.sim, seed=seed)
+        self.light_modder = LightingModder(self.env.sim, seed=seed)
+        self.mat_modder = MaterialModder(self.env.sim, seed=seed)
+        self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name, seed=seed)
 
     def reset(self):
         super().reset()
         # Env will be updated after reset
-        self.tex_modder = TextureModder(self.env.sim)
-        self.light_modder = LightingModder(self.env.sim)
-        self.mat_modder = MaterialModder(self.env.sim)
-        self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name)
+        self.tex_modder = TextureModder(self.env.sim, seed=self.seed)
+        self.light_modder = LightingModder(self.env.sim, seed=self.seed)
+        self.mat_modder = MaterialModder(self.env.sim, seed=self.seed)
+        self.camera_modder =  CameraModder(sim=self.env.sim, camera_name=self.env.camera_name, seed=self.seed)
         self.randomize_all()
 
     def step(self, action):

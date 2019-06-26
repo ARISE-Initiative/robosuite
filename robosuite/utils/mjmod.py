@@ -88,12 +88,14 @@ class CameraModder(modder.CameraModder):
           site in the location where the camera gaze is to be located.
     """
     def __init__(self, random_state=None, sim=None, \
-                 pos_ranges=[(-0.25, 0.25), (-0.25, 0.25), (-0.25, 0.25)],
+                 pos_ranges=[(-0.1, 0.1), (-0.1, 0.1), (-0.1, 0.1)],
                  axis=[0, 0, 1], angle_range=(-0.25, 0.25), \
-                 camera_name=None):
+                 camera_name=None, seed=None):
 
         assert camera_name is not None
-        
+
+        if seed is not None: np.random.seed(seed)
+
         super().__init__(sim, random_state=random_state)
         
         self.base_pos = copy.copy(self.get_pos(camera_name))
@@ -118,8 +120,9 @@ class MaterialModder(modder.MaterialModder):
     """
     Extension of the MaterialModder in MujocoPy to support randomization of all materials in a model
     """
-    def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
+    def __init__(self, sim, seed=None):
+        if seed is not None: np.random.seed(seed)
+        super().__init__(sim, random_state=seed)
 
     def randomize(self):
         # randomize all the materials ie properties like reflectance
@@ -134,8 +137,9 @@ class LightingModder(modder.LightModder):
     """
     Extension of the LightModder in MujocoPy to support randomization of all the lights in a model
     """
-    def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
+    def __init__(self, sim, seed=None):
+        if seed is not None: np.random.seed(seed)
+        super().__init__(sim, random_state=seed)
 
     def randomize(self):
         # randomize all the lights
@@ -167,8 +171,9 @@ class TextureModder(modder.TextureModder):
     """
     Extension of the TextureModder in MujocoPy
     """
-    def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
+    def __init__(self, sim, seed=None):
+        if seed is not None: np.random.seed(seed)
+        super().__init__(sim, random_state=seed)
 
     def whiten_materials(self, geom_names=None):
         """
