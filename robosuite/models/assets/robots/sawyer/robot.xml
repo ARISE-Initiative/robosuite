@@ -130,8 +130,8 @@
                     <body name="right_l6" pos="0 -0.11 0.1053" quat="0.0616248 0.06163 -0.704416 0.704416">
                       <inertial diaginertia="0.000360258 0.000311068 0.000214974" mass="0.3292" pos="-8.0726e-06 0.0085838 -0.0049566" quat="0.479044 0.515636 -0.513069 0.491322"/>
                       <joint axis="0 0 1" limited="true" name="right_j6" pos="0 0 0" range="-4.7124 4.7124" damping="0.1"/>
-                      <geom name="right_l61" material="arm_mat" conaffinity="0" contype="0" group="1" mesh="l6" rgba="0.5 0.1 0.1 1" type="mesh"/>
-                      <geom name="right_l62" material="arm_mat" pos="0 0.015 -0.01" rgba="0.5 0.1 0.1 1" size="0.055 0.025" type="cylinder"/>
+                      <geom name="right_l61" material="arm_mat" conaffinity="0" contype="0" group="1" mesh="l6" rgba="0 0 0 1" type="mesh"/>
+                      <geom name="right_l62" material="arm_mat" pos="0 0.015 -0.01" rgba="0 0 0 1" size="0.055 0.025" type="cylinder"/>
                       <body name="right_hand" pos="0 0 0.0245" quat="0.707105 0 0 0.707108">
                                               <!-- To add gripper -->
                                           </body>
@@ -145,12 +145,12 @@
               </body>
               <body name="right_l2_2" pos="0 0 0">
                 <inertial diaginertia="1e-08 1e-08 1e-08" mass="1e-08" pos="1e-08 1e-08 1e-08" quat="0.820473 0.339851 -0.17592 0.424708"/>
-                <geom name="right_l2_21" material="arm_mat" pos="0 0 0.26" size="0.06"/>
+                <geom name="right_l2_21" material="arm_mat" pos="0 0 0.26" size="0.06" rgba="0 0 0 1"/>
               </body>
             </body>
             <body name="right_l1_2" pos="0 0 0">
               <inertial diaginertia="1e-08 1e-08 1e-08" mass="1e-08" pos="1e-08 1e-08 1e-08" quat="0.820473 0.339851 -0.17592 0.424708"/>
-              <geom name="right_l1_21" material="arm_mat" pos="0 0 0.035" size="0.07 0.07" type="cylinder"/>
+              <geom name="right_l1_21" material="arm_mat" pos="0 0 0.035" size="0.07 0.07" type="cylinder" rgba="0 0 0 1"/>
             </body>
           </body>
         </body>
