@@ -35,7 +35,8 @@
                 <camera mode="fixed" name="eye_in_hand" pos="0 0 0" quat="0 -1 1 0" fovy="75"/>
             </body>
             <!-- original <body name="r_gripper_l_finger" pos="0 -0.0015 0.02"> -->
-            <body name="r_gripper_l_finger" pos="0 0.03 0.02">
+            <!--TODO: Gripper seems narrow enough but cant grab cube-->
+            <body name="r_gripper_l_finger" pos="0 0.02 0.02">
                 <inertial pos="0 0 0" quat="0 0 0 -1" mass="0.02" diaginertia="0.01 0.01 0.01" />
                 <joint name="r_gripper_l_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.0115 0.020833" damping="100"/>
                 <geom rgba="0 0 0 1" name="r_gripper_l_finger" material="gripper_finger_mat" quat="0 0 0 -1" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" />
@@ -48,7 +49,7 @@
                     <geom rgba="0 0 0 1" name="l_fingertip_g1" material="gripper_finger_mat" size="0.004 0.004 0.0185" pos="0 -0.0045 -0.015" quat="0 0 0 1" type="box"  conaffinity="1" contype="0" friction="0 0 0"/>
                 </body>
             </body>
-            <body name="r_gripper_r_finger" pos="0 -0.03 0.02">
+            <body name="r_gripper_r_finger" pos="0 -0.02 0.02">
                 <inertial pos="0 0 0" mass="0.02" diaginertia="0.01 0.01 0.01" />
                 <joint name="r_gripper_r_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.020833 0.0115" damping="100"/>
                 <geom rgba="0 0 0 1" name="r_gripper_r_finger" material="gripper_finger_mat" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" />
