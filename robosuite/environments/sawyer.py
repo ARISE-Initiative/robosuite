@@ -87,7 +87,7 @@ class SawyerEnv(MujocoEnv):
             use_camera_obs=use_camera_obs,
             camera_name=camera_name,
             camera_height=camera_height,
-            camera_width=camera_height,
+            camera_width=camera_width,
             camera_depth=camera_depth,
         )
 
