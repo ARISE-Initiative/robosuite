@@ -1,9 +1,9 @@
 <mujoco model="table_arena">
   <asset>
-    <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
-    <texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" type="2d" width="512"/>
-    <texture builtin="flat" height="512" name="textable" width="512"/>
-    <material name="floorplane" texture="texplane" />
+    <texture builtin="flat" height="256" rgb1="1 1 1" type="skybox" width="256"/>
+    <texture builtin="flat" height="512" name="texplane" rgb1="1 1 1" rgb2="1 1 1" type="2d" width="512"/>
+    <texture builtin="flat" height="512" name="textable" width="512" rgb1="0.6 0.6 0.6"/>
+    <material name="floorplane" texture="texplane" shininess="0"/>
     <material name="table_mat" texture="textable" />
   </asset>
   <worldbody>
@@ -15,21 +15,25 @@
     </body>
 
     <light name="light1" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <light name="light2" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <!--<light name="light2" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>-->
 
     <!-- Lights for domain randomization -->
     <!-- TODO: Figure out why active tag does not change on randomization -->
-    <light name="light3" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <light name="light4" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <light name="light5" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <light name="light6" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <light name="light7" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <!-- TODO: These are needed for domain randomization but bad for sim2real (weird shadows) -->
+    <!--<light name="light3" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>-->
+    <!--<light name="light4" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>-->
+    <!--<light name="light5" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>-->
+    <!--<light name="light6" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>-->
+    <!--<light name="light7" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>-->
 
     <!-- front view -->
     <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
     <!-- bird view -->
     <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
     <!-- agent view -->
-    <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
+    <!-- TODO: Adjust camera to match real world view -->
+    <!--<camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>-->
+    <camera mode="fixed" name="agentview" pos="1.14 0.027181233231036377 1.4414660539" quat="0.63231 0.30547 0.32582 0.63302" fovy="40"/>
+
   </worldbody>
 </mujoco>

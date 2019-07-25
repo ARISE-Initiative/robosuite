@@ -30,7 +30,7 @@ class TableArena(Arena):
         self.configure_location()
 
     def configure_location(self):
-        self.bottom_pos = np.array([0, 0, 0])
+        self.bottom_pos = np.array([.18, 0, 0])
         self.floor.set("pos", array_to_string(self.bottom_pos))
 
         self.center_pos = self.bottom_pos + np.array([0, 0, self.table_half_size[2]])

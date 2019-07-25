@@ -153,10 +153,10 @@ class SawyerLift(SawyerEnv):
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
         # initialize objects of interest
+        offset = 0.051 / 2
         cube = BoxObject(
-            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
-            size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
-            rgba=[1, 0, 0, 1],
+            size=[offset, offset, offset],
+            rgba=[0.25, 0.59, .73, 1],
             name="cube"
         )
         self.mujoco_objects = OrderedDict([("cube", cube)])

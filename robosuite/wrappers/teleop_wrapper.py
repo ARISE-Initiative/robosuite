@@ -12,8 +12,11 @@ import robosuite
 import robosuite.utils.transform_utils as T
 from robosuite.wrappers import Wrapper
 
-from RobotTeleop import make_robot, make_controller, make_config
-import RobotTeleop.utils as U
+try:
+    from RobotTeleop import make_robot, make_controller, make_config
+    import RobotTeleop.utils as U
+except:
+    print(f'RobotTeleop is needed to to teleop')
 
 
 class TeleopWrapper(Wrapper):
