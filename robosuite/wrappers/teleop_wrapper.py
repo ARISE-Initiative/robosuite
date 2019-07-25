@@ -16,7 +16,7 @@ from RobotTeleop import make_robot, make_controller, make_config
 import RobotTeleop.utils as U
 
 
-class IKTeleopWrapper(Wrapper):
+class TeleopWrapper(Wrapper):
     env = None
 
     def __init__(self, env, config='BaseServerConfig'):
@@ -25,10 +25,27 @@ class IKTeleopWrapper(Wrapper):
         self.config.infer_settings()
         self.robot = make_robot(self.config.robot.type, config=self.config, env=self.env)
         self.controller = make_controller(self.config.controller.type, robot=self.robot, config=self.config)
+        self.controller.reset()
+        self.controller.sync_state()
+        self.gripper_open = True
 
     def reset(self):
         self.robot.reset()
+        self.controller.sync_state()
         self.controller.reset()
+        self.last_t = time.time()
+        return self._get_observation()
+
+    def sleep(self, time_elapsed=0.):
+        time.sleep(max(0, (self.last_t + 1. / self.config.control.rate) - time.time()))
+
+    def toggle_gripper(self, action):
+        if action != 0. and self.gripper_open:
+            self.robot.control_gripper(1)
+            self.gripper_open = False
+        elif action == 0. and not self.gripper_open:
+            self.robot.control_gripper(0)
+            self.gripper_open = True
 
     def step(self, action):
         """
@@ -36,7 +53,6 @@ class IKTeleopWrapper(Wrapper):
         [ delta_pos, delta_rot (euler angles), gripper_status]
         gripper will be closed when gripper_status is non 0
         """
-        self.robot.robot_arm.blocking = False
 
         if self.config.controller.ik.control_with_orn:
             cur_rot = self.robot.eef_orientation()
@@ -69,5 +85,7 @@ class IKTeleopWrapper(Wrapper):
         obs = self._get_observation()
         reward = self.reward()
         done = self.env._check_success()
-        self.robot.robot_arm.blocking = True
-        return obs, reward, done, {}
+        reward, done, info = self.env._post_action(None)
+        info['reward'] = reward
+        #self.robot.robot_arm.blocking = True
+        return obs, reward, done, info
