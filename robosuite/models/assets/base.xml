@@ -7,6 +7,10 @@
   <asset>
   </asset>
 
+  <visual>
+    <map znear="0.001"/>
+  </visual>
+
   <actuator>
   </actuator>
 
