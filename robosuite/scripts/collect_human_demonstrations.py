@@ -163,7 +163,7 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
         left_dquat = []
 
         for state_file in sorted(glob(state_paths)):
-            dic = np.load(state_file)
+            dic = np.load(state_file, allow_pickle=True)
             env_name = str(dic["env"])
 
             states.extend(dic["states"])

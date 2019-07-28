@@ -10,7 +10,7 @@ from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
 
-class SawyerLift(SawyerEnv):
+class SawyerReach(SawyerEnv):
     """
     This class corresponds to the lifting task for the Sawyer robot arm.
     """
@@ -111,8 +111,8 @@ class SawyerLift(SawyerEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.03, 0.03],
-                y_range=[-0.03, 0.03],
+                x_range=[-0.2, 0.2],
+                y_range=[-0.2, 0.2],
                 ensure_object_boundary_in_range=False,
                 z_rotation=None,
             )
@@ -153,7 +153,7 @@ class SawyerLift(SawyerEnv):
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
         # initialize objects of interest
-        offset = 0.051 / 2
+        offset = 0.001
         cube = BoxObject(
             size=[offset, offset, offset],
             rgba=[0.25, 0.59, .73, 1],
@@ -234,22 +234,6 @@ class SawyerLift(SawyerEnv):
             reaching_reward = 1 - np.tanh(10.0 * dist)
             reward += reaching_reward
 
-            # grasping reward
-            touch_left_finger = False
-            touch_right_finger = False
-            for i in range(self.sim.data.ncon):
-                c = self.sim.data.contact[i]
-                if c.geom1 in self.l_finger_geom_ids and c.geom2 == self.cube_geom_id:
-                    touch_left_finger = True
-                if c.geom1 == self.cube_geom_id and c.geom2 in self.l_finger_geom_ids:
-                    touch_left_finger = True
-                if c.geom1 in self.r_finger_geom_ids and c.geom2 == self.cube_geom_id:
-                    touch_right_finger = True
-                if c.geom1 == self.cube_geom_id and c.geom2 in self.r_finger_geom_ids:
-                    touch_right_finger = True
-            if touch_left_finger and touch_right_finger:
-                reward += 0.25
-
         return reward
 
     def _get_observation(self):
@@ -318,11 +302,12 @@ class SawyerLift(SawyerEnv):
         """
         Returns True if task has been completed.
         """
-        cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.table_full_size[2]
+        cube_pos = self.sim.data.body_xpos[self.cube_body_id]
+        gripper_site_pos = self.sim.data.site_xpos[self.eef_site_id]
+        dist = np.linalg.norm(gripper_site_pos - cube_pos)
 
         # cube is higher than the table top above a margin
-        return cube_height > table_height + 0.04
+        return dist < 0.03
 
     def _gripper_visualization(self):
         """

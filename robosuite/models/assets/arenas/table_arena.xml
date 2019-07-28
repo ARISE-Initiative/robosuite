@@ -9,7 +9,7 @@
   <worldbody>
     <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="0.5 0.5 .125" type="plane"/>
     <body name="table" pos="0 0 0.4">
-      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" name="table_collision" material="table_mat" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" name="table_collision" material="table_mat" friction="1 0.005 0.0001" />
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="table_mat" />
       <!-- TODO: .18 here? -->
       <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>

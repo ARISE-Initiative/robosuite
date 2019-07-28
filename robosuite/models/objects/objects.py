@@ -271,7 +271,9 @@ class MujocoGeneratedObject(MujocoObject):
         pass
 
     def get_collision_attrib_template(self):
+        # Set conaffinity & contype to 0 for no collisions
         return {"pos": "0 0 0", "group": "1"}
+        #return {"pos": "0 0 0", "group": "1", "conaffinity": "0", "contype": "0"}
 
     def get_visual_attrib_template(self):
         return {"conaffinity": "0", "contype": "0", "group": "1"}
