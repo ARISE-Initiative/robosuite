@@ -267,17 +267,13 @@ class SawyerReach(SawyerEnv):
         if self.use_object_obs:
             # position and rotation of object
             cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-            cube_quat = convert_quat(
-                np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw"
-            )
-            di["cube_pos"] = cube_pos
-            di["cube_quat"] = cube_quat
+            di["target_pos"] = cube_pos
 
             gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
             di["gripper_to_cube"] = gripper_site_pos - cube_pos
 
             di["object-state"] = np.concatenate(
-                [cube_pos, cube_quat, di["gripper_to_cube"]]
+                [cube_pos, di["gripper_to_cube"]]
             )
 
         return di
