@@ -111,8 +111,8 @@ class SawyerReach(SawyerEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.2, 0.2],
-                y_range=[-0.2, 0.2],
+                x_range=[-0.01, 0.01],
+                y_range=[-0.01, 0.01],
                 ensure_object_boundary_in_range=False,
                 z_rotation=None,
             )
