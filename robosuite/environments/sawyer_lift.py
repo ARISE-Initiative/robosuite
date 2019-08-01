@@ -111,8 +111,8 @@ class SawyerLift(SawyerEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.25, -0.1],
-                y_range=[-0.08, 0.08],
+                x_range=[-0.15, -0.1],
+                y_range=[-0.02, 0.02],
                 ensure_object_boundary_in_range=False,
                 z_rotation=None,
             )
