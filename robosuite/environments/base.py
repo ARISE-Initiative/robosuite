@@ -167,7 +167,7 @@ class MujocoEnv(metaclass=EnvMeta):
             # hiding the overlay speeds up rendering significantly
             self.viewer.viewer._hide_overlay = True
 
-        elif self.has_offscreen_renderer:
+        if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim)
                 self.sim.add_render_context(render_context)

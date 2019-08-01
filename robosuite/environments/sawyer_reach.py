@@ -306,7 +306,6 @@ class SawyerReach(SawyerEnv):
         gripper_site_pos = self.sim.data.site_xpos[self.eef_site_id]
         dist = np.linalg.norm(gripper_site_pos - cube_pos)
 
-        # cube is higher than the table top above a margin
         return dist < 0.03
 
     def _gripper_visualization(self):
