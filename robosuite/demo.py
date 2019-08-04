@@ -2,6 +2,8 @@ import numpy as np
 import robosuite as suite
 from robosuite.wrappers import DRWrapper
 
+from PIL import Image
+
 if __name__ == "__main__":
 
     # get the list of all environments
@@ -31,15 +33,23 @@ if __name__ == "__main__":
         envs[k],
         has_renderer=True,
         ignore_done=True,
-        use_camera_obs=False,
+        use_camera_obs=True,
         control_freq=100,
+        camera_name="agentview",
     )
     env = DRWrapper(env)
     env.reset()
     env.viewer.set_camera(camera_id=0)
 
+    save_path_textured = '/Users/aqua/Documents/Workspace/Summer/svl_summer/domain_randomization/samples'
+
     # do visualization
-    for i in range(1000):
+    for i in range(10000):
         action = np.random.randn(env.dof)
         obs, reward, done, _ = env.step(action)
         env.render()
+
+        # img = obs['image'][::-1]
+        # img = Image.fromarray(img).convert('RGB')
+        # print(save_path_textured + f'/from_states_{i}')
+        # img.save(save_path_textured + f'/rand_sample_{i}.jpg')

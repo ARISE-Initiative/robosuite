@@ -18,7 +18,7 @@ class SawyerLift(SawyerEnv):
     def __init__(
         self,
         gripper_type="TwoFingerGripper",
-        table_full_size=(0.8, 0.8, 0.8),
+        table_full_size=(1., 1.3, 0.75),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,

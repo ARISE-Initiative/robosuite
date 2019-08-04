@@ -18,14 +18,14 @@ class SawyerReach(SawyerEnv):
     def __init__(
         self,
         gripper_type="TwoFingerGripper",
-        table_full_size=(0.8, 0.8, 0.8),
+        table_full_size=(1., 1.3, 0.75),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
         placement_initializer=None,
         gripper_visualization=False,
-        use_indicator_object=False,
+        use_indicator_object=True,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -38,63 +38,7 @@ class SawyerReach(SawyerEnv):
         camera_width=256,
         camera_depth=False,
     ):
-        """
-        Args:
-
-            gripper_type (str): type of gripper, used to instantiate
-                gripper models from gripper factory.
-
-            table_full_size (3-tuple): x, y, and z dimensions of the table.
-
-            table_friction (3-tuple): the three mujoco friction parameters for
-                the table.
-
-            use_camera_obs (bool): if True, every observation includes a
-                rendered image.
-
-            use_object_obs (bool): if True, include object (cube) information in
-                the observation.
-
-            reward_shaping (bool): if True, use dense rewards.
-
-            placement_initializer (ObjectPositionSampler instance): if provided, will
-                be used to place objects on every reset, else a UniformRandomSampler
-                is used by default.
-
-            gripper_visualization (bool): True if using gripper visualization.
-                Useful for teleoperation.
-
-            use_indicator_object (bool): if True, sets up an indicator object that
-                is useful for debugging.
-
-            has_renderer (bool): If true, render the simulation state in
-                a viewer instead of headless mode.
-
-            has_offscreen_renderer (bool): True if using off-screen rendering.
-
-            render_collision_mesh (bool): True if rendering collision meshes
-                in camera. False otherwise.
-
-            render_visual_mesh (bool): True if rendering visual meshes
-                in camera. False otherwise.
-
-            control_freq (float): how many control signals to receive
-                in every second. This sets the amount of simulation time
-                that passes between every action input.
-
-            horizon (int): Every episode lasts for exactly @horizon timesteps.
-
-            ignore_done (bool): True if never terminating the environment (ignore @horizon).
-
-            camera_name (str): name of camera to be rendered. Must be
-                set if @use_camera_obs is True.
-
-            camera_height (int): height of camera frame.
-
-            camera_width (int): width of camera frame.
-
-            camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
-        """
+        """TODO: Add docstring"""
 
         # settings for table top
         self.table_full_size = table_full_size
@@ -111,8 +55,8 @@ class SawyerReach(SawyerEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.01, 0.01],
-                y_range=[-0.01, 0.01],
+                x_range=[-0.15, -0.1],
+                y_range=[-0.02, 0.02],
                 ensure_object_boundary_in_range=False,
                 z_rotation=None,
             )
@@ -146,20 +90,13 @@ class SawyerReach(SawyerEnv):
         self.mujoco_arena = TableArena(
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
-        if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+        # if self.use_indicator_object:
+        self.mujoco_arena.add_pos_indicator()
 
         # The sawyer robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
-        # initialize objects of interest
-        offset = 0.001
-        cube = BoxObject(
-            size=[offset, offset, offset],
-            rgba=[0.25, 0.59, .73, 1],
-            name="cube"
-        )
-        self.mujoco_objects = OrderedDict([("cube", cube)])
+        self.mujoco_objects = {}
 
         # task includes arena, robot, and objects of interest
         self.model = TableTopTask(
@@ -177,26 +114,28 @@ class SawyerReach(SawyerEnv):
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
         super()._get_reference()
-        self.cube_body_id = self.sim.model.body_name2id("cube")
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
         ]
         self.r_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.right_finger_geoms
         ]
-        self.cube_geom_id = self.sim.model.geom_name2id("cube")
+        # self.target_site_id = self.sim.model.site_name2id("target_site")
+        self.target_geom = self.sim.model.geom_name2id("target_geom")
 
     def _reset_internal(self):
         """
         Resets simulation internal configurations.
         """
         super()._reset_internal()
-
-        # reset positions of objects
-        self.model.place_objects()
+        self.target_pos = [self.table_full_size[0] / 2, 0, self.table_full_size[2] + .02]
+        self.target_pos[:-1] += np.random.uniform(-0.05, 0.05, (2,))
+        self.move_indicator(self.target_pos)
 
         # reset joint positions
         init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
+        # init_pos = np.array([1.5096259765625, 0.382556640625, -0.0075322265625, 2.03440234375, -0.0040390625, -0.82582421875, -0.254373046875])
+        # print(init_pos)
         init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 
@@ -226,11 +165,8 @@ class SawyerReach(SawyerEnv):
 
         # use a shaping reward
         if self.reward_shaping:
-
-            # reaching reward
-            cube_pos = self.sim.data.body_xpos[self.cube_body_id]
             gripper_site_pos = self.sim.data.site_xpos[self.eef_site_id]
-            dist = np.linalg.norm(gripper_site_pos - cube_pos)
+            dist = np.linalg.norm(self.target_pos - gripper_site_pos)
             reaching_reward = 1 - np.tanh(10.0 * dist)
             reward += reaching_reward
 
@@ -263,18 +199,12 @@ class SawyerReach(SawyerEnv):
             else:
                 di["image"] = camera_obs
 
-        # low-level object information
-        if self.use_object_obs:
-            # position and rotation of object
-            cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-            di["target_pos"] = cube_pos
+        gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
+        di["gripper_to_cube"] = gripper_site_pos - self.target_pos
 
-            gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
-            di["gripper_to_cube"] = gripper_site_pos - cube_pos
-
-            di["object-state"] = np.concatenate(
-                [cube_pos, di["gripper_to_cube"]]
-            )
+        di["object-state"] = np.concatenate(
+            [self.target_pos, di["gripper_to_cube"]]
+        )
 
         return di
 
@@ -298,11 +228,9 @@ class SawyerReach(SawyerEnv):
         """
         Returns True if task has been completed.
         """
-        cube_pos = self.sim.data.body_xpos[self.cube_body_id]
-        gripper_site_pos = self.sim.data.site_xpos[self.eef_site_id]
-        dist = np.linalg.norm(gripper_site_pos - cube_pos)
-
-        return dist < 0.03
+        gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
+        dist = np.linalg.norm(self.target_pos - gripper_site_pos)
+        return dist < 0.05
 
     def _gripper_visualization(self):
         """
@@ -312,11 +240,9 @@ class SawyerReach(SawyerEnv):
         # color the gripper site appropriately based on distance to cube
         if self.gripper_visualization:
             # get distance to cube
-            cube_site_id = self.sim.model.site_name2id("cube")
             dist = np.sum(
                 np.square(
-                    self.sim.data.site_xpos[cube_site_id]
-                    - self.sim.data.get_site_xpos("grip_site")
+                   self.target_pos - self.sim.data.get_site_xpos("grip_site")
                 )
             )
 
