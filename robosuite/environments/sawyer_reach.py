@@ -120,8 +120,6 @@ class SawyerReach(SawyerEnv):
         self.r_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.right_finger_geoms
         ]
-        # self.target_site_id = self.sim.model.site_name2id("target_site")
-        self.target_geom = self.sim.model.geom_name2id("target_geom")
 
     def _reset_internal(self):
         """
@@ -134,8 +132,6 @@ class SawyerReach(SawyerEnv):
 
         # reset joint positions
         init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
-        # init_pos = np.array([1.5096259765625, 0.382556640625, -0.0075322265625, 2.03440234375, -0.0040390625, -0.82582421875, -0.254373046875])
-        # print(init_pos)
         init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 
