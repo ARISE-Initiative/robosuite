@@ -25,7 +25,7 @@ class SawyerReach(SawyerEnv):
         reward_shaping=False,
         placement_initializer=None,
         gripper_visualization=False,
-        use_indicator_object=True,
+        use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -126,7 +126,7 @@ class SawyerReach(SawyerEnv):
         Resets simulation internal configurations.
         """
         super()._reset_internal()
-        self.target_pos = [self.table_full_size[0] / 2, 0, self.table_full_size[2] + .02]
+        self.target_pos = np.array([self.table_full_size[0] / 2, 0, self.table_full_size[2] + .02])
         self.target_pos[:-1] += np.random.uniform(-0.05, 0.05, (2,))
         self.move_indicator(self.target_pos)
 
@@ -199,7 +199,7 @@ class SawyerReach(SawyerEnv):
         di["gripper_to_cube"] = gripper_site_pos - self.target_pos
 
         di["object-state"] = np.concatenate(
-            [self.target_pos, di["gripper_to_cube"]]
+            [gripper_site_pos, self.target_pos, di["gripper_to_cube"]]
         )
 
         return di
@@ -226,7 +226,7 @@ class SawyerReach(SawyerEnv):
         """
         gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
         dist = np.linalg.norm(self.target_pos - gripper_site_pos)
-        return dist < 0.05
+        return dist < 0.08
 
     def _gripper_visualization(self):
         """
@@ -234,20 +234,21 @@ class SawyerReach(SawyerEnv):
         """
 
         # color the gripper site appropriately based on distance to cube
-        if self.gripper_visualization:
-            # get distance to cube
-            dist = np.sum(
-                np.square(
-                   self.target_pos - self.sim.data.get_site_xpos("grip_site")
-                )
-            )
-
-            # set RGBA for the EEF site here
-            max_dist = 0.1
-            scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
-            rgba = np.zeros(4)
-            rgba[0] = 1 - scaled
-            rgba[1] = scaled
-            rgba[3] = 0.5
-
-            self.sim.model.site_rgba[self.eef_site_id] = rgba
+        pass
+        # if self.gripper_visualization:
+        #     # get distance to cube
+        #     dist = np.sum(
+        #         np.square(
+        #            self.target_pos - self.sim.data.get_site_xpos("grip_site")
+        #         )
+        #     )
+        #
+        #     # set RGBA for the EEF site here
+        #     max_dist = 0.1
+        #     scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
+        #     rgba = np.zeros(4)
+        #     rgba[0] = 1 - scaled
+        #     rgba[1] = scaled
+        #     rgba[3] = 0.5
+        #
+        #     self.sim.model.site_rgba[self.eef_site_id] = rgba
