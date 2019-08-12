@@ -7,6 +7,7 @@ from robosuite.environments.sawyer import SawyerEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.robots import Sawyer
+from robosuite.utils.transform_utils import pose2mat, mat2euler
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
 
@@ -24,8 +25,8 @@ class SawyerReach(SawyerEnv):
         use_object_obs=True,
         reward_shaping=False,
         placement_initializer=None,
-        gripper_visualization=False,
-        use_indicator_object=False,
+        gripper_visualization=True,
+        use_indicator_object=True,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -126,14 +127,16 @@ class SawyerReach(SawyerEnv):
         Resets simulation internal configurations.
         """
         super()._reset_internal()
-        self.target_pos = np.array([self.table_full_size[0] / 2, 0, self.table_full_size[2] + .02])
+        self.target_pos = np.array([self.table_full_size[0] / 2 + .28, 0, self.table_full_size[2] + .2])
         self.target_pos[:-1] += np.random.uniform(-0.05, 0.05, (2,))
         self.move_indicator(self.target_pos)
+        #print(self.sim.data.qpos[self._ref_joint_pos_indexes])
+        #assert False
 
         # reset joint positions
-        init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
-        init_pos += np.random.randn(init_pos.shape[0]) * 0.02
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
+        #init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
+        #init_pos += np.random.randn(init_pos.shape[0]) * 0.02
+        #self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 
     def reward(self, action=None):
         """
@@ -226,7 +229,7 @@ class SawyerReach(SawyerEnv):
         """
         gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
         dist = np.linalg.norm(self.target_pos - gripper_site_pos)
-        return dist < 0.08
+        return dist < 0.05
 
     def _gripper_visualization(self):
         """
@@ -234,21 +237,20 @@ class SawyerReach(SawyerEnv):
         """
 
         # color the gripper site appropriately based on distance to cube
-        pass
-        # if self.gripper_visualization:
-        #     # get distance to cube
-        #     dist = np.sum(
-        #         np.square(
-        #            self.target_pos - self.sim.data.get_site_xpos("grip_site")
-        #         )
-        #     )
-        #
-        #     # set RGBA for the EEF site here
-        #     max_dist = 0.1
-        #     scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
-        #     rgba = np.zeros(4)
-        #     rgba[0] = 1 - scaled
-        #     rgba[1] = scaled
-        #     rgba[3] = 0.5
-        #
-        #     self.sim.model.site_rgba[self.eef_site_id] = rgba
+        if self.gripper_visualization:
+            # get distance to cube
+            dist = np.sum(
+                np.square(
+                   self.target_pos - self.sim.data.get_site_xpos("grip_site")
+                )
+            )
+        
+            # set RGBA for the EEF site here
+            max_dist = 0.1
+            scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
+            rgba = np.zeros(4)
+            rgba[0] = 1 - scaled
+            rgba[1] = scaled
+            rgba[3] = 0.5
+        
+            self.sim.model.site_rgba[self.eef_site_id] = rgba

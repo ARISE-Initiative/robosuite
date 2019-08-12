@@ -197,7 +197,8 @@ class SawyerEnv(MujocoEnv):
         """
 
         # clip actions into valid range
-        self.gripper.hide_visualization()
+        # TODO: idk if this hide is needed for collected image states
+        #self.gripper.hide_visualization()
         assert len(action) == self.dof, "environment got invalid action dimension"
         low, high = self.action_spec
         action = np.clip(action, low, high)
