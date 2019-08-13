@@ -31,12 +31,14 @@ class TeleopWrapper(Wrapper):
         self.controller.reset()
         self.controller.sync_state()
         self.gripper_open = True
+        self.reset()
 
     def reset(self):
         self.robot.reset()
         self.controller.sync_state()
         self.controller.reset()
         self.last_t = time.time()
+        self.init_rot = U.mat2euler(self.robot.eef_orientation())
         return self._get_observation()
 
     def sleep(self, time_elapsed=0.):
@@ -53,19 +55,11 @@ class TeleopWrapper(Wrapper):
     def step(self, action):
         """
         action assumed to be
-        [ delta_pos, delta_rot (euler angles), gripper_status]
+        [ delta_pos, gripper_status]
         gripper will be closed when gripper_status is non 0
         """
 
-        if self.config.controller.ik.control_with_orn:
-            cur_rot = self.robot.eef_orientation()
-            cur_rot = U.mat2euler(cur_rot)
-
-            new_rot = cur_rot + action[3:6]
-            new_rot = U.euler2quat(new_rot)
-            new_rot = U.quat2mat(new_rot)
-        else:
-            new_rot = self.robot.eef_orientation()
+        new_rot = self.init_rot # For now, freeze the rotation of the arm
 
         action = {
             'dpos': np.array(action[:3]),
@@ -90,5 +84,8 @@ class TeleopWrapper(Wrapper):
         done = self.env._check_success()
         reward, done, info = self.env._post_action(None)
         info['reward'] = reward
-        #self.robot.robot_arm.blocking = True
+
+        # robot_arm only defined for real robot
+        if self.config.robot.type == "RealSawyerRobot": 
+            self.robot.robot_arm.blocking = True
         return obs, reward, done, info
