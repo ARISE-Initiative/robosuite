@@ -49,6 +49,8 @@ class IKWrapper(Wrapper):
             )
 
         self.action_repeat = action_repeat
+        self.action_spec = self.env.action_spec
+        self.init_quat = np.array([-0.02224347, -0.99944383, 0.01488818, -0.01988979])
 
     def set_robot_joint_positions(self, positions):
         """
@@ -87,8 +89,10 @@ class IKWrapper(Wrapper):
                 right hand. Indices 7-13 indicate the left hand, and the rest (*) are the gripper
                 inputs (first right, then left).
         """
+        # Make change in orientation none
+        action = np.hstack([action[:3], np.array([0, 0, 0, 1]), action[3]])
 
-        input_1 = self._make_input(action[:7], self.env._right_hand_quat)
+        input_1 = self._make_input(action[:7], self.init_quat)
         if self.env.mujoco_robot.name == "sawyer":
             velocities = self.controller.get_control(**input_1)
             low_action = np.concatenate([velocities, action[7:]])
@@ -119,8 +123,17 @@ class IKWrapper(Wrapper):
         array. The first three elements are taken to be displacement in position, and a
         quaternion indicating the change in rotation with respect to @old_quat.
         """
+        action = np.hstack([action[:3], [0, 0, 0, 1], action[3]])
         return {
             "dpos": action[:3],
             # IK controller takes an absolute orientation in robot base frame
             "rotation": T.quat2mat(T.quat_multiply(old_quat, action[3:7])),
         }
+
+    @property
+    def dof(self):
+        """
+        Returns size of (x, y, z) delta + gripper
+        """
+        return 4
+
