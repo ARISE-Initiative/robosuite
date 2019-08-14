@@ -69,6 +69,7 @@ class IKWrapper(Wrapper):
 
     def reset(self):
         ret = super().reset()
+        ret['robot-state'] = np.concatenate([ret['robot-state'], self.controller.ik_robot_target_pos])
         self.controller.sync_state()
         return ret
 
@@ -114,7 +115,9 @@ class IKWrapper(Wrapper):
                 low_action = np.concatenate([velocities, action[7:]])
             else:
                 low_action = np.concatenate([velocities, action[14:]])
-
+            
+        # This is to append target position into obs space
+        ret[0]['robot-state'] = np.concatenate([ret[0]['robot-state'], self.controller.ik_robot_target_pos])
         return ret
 
     def _make_input(self, action, old_quat):

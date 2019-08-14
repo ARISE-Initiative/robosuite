@@ -128,8 +128,6 @@ class SawyerReach(SawyerEnv):
         """
         super()._reset_internal()
         self.target_pos = np.array([self.table_full_size[0] / 2 + .28, 0, self.table_full_size[2] + .2])
-        print(self.target_pos)
-        assert False
         self.target_pos[:-1] += np.random.uniform(-0.05, 0.05, (2,))
         self.move_indicator(self.target_pos)
         #print(self.sim.data.qpos[self._ref_joint_pos_indexes])
