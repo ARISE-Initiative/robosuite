@@ -32,13 +32,14 @@ class TeleopWrapper(Wrapper):
         self.controller.sync_state()
         self.gripper_open = True
         self.reset()
+        self.action_spec = self.env.action_spec
 
     def reset(self):
         self.robot.reset()
         self.controller.sync_state()
         self.controller.reset()
         self.last_t = time.time()
-        self.init_rot = U.mat2euler(self.robot.eef_orientation())
+        self.init_rot = self.robot.eef_orientation()
         return self._get_observation()
 
     def sleep(self, time_elapsed=0.):
