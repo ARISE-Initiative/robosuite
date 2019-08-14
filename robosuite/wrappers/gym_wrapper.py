@@ -66,6 +66,5 @@ class GymWrapper(Wrapper):
         return self._flatten_obs(ob_dict), reward, done, ob_dict
 
     def get_observation(self):
-        print(self.env.get_observatio().shape) 
         return self.env.get_observation()
 
