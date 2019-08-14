@@ -31,7 +31,7 @@ class GymWrapper(Wrapper):
 
         # set up observation and action spaces
         flat_ob = self._flatten_obs(self.env.reset(), verbose=True)
-        self.obs_dim = flat_ob.size
+        self.obs_dim = flat_ob.shape
         high = np.inf * np.ones(self.obs_dim)
         low = -high
         self.observation_space = spaces.Box(low=low, high=high)
@@ -66,4 +66,6 @@ class GymWrapper(Wrapper):
         return self._flatten_obs(ob_dict), reward, done, ob_dict
 
     def get_observation(self):
+        print(self.env.get_observatio().shape) 
         return self.env.get_observation()
+
