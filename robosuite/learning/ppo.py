@@ -44,6 +44,7 @@ def main():
     render = False
     image_state = False
     subproc = False
+    #existing = 'lift_markov_obs_4stack_correctedgripperbest_model.pkl'
     existing = None
     markov_obs = True
     print('Config for ' + log_dir + ':')
@@ -78,7 +79,7 @@ def main():
             model.set_env(env)
         except:
             print('No existing model found. Training new one.')
-            model = PPO2(MlpPolicy, env, verbose=1)
+            model = PPO2(MlpLstmPolicy, env, verbose=1, nminibatches=num_env)
 
     model.learn(total_timesteps=int(1e8), callback=callback)
 
@@ -87,7 +88,6 @@ def main():
         while True:
             action, _states = model.predict(obs)
             obs, rewards, done, info = env.step(action)
-            #env.render()
             env._get_target_envs([0])[0].render()
             if done[0]:
                 obs = env.reset()
