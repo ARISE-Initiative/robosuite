@@ -202,12 +202,16 @@ class SawyerEnv(MujocoEnv):
         assert len(action) == self.dof, "environment got invalid action dimension"
         low, high = self.action_spec
         action = np.clip(action, low, high)
-
         if self.has_gripper:
             arm_action = action[: self.mujoco_robot.dof]
             gripper_action_in = action[
                 self.mujoco_robot.dof : self.mujoco_robot.dof + self.gripper.dof
             ]
+            if gripper_action_in > 0:
+                gripper_action_in = [1]
+            else:
+                gripper_action_in = [-1]
+
             gripper_action_actual = self.gripper.format_action(gripper_action_in)
             action = np.concatenate([arm_action, gripper_action_actual])
 

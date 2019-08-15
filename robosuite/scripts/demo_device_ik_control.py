@@ -47,7 +47,7 @@ from robosuite.wrappers import IKWrapper
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="SawyerPickPlaceCan")
+    parser.add_argument("--environment", type=str, default="SawyerLift")
     parser.add_argument("--device", type=str, default="keyboard")
     args = parser.parse_args()
 
@@ -111,6 +111,6 @@ if __name__ == "__main__":
             # map 0 to -1 (open) and 1 to 0 (closed halfway)
             grasp = grasp - 1.
 
-            action = np.concatenate([dpos, dquat, [grasp]])
+            action = np.concatenate([dpos, [grasp]])
             obs, reward, done, info = env.step(action)
             env.render()

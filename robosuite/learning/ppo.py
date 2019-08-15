@@ -37,45 +37,55 @@ def main():
     log_dir = "./checkpoints/reach/lift_4d/"
     os.makedirs(log_dir, exist_ok=True)
 
-    num_stack = 3
-    num_env = 2
-    render = False
+    num_stack = None
+    num_env = 1
+    render = True
     image_state = False
     subproc = False
+    existing = '4d_low_dim_markovianbest_model'
+    markov_obs = True
     print('Config for ' + log_dir + ':')
     print('num_stack:', num_stack)
     print('num_env:', num_env)
     print('render:', render)
     print('image_state:', image_state)
     print('subproc:', subproc)
+    print('existing:', existing)
+    print('markov_obs:', markov_obs)
 
     env = []
     for i in range(num_env):
-        ith = GymWrapper(IKWrapper(robosuite.make("SawyerLift", has_renderer=render, has_offscreen_renderer=image_state, use_camera_obs=image_state, reward_shaping=True)), num_stack=num_stack, num_env=num_env)
+        ith = GymWrapper(IKWrapper(robosuite.make("SawyerLift", has_renderer=render, has_offscreen_renderer=image_state, use_camera_obs=image_state, reward_shaping=True, camera_name='agentview'), markov_obs=markov_obs), num_stack=num_stack)
         ith.metadata = {'render.modes': ['human']}
         ith.reward_range = None
         ith.spec = None
         ith = Monitor(ith, log_dir, allow_early_resets=True)
         env.append((lambda: ith))
 
-    env = VecFrameStack(SubprocVecEnv(env, 'fork'), num_stack) if subproc else VecFrameStack(DummyVecEnv(env), num_stack)
+    env = DummyVecEnv(env)
+    #env = VecFrameStack(SubprocVecEnv(env, 'fork'), num_stack) if subproc else VecFrameStack(DummyVecEnv(env), num_stack)
 
-    try:
-        print('Trying existing model...')
-        model = PPO2.load(log_dir + 'best_model.pkl')
+    if existing:
+        print('Loading pkl directly')
+        model = PPO2.load(existing)
         model.set_env(env)
-    except:
-        print('No existing model found. Training new one.')
-        model = PPO2(MlpPolicy, env, verbose=1)
+    else:
+        try:
+            print('Trying existing model...')
+            model = PPO2.load(log_dir + 'best_model.pkl')
+            model.set_env(env)
+        except:
+            print('No existing model found. Training new one.')
+            model = PPO2(MlpPolicy, env, verbose=1)
 
-    model.learn(total_timesteps=int(1e4), callback=callback)
+        model.learn(total_timesteps=int(1e1), callback=callback)
 
     if render:
         obs = env.reset()
         while True:
             action, _states = model.predict(obs)
             obs, rewards, done, info = env.step(action)
-            env.render()
+            #env.render()
             env._get_target_envs([0])[0].render()
             if done[0]:
                 obs = env.reset()

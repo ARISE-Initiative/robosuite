@@ -34,7 +34,7 @@
                 <!-- This camera points out of the gripper. -->
                 <camera mode="fixed" name="eye_in_hand" pos="0 0 0" quat="0 -1 1 0" fovy="75"/>
             </body>
-            <!-- original <body name="r_gripper_l_finger" pos="0 -0.0015 0.02"> -->
+            <!-- original <body name="r_gripper_l_finger" pos="0 -0.002 0.02"> -->
             <!--TODO: Gripper seems narrow enough but cant grab cube-->
             <body name="r_gripper_l_finger" pos="0 0.02 0.02">
                 <inertial pos="0 0 0" quat="0 0 0 -1" mass="0.02" diaginertia="0.01 0.01 0.01" />
