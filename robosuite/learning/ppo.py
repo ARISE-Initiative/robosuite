@@ -16,6 +16,10 @@ from stable_baselines.bench import Monitor
 
 best_mean_reward, n_steps = -np.inf, 0
 
+name = 'lift_markov_obs_4stack_correctedgripper'
+log_dir = "./checkpoints/lift/" + name
+os.makedirs(log_dir, exist_ok=True)
+
 def callback(_locals, _globals):
     global n_steps, best_mean_reward
     if (n_steps + 1) % 75 == 0:
@@ -34,11 +38,9 @@ def callback(_locals, _globals):
 
 def main():
     # Create log dir
-    log_dir = "./checkpoints/reach/lift_4d/"
-    os.makedirs(log_dir, exist_ok=True)
 
-    num_stack = None
-    num_env = 3
+    num_stack = 1
+    num_env = 4
     render = False
     image_state = False
     subproc = False
@@ -52,6 +54,7 @@ def main():
     print('subproc:', subproc)
     print('existing:', existing)
     print('markov_obs:', markov_obs)
+    print('log_dir:', log_dir)
 
     env = []
     for i in range(num_env):
@@ -62,8 +65,7 @@ def main():
         ith = Monitor(ith, log_dir, allow_early_resets=True)
         env.append((lambda: ith))
 
-    env = DummyVecEnv(env)
-    #env = VecFrameStack(SubprocVecEnv(env, 'fork'), num_stack) if subproc else VecFrameStack(DummyVecEnv(env), num_stack)
+    env = VecFrameStack(SubprocVecEnv(env, 'fork'), num_stack) if subproc else VecFrameStack(DummyVecEnv(env), num_stack)
 
     if existing:
         print('Loading pkl directly')
@@ -78,7 +80,7 @@ def main():
             print('No existing model found. Training new one.')
             model = PPO2(MlpPolicy, env, verbose=1)
 
-        model.learn(total_timesteps=int(1e1), callback=callback)
+    model.learn(total_timesteps=int(1e8), callback=callback)
 
     if render:
         obs = env.reset()
