@@ -33,25 +33,32 @@ def callback(_locals, _globals):
     return True
 
 def main():
-# Create log dir
+    # Create log dir
     log_dir = "./checkpoints/reach/lift_4d/"
     os.makedirs(log_dir, exist_ok=True)
 
     num_stack = 3
     num_env = 2
     render = False
+    image_state = False
+    subproc = False
     print('Config for ' + log_dir + ':')
     print('num_stack:', num_stack)
     print('num_env:', num_env)
     print('render:', render)
+    print('image_state:', image_state)
+    print('subproc:', subproc)
 
-    env = GymWrapper(IKWrapper(robosuite.make("SawyerLift", has_renderer=render, has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True)), stack=num_stack)
-    env.metadata = {'render.modes': ['human']}
-    env.reward_range = None
-    env.spec = None
-    env = Monitor(env, log_dir, allow_early_resets=True)
-    #env = VecFrameStack(SubprocVecEnv([lambda: env] * num_env, 'fork'), num_stack)
-    env = VecFrameStack(DummyVecEnv([lambda: env] * num_env), num_stack)
+    env = []
+    for i in range(num_env):
+        ith = GymWrapper(IKWrapper(robosuite.make("SawyerLift", has_renderer=render, has_offscreen_renderer=image_state, use_camera_obs=image_state, reward_shaping=True)), num_stack=num_stack, num_env=num_env)
+        ith.metadata = {'render.modes': ['human']}
+        ith.reward_range = None
+        ith.spec = None
+        ith = Monitor(ith, log_dir, allow_early_resets=True)
+        env.append((lambda: ith))
+
+    env = VecFrameStack(SubprocVecEnv(env, 'fork'), num_stack) if subproc else VecFrameStack(DummyVecEnv(env), num_stack)
 
     try:
         print('Trying existing model...')
@@ -75,3 +82,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

@@ -12,7 +12,7 @@ from robosuite.wrappers import Wrapper
 class GymWrapper(Wrapper):
     env = None
 
-    def __init__(self, env, keys=None, stack=1):
+    def __init__(self, env, keys=None, num_stack=1, num_env=1):
         """
         Initializes the Gym wrapper.
 
@@ -31,11 +31,10 @@ class GymWrapper(Wrapper):
 
         # set up observation and action spaces
         flat_ob = self._flatten_obs(self.env.reset(), verbose=True)
-        self.obs_dim = (stack, flat_ob.size)
+        self.obs_dim = (num_stack, flat_ob.size)
         high = np.inf * np.ones(self.obs_dim)
         low = -high
         self.observation_space = spaces.Box(low=low, high=high)
-        print(self.observation_space)
         low, high = self.env.action_spec
 
         # This simulates max dpos
