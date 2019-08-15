@@ -37,15 +37,14 @@ def callback(_locals, _globals):
     return True
 
 def main():
-    # Create log dir
     num_stack = None
     num_env = 4
     render = False
     image_state = False
     subproc = True
-    #existing = 'lift_markov_obs_4stack_correctedgripperbest_model.pkl'
     existing = None
     markov_obs = True
+    arch = MlpLstmPolicy  # MlpPolicy
     print('Config for ' + log_dir + ':')
     print('num_stack:', num_stack)
     print('num_env:', num_env)
@@ -81,7 +80,7 @@ def main():
             model.set_env(env)
         except:
             print('No existing model found. Training new one.')
-            model = PPO2(MlpLstmPolicy, env, verbose=1, nminibatches=num_env)
+            model = PPO2(arch, env, verbose=1, nminibatches=num_env)
 
     model.learn(total_timesteps=int(1e8), callback=callback)
 
