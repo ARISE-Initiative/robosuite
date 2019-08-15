@@ -38,11 +38,11 @@ def main():
     os.makedirs(log_dir, exist_ok=True)
 
     num_stack = None
-    num_env = 1
-    render = True
+    num_env = 3
+    render = False
     image_state = False
     subproc = False
-    existing = '4d_low_dim_markovianbest_model'
+    existing = None
     markov_obs = True
     print('Config for ' + log_dir + ':')
     print('num_stack:', num_stack)
