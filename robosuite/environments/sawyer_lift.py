@@ -222,7 +222,8 @@ class SawyerLift(SawyerEnv):
 
         # sparse completion reward
         if self._check_success():
-            reward = 1.0
+            reward = 1000.0
+            return reward
 
         # use a shaping reward
         if self.reward_shaping:
@@ -322,7 +323,7 @@ class SawyerLift(SawyerEnv):
         table_height = self.table_full_size[2]
 
         # cube is higher than the table top above a margin
-        return cube_height > table_height + 0.04
+        return cube_height > table_height + 0.08
 
     def _gripper_visualization(self):
         """
