@@ -14,7 +14,7 @@ from robosuite.wrappers import Wrapper
 class IKWrapper(Wrapper):
     env = None
 
-    def __init__(self, env, action_repeat=1):
+    def __init__(self, env, action_repeat=1, markov_obs=True):
         """
         Initializes the inverse kinematics wrapper.
         This wrapper allows for controlling the robot through end effector
@@ -48,6 +48,7 @@ class IKWrapper(Wrapper):
                 "control currently."
             )
 
+        self.markov_obs = markov_obs
         self.action_repeat = action_repeat
         self.action_spec = self.env.action_spec
         self.init_quat = np.array([-0.02224347, -0.99944383, 0.01488818, -0.01988979])
@@ -69,7 +70,8 @@ class IKWrapper(Wrapper):
 
     def reset(self):
         ret = super().reset()
-        ret['robot-state'] = np.concatenate([ret['robot-state'], self.controller.ik_robot_target_pos])
+        if self.markov_obs:
+            ret['robot-state'] = np.concatenate([ret['robot-state'], self.controller.ik_robot_target_pos])
         self.controller.sync_state()
         return ret
 
@@ -117,7 +119,8 @@ class IKWrapper(Wrapper):
                 low_action = np.concatenate([velocities, action[14:]])
             
         # This is to append target position into obs space
-        ret[0]['robot-state'] = np.concatenate([ret[0]['robot-state'], self.controller.ik_robot_target_pos])
+        if self.markov_obs:
+            ret[0]['robot-state'] = np.concatenate([ret[0]['robot-state'], self.controller.ik_robot_target_pos])
         return ret
 
     def _make_input(self, action, old_quat):
