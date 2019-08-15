@@ -16,7 +16,7 @@ from stable_baselines.bench import Monitor
 
 best_mean_reward, n_steps = -np.inf, 0
 
-name = 'lift_markov_obs_4stack_correctedgripper'
+name = 'lift_markov_obs_4stack_correctedgripper_lstm'
 log_dir = "./checkpoints/lift/" + name
 os.makedirs(log_dir, exist_ok=True)
 
@@ -38,12 +38,11 @@ def callback(_locals, _globals):
 
 def main():
     # Create log dir
-
-    num_stack = 1
+    num_stack = None
     num_env = 4
     render = False
     image_state = False
-    subproc = False
+    subproc = True
     #existing = 'lift_markov_obs_4stack_correctedgripperbest_model.pkl'
     existing = None
     markov_obs = True
@@ -66,7 +65,10 @@ def main():
         ith = Monitor(ith, log_dir, allow_early_resets=True)
         env.append((lambda: ith))
 
-    env = VecFrameStack(SubprocVecEnv(env, 'fork'), num_stack) if subproc else VecFrameStack(DummyVecEnv(env), num_stack)
+    if num_stack:
+        env = VecFrameStack(SubprocVecEnv(env, 'fork'), num_stack) if subproc else VecFrameStack(DummyVecEnv(env), num_stack)
+    else:
+        env = SubprocVecEnv(env, 'fork') if subproc else DummyVecEnv(env)
 
     if existing:
         print('Loading pkl directly')
