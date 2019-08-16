@@ -8,7 +8,7 @@ import numpy as np
 import robosuite
 from robosuite.wrappers import TeleopWrapper, GymWrapper, IKWrapper
 
-from stable_baselines.common.policies import MlpPolicy, MlpLstmPolicy
+from stable_baselines.common.policies import MlpPolicy, MlpLstmPolicy, CnnLstmPolicy
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv, VecFrameStack
 from stable_baselines.results_plotter import load_results, ts2xy
 from stable_baselines import PPO2
@@ -16,13 +16,15 @@ from stable_baselines.bench import Monitor
 
 best_mean_reward, n_steps = -np.inf, 0
 
-name = 'lift_markov_obs_4stack_correctedgripper_lstm'
-log_dir = "./checkpoints/lift/" + name
+#name = '3stack_cnnlstm'
+#name = 'lstm'
+name = '4stack_lstm'
+log_dir = "./checkpoints/lift/" + name + '/'
 os.makedirs(log_dir, exist_ok=True)
 
 def callback(_locals, _globals):
     global n_steps, best_mean_reward
-    if (n_steps + 1) % 75 == 0:
+    if (n_steps + 1) % 5 == 0:
         x, y = ts2xy(load_results(log_dir), 'timesteps')
         if len(x) > 0:
             mean_reward = np.mean(y[-100:])
@@ -37,13 +39,14 @@ def callback(_locals, _globals):
     return True
 
 def main():
-    num_stack = None
-    num_env = 4
+    num_stack = 4
+    num_env = 8
     render = False
     image_state = False
     subproc = True
     existing = None
     markov_obs = True
+    #arch = CnnLstmPolicy # MlpLstmPolicy  # MlpPolicy
     arch = MlpLstmPolicy  # MlpPolicy
     print('Config for ' + log_dir + ':')
     print('num_stack:', num_stack)
@@ -57,6 +60,7 @@ def main():
 
     env = []
     for i in range(num_env):
+        #ith = GymWrapper(IKWrapper(robosuite.make("SawyerLift", has_renderer=render, has_offscreen_renderer=image_state, use_camera_obs=image_state, reward_shaping=True, camera_name='agentview'), markov_obs=markov_obs), num_stack=num_stack, keys=['image'])
         ith = GymWrapper(IKWrapper(robosuite.make("SawyerLift", has_renderer=render, has_offscreen_renderer=image_state, use_camera_obs=image_state, reward_shaping=True, camera_name='agentview'), markov_obs=markov_obs), num_stack=num_stack)
         ith.metadata = {'render.modes': ['human']}
         ith.reward_range = None
@@ -87,6 +91,8 @@ def main():
     if render:
         obs = env.reset()
         while True:
+            print(obs.shape)
+            assert False
             action, _states = model.predict(obs)
             obs, rewards, done, info = env.step(action)
             env._get_target_envs([0])[0].render()

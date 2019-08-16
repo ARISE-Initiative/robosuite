@@ -1,0 +1,3 @@
+Thu Aug 15 17:53:33 2019
+ERROR: Offscreen framebuffer is not complete, error 0x8cdd
+
