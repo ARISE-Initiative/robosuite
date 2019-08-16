@@ -72,6 +72,22 @@ class IKWrapper(Wrapper):
         ret = super().reset()
         if self.markov_obs:
             ret['robot-state'] = np.concatenate([ret['robot-state'], self.controller.ik_robot_target_pos])
+            touch_left_finger = 0
+            touch_right_finger = 0
+
+            for i in range(self.env.sim.data.ncon):
+                c = self.env.sim.data.contact[i]
+                if c.geom1 in self.env.l_finger_geom_ids and c.geom2 == self.env.cube_geom_id:
+                    touch_left_finger = 1
+                if c.geom1 == self.env.cube_geom_id and c.geom2 in self.env.l_finger_geom_ids:
+                    touch_left_finger = 1
+                if c.geom1 in self.env.r_finger_geom_ids and c.geom2 == self.env.cube_geom_id:
+                    touch_right_finger = 1
+                if c.geom1 == self.env.cube_geom_id and c.geom2 in self.env.r_finger_geom_ids:
+                    touch_right_finger = 1
+
+            ret['robot-state'] = np.concatenate([ret['robot-state'], np.array([touch_left_finger, touch_right_finger])])
+ 
         self.controller.sync_state()
         return ret
 
@@ -121,6 +137,21 @@ class IKWrapper(Wrapper):
         # This is to append target position into obs space
         if self.markov_obs:
             ret[0]['robot-state'] = np.concatenate([ret[0]['robot-state'], self.controller.ik_robot_target_pos])
+            touch_left_finger = 0
+            touch_right_finger = 0
+
+            for i in range(self.env.sim.data.ncon):
+                c = self.env.sim.data.contact[i]
+                if c.geom1 in self.env.l_finger_geom_ids and c.geom2 == self.env.cube_geom_id:
+                    touch_left_finger = 1
+                if c.geom1 == self.env.cube_geom_id and c.geom2 in self.env.l_finger_geom_ids:
+                    touch_left_finger = 1
+                if c.geom1 in self.env.r_finger_geom_ids and c.geom2 == self.env.cube_geom_id:
+                    touch_right_finger = 1
+                if c.geom1 == self.env.cube_geom_id and c.geom2 in self.env.r_finger_geom_ids:
+                    touch_right_finger = 1
+
+            ret[0]['robot-state'] = np.concatenate([ret[0]['robot-state'], np.array([touch_left_finger, touch_right_finger])])
         return ret
 
     def _make_input(self, action, old_quat):
