@@ -18,13 +18,13 @@ best_mean_reward, n_steps = -np.inf, 0
 
 #name = '3stack_cnnlstm'
 #name = 'lstm'
-name = '4stack_lstm'
+name = '4stack_lstm_gripperobs'
 log_dir = "./checkpoints/lift/" + name + '/'
 os.makedirs(log_dir, exist_ok=True)
 
 def callback(_locals, _globals):
     global n_steps, best_mean_reward
-    if (n_steps + 1) % 5 == 0:
+    if (n_steps + 1) % 75 == 0:
         x, y = ts2xy(load_results(log_dir), 'timesteps')
         if len(x) > 0:
             mean_reward = np.mean(y[-100:])
