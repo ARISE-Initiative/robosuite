@@ -247,8 +247,10 @@ class PandaIKController(Controller):
 
         self.ik_robot_target_pos += dpos * self.user_sensitivity
 
-        # this rotation accounts for rotating the end effector by 45 degrees
-        # from its rest configuration.
+        # this rotation accounts for offsetting the rotation between the final joint and
+        # the hand link, since the pybullet eef frame is the final joint
+        # of robot arm, whereas the mujoco eef frame is the hand link, which is rotated
+        # from the final joint by the 'quat' value for 'right_hand' specified in panda/robot.xml
 
         rotation = rotation.dot(
             T.rotation_matrix(angle=-np.pi/4, direction=[0., 0., 1.], point=None)[
