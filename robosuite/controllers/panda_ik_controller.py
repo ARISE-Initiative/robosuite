@@ -22,7 +22,7 @@ class PandaIKController(Controller):
     """
     Inverse kinematics for the Panda robot, using Pybullet and the urdf description
     files. Loads a panda robot into an internal Pybullet simulation, and uses it to
-    do inverse kinematics computations. (##TODO: This is currently identical to the sawyer_ik_controller, check params)
+    do inverse kinematics computations.
     """
 
     def __init__(self, bullet_data_path, robot_jpos_getter):
