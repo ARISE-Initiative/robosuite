@@ -35,6 +35,13 @@ class IKWrapper(Wrapper):
                 bullet_data_path=os.path.join(robosuite.models.assets_root, "bullet_data"),
                 robot_jpos_getter=self._robot_jpos_getter,
             )
+        elif self.env.mujoco_robot.name == "panda":
+            from robosuite.controllers import PandaIKController
+
+            self.controller = PandaIKController(
+                bullet_data_path=os.path.join(robosuite.models.assets_root, "bullet_data"),
+                robot_jpos_getter=self._robot_jpos_getter,
+            )
         elif self.env.mujoco_robot.name == "baxter":
             from robosuite.controllers import BaxterIKController
 
@@ -44,7 +51,7 @@ class IKWrapper(Wrapper):
             )
         else:
             raise Exception(
-                "Only Sawyer and Baxter robot environments are supported for IK "
+                "Only Sawyer, Panda, and Baxter robot environments are supported for IK "
                 "control currently."
             )
 
@@ -92,13 +99,16 @@ class IKWrapper(Wrapper):
         if self.env.mujoco_robot.name == "sawyer":
             velocities = self.controller.get_control(**input_1)
             low_action = np.concatenate([velocities, action[7:]])
+        elif self.env.mujoco_robot.name == "panda":
+            velocities = self.controller.get_control(**input_1)
+            low_action = np.concatenate([velocities, action[7:]])
         elif self.env.mujoco_robot.name == "baxter":
             input_2 = self._make_input(action[7:14], self.env._left_hand_quat)
             velocities = self.controller.get_control(input_1, input_2)
             low_action = np.concatenate([velocities, action[14:]])
         else:
             raise Exception(
-                "Only Sawyer and Baxter robot environments are supported for IK "
+                "Only Sawyer, Panda, and Baxter robot environments are supported for IK "
                 "control currently."
             )
 
@@ -109,11 +119,13 @@ class IKWrapper(Wrapper):
                 velocities = self.controller.get_control()
                 if self.env.mujoco_robot.name == "sawyer":
                     low_action = np.concatenate([velocities, action[7:]])
+                elif self.env.mujoco_robot.name == "panda":
+                    low_action = np.concatenate([velocities, action[7:]])
                 elif self.env.mujoco_robot.name == "baxter":
                     low_action = np.concatenate([velocities, action[14:]])
                 else:
                     raise Exception(
-                        "Only Sawyer and Baxter robot environments are supported for IK "
+                        "Only Sawyer, Panda, and Baxter robot environments are supported for IK "
                         "control currently."
                     )
 

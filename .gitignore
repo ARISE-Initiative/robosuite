@@ -112,3 +112,6 @@ mjkey.txt
 .idea
 
 .pytest_cache/
+
+# local files
+test_script.py

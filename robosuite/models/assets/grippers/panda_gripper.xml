@@ -1,0 +1,74 @@
+<mujoco model="panda_hand">
+    <size njmax="500" nconmax="100" />
+    <asset>
+        <mesh name="hand" file="meshes/panda_gripper/hand.stl" />
+
+        <mesh name="hand_vis" file="meshes/panda_gripper/hand_vis.stl" />
+        <mesh name="finger" file="meshes/panda_gripper/finger_longer_a.stl" />
+        <mesh name="fingerb" file="meshes/panda_gripper/finger_longer_b.stl" />
+        <mesh name="fingerc" file="meshes/panda_gripper/finger_longer_c.stl" />
+
+    </asset>
+
+    <actuator>
+        <position ctrllimited="true" ctrlrange="-0.0115 0.020833" joint="finger_joint1" kp="10000" name="gripper_joint1" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-0.020833 0.0115" joint="finger_joint2" kp="10000" name="gripper_joint2" forcelimited="true" forcerange="-20 20"/>
+    </actuator>
+
+    <worldbody>
+      <body name="right_gripper" pos="0 0 -0.018">
+
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"></site> 
+
+            <inertial pos="0 0 0.17" quat="0.707107 0.707107 0 0" mass="0.0" diaginertia="0.09 0.07 0.05" />
+            <!--<geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link7" /> -->
+      <!--       <geom pos="0 0 0.107" quat="0.92388 0 0 -0.382683" type="mesh" contype="0" conaffinity="0" group="1" mesh="hand" name="hand_collision"/> -->
+
+                  <!--<geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link7" /> -->
+            <geom pos="0 0 0." quat="0.707107 0 0 0.707" type="mesh" contype="0" conaffinity="0" group="1" mesh="hand_vis" name="hand_visual" rgba="1 1 1 1"/>
+
+            
+            <geom pos="0 0 0." quat="0.707107 0 0 0.707" type="mesh" mesh="hand"  group="0" name="hand_collision"/>
+
+            <!-- This site was added for visualization. -->
+            <site name="grip_site" pos="0 0 0.1399" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <!-- This site was added for visualization. -->
+            <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            
+
+            <body name="leftfinger" pos="0 0 0.0524" quat="0.707107 0 0 0.70">
+                <inertial pos="0 0 0.05" mass="0.1" diaginertia="0.01 0.01 0.005" />
+                <joint name="finger_joint1" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="0 0.04" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="finger" name="finger1_visuala"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerb" name="finger1_visualb"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerc" name="finger1_visualc"/>
+
+                <!-- <geom type="mesh" mesh="finger"  solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
+                <!-- <geom type="mesh" mesh="fingerc" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
+                <!-- <geom type="mesh" mesh="fingerb" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
+                <geom type="mesh" mesh="fingerc" />
+                <geom type="mesh" mesh="fingerb" />
+                <geom type="mesh" mesh="finger" />
+            </body>
+            <body name="rightfinger" pos="0 0 0.0524" quat="0.707107 0 0 0.70">
+                <inertial pos="0 0 0.05" mass="0.1" diaginertia="0.01 0.01 0.005" />
+                <joint name="finger_joint2" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="0 0.04" />
+                <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="finger" name="finger2_visuala"/>
+                <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerb" name="finger2_visualb"/>
+                <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerc" name="finger2_visualc"/>
+
+                <!-- <geom quat="0 0 0 1" type="mesh" mesh="finger"  solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
+                <!-- <geom quat="0 0 0 1" type="mesh" mesh="fingerb" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
+                <!-- <geom quat="0 0 0 1" type="mesh" mesh="fingerc" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
+                <geom quat="0 0 0 1" type="mesh" mesh="finger"/>
+                <geom quat="0 0 0 1" type="mesh" mesh="fingerb" />
+                <geom quat="0 0 0 1" type="mesh" mesh="fingerc" />
+            </body>
+        </body>
+    </worldbody>
+
+        <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
+</mujoco>

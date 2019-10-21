@@ -71,6 +71,7 @@ class SawyerIKController(Controller):
 
         # Compute new target joint positions if arguments are provided
         if (dpos is not None) and (rotation is not None):
+
             self.commanded_joint_positions = self.joint_positions_for_eef_command(
                 dpos, rotation
             )
@@ -83,6 +84,7 @@ class SawyerIKController(Controller):
         for i, delta in enumerate(deltas):
             velocities[i] = -2. * delta  # -2. * delta
         velocities = self.clip_joint_velocities(velocities)
+        print("Commanded vels: {}".format(velocities))
 
         self.commanded_joint_velocities = velocities
         return velocities
@@ -254,11 +256,14 @@ class SawyerIKController(Controller):
         # from its rest configuration. The corresponding line in most demo
         # scripts is:
         #   `env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])`
+
         rotation = rotation.dot(
             T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)[
                 :3, :3
             ]
         )
+
+
 
         self.ik_robot_target_orn = T.mat2quat(rotation)
 
