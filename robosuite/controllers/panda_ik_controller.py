@@ -47,7 +47,6 @@ class PandaIKController(Controller):
         self.user_sensitivity = .3
 
         self.sync_state()
-        self.i = 0
 
     def get_control(self, dpos, rotation):
         """
@@ -68,12 +67,6 @@ class PandaIKController(Controller):
         # Sync joint positions for IK.
         self.sync_ik_robot(self.robot_jpos_getter())
 
-        # TODO: EDITED -Josiah
-        #rotation = np.array([[1,0,0],[0,1,0],[0,0,1]])
-        #dpos = np.array([0,0,0])
-        # TODO END
-
-
         self.commanded_joint_positions = self.joint_positions_for_eef_command(
             dpos, rotation
         )
@@ -83,11 +76,9 @@ class PandaIKController(Controller):
         deltas = self._get_current_error(
             self.robot_jpos_getter(), self.commanded_joint_positions
         )
-        print("Deltas: {}".format(deltas))
         for i, delta in enumerate(deltas):
             velocities[i] = -2. * delta  # -2. * delta
         velocities = self.clip_joint_velocities(velocities)
-        print("Commanded vels: {}".format(velocities))
 
         self.commanded_joint_velocities = velocities
         return velocities
@@ -106,8 +97,6 @@ class PandaIKController(Controller):
             self.ik_robot_eef_joint_cartesian_pose()
         )
 
-        print("Initial ik target pos: {}\nInitial ik target orn: {}".format(self.ik_robot_target_pos, self.ik_robot_target_orn))
-
     def setup_inverse_kinematics(self):
         """
         This function is responsible for doing any setup for inverse kinematics.
@@ -118,9 +107,6 @@ class PandaIKController(Controller):
         # Set up a connection to the PyBullet simulator.
         p.connect(p.DIRECT)
         p.resetSimulation()
-        import pybullet_data
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        planeId = p.loadURDF("plane.urdf")
 
         # get paths to urdfs
         self.robot_urdf = pjoin(
@@ -200,14 +186,6 @@ class PandaIKController(Controller):
             A list of size @num_joints corresponding to the joint angle solution.
         """
 
-        # TODO: Trying magic numbers below JOSIAH
-        #target_position=[0,0,1]
-        #target_orientation=[0,0,0,1]
-        lim = np.pi
-        # TODO end
-
-
-
         if rest_poses is None:
             ik_solution = list(
                 p.calculateInverseKinematics(
@@ -229,9 +207,6 @@ class PandaIKController(Controller):
                     lowerLimits=[-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973],
                     upperLimits=[2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973],
                     jointRanges=[5.8, 3.5, 5.8, 3.1, 5.8, 3.8, 5.8],
-                    #lowerLimits=[-lim, -lim,-lim,-lim,-lim,-lim,-lim],
-                    #upperLimits=[lim,lim,lim,lim,lim,lim,lim],
-                    #jointRanges=[2*lim, 2*lim,2*lim,2*lim,2*lim,2*lim,2*lim],
                     restPoses=rest_poses,
                     jointDamping=[0.1] * 8,
                 )
@@ -251,7 +226,6 @@ class PandaIKController(Controller):
         pose_in_base = T.pose2mat(pose_in_base)
 
         base_pos_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot)[0])
-        print("base_pos: {}\nworld_pos: {}".format(T.mat2pose(pose_in_base), base_pos_in_world))
         base_orn_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot)[1])
         base_pose_in_world = T.pose2mat((base_pos_in_world, base_orn_in_world))
 
@@ -271,27 +245,10 @@ class PandaIKController(Controller):
             A list of size @num_joints corresponding to the target joint angles.
         """
 
-        print("input dpos: {}\ninput rotation: {}".format(dpos, rotation))
         self.ik_robot_target_pos += dpos * self.user_sensitivity
 
-        # this rotation accounts for rotating the end effector by 90 degrees
-        # from its rest configuration. The corresponding line in most demo
-        # scripts is:
-        #   `env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])`
-        """
-        rotation = rotation.dot(
-            T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)[
-                :3, :3
-            ]
-        )
-        """
-        """
-        rotation = rotation.dot(
-            T.rotation_matrix(angle=np.pi, direction=[1., 0., 0.], point=None)[
-            :3, :3
-            ]
-        )
-        """
+        # this rotation accounts for rotating the end effector by 45 degrees
+        # from its rest configuration.
 
         rotation = rotation.dot(
             T.rotation_matrix(angle=-np.pi/4, direction=[0., 0., 1.], point=None)[
@@ -299,53 +256,15 @@ class PandaIKController(Controller):
             ]
         )
 
-        """
-        rotation = T.rotation_matrix(angle=-np.pi/4, direction=[0., 0., 1.], point=None)[
-            :3, :3
-            ] @ T.rotation_matrix(angle=np.pi, direction=[1., 0., 0.], point=None)[
-            :3, :3
-            ] @ rotation
-        """
-
-
-
-        print("output rotation: {}".format(rotation))
-
         self.ik_robot_target_orn = T.mat2quat(rotation)
 
         # convert from target pose in base frame to target pose in bullet world frame
-        print("ik_robot_target_pos: {}".format(self.ik_robot_target_pos))
-        print("ik_robot_target_orn: {}".format(self.ik_robot_target_orn))
         world_targets = self.bullet_base_pose_to_world_pose(
             (self.ik_robot_target_pos, self.ik_robot_target_orn)
         )
 
-        # TODO - Check
-
-        world_targets = list(world_targets)
-
-
-        if self.i < 500:
-            world_targets[0] -= np.array([0,0,0])
-            #world_targets[0] = np.array([0.25, 0.0, 0.75])
-            #world_targets[1] = np.array([0, 0.9999997, 0, 0.0007963 ])
-            #world_targets[1] = np.array([0.9999997, 0, 0, 0.0007963])
-            #world_targets[1] = np.array([0, 0, 0.9999997, 0.0007963])
-            #world_targets[1] = np.array([-0.7071068, 0, 0, 0.7071068])
-            #world_targets[1] = np.array([0, 1, 0, 0])
-            #world_targets[1] = np.array([np.sqrt(0.001 * (self.i)), 0, 0, np.sqrt(0.001 * (-self.i + 500))])
-        else:
-            world_targets[0] -= np.array([0, 0, 0])
-            #world_targets[1] = np.array([0, np.sqrt(0.001*(1500 - self.i)), 0, np.sqrt(0.001*(self.i-500))])
-        self.i += 1
-
-
-        print("World targets: {}".format(world_targets))
-        print("ik_robot_pose: {}".format(self.ik_robot_eef_joint_cartesian_pose()))
-
         # Set default rest pose as a neutral down-position over the center of the table
         rest_poses = [0, np.pi/6, 0.00, -(np.pi - 2*np.pi/6), 0.00, (np.pi - np.pi/6), np.pi/4]
-        #rest_poses = [-1.0454259,   1.25584966,  0.92494988, -2.2255072,   1.43708077,  0.87291517, -1.92567813]
 
         for bullet_i in range(100):
             arm_joint_pos = self.inverse_kinematics(

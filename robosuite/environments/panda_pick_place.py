@@ -26,7 +26,7 @@ from robosuite.models.tasks import PickPlaceTask, UniformRandomSampler
 class PandaPickPlace(PandaEnv):
     def __init__(
             self,
-            gripper_type="TwoFingerGripper",
+            gripper_type="PandaGripper",
             table_full_size=(0.39, 0.49, 0.82),
             table_friction=(1, 0.005, 0.0001),
             use_camera_obs=True,

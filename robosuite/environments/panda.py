@@ -270,11 +270,7 @@ class PandaEnv(MujocoEnv):
                 self.sim.data.get_body_xquat("right_hand"), to="xyzw"
             )
 
-
-            print("eef_pos: {}".format(self.sim.data.site_xpos[self.eef_site_id]))
-            print("eef_quat: {}".format(di["eef_quat"]))
-
-            # add in gripper information # TODO: Added negative -Josiah
+            # add in gripper information
             robot_states.extend([di["gripper_qpos"], di["eef_pos"], di["eef_quat"]])
 
         di["robot-state"] = np.concatenate(robot_states)
@@ -343,7 +339,6 @@ class PandaEnv(MujocoEnv):
         """
         Returns eef quaternion in base frame of robot.
         """
-        print("right_hand_orn: {}".format(T.mat2quat(self._right_hand_orn)))
         return T.mat2quat(self._right_hand_orn)
 
     @property

@@ -17,7 +17,7 @@ class PandaStack(PandaEnv):
 
     def __init__(
         self,
-        gripper_type="TwoFingerGripper",
+        gripper_type="PandaGripper",
         table_full_size=(0.8, 0.8, 0.8),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
@@ -220,7 +220,7 @@ class PandaStack(PandaEnv):
         self.model.place_objects()
 
         # reset joint positions # TODO: Better to reference init_qpos (via super()) than hardcoded value? Or is this task-specific?
-        init_pos = np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, np.pi / 4])
+        init_pos = np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, -np.pi / 4])
         init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 

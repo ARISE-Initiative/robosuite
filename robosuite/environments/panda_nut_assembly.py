@@ -19,7 +19,7 @@ class PandaNutAssembly(PandaEnv):
 
     def __init__(
             self,
-            gripper_type="TwoFingerGripper",
+            gripper_type="PandaGripper",
             table_full_size=(0.45, 0.69, 0.82),
             table_friction=(1, 0.005, 0.0001),
             use_camera_obs=True,

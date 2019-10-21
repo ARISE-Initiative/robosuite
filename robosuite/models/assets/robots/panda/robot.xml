@@ -100,8 +100,7 @@
                                         <geom type="mesh" group="0" mesh="link7" name="link7_collision"/>
                                         <!-- to add gripper -->
                                         <!-- rotate 45deg to align physically to the tool-->
-                                        <body name="right_hand" pos="0 0 0.107" quat="0.924 0 0 0.383"><!-- pos="0 0 0.125" quat="-0.924 0 0 0.383" -->
-                                        <!---<body name="right_hand" pos="0 0 0.125" quat="0.707105 0 0 0.707108">-->
+                                        <body name="right_hand" pos="0 0 0.107" quat="0.924 0 0 0.383">
                                             <inertial pos="0 0 0" mass="0.5" diaginertia="0.05 0.05 0.05" />
                                             <!-- This sites were added for visualization. -->
                                             <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
