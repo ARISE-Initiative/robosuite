@@ -26,6 +26,10 @@ class TwoFingerGripperBase(Gripper):
         return ["r_gripper_l_finger_joint", "r_gripper_r_finger_joint"]
 
     @property
+    def sensors(self):
+        return ["force_ee", "torque_ee"]
+
+    @property
     def dof(self):
         return 2
 

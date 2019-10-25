@@ -53,7 +53,7 @@ class UniformRandomSampler(ObjectPositionSampler):
             ensure_object_boundary_in_range:
                 True: The center of object is at position:
                      [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
-                False: 
+                False:
                     [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
             z_rotation:
                 None: Add uniform random random z-rotation
@@ -165,7 +165,7 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
             ensure_object_boundary_in_range:
                 True: The center of object is at position:
                      [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
-                False: 
+                False:
                     [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
             z_rotation:
                 Add random z-rotation
@@ -228,6 +228,7 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
             horizontal_radius = obj_mjcf.get_horizontal_radius()
             bottom_offset = obj_mjcf.get_bottom_offset()
             success = False
+
             for i in range(5000):  # 1000 retries
                 if obj_name.startswith("SquareNut"):
                     x_range = [

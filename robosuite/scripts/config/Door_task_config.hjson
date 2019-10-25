@@ -1,0 +1,23 @@
+/* Default values for door task config parameters */
+{
+    "action_delta_penalty": 0.0,
+    "arm_collision_penalty": -50,
+    "change_door_friction": false,
+    "data_logging": false,
+    "dist_threshold": 0.01,
+    "door_damping_max": 500,
+    "door_damping_min": 500,
+    "door_friction_max": 300,
+    "door_friction_min": 300,
+    "ee_accel_penalty": 0,
+    "energy_penalty": 0,
+    "excess_force_penalty_mul": 0.05,
+    "table_full_size": [0.5, 0.5, 0.8],
+    "gripper_on_handle": true,
+    "handle_reward": true,
+    "logging_filename": "None",
+    "only_cartesian_obs": true,
+    "pressure_threshold_max": 100.0,
+    "reward_scale": 1.0,
+    "use_door_state": true
+}

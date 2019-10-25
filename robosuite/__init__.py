@@ -6,6 +6,12 @@ from robosuite.environments.sawyer_lift import SawyerLift
 from robosuite.environments.sawyer_stack import SawyerStack
 from robosuite.environments.sawyer_pick_place import SawyerPickPlace
 from robosuite.environments.sawyer_nut_assembly import SawyerNutAssembly
+from robosuite.environments.sawyer_free_space_traj import SawyerFreeSpaceTraj
+from robosuite.environments.sawyer_door import SawyerDoor
+from robosuite.environments.sawyer_wipe_force import SawyerWipeForce
+from robosuite.environments.sawyer_wipe_pegs import SawyerWipePegs
+from robosuite.environments.sawyer_wipe_tactile import SawyerWipeTactile
+from robosuite.environments.sawyer_wipe_3d_tactile import SawyerWipe3DTactile
 
 from robosuite.environments.panda_lift import PandaLift
 from robosuite.environments.panda_stack import PandaStack

@@ -1,0 +1,66 @@
+/* Default values for controller config parameters */
+{
+    // Position and Orientation controller
+    "position_orientation":
+    {
+        "control_range_ori": 0.2,
+        "control_range_pos": 0.05,
+        "damping_max": 2,
+        "damping_max_abs_delta": 0.1,
+        "damping_min": 0,
+        "initial_damping": 1,
+        "initial_impedance_ori": 150,
+        "initial_impedance_pos": 150,
+        "kp_max": 300,
+        "kp_max_abs_delta": 10,
+        "kp_min": 10,
+        "impedance_flag": false,
+        "use_delta_impedance": false
+    },
+
+    // Position controller
+    "position":
+    {
+        "control_range_pos": 0.05,
+        "damping_max": 2,
+        "damping_max_abs_delta": 0.1,
+        "damping_min": 0,
+        "initial_damping": 1,
+        "initial_impedance_ori": 150,
+        "initial_impedance_pos": 150,
+        "kp_max": 300,
+        "kp_max_abs_delta": 10,
+        "kp_min": 10,
+        "impedance_flag": false,
+        "use_delta_impedance": false
+    },
+
+    // Joint Impedance controller
+    "joint_impedance":
+    {
+        "control_freq" : 20,
+        "control_range": [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
+        "kp_max": [100, 100, 100, 100, 50, 30, 10],
+        "kp_min": [10, 10, 10, 10, 10, 1, 1],
+        "damping_max": [2, 2, 2, 2, 2, 2, 2],
+        "damping_min": [0, 0, 0, 0, 0, 0, 0],
+        "impedance_flag": false,
+        "use_delta_impedance": false
+    },
+
+    // Joint Velocity controller
+    "joint_velocity":
+    {
+        "control_range": [1, 1, 1, 1, 1, 1, 1],
+        "kv": [8.0, 7.0, 6.0, 4.0, 2.0, 0.5, 0.1]
+    },
+
+    // Joint Torque controller
+    "joint_torque":
+    {
+        "control_range": [0.5, 0.5, 0.5, 0.2, 0.2, 0.1, 0.1],
+        "impedance_flag": false,
+        "use_delta_impedance": false
+    }
+
+}

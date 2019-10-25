@@ -1,0 +1,28 @@
+/* Default values for free_space_traj task config parameters */
+{
+    "acc_vp_reward_mult": 0.0,
+    "action_delta_penalty": 0.0,
+    "allow_early_end": false,
+    "data_logging": false,
+    "dist_threshold": 0.05,
+    "distance_penalty_weight": 1,
+    "distance_reward_weight": 30.0,
+    "ee_accel_penalty": 0,
+    "end_bonus_multiplier": 25,
+    "energy_penalty": 0,
+    "logging_filename": "None",
+    "num_already_checked": 0,
+    "num_via_points": 3,
+    "only_cartesian_obs": true,
+    "point_randomization": 0,
+    "random_point_order": false,
+    "randomize_initialization": true,
+    "reward_scale": 1.0,
+    "timestep_penalty": 0.0,
+    "use_debug_cube": false,
+    "use_debug_point": false,
+    "use_debug_square": true,
+    "use_delta_distance_reward": false,
+    "via_point_reward": 100.0
+}
+

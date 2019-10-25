@@ -1,0 +1,141 @@
+<mujoco model="base">    
+    <worldbody>
+        <body name="right_gripper" pos="0 0 0.0">
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"></site> 
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0 0 0" />
+           <!-- 
+            <geom type="capsule" pos="0 0.01 0" size="0.02 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface_vis1" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+            <geom type="capsule" pos="0 0.01 0" size="0.02 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface1" solimp="0.1 0.95 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" condim="3" />
+            <geom type="capsule" pos="0 -0.01 0" size="0.02 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface_vis3" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+            <geom type="capsule" pos="0 -0.01 0" size="0.02 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface3" solimp="0.1 0.95 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" condim="3" />
+            <geom type="sphere" pos="0 0.01 0" size="0.02 0.04 0.02"  name="wiping_surface_vis2" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+            <geom type="sphere" pos="0 0.01 0" size="0.02 0.04 0.02"  name="wiping_surface2" solimp="0.1 0.95 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" condim="3" />
+            <geom type="sphere" pos="0 -0.01 0" size="0.02 0.04 0.02"  name="wiping_surface_vis4" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+            <geom type="sphere" pos="0 -0.01 0" size="0.02 0.04 0.02"  name="wiping_surface4" solimp="0.1 0.95 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" condim="3" />
+-->
+
+            <geom type="box" pos="0 0 0.0" size="0.06 0.025 0.015" name="wiping_surface_vis" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+            <!-- <geom type="box" pos="0 0 0.0" size="0.06 0.025 0.015" name="wiping_surface" solimp="0.4 0.98 0.005" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/> -->
+
+            <geom type="box" pos="0.055 0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface1a" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.04 0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface1b" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.02 0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface1c" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.0 0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface1d" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.02 0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface1e" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.04 0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface1f" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.055 0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface1g" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+
+            <geom type="sphere" pos="0.06 0.025 0.015" size="0.001" name="wiping_corner1" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            
+            <site type="sphere" pos="0.06 0.025 0.015" size="0.001" name="wiping_corner1_site"/>
+            <geom type="sphere" pos="0.04 0.025 0.015" size="0.001" name="wiping_surface1br" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="0.02 0.025 0.015" size="0.001" name="wiping_surface1cr" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="0.0 0.025 0.015" size="0.001" name="wiping_surface1dr" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="-0.02 0.025 0.015" size="0.001" name="wiping_surface1er" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="-0.04 0.025 0.015" size="0.001" name="wiping_surface1fr" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="-0.06 0.025 0.015" size="0.001" name="wiping_corner2" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <site type="sphere" pos="-0.06 0.025 0.015" size="0.001" name="wiping_corner2_site"/>
+<!-- 
+            <site type="sphere" pos="0.06 0.025 0.015" size="0.02" name="aa" rgba = "1 0 0 1"/>
+            <site type="sphere" pos="-0.06 0.025 0.015" size="0.02" name="bb" rgba = "0 1 0 1"/>
+            <site type="sphere" pos="-0.06 -0.025 0.015" size="0.02" name="cc" rgba = "0 0 1 1"/> -->
+
+            <geom type="box" pos="0.055 -0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface2a" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.04 -0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface2b" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.02 -0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface2c" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.0 -0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface2d" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.02 -0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface2e" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.04 -0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface2f" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.055 -0.02 0.0" size="0.005 0.01 0.015" name="wiping_surface2g" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+
+            <geom type="sphere" pos="0.06 -0.025 0.015" size="0.001" name="wiping_corner3" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <site type="sphere" pos="0.06 -0.025 0.015" size="0.001" name="wiping_corner3_site"/>
+            <geom type="sphere" pos="0.04 -0.025 0.015" size="0.001" name="wiping_surface2br" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="0.02 -0.025 0.015" size="0.001" name="wiping_surface2cr" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="0.0 -0.025 0.015" size="0.001" name="wiping_surface2dr" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="-0.02 -0.025 0.015" size="0.001" name="wiping_surface2er" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="-0.04 -0.025 0.015" size="0.001" name="wiping_surface2fr" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="sphere" pos="-0.06 -0.025 0.015" size="0.001" name="wiping_corner4" solimp="0.0 0.1 0.01" solmix="10000" solref="1 2" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <site type="sphere" pos="-0.06 -0.025 0.015" size="0.001" name="wiping_corner4_site"/>
+
+            
+
+<!--             <site type="box" pos="-0.06 -0.025 0.015" size="3 3 0.001" name="ddddd" rgba = "1 0 0 0.1"/> -->
+
+
+
+            <geom type="box" pos="0.055 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1ax" solimp="0.001 0.3 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.04 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1bx" solimp="0.001 0.3 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.02 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1cx" solimp="0.001 0.3 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="0.0 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1dx" solimp="0.001 0.3 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.02 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1ex" solimp="0.001 0.3 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.04 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1fx" solimp="0.001 0.3 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+            <geom type="box" pos="-0.055 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1gx" solimp="0.001 0.3 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" friction="0.001 0.005 0.0001"/>
+
+
+
+
+<!--             <geom type="box" pos="0.055 0.0 0.0" size="0.005 0.03 0.015" name="wiping_surface2aS" contype="0" conaffinity="0" group="1" rgba="1 1 0 1" />
+
+            <geom type="box" pos="0.055 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1ax2" contype="0" conaffinity="0" group="1" rgba="1 0 0 1" />
+            <geom type="box" pos="0.04 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1bx2" contype="0" conaffinity="0" group="1" rgba="1 0 0 1" />
+            <geom type="box" pos="0.02 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1cx2" contype="0" conaffinity="0" group="1" rgba="1 0 0 1" />
+            <geom type="box" pos="0.0 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1dx2" contype="0" conaffinity="0" group="1" rgba="1 0 0 1" />
+            <geom type="box" pos="-0.02 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1ex2" contype="0" conaffinity="0" group="1" rgba="1 0 0 1" />
+            <geom type="box" pos="-0.04 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1fx2" contype="0" conaffinity="0" group="1" rgba="1 0 0 1" />
+            <geom type="box" pos="-0.055 0.0 0.0" size="0.005 0.03 0.005" name="wiping_surface1gx2" contype="0" conaffinity="0" group="1" rgba="1 0 0 1" /> -->
+
+
+            <!-- <geom type="capsule" pos="0 0.01 0" size="0.01 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface1" solimp="0.4 0.98 0.005" solmix="10000" solref="0.05 1" rgba="0 0 0 1" condim="3" />
+            <geom type="capsule" pos="0 -0.01 0" size="0.01 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface3" solimp="0.1 0.95 0.01" solmix="10000" solref="0.05 1" rgba="0 0 0 1" condim="3" /> -->
+      
+            <!-- This site was added for visualization. -->
+            <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="0"></site>
+            <!-- This site was added for visualization. -->
+            <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0" type="cylinder" group="0"></site>
+        </body>
+    </worldbody>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+        <touch name="touch1" site="wiping_corner1_site"/>
+        <touch name="touch2" site="wiping_corner2_site"/>
+        <touch name="touch3" site="wiping_corner3_site"/>
+        <touch name="touch4" site="wiping_corner4_site"/>
+    </sensor>
+</mujoco>
+
+<!-- solref="timeconst dampratio" solimp ="dmin dmax width"
+stiffness = d(r)*k
+k = d(r) / (dmax * timeconst* dampratio)^2 
+damping = d(r)*b
+b = 2 / (dmax * timeconst) 
+timeconst parameter should be at least two times larger than the simulation time step
+dampratio parameter would normally be set to 1, corresponding to critical damping
+-->
+
+<!-- 
+<geom type="box" pos="0 0 0.0" size="0.05 0.03 0.015" name="wiping_surface_vis" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="box" pos="0 0 0.0" size="0.05 0.03 0.015" name="wiping_surface" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" />-->
+
+
+<!-- <geom type="cylinder" pos="0 0 0" size="0.03 0.05" quat="0 0.707105 0 0.707108" name="wiping_surface_vis" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="cylinder" pos="0 0 0" size="0.03 0.05" quat="0 0.707105 0 0.707108" name="wiping_surface" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" /> -->
+
+<!-- <geom type="capsule" pos="0 0 0" size="0.03 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface_vis" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="capsule" pos="0 0 0" size="0.03 0.04" quat="0 0.707105 0 0.707108" name="wiping_surface" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" /> -->
+<!-- <geom type="sphere" pos="0.015 0.01 0" size="0.02 0.04 0.02"  name="wiping_surface_vis3" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0.015 0.01 0" size="0.02 0.04 0.02"  name="wiping_surface3" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0.03 0.01 0" size="0.02 0.02 0.02"  name="wiping_surface_vis4" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0.03 0.01 0" size="0.02 0.02 0.02"  name="wiping_surface4" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" />
+<geom type="sphere" pos="-0.03 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface_vis5" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="sphere" pos="-0.03 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface5" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" />
+<geom type="sphere" pos="-0.015 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface_vis6" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="sphere" pos="-0.015 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface6" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0.015 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface_vis7" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0.015 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface7" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0.03 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface_vis8" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0.03 -0.01 0" size="0.02 0.02 0.02"  name="wiping_surface8" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" /> -->
+<!-- 
+<geom type="sphere" pos="0 0 0" size="0.03 0.05" quat="0 0.707105 0 0.707108" name="wiping_surface_vis3" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" />
+<geom type="sphere" pos="0 0 0" size="0.03 0.05" quat="0 0.707105 0 0.707108" name="wiping_surface3" solimp="0.1 0.95 0.02" solmix="10000" solref="0.1 1" rgba="0 0 0 1" /> -->
