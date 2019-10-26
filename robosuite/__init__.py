@@ -17,6 +17,12 @@ from robosuite.environments.panda_lift import PandaLift
 from robosuite.environments.panda_stack import PandaStack
 from robosuite.environments.panda_pick_place import PandaPickPlace
 from robosuite.environments.panda_nut_assembly import PandaNutAssembly
+from robosuite.environments.panda_free_space_traj import PandaFreeSpaceTraj
+from robosuite.environments.panda_door import PandaDoor
+from robosuite.environments.panda_wipe_force import PandaWipeForce
+from robosuite.environments.panda_wipe_pegs import PandaWipePegs
+from robosuite.environments.panda_wipe_tactile import PandaWipeTactile
+from robosuite.environments.panda_wipe_3d_tactile import PandaWipe3DTactile
 
 from robosuite.environments.baxter_lift import BaxterLift
 from robosuite.environments.baxter_peg_in_hole import BaxterPegInHole

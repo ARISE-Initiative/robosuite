@@ -5,7 +5,7 @@ import robosuite.utils.transform_utils as T
 from robosuite.environments import MujocoEnv
 
 from robosuite.models.grippers import gripper_factory
-from robosuite.models.robots import Sawyer
+from robosuite.models.robots import Panda
 from robosuite.controllers.arm_controller import *
 import pdb
 import mujoco_py
@@ -25,7 +25,7 @@ import time
 import hjson
 
 
-class SawyerRobotArmEnv(MujocoEnv):
+class PandaRobotArmEnv(MujocoEnv):
     """Initializes a robot environment."""
 
     def __init__(
@@ -176,7 +176,7 @@ class SawyerRobotArmEnv(MujocoEnv):
 
         self.n_avg_ee_acc = 10
 
-        super(SawyerRobotArmEnv, self).__init__(
+        super(PandaRobotArmEnv, self).__init__(
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_collision_mesh=render_collision_mesh,
@@ -298,8 +298,7 @@ class SawyerRobotArmEnv(MujocoEnv):
         Loads robot and optionally add grippers.
         """
         super()._load_model()
-        # Use xml that has motor torque actuators enabled
-        self.mujoco_robot = Sawyer(xml_path="robots/sawyer/robot_torque.xml")
+        self.mujoco_robot = Panda(xml_path="robots/panda/robot_torque.xml")
 
         if self.has_gripper:
             self.gripper = gripper_factory(self.gripper_type)
@@ -842,7 +841,7 @@ class SawyerRobotArmEnv(MujocoEnv):
     def _joint_positions(self):
         """
         Returns a numpy array of joint positions.
-        Sawyer robots have 7 joints and positions are in rotation angles.
+        Panda robots have 7 joints and positions are in rotation angles.
         """
         return self.sim.data.qpos[self._ref_joint_pos_indexes]
 
@@ -850,7 +849,7 @@ class SawyerRobotArmEnv(MujocoEnv):
     def _joint_velocities(self):
         """
         Returns a numpy array of joint velocities.
-        Sawyer robots have 7 joints and velocities are angular velocities.
+        Panda robots have 7 joints and velocities are angular velocities.
         """
         return self.sim.data.qvel[self._ref_joint_vel_indexes]
 

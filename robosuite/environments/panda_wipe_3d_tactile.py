@@ -1,7 +1,7 @@
 import numpy as np
 from collections import OrderedDict
 from robosuite.utils import RandomizationError
-from robosuite.environments.sawyer_robot_arm import SawyerRobotArmEnv
+from robosuite.environments.panda_robot_arm import PandaRobotArmEnv
 from robosuite.models import *
 from robosuite.utils.mjcf_utils import xml_path_completion
 from robosuite.models.tasks import Task, UniformRandomSampler, HeightTableTask
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 import hjson
 
 
-class SawyerWipe3DTactile(SawyerRobotArmEnv):
+class PandaWipe3DTactile(PandaRobotArmEnv):
 
     def __init__(
         self,
@@ -174,7 +174,7 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
                 ensure_object_boundary_in_range=False,
                 z_rotation=True)
 
-        super(SawyerWipe3DTactile,self).__init__(
+        super(PandaWipe3DTactile,self).__init__(
             logging_filename=task['logging_filename'],
             only_cartesian_obs=task['only_cartesian_obs'],
             data_logging=task['data_logging'],
@@ -209,7 +209,7 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
                                        table_friction=self.table_friction,
                                        )
 
-        # The sawyer robot has a pedestal, we want to align it with the table
+        # The panda robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([0.50 + self.table_full_size[0] / 2,0,0])
 
         self.mujoco_objects = OrderedDict()

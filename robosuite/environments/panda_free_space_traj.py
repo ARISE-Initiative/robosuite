@@ -1,5 +1,5 @@
 import numpy as np
-from robosuite.environments.sawyer_robot_arm import SawyerRobotArmEnv
+from robosuite.environments.panda_robot_arm import PandaRobotArmEnv
 from robosuite.models import *
 from robosuite.utils.mjcf_utils import xml_path_completion
 from robosuite.models.tasks import Task, FreeSpaceTask
@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 import hjson
 
 
-class SawyerFreeSpaceTraj(SawyerRobotArmEnv):
+class PandaFreeSpaceTraj(PandaRobotArmEnv):
 
     def __init__(
             self,
-            gripper_type="TwoFingerGripper",
+            gripper_type="PandaGripper",
             use_camera_obs=True,
             use_object_obs=True,
             reward_shaping=False,   # TODO: no shaping option currently
@@ -271,8 +271,8 @@ class SawyerFreeSpaceTraj(SawyerRobotArmEnv):
 
         # ensure both robots start at similar positions:
         self.mujoco_robot._init_qpos = np.array(
-            [-0.3069560907729503, -1.1316307809096735, -0.0444000938487099, 2.4458494773056896, 0.47625600105788357,
-             0.15048738525687322, -0.6397859996642663])
+            [0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, np.pi / 4])
+
 
         # load model for workspace
         self.mujoco_arena = EmptyArena()

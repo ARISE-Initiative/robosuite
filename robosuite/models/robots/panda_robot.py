@@ -6,8 +6,11 @@ from robosuite.utils.mjcf_utils import xml_path_completion, array_to_string
 class Panda(Robot):
     """Panda is a sensitive single-arm robot designed by Franka."""
 
-    def __init__(self):
-        super().__init__(xml_path_completion("robots/panda/robot.xml"))
+    def __init__(
+            self,
+            xml_path="robots/panda/robot.xml"
+    ):
+        super().__init__(xml_path_completion(xml_path))
 
         self.bottom_offset = np.array([0, 0, -0.913])
         self.set_joint_damping()

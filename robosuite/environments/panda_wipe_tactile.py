@@ -1,23 +1,21 @@
 import numpy as np
 from collections import OrderedDict
 from robosuite.utils import RandomizationError
-from robosuite.environments.sawyer_robot_arm import SawyerRobotArmEnv
+from robosuite.environments.panda_robot_arm import PandaRobotArmEnv
 from robosuite.models import *
 from robosuite.utils.mjcf_utils import xml_path_completion
-from robosuite.models.tasks import Task, UniformRandomSampler, HeightTableTask
-from robosuite.models.arenas import HeightTableArena
+from robosuite.models.tasks import Task, UniformRandomSampler, TactileTableTask
+from robosuite.models.arenas import TactileTableArena
 from robosuite.models.objects import CylinderObject, PlateWithHoleObject, BoxObject
 import multiprocessing
-import mujoco_py
-import copy
 from robosuite.controllers.arm_controller import *
-import imageio
+
 import logging
 logger = logging.getLogger(__name__)
 import hjson
 
 
-class SawyerWipe3DTactile(SawyerRobotArmEnv):
+class PandaWipeTactile(PandaRobotArmEnv):
 
     def __init__(
         self,
@@ -140,15 +138,18 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
 
         # settings for the reward
         self.arm_collision_penalty = task['arm_collision_penalty']
-        self.wipe_contact_reward= task['wipe_contact_reward']
+        self.wipe_contact_reward = task['wipe_contact_reward']
         self.unit_wiped_reward = task['unit_wiped_reward']
 
         # settings for table top
-        self.table_full_size = task['table_height_full_size']
+        self.table_full_size = task['table_full_size']
         self.table_friction = task['table_friction']
 
-        # Whether to print results or not
-        self.print_results = task['print_results']
+        # num of squares to divide each dim of the table surface
+        self.num_squares = task['num_squares']
+
+        # force threshold (N) to overcome to change the color of the sensor
+        self.touch_threshold = task['touch_threshold']
 
         # whether to include and use ground-truth object states
         self.use_object_obs = use_object_obs
@@ -156,14 +157,20 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
         # whether to include and use ground-truth proprioception in the observation
         self.observe_robot_state = True
 
+        # whether to show visual aid about where is the gripper
+        self.gripper_visualization = gripper_visualization
+
         # reward configuration
         self.reward_shaping = reward_shaping
 
-        self.sites_counter = 0
-        self.sites_max = 10000
+        # Whether to print results or not
+        self.print_results = task['print_results']
+
+        self.use_proprio_obs = task['use_proprio_obs']
 
         self.wiped_sensors = []
-        self.touch_threshold= task['touch_threshold']
+
+        self.collisions = 0
 
         # object placement initializer\
         if placement_initializer:
@@ -174,7 +181,7 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
                 ensure_object_boundary_in_range=False,
                 z_rotation=True)
 
-        super(SawyerWipe3DTactile,self).__init__(
+        super(PandaWipeTactile, self).__init__(
             logging_filename=task['logging_filename'],
             only_cartesian_obs=task['only_cartesian_obs'],
             data_logging=task['data_logging'],
@@ -201,25 +208,29 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
 
     def _load_model(self):
         super()._load_model()
-        self.mujoco_robot.set_base_xpos([0,0,0])
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
 
         self.robot_contact_geoms = self.mujoco_robot.contact_geoms
 
-        self.mujoco_arena = HeightTableArena(table_height_full_size=self.table_full_size,
-                                       table_friction=self.table_friction,
-                                       )
+        self.mujoco_arena = TactileTableArena(table_full_size=self.table_full_size,
+                                              table_friction=self.table_friction,
+                                              num_squares=self.num_squares
+                                              )
 
-        # The sawyer robot has a pedestal, we want to align it with the table
-        self.mujoco_arena.set_origin([0.50 + self.table_full_size[0] / 2,0,0])
+        # The robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.26 + self.table_full_size[0] / 2, 0, 0])
 
         self.mujoco_objects = OrderedDict()
 
         # task includes arena, robot, and objects of interest
-        self.model = HeightTableTask(self.mujoco_arena,
-                                self.mujoco_robot,
-                                self.mujoco_objects,
-                                initializer=self.placement_initializer)
+        self.model = TactileTableTask(self.mujoco_arena,
+                                      self.mujoco_robot,
+                                      self.mujoco_objects,
+                                      initializer=self.placement_initializer)
         self.model.place_objects()
+
+        # print(self.model.get_xml())
+        # exit()
 
     def _get_reference(self):
         super()._get_reference()
@@ -237,79 +248,82 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
     def reward(self, action):
         reward = 0
 
-        # Neg Reward from collisions of the arm with the table
-        if len([c for c in self.find_contacts(['table_hf_geom'],self.robot_contact_geoms)]) > 0:
-            reward = -100
-        # TODO: Careful! The else here indicates that if the robot is colliding with the table it can wipe anything!
-        else:
-            #TODO: Use the sensed touch to shape reward
-            force_sensor_id = self.sim.model.sensor_name2id("force_ee")
-            force_ee = self.sim.data.sensordata[force_sensor_id*3: force_sensor_id*3+3]
+        self.table_id = self.sim.model.geom_name2id('table_visual')
+        table_height = self.table_full_size[2]
+        table_location = self.mujoco_arena.table_top_abs
+        table_x_border_plus = table_location[0] + self.table_full_size[0] * 0.5
+        table_x_border_minus = table_location[0] - self.table_full_size[0] * 0.5
+        table_y_border_plus = table_location[1] + self.table_full_size[1] * 0.5
+        table_y_border_minus = table_location[1] - self.table_full_size[1] * 0.5
 
+        # Neg Reward from collisions of the arm with the table
+        if self._check_arm_contact():
+            reward = self.arm_collision_penalty
+            self.collisions += 1
+        else:
+            force_sensor_id = self.sim.model.sensor_name2id("force_ee")
+            force_ee = self.sim.data.sensordata[force_sensor_id * 3: force_sensor_id * 3 + 3]
+
+            # TODO: Use the sensed touch to shape reward
             # Only do computation if there are active sensors and they weren't active before
             sensors_active_ids = np.argwhere(self.sim.data.sensordata > self.touch_threshold).flatten()
-            new_sensors_active_ids = sensors_active_ids[np.where( np.isin(sensors_active_ids, self.wiped_sensors, invert=True))]
+            new_sensors_active_ids = sensors_active_ids[
+                np.where(np.isin(sensors_active_ids, self.wiped_sensors, invert=True))]
+
             if np.any(new_sensors_active_ids):
-                ee_pos = self.sim.data.body_xpos[self.sim.model.body_name2id('right_hand')]
+                for new_sensor_active_id in new_sensors_active_ids:
+                    # TODO: Careful! The sensor IDs do not correspond to the sites IDs
+                    # Site id 0 -> Table top site
+                    # We need to add +1 to all the sensor IDs to match the site IDs
+                    new_sensor_active_site_id = new_sensor_active_id + 1
+                    self.sim.model.site_rgba[new_sensor_active_site_id] = [1, 1, 1, 1]
+                    self.wiped_sensors += [new_sensor_active_id]
+                    reward += self.unit_wiped_reward
 
-                # Build a list of contact points
-                contact_points = []
-                for i in range(self.sim.data.ncon):
-                    # Note that the contact array has more than `ncon` entries,
-                    # so be careful to only read the valid entries.
-                    contact = self.sim.data.contact[i]
+            # Mean distance to all sensors
+            # mean_d = 0
+            num_sensors_inactive = 0
+            for sensor_id in range(len(self.sim.data.sensordata)):
+                if sensor_id not in self.wiped_sensors:
+                    # TODO: Careful! The sensor IDs do not correspond to the sites IDs
+                    # Site id 0 -> Table top site
+                    # We need to add +1 to all the sensor IDs to match the site IDs
+                    sensor_site_id = sensor_id + 1
+                    sensor_position = np.array(self.sim.data.site_xpos[sensor_site_id])
+                    gripper_position = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id('right_hand')])
+                    sensor_i_to_gripper_d = np.linalg.norm(gripper_position - sensor_position)
+                    continuous_distance_reward = 0.01 * (1 - np.tanh(5 * sensor_i_to_gripper_d))
+                    reward += continuous_distance_reward
 
-                    if self.sim.model.geom_id2name(contact.geom1) in ["table_hf_geom", "wiping_surface"] \
-                        and self.sim.model.geom_id2name(contact.geom2) in ["table_hf_geom", "wiping_surface"]:
-
-                        contact_points += [contact.pos]
-
-                for i in new_sensors_active_ids:
-                    #HACKY FIX: some sensors far away trigger when they shouldn't. Why?
-                    #The fix is to measure distance to the contact points and count contact only if the sensor is close enough to a contact
-
-                    sensor_too_far = True
-                    sensor_to_contact_distance_th = 0.05
-                    for contact_point in contact_points:
-                        if np.linalg.norm(np.array(contact_point)- np.array(self.sim.model.site_pos[i])) < sensor_to_contact_distance_th:
-                            sensor_too_far = False
-                            break
-
-                    if not sensor_too_far:
-                        #print("Contact force in square " + str(i) + " " + str(j) + " " + str(force_in_ij) + " Newton")
-                        self.sim.model.site_rgba[i] = [1, 1, 1, 1]
-                        self.wiped_sensors += [i]
-                        reward += self.unit_wiped_reward
-
-            reward += len(self.wiped_sensors)
-
-            # Reward for keeping contact
+                    # Reward for keeping contact
             # if self.sim.data.ncon != 0 :
             if np.linalg.norm(np.array(force_ee)) > 1:
                 reward += self.wipe_contact_reward
 
         if(self.print_results):
             print('Process %i, timestep %i: reward: %5.4f wiped sensors: %i collisions: %i' % (
-                id(multiprocessing.current_process()) ,self.timestep, reward, len(self.wiped_sensors), self.collisions))#'reward ', reward)
+                id(multiprocessing.current_process()), self.timestep, reward, len(self.wiped_sensors),
+                self.collisions))  # 'reward ', reward)
         return reward
 
     def _get_observation(self):
         di = super()._get_observation()
 
-        # # object information in the observation
+        # object information in the observation
         if self.use_object_obs:
             # position of objects to wipe
             acc = np.array([])
             for i in range(len(self.sim.data.sensordata)):
-                sensor_position = np.array(self.sim.model.site_pos[i])
+                sensor_site_id = i + 1
+                sensor_position = np.array(self.sim.data.site_xpos[sensor_site_id])
                 di['sensor' + str(i) + '_pos'] = sensor_position
-                acc = np.concatenate([acc, di['sensor' + str(i) + '_pos'] ])
-                acc = np.concatenate([acc, [[0,1][i in self.wiped_sensors]] ])
+                acc = np.concatenate([acc, di['sensor' + str(i) + '_pos']])
+                acc = np.concatenate([acc, [[0, 1][i in self.wiped_sensors]]])
                 # proprioception
-                if self.observe_robot_state:
+                if self.use_proprio_obs:
                     gripper_position = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id('right_hand')])
-                    di['gripper_to_sensor'+str(i)] = gripper_position - sensor_position
-                    acc = np.concatenate([acc, di['gripper_to_sensor' + str(i)] ])
+                    di['gripper_to_sensor' + str(i)] = gripper_position - sensor_position
+                    acc = np.concatenate([acc, di['gripper_to_sensor' + str(i)]])
             di['object-state'] = acc
 
         return di
@@ -321,7 +335,7 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
         collision = False
         for contact in self.sim.data.contact[:self.sim.data.ncon]:
             if self.sim.model.geom_id2name(contact.geom1) in self.gripper.contact_geoms() or \
-               self.sim.model.geom_id2name(contact.geom2) in self.gripper.contact_geoms():
+                    self.sim.model.geom_id2name(contact.geom2) in self.gripper.contact_geoms():
                 collision = True
                 break
         return collision
@@ -340,9 +354,9 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
         #    terminated = True
 
         if terminated:
-            print(60*"*")
+            print(60 * "*")
             print("TERMINATED")
-            print(60*"*")
+            print(60 * "*")
 
         return terminated
 
@@ -356,5 +370,10 @@ class SawyerWipe3DTactile(SawyerRobotArmEnv):
         """
         If something to do
         """
-        ret = super()._post_action(action)
-        return ret
+        reward, done, info = super()._post_action(action)
+
+        info['add_vals'] = ['nwipedsensors', 'colls']
+        info['nwipedsensors'] = len(self.wiped_sensors)
+        info['colls'] = self.collisions
+
+        return reward, done, info

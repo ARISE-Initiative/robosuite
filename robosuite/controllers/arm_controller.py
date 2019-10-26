@@ -161,7 +161,6 @@ class Controller():
         delta_kp_per_step = (goal_kp - starting_kp[self.action_mask]) / self.interpolation_steps
         delta_damping_per_step = (goal_damping - starting_damping[self.action_mask]) / self.interpolation_steps
 
-        ## TODO ## What does this function do? -Joe
         def update_impedance(index):
             if index < self.interpolation_steps - 1:
                 self.impedance_kp[self.action_mask] += delta_kp_per_step
@@ -234,7 +233,6 @@ class Controller():
 
     @property
     def action_mask(self):
-        ## TODO ## What is this? -Joe
         raise NotImplementedError
 
 
@@ -387,7 +385,7 @@ class JointImpedanceController(Controller):
 
     def interpolate_joint(self, starting_joint, last_goal_joint, goal_joint, current_vel):
         # We interpolate to reach the commanded desired position in self.ramp_ratio % of the time we have this goal
-        if self.interpolation_type == "cubic":  ## TODO ## : Nothing changes this parameter to cubic? -Joe
+        if self.interpolation_type == "cubic":  ## TODO ## : Nothing changes this parameter to cubic?
             time = [0, self.interpolation_steps]
             position = np.vstack((starting_joint, goal_joint))
             self.spline_joint = CubicSpline(time, position, bc_type=((1, current_vel), (1, (0, 0, 0, 0, 0, 0, 0))),
@@ -437,7 +435,7 @@ class JointImpedanceController(Controller):
             if self.step < self.interpolation_steps - 1:
                 self.step += 1
             if self.impedance_flag: self.update_impedance(
-                self.step)  ## TODO ##: Why does this come after the step update? -Joe
+                self.step)  ## TODO ##: Why does this come after the step update?
 
         else:
             self.last_goal_joint = np.array(self.goal_joint_position)
@@ -559,7 +557,7 @@ class PositionOrientationController(Controller):
 
     def interpolate_position(self, starting_position, last_goal_position, goal_position, current_vel):
 
-        ## TODO ## : Once again, no way to make interpolation 'cubic' -Joe
+        ## TODO ## : Once again, no way to make interpolation 'cubic'
         if self.interpolation_type == "cubic":
             # We interpolate to reach the commanded desired position in self.ramp_ratio % of the time we have this goal
             time = [0, self.interpolation_steps]
@@ -578,7 +576,7 @@ class PositionOrientationController(Controller):
         if self.interpolation_type == "cubic":
             time = [0, self.interpolation_steps]
             orientation_error = self.calculate_orientation_error(desired=goal_orientation, current=starting_orientation)
-            orientation = np.vstack(([0, 0, 0], orientation_error))  ## TODO ## : Should this be flipped? -Joe
+            orientation = np.vstack(([0, 0, 0], orientation_error))
             self.spline_ori = CubicSpline(time, orientation, bc_type=((1, current_vel), (1, (0, 0, 0))), axis=0)
             self.orientation_initial_interpolation = starting_orientation
         elif self.interpolation_type == 'linear':
@@ -676,7 +674,6 @@ class PositionOrientationController(Controller):
         desired_torque = (np.multiply(np.array(orientation_error), np.array(self.impedance_kp[3:6]))
                           - np.multiply(np.array(self.current_ang_velocity), self.impedance_kv[3:6]))
 
-        # TODO - is this just decoupling? >> Paper / Source of algorithm and theory? --Joe
         uncoupling = True
         if (uncoupling):
             decoupled_force = np.dot(self.lambda_x_matrix, desired_force)
@@ -689,7 +686,7 @@ class PositionOrientationController(Controller):
         torques = np.dot(self.J_full.T, decoupled_wrench)
 
         if self.initial_joint is not None:
-            # TODO where does 10 come from? what does initial joint mean? >> 10 seems to be default, initial joint is initial robot position when env is created --Joe
+            # TODO where does 10 come from?
             joint_kp = 10
             joint_kv = np.sqrt(joint_kp) * 2
             pose_torques = np.dot(self.mass_matrix, (joint_kp * (
@@ -748,8 +745,6 @@ class PositionOrientationController(Controller):
         singularity_threshold = 0.00025
         svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
         self.lambda_r_matrix = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
-
-        ## TODO : CHECK MATH BELOW ## -Joe
 
         if self.initial_joint is not None:
             Jbar = np.dot(mass_matrix_inv, self.J_full.transpose()).dot(self.lambda_matrix)

@@ -19,7 +19,7 @@ class SawyerWipePegs(SawyerRobotArmEnv):
 
     def __init__(
         self,
-        gripper_type="TwoFingerGripper",
+        gripper_type="WipingGripper",
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
