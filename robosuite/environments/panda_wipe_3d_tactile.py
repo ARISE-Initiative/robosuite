@@ -43,7 +43,7 @@ class PandaWipe3DTactile(PandaRobotArmEnv):
         task_config_file=None,
         use_default_controller_config=True,
         controller_config_file=None,
-        controller='position_orientation',
+        controller='joint_velocity',
         **kwargs
     ):
         """
