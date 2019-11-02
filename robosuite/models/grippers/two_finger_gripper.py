@@ -64,8 +64,10 @@ class TwoFingerGripper(TwoFingerGripperBase):
     def format_action(self, action):
         """
         1 => open, -1 => closed
+        TODO: This is flipped -- sending a 1 closes, and a -1 opens the gripper
         """
         assert len(action) == 1
+        # TODO: This is only 1 dof control -- should it be 2?
         return np.array([1 * action[0], -1 * action[0]])
 
     @property

@@ -8,6 +8,7 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+import hjson
 
 
 class SawyerLift(SawyerEnv):
@@ -37,6 +38,12 @@ class SawyerLift(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        use_default_task_config=True,
+        task_config_file=None,
+        use_default_controller_config=True,
+        controller_config_file=None,
+        controller='joint_velocity',
+        **kwargs
     ):
         """
         Args:
@@ -94,7 +101,46 @@ class SawyerLift(SawyerEnv):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            use_default_task_config (bool): True if using default configuration file
+                for remaining environment parameters. Default is true
+
+            task_config_file (str): filepath to configuration file to be
+                used for remaining environment parameters (taken relative to head of robosuite repo).
+
+            use_default_controller_config (bool): True if using default configuration file
+                for remaining environment parameters. Default is true
+
+            controller_config_file (str): filepath to configuration file to be
+                used for remaining environment parameters (taken relative to head of robosuite repo).
+
+            controller (str): Can be 'position', 'position_orientation', 'joint_velocity', 'joint_impedance', or
+                'joint_torque'. Specifies the type of controller to be used for dynamic trajectories
+
+            controller_config_file (str): filepath to the corresponding controller config file that contains the
+                associated controller parameters
+
+            #########
+            **kwargs includes additional params that may be specified and will override values found in
+            the configuration file
         """
+
+        # Load the parameter configuration files
+        if use_default_controller_config == True:
+            controller_filepath = 'robosuite/scripts/config/controller_config.hjson'
+        else:
+            controller_filepath = controller_config_file
+
+        if use_default_task_config == True:
+            task_filepath = 'robosuite/scripts/config/Lift_task_config.hjson'
+        else:
+            task_filepath = task_config_file
+
+        try:
+            with open(task_filepath) as f:
+                task = hjson.load(f)
+        except FileNotFoundError:
+            print("Env Config file '{}' not found. Please check filepath and try again.".format(task_filepath))
 
         # settings for table top
         self.table_full_size = table_full_size
@@ -133,6 +179,9 @@ class SawyerLift(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            controller_config_file=controller_filepath,
+            controller=controller,
+            **kwargs
         )
 
     def _load_model(self):

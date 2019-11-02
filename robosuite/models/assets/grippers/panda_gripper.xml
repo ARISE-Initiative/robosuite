@@ -11,8 +11,8 @@
     </asset>
 
     <actuator>
-        <position ctrllimited="true" ctrlrange="-0.0115 0.020833" joint="finger_joint1" kp="10000" name="gripper_joint1" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.020833 0.0115" joint="finger_joint2" kp="10000" name="gripper_joint2" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0.005 0.04" joint="finger_joint1" kp="10000" name="gripper_joint1" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-0.04 -0.0" joint="finger_joint2" kp="10000" name="gripper_joint2" forcelimited="true" forcerange="-20 20"/>
     </actuator>
 
     <worldbody>
@@ -38,7 +38,7 @@
 
             <body name="leftfinger" pos="0 0 0.0524" quat="0.707107 0 0 0.70">
                 <inertial pos="0 0 0.05" mass="0.1" diaginertia="0.01 0.01 0.005" />
-                <joint name="finger_joint1" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="0 0.04" />
+                <joint name="finger_joint1" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="0.005 0.04" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="finger" name="finger1_visuala"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerb" name="finger1_visualb"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerc" name="finger1_visualc"/>
@@ -52,7 +52,7 @@
             </body>
             <body name="rightfinger" pos="0 0 0.0524" quat="0.707107 0 0 0.70">
                 <inertial pos="0 0 0.05" mass="0.1" diaginertia="0.01 0.01 0.005" />
-                <joint name="finger_joint2" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="0 0.04" />
+                <joint name="finger_joint2" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.04 -0.005" />
                 <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="finger" name="finger2_visuala"/>
                 <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerb" name="finger2_visualb"/>
                 <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="fingerc" name="finger2_visualc"/>

@@ -84,6 +84,8 @@ for i in range(1000):
 ````
 The `step()` function takes an `action` as input and returns a tuple of `(obs, reward, done, info)` where `obs` is an `OrderedDict` containing observations `[(name_string, np.array), ...]`, `reward` is the immediate reward obtained per step, `done` is a Boolean flag indicating if the episode has terminated and `info` is a dictionary which contains additional metadata.
 
+A specific `controller` may additionally be specified as an argument in the `make()` function. Please refer to the [configurations](robosuite/scripts/config) page for specific available controllers and default parameters.
+
 There are other parameters which can be configured for each environment. They provide functionalities such as headless rendering, getting pixel observations, changing camera settings, using reward shaping, and adding extra low-level observations. Please refer to [this page](robosuite/environments/README.md) and the [environment classes](robosuite/environments) for further details.
 
 Sample scripts that showcase various features of the Surreal Robotics Suite are available at [robosuite/scripts](robosuite/scripts). The purpose of each script and usage instructions can be found at the beginning of each file.

@@ -125,9 +125,6 @@ class PandaRobotArmEnv(MujocoEnv):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        # Load the appropriate controller
-        self._load_controller(controller, controller_config_file)
-
         self.reward_range = (float('-inf'), float('inf'))  # TODO
         from argparse import Namespace
         self.spec = Namespace(max_episode_steps=horizon)  # TODO
@@ -140,7 +137,12 @@ class PandaRobotArmEnv(MujocoEnv):
         self.gripper_type = gripper_type
         self.gripper_visualization = gripper_visualization
         self.use_indicator_object = use_indicator_object
+
         self.impedance_ctrl = impedance_ctrl
+        if self.impedance_ctrl:
+            # Load the appropriate controller
+            self._load_controller(controller, controller_config_file)
+
         self.goal = np.zeros(3)
         self.goal_orientation = np.zeros(3)
         self.desired_force = np.zeros(3)
@@ -422,10 +424,13 @@ class PandaRobotArmEnv(MujocoEnv):
 
         self.policy_step = policy_step
 
+        # Make sure action length is correct
+        assert len(action) == self.dof, "environment got invalid action dimension"
+
+        # i.e.: not using new controller
         if not self.impedance_ctrl:
 
             # clip actions into valid range
-            assert len(action) == self.dof, "environment got invalid action dimension"
             low, high = self.action_spec
             action = np.clip(action, low, high)
 
@@ -456,9 +461,17 @@ class PandaRobotArmEnv(MujocoEnv):
                     self._ref_indicator_vel_low: self._ref_indicator_vel_high
                     ]
 
-
+        # using new controller
         else:
+            # Split action into joint control and peripheral (i.e.: gripper) control (as specified by individual gripper)
+            gripper_action = []
+            if self.has_gripper:
+                gripper_action = action[self.controller.control_dim:]  # all indexes past controller dimension indexes
+                action = action[:self.controller.control_dim]
+
+
             # TODO
+            # First, get joint space action
             #action = action.copy()  # ensure that we don't change the action outside of this scope
             self.controller.update_model(self.sim, id_name='right_hand', joint_index=self._ref_joint_pos_indexes)
             torques = self.controller.action_to_torques(action,
@@ -479,14 +492,27 @@ class PandaRobotArmEnv(MujocoEnv):
             self.total_joint_torque += np.sum(abs(torques))
             self.joint_torques = torques
 
-            #print("Joint pos: {}\nApplied Torques: {}".format(self._joint_positions, torques))
+            # Get gripper action, if applicable
+            if self.has_gripper:
+                gripper_action_actual = self.gripper.format_action(gripper_action)
+                # rescale normalized gripper action to control ranges
+                ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_gripper_joint_vel_indexes]
+                bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+                weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+                applied_gripper_action = bias + weight * gripper_action_actual
+                self.sim.data.ctrl[self._ref_gripper_joint_vel_indexes] = applied_gripper_action
+
+            # Now, control both gripper and joints
             self.sim.data.ctrl[self._ref_joint_vel_indexes] = self.sim.data.qfrc_bias[self._ref_joint_vel_indexes] + torques
 
             if self.policy_step:
                 self.prev_pstep_q = np.array(self.curr_pstep_q)
                 self.curr_pstep_q = np.array(self.sim.data.qpos[self._ref_joint_vel_indexes])
                 self.prev_pstep_a = np.array(self.curr_pstep_a)
-                self.curr_pstep_a = np.array(action)#.copy()) # TODO
+                if self.has_gripper:
+                    self.curr_pstep_a = np.concatenate((action, gripper_action))#.copy()) # TODO
+                else:
+                    self.curr_pstep_a = np.array(action)
                 self.prev_pstep_t = np.array(self.curr_pstep_t)
                 self.curr_pstep_t = np.array(self.sim.data.ctrl[self._ref_joint_vel_indexes])
                 self.prev_pstep_ft = np.array(self.curr_pstep_ft)
@@ -662,9 +688,10 @@ class PandaRobotArmEnv(MujocoEnv):
             else:
                 di['image'] = camera_obs
 
-                if self.visualize_offscreen and not self.real_robot:
-                    cv2.imshow('Robot observation', np.flip(camera_obs[..., ::-1], 0))
-                    cv2.waitKey(10)
+                # Skip for now, not worth importing cv2 just for this
+                # if self.visualize_offscreen and not self.real_robot:
+                    # cv2.imshow('Robot observation', np.flip(camera_obs[..., ::-1], 0))
+                    # cv2.waitKey(10)
 
         # proprioceptive features
         di["joint_pos"] = np.array(
@@ -736,11 +763,12 @@ class PandaRobotArmEnv(MujocoEnv):
         Returns the DoF of the robot (with grippers).
         """
         if self.impedance_ctrl:
-            return self.controller.action_dim
+            dof = self.controller.action_dim
         else:
             dof = self.mujoco_robot.dof
-            if self.has_gripper:
-                dof += self.gripper.dof
+
+        if self.has_gripper:
+            dof += self.gripper.dof
             return dof
 
     def pose_in_base_from_name(self, name):
@@ -913,7 +941,6 @@ class PandaRobotArmEnv(MujocoEnv):
         """
         Returns the change in policy action between previous and current steps
         """
-
         a_delta = self.prev_pstep_a - self.curr_pstep_a
 
         return a_delta

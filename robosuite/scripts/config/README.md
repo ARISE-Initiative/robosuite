@@ -1,7 +1,7 @@
-Config
+Configurations
 ======
 
-Config provides a set of default configuration files that hold parameters relevant to specific tasks or subsystems (e.g.: controller-specific values).
+The config directory provides a set of default configuration files that hold parameters relevant to specific tasks or subsystems (e.g.: controller-specific values).
 Below we differentiate between the types of config files and provide descriptions of individual parameter values that each file holds:
 
 controller_config
@@ -15,7 +15,7 @@ Overview: Provides default parameters for all robot arm controllers supported by
     joint_torque
     joint_velocity
     
-Any of the above controllers may be specified for a given environment by passing the controller name via the `controller` arg when calling robosuite's `make` function.
+Any of the above controllers may be specified for a given environment by passing the controller name via the `controller` arg when calling robosuite's `make()` function.
 
 Below are descriptions of the individual controller parameters:
 ####general controller settings

@@ -195,27 +195,15 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.done:
             raise ValueError("executing action in terminated episode")
 
-        # TODO: Fix once OSC is fully integrated
-        # Currently hackish way to differentiate between which self._pre_action to use, based on whether the
-        # controller attribute is specified (which only exists in the "new" envs)
-        if(hasattr(self, 'controller')):
-            self.timestep += 1
-            policy_step = True
-            for i in range(int(self.control_timestep / self.model_timestep)):
-                self._pre_action(action, policy_step)
-                self.sim.step()
-                policy_step = False
+        self.timestep += 1
+        policy_step = True
+        for i in range(int(self.control_timestep / self.model_timestep)):
+            self._pre_action(action, policy_step)
+            self.sim.step()
+            policy_step = False
 
-            # Note: this is done all at once to avoid floating point inaccuracies
-            self.cur_time += self.control_timestep
-
-        else:
-            self.timestep += 1
-            self._pre_action(action)
-            end_time = self.cur_time + self.control_timestep
-            while self.cur_time < end_time:
-                self.sim.step()
-                self.cur_time += self.model_timestep
+        # Note: this is done all at once to avoid floating point inaccuracies
+        self.cur_time += self.control_timestep
 
         reward, done, info = self._post_action(action)
         return self._get_observation(), reward, done, info
