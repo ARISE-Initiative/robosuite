@@ -23,6 +23,7 @@ Below are descriptions of the individual controller parameters:
 * use_impedance: Whether to use impedance control
 * use_delta_impedance: Whether to use delta impedance as the action
 * control_range": What range to scale control input from the policy (will be used as +/- max/min respectively)
+* interpolation: What type of interpolation to use for trajectory planning. Can be "linear" or "cubic". Removing this parameter will default to None
 
 ####position-orientation controller
 * control_range_ori: What range to scale orientation deltas (will be used as +/- max/min respectively)

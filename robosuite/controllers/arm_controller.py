@@ -37,6 +37,7 @@ class Controller():
                  initial_joint=None,
                  position_limits=[[0, 0, 0], [0, 0, 0]],
                  orientation_limits=[[0, 0, 0], [0, 0, 0]],
+                 interpolation=None,
                  **kwargs
                  ):
 
@@ -70,7 +71,7 @@ class Controller():
 
         self.control_freq = control_freq  # control steps per second
 
-        self.interpolation_type = "linear"
+        self.interpolation = interpolation
 
         self.ramp_ratio = 0.20  # Percentage of the time between policy timesteps used for interpolation
 
@@ -247,6 +248,7 @@ class JointTorqueController(Controller):
                  min_action=-1,
                  # impedance_flag= False,  ## TODO ## : Why is this commented out?
                  inertia_decoupling=False,
+                 interpolation = None,
                  **kwargs
                  ):
 
@@ -255,6 +257,7 @@ class JointTorqueController(Controller):
             control_min=-1 * np.array(control_range),
             max_action=max_action,
             min_action=min_action,
+            interpolation=interpolation,
             **kwargs)
 
         # self.use_delta_impedance = False
@@ -269,12 +272,14 @@ class JointTorqueController(Controller):
         if policy_step:
             self.step = 0
             self.goal = np.array((action))
-            if self.interpolate:
+            if self.interpolation and self.interpolation != "linear":
+                print("Only linear interpolation supported for this controller type.")
+            if self.interpolation == "linear":
                 self.linear_interpolate(self.last_goal, self.goal)
             else:
                 self.last_goal = np.array((self.goal))
 
-        if self.interpolate:
+        if self.interpolation == "linear":
             self.last_goal = self.linear[self.step]
 
             if self.step < self.interpolation_steps - 1:
@@ -306,12 +311,14 @@ class JointVelocityController(Controller):
                  kv,
                  max_action=1,
                  min_action=-1,
+                 interpolation=None,
                  ):
         super(JointVelocityController, self).__init__(
             control_max=np.array(control_range),
             control_min=-1 * np.array(control_range),
             max_action=max_action,
-            min_action=min_action)
+            min_action=min_action,
+            interpolation=interpolation)
 
         self.kv = np.array(kv)
         self.interpolate = True
@@ -324,12 +331,14 @@ class JointVelocityController(Controller):
         if policy_step:
             self.step = 0
             self.goal = np.array((action))
-            if self.interpolate:
+            if self.interpolation and self.interpolation != "linear":
+                print("Only linear interpolation supported for this controller type.")
+            if self.interpolation == "linear":
                 self.linear_interpolate(self.last_goal, self.goal)
             else:
                 self.last_goal = np.array((self.goal))
 
-        if self.interpolate:
+        if self.interpolation == "linear":
             self.last_goal = self.linear[self.step]
 
             if self.step < self.interpolation_steps - 1:
@@ -356,6 +365,7 @@ class JointImpedanceController(Controller):
                  impedance_flag=False,
                  max_action=1,
                  min_action=-1,
+                 interpolation=None,
                  **kwargs
                  ):
         # for back-compatibility interpret a single # as the same value for all joints
@@ -374,6 +384,7 @@ class JointImpedanceController(Controller):
             kp_min=np.array(kp_min),
             damping_max=np.array(damping_max),
             damping_min=np.array(damping_min),
+            interpolation=interpolation,
             **kwargs
         )
 
@@ -385,17 +396,19 @@ class JointImpedanceController(Controller):
 
     def interpolate_joint(self, starting_joint, last_goal_joint, goal_joint, current_vel):
         # We interpolate to reach the commanded desired position in self.ramp_ratio % of the time we have this goal
-        if self.interpolation_type == "cubic":  ## TODO ## : Nothing changes this parameter to cubic?
+        if self.interpolation == "cubic":
             time = [0, self.interpolation_steps]
             position = np.vstack((starting_joint, goal_joint))
             self.spline_joint = CubicSpline(time, position, bc_type=((1, current_vel), (1, (0, 0, 0, 0, 0, 0, 0))),
                                             axis=0)
-        elif self.interpolation_type == 'linear':
+        elif self.interpolation == 'linear':
             delta_x_per_step = (goal_joint - last_goal_joint) / self.interpolation_steps
             self.linear_joint = np.array([(last_goal_joint + i * delta_x_per_step)
                                           for i in range(1, int(self.interpolation_steps) + 1)])
+        elif self.interpolation == None:
+            pass
         else:
-            logger.error("[Controller] Invalid interpolation_type! Please specify 'cubic' or 'linear'.")
+            logger.error("[Controller] Invalid interpolation! Please specify 'cubic' or 'linear'.")
             exit(-1)
 
     def action_to_torques(self, action, policy_step):
@@ -408,34 +421,34 @@ class JointImpedanceController(Controller):
             if self.impedance_flag: self.set_goal_impedance(
                 action)  # this takes into account whether or not it's delta impedance
 
-            if self.interpolate:
+            if self.interpolation:
                 if np.linalg.norm(self.last_goal_joint) == 0:
                     self.last_goal_joint = self.current_joint_position
                 self.interpolate_joint(self.current_joint_position, self.last_goal_joint, self.goal_joint_position,
                                        self.current_joint_velocity)
 
             if self.impedance_flag:
-                if self.interpolate:
+                if self.interpolation:
                     self.interpolate_impedance(self.impedance_kp, self.damping, self.goal_kp, self.goal_damping)
                 else:
                     # update impedances immediately
                     self.impedance_kp[self.action_mask] = self.goal_kp
                     self.damping[self.action_mask] = self.goal_damping
 
-        if self.interpolate:
-
-            if self.interpolation_type == 'cubic':
+        # if interpolation is specified, then interpolate. Otherwise, pass
+        if self.interpolation:
+            if self.interpolation == 'cubic':
                 self.last_goal_joint = self.spline_joint(self.step)
-            if self.interpolation_type == 'linear':
+            elif self.interpolation == 'linear':
                 self.last_goal_joint = self.linear_joint[self.step]
             else:
-                logger.error("[Controller] Invalid interpolation_type! Please specify 'cubic' or 'linear'.")
+                logger.error("[Controller] Invalid interpolation! Please specify 'cubic' or 'linear'.")
                 exit(-1)
 
             if self.step < self.interpolation_steps - 1:
                 self.step += 1
             if self.impedance_flag: self.update_impedance(
-                self.step)  ## TODO ##: Why does this come after the step update?
+                self.step)
 
         else:
             self.last_goal_joint = np.array(self.goal_joint_position)
@@ -465,7 +478,6 @@ class JointImpedanceController(Controller):
 
     @property
     def action_mask(self):
-        # TODO - what is this used for?
         return np.arange(self.control_dim)
 
 
@@ -494,6 +506,7 @@ class PositionOrientationController(Controller):
                  impedance_flag=False,
                  position_limits=[[0, 0, 0], [0, 0, 0]],
                  orientation_limits=[[0, 0, 0], [0, 0, 0]],
+                 interpolation=None,
                  **kwargs
                  ):
         control_max = np.ones(3) * control_range_pos
@@ -543,7 +556,9 @@ class PositionOrientationController(Controller):
             initial_joint=initial_joint,
             control_freq=control_freq,
             position_limits=position_limits,
-            orientation_limits=orientation_limits
+            orientation_limits=orientation_limits,
+            interpolation=interpolation,
+            **kwargs
         )
 
         self.impedance_kp = np.array(initial_impedance).astype('float64')
@@ -557,36 +572,39 @@ class PositionOrientationController(Controller):
 
     def interpolate_position(self, starting_position, last_goal_position, goal_position, current_vel):
 
-        ## TODO ## : Once again, no way to make interpolation 'cubic'
-        if self.interpolation_type == "cubic":
+        if self.interpolation == "cubic":
             # We interpolate to reach the commanded desired position in self.ramp_ratio % of the time we have this goal
             time = [0, self.interpolation_steps]
             position = np.vstack((starting_position, goal_position))
             self.spline_pos = CubicSpline(time, position, bc_type=((1, current_vel), (1, (0, 0, 0))), axis=0)
-        elif self.interpolation_type == 'linear':
+        elif self.interpolation == 'linear':
             delta_x_per_step = (goal_position - last_goal_position) / self.interpolation_steps
             self.linear_pos = np.array(
                 [(last_goal_position + i * delta_x_per_step) for i in range(1, int(self.interpolation_steps) + 1)])
+        elif self.interpolation == None:
+            pass
         else:
-            logger.error("[Controller] Invalid interpolation_type! Please specify 'cubic' or 'linear'.")
+            logger.error("[Controller] Invalid interpolation! Please specify 'cubic' or 'linear'.")
             exit(-1)
 
     def interpolate_orientation(self, starting_orientation, last_goal_orientation, goal_orientation, current_vel):
         # We interpolate to reach the commanded desired position in self.ramp_ratio % of the time we have this goal
-        if self.interpolation_type == "cubic":
+        if self.interpolation == "cubic":
             time = [0, self.interpolation_steps]
             orientation_error = self.calculate_orientation_error(desired=goal_orientation, current=starting_orientation)
             orientation = np.vstack(([0, 0, 0], orientation_error))
             self.spline_ori = CubicSpline(time, orientation, bc_type=((1, current_vel), (1, (0, 0, 0))), axis=0)
             self.orientation_initial_interpolation = starting_orientation
-        elif self.interpolation_type == 'linear':
+        elif self.interpolation == 'linear':
             orientation_error = self.calculate_orientation_error(desired=goal_orientation,
                                                                  current=last_goal_orientation)
             delta_r_per_step = orientation_error / self.interpolation_steps
             self.linear_ori = np.array([i * delta_r_per_step for i in range(1, int(self.interpolation_steps) + 1)])
             self.orientation_initial_interpolation = last_goal_orientation
+        elif self.interpolation == None:
+            pass
         else:
-            logger.error("[Controller] Invalid interpolation_type! Please specify 'cubic' or 'linear'.")
+            logger.error("[Controller] Invalid interpolation! Please specify 'cubic' or 'linear'.")
             exit(-1)
 
     def action_to_torques(self, action, policy_step):
@@ -604,7 +622,7 @@ class PositionOrientationController(Controller):
             if self.impedance_flag: self.set_goal_impedance(
                 action)  # this takes into account whether or not it's delta impedance
 
-            if self.interpolate:
+            if self.interpolation:
                 # The first time we interpolate we don't have a previous goal value -> We set it to the current robot position+orientation
                 if np.linalg.norm(self.last_goal_position) == 0:
                     self.last_goal_position = self.current_position
@@ -618,7 +636,7 @@ class PositionOrientationController(Controller):
 
             # handle impedances
             if self.impedance_flag:
-                if self.interpolate:
+                if self.interpolation:
                     # set goals for next round of interpolation
                     self.interpolate_impedance(self.impedance_kp, self.damping, self.goal_kp, self.goal_damping)
                 else:
@@ -626,16 +644,15 @@ class PositionOrientationController(Controller):
                     self.impedance_kp[self.action_mask] = self.goal_kp
                     self.damping[self.action_mask] = self.goal_damping
 
-        if self.interpolate:
-            # TODO - this could be one name to unify here?
-            if self.interpolation_type == 'cubic':
+        if self.interpolation:
+            if self.interpolation == 'cubic':
                 self.last_goal_position = self.spline_pos(self.step)
                 goal_orientation_delta = self.spline_ori(self.step)
-            if self.interpolation_type == 'linear':
+            elif self.interpolation == 'linear':
                 self.last_goal_position = self.linear_pos[self.step]
                 goal_orientation_delta = self.linear_ori[self.step]
             else:
-                logger.error("[Controller] Invalid interpolation_type! Please specify 'cubic' or 'linear'.")
+                logger.error("[Controller] Invalid interpolation! Please specify 'cubic' or 'linear'.")
                 exit(-1)
 
             if self.impedance_flag: self.update_impedance(self.step)
@@ -856,6 +873,7 @@ class PositionController(PositionOrientationController):
                  impedance_flag=False,
                  initial_joint=None,
                  control_freq=20,
+                 interpolation=None,
                  **kwargs
                  ):
         super(PositionController, self).__init__(
@@ -876,6 +894,7 @@ class PositionController(PositionOrientationController):
             initial_impedance_pos=initial_impedance_pos,
             initial_impedance_ori=initial_impedance_ori,
             initial_damping=initial_damping,
+            interpolation=interpolation,
             **kwargs)
 
         self.goal_orientation_set = False

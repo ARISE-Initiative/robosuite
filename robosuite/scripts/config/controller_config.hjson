@@ -15,7 +15,8 @@
         "kp_max_abs_delta": 10,
         "kp_min": 10,
         "impedance_flag": false,
-        "use_delta_impedance": false
+        "use_delta_impedance": false,
+        "interpolation": "linear"
     },
 
     // Position controller
@@ -32,7 +33,8 @@
         "kp_max_abs_delta": 10,
         "kp_min": 10,
         "impedance_flag": false,
-        "use_delta_impedance": false
+        "use_delta_impedance": false,
+        "interpolation": "linear"
     },
 
     // Joint Impedance controller
@@ -45,14 +47,16 @@
         "damping_max": [2, 2, 2, 2, 2, 2, 2],
         "damping_min": [0, 0, 0, 0, 0, 0, 0],
         "impedance_flag": false,
-        "use_delta_impedance": false
+        "use_delta_impedance": false,
+        "interpolation": "linear"
     },
 
     // Joint Velocity controller
     "joint_velocity":
     {
         "control_range": [1, 1, 1, 1, 1, 1, 1],
-        "kv": [8.0, 7.0, 6.0, 4.0, 2.0, 0.5, 0.1]
+        "kv": [8.0, 7.0, 6.0, 4.0, 2.0, 0.5, 0.1],
+        "interpolation": "linear"
     },
 
     // Joint Torque controller
@@ -60,7 +64,8 @@
     {
         "control_range": [0.5, 0.5, 0.5, 0.2, 0.2, 0.1, 0.1],
         "impedance_flag": false,
-        "use_delta_impedance": false
+        "use_delta_impedance": false,
+        "interpolation": "linear"
     }
 
 }
