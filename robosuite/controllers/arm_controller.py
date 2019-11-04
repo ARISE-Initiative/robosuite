@@ -72,7 +72,6 @@ class Controller():
         self.control_freq = control_freq  # control steps per second
 
         self.interpolation = interpolation
-        print("interpolation: {}".format(self.interpolation))
 
         self.ramp_ratio = 0.20  # Percentage of the time between policy timesteps used for interpolation
 
