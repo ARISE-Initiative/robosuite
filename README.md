@@ -13,6 +13,10 @@ Please, if you use this code, cite the orinal Robosuite as well as:
 ```
 Acknowledgements: we thank Josiah Wong for the great work merging the code base into Robosuite.
 
+More info in our website [Surreal Distributed Reinforcement Learning Framework](https://stanfordvl.github.io/vices/).
+
+![vices](resources/vices.jpeg)
+
 ![gallery of_environments](resources/gallery.png)
 
 Surreal Robotics Suite is a tookit and simulation benchmark powered by the [MuJoCo physics engine](http://mujoco.org/) for reproducible robotics research. The current release concentrates on reinforcement learning for robot manipulation. This library is designed to smoothly interoperate with the [Surreal Distributed Reinforcement Learning Framework](https://github.com/SurrealAI/Surreal).
