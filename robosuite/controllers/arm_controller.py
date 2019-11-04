@@ -273,7 +273,7 @@ class JointTorqueController(Controller):
         if policy_step:
             self.step = 0
             self.goal = np.array((action))
-            if self.interpolation and self.interpolation is not "linear":
+            if self.interpolation and self.interpolation != "linear":
                 print("Only linear interpolation supported for this controller type.")
             if self.interpolation == "linear":
                 self.linear_interpolate(self.last_goal, self.goal)
@@ -332,7 +332,7 @@ class JointVelocityController(Controller):
         if policy_step:
             self.step = 0
             self.goal = np.array((action))
-            if self.interpolation and self.interpolation is not "linear":
+            if self.interpolation and self.interpolation != "linear":
                 print("Only linear interpolation supported for this controller type.")
             if self.interpolation == "linear":
                 self.linear_interpolate(self.last_goal, self.goal)
