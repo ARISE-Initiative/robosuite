@@ -894,7 +894,7 @@ class PositionController(PositionOrientationController):
             initial_impedance_pos=initial_impedance_pos,
             initial_impedance_ori=initial_impedance_ori,
             initial_damping=initial_damping,
-            interpolation=interpolation
+            interpolation=interpolation,
             **kwargs)
 
         self.goal_orientation_set = False
