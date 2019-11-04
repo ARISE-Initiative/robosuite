@@ -15,8 +15,8 @@ from enum import Enum
 
 from collections import deque
 
-import cv2
-import multiprocessing
+#import cv2
+#import multiprocessing
 
 #from baselines.baselines import logger
 import logging

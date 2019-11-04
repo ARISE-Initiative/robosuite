@@ -15,6 +15,7 @@ import robosuite.utils.transform_utils as T
 import logging
 logger = logging.getLogger(__name__)
 import hjson
+import os
 
 
 class SawyerDoor(SawyerRobotArmEnv):
@@ -123,14 +124,18 @@ class SawyerDoor(SawyerRobotArmEnv):
 
         # Load the parameter configuration files
         if use_default_controller_config == True:
-            controller_filepath = 'robosuite/scripts/config/controller_config.hjson'
+            controller_filepath = os.path.join(os.path.dirname(__file__), '..',
+                                               'scripts/config/controller_config.hjson')
         else:
-            controller_filepath = controller_config_file
+            controller_filepath = os.path.join(os.path.dirname(__file__), '..',
+                                               controller_config_file)
 
         if use_default_task_config == True:
-            task_filepath = 'robosuite/scripts/config/Door_task_config.hjson'
+            task_filepath = os.path.join(os.path.dirname(__file__), '..',
+                                         'scripts/config/Door_task_config.hjson')
         else:
-            task_filepath = task_config_file
+            task_filepath = os.path.join(os.path.dirname(__file__), '..',
+                                         task_config_file)
 
         try:
             with open(task_filepath) as f:

@@ -1,4 +1,5 @@
 numpy>=1.13.3
 mujoco-py<1.50.2,>=1.50.1
 hjson>=3.0.1
+pyquaternion>=0.9.5
 -e .
