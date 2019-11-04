@@ -15,7 +15,7 @@ Acknowledgements: we thank Josiah Wong for the great work merging the code base 
 
 More info in [our website](https://stanfordvl.github.io/vices/).
 
-![vices](resources/vices.jpeg)
+![vices](resources/vices.jpg)
 
 ![gallery of_environments](resources/gallery.png)
 
