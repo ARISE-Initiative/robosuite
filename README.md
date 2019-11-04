@@ -1,4 +1,17 @@
-# Surreal Robotics Suite
+# Surreal Robotics Suite - VICES IROS19 Version
+
+This is the preliminary branch for the version of Robosuite used in our recent IROS19 paper "VICES: Variable Impedance Control in End-Effector Space. An Action Space for Reinforcement Learning in Contact Rich Tasks". It includes new robot models (Franka Panda), tasks (free space motion, door opening and table wiping) and the analytical controllers we use in our evaluation to map policy actions in joint torques, velocities and positions as well as 6D poses in task-space into robot commands (joint torques). The policy and the controller run at different frequences (20 Hz and 500 Hz per default). The repertoire of controllers include versions that control impedance in joint and Cartesian space, allowing the agent to control the amount of force applied to the environment. We also include an interpolator to smooth the actions and be able to execute the same commands and control in the real robot.
+
+Please, if you use this code, cite the orinal Robosuite as well as:
+```
+@inproceedings{martin2019iros,
+  title={Variable Impedance Control in End-Effector Space. An Action Space for Reinforcement Learning in Contact Rich Tasks},
+  author={Mart\'in-Mart\'in, Roberto and Lee, Michelle and Gardner, Rachel and Savarese, Silvio and Bohg, Jeannette and Garg, Animesh},
+  booktitle={Proceedings of the International Conference of Intelligent Robots and Systems (IROS)},
+  year={2019}
+}
+```
+Acknowledgements: we thank Josiah Wong for the great work merging the code base into Robosuite.
 
 ![gallery of_environments](resources/gallery.png)
 
