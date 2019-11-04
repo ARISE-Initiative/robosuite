@@ -13,7 +13,7 @@ Please, if you use this code, cite the orinal Robosuite as well as:
 ```
 Acknowledgements: we thank Josiah Wong for the great work merging the code base into Robosuite.
 
-More info in our website [Surreal Distributed Reinforcement Learning Framework](https://stanfordvl.github.io/vices/).
+More info in [our website](https://stanfordvl.github.io/vices/).
 
 ![vices](resources/vices.jpeg)
 
