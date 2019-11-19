@@ -186,7 +186,7 @@ class BaxterEnv(MujocoEnv):
             ] = pos
 
     # Note: Overrides super
-    def _pre_action(self, action):
+    def _pre_action(self, action, policy_step=False):
         # Optionally (and by default) rescale actions to [-1, 1]. Not desirable
         # for certain controllers. They later get normalized to the control range.
         if self.rescale_actions:

@@ -346,6 +346,16 @@ class PandaDoor(PandaRobotArmEnv):
     def _get_observation(self):
         di = super()._get_observation()
 
+        # door information for rewards
+        handle_id = self.sim.model.site_name2id("S_handle")
+        self.handle_position = self.sim.data.site_xpos[handle_id]
+        handle_orientation_mat = self.sim.data.site_xmat[handle_id].reshape(3, 3)
+        handle_orientation = T.mat2quat(handle_orientation_mat)
+        hinge_id = self.sim.model.get_joint_qpos_addr("door_hinge")
+
+        self.hinge_qpos = np.array((self.sim.data.qpos[hinge_id])).reshape(-1, )
+        self.hinge_qvel = np.array((self.sim.data.qvel[hinge_id])).reshape(-1, )
+
         if self.use_camera_obs:
             camera_obs = self.sim.render(camera_name=self.camera_name,
                                          width=self.camera_width,
@@ -360,16 +370,6 @@ class PandaDoor(PandaRobotArmEnv):
             # checking if contact is made, add as state
             contact = self._check_contact()
             di['object-state'] = np.array([[0, 1][contact]])
-
-            # door information for rewards
-            handle_id = self.sim.model.site_name2id("S_handle")
-            self.handle_position = self.sim.data.site_xpos[handle_id]
-            handle_orientation_mat = self.sim.data.site_xmat[handle_id].reshape(3, 3)
-            handle_orientation = T.mat2quat(handle_orientation_mat)
-            hinge_id = self.sim.model.get_joint_qpos_addr("door_hinge")
-
-            self.hinge_qpos = np.array((self.sim.data.qpos[hinge_id])).reshape(-1, )
-            self.hinge_qvel = np.array((self.sim.data.qvel[hinge_id])).reshape(-1, )
 
             if self.use_door_state:
                 di['object-state'] = np.concatenate([
