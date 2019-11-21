@@ -89,19 +89,15 @@ class PandaEnv(MujocoEnv):
             impedance_ctrl (bool) : True if we want to control impedance of the end effector
 
         #########
-            **kwargs includes the following additional params that may be specified and will override values found in
-            the configuration file
+            **kwargs includes additional params that may be specified and will override values found in
+            the controller configuration file if the names match
         """
-
-        # Load additional arguments from kwargs as (temporary) attributes and override the prior config-file loaded ones
-        for key, value in kwargs.items():
-            setattr(self, key, value)
 
         self.initial_policy = initial_policy
         self.impedance_ctrl = impedance_ctrl
         if self.impedance_ctrl:
             # Load the appropriate controller
-            self._load_controller(controller, controller_config_file)
+            self._load_controller(controller, controller_config_file, kwargs)
 
         if 'residual_policy_multiplier' in kwargs:
             self.residual_policy_multiplier = kwargs['residual_policy_multiplier']
@@ -184,12 +180,14 @@ class PandaEnv(MujocoEnv):
         ## counting joint limits
         self.joint_limit_count = 0
 
-    def _load_controller(self, controller_type, controller_file):
+    def _load_controller(self, controller_type, controller_file, kwargs):
         """
         Loads controller to be used for dynamic trajectories
 
         Controller_type is a specified controller, and controller_params is a config file containing the appropriate
         parameters for that controller
+
+        Kwargs is kwargs passed from init call and represents individual params to override in controller config file
         """
 
         # Load the controller config file
@@ -201,6 +199,11 @@ class PandaEnv(MujocoEnv):
                 controller_file))
 
         controller_params = params[controller_type]
+
+        # Load additional arguments from kwargs and override the prior config-file loaded ones
+        for key, value in kwargs.items():
+            if key in controller_params:
+                controller_params[key] = value
 
         if controller_type == ControllerType.POS:
             self.controller = PositionController(**controller_params)

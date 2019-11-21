@@ -117,13 +117,9 @@ class PandaRobotArmEnv(MujocoEnv):
             impedance_ctrl (bool) : True if we want to control impedance of the end effector
 
         #########
-            **kwargs includes the following additional params that may be specified and will override values found in
-            the configuration file
+            **kwargs includes additional params that may be specified and will override values found in
+            the controller configuration file if the names match
         """
-
-        # Load additional arguments from kwargs as (temporary) attributes and override the prior config-file loaded ones
-        for key, value in kwargs.items():
-            setattr(self, key, value)
 
         self.reward_range = (float('-inf'), float('inf'))  # TODO
         from argparse import Namespace
@@ -267,12 +263,14 @@ class PandaRobotArmEnv(MujocoEnv):
 
     ########################## DATA LOGGING #################
 
-    def _load_controller(self, controller_type, controller_file):
+    def _load_controller(self, controller_type, controller_file, kwargs):
         """
         Loads controller to be used for dynamic trajectories
 
         Controller_type is a specified controller, and controller_params is a config file containing the appropriate
         parameters for that controller
+
+        Kwargs is kwargs passed from init call and represents individual params to override in controller config file
         """
 
         # Load the controller config file
@@ -280,9 +278,15 @@ class PandaRobotArmEnv(MujocoEnv):
             with open(controller_file) as f:
                 params = hjson.load(f)
         except FileNotFoundError:
-            print("Controller config file '{}' not found. Please check filepath and try again.".format(controller_file))
+            print("Controller config file '{}' not found. Please check filepath and try again.".format(
+                controller_file))
 
         controller_params = params[controller_type]
+
+        # Load additional arguments from kwargs and override the prior config-file loaded ones
+        for key, value in kwargs.items():
+            if key in controller_params:
+                controller_params[key] = value
 
         if controller_type == ControllerType.POS:
             self.controller = PositionController(**controller_params)
