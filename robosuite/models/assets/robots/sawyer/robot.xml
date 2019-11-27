@@ -11,12 +11,12 @@
     <position ctrllimited="true" ctrlrange="-2.9761 2.9761" joint="right_j5" kp="5" name="pos_right_j5" forcelimited="true" forcerange="-8 8"/>
     <position ctrllimited="true" ctrlrange="-4.7124 4.7124" joint="right_j6" kp="2" name="pos_right_j6" forcelimited="true" forcerange="-8 8"/> -->
     <velocity ctrllimited="true" ctrlrange="-1.74 1.74" joint="right_j0" kv="8.0" name="vel_right_j0"/>
-        <velocity ctrllimited="true" ctrlrange="-1.328 1.328" joint="right_j1" kv="7.0" name="vel_right_j1"/>
-        <velocity ctrllimited="true" ctrlrange="-1.957 1.957" joint="right_j2" kv="6.0" name="vel_right_j2"/>
-        <velocity ctrllimited="true" ctrlrange="-1.957 1.957" joint="right_j3" kv="4.0" name="vel_right_j3"/>
-        <velocity ctrllimited="true" ctrlrange="-3.485 3.485" joint="right_j4" kv="2.0" name="vel_right_j4"/>
-        <velocity ctrllimited="true" ctrlrange="-3.485 3.485" joint="right_j5" kv="0.5" name="vel_right_j5"/>
-        <velocity ctrllimited="true" ctrlrange="-4.545 4.545" joint="right_j6" kv="0.1" name="vel_right_j6"/>
+    <velocity ctrllimited="true" ctrlrange="-1.328 1.328" joint="right_j1" kv="7.0" name="vel_right_j1"/>
+    <velocity ctrllimited="true" ctrlrange="-1.957 1.957" joint="right_j2" kv="6.0" name="vel_right_j2"/>
+    <velocity ctrllimited="true" ctrlrange="-1.957 1.957" joint="right_j3" kv="4.0" name="vel_right_j3"/>
+    <velocity ctrllimited="true" ctrlrange="-3.485 3.485" joint="right_j4" kv="2.0" name="vel_right_j4"/>
+    <velocity ctrllimited="true" ctrlrange="-3.485 3.485" joint="right_j5" kv="0.5" name="vel_right_j5"/>
+    <velocity ctrllimited="true" ctrlrange="-4.545 4.545" joint="right_j6" kv="0.1" name="vel_right_j6"/>
   </actuator>
   <asset>
     <mesh file="meshes/pedestal.stl" name="pedestal"/>
@@ -61,7 +61,7 @@
           <geom pos="0.08 0 0.23" rgba="0.5 0.1 0.1 1" size="0.07"/>
           <body name="head" pos="0 0 0.2965">
             <inertial diaginertia="0.0118334 0.00827089 0.00496574" mass="1.5795" pos="0.0053207 -2.6549e-05 0.1021" quat="0.999993 7.08405e-05 -0.00359857 -0.000626247"/>
-            <joint axis="0 0 1" limited="true" name="head_pan" pos="0 0 0" range="-5.0952 0.9064"/>
+            <!--<joint axis="0 0 1" limited="true" name="head_pan" pos="0 0 0" range="-5.0952 0.9064"/>-->
             <geom conaffinity="0" contype="0" group="1" mesh="head" rgba="0.5 0.1 0.1 1" type="mesh"/>
             <geom pos="0 0 0.08" rgba="0.5 0.1 0.1 1" size="0.018"/>
             <body name="screen" pos="0.03 0 0.105" quat="0.5 0.5 0.5 0.5">

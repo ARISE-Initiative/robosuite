@@ -339,7 +339,6 @@ class SawyerEnv(MujocoEnv):
         """
         Returns eef quaternion in base frame of robot.
         """
-        print("right_hand_orn: {}".format(self._right_hand_orn))
         return T.mat2quat(self._right_hand_orn)
 
     @property
