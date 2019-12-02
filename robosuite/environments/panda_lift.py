@@ -149,7 +149,7 @@ class PandaLift(PandaEnv):
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
 
-        # The panda robot has a pedestal, we want to align it with the table # TODO: Check heights
+        # The panda robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
         # initialize objects of interest
@@ -194,9 +194,8 @@ class PandaLift(PandaEnv):
         # reset positions of objects
         self.model.place_objects()
 
-        # reset joint positions # TODO: Better to reference init_qpos (via super()) than hardcoded value? Or is this task-specific?
+        # reset joint positions
         init_pos = self.mujoco_robot.init_qpos
-        #init_pos = np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, np.pi / 4])
         init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 

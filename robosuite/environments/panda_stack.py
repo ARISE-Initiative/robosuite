@@ -219,8 +219,8 @@ class PandaStack(PandaEnv):
         # reset positions of objects
         self.model.place_objects()
 
-        # reset joint positions # TODO: Better to reference init_qpos (via super()) than hardcoded value? Or is this task-specific?
-        init_pos = np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, -np.pi / 4])
+        # reset joint positions
+        init_pos = self.mujoco_robot.init_qpos
         init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 

@@ -19,14 +19,10 @@ class PandaGripperBase(Gripper):
 
     @property
     def init_qpos(self):
-        # TODO - do these need to be modified?
-
-        #return []
         return np.array([0.020833, -0.020833])
 
     @property
     def joints(self):
-        #return []
         return ["finger_joint1", "finger_joint2"]
 
     @property
@@ -47,11 +43,6 @@ class PandaGripperBase(Gripper):
             "finger2_visualb",
             "finger2_visualc"
         ]
-        #return [
-        #    "hand_collision",
-        #    "finger1_collision",
-        #    "finger2_collision",
-        #]
 
     @property
     def left_finger_geoms(self):
@@ -60,7 +51,6 @@ class PandaGripperBase(Gripper):
             "finger1_visualb",
             "finger1_visualc"
         ]
-        # return ["finger1_collision"]
 
     @property
     def right_finger_geoms(self):
@@ -69,7 +59,6 @@ class PandaGripperBase(Gripper):
             "finger2_visualb",
             "finger2_visualc"
         ]
-        # return ["finger2_collision"]
 
 
 class PandaGripper(PandaGripperBase):

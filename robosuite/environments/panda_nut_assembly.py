@@ -179,7 +179,7 @@ class PandaNutAssembly(PandaEnv):
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
 
-        # The panda robot has a pedestal, we want to align it with the table    # TODO: This is different than panda_lift?
+        # The panda robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([.5, -0.15, 0])
 
         # define mujoco objects
