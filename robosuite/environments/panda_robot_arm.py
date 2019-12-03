@@ -326,6 +326,7 @@ class PandaRobotArmEnv(MujocoEnv):
                 self._ref_joint_gripper_actuator_indexes
             ] = self.gripper.init_qpos
 
+        self.controller.reset()
         self.goal = np.zeros(3)
         self.goal_orientation = np.zeros(3)
         self.desired_force = np.zeros(3)
