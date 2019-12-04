@@ -139,7 +139,7 @@ class Controller():
             self.goal_kp = np.clip(self.impedance_kp[self.action_mask] + action[self.kp_index[0]:self.kp_index[1]],
                                    self.kp_min, self.kp_max)
             self.goal_damping = np.clip(
-                self.damping[self.action_mask] + action[self.damping_index[0]:self.damping_index[1]], self.damping_min,
+                self.impedance_damping[self.action_mask] + action[self.damping_index[0]:self.damping_index[1]], self.damping_min,
                 self.damping_max)
         else:
             # no clipped is needed here, since the action has already been scaled
@@ -165,7 +165,7 @@ class Controller():
         def update_impedance(index):
             if index < self.interpolation_steps - 1:
                 self.impedance_kp[self.action_mask] += delta_kp_per_step
-                self.damping[self.action_mask] += delta_damping_per_step
+                self.impedance_damping[self.action_mask] += delta_damping_per_step
 
         self.update_impedance = update_impedance
 
@@ -390,8 +390,8 @@ class JointImpedanceController(Controller):
 
         self.interpolate = True
         self.use_delta_impedance = False
-        self.impedance_kp = (np.array(kp_max) - np.array(kp_min)) * 0.5
-        self.damping = (np.array(damping_max) - np.array(damping_min)) * 0.5
+        self.impedance_kp = (np.array(kp_max) + np.array(kp_min)) * 0.5
+        self.impedance_damping = (np.array(damping_max) + np.array(damping_min)) * 0.5
         self.last_goal_joint = np.zeros(self.control_dim)
 
     def interpolate_joint(self, starting_joint, last_goal_joint, goal_joint, current_vel):
@@ -429,11 +429,11 @@ class JointImpedanceController(Controller):
 
             if self.impedance_flag:
                 if self.interpolation:
-                    self.interpolate_impedance(self.impedance_kp, self.damping, self.goal_kp, self.goal_damping)
+                    self.interpolate_impedance(self.impedance_kp, self.impedance_damping, self.goal_kp, self.goal_damping)
                 else:
                     # update impedances immediately
                     self.impedance_kp[self.action_mask] = self.goal_kp
-                    self.damping[self.action_mask] = self.goal_damping
+                    self.impedance_damping[self.action_mask] = self.goal_damping
 
         # if interpolation is specified, then interpolate. Otherwise, pass
         if self.interpolation:
@@ -455,11 +455,11 @@ class JointImpedanceController(Controller):
 
             if self.impedance_flag:
                 self.impedance_kp = action[self.kp_index[0]:self.kp_index[1]]
-                self.damping = action[self.damping_index[0]:self.damping_index[1]]
+                self.impedance_damping = action[self.damping_index[0]:self.damping_index[1]]
 
         position_joint_error = self.last_goal_joint - self.current_joint_position
 
-        self.impedance_kv = 2 * np.sqrt(self.impedance_kp) * self.damping
+        self.impedance_kv = 2 * np.sqrt(self.impedance_kp) * self.impedance_damping
 
         norm = np.linalg.norm(self.current_joint_velocity)
         if norm > 7.0:
@@ -562,7 +562,7 @@ class PositionOrientationController(Controller):
         )
 
         self.impedance_kp = np.array(initial_impedance).astype('float64')
-        self.damping = np.array(initial_damping).astype('float64')
+        self.impedance_damping = np.array(initial_damping).astype('float64')
 
         self.step = 0
         self.interpolate = True
@@ -638,11 +638,11 @@ class PositionOrientationController(Controller):
             if self.impedance_flag:
                 if self.interpolation:
                     # set goals for next round of interpolation
-                    self.interpolate_impedance(self.impedance_kp, self.damping, self.goal_kp, self.goal_damping)
+                    self.interpolate_impedance(self.impedance_kp, self.impedance_damping, self.goal_kp, self.goal_damping)
                 else:
                     # update impedances immediately
                     self.impedance_kp[self.action_mask] = self.goal_kp
-                    self.damping[self.action_mask] = self.goal_damping
+                    self.impedance_damping[self.action_mask] = self.goal_damping
 
         if self.interpolation:
             if self.interpolation == 'cubic':
@@ -669,7 +669,7 @@ class PositionOrientationController(Controller):
 
             if self.impedance_flag:
                 self.impedance_kp = action[self.kp_index[0]:self.kp_index[1]]
-                self.damping = action[self.damping_index[0]:self.damping_index[1]]
+                self.impedance_damping = action[self.damping_index[0]:self.damping_index[1]]
 
         position_error = self.last_goal_position - self.current_position
         #print("Position err: {}".format(position_error))
@@ -677,7 +677,7 @@ class PositionOrientationController(Controller):
                                                              current=self.current_orientation_mat)
 
         # always ensure critical damping TODO - technically this is called unneccessarily if the impedance_flag is not set
-        self.impedance_kv = 2 * np.sqrt(self.impedance_kp) * self.damping
+        self.impedance_kv = 2 * np.sqrt(self.impedance_kp) * self.impedance_damping
 
         return self.calculate_impedance_torques(position_error, orientation_error)
 
