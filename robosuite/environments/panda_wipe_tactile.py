@@ -117,7 +117,7 @@ class PandaWipeTactile(PandaRobotArmEnv):
 
             #########
             **kwargs includes additional params that may be specified and will override values found in
-            the configuration file
+            the configuration files
         """
 
         # Load the parameter configuration files
@@ -138,6 +138,10 @@ class PandaWipeTactile(PandaRobotArmEnv):
         try:
             with open(task_filepath) as f:
                 task = hjson.load(f)
+                # Load additional arguments from kwargs and override the prior config-file loaded ones
+                for key, value in kwargs.items():
+                    if key in task:
+                        task[key] = value
         except FileNotFoundError:
             print("Env Config file '{}' not found. Please check filepath and try again.".format(task_filepath))
 

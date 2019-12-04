@@ -59,6 +59,7 @@ if __name__ == "__main__":
         gripper_visualization=True,
         reward_shaping=True,
         control_freq=100,
+        interpolation=None
     )
 
     # enable controlling the end effector directly instead of using joint velocities
@@ -87,7 +88,7 @@ if __name__ == "__main__":
         env.render()
 
         # rotate the gripper so we can see it easily
-        env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
+        env.set_robot_joint_positions(env.mujoco_robot.init_qpos)
 
         device.start_control()
         while True:

@@ -91,6 +91,12 @@ class Controller():
         self.Jr = None
         self.J_full = None
 
+    def reset(self):
+        """
+        Resets the internal values of the controller
+        """
+        pass
+
     def transform_action(self, action):
         """
         Scale the action to go to the right min and max
@@ -266,6 +272,11 @@ class JointTorqueController(Controller):
         self.step = 0
         self.inertia_decoupling = inertia_decoupling
 
+    def reset(self):
+        super().reset()
+        self.step = 0
+        self.last_goal = np.zeros(self.control_dim)
+
     def action_to_torques(self, action, policy_step):
         action = self.transform_action(action)
 
@@ -325,6 +336,11 @@ class JointVelocityController(Controller):
 
         self.last_goal = np.zeros(self.control_dim)
         self.step = 0
+
+    def reset(self):
+        super().reset()
+        self.step = 0
+        self.last_goal = np.zeros(self.control_dim)
 
     def action_to_torques(self, action, policy_step):
         action = self.transform_action(action)
@@ -393,6 +409,13 @@ class JointImpedanceController(Controller):
         self.impedance_kp = (np.array(kp_max) + np.array(kp_min)) * 0.5
         self.impedance_damping = (np.array(damping_max) + np.array(damping_min)) * 0.5
         self.last_goal_joint = np.zeros(self.control_dim)
+        self.step = 0
+
+    def reset(self):
+        super().reset()
+        self.step = 0
+        self.last_goal_joint = np.zeros(self.control_dim)
+
 
     def interpolate_joint(self, starting_joint, last_goal_joint, goal_joint, current_vel):
         # We interpolate to reach the commanded desired position in self.ramp_ratio % of the time we have this goal
@@ -567,6 +590,12 @@ class PositionOrientationController(Controller):
         self.step = 0
         self.interpolate = True
 
+        self.last_goal_position = np.array((0, 0, 0))
+        self.last_goal_orientation = np.eye(3)
+
+    def reset(self):
+        super().reset()
+        self.step = 0
         self.last_goal_position = np.array((0, 0, 0))
         self.last_goal_orientation = np.eye(3)
 
@@ -898,6 +927,9 @@ class PositionController(PositionOrientationController):
             **kwargs)
 
         self.goal_orientation_set = False
+
+    def reset(self):
+        super().reset()
 
     def set_goal_orientation(self, action, orientation=None):
         if orientation is not None:
