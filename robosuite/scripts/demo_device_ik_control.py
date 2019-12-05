@@ -59,11 +59,13 @@ if __name__ == "__main__":
         gripper_visualization=True,
         reward_shaping=True,
         control_freq=100,
-        interpolation=None
+        interpolation=None,
     )
 
     # enable controlling the end effector directly instead of using joint velocities
     env = IKWrapper(env)
+    controller = env.controller
+    print("Controller: {}".format(controller))
 
     # initialize device
     if args.device == "keyboard":
@@ -88,7 +90,10 @@ if __name__ == "__main__":
         env.render()
 
         # rotate the gripper so we can see it easily
-        env.set_robot_joint_positions(env.mujoco_robot.init_qpos)
+        if env.mujoco_robot.name == 'sawyer':
+            env.set_robot_joint_positions(env.mujoco_robot.init_qpos + [0, 0, 0, 0, 0, 0, np.pi/2])
+        elif env.mujoco_robot.name == 'panda':
+            env.set_robot_joint_positions(env.mujoco_robot.init_qpos + [0, 0, 0, 0, 0, 0, np.pi])
 
         device.start_control()
         while True:
