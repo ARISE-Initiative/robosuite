@@ -17,5 +17,5 @@ setup(
     author="Yuke Zhu, Jiren Zhu, Ajay Mandlekar, Joan Creus-Costa, Anchit Gupta",
     url="https://github.com/StanfordVL/robosuite",
     author_email="yukez@cs.stanford.edu",
-    version="0.1.0",
+    version="0.2.0",
 )
