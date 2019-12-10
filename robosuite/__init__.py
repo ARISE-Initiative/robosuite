@@ -9,7 +9,7 @@ from robosuite.environments.sawyer_nut_assembly import SawyerNutAssembly
 from robosuite.environments.baxter_lift import BaxterLift
 from robosuite.environments.baxter_peg_in_hole import BaxterPegInHole
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __logo__ = """
       ;     /        ,--.
      ["]   ["]  ,<  |__**|
