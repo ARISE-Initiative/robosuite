@@ -6,13 +6,13 @@ from robosuite.utils.mjcf_utils import xml_path_completion
 from robosuite.models.grippers.gripper import Gripper
 
 
-class PandaGripperBase(Gripper):
+class PandaVICESGripperBase(Gripper):
     """
     Gripper for Franka's Panda (has two fingers).
     """
 
     def __init__(self):
-        super().__init__(xml_path_completion("grippers/panda_gripper.xml"))
+        super().__init__(xml_path_completion("grippers/panda_vices_gripper.xml"))
 
     def format_action(self, action):
         return action
@@ -36,24 +36,32 @@ class PandaGripperBase(Gripper):
     def contact_geoms(self):
         return [
             "hand_collision",
-            "finger1_collision",
-            "finger2_collision"
+            "finger1_collisiona",
+            "finger1_collisionb",
+            "finger1_collisionc",
+            "finger2_collisiona",
+            "finger2_collisionb",
+            "finger2_collisionc"
         ]
 
     @property
     def left_finger_geoms(self):
         return [
-            "finger1_visual"
+            "finger1_visuala",
+            "finger1_visualb",
+            "finger1_visualc"
         ]
 
     @property
     def right_finger_geoms(self):
         return [
-            "finger2_visual"
+            "finger2_visuala",
+            "finger2_visualb",
+            "finger2_visualc"
         ]
 
 
-class PandaGripper(PandaGripperBase):
+class PandaVICESGripper(PandaVICESGripperBase):
     """
     Modifies PandaGripperBase to only take one action.
     """
