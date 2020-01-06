@@ -47,7 +47,7 @@ from robosuite.wrappers import IKWrapper
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="SawyerPickPlaceCan")
+    parser.add_argument("--environment", type=str, default="PandaLift")
     parser.add_argument("--device", type=str, default="keyboard")
     args = parser.parse_args()
 
@@ -57,6 +57,8 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         gripper_visualization=True,
+        render_visual_mesh=True,
+        render_collision_mesh=False,
         reward_shaping=True,
         control_freq=100,
     )
@@ -87,7 +89,8 @@ if __name__ == "__main__":
         env.render()
 
         # rotate the gripper so we can see it easily
-        env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
+        #env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
+        env.set_robot_joint_positions([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, -np.pi/4])
 
         device.start_control()
         while True:
@@ -112,5 +115,6 @@ if __name__ == "__main__":
             grasp = grasp - 1.
 
             action = np.concatenate([dpos, dquat, [grasp]])
+            print("action: {}".format(action))
             obs, reward, done, info = env.step(action)
             env.render()
