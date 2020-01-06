@@ -44,7 +44,7 @@
                 <!-- <geom type="mesh" mesh="finger"  solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom type="mesh" mesh="fingerc" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom type="mesh" mesh="fingerb" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
-                <geom type="mesh" mesh="finger" name="finger1_collision"/>
+                <geom type="mesh" conaffinity="1" contype="0" solref="0.01 0.5" friction="1 0.05 0.001" condim="4" mesh="finger" name="finger1_collision"/>
             </body>
             <body name="rightfinger" pos="0 0 0.0524" quat="0.707107 0 0 0.70">
                 <inertial pos="0 0 0.05" mass="0.1" diaginertia="0.01 0.01 0.005" />
@@ -54,7 +54,7 @@
                 <!-- <geom quat="0 0 0 1" type="mesh" mesh="finger"  solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom quat="0 0 0 1" type="mesh" mesh="fingerb" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom quat="0 0 0 1" type="mesh" mesh="fingerc" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
-                <geom quat="0 0 0 1" type="mesh" mesh="finger" name="finger2_collision"/>
+                <geom quat="0 0 0 1" type="mesh" conaffinity="1" contype="0" solref="0.01 0.5" friction="1 0.05 0.0001" condim="4" mesh="finger" name="finger2_collision"/>
             </body>
         </body>
     </worldbody>
