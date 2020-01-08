@@ -47,7 +47,7 @@ from robosuite.wrappers import IKWrapper
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="SawyerPickPlace")
+    parser.add_argument("--environment", type=str, default="SawyerPickPlaceCan")
     parser.add_argument("--device", type=str, default="keyboard")
     args = parser.parse_args()
 
