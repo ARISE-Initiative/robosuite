@@ -47,7 +47,7 @@ from robosuite.wrappers import IKWrapper
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="PandaLift")
+    parser.add_argument("--environment", type=str, default="SawyerPickPlaceCan")
     parser.add_argument("--device", type=str, default="keyboard")
     args = parser.parse_args()
 
@@ -57,8 +57,6 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         gripper_visualization=True,
-        render_visual_mesh=True,
-        render_collision_mesh=False,
         reward_shaping=True,
         control_freq=100,
     )
@@ -112,7 +110,11 @@ if __name__ == "__main__":
             dquat = T.mat2quat(drotation)
 
             # map 0 to -1 (open) and 1 to 0 (closed halfway)
-            grasp = grasp - 1.
+            #grasp = grasp - 1.
+            if grasp:
+                grasp = -1
+            else:
+                grasp = 1
 
             action = np.concatenate([dpos, dquat, [grasp]])
             print("action: {}".format(action))
