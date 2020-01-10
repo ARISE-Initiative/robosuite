@@ -37,7 +37,9 @@ class PandaGripperBase(Gripper):
         return [
             "hand_collision",
             "finger1_collision",
-            "finger2_collision"
+            "finger2_collision",
+            "finger1_tip_collision",
+            "finger2_tip_collision"
         ]
 
     @property
