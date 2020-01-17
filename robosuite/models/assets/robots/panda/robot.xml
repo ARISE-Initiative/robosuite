@@ -8,13 +8,13 @@
         <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint5" name="torq_right_j4"/>
         <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint6" name="torq_right_j5"/>
         <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint7" name="torq_right_j6"/> -->
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint1" kv="8.0" name="vel_right_j1"/>
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint2" kv="7.0" name="vel_right_j2"/>
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint3" kv="6.0" name="vel_right_j3"/>
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint4" kv="4.0" name="vel_right_j4"/>
-        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint5" kv="2.0" name="vel_right_j5"/>
-        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint6" kv="0.5" name="vel_right_j6"/>
-        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint7" kv="0.1" name="vel_right_j7"/>
+        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint1" kv="40.0" name="vel_right_j1"/> <!-- 8.0 kv-->
+        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint2" kv="40.0" name="vel_right_j2"/> <!-- 7.0 kv-->
+        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint3" kv="40.0" name="vel_right_j3"/> <!-- 6.0 kv-->
+        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint4" kv="40.0" name="vel_right_j4"/> <!-- 4.0 kv-->
+        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint5" kv="40.0" name="vel_right_j5"/> <!-- 2.0 kv-->
+        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint6" kv="40.0" name="vel_right_j6"/> <!-- 0.5 kv-->
+        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint7" kv="40.0" name="vel_right_j7"/> <!-- 0.1 kv-->
     </actuator>
     <default>
        <joint damping=".1"/>
