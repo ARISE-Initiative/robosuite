@@ -31,7 +31,7 @@
             <geom pos="0 0 0." quat="0.707107 0 0 0.707" type="mesh" mesh="hand"  group="0" name="hand_collision"/>
 
             <!-- This site was added for visualization. -->
-            <site name="grip_site" pos="0 0 0.1399" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <site name="grip_site" pos="0 0 0.0970" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <!-- This site was added for visualization. -->
             <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
 
