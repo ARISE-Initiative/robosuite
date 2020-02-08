@@ -44,7 +44,7 @@
                 <!-- <geom type="mesh" mesh="finger"  solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom type="mesh" mesh="fingerc" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom type="mesh" mesh="fingerb" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
-                <geom type="mesh" conaffinity="0" contype="0" solref="0.02 1" friction="1 0.005 0.0001" condim="4" mesh="finger" name="finger1_collision"/>
+                <geom type="mesh" conaffinity="1" contype="0" solref="0.02 1" friction="1 0.005 0.0001" condim="4" mesh="finger" name="finger1_collision"/>
                 <body name="finger_joint1_tip" pos="0 0.0085 0.056">
                     <inertial pos="0 0 0" quat="0 0 0 1" mass="0.01" diaginertia="0.01 0.01 0.01" />
                     <geom size="0.008 0.004 0.008" pos="0 -0.005 -0.015" quat="0 0 0 1" type="box" solref="0.01 0.5" friction = "2 0.05 0.0001" conaffinity="1" contype="1" name="finger1_tip_collision"/>
@@ -58,7 +58,7 @@
                 <!-- <geom quat="0 0 0 1" type="mesh" mesh="finger"  solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom quat="0 0 0 1" type="mesh" mesh="fingerb" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
                 <!-- <geom quat="0 0 0 1" type="mesh" mesh="fingerc" solimp="0.9 0.95 0.005" solmix="10000" solref="0.05 1"/> -->
-                <geom quat="0 0 0 1" type="mesh" conaffinity="0" contype="0" solref="0.02 1" friction="1 0.005 0.0001" condim="4" mesh="finger" name="finger2_collision"/>
+                <geom quat="0 0 0 1" type="mesh" conaffinity="1" contype="0" solref="0.02 1" friction="1 0.005 0.0001" condim="4" mesh="finger" name="finger2_collision"/>
                 <body name="finger_joint2_tip" pos="0 -0.0085 0.056">
                     <inertial pos="0 0 0" quat="0 0 0 1" mass="0.01" diaginertia="0.01 0.01 0.01" />
                     <geom size="0.008 0.004 0.008" pos="0 0.005 -0.015" quat="0 0 0 1" type="box" solref="0.01 0.5" friction = "2 0.05 0.0001" conaffinity="1" contype="1" name="finger2_tip_collision"/>
