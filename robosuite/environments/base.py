@@ -3,6 +3,7 @@ from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
+import numpy as np
 
 REGISTERED_ENVS = {}
 
@@ -112,6 +113,18 @@ class MujocoEnv(metaclass=EnvMeta):
         self.camera_depth = camera_depth
 
         self._reset_internal()
+        self.camera_matrix = self._set_camera_matrix() # must be after reset_internal!
+
+    def _set_camera_matrix(self):
+        """
+        Obtain camera internal matrix from other parameters. A 3X3 matrix.
+        """
+        cam_id = self.sim.model.camera_name2id(self.camera_name)
+        height, width = self.camera_height, self.camera_width
+        fovy = self.sim.model.cam_fovy[cam_id]
+        f = 0.5 * height / np.tan(fovy * np.pi / 360)
+        K = np.array([[f, 0, width / 2], [0, f, height / 2], [0, 0, 1]])
+        return K
 
     def initialize_time(self, control_freq):
         """
