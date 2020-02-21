@@ -4,6 +4,7 @@ from mujoco_py import load_model_from_xml
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
 import numpy as np
+import robosuite.utils.transform_utils as T
 
 REGISTERED_ENVS = {}
 
@@ -113,11 +114,10 @@ class MujocoEnv(metaclass=EnvMeta):
         self.camera_depth = camera_depth
 
         self._reset_internal()
-        self.camera_matrix = self._set_camera_matrix() # must be after reset_internal!
 
-    def _set_camera_matrix(self):
+    def _get_camera_intrinsic_matrix(self):
         """
-        Obtain camera internal matrix from other parameters. A 3X3 matrix.
+        Obtains camera internal matrix from other parameters. A 3X3 matrix.
         """
         cam_id = self.sim.model.camera_name2id(self.camera_name)
         height, width = self.camera_height, self.camera_width
@@ -202,6 +202,23 @@ class MujocoEnv(metaclass=EnvMeta):
     def _get_observation(self):
         """Returns an OrderedDict containing observations [(name_string, np.array), ...]."""
         return OrderedDict()
+
+    def _get_camera_extrinsic_quat(self):
+        """Returns a transformation matrix of 3X4 [R, p] represented in world frame"""
+        cam_id = self.sim.model.camera_name2id(self.camera_name)
+        camera_pos = self.sim.model.cam_pos[cam_id]
+        camera_quat = self.sim.model.cam_quat[cam_id]
+        return camera_pos, camera_quat
+
+    def get_camera_transform_matrix(self):
+        pos, quat = self._get_camera_extrinsic_quat()
+        K = self._get_camera_intrinsic_matrix()
+        quat = T.convert_quat(quat, to="xyzw") # mujoco quaternion convention is diff from usual!
+        transform_camera2world = T.pose2mat((pos, quat)) # 4X4, camera in world
+        transform_world2camera = T.pose_inv(transform_camera2world)
+        transform_matrix = transform_world2camera[:3, :]
+        permutation = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]]) # mujoco camera frame is different from conventional
+        return K @ permutation @ transform_matrix
 
     def step(self, action):
         """Takes a step in simulation with control command @action."""
