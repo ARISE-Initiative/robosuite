@@ -211,14 +211,34 @@ class MujocoEnv(metaclass=EnvMeta):
         return camera_pos, camera_quat
 
     def get_camera_transform_matrix(self):
+        """
+        returns matrix 3X4 K
+        K @ world = camera
+        """
         pos, quat = self._get_camera_extrinsic_quat()
         K = self._get_camera_intrinsic_matrix()
         quat = T.convert_quat(quat, to="xyzw") # mujoco quaternion convention is diff from usual!
         transform_camera2world = T.pose2mat((pos, quat)) # 4X4, camera in world
         transform_world2camera = T.pose_inv(transform_camera2world)
         transform_matrix = transform_world2camera[:3, :]
-        permutation = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]]) # mujoco camera frame is different from conventional
+        # permutation matrix: mujoco camera frame is different from conventional, with convention described here
+        # https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+        permutation = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
         return K @ permutation @ transform_matrix
+
+    def from_pixel_to_world(self, u, v, w):
+        """
+        @input u, v: pixel
+        @input w: a scale, for homogeneous transformation
+        @returns X: numpy array of shape (3,); x, y, z in world coordinates
+        """
+        assert 0 <= u < self.camera_width
+        assert 0 <= v < self.camera_height
+        P = self.get_camera_transform_matrix()
+        P = np.vstack((P, [0, 0, 0, 1])) # make 4X4
+        P_inv = np.linalg.inv(P) # inverse
+        X = P_inv @ np.array([u * w, v * w, w, 1])
+        return X[:3]
 
     def step(self, action):
         """Takes a step in simulation with control command @action."""
