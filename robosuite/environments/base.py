@@ -234,11 +234,16 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         assert 0 <= u < self.camera_width
         assert 0 <= v < self.camera_height
-        P = self.get_camera_transform_matrix()
-        P = np.vstack((P, [0, 0, 0, 1])) # make 4X4
-        P_inv = np.linalg.inv(P) # inverse
+        P_inv = self.get_camera_inv_transform()
         X = P_inv @ np.array([u * w, v * w, w, 1])
         return X[:3]
+
+    def get_camera_inv_transform(self):
+        """Exposes the 4X4 homogeneous transform matrix from camera frame to world frame."""
+        P = self.get_camera_transform_matrix()
+        P = np.vstack((P, [0, 0, 0, 1]))  # make 4X4
+        P_inv = np.linalg.inv(P)  # inverse
+        return P_inv
 
     def step(self, action):
         """Takes a step in simulation with control command @action."""
