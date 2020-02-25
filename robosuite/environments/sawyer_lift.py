@@ -404,3 +404,154 @@ class SawyerLift(SawyerEnv):
             rgba[3] = 0.5
 
             self.sim.model.site_rgba[self.eef_site_id] = rgba
+
+
+### Some new environments... ###
+
+class SawyerLiftRotation(SawyerLift):
+    """
+    Cube is initialized with uniform z-rotations instead of fixed z-rotation
+    of 1 radian.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.03, 0.03],
+            y_range=[-0.03, 0.03],
+            ensure_object_boundary_in_range=False,
+            z_rotation=None
+        )
+        super(SawyerLiftRotation, self).__init__(**kwargs)
+
+
+class SawyerLiftWidePositionInit(SawyerLift):
+    """
+    Cube is initialized with a wider set of positions, but with
+    a fixed z-rotation of 1 radian.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.1, 0.1],
+            y_range=[-0.1, 0.1],
+            ensure_object_boundary_in_range=False,
+            z_rotation=True
+        )
+        super(SawyerLiftWidePositionInit, self).__init__(**kwargs)
+
+class SawyerLiftWideInit(SawyerLift):
+    """
+    Cube is initialized with a wider set of positions with
+    uniformly random z-rotations.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.1, 0.1],
+            y_range=[-0.1, 0.1],
+            ensure_object_boundary_in_range=False,
+            z_rotation=None
+        )
+        super(SawyerLiftWideInit, self).__init__(**kwargs)
+
+class RoundRobinSampler(UniformRandomSampler):
+    """Places all objects according to grid and round robin between grid points."""
+
+    def __init__(
+        self,
+        x_range=None,
+        y_range=None,
+        ensure_object_boundary_in_range=True,
+        z_rotation="random",
+    ):
+        assert(len(x_range) == len(y_range))
+        self._counter = 0
+        self.num_grid = len(x_range)
+
+        super(RoundRobinSampler, self).__init__(
+            x_range=x_range, 
+            y_range=y_range, 
+            ensure_object_boundary_in_range=ensure_object_boundary_in_range, 
+            z_rotation=z_rotation,
+        )
+
+    def increment_counter(self):
+        """
+        Useful for moving on to next placement in the grid.
+        """
+        self._counter = (self._counter + 1) % self.num_grid
+
+    def decrement_counter(self):
+        """
+        Useful to reverting to the last placement in the grid.
+        """
+        self._counter -= 1
+        if self._counter < 0:
+            self._counter = self.num_grid - 1
+
+    def sample_x(self, object_horizontal_radius):
+        minimum = self.x_range[self._counter]
+        maximum = self.x_range[self._counter]
+        if self.ensure_object_boundary_in_range:
+            minimum += object_horizontal_radius
+            maximum -= object_horizontal_radius
+        return np.random.uniform(high=maximum, low=minimum)
+
+    def sample_y(self, object_horizontal_radius):
+        minimum = self.y_range[self._counter]
+        maximum = self.y_range[self._counter]
+        if self.ensure_object_boundary_in_range:
+            minimum += object_horizontal_radius
+            maximum -= object_horizontal_radius
+        return np.random.uniform(high=maximum, low=minimum)
+
+
+class SawyerLiftSmallGrid(SawyerLift):
+    """
+    Cube is initialized with a wider set of positions with
+    uniformly random z-rotations.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+
+        # set up uniform 3x3 grid
+        GRID_SIZE = 0.05
+        x_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        y_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        grid = np.meshgrid(x_grid, y_grid)
+        self.x_grid = grid[0].ravel()
+        self.y_grid = grid[1].ravel()
+
+        # remember when we have interaction
+        self._has_interaction = False
+
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = RoundRobinSampler(
+            x_range=self.x_grid,
+            y_range=self.y_grid,
+            ensure_object_boundary_in_range=False,
+            z_rotation=0.
+        )
+        super(SawyerLiftSmallGrid, self).__init__(**kwargs)
+
+    def reset(self):
+        self._has_interaction = False
+        return super(SawyerLiftSmallGrid, self).reset()
+
+    def step(self, action):
+        if not self._has_interaction:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super(SawyerLiftSmallGrid, self).step(action)
