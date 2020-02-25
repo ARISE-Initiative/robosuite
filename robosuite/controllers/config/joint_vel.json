@@ -1,0 +1,10 @@
+{
+  "type" : "JOINT_VEL",
+  "input_max": 1,
+  "input_min": -1,
+  "output_max": 0.05,
+  "output_min": -0.05,
+  "kv": 4.0,
+  "velocity_limits": [-1,1],
+  "interpolation": null
+}

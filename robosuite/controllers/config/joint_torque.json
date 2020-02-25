@@ -1,0 +1,7 @@
+{
+  "type": "JOINT_TORQUE",
+  "control_range": [0.5, 0.5, 0.5, 0.2, 0.2, 0.1, 0.1],
+  "impedance_flag": false,
+  "use_delta_impedance": false,
+  "interpolation": "linear"
+}

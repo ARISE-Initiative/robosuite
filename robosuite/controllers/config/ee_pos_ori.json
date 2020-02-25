@@ -1,0 +1,13 @@
+{
+  "type": "EE_POS_ORI",
+  "input_max": 1,
+  "input_min": -1,
+  "output_max": 0.05,
+  "output_min": -0.05,
+  "kp": 50,
+  "damping": 1,
+  "position_limits": [[-5,-5,-5],[5,5,5]],
+  "orientation_limits": [[-5,-5,-5],[5,5,5]],
+  "uncouple_pos_ori": true,
+  "interpolation": null
+}

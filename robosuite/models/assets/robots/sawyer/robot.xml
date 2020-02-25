@@ -1,24 +1,16 @@
 <mujoco model="sawyer">
-  <!-- <compiler angle="radian"/>
-  <size nconmax="100" njmax="500"/> -->
-  <actuator>
-    <!-- Mujoco does not have velocity limit in actuator :( -->
-<!--     <position ctrllimited="true" ctrlrange="-3.0503 3.0503" joint="right_j0" kp="50" name="pos_right_j0"/>
-    <position ctrllimited="true" ctrlrange="-3.8095 2.2736" joint="right_j1" kp="30" name="pos_right_j1" forcelimited="true" forcerange="-8000 8000"/>
-    <position ctrllimited="true" ctrlrange="-3.0426 3.0426" joint="right_j2" kp="20" name="pos_right_j2" forcelimited="true" forcerange="-500 500"/>
-    <position ctrllimited="true" ctrlrange="-3.0439 3.0439" joint="right_j3" kp="15" name="pos_right_j3" forcelimited="true" forcerange="-500 500"/>
-    <position ctrllimited="true" ctrlrange="-2.9761 2.9761" joint="right_j4" kp="10" name="pos_right_j4" forcelimited="true" forcerange="-8 8"/>
-    <position ctrllimited="true" ctrlrange="-2.9761 2.9761" joint="right_j5" kp="5" name="pos_right_j5" forcelimited="true" forcerange="-8 8"/>
-    <position ctrllimited="true" ctrlrange="-4.7124 4.7124" joint="right_j6" kp="2" name="pos_right_j6" forcelimited="true" forcerange="-8 8"/> -->
-    <velocity ctrllimited="true" ctrlrange="-1.74 1.74" joint="right_j0" kv="8.0" name="vel_right_j0"/>
-    <velocity ctrllimited="true" ctrlrange="-1.328 1.328" joint="right_j1" kv="7.0" name="vel_right_j1"/>
-    <velocity ctrllimited="true" ctrlrange="-1.957 1.957" joint="right_j2" kv="6.0" name="vel_right_j2"/>
-    <velocity ctrllimited="true" ctrlrange="-1.957 1.957" joint="right_j3" kv="4.0" name="vel_right_j3"/>
-    <velocity ctrllimited="true" ctrlrange="-3.485 3.485" joint="right_j4" kv="2.0" name="vel_right_j4"/>
-    <velocity ctrllimited="true" ctrlrange="-3.485 3.485" joint="right_j5" kv="0.5" name="vel_right_j5"/>
-    <velocity ctrllimited="true" ctrlrange="-4.545 4.545" joint="right_j6" kv="0.1" name="vel_right_j6"/>
-  </actuator>
-  <asset>
+    <!-- <compiler angle="radian"/>
+    <size nconmax="100" njmax="500"/> -->
+    <actuator>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="right_j0" name="torq_right_j0"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="right_j1" name="torq_right_j1"/>
+        <motor ctrllimited="true" ctrlrange="-40.0 40.0" joint="right_j2" name="torq_right_j2"/>
+        <motor ctrllimited="true" ctrlrange="-40.0 40.0" joint="right_j3" name="torq_right_j3"/>
+        <motor ctrllimited="true" ctrlrange="-9.0 9.0" joint="right_j4" name="torq_right_j4"/>
+        <motor ctrllimited="true" ctrlrange="-9.0 9.0" joint="right_j5" name="torq_right_j5"/>
+        <motor ctrllimited="true" ctrlrange="-9.0 9.0" joint="right_j6" name="torq_right_j6"/>
+    </actuator>
+    <asset>
     <mesh file="meshes/pedestal.stl" name="pedestal"/>
     <mesh file="meshes/base.stl" name="base"/>
     <mesh file="meshes/l0.stl" name="l0"/>
@@ -61,6 +53,7 @@
           <geom pos="0.08 0 0.23" rgba="0.5 0.1 0.1 1" size="0.07"/>
           <body name="head" pos="0 0 0.2965">
             <inertial diaginertia="0.0118334 0.00827089 0.00496574" mass="1.5795" pos="0.0053207 -2.6549e-05 0.1021" quat="0.999993 7.08405e-05 -0.00359857 -0.000626247"/>
+            <!--Don't want to control the head joint so remove it from the kinematic tree-->
             <!--<joint axis="0 0 1" limited="true" name="head_pan" pos="0 0 0" range="-5.0952 0.9064"/>-->
             <geom conaffinity="0" contype="0" group="1" mesh="head" rgba="0.5 0.1 0.1 1" type="mesh"/>
             <geom pos="0 0 0.08" rgba="0.5 0.1 0.1 1" size="0.018"/>

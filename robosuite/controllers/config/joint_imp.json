@@ -1,0 +1,12 @@
+{
+  "type" : "JOINT_IMP",
+  "control_freq" : 20,
+  "control_range": [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
+  "kp_max": [100, 100, 100, 100, 50, 30, 10],
+  "kp_min": [10, 10, 10, 10, 10, 1, 1],
+  "damping_max": [2, 2, 2, 2, 2, 2, 2],
+  "damping_min": [0, 0, 0, 0, 0, 0, 0],
+  "impedance_flag": false,
+  "use_delta_impedance": false,
+  "interpolation": "linear"
+}

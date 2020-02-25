@@ -275,6 +275,30 @@ def mat2quat(rmat, precise=False):
     return q[[1, 2, 3, 0]]
 
 
+def euler2mat(euler: object) -> object: #assume xyz
+
+    euler = np.asarray(euler, dtype=np.float64)
+    assert euler.shape[-1] == 3, "Invalid shaped euler {}".format(euler)
+
+    ai, aj, ak = -euler[..., 2], -euler[..., 1], -euler[..., 0]
+    si, sj, sk = np.sin(ai), np.sin(aj), np.sin(ak)
+    ci, cj, ck = np.cos(ai), np.cos(aj), np.cos(ak)
+    cc, cs = ci * ck, ci * sk
+    sc, ss = si * ck, si * sk
+
+    mat = np.empty(euler.shape[:-1] + (3, 3), dtype=np.float64)
+    mat[..., 2, 2] = cj * ck
+    mat[..., 2, 1] = sj * sc - cs
+    mat[..., 2, 0] = sj * cc + ss
+    mat[..., 1, 2] = cj * sk
+    mat[..., 1, 1] = sj * ss + cc
+    mat[..., 1, 0] = sj * cs - sc
+    mat[..., 0, 2] = -sj
+    mat[..., 0, 1] = cj * si
+    mat[..., 0, 0] = cj * ci
+    return mat
+
+
 def mat2euler(rmat, axes="sxyz"):
     """
     Converts given rotation matrix to euler angles in radian.
@@ -526,6 +550,45 @@ def rotation_matrix(angle, direction, point=None):
         point = np.array(point[:3], dtype=np.float32, copy=False)
         M[:3, 3] = point - np.dot(R, point)
     return M
+
+
+def clip_rotation(quat, limit):
+    """
+    Limits a rotation to a specified limit
+
+    Converts rotation to axis-angle, clips, then re-converts back into quaternion
+
+    :param quat: Rotation being clipped (x, y, z, w) -- numpy array
+    :param limit: Value to limit rotation by -- magnitude (scalar)
+    :return: Clipped rotation quaternion (x, y, z, w)
+    """
+    if quat[3] == 1:
+        # This is a zero degree rotation, immediately return
+        return quat
+    elif quat[3] == 0:
+        # This is a 180 degree rotation, immediately set values
+        x, y, z, a = quat[0], quat[1], quat[2], np.pi
+    else:
+        # This is all other cases
+        den = np.sqrt(1 - quat[3]*quat[3])
+        x = quat[0] / den
+        y = quat[1] / den
+        z = quat[2] / den
+        a = 2 * math.acos(quat[3])
+
+    # Clip rotation if necessary and return clipped quat
+    if abs(a) > limit:
+        a = limit * np.sign(a) / 2
+        sa = math.sin(a)
+        ca = math.cos(a)
+        quat = np.array([
+            x * sa,
+            y * sa,
+            z * sa,
+            ca
+        ])
+
+    return quat
 
 
 def make_pose(translation, rotation):

@@ -9,6 +9,8 @@ from robosuite.models.objects import BoxObject
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
+import json
+import os
 
 class SawyerLift(SawyerEnv):
     """
@@ -17,6 +19,7 @@ class SawyerLift(SawyerEnv):
 
     def __init__(
         self,
+        controller_config=None,
         gripper_type="TwoFingerGripper",
         table_full_size=(0.8, 0.8, 0.8),
         table_friction=(1., 5e-3, 1e-4),
@@ -40,6 +43,8 @@ class SawyerLift(SawyerEnv):
     ):
         """
         Args:
+            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+                Else, uses the default controller for this specific task
 
             gripper_type (str): type of gripper, used to instantiate
                 gripper models from gripper factory.
@@ -96,6 +101,19 @@ class SawyerLift(SawyerEnv):
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
         """
 
+        # Load the default controller (joint velocity) if none is specified
+        if not controller_config:
+            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/joint_vel.json')
+            try:
+                with open(controller_path) as f:
+                    controller_config = json.load(f)
+                    # Override the velocity kv parameters to be suited for sawyer
+                    controller_config["kv"] = [8.0, 7.0, 6.0, 4.0, 2.0, 0.5, 0.1]
+            except FileNotFoundError:
+                print("Error opening default controller filepath at: {}. "
+                      "Please check filepath and try again.".format(controller_path))
+
+
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
@@ -118,6 +136,7 @@ class SawyerLift(SawyerEnv):
             )
 
         super().__init__(
+            controller_config=controller_config,
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
@@ -189,14 +208,19 @@ class SawyerLift(SawyerEnv):
         """
         Resets simulation internal configurations.
         """
+        # reset joint positions (gets reset in sim during super() call)
+        # TODO: This manually overrides init_qpos found in robot_model, so maybe best to merge these two into one attribute
+        init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
+        init_pos += np.random.randn(init_pos.shape[0]) * 0.02
+        # Update controller config so that the init pos is initialized to this
+        self.controller_config["initial_joint"] = init_pos
+
         super()._reset_internal()
 
         # reset positions of objects
         self.model.place_objects()
 
         # reset joint positions
-        init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
-        init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 
     def reward(self, action=None):

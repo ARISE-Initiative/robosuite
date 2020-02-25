@@ -39,6 +39,8 @@ Example:
 import argparse
 import numpy as np
 import sys
+import os
+import json
 
 import robosuite
 import robosuite.utils.transform_utils as T
@@ -52,6 +54,16 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     args = parser.parse_args()
 
+    # Import controller config for EE IK
+    controller_config = None
+    controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/ee_ik.json')
+    try:
+        with open(controller_path) as f:
+            controller_config = json.load(f)
+    except FileNotFoundError:
+        print("Error opening default controller filepath at: {}. "
+              "Please check filepath and try again.".format(controller_path))
+
     env = robosuite.make(
         args.environment,
         has_renderer=True,
@@ -59,11 +71,11 @@ if __name__ == "__main__":
         use_camera_obs=False,
         gripper_visualization=True,
         reward_shaping=True,
-        control_freq=100
+        control_freq=100,
+        controller_config=controller_config
     )
 
-    # enable controlling the end effector directly instead of using joint velocities
-    env = IKWrapper(env)
+    np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
     # initialize device
     if args.device == "keyboard":
@@ -89,7 +101,9 @@ if __name__ == "__main__":
 
         # rotate the gripper so we can see it easily
         if env.mujoco_robot.name == 'sawyer':
-            env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
+            # TODO: Confirm that this is no longer necessary
+            pass
+            #env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
         elif env.mujoco_robot.name == 'panda':
             env.set_robot_joint_positions([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, -np.pi/4])
         else:
