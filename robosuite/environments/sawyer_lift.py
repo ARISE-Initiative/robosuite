@@ -517,8 +517,7 @@ class RoundRobinSampler(UniformRandomSampler):
 
 class SawyerLiftSmallGrid(SawyerLift):
     """
-    Cube is initialized with a wider set of positions with
-    uniformly random z-rotations.
+    Cube is initialized on a grid of points.
     """
     def __init__(
         self,
@@ -555,3 +554,57 @@ class SawyerLiftSmallGrid(SawyerLift):
             self.placement_initializer.increment_counter()
         self._has_interaction = True
         return super(SawyerLiftSmallGrid, self).step(action)
+
+class SawyerLiftSmallGridFull(SawyerLift):
+    """
+    Cube is initialized in a box.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+
+        # remember when we have interaction
+        self._has_interaction = False
+
+
+        GRID_SIZE = 0.05
+        assert("placement_initializer" not in kwargs)
+
+        self.reproducible = kwargs.get("reproducible", False)
+        if self.reproducible:
+
+            # probably don't need more than 1000 points to cover the grid finely enough
+            NUM_EVALS = 1000
+            SEED = 0
+
+            np.random.seed(SEED)
+            self.x_grid = np.random.uniform(low=-GRID_SIZE, high=GRID_SIZE, size=NUM_EVALS)
+            self.y_grid = np.random.uniform(low=-GRID_SIZE, high=GRID_SIZE, size=NUM_EVALS)
+            kwargs["placement_initializer"] = RoundRobinSampler(
+                x_range=self.x_grid,
+                y_range=self.y_grid,
+                ensure_object_boundary_in_range=False,
+                z_rotation=0.
+            )
+        else:
+            kwargs["placement_initializer"] = UniformRandomSampler(
+                x_range=[-GRID_SIZE, GRID_SIZE],
+                y_range=[-GRID_SIZE, GRID_SIZE],
+                ensure_object_boundary_in_range=False,
+                z_rotation=0.
+            )
+        super(SawyerLiftSmallGridFull, self).__init__(**kwargs)
+
+    def reset(self):
+        self._has_interaction = False
+        return super(SawyerLiftSmallGridFull, self).reset()
+
+    def step(self, action):
+        if not self._has_interaction and self.reproducible:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super(SawyerLiftSmallGridFull, self).step(action)
+
+
