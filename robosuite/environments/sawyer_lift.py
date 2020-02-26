@@ -607,4 +607,96 @@ class SawyerLiftSmallGridFull(SawyerLift):
         self._has_interaction = True
         return super(SawyerLiftSmallGridFull, self).step(action)
 
+class SawyerLiftLargeGrid(SawyerLift):
+    """
+    Cube is initialized on a grid of points.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+
+        # set up uniform 3x3 grid
+        GRID_SIZE = 0.1
+        x_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        y_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        grid = np.meshgrid(x_grid, y_grid)
+        self.x_grid = grid[0].ravel()
+        self.y_grid = grid[1].ravel()
+
+        # remember when we have interaction
+        self._has_interaction = False
+
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = RoundRobinSampler(
+            x_range=self.x_grid,
+            y_range=self.y_grid,
+            ensure_object_boundary_in_range=False,
+            z_rotation=0.
+        )
+        super(SawyerLiftLargeGrid, self).__init__(**kwargs)
+
+    def reset(self):
+        self._has_interaction = False
+        return super(SawyerLiftLargeGrid, self).reset()
+
+    def step(self, action):
+        if not self._has_interaction:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super(SawyerLiftLargeGrid, self).step(action)
+
+
+class SawyerLiftLargeGridFull(SawyerLift):
+    """
+    Cube is initialized in a box.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+
+        # remember when we have interaction
+        self._has_interaction = False
+
+
+        GRID_SIZE = 0.1
+        assert("placement_initializer" not in kwargs)
+
+        self.reproducible = kwargs.get("reproducible", False)
+        if self.reproducible:
+
+            # probably don't need more than 1000 points to cover the grid finely enough
+            NUM_EVALS = 1000
+            SEED = 0
+
+            np.random.seed(SEED)
+            self.x_grid = np.random.uniform(low=-GRID_SIZE, high=GRID_SIZE, size=NUM_EVALS)
+            self.y_grid = np.random.uniform(low=-GRID_SIZE, high=GRID_SIZE, size=NUM_EVALS)
+            kwargs["placement_initializer"] = RoundRobinSampler(
+                x_range=self.x_grid,
+                y_range=self.y_grid,
+                ensure_object_boundary_in_range=False,
+                z_rotation=None
+            )
+        else:
+            kwargs["placement_initializer"] = UniformRandomSampler(
+                x_range=[-GRID_SIZE, GRID_SIZE],
+                y_range=[-GRID_SIZE, GRID_SIZE],
+                ensure_object_boundary_in_range=False,
+                z_rotation=None
+            )
+        super(SawyerLiftLargeGridFull, self).__init__(**kwargs)
+
+    def reset(self):
+        self._has_interaction = False
+        return super(SawyerLiftLargeGridFull, self).reset()
+
+    def step(self, action):
+        if not self._has_interaction and self.reproducible:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super(SawyerLiftLargeGridFull, self).step(action)
 
