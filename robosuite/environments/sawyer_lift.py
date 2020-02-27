@@ -471,9 +471,11 @@ class RoundRobinSampler(UniformRandomSampler):
         x_range=None,
         y_range=None,
         ensure_object_boundary_in_range=True,
-        z_rotation="random",
+        z_rotation=None,
     ):
+        # x_range, y_range, and z_rotation should all be lists of values to rotate between
         assert(len(x_range) == len(y_range))
+        assert(len(z_rotation) == len(y_range))
         self._counter = 0
         self.num_grid = len(x_range)
 
@@ -514,6 +516,10 @@ class RoundRobinSampler(UniformRandomSampler):
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
+    def sample_quat(self):
+        rot_angle = self.z_rotation[self._counter]
+        return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
+
 
 class SawyerLiftSmallGrid(SawyerLift):
     """
@@ -540,7 +546,7 @@ class SawyerLiftSmallGrid(SawyerLift):
             x_range=self.x_grid,
             y_range=self.y_grid,
             ensure_object_boundary_in_range=False,
-            z_rotation=0.
+            z_rotation=np.zeros_like(self.x_grid)
         )
         super(SawyerLiftSmallGrid, self).__init__(**kwargs)
 
@@ -585,7 +591,7 @@ class SawyerLiftSmallGridFull(SawyerLift):
                 x_range=self.x_grid,
                 y_range=self.y_grid,
                 ensure_object_boundary_in_range=False,
-                z_rotation=0.
+                z_rotation=np.zeros_like(self.x_grid)
             )
         else:
             kwargs["placement_initializer"] = UniformRandomSampler(
@@ -632,7 +638,7 @@ class SawyerLiftLargeGrid(SawyerLift):
             x_range=self.x_grid,
             y_range=self.y_grid,
             ensure_object_boundary_in_range=False,
-            z_rotation=0.
+            z_rotation=np.zeros_like(self.x_grid)
         )
         super(SawyerLiftLargeGrid, self).__init__(**kwargs)
 
@@ -674,11 +680,12 @@ class SawyerLiftLargeGridFull(SawyerLift):
             np.random.seed(SEED)
             self.x_grid = np.random.uniform(low=-GRID_SIZE, high=GRID_SIZE, size=NUM_EVALS)
             self.y_grid = np.random.uniform(low=-GRID_SIZE, high=GRID_SIZE, size=NUM_EVALS)
+            self.z_rotation_grid = np.random.uniform(low=0., high=(2. * np.pi), size=NUM_EVALS)
             kwargs["placement_initializer"] = RoundRobinSampler(
                 x_range=self.x_grid,
                 y_range=self.y_grid,
                 ensure_object_boundary_in_range=False,
-                z_rotation=None
+                z_rotation=self.z_rotation_grid
             )
         else:
             kwargs["placement_initializer"] = UniformRandomSampler(
