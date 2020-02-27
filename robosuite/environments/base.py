@@ -115,17 +115,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
         self._reset_internal()
 
-    def _get_camera_intrinsic_matrix(self):
-        """
-        Obtains camera internal matrix from other parameters. A 3X3 matrix.
-        """
-        cam_id = self.sim.model.camera_name2id(self.camera_name)
-        height, width = self.camera_height, self.camera_width
-        fovy = self.sim.model.cam_fovy[cam_id]
-        f = 0.5 * height / np.tan(fovy * np.pi / 360)
-        K = np.array([[f, 0, width / 2], [0, f, height / 2], [0, 0, 1]])
-        return K
-
     def initialize_time(self, control_freq):
         """
         Initializes the time constants used for simulation.
@@ -202,48 +191,6 @@ class MujocoEnv(metaclass=EnvMeta):
     def _get_observation(self):
         """Returns an OrderedDict containing observations [(name_string, np.array), ...]."""
         return OrderedDict()
-
-    def _get_camera_extrinsic_quat(self):
-        """Returns a transformation matrix of 3X4 [R, p] represented in world frame"""
-        cam_id = self.sim.model.camera_name2id(self.camera_name)
-        camera_pos = self.sim.model.cam_pos[cam_id]
-        camera_quat = self.sim.model.cam_quat[cam_id]
-        return camera_pos, camera_quat
-
-    def get_camera_transform_matrix(self):
-        """
-        returns matrix 3X4 K
-        K @ world = camera
-        """
-        pos, quat = self._get_camera_extrinsic_quat()
-        K = self._get_camera_intrinsic_matrix()
-        quat = T.convert_quat(quat, to="xyzw") # mujoco quaternion convention is diff from usual!
-        transform_camera2world = T.pose2mat((pos, quat)) # 4X4, camera in world
-        transform_world2camera = T.pose_inv(transform_camera2world)
-        transform_matrix = transform_world2camera[:3, :]
-        # permutation matrix: mujoco camera frame is different from conventional, with convention described here
-        # https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
-        permutation = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
-        return K @ permutation @ transform_matrix
-
-    def from_pixel_to_world(self, u, v, w):
-        """
-        @input u, v: pixel
-        @input w: a scale, for homogeneous transformation
-        @returns X: numpy array of shape (3,); x, y, z in world coordinates
-        """
-        assert 0 <= u < self.camera_width
-        assert 0 <= v < self.camera_height
-        P_inv = self.get_camera_inv_transform()
-        X = P_inv @ np.array([u * w, v * w, w, 1])
-        return X[:3]
-
-    def get_camera_inv_transform(self):
-        """Exposes the 4X4 homogeneous transform matrix from camera frame to world frame."""
-        P = self.get_camera_transform_matrix()
-        P = np.vstack((P, [0, 0, 0, 1]))  # make 4X4
-        P_inv = np.linalg.inv(P)  # inverse
-        return P_inv
 
     def step(self, action):
         """Takes a step in simulation with control command @action."""
@@ -383,6 +330,110 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.viewer is not None:
             self.viewer.close()  # change this to viewer.finish()?
             self.viewer = None
+
+    ### added some camera methods ###
+    def _get_camera_intrinsic_matrix(self, camera_name=None):
+        """
+        Obtains camera internal matrix from other parameters. A 3X3 matrix.
+        """
+        if camera_name is None:
+            camera_name = self.camera_name
+        cam_id = self.sim.model.camera_name2id(camera_name)
+        height, width = self.camera_height, self.camera_width
+        fovy = self.sim.model.cam_fovy[cam_id]
+        f = 0.5 * height / np.tan(fovy * np.pi / 360)
+        K = np.array([[f, 0, width / 2], [0, f, height / 2], [0, 0, 1]])
+        return K
+
+    def _get_camera_extrinsic_matrix(self, camera_name=None):
+        """
+        Returns a 4x4 homogenous matrix corresponding to the camera pose in the
+        world frame. MuJoCo has a weird convention for how it sets up the
+        camera body axis, so we also apply a correction so that the x and y
+        axis are along the camera view and the z axis points along the 
+        viewpoint.
+
+        Normal camera convention: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+        """
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        cam_id = self.sim.model.camera_name2id(camera_name)
+        camera_pos = self.sim.model.cam_pos[cam_id]
+        camera_rot = self.sim.model.cam_mat0[cam_id].reshape(3, 3)
+        R = T.make_pose(camera_pos, camera_rot)
+
+        # IMPORTANT! This is a correction so that the camera axis is set up along the viewpoint correctly.
+        camera_axis_correction = np.array([
+            [1., 0., 0., 0.], 
+            [0., -1., 0., 0.], 
+            [0., 0., -1., 0.], 
+            [0., 0., 0., 1.]]
+        )
+        R = camera_axis_correction @ R
+        return R
+
+    def get_camera_transform_matrix(self, camera_name=None):
+        """
+        Camera transform matrix to project from world coordinates to pixel coordinates.
+        """
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        R = self._get_camera_extrinsic_matrix(camera_name=camera_name)
+        K = self._get_camera_intrinsic_matrix(camera_name=camera_name)
+        K_exp = np.eye(4)
+        K_exp[:3, :3] = K
+
+        # Takes a point in world, transforms to camera frame, and then projects onto image plane.
+        return K_exp @ T.pose_inv(R)
+
+    def get_camera_inverse_transform_matrix(self, camera_name=None):
+        """Exposes the 4X4 homogeneous transform matrix from camera frame to world frame."""
+        if camera_name is None:
+            camera_name = self.camera_name
+        P = self.get_camera_transform_matrix(camera_name=camera_name)
+        return np.linalg.inv(P)
+
+    def from_pixel_to_world(self, u, v, w, camera_name=None):
+        """
+        @input u, v: pixel
+        @input w: a scale, for homogeneous transformation
+        @returns X: numpy array of shape (3,); x, y, z in world coordinates
+        """
+        assert 0 <= u < self.camera_width
+        assert 0 <= v < self.camera_height
+
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        P_inv = self.get_camera_inverse_transform_matrix(camera_name=camera_name)
+        X = P_inv @ np.array([u * w, v * w, w, 1.])
+        return X[:3]
+
+    def from_world_to_pixel(self, x, camera_name=None):
+        """
+        @input x: numpy array of shape (3,); x, y, z in world coordinates
+        @returns u, v: pixel coordinates (not rounded)
+        """
+        assert x.shape[0] == 3
+        assert len(x.shape) == 1
+
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        P = self.get_camera_transform_matrix(camera_name=camera_name)
+        pixel = P @ np.array([x[0], x[1], x[2], 1.])
+
+        from IPython import embed; embed()
+
+        # account for homogenous coordinates
+        pixel /= pixel[2]
+        u, v = pixel[:2]
+
+        assert 0 <= u < self.camera_width
+        assert 0 <= v < self.camera_height
+        return u, v
 
     def close(self):
         """Do any cleanup necessary here."""
