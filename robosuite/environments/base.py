@@ -370,7 +370,7 @@ class MujocoEnv(metaclass=EnvMeta):
             [0., 0., -1., 0.], 
             [0., 0., 0., 1.]]
         )
-        R = camera_axis_correction @ R
+        R = R @ camera_axis_correction
         return R
 
     def get_camera_transform_matrix(self, camera_name=None):
