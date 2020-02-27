@@ -425,8 +425,6 @@ class MujocoEnv(metaclass=EnvMeta):
         P = self.get_camera_transform_matrix(camera_name=camera_name)
         pixel = P @ np.array([x[0], x[1], x[2], 1.])
 
-        from IPython import embed; embed()
-
         # account for homogenous coordinates
         pixel /= pixel[2]
         u, v = pixel[:2]
