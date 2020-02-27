@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # do visualization
     controller = IKWrapper(env, action_repeat=10)
     # controller.reset() # will accidentally change camera???
-    target_pixel = [ 39.93235/0.55339, 41/0.55339, 0.55339] # u, v, w
+    target_pixel = [ 39.93235, 41, 0.55339] # u, v, w
     u, v, w = target_pixel
     target_coord = env.from_pixel_to_world(u, v, w)
     target_body_part_name = 'right_hand'
