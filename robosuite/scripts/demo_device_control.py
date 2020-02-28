@@ -32,7 +32,7 @@ SpaceMouse:
             https://www.3dconnexion.com/service/drivers.html
 
 Example:
-    $ python demo_device_ik_control.py --environment SawyerPickPlaceCan
+    $ python demo_device_control.py --environment SawyerPickPlaceCan
 
 """
 
@@ -50,16 +50,30 @@ from robosuite.wrappers import IKWrapper
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="SawyerPickPlaceCan")
-    parser.add_argument("--device", type=str, default="keyboard")
+    parser.add_argument("--environment", type=str, default="SawyerLift")
+    parser.add_argument("--controller", type=str, default="ik", help="Choice of controller. Can be 'ik' or 'osc'")
+    parser.add_argument("--device", type=str, default="spacemouse")
     args = parser.parse_args()
 
-    # Import controller config for EE IK
+    # Import controller config for EE IK or OSC (pos/ori)
     controller_config = None
-    controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/ee_ik.json')
+    controller_path = None
+    if args.controller == 'ik':
+        controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/ee_ik.json')
+    elif args.controller == 'osc':
+        controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/ee_pos_ori.json')
+    else:
+        print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
+        raise ValueError
     try:
         with open(controller_path) as f:
             controller_config = json.load(f)
+            if args.controller == 'osc':
+                controller_config["max_action"] = 1
+                controller_config["min_action"] = -1
+                controller_config["control_delta"] = False
+                # Must have a cumulative dpos since we are controlling absolute pos and ori values
+                cumulative_dpos = 0
     except FileNotFoundError:
         print("Error opening default controller filepath at: {}. "
               "Please check filepath and try again.".format(controller_path))
@@ -113,6 +127,8 @@ if __name__ == "__main__":
         device.start_control()
         while True:
             state = device.get_controller_state()
+            # Note: Devices output rotation with x and z flipped to account for robots starting with gripper facing down
+            #       Also note that the outputted rotation is an absolute rotation, while outputted dpos is delta pos
             dpos, rotation, grasp, reset = (
                 state["dpos"],
                 state["rotation"],
@@ -127,11 +143,22 @@ if __name__ == "__main__":
 
             # relative rotation of desired from current
             drotation = current.T.dot(rotation)
-            dquat = T.mat2quat(drotation)
+
+            if args.controller == 'ik':
+                # IK expects quat, so convert to quat
+                drotation = T.mat2quat(drotation)
+            elif args.controller == 'osc':
+                # OSC expects euler, so convert to euler
+                drotation = T.mat2euler(drotation)
+
+                # Since the input rotation is absolute (relative to initial), input pos must also be absolute
+                # So increment cumulative dpos (scaled down) and use that as input
+                cumulative_dpos += dpos * 0.1
+                dpos = cumulative_dpos
 
             # map 0 to -1 (open) and 1 to 0 (closed halfway)
             grasp = grasp - 1.
 
-            action = np.concatenate([dpos, dquat, [grasp]])
+            action = np.concatenate([dpos, drotation, [grasp]])
             obs, reward, done, info = env.step(action)
             env.render()

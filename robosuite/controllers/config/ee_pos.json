@@ -1,16 +1,12 @@
 {
   "type": "EE_POS",
-  "control_range_pos": 0.05,
-  "damping_max": 2,
-  "damping_max_abs_delta": 0.1,
-  "damping_min": 0,
-  "initial_damping": 1,
-  "initial_impedance_ori": 150,
-  "initial_impedance_pos": 150,
-  "kp_max": 300,
-  "kp_max_abs_delta": 10,
-  "kp_min": 10,
-  "impedance_flag": false,
-  "use_delta_impedance": false,
-  "interpolation": "linear"
+  "input_max": 1,
+  "input_min": -1,
+  "output_max": [0.05, 0.05, 0.05],
+  "output_min": [-0.05, -0.05, -0.05],
+  "kp": 50,
+  "damping": 1,
+  "position_limits": null,
+  "control_delta": true,
+  "interpolation": null
 }

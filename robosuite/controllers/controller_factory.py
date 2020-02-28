@@ -40,10 +40,12 @@ def controller_factory(name, params):
         if interpolator is not None:
             interpolator.dim = 3                # EE control uses dim 3 for pos and ori each
             ori_interpolator = deepcopy(interpolator)
+        params["control_ori"] = True
         return EEImpController(interpolator_pos=interpolator, interpolator_ori=ori_interpolator, **params)
     if name == "EE_POS":
         if interpolator is not None:
             interpolator.dim = 3                # EE control uses dim 3 for pos and ori each
+        params["control_ori"] = False
         return EEImpController(interpolator_pos=interpolator, **params)
     if name == "EE_IK":
         return EEIKController(interpolator=interpolator, **params)

@@ -14,18 +14,23 @@ class Controller(object, metaclass=abc.ABCMeta):
                  sim,
                  id_name,
                  joint_indexes,
-                 initial_joint
     ):
-        self.action_scale = None
 
-        # Note: the following attributes must be specified in extended controller subclasses during the init call:
-        # self.output_min
-        # self.output_max
-        # self.input_min
-        # self.input_max
+        # Attributes for scaling / clipping inputs to outputs
+        self.action_scale = None
+        self.action_input_transform = None
+        self.action_output_transform = None
+
+        # Private property attributes
+        self._control_dim = None
+        self._output_min = None
+        self._output_max = None
+        self._input_min = None
+        self._input_max = None
 
         # mujoco simulator state
         self.sim = sim
+        self.model_timestep = self.sim.model.opt.timestep
         self.id_name = id_name
         self.joint_index = joint_indexes
 
@@ -46,9 +51,17 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Joint dimension
         self.joint_dim = len(joint_indexes)
 
+        # Torques being outputted by the controller
+        self.torques = None
+
+        # Move forward one timestep to propagate updates before taking first update
+        self.sim.forward()
+
+        # Initialize controller by updating internal state and setting the initial joint, pos, and ori
         self.update()
-        self.initial_joint = initial_joint
-        print("initial_joint: {}".format(self.initial_joint))       # TODO: Clean post-debugging
+        self.initial_joint = self.joint_pos
+        self.initial_ee_pos = self.ee_pos
+        self.initial_ee_ori_mat = self.ee_ori_mat
         self.torque_compensation = np.zeros(self.joint_dim)
 
     @abc.abstractmethod
@@ -74,25 +87,65 @@ class Controller(object, metaclass=abc.ABCMeta):
 
     def update(self):
 
-        self.model_timestep = self.sim.model.opt.timestep
+        self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.id_name)])
+        self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.id_name)].reshape([3, 3]))
+        self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.id_name)])
+        self.ee_ori_vel = np.array(self.sim.data.body_xvelr[self.sim.model.body_name2id(self.id_name)])
 
-        self.ee_pos = self.sim.data.body_xpos[self.sim.model.body_name2id(self.id_name)]
-        self.ee_ori_mat = self.sim.data.body_xmat[self.sim.model.body_name2id(self.id_name)].reshape([3, 3])
-        self.ee_pos_vel = self.sim.data.body_xvelp[self.sim.model.body_name2id(self.id_name)]
-        self.ee_ori_vel = self.sim.data.body_xvelr[self.sim.model.body_name2id(self.id_name)]
+        self.joint_pos = np.array(self.sim.data.qpos[self.joint_index])
+        self.joint_vel = np.array(self.sim.data.qvel[self.joint_index])
 
-        self.joint_pos = self.sim.data.qpos[self.joint_index]
-        self.joint_vel = self.sim.data.qvel[self.joint_index]
-
-        self.J_pos = self.sim.data.get_body_jacp(self.id_name).reshape((3, -1))[:, self.joint_index]
-        self.J_ori = self.sim.data.get_body_jacr(self.id_name).reshape((3, -1))[:, self.joint_index]
-        self.J_full = np.vstack([self.J_pos, self.J_ori])
+        self.J_pos = np.array(self.sim.data.get_body_jacp(self.id_name).reshape((3, -1))[:, self.joint_index])
+        self.J_ori = np.array(self.sim.data.get_body_jacr(self.id_name).reshape((3, -1))[:, self.joint_index])
+        self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
         mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
         mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
         mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
         self.mass_matrix = mass_matrix[self.joint_index, :][:, self.joint_index]
 
+    @property
+    def input_min(self):
+        return self._input_min
 
+    @input_min.setter
+    def input_min(self, input_min):
+        self._input_min = np.array(input_min) if type(input_min) == list or type(input_min) == tuple \
+            else np.array([input_min]*self.control_dim)
+
+    @property
+    def input_max(self):
+        return self._input_max
+
+    @input_max.setter
+    def input_max(self, input_max):
+        self._input_max = np.array(input_max) if type(input_max) == list or type(input_max) == tuple \
+            else np.array([input_max]*self.control_dim)
+
+    @property
+    def output_min(self):
+        return self._output_min
+
+    @output_min.setter
+    def output_min(self, output_min):
+        self._output_min = np.array(output_min) if type(output_min) == list or type(output_min) == tuple \
+            else np.array([output_min]*self.control_dim)
+
+    @property
+    def output_max(self):
+        return self._output_max
+
+    @output_max.setter
+    def output_max(self, output_max):
+        self._output_max = np.array(output_max) if type(output_max) == list or type(output_max) == tuple \
+                else np.array([output_max]*self.control_dim)
+
+    @property
+    def control_dim(self):
+        return self._control_dim
+
+    @control_dim.setter
+    def control_dim(self, control_dim):
+        self._control_dim = control_dim
 
 

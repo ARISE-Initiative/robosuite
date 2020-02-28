@@ -123,6 +123,7 @@ class SawyerEnv(MujocoEnv):
         """
         super()._load_model()
         self.mujoco_robot = Sawyer()
+        self.init_qpos = self.mujoco_robot.init_qpos
         if self.has_gripper:
             self.gripper = gripper_factory(self.gripper_type)
             if not self.gripper_visualization:
@@ -134,7 +135,7 @@ class SawyerEnv(MujocoEnv):
         Sets initial pose of arm and grippers.
         """
         super()._reset_internal()
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = self.mujoco_robot.init_qpos
+        self.sim.data.qpos[self._ref_joint_pos_indexes] = self.init_qpos
         self._load_controller(self.controller_config)
 
         if self.has_gripper:
@@ -240,8 +241,6 @@ class SawyerEnv(MujocoEnv):
         # Now run the controller for a step
         torques = self.controller.run_controller()
 
-        # TODO? No torque compensation currently in controller? (set to zeros it seems)
-
         # Clip the torques
         low, high = self.action_spec
         torques = np.clip(torques, low, high)
@@ -316,8 +315,8 @@ class SawyerEnv(MujocoEnv):
         Action lower/upper limits per dimension.
         """
         # Torque limit values pulled from relevant robot.xml file
-        low = np.array([-80., -80., -40., -40., -9., -9., -9.])
-        high = np.array([80., 80., 40., 40., 9., 9., 9.])
+        low = self.sim.model.actuator_ctrlrange[self.joint_indexes, 0]
+        high = self.sim.model.actuator_ctrlrange[self.joint_indexes, 1]
 
         return low, high
 

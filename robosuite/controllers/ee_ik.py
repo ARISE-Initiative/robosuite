@@ -31,14 +31,12 @@ class EEIKController(JointVelController):
                  robot_name,
                  kv=40.0,
                  policy_freq=20,
-                 initial_joint=None,
                  ik_pos_limit=None,
                  ik_ori_limit=None,
                  interpolator=None,
                  converge_steps=20,
                  **kwargs
                  ):
-
 
         # Initialize ik-specific attributes
         self.robot_name = robot_name        # Name of robot (e.g.: "panda", "sawyer", etc.)
@@ -55,7 +53,7 @@ class EEIKController(JointVelController):
         elif self.robot_name == "baxter":
             # TODO: Untested. Currently no rotation in old baxter ik anyways
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
-            self.rest_poses = initial_joint      # Default to initial joint for now
+            self.rest_poses = None      # Default to None for now
         else:
             # No other robots supported, print out to user
             print("ERROR: Unsupported robot requested for ik controller. Only sawyer, panda, and baxter "
@@ -93,7 +91,6 @@ class EEIKController(JointVelController):
             output_min=-50,
             kv=kv,
             policy_freq=policy_freq,
-            initial_joint=initial_joint,
             velocity_limits=[-50,50],
             interpolator=interpolator,
             **kwargs
@@ -249,8 +246,6 @@ class EEIKController(JointVelController):
         Returns:
             A list of size @num_joints corresponding to the joint angle solution.
         """
-
-        # TODO: FIX
 
         ik_solution = list(
             p.calculateInverseKinematics(

@@ -3,6 +3,7 @@ from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
 
+
 class JointVelController(Controller):
     """
     Controller for joint velocity
@@ -18,7 +19,6 @@ class JointVelController(Controller):
                  output_min=-1,
                  kv=4.0,
                  policy_freq=20,
-                 initial_joint=None,
                  velocity_limits=None,
                  interpolator=None,
                  **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
@@ -28,16 +28,15 @@ class JointVelController(Controller):
             sim,
             robot_id,
             joint_indexes,
-            initial_joint
         )
         # Control dimension
         self.control_dim = len(joint_indexes)
 
         # input and output max and min (allow for either explicit lists or single numbers)
-        self.input_max = np.array(input_max) if type(input_max) == list else np.array([input_max] * self.control_dim)
-        self.input_min = np.array(input_min) if type(input_min) == list else np.array([input_min] * self.control_dim)
-        self.output_max = np.array(output_max) if type(output_max) == list else np.array([output_max] * self.control_dim)
-        self.output_min = np.array(output_min) if type(output_min) == list else np.array([output_min] * self.control_dim)
+        self.input_max = input_max
+        self.input_min = input_min
+        self.output_max = output_max
+        self.output_min = output_min
 
         # kv
         self.kv = np.array(kv) if type(kv) == list else np.array([kv] * self.control_dim)
@@ -57,18 +56,18 @@ class JointVelController(Controller):
         self.current_vel = np.zeros(self.joint_dim)     # Current velocity setpoint, pre-compensation
         self.torques = None                             # Torques returned every time run_controller is called
 
-        #self.set_goal(np.zeros(self.control_dim))
-
     def set_goal(self, delta, set_velocity=None):
         self.update()
 
         if delta is not None:
             # Check to make sure delta is size self.joint_dim
-            assert len(delta) == self.joint_dim, "Delta length must be equal to the robot's joint dimension space!"
+            assert len(delta) == self.joint_dim,\
+                "Delta length must be equal to the robot's joint dimension space!"
             scaled_delta = self.scale_action(delta)
         else:
             # Otherwise, check to make sure set_velocity is size self.joint_dim
-            assert len(set_velocity) == self.joint_dim, "Goal action must be equal to the robot's joint dimension space!"
+            assert len(set_velocity) == self.joint_dim,\
+                "Goal action must be equal to the robot's joint dimension space!"
             scaled_delta = None
 
         self.goal_vel = set_goal_position(scaled_delta,
@@ -80,6 +79,10 @@ class JointVelController(Controller):
             self.interpolator.set_goal(self.goal_vel)
 
     def run_controller(self, action=None):
+        # Make sure goal has been set
+        if not self.goal_vel.all():
+            self.set_goal(np.zeros(self.control_dim))
+
         # First, update goal if action is not set to none
         # Action will be interpreted as delta value from current
         if action is not None:
