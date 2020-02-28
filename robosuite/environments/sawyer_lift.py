@@ -408,6 +408,26 @@ class SawyerLift(SawyerEnv):
 
 ### Some new environments... ###
 
+class SawyerLiftPosition(SawyerLift):
+    """
+    Cube is initialized with a constant z-rotation of 0.
+    If using OSC control, force control to be position-only.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.03, 0.03],
+            y_range=[-0.03, 0.03],
+            ensure_object_boundary_in_range=False,
+            z_rotation=0.
+        )
+        if kwargs["controller"] == "position_orientation":
+            kwargs["controller"] = "position"
+        super(SawyerLiftPosition, self).__init__(**kwargs)
+
 class SawyerLiftRotation(SawyerLift):
     """
     Cube is initialized with uniform z-rotations instead of fixed z-rotation
