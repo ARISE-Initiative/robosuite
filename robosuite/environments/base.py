@@ -408,7 +408,7 @@ class MujocoEnv(metaclass=EnvMeta):
             camera_name = self.camera_name
 
         P_inv = self.get_camera_inverse_transform_matrix(camera_name=camera_name)
-        X = P_inv @ np.array([u, v, w, 1.])
+        X = P_inv @ np.array([u * w, v * w, w, 1.])
         return X[:3]
 
     def from_world_to_pixel(self, x, camera_name=None):
@@ -428,8 +428,6 @@ class MujocoEnv(metaclass=EnvMeta):
         # account for homogenous coordinates
         pixel /= pixel[2]
         u, v = pixel[:2]
-
-        print("PIXEL: {}".format(pixel))
 
         assert 0 <= u < self.camera_width
         assert 0 <= v < self.camera_height
