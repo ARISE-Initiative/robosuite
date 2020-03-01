@@ -22,10 +22,13 @@ from robosuite.models.objects import (
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import PickPlaceTask, UniformRandomSampler
 
+import json
+import os
 
 class SawyerPickPlace(SawyerEnv):
     def __init__(
         self,
+        controller_config=None,
         gripper_type="TwoFingerGripper",
         table_full_size=(0.39, 0.49, 0.82),
         table_friction=(1, 0.005, 0.0001),
@@ -51,6 +54,8 @@ class SawyerPickPlace(SawyerEnv):
     ):
         """
         Args:
+            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+                Else, uses the default controller for this specific task
 
             gripper_type (str): type of gripper, used to instantiate
                 gripper models from gripper factory.
@@ -123,6 +128,16 @@ class SawyerPickPlace(SawyerEnv):
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
         """
 
+        # Load the default controller if none is specified
+        if not controller_config:
+            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
+            try:
+                with open(controller_path) as f:
+                    controller_config = json.load(f)
+            except FileNotFoundError:
+                print("Error opening default controller filepath at: {}. "
+                      "Please check filepath and try again.".format(controller_path))
+
         # task settings
         self.single_object_mode = single_object_mode
         self.object_to_id = {"milk": 0, "bread": 1, "cereal": 2, "can": 3}
@@ -148,6 +163,7 @@ class SawyerPickPlace(SawyerEnv):
         self.use_object_obs = use_object_obs
 
         super().__init__(
+            controller_config=controller_config,
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
@@ -184,6 +200,9 @@ class SawyerPickPlace(SawyerEnv):
         ]
 
     def _load_model(self):
+        """
+        Loads an xml model, puts it in self.model
+        """
         super()._load_model()
         self.mujoco_robot.set_base_xpos([0, 0, 0])
 
@@ -191,7 +210,6 @@ class SawyerPickPlace(SawyerEnv):
         self.mujoco_arena = BinsArena(
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
-
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
 

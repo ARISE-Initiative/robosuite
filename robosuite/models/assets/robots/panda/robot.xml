@@ -1,20 +1,13 @@
 <mujoco model="panda">
     <actuator>
         <!-- Physical limits of the actuator. -->
-        <!-- <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_right_j0"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint2" name="torq_right_j1"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint3" name="torq_right_j2"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint4" name="torq_right_j3"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint5" name="torq_right_j4"/>
-        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint6" name="torq_right_j5"/>
-        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint7" name="torq_right_j6"/> -->
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint1" kv="40.0" name="vel_right_j1"/> <!-- 8.0 kv-->
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint2" kv="40.0" name="vel_right_j2"/> <!-- 7.0 kv-->
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint3" kv="40.0" name="vel_right_j3"/> <!-- 6.0 kv-->
-        <velocity ctrllimited="true" ctrlrange="-2.1750 2.1750" joint="joint4" kv="40.0" name="vel_right_j4"/> <!-- 4.0 kv-->
-        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint5" kv="40.0" name="vel_right_j5"/> <!-- 2.0 kv-->
-        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint6" kv="40.0" name="vel_right_j6"/> <!-- 0.5 kv-->
-        <velocity ctrllimited="true" ctrlrange="-2.6100 2.6100" joint="joint7" kv="40.0" name="vel_right_j7"/> <!-- 0.1 kv-->
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_right_j1"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint2" name="torq_right_j2"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint3" name="torq_right_j3"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint4" name="torq_right_j4"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint5" name="torq_right_j5"/>
+        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint6" name="torq_right_j6"/>
+        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint7" name="torq_right_j7"/>
     </actuator>
     <asset>
         <mesh name="link0" file="meshes/link0.stl" />
@@ -96,8 +89,8 @@
                                         <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link7_vis" name="link7_visual" rgba="1 1 1 1"/>
                                         <geom type="mesh" group="0" mesh="link7" name="link7_collision"/>
                                         <!-- to add gripper -->
-                                        <!-- rotate 45deg to align physically to the tool-->
-                                        <body name="right_hand" pos="0 0 0.107" quat="0.924 0 0 0.383">
+                                        <!-- rotate 135deg to align physically to the tool-->
+                                        <body name="right_hand" pos="0 0 0.107" quat="0.383 0 0 0.924">
                                             <inertial pos="0 0 0" mass="0.5" diaginertia="0.05 0.05 0.05" />
                                             <!-- This sites were added for visualization. -->
                                             <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>

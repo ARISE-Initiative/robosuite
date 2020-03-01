@@ -5,6 +5,7 @@ import robosuite.utils.transform_utils as T
 from robosuite.environments import MujocoEnv
 
 from robosuite.models.grippers import gripper_factory
+from robosuite.controllers import controller_factory
 from robosuite.models.robots import Panda
 
 
@@ -13,6 +14,7 @@ class PandaEnv(MujocoEnv):
 
     def __init__(
         self,
+        controller_config,
         gripper_type=None,
         gripper_visualization=False,
         use_indicator_object=False,
@@ -31,6 +33,9 @@ class PandaEnv(MujocoEnv):
     ):
         """
         Args:
+            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+                Else, uses the default controller for this specific task
+
             gripper_type (str): type of gripper, used to instantiate
                 gripper models from gripper factory.
 
@@ -76,6 +81,7 @@ class PandaEnv(MujocoEnv):
         self.gripper_type = gripper_type
         self.gripper_visualization = gripper_visualization
         self.use_indicator_object = use_indicator_object
+        self.controller_config = controller_config
         super().__init__(
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
@@ -91,12 +97,33 @@ class PandaEnv(MujocoEnv):
             camera_depth=camera_depth,
         )
 
+    def _load_controller(self, controller_config):
+        """
+        Loads controller to be used for dynamic trajectories
+
+        @controller_config (dict): Dict of relevant controller parameters, including controller type
+            NOTE: Type must be one of: {JOINT_IMP, JOINT_TORQUE, JOINT_VEL, EE_POS, EE_POS_ORI}
+        """
+        # Add to the controller dict additional relevant params:
+        #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq, policy (control) freq, and ndim (# joints)
+        controller_config["robot_name"] = self.mujoco_robot.name
+        controller_config["sim"] = self.sim
+        controller_config["robot_id"] = "right_hand"
+        controller_config["joint_indexes"] = self.joint_indexes
+        controller_config["controller_freq"] = 1.0 / self.model_timestep
+        controller_config["policy_freq"] = self.control_freq
+        controller_config["ndim"] = len(self.robot_joints)
+
+        # Instantiate the relevant controller
+        self.controller = controller_factory(controller_config["type"], controller_config)
+
     def _load_model(self):
         """
         Loads robot and optionally add grippers.
         """
         super()._load_model()
         self.mujoco_robot = Panda()
+        self.init_qpos = self.mujoco_robot.init_qpos
         if self.has_gripper:
             self.gripper = gripper_factory(self.gripper_type)
             if not self.gripper_visualization:
@@ -108,11 +135,12 @@ class PandaEnv(MujocoEnv):
         Sets initial pose of arm and grippers.
         """
         super()._reset_internal()
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = self.mujoco_robot.init_qpos
+        self.sim.data.qpos[self._ref_joint_pos_indexes] = self.init_qpos
+        self._load_controller(self.controller_config)
 
         if self.has_gripper:
             self.sim.data.qpos[
-                self._ref_joint_gripper_actuator_indexes
+                self._ref_gripper_joint_pos_indexes
             ] = self.gripper.init_qpos
 
     def _get_reference(self):
@@ -181,7 +209,7 @@ class PandaEnv(MujocoEnv):
             index = self._ref_indicator_pos_low
             self.sim.data.qpos[index : index + 3] = pos
 
-    def _pre_action(self, action):
+    def _pre_action(self, action, policy_step=False):
         """
         Overrides the superclass method to actuate the robot with the
         passed joint velocities and gripper control.
@@ -192,39 +220,44 @@ class PandaEnv(MujocoEnv):
                 normalized joint velocities and if the robot has
                 a gripper, the next @self.gripper.dof dimensions should be
                 actuation controls for the gripper.
+            policy_step (bool): Whether a new policy step (action) is being taken
         """
 
         # clip actions into valid range
-        assert len(action) == self.dof, "environment got invalid action dimension"
-        low, high = self.action_spec
-        action = np.clip(action, low, high)
+        assert len(action) == self.controller.control_dim + self.gripper.dof, "environment got invalid action dimension"
 
+        gripper_action = None
         if self.has_gripper:
-            arm_action = action[: self.mujoco_robot.dof]
-            gripper_action_in = action[
-                self.mujoco_robot.dof : self.mujoco_robot.dof + self.gripper.dof
-            ]
-            gripper_action_actual = self.gripper.format_action(gripper_action_in)
-            action = np.concatenate([arm_action, gripper_action_actual])
+            gripper_action = action[self.controller.control_dim:]  # all indexes past controller dimension indexes
+            action = action[:self.controller.control_dim]
 
-        # rescale normalized action to control ranges
-        ctrl_range = self.sim.model.actuator_ctrlrange
-        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-        applied_action = bias + weight * action
-        self.sim.data.ctrl[:] = applied_action
+        # Update model in controller
+        self.controller.update()
 
-        # gravity compensation
-        self.sim.data.qfrc_applied[
-            self._ref_joint_vel_indexes
-        ] = self.sim.data.qfrc_bias[self._ref_joint_vel_indexes]
+        # Update the controller goal if this is a new policy step
+        if policy_step:
+            self.controller.set_goal(delta=action)
 
-        if self.use_indicator_object:
-            self.sim.data.qfrc_applied[
-                self._ref_indicator_vel_low : self._ref_indicator_vel_high
-            ] = self.sim.data.qfrc_bias[
-                self._ref_indicator_vel_low : self._ref_indicator_vel_high
-            ]
+        # Now run the controller for a step
+        torques = self.controller.run_controller()
+
+        # Clip the torques
+        low, high = self.action_spec
+        torques = np.clip(torques, low, high)
+
+        # Get gripper action, if applicable
+        if self.has_gripper:
+            gripper_action_actual = self.gripper.format_action(gripper_action)
+            # rescale normalized gripper action to control ranges
+            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_gripper_joint_vel_indexes]
+            bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+            weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+            applied_gripper_action = bias + weight * gripper_action_actual
+            self.sim.data.ctrl[self._ref_gripper_joint_vel_indexes] = applied_gripper_action
+
+        # Now, control both gripper and joints (with gravity compensation)
+        self.sim.data.ctrl[self.joint_indexes] = self.sim.data.qfrc_bias[
+                                                              self.joint_indexes] + torques
 
     def _post_action(self, action):
         """
@@ -281,8 +314,10 @@ class PandaEnv(MujocoEnv):
         """
         Action lower/upper limits per dimension.
         """
-        low = np.ones(self.dof) * -1.
-        high = np.ones(self.dof) * 1.
+        # Torque limit values pulled from relevant robot.xml file
+        low = self.sim.model.actuator_ctrlrange[self.joint_indexes, 0]
+        high = self.sim.model.actuator_ctrlrange[self.joint_indexes, 1]
+
         return low, high
 
     @property
@@ -404,6 +439,13 @@ class PandaEnv(MujocoEnv):
         Panda robots have 7 joints and velocities are angular velocities.
         """
         return self.sim.data.qvel[self._ref_joint_vel_indexes]
+
+    @property
+    def joint_indexes(self):
+        """
+        Returns mujoco internal indexes for the robot joints
+        """
+        return self._ref_joint_vel_indexes
 
     def _gripper_visualization(self):
         """

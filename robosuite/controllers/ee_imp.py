@@ -70,8 +70,8 @@ class EEImpController(Controller):
         self.uncoupling = uncouple_pos_ori
 
         # initialize
-        self.goal_ori = None
-        self.goal_pos = None
+        self.goal_ori = np.array([[-1,0,0],[0,1,0],[0,0,-1]])
+        self.goal_pos = np.array([0,0,0])
 
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
@@ -96,10 +96,12 @@ class EEImpController(Controller):
                 else np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
             scaled_delta = []
 
-        self.goal_ori = set_goal_orientation(scaled_delta[3:],
-                                             self.ee_ori_mat,
-                                             orientation_limit=self.orientation_limits,
-                                             set_ori=set_ori)
+        # We only want to update goal orientation if there is a valid delta ori value
+        if not np.isclose(scaled_delta[3:], 0).all():
+            self.goal_ori = set_goal_orientation(scaled_delta[3:],
+                                                 self.ee_ori_mat,
+                                                 orientation_limit=self.orientation_limits,
+                                                 set_ori=set_ori)
         self.goal_pos = set_goal_position(scaled_delta[:3],
                                           self.ee_pos,
                                           position_limit=self.position_limits,
@@ -107,6 +109,7 @@ class EEImpController(Controller):
 
         if self.interpolator_pos is not None:
             self.interpolator_pos.set_goal(self.goal_pos)
+            print("Got here!")
 
         if self.interpolator_ori is not None:
             self.ori_ref = np.array(self.ee_ori_mat)  # reference is the current orientation at start
@@ -114,11 +117,7 @@ class EEImpController(Controller):
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
     def run_controller(self, action=None):
-        # Make sure goal has been set
-        if not self.goal_pos.all():
-            self.set_goal(np.zeros(self.control_dim))
-
-        # Then, update goal if action is not set to none
+        # First, update goal if action is not set to none
         # Action will be interpreted as delta value from current
         if action is not None:
             self.set_goal(action)

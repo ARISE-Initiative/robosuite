@@ -41,27 +41,15 @@ class EEIKController(JointVelController):
         # Initialize ik-specific attributes
         self.robot_name = robot_name        # Name of robot (e.g.: "panda", "sawyer", etc.)
 
-        # Set rotation offsets (for mujoco eef -> pybullet eef) and rest poses
+        # Rotation offsets (for mujoco eef -> pybullet eef) and rest poses
         self.rotation_offset = None
         self.rest_poses = None
-        if self.robot_name == "sawyer":
-            self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)#.dot()
-            self.rest_poses = [0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161]
-        elif self.robot_name == "panda":
-            self.rotation_offset = T.rotation_matrix(angle=-np.pi/4, direction=[0., 0., 1.], point=None)
-            self.rest_poses = [0, np.pi / 6, 0.00, -(np.pi - 2 * np.pi / 6), 0.00, (np.pi - np.pi / 6), np.pi / 4]
-        elif self.robot_name == "baxter":
-            # TODO: Untested. Currently no rotation in old baxter ik anyways
-            self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
-            self.rest_poses = None      # Default to None for now
-        else:
-            # No other robots supported, print out to user
-            print("ERROR: Unsupported robot requested for ik controller. Only sawyer, panda, and baxter "
-                  "currently supported.")
+
 
         # Values for initializing pybullet env
         self.ik_robot = None
         self.robot_urdf = None
+        self.num_bullet_joints = None
         self.converge_steps = converge_steps
         self.ik_pos_limit = ik_pos_limit
         self.ik_ori_limit = ik_ori_limit
@@ -107,12 +95,7 @@ class EEIKController(JointVelController):
         """
 
         # Set up a connection to the PyBullet simulator.
-        try:
-            p.disconnect()
-        except:
-            pass
         p.connect(p.DIRECT)
-        #p.connect(p.GUI)
         p.resetSimulation()
 
         # get paths to urdfs
@@ -123,6 +106,25 @@ class EEIKController(JointVelController):
 
         # load the urdfs
         self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.9), useFixedBase=1)
+
+        # load the number of joints from the bullet data
+        self.num_bullet_joints = p.getNumJoints(self.ik_robot)
+
+        # Set rotation offsets (for mujoco eef -> pybullet eef) and rest poses
+        if self.robot_name == "sawyer":
+            self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)
+            self.rest_poses = [0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161]
+        elif self.robot_name == "panda":
+            self.rotation_offset = T.rotation_matrix(angle=-3*np.pi/4, direction=[0., 0., 1.], point=None)
+            self.rest_poses = [0, np.pi / 6, 0.00, -(np.pi - 2 * np.pi / 6), 0.00, (np.pi - np.pi / 6), np.pi / 4]
+        elif self.robot_name == "baxter":
+            # TODO: Untested. Currently no rotation in old baxter ik anyways
+            self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
+            self.rest_poses = None      # Default to None for now
+        else:
+            # No other robots supported, print out to user
+            print("ERROR: Unsupported robot requested for ik controller. Only sawyer, panda, and baxter "
+                  "currently supported.")
 
         # Simulation will update as fast as it can in real time, instead of waiting for
         # step commands like in the non-realtime case.
@@ -250,14 +252,14 @@ class EEIKController(JointVelController):
         ik_solution = list(
             p.calculateInverseKinematics(
                 self.ik_robot,
-                self.joint_dim - 1,
+                self.num_bullet_joints - 1,
                 target_position,
                 targetOrientation=target_orientation,
                 lowerLimits=list(self.sim.model.jnt_range[:self.joint_dim,0]),                     # TODO: currently only works with one hand (might not work with baxter)
                 upperLimits=list(self.sim.model.jnt_range[:self.joint_dim,1]),                     # TODO: currently only works with one hand (might not work with baxter)
                 jointRanges=list(self.sim.model.jnt_range[:self.joint_dim,1] - self.sim.model.jnt_range[:self.joint_dim,0]),    # TODO: currently only works with one hand (might not work with baxter)
                 restPoses=self.rest_poses,
-                jointDamping=[0.1] * self.joint_dim,
+                jointDamping=[0.1] * self.num_bullet_joints,
             )
         )
 

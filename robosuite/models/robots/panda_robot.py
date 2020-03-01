@@ -14,11 +14,11 @@ class Panda(Robot):
         self._model_name = "panda"
         # Careful of init_qpos -- certain init poses cause ik controller to go unstable (e.g: pi/4 instead of -pi/4
         # for the final joint angle)
-        self._init_qpos = np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, -np.pi/4])
+        self._init_qpos = np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, np.pi/4])
 
     def set_base_xpos(self, pos):
         """Places the robot on position @pos."""
-        node = self.worldbody.find("./body[@name='link0']")
+        node = self.worldbody.find("./body[@name='{}']".format(self._base_name))
         node.set("pos", array_to_string(pos - self.bottom_offset))
 
     def set_joint_damping(self, damping=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01))):
@@ -55,8 +55,13 @@ class Panda(Robot):
 
     @property
     def _base_body(self):
-        node = self.worldbody.find("./body[@name='link0']")
+        node = self.worldbody.find("./body[@name='{}']".format(self._base_name))
         return node
+
+    @property
+    def _base_name(self):
+        # Returns the base name of the mujoco xml body
+        return 'link0'
 
     @property
     def _link_body(self):

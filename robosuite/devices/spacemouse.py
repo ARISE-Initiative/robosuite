@@ -65,12 +65,19 @@ def convert(b1, b2):
 class SpaceMouse(Device):
     """A minimalistic driver class for SpaceMouse with HID library."""
 
-    def __init__(self, vendor_id=9583, product_id=50735):
+    def __init__(self,
+                 vendor_id=9583,
+                 product_id=50735,
+                 pos_sensitivity=1.0,
+                 rot_sensitivity=1.0
+                 ):
         """Initialize a SpaceMouse handler.
 
         Args:
             vendor_id: HID device vendor id
             product_id: HID device product id
+            pos_sensitivity: Magnitude of input position command scaling
+            rot_sensitivity: Magnitude of scale input rotation commands scaling
 
         Note:
             Use hid.enumerate() to view all USB human interface devices (HID).
@@ -81,6 +88,9 @@ class SpaceMouse(Device):
         print("Opening SpaceMouse device")
         self.device = hid.device()
         self.device.open(vendor_id, product_id)  # SpaceMouse
+
+        self.pos_sensitivity = pos_sensitivity
+        self.rot_sensitivity = rot_sensitivity
 
         print("Manufacturer: %s" % self.device.get_manufacturer_string())
         print("Product: %s" % self.device.get_product_string())
@@ -137,8 +147,8 @@ class SpaceMouse(Device):
 
     def get_controller_state(self):
         """Returns the current state of the 3d mouse, a dictionary of pos, orn, grasp, and reset."""
-        dpos = self.control[:3] * 0.005
-        roll, pitch, yaw = self.control[3:] * 0.005
+        dpos = self.control[:3] * 0.005 * self.pos_sensitivity
+        roll, pitch, yaw = self.control[3:] * 0.005 * self.rot_sensitivity
         self.grasp = self.control_gripper
 
         # convert RPY to an absolute orientation
@@ -149,7 +159,11 @@ class SpaceMouse(Device):
         self.rotation = self.rotation.dot(drot1.dot(drot2.dot(drot3)))
 
         return dict(
-            dpos=dpos, rotation=self.rotation, grasp=self.grasp, reset=self._reset_state
+            dpos=dpos,
+            rotation=self.rotation,
+            raw_drotation=np.array([roll, pitch, yaw]),
+            grasp=self.grasp,
+            reset=self._reset_state
         )
 
     def run(self):

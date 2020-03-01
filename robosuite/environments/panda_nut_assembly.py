@@ -11,6 +11,8 @@ from robosuite.models.objects import SquareNutObject, RoundNutObject
 from robosuite.models.robots import Panda
 from robosuite.models.tasks import NutAssemblyTask, UniformRandomPegsSampler
 
+import json
+import os
 
 class PandaNutAssembly(PandaEnv):
     """
@@ -19,6 +21,7 @@ class PandaNutAssembly(PandaEnv):
 
     def __init__(
             self,
+            controller_config=None,
             gripper_type="PandaGripper",
             table_full_size=(0.45, 0.69, 0.82),
             table_friction=(1, 0.005, 0.0001),
@@ -44,6 +47,8 @@ class PandaNutAssembly(PandaEnv):
     ):
         """
         Args:
+            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+                Else, uses the default controller for this specific task
 
             gripper_type (str): type of gripper, used to instantiate
                 gripper models from gripper factory.
@@ -116,6 +121,16 @@ class PandaNutAssembly(PandaEnv):
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
         """
 
+        # Load the default controller if none is specified
+        if not controller_config:
+            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
+            try:
+                with open(controller_path) as f:
+                    controller_config = json.load(f)
+            except FileNotFoundError:
+                print("Error opening default controller filepath at: {}. "
+                      "Please check filepath and try again.".format(controller_path))
+
         # task settings
         self.single_object_mode = single_object_mode
         self.nut_to_id = {"square": 0, "round": 1}
@@ -151,6 +166,7 @@ class PandaNutAssembly(PandaEnv):
             )
 
         super().__init__(
+            controller_config=controller_config,
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
@@ -169,6 +185,9 @@ class PandaNutAssembly(PandaEnv):
         )
 
     def _load_model(self):
+        """
+        Loads an xml model, puts it in self.model
+        """
         super()._load_model()
         self.mujoco_robot.set_base_xpos([0, 0, 0])
 
@@ -226,6 +245,11 @@ class PandaNutAssembly(PandaEnv):
                 self.sim.forward()
 
     def _get_reference(self):
+        """
+        Sets up references to important components. A reference is typically an
+        index or a list of indices that point to the corresponding elements
+        in a flatten array, which is how MuJoCo stores physical simulation data.
+        """
         super()._get_reference()
         self.obj_body_id = {}
         self.obj_geom_id = {}
@@ -262,6 +286,9 @@ class PandaNutAssembly(PandaEnv):
         self.objects_on_pegs = np.zeros(len(self.ob_inits))
 
     def _reset_internal(self):
+        """
+        Resets simulation internal configurations.
+        """
         super()._reset_internal()
 
         # reset positions of objects, and move objects out of the scene depending on the mode
@@ -402,6 +429,7 @@ class PandaNutAssembly(PandaEnv):
                 contains a rendered depth map from the simulation
         """
         di = super()._get_observation()
+        # camera observations
         if self.use_camera_obs:
             camera_obs = self.sim.render(
                 camera_name=self.camera_name,

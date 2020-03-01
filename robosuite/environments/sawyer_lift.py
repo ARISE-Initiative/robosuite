@@ -111,7 +111,6 @@ class SawyerLift(SawyerEnv):
                 print("Error opening default controller filepath at: {}. "
                       "Please check filepath and try again.".format(controller_path))
 
-
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction

@@ -31,8 +31,13 @@ SpaceMouse:
         Download and install the driver before running the script:
             https://www.3dconnexion.com/service/drivers.html
 
+Choice of using either inverse kinematics controller (ik) or operational space controller (osc).
+Main difference is that user inputs with ik's rotations are always taken relative to eef coordinate frame, whereas
+    user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
+    Note that osc also tends to be more efficient since ik relies on backend pybullet sim
+
 Example:
-    $ python demo_device_control.py --environment SawyerPickPlaceCan
+    $ python demo_device_control.py --environment SawyerPickPlaceCan --controller ik
 
 """
 
@@ -53,6 +58,8 @@ if __name__ == "__main__":
     parser.add_argument("--environment", type=str, default="SawyerLift")
     parser.add_argument("--controller", type=str, default="ik", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="spacemouse")
+    parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
+    parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")
     args = parser.parse_args()
 
     # Import controller config for EE IK or OSC (pos/ori)
@@ -71,9 +78,7 @@ if __name__ == "__main__":
             if args.controller == 'osc':
                 controller_config["max_action"] = 1
                 controller_config["min_action"] = -1
-                controller_config["control_delta"] = False
-                # Must have a cumulative dpos since we are controlling absolute pos and ori values
-                cumulative_dpos = 0
+                controller_config["control_delta"] = True
     except FileNotFoundError:
         print("Error opening default controller filepath at: {}. "
               "Please check filepath and try again.".format(controller_path))
@@ -95,14 +100,14 @@ if __name__ == "__main__":
     if args.device == "keyboard":
         from robosuite.devices import Keyboard
 
-        device = Keyboard()
+        device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
         env.viewer.add_keypress_callback("any", device.on_press)
         env.viewer.add_keyup_callback("any", device.on_release)
         env.viewer.add_keyrepeat_callback("any", device.on_press)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
-        device = SpaceMouse()
+        device = SpaceMouse(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     else:
         raise Exception(
             "Invalid device choice: choose either 'keyboard' or 'spacemouse'."
@@ -113,52 +118,41 @@ if __name__ == "__main__":
         env.viewer.set_camera(camera_id=2)
         env.render()
 
-        # rotate the gripper so we can see it easily
-        if env.mujoco_robot.name == 'sawyer':
-            # TODO: Confirm that this is no longer necessary
-            pass
-            #env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
-        elif env.mujoco_robot.name == 'panda':
-            env.set_robot_joint_positions([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, -np.pi/4])
-        else:
-            print("Error: Script supported for Sawyer and Panda robots only!")
-            sys.exit()
-
         device.start_control()
         while True:
             state = device.get_controller_state()
             # Note: Devices output rotation with x and z flipped to account for robots starting with gripper facing down
             #       Also note that the outputted rotation is an absolute rotation, while outputted dpos is delta pos
-            dpos, rotation, grasp, reset = (
+            dpos, rotation, raw_drotation, grasp, reset = (
                 state["dpos"],
                 state["rotation"],
+                state["raw_drotation"],
                 state["grasp"],
                 state["reset"],
             )
             if reset:
                 break
 
-            # convert into a suitable end effector action for the environment
-            current = env._right_hand_orn
-
-            # relative rotation of desired from current
-            drotation = current.T.dot(rotation)
-
+            drotation = None
             if args.controller == 'ik':
-                # IK expects quat, so convert to quat
-                drotation = T.mat2quat(drotation)
+                # relative rotation of desired from current eef orientation
+                # IK expects quat, so also convert to quat
+                drotation = T.mat2quat(env._right_hand_orn.T.dot(rotation))
             elif args.controller == 'osc':
-                # OSC expects euler, so convert to euler
-                drotation = T.mat2euler(drotation)
+                # OSC expects raw delta euler angles, so convert raw rotations to euler
+                drotation = (raw_drotation[np.array([1,0,2])] * 75)
+                # Flip z
+                drotation[2] = -drotation[2]
+                dpos = dpos * 200
+            else:
+                # No other controllers currently supported
+                print("Error: Unsupported controller specified -- must be either ik or osc!")
 
-                # Since the input rotation is absolute (relative to initial), input pos must also be absolute
-                # So increment cumulative dpos (scaled down) and use that as input
-                cumulative_dpos += dpos * 0.1
-                dpos = cumulative_dpos
-
-            # map 0 to -1 (open) and 1 to 0 (closed halfway)
-            grasp = grasp - 1.
+            # map 0 to -1 (open) and leave 1 mapped as is (closed)
+            grasp = 1 if grasp else -1
 
             action = np.concatenate([dpos, drotation, [grasp]])
             obs, reward, done, info = env.step(action)
             env.render()
+
+
