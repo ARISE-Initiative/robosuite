@@ -103,6 +103,7 @@ class PandaLift(PandaEnv):
 
         # Load the default controller if none is specified
         if not controller_config:
+            #TODO: Change to panda default
             controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
             try:
                 with open(controller_path) as f:

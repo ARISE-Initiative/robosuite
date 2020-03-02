@@ -69,7 +69,7 @@ class EEIKController(JointVelController):
         self.setup_inverse_kinematics()
 
         # Run sueprclass inits
-        super(EEIKController, self).__init__(
+        super().__init__(
             sim=sim,
             robot_id=robot_id,
             joint_indexes=joint_indexes,
@@ -369,7 +369,8 @@ class EEIKController(JointVelController):
                 dpos = dpos * self.ik_pos_limit / input_norm
 
         # Clip orientation to desired magnitude
-        rotation = T.clip_rotation(rotation, self.ik_ori_limit)
+        #TODO: Fix!!
+        #rotation = T.clip_rotation(rotation, self.ik_ori_limit)
 
 
         return dpos, rotation
@@ -406,4 +407,8 @@ class EEIKController(JointVelController):
         """
         error = current - set_point
         return error
+
+    @property
+    def name(self):
+        return 'ee_ik'
 

@@ -148,4 +148,8 @@ class Controller(object, metaclass=abc.ABCMeta):
     def control_dim(self, control_dim):
         self._control_dim = control_dim
 
+    @property
+    def name(self):
+        raise NotImplementedError
+
 

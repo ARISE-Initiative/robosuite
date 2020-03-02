@@ -99,3 +99,7 @@ class JointTorqueController(Controller):
 
         # Return final torques
         return self.torques
+
+    @property
+    def name(self):
+        return 'joint_torque'

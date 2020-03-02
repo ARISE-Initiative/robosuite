@@ -562,7 +562,7 @@ def clip_rotation(quat, limit):
     :param limit: Value to limit rotation by -- magnitude (scalar)
     :return: Clipped rotation quaternion (x, y, z, w)
     """
-    if np.isclose(quat[3], 1):
+    if np.isclose(quat[3], 1, 1e-3):
         # This is (close to) a zero degree rotation, immediately return
         return quat
     else:

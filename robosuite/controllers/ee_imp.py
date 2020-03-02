@@ -174,3 +174,7 @@ class EEImpController(Controller):
                                           self.initial_joint, self.joint_pos, self.joint_vel)
 
         return self.torques
+
+    @property
+    def name(self):
+        return 'ee_imp'

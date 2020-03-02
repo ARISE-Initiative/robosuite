@@ -108,3 +108,7 @@ class JointImpController(Controller):
         self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
 
         return self.torques
+
+    @property
+    def name(self):
+        return 'joint_imp'
