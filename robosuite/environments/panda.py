@@ -224,7 +224,9 @@ class PandaEnv(MujocoEnv):
         """
 
         # clip actions into valid range
-        assert len(action) == self.controller.control_dim + self.gripper.dof, "environment got invalid action dimension"
+        assert len(action) == self.controller.control_dim + self.gripper.dof, \
+            "environment got invalid action dimension -- expected {}, got {}".format(
+                self.controller.control_dim+self.gripper.dof, len(action))
 
         gripper_action = None
         if self.has_gripper:

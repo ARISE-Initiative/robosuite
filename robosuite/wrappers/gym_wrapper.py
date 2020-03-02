@@ -35,7 +35,8 @@ class GymWrapper(Wrapper):
         high = np.inf * np.ones(self.obs_dim)
         low = -high
         self.observation_space = spaces.Box(low=low, high=high)
-        low, high = self.env.action_spec
+        low = np.concatenate((self.env.controller.input_min, np.array([-1])))
+        high = np.concatenate((self.env.controller.input_max, np.array([1])))
         self.action_space = spaces.Box(low=low, high=high)
 
     def _flatten_obs(self, obs_dict, verbose=False):

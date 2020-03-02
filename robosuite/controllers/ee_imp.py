@@ -30,7 +30,7 @@ class EEImpController(Controller):
                  **kwargs # does nothing; used so no error raised when dict is passed with extra terms used previously
                  ):
 
-        super(EEImpController, self).__init__(
+        super().__init__(
             sim,
             robot_id,
             joint_indexes,
