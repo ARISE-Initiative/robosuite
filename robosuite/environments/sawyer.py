@@ -430,7 +430,7 @@ class SawyerEnv(MujocoEnv):
 
             # Now, control both gripper and joints
             self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
-                                                                  self._ref_joint_torq_actuator_indexes] + torques
+                                                                  self._ref_joint_vel_indexes] + torques
 
             if self.use_indicator_object:
                 self.sim.data.qfrc_applied[
