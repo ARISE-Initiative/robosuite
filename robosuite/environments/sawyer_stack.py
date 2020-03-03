@@ -114,7 +114,7 @@ class SawyerStack(SawyerEnv):
                 x_range=[-0.08, 0.08],
                 y_range=[-0.08, 0.08],
                 ensure_object_boundary_in_range=False,
-                z_rotation=True,
+                z_rotation=None,
             )
 
         super().__init__(
