@@ -190,6 +190,12 @@ class PandaEnv(MujocoEnv):
             if actuator.startswith("vel")
         ]
 
+        self._ref_joint_torq_actuator_indexes = [
+            self.sim.model.actuator_name2id(actuator)
+            for actuator in self.sim.model.actuator_names
+            if actuator.startswith("torq")
+        ]
+
         if self.has_gripper:
             self._ref_joint_gripper_actuator_indexes = [
                 self.sim.model.actuator_name2id(actuator)
@@ -251,15 +257,22 @@ class PandaEnv(MujocoEnv):
         if self.has_gripper:
             gripper_action_actual = self.gripper.format_action(gripper_action)
             # rescale normalized gripper action to control ranges
-            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_gripper_joint_vel_indexes]
+            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes]
             bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
             weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
             applied_gripper_action = bias + weight * gripper_action_actual
-            self.sim.data.ctrl[self._ref_gripper_joint_vel_indexes] = applied_gripper_action
+            self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
 
-        # Now, control both gripper and joints (with gravity compensation)
-        self.sim.data.ctrl[self.joint_indexes] = self.sim.data.qfrc_bias[
+        # Apply joint torque control (with gravity compensation)
+        self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
                                                               self.joint_indexes] + torques
+
+        if self.use_indicator_object:
+            # Apply gravity compensation to indicator object too
+            self.sim.data.qfrc_applied[
+            self._ref_indicator_vel_low: self._ref_indicator_vel_high
+            ] = self.sim.data.qfrc_bias[
+                self._ref_indicator_vel_low: self._ref_indicator_vel_high]
 
     def _post_action(self, action):
         """
@@ -317,8 +330,8 @@ class PandaEnv(MujocoEnv):
         Action lower/upper limits per dimension.
         """
         # Torque limit values pulled from relevant robot.xml file
-        low = self.sim.model.actuator_ctrlrange[self.joint_indexes, 0]
-        high = self.sim.model.actuator_ctrlrange[self.joint_indexes, 1]
+        low = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 1]
 
         return low, high
 
