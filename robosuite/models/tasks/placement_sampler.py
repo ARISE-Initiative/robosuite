@@ -41,7 +41,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         x_range=None,
         y_range=None,
         ensure_object_boundary_in_range=True,
-        z_rotation="random",
+        z_rotation=None,
     ):
         """
         Args:
