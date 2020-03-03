@@ -399,7 +399,7 @@ class PandaEnv(MujocoEnv):
             # TODO
             # First, get joint space action
             # action = action.copy()  # ensure that we don't change the action outside of this scope
-            self.controller.update_model(self.sim, id_name='right_hand', joint_index=self._ref_joint_pos_indexes)
+            self.controller.update_model(self.sim, id_name='right_hand', joint_index=(self._ref_joint_pos_indexes, self._ref_joint_vel_indexes))
             torques = self.controller.action_to_torques(action,
                                                         self.policy_step)  # this scales and clips the actions correctly
 
