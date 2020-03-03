@@ -401,7 +401,7 @@ class MujocoEnv(metaclass=EnvMeta):
     def from_pixel_to_world(self, u, v, w, camera_name=None):
         """
         @input u, v: pixel
-        @input w: a scale, for homogeneous transformation
+        @input w: depth
         @returns X: numpy array of shape (3,); x, y, z in world coordinates
         """
         assert 0 <= u < self.camera_width
