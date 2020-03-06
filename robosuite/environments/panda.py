@@ -311,6 +311,12 @@ class PandaEnv(MujocoEnv):
             if actuator.startswith("vel")
         ]
 
+        self._ref_joint_torq_actuator_indexes = [
+            self.sim.model.actuator_name2id(actuator)
+            for actuator in self.sim.model.actuator_names
+            if actuator.startswith("torq")
+        ]
+
         if self.has_gripper:
             self._ref_joint_gripper_actuator_indexes = [
                 self.sim.model.actuator_name2id(actuator)
@@ -368,7 +374,7 @@ class PandaEnv(MujocoEnv):
             bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
             weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
             applied_action = bias + weight * action
-            self.sim.data.ctrl[self._ref_joint_vel_indexes] = applied_action
+            self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = applied_action
 
             # gravity compensation
             self.sim.data.qfrc_applied[
@@ -393,7 +399,7 @@ class PandaEnv(MujocoEnv):
             # TODO
             # First, get joint space action
             # action = action.copy()  # ensure that we don't change the action outside of this scope
-            self.controller.update_model(self.sim, id_name='right_hand', joint_index=self._ref_joint_pos_indexes)
+            self.controller.update_model(self.sim, id_name='right_hand', joint_index=(self._ref_joint_pos_indexes, self._ref_joint_vel_indexes))
             torques = self.controller.action_to_torques(action,
                                                         self.policy_step)  # this scales and clips the actions correctly
 
@@ -416,15 +422,22 @@ class PandaEnv(MujocoEnv):
             if self.has_gripper:
                 gripper_action_actual = self.gripper.format_action(gripper_action)
                 # rescale normalized gripper action to control ranges
-                ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_gripper_joint_vel_indexes]
+                ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes]
                 bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
                 weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
                 applied_gripper_action = bias + weight * gripper_action_actual
-                self.sim.data.ctrl[self._ref_gripper_joint_vel_indexes] = applied_gripper_action
+                self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
 
             # Now, control both gripper and joints
-            self.sim.data.ctrl[self._ref_joint_vel_indexes] = self.sim.data.qfrc_bias[
+            self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
                                                                   self._ref_joint_vel_indexes] + torques
+
+            if self.use_indicator_object:
+                self.sim.data.qfrc_applied[
+                self._ref_indicator_vel_low: self._ref_indicator_vel_high
+                ] = self.sim.data.qfrc_bias[
+                    self._ref_indicator_vel_low: self._ref_indicator_vel_high
+                    ]
 
             if self.policy_step:
                 self.prev_pstep_q = np.array(self.curr_pstep_q)
@@ -432,7 +445,7 @@ class PandaEnv(MujocoEnv):
                 self.prev_pstep_a = np.array(self.curr_pstep_a)
                 self.curr_pstep_a = np.array(action)  # .copy()) # TODO
                 self.prev_pstep_t = np.array(self.curr_pstep_t)
-                self.curr_pstep_t = np.array(self.sim.data.ctrl[self._ref_joint_vel_indexes])
+                self.curr_pstep_t = np.array(self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes])
                 self.prev_pstep_ft = np.array(self.curr_pstep_ft)
 
                 # Assumes a ft sensor on the wrist

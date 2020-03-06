@@ -101,6 +101,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.ignore_done = ignore_done
         self.viewer = None
         self.model = None
+        self.last_action = None
 
         # settings for camera observations
         self.use_camera_obs = use_camera_obs
@@ -187,6 +188,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = 0
         self.timestep = 0
         self.done = False
+        self.last_action = None
 
     def _get_observation(self):
         """Returns an OrderedDict containing observations [(name_string, np.array), ...]."""
@@ -196,6 +198,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """Takes a step in simulation with control command @action."""
         if self.done:
             raise ValueError("executing action in terminated episode")
+        self.last_action = np.array(action)
 
         self.timestep += 1
         policy_step = True
@@ -398,7 +401,7 @@ class MujocoEnv(metaclass=EnvMeta):
     def from_pixel_to_world(self, u, v, w, camera_name=None):
         """
         @input u, v: pixel
-        @input w: a scale, for homogeneous transformation
+        @input w: depth
         @returns X: numpy array of shape (3,); x, y, z in world coordinates
         """
         assert 0 <= u < self.camera_width

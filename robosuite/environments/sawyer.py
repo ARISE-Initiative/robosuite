@@ -22,6 +22,7 @@ class SawyerEnv(MujocoEnv):
         gripper_type=None,
         gripper_visualization=False,
         use_indicator_object=False,
+        indicator_num=1,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -139,6 +140,7 @@ class SawyerEnv(MujocoEnv):
         self.gripper_type = gripper_type
         self.gripper_visualization = gripper_visualization
         self.use_indicator_object = use_indicator_object
+        self.indicator_num = indicator_num
         super().__init__(
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
@@ -280,13 +282,19 @@ class SawyerEnv(MujocoEnv):
         ]
 
         if self.use_indicator_object:
-            ind_qpos = self.sim.model.get_joint_qpos_addr("pos_indicator")
-            self._ref_indicator_pos_low, self._ref_indicator_pos_high = ind_qpos
+            self._ref_indicator_pos_low = [0] * self.indicator_num
+            self._ref_indicator_pos_high = [0] * self.indicator_num
+            self._ref_indicator_vel_low = [0] * self.indicator_num
+            self._ref_indicator_vel_high = [0] * self.indicator_num
+            self.indicator_id = [0] * self.indicator_num
+            for i in range(self.indicator_num):
+                ind_qpos = self.sim.model.get_joint_qpos_addr("pos_indicator_{}".format(i))
+                self._ref_indicator_pos_low[i], self._ref_indicator_pos_high[i] = ind_qpos
 
-            ind_qvel = self.sim.model.get_joint_qvel_addr("pos_indicator")
-            self._ref_indicator_vel_low, self._ref_indicator_vel_high = ind_qvel
+                ind_qvel = self.sim.model.get_joint_qvel_addr("pos_indicator_{}".format(i))
+                self._ref_indicator_vel_low[i], self._ref_indicator_vel_high[i] = ind_qvel
 
-            self.indicator_id = self.sim.model.body_name2id("pos_indicator")
+                self.indicator_id[i] = self.sim.model.body_name2id("pos_indicator_{}".format(i))
 
         # indices for grippers in qpos, qvel
         if self.has_gripper:
@@ -311,6 +319,12 @@ class SawyerEnv(MujocoEnv):
             if actuator.startswith("vel")
         ]
 
+        self._ref_joint_torq_actuator_indexes = [
+            self.sim.model.actuator_name2id(actuator)
+            for actuator in self.sim.model.actuator_names
+            if actuator.startswith("torq")
+        ]
+
         if self.has_gripper:
             self._ref_joint_gripper_actuator_indexes = [
                 self.sim.model.actuator_name2id(actuator)
@@ -322,12 +336,12 @@ class SawyerEnv(MujocoEnv):
         self.eef_site_id = self.sim.model.site_name2id("grip_site")
         self.eef_cylinder_id = self.sim.model.site_name2id("grip_site_cylinder")
 
-    def move_indicator(self, pos):
+    def move_indicator(self, pos, i=0):
         """
-        Sets 3d position of indicator object to @pos.
+        Sets 3d position of indicator object i to @pos.
         """
         if self.use_indicator_object:
-            index = self._ref_indicator_pos_low
+            index = self._ref_indicator_pos_low[i]
             self.sim.data.qpos[index : index + 3] = pos
 
     def _pre_action(self, action, policy_step):
@@ -368,7 +382,7 @@ class SawyerEnv(MujocoEnv):
             bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
             weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
             applied_action = bias + weight * action
-            self.sim.data.ctrl[self._ref_joint_vel_indexes] = applied_action
+            self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = applied_action
 
             # gravity compensation
             self.sim.data.qfrc_applied[
@@ -376,11 +390,12 @@ class SawyerEnv(MujocoEnv):
             ] = self.sim.data.qfrc_bias[self._ref_joint_vel_indexes]
 
             if self.use_indicator_object:
-                self.sim.data.qfrc_applied[
-                self._ref_indicator_vel_low: self._ref_indicator_vel_high
-                ] = self.sim.data.qfrc_bias[
-                    self._ref_indicator_vel_low: self._ref_indicator_vel_high
-                    ]
+                for i in range(self.indicator_num):
+                    self.sim.data.qfrc_applied[
+                    self._ref_indicator_vel_low[i]: self._ref_indicator_vel_high[i]
+                    ] = self.sim.data.qfrc_bias[
+                        self._ref_indicator_vel_low[i]: self._ref_indicator_vel_high[i]
+                        ]
 
         # using new controller
         else:
@@ -393,7 +408,7 @@ class SawyerEnv(MujocoEnv):
             # TODO
             # First, get joint space action
             # action = action.copy()  # ensure that we don't change the action outside of this scope
-            self.controller.update_model(self.sim, id_name='right_hand', joint_index=self._ref_joint_pos_indexes)
+            self.controller.update_model(self.sim, id_name='right_hand', joint_index=(self._ref_joint_pos_indexes, self._ref_joint_vel_indexes))
             torques = self.controller.action_to_torques(action,
                                                         self.policy_step)  # this scales and clips the actions correctly
 
@@ -416,15 +431,23 @@ class SawyerEnv(MujocoEnv):
             if self.has_gripper:
                 gripper_action_actual = self.gripper.format_action(gripper_action)
                 # rescale normalized gripper action to control ranges
-                ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_gripper_joint_vel_indexes]
+                ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes]
                 bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
                 weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
                 applied_gripper_action = bias + weight * gripper_action_actual
-                self.sim.data.ctrl[self._ref_gripper_joint_vel_indexes] = applied_gripper_action
+                self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
 
             # Now, control both gripper and joints
-            self.sim.data.ctrl[self._ref_joint_vel_indexes] = self.sim.data.qfrc_bias[
+            self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
                                                                   self._ref_joint_vel_indexes] + torques
+
+            if self.use_indicator_object:
+                for i in range(self.indicator_num):
+                    self.sim.data.qfrc_applied[
+                    self._ref_indicator_vel_low[i]: self._ref_indicator_vel_high[i]
+                    ] = self.sim.data.qfrc_bias[
+                        self._ref_indicator_vel_low[i]: self._ref_indicator_vel_high[i]
+                        ]
 
             if self.policy_step:
                 self.prev_pstep_q = np.array(self.curr_pstep_q)
@@ -432,7 +455,7 @@ class SawyerEnv(MujocoEnv):
                 self.prev_pstep_a = np.array(self.curr_pstep_a)
                 self.curr_pstep_a = np.array(action)  # .copy()) # TODO
                 self.prev_pstep_t = np.array(self.curr_pstep_t)
-                self.curr_pstep_t = np.array(self.sim.data.ctrl[self._ref_joint_vel_indexes])
+                self.curr_pstep_t = np.array(self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes])
                 self.prev_pstep_ft = np.array(self.curr_pstep_ft)
 
                 # Assumes a ft sensor on the wrist

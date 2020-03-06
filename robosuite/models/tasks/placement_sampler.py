@@ -153,7 +153,7 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
         y_range=None,
         z_range=None,
         ensure_object_boundary_in_range=True,
-        z_rotation=True,
+        z_rotation=None,
     ):
         """
         Args:
@@ -213,11 +213,16 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
         return np.random.uniform(high=maximum, low=minimum)
 
     def sample_quat(self):
-        if self.z_rotation:
+        if self.z_rotation is None:
             rot_angle = np.random.uniform(high=2 * np.pi, low=0)
-            return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
+        elif isinstance(self.z_rotation, collections.Iterable):
+            rot_angle = np.random.uniform(
+                high=max(self.z_rotation), low=min(self.z_rotation)
+            )
         else:
-            return [1, 0, 0, 0]
+            rot_angle = self.z_rotation
+
+        return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
 
     def sample(self):
         pos_arr = []

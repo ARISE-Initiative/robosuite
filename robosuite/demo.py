@@ -33,6 +33,7 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         control_freq=100,
+        use_indicator_object=True,
     )
     env.reset()
     env.viewer.set_camera(camera_id=0)
@@ -41,4 +42,5 @@ if __name__ == "__main__":
     for i in range(1000):
         action = np.random.randn(env.dof)
         obs, reward, done, _ = env.step(action)
+        env.move_indicator(pos=np.array([0.5, 0., 0.9]))
         env.render()

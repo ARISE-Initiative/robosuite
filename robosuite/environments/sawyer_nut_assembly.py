@@ -200,7 +200,7 @@ class SawyerNutAssembly(SawyerEnv):
                 y_range=[-0.2, 0.2],
                 z_range=[0.02, 0.10],
                 ensure_object_boundary_in_range=False,
-                z_rotation=True,
+                z_rotation=None,
             )
 
         super().__init__(
@@ -616,3 +616,30 @@ class SawyerNutAssemblyRound(SawyerNutAssembly):
             "single_object_mode" not in kwargs and "nut_type" not in kwargs
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="round", **kwargs)
+
+
+### Some new environments... ###
+
+class SawyerNutAssemblySquareConstantRotation(SawyerNutAssemblySquare):
+    """
+    Square nut is initialized in the same orientation each time, and with
+    a fixed z-offset corresponding to lying flat on the table.
+
+    The original environment had a random z-offset to initialize the nut 
+    in the air for some reason...
+    """
+
+    def __init__(self, **kwargs):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomPegsSampler(
+            x_range=[-0.15, 0.],
+            y_range=[-0.2, 0.2],
+            z_range=[-0.02, -0.02],
+            ensure_object_boundary_in_range=False,
+            z_rotation=np.pi
+        )
+        super().__init__(**kwargs)
+
+
+
+
