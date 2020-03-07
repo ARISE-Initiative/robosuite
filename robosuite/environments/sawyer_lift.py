@@ -129,7 +129,7 @@ class SawyerLift(SawyerEnv):
                 x_range=[-0.03, 0.03],
                 y_range=[-0.03, 0.03],
                 ensure_object_boundary_in_range=False,
-                z_rotation=True,
+                z_rotation=None,
             )
 
         super().__init__(
