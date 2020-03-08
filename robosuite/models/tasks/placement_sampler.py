@@ -157,10 +157,10 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
     ):
         """
         Args:
-            x_range(float * 2): override the x_range used to uniformly place objects
-                    if None, default to x-range of table
-            y_range(float * 2): override the y_range used to uniformly place objects
-                    if None default to y-range of table
+            x_range { object : (float * 2) }: override the x_range used to uniformly place objects
+                    if None, defaults to a pre-specified range per object type
+            y_range { object : (float * 2) }: override the y_range used to uniformly place objects
+                    if None defaults to a pre-specified range per object type
             x_range and y_range are both with respect to (0,0) = center of table.
             ensure_object_boundary_in_range:
                 True: The center of object is at position:
@@ -170,43 +170,45 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
             z_rotation:
                 Add random z-rotation
         """
+
+        # NOTE: defaults for these ranges will be set in @setup if necessary
         self.x_range = x_range
         self.y_range = y_range
         self.z_range = z_range
         self.ensure_object_boundary_in_range = ensure_object_boundary_in_range
         self.z_rotation = z_rotation
 
-    def sample_x(self, object_horizontal_radius, x_range=None):
-        if x_range is None:
-            x_range = self.x_range
-            if x_range is None:
-                x_range = [-self.table_size[0] / 2, self.table_size[0] / 2]
-        minimum = min(x_range)
-        maximum = max(x_range)
+    def sample_x(self, object_name, object_horizontal_radius):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        minimum = min(self.x_range[k])
+        maximum = max(self.x_range[k])
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_y(self, object_horizontal_radius, y_range=None):
-        if y_range is None:
-            y_range = self.y_range
-            if y_range is None:
-                y_range = [-self.table_size[0] / 2, self.table_size[0] / 2]
-        minimum = min(y_range)
-        maximum = max(y_range)
+    def sample_y(self, object_name, object_horizontal_radius):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        minimum = min(self.y_range[k])
+        maximum = max(self.y_range[k])
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_z(self, object_horizontal_radius, z_range=None):
-        if z_range is None:
-            z_range = self.z_range
-            if z_range is None:
-                z_range = [0, 1]
-        minimum = min(z_range)
-        maximum = max(z_range)
+    def sample_z(self, object_name, object_horizontal_radius):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        minimum = min(self.z_range[k])
+        maximum = max(self.z_range[k])
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
@@ -234,28 +236,10 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
             bottom_offset = obj_mjcf.get_bottom_offset()
             success = False
 
-            for i in range(5000):  # 1000 retries
-                if obj_name.startswith("SquareNut"):
-                    x_range = [
-                        -self.table_size[0] / 2 + horizontal_radius,
-                        -horizontal_radius,
-                    ]
-                    y_range = [horizontal_radius, self.table_size[0] / 2]
-                    print("SquareNut")
-                    print(x_range)
-                    print(y_range)
-                else:
-                    x_range = [
-                        -self.table_size[0] / 2 + horizontal_radius,
-                        -horizontal_radius,
-                    ]
-                    y_range = [-self.table_size[0] / 2, -horizontal_radius]
-                    print("RoundNut")
-                    print(x_range)
-                    print(y_range)
-                object_x = self.sample_x(horizontal_radius, x_range=x_range)
-                object_y = self.sample_y(horizontal_radius, y_range=y_range)
-                object_z = self.sample_z(0.01)
+            for i in range(5000):  # 5000 retries
+                object_x = self.sample_x(obj_name, horizontal_radius)
+                object_y = self.sample_y(obj_name, horizontal_radius)
+                object_z = self.sample_z(obj_name, 0.01)
                 # objects cannot overlap
                 location_valid = True
                 pos = (
@@ -302,6 +286,51 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
         self.n_obj = len(self.mujoco_objects)
         self.table_top_offset = table_top_offset
         self.table_size = table_size
+
+        # future proof: make sure all objects of same type have same size
+        all_horizontal_radius = {}
+        for obj_name, obj_mjcf in self.mujoco_objects.items():
+            horizontal_radius = obj_mjcf.get_horizontal_radius()
+
+            if obj_name.startswith("SquareNut"):
+                if "SquareNut" in all_horizontal_radius:
+                    assert(all_horizontal_radius["SquareNut"] == horizontal_radius)
+                all_horizontal_radius["SquareNut"] = horizontal_radius
+            elif obj_name.startswith("RoundNut"):
+                if "RoundNut" in all_horizontal_radius:
+                    assert(all_horizontal_radius["RoundNut"] == horizontal_radius)
+                all_horizontal_radius["RoundNut"] = horizontal_radius
+            else:
+                raise Exception("Got invalid object to place!")
+
+        # set defaults if necessary
+        if self.x_range is None:
+            self.x_range = {
+                "SquareNut": [
+                    -self.table_size[0] / 2 + all_horizontal_radius["SquareNut"], 
+                    -all_horizontal_radius["SquareNut"],
+                ],
+                "RoundNut": [
+                    -self.table_size[0] / 2 + all_horizontal_radius["RoundNut"], 
+                    -all_horizontal_radius["RoundNut"],
+                ],
+            }
+        if self.y_range is None:
+            self.y_range = {
+                "SquareNut": [
+                    all_horizontal_radius["SquareNut"], 
+                    self.table_size[0] / 2,
+                ],
+                "RoundNut": [
+                    -self.table_size[0] / 2, 
+                    -all_horizontal_radius["RoundNut"]
+                ],
+            }
+        if self.z_range is None:
+            self.z_range = {
+                "SquareNut": [0., 1.],
+                "RoundNut": [0., 1.],
+            }
 
 
 class RoundRobinSampler(UniformRandomSampler):

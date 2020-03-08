@@ -196,9 +196,9 @@ class SawyerNutAssembly(SawyerEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomPegsSampler(
-                x_range=[-0.15, 0.],
-                y_range=[-0.2, 0.2],
-                z_range=[0.02, 0.10],
+                x_range={ "SquareNut" : [-0.115, -0.11], "RoundNut" : [-0.115, -0.11], },
+                y_range={ "SquareNut" : [0.11, 0.225], "RoundNut" : [-0.225, -0.11], },
+                z_range={ "SquareNut" : [0.02, 0.10], "RoundNut" : [0.02, 0.10], },
                 ensure_object_boundary_in_range=False,
                 z_rotation=None,
             )
