@@ -241,12 +241,18 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
                         -horizontal_radius,
                     ]
                     y_range = [horizontal_radius, self.table_size[0] / 2]
+                    print("SquareNut")
+                    print(x_range)
+                    print(y_range)
                 else:
                     x_range = [
                         -self.table_size[0] / 2 + horizontal_radius,
                         -horizontal_radius,
                     ]
                     y_range = [-self.table_size[0] / 2, -horizontal_radius]
+                    print("RoundNut")
+                    print(x_range)
+                    print(y_range)
                 object_x = self.sample_x(horizontal_radius, x_range=x_range)
                 object_y = self.sample_y(horizontal_radius, y_range=y_range)
                 object_z = self.sample_z(0.01)
@@ -296,3 +302,132 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
         self.n_obj = len(self.mujoco_objects)
         self.table_top_offset = table_top_offset
         self.table_size = table_size
+
+
+class RoundRobinSampler(UniformRandomSampler):
+    """Places all objects according to grid and round robin between grid points."""
+
+    def __init__(
+        self,
+        x_range=None,
+        y_range=None,
+        ensure_object_boundary_in_range=True,
+        z_rotation=None,
+    ):
+        # x_range, y_range, and z_rotation should all be lists of values to rotate between
+        assert(len(x_range) == len(y_range))
+        assert(len(z_rotation) == len(y_range))
+        self._counter = 0
+        self.num_grid = len(x_range)
+
+        super(RoundRobinSampler, self).__init__(
+            x_range=x_range, 
+            y_range=y_range, 
+            ensure_object_boundary_in_range=ensure_object_boundary_in_range, 
+            z_rotation=z_rotation,
+        )
+
+    def increment_counter(self):
+        """
+        Useful for moving on to next placement in the grid.
+        """
+        self._counter = (self._counter + 1) % self.num_grid
+
+    def decrement_counter(self):
+        """
+        Useful to reverting to the last placement in the grid.
+        """
+        self._counter -= 1
+        if self._counter < 0:
+            self._counter = self.num_grid - 1
+
+    def sample_x(self, object_horizontal_radius):
+        minimum = self.x_range[self._counter]
+        maximum = self.x_range[self._counter]
+        if self.ensure_object_boundary_in_range:
+            minimum += object_horizontal_radius
+            maximum -= object_horizontal_radius
+        return np.random.uniform(high=maximum, low=minimum)
+
+    def sample_y(self, object_horizontal_radius):
+        minimum = self.y_range[self._counter]
+        maximum = self.y_range[self._counter]
+        if self.ensure_object_boundary_in_range:
+            minimum += object_horizontal_radius
+            maximum -= object_horizontal_radius
+        return np.random.uniform(high=maximum, low=minimum)
+
+    def sample_quat(self):
+        rot_angle = self.z_rotation[self._counter]
+        return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
+
+
+class RoundRobinPegsSampler(UniformRandomPegsSampler):
+    """Places all objects according to grid and round robin between grid points."""
+
+    def __init__(
+        self,
+        x_range=None,
+        y_range=None,
+        z_range=None,
+        ensure_object_boundary_in_range=True,
+        z_rotation=None,
+    ):
+        # x_range, y_range, and z_rotation should all be lists of values to rotate between
+        assert(len(x_range) == len(y_range))
+        assert(len(z_rotation) == len(y_range))
+        assert(len(z_range) == len(y_range))
+        self._counter = 0
+        self.num_grid = len(x_range)
+
+        super(RoundRobinPegsSampler, self).__init__(
+            x_range=x_range, 
+            y_range=y_range, 
+            z_range=z_range,
+            ensure_object_boundary_in_range=ensure_object_boundary_in_range, 
+            z_rotation=z_rotation,
+        )
+
+    def increment_counter(self):
+        """
+        Useful for moving on to next placement in the grid.
+        """
+        self._counter = (self._counter + 1) % self.num_grid
+
+    def decrement_counter(self):
+        """
+        Useful to reverting to the last placement in the grid.
+        """
+        self._counter -= 1
+        if self._counter < 0:
+            self._counter = self.num_grid - 1
+
+    def sample_x(self, object_horizontal_radius):
+        minimum = self.x_range[self._counter]
+        maximum = self.x_range[self._counter]
+        if self.ensure_object_boundary_in_range:
+            minimum += object_horizontal_radius
+            maximum -= object_horizontal_radius
+        return np.random.uniform(high=maximum, low=minimum)
+
+    def sample_y(self, object_horizontal_radius):
+        minimum = self.y_range[self._counter]
+        maximum = self.y_range[self._counter]
+        if self.ensure_object_boundary_in_range:
+            minimum += object_horizontal_radius
+            maximum -= object_horizontal_radius
+        return np.random.uniform(high=maximum, low=minimum)
+
+    def sample_z(self, object_horizontal_radius):
+        minimum = self.z_range[self._counter]
+        maximum = self.z_range[self._counter]
+        if self.ensure_object_boundary_in_range:
+            minimum += object_horizontal_radius
+            maximum -= object_horizontal_radius
+        return np.random.uniform(high=maximum, low=minimum)
+
+    def sample_quat(self):
+        rot_angle = self.z_rotation[self._counter]
+        return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
+
+

@@ -36,6 +36,9 @@ class SawyerEnv(MujocoEnv):
         camera_depth=False,
         impedance_ctrl=True,    # TODO
         initial_policy=None,    # TODO - currently not included in the config file (should be a function)
+        eval_mode=False,
+        num_evals=50,
+        perturb_evals=False,
         **kwargs
     ):
         """
@@ -139,6 +142,13 @@ class SawyerEnv(MujocoEnv):
         self.gripper_type = gripper_type
         self.gripper_visualization = gripper_visualization
         self.use_indicator_object = use_indicator_object
+
+        self.eval_mode = eval_mode
+        self.num_evals = num_evals
+        self.perturb_evals = perturb_evals
+        if self.eval_mode:
+            self._get_placement_initializer_for_eval_mode()
+
         super().__init__(
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
@@ -179,6 +189,15 @@ class SawyerEnv(MujocoEnv):
 
         ## counting joint limits
         self.joint_limit_count = 0
+
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        This method is used by subclasses to implement a 
+        placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+        raise Exception("Must implement this in subclass.")
 
     def _load_controller(self, controller_type, controller_file, kwargs):
         """
@@ -235,6 +254,8 @@ class SawyerEnv(MujocoEnv):
         Sets initial pose of arm and grippers.
         """
         super()._reset_internal()
+        self._has_interaction = False
+
         self.sim.data.qpos[self._ref_joint_pos_indexes] = self.mujoco_robot.init_qpos
 
         if self.has_gripper:
@@ -335,6 +356,13 @@ class SawyerEnv(MujocoEnv):
         if self.use_indicator_object:
             index = self._ref_indicator_pos_low
             self.sim.data.qpos[index : index + 3] = pos
+
+    def step(self, action):
+        if not self._has_interaction and self.eval_mode:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super().step(action)
 
     def _pre_action(self, action, policy_step):
         """
