@@ -3,8 +3,6 @@ Convenience script to tune a camera view in a mujoco environment.
 Allows keyboard presses to move a camera around in the viewer, and
 then prints the final position and quaternion you should set
 for your camera in the mujoco XML file.
-
-NOTE: assumes that camera is defined in world frame.
 """
 
 import time
@@ -19,23 +17,6 @@ import robosuite.utils.transform_utils as T
 # some settings
 DELTA_POS_KEY_PRESS = 0.05 # delta camera position per key press
 DELTA_ROT_KEY_PRESS = 1 # delta camera angle per key press
-
-def camera_location_from_xml_string(xml, camera_name):
-    """
-    Gets the current camera pos and quat defined in a mujoco xml.
-    """
-    tree = ET.fromstring(xml)
-    wb = tree.find("worldbody")
-
-    camera_pos = None
-    camera_quat = None
-    cameras = wb.findall("camera")
-    for camera in cameras:
-        if camera.get("name") == camera_name:
-            camera_pos = camera.get("pos")
-            camera_quat = camera.get("quat")
-            break
-    return camera_pos, camera_quat
 
 def modify_xml_for_camera_movement(xml, camera_name):
     """
@@ -178,6 +159,9 @@ class KeyboardHandler:
         """
         pass
 
+def print_command(char, info):
+    char += " " * (10 - len(char))
+    print("{}\t{}".format(char, info))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -188,8 +172,30 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    print("\nWelcome to the camera tuning script! You will be able to tune a camera view")
+    print("by moving it around using your keyboard. The controls are printed below.")
+
+    print("")
+    print_command("Keys", "Command")
+    print_command("w-s", "zoom the camera in/out")
+    print_command("a-d", "pan the camera left/right")
+    print_command("r-f", "pan the camera up/down")
+    print_command("arrow keys", "rotate the camera to change view direction")
+    print_command(".-/", "rotate the camera view without changing view direction")
+    print("")
+
     # read camera XML tag from user input
-    inp = input("Please paste the current camera xml tag below (e.g. <camera ... />):\n")
+    inp = input("\nPlease paste a camera xml tag below (e.g. <camera ... />) \nOR leave blank for an example:\n")
+
+    if len(inp) == 0:
+        if args.env != "SawyerLift":
+            raise Exception("ERROR: env must be SawyerLift to run default example.")
+        print("\nUsing an example tag corresponding to the frontview camera.")
+        print("This xml tag was copied from robosuite/models/assets/arenas/table_arena.xml")
+        inp = '<camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>'
+    
+    print("NOTE: using the following xml tag:\n")
+    print("{}\n".format(inp))
 
     # remember the tag and infer some properties
     cam_tree = ET.fromstring(inp)
