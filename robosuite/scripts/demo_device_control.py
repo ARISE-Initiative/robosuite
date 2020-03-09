@@ -31,10 +31,13 @@ SpaceMouse:
         Download and install the driver before running the script:
             https://www.3dconnexion.com/service/drivers.html
 
-Choice of using either inverse kinematics controller (ik) or operational space controller (osc).
+Choice of using either inverse kinematics controller (ik) or operational space controller (osc):
 Main difference is that user inputs with ik's rotations are always taken relative to eef coordinate frame, whereas
     user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
-    Note that osc also tends to be more efficient since ik relies on backend pybullet sim
+
+    Notes:
+        OSC also tends to be more efficient since IK relies on backend pybullet sim
+        IK maintains initial orientation of robot env while OSC automatically initializes with gripper facing downwards
 
 Example:
     $ python demo_device_control.py --environment SawyerPickPlaceCan --controller ik
@@ -123,6 +126,7 @@ if __name__ == "__main__":
             state = device.get_controller_state()
             # Note: Devices output rotation with x and z flipped to account for robots starting with gripper facing down
             #       Also note that the outputted rotation is an absolute rotation, while outputted dpos is delta pos
+            #       Raw delta rotations from neutral user input is captured in raw_drotation (roll, pitch, yaw)
             dpos, rotation, raw_drotation, grasp, reset = (
                 state["dpos"],
                 state["rotation"],
@@ -133,16 +137,19 @@ if __name__ == "__main__":
             if reset:
                 break
 
-            drotation = None
+            # First process the raw drotation
+            drotation = raw_drotation[np.array([1,0,2])]
             if args.controller == 'ik':
+                # Flip x
+                drotation[0] = -drotation[0]
                 # relative rotation of desired from current eef orientation
                 # IK expects quat, so also convert to quat
-                drotation = T.mat2quat(env._right_hand_orn.T.dot(rotation))
+                drotation = T.mat2quat(T.euler2mat(drotation))
             elif args.controller == 'osc':
-                # OSC expects raw delta euler angles, so convert raw rotations to euler
-                drotation = (raw_drotation[np.array([1,0,2])] * 75)
                 # Flip z
                 drotation[2] = -drotation[2]
+                # OSC expects raw delta euler angles, so convert raw rotations to euler
+                drotation = (drotation * 75)
                 dpos = dpos * 200
             else:
                 # No other controllers currently supported
@@ -151,7 +158,23 @@ if __name__ == "__main__":
             # map 0 to -1 (open) and leave 1 mapped as is (closed)
             grasp = 1 if grasp else -1
 
-            action = np.concatenate([dpos, drotation, [grasp]])
+            # Create action based on action space of individual robot
+            if env.mujoco_robot.name == 'baxter':
+                # Baxter takes double the action length
+                # TODO: Maybe double controlling of Right and Left??
+
+                nonactive = np.zeros(6)
+                if args.controller == 'ik':
+                    nonactive = np.concatenate([nonactive, [1]])
+                # Right control
+                action = np.concatenate([dpos, drotation, nonactive, [grasp], [-1]])
+                # Left control
+                #action = np.concatenate([nonactive, dpos, drotation, [-1], [grasp]])
+
+            else:
+                action = np.concatenate([dpos, drotation, [grasp]])
+
+            # Step through the simulation and render
             obs, reward, done, info = env.step(action)
             env.render()
 
