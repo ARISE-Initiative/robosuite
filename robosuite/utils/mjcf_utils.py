@@ -179,3 +179,20 @@ def postprocess_model_xml(xml_str):
         elem.set("file", new_path)
 
     return ET.tostring(root, encoding="utf8").decode("utf8")
+
+
+def range_to_uniform_grid(a, b, n):
+    """
+    Utility function to return an evenly spaced grid
+    of n points ranging from low point a to high point b
+    such that the spacing is uniform between the points.
+
+    For example, if a = -0.03, b = 0.03, and n = 3, the
+    function will return [-0.02, 0., 0.02]. This also
+    makes it so that you can sample in the range +/- 0.01
+    about each grid point, and this will cover the entire
+    range while respecting the range constraints.
+    """
+    spacing = (b - a) / n
+    offset = a + spacing / 2.
+    return np.arange(n) * spacing + offset
