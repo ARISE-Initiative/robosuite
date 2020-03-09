@@ -236,42 +236,49 @@ class SawyerNutAssembly(SawyerEnv):
         # set up placement grid by getting bounds per dimension and then
         # using meshgrid to get all combinations
         x_bounds, y_bounds, z_bounds, z_rot_bounds = self._grid_bounds_for_eval_mode()
-        x_grid = range_to_uniform_grid(a=x_bounds[0], b=x_bounds[1], n=x_bounds[2])
-        y_grid = range_to_uniform_grid(a=y_bounds[0], b=y_bounds[1], n=y_bounds[2])
-        z_grid = range_to_uniform_grid(a=z_bounds[0], b=z_bounds[1], n=z_bounds[2])
-        z_rotation = range_to_uniform_grid(a=z_rot_bounds[0], b=z_rot_bounds[1], n=z_rot_bounds[2])
-        grid = np.meshgrid(x_grid, y_grid, z_grid, z_rotation)
-        x_grid = grid[0].ravel()
-        y_grid = grid[1].ravel()
-        z_grid = grid[2].ravel()
-        z_rotation = grid[3].ravel()
-        grid_length = x_grid.shape[0]
+        
+        # iterate over nut types to get a grid per nut type
+        final_x_grid = {}
+        final_y_grid = {}
+        final_z_grid = {}
+        final_z_rot_grid = {}
+        for k in x_bounds:
+            x_grid = range_to_uniform_grid(a=x_bounds[k][0], b=x_bounds[k][1], n=x_bounds[k][2])
+            y_grid = range_to_uniform_grid(a=y_bounds[k][0], b=y_bounds[k][1], n=y_bounds[k][2])
+            z_grid = range_to_uniform_grid(a=z_bounds[k][0], b=z_bounds[k][1], n=z_bounds[k][2])
+            z_rotation = range_to_uniform_grid(a=z_rot_bounds[k][0], b=z_rot_bounds[k][1], n=z_rot_bounds[k][2])
+            grid = np.meshgrid(x_grid, y_grid, z_grid, z_rotation)
+            x_grid = grid[0].ravel()
+            y_grid = grid[1].ravel()
+            z_grid = grid[2].ravel()
+            z_rotation = grid[3].ravel()
+            grid_length = x_grid.shape[0]
 
-        round_robin_period = self.num_evals
-        if self.perturb_evals:
-            # sample 100 rounds of perturbations and then sampler will repeat
-            round_robin_period *= 100
-
-            # perturbation size should be half the grid spacing
-            x_pos_perturb_size = ((x_bounds[1] - x_bounds[0]) / x_bounds[2]) / 2.
-            y_pos_perturb_size = ((y_bounds[1] - y_bounds[0]) / y_bounds[2]) / 2.
-            z_pos_perturb_size = ((z_bounds[1] - z_bounds[0]) / z_bounds[2]) / 2.
-            z_rot_perturb_size = ((z_rot_bounds[1] - z_rot_bounds[0]) / z_rot_bounds[2]) / 2.
-
-        # assign grid locations for the full round robin schedule
-        final_x_grid = np.zeros(round_robin_period)
-        final_y_grid = np.zeros(round_robin_period)
-        final_z_grid = np.zeros(round_robin_period)
-        final_z_rot_grid = np.zeros(round_robin_period)
-        for t in range(round_robin_period):
-            g_ind = t % grid_length
-            x, y, z, z_rot = x_grid[g_ind], y_grid[g_ind], z_grid[g_ind], z_rotation[g_ind]
+            round_robin_period = self.num_evals
             if self.perturb_evals:
-                x += np.random.uniform(low=-x_pos_perturb_size, high=x_pos_perturb_size)
-                y += np.random.uniform(low=-y_pos_perturb_size, high=y_pos_perturb_size)
-                z += np.random.uniform(low=-z_pos_perturb_size, high=z_pos_perturb_size)
-                z_rot += np.random.uniform(low=-z_rot_perturb_size, high=z_rot_perturb_size)
-            final_x_grid[t], final_y_grid[t], final_z_grid[t], final_z_rot_grid[t] = x, y, z, z_rot
+                # sample 100 rounds of perturbations and then sampler will repeat
+                round_robin_period *= 100
+
+                # perturbation size should be half the grid spacing
+                x_pos_perturb_size = ((x_bounds[k][1] - x_bounds[k][0]) / x_bounds[k][2]) / 2.
+                y_pos_perturb_size = ((y_bounds[k][1] - y_bounds[k][0]) / y_bounds[k][2]) / 2.
+                z_pos_perturb_size = ((z_bounds[k][1] - z_bounds[k][0]) / z_bounds[k][2]) / 2.
+                z_rot_perturb_size = ((z_rot_bounds[k][1] - z_rot_bounds[k][0]) / z_rot_bounds[k][2]) / 2.
+
+            # assign grid locations for the full round robin schedule
+            final_x_grid[k] = np.zeros(round_robin_period)
+            final_y_grid[k] = np.zeros(round_robin_period)
+            final_z_grid[k] = np.zeros(round_robin_period)
+            final_z_rot_grid[k] = np.zeros(round_robin_period)
+            for t in range(round_robin_period):
+                g_ind = t % grid_length
+                x, y, z, z_rot = x_grid[g_ind], y_grid[g_ind], z_grid[g_ind], z_rotation[g_ind]
+                if self.perturb_evals:
+                    x += np.random.uniform(low=-x_pos_perturb_size, high=x_pos_perturb_size)
+                    y += np.random.uniform(low=-y_pos_perturb_size, high=y_pos_perturb_size)
+                    z += np.random.uniform(low=-z_pos_perturb_size, high=z_pos_perturb_size)
+                    z_rot += np.random.uniform(low=-z_rot_perturb_size, high=z_rot_perturb_size)
+                final_x_grid[k][t], final_y_grid[k][t], final_z_grid[k][t], final_z_rot_grid[k][t] = x, y, z, z_rot
 
         self.placement_initializer = RoundRobinPegsSampler(
             x_range=final_x_grid,
@@ -288,11 +295,17 @@ class SawyerNutAssembly(SawyerEnv):
         per dimension.
         """
 
+        print("")
+        print("*" * 50)
+        print("WARNING! TODO: figure out nice way to have all combinations of objects...")
+        print("*" * 50)
+        print("")
+
         # (low, high, number of grid points for this dimension)
-        x_bounds = (-0.15, 0., 3)
-        y_bounds = (-0.2, 0.2, 3)
-        z_bounds = (0.02, 0.02, 1)
-        z_rot_bounds = (0., 2. * np.pi, 3)
+        x_bounds = { "SquareNut" : (-0.115, -0.11, 3), "RoundNut" : (-0.115, -0.11, 3) }
+        y_bounds = { "SquareNut" : (0.11, 0.225, 3), "RoundNut" : (-0.225, -0.11, 3) }
+        z_bounds = { "SquareNut" : (0.02, 0.02, 1), "RoundNut" : (0.02, 0.02, 1) }
+        z_rot_bounds = { "SquareNut" : (0., 2. * np.pi, 3), "RoundNut" : (0., 2. * np.pi, 3) }
         return x_bounds, y_bounds, z_bounds, z_rot_bounds
 
     def _load_model(self):
@@ -703,13 +716,27 @@ class SawyerNutAssemblySquareConstantRotation(SawyerNutAssemblySquare):
     def __init__(self, **kwargs):
         assert("placement_initializer" not in kwargs)
         kwargs["placement_initializer"] = UniformRandomPegsSampler(
-            x_range=[-0.15, 0.],
-            y_range=[-0.2, 0.2],
-            z_range=[-0.02, -0.02],
+            x_range={ "SquareNut" : [-0.115, -0.11], "RoundNut" : [-0.115, -0.11], },
+            y_range={ "SquareNut" : [0.11, 0.225], "RoundNut" : [-0.225, -0.11], },
+            z_range={ "SquareNut" : [0.02, 0.02], "RoundNut" : [0.02, 0.02], },
             ensure_object_boundary_in_range=False,
-            z_rotation=np.pi
+            z_rotation={ "SquareNut" : np.pi, "RoundNut" : np.pi, },
         )
         super().__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, z positions,
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = { "SquareNut" : (-0.115, -0.11, 3), "RoundNut" : (-0.115, -0.11, 3) }
+        y_bounds = { "SquareNut" : (0.11, 0.225, 3), "RoundNut" : (-0.225, -0.11, 3) }
+        z_bounds = { "SquareNut" : (0.02, 0.02, 1), "RoundNut" : (0.02, 0.02, 1) }
+        z_rot_bounds = { "SquareNut" : (np.pi, np.pi, 1), "RoundNut" : (np.pi, np.pi, 1) }
+        return x_bounds, y_bounds, z_bounds, z_rot_bounds
 
 
 

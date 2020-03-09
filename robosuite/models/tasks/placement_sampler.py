@@ -214,15 +214,19 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_quat(self):
-        if self.z_rotation is None:
+    def sample_quat(self, object_name):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        if self.z_rotation is None or self.z_rotation[k] is None:
             rot_angle = np.random.uniform(high=2 * np.pi, low=0)
-        elif isinstance(self.z_rotation, collections.Iterable):
+        elif isinstance(self.z_rotation[k], collections.Iterable):
             rot_angle = np.random.uniform(
-                high=max(self.z_rotation), low=min(self.z_rotation)
+                high=max(self.z_rotation[k]), low=min(self.z_rotation[k])
             )
         else:
-            rot_angle = self.z_rotation
+            rot_angle = self.z_rotation[k]
 
         return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
 
@@ -260,7 +264,7 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
                     placed_objects.append((pos, horizontal_radius))
                     # random z-rotation
 
-                    quat = self.sample_quat()
+                    quat = self.sample_quat(obj_name)
 
                     quat_arr.append(quat)
                     pos_arr.append(pos)
@@ -402,12 +406,13 @@ class RoundRobinPegsSampler(UniformRandomPegsSampler):
         ensure_object_boundary_in_range=True,
         z_rotation=None,
     ):
-        # x_range, y_range, and z_rotation should all be lists of values to rotate between
-        assert(len(x_range) == len(y_range))
-        assert(len(z_rotation) == len(y_range))
-        assert(len(z_range) == len(y_range))
+        for k in x_range:
+            # x_range, y_range, and z_rotation should all be lists of values to rotate between
+            assert(len(x_range[k]) == len(y_range[k]))
+            assert(len(z_rotation[k]) == len(y_range[k]))
+            assert(len(z_range[k]) == len(y_range[k]))
         self._counter = 0
-        self.num_grid = len(x_range)
+        self.num_grid = len(x_range[k])
 
         super(RoundRobinPegsSampler, self).__init__(
             x_range=x_range, 
@@ -431,32 +436,48 @@ class RoundRobinPegsSampler(UniformRandomPegsSampler):
         if self._counter < 0:
             self._counter = self.num_grid - 1
 
-    def sample_x(self, object_horizontal_radius):
-        minimum = self.x_range[self._counter]
-        maximum = self.x_range[self._counter]
+    def sample_x(self, object_name, object_horizontal_radius):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        minimum = self.x_range[k][self._counter]
+        maximum = self.x_range[k][self._counter]
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_y(self, object_horizontal_radius):
-        minimum = self.y_range[self._counter]
-        maximum = self.y_range[self._counter]
+    def sample_y(self, object_name, object_horizontal_radius):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        minimum = self.y_range[k][self._counter]
+        maximum = self.y_range[k][self._counter]
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_z(self, object_horizontal_radius):
-        minimum = self.z_range[self._counter]
-        maximum = self.z_range[self._counter]
+    def sample_z(self, object_name, object_horizontal_radius):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        minimum = self.z_range[k][self._counter]
+        maximum = self.z_range[k][self._counter]
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_quat(self):
-        rot_angle = self.z_rotation[self._counter]
+    def sample_quat(self, object_name):
+        if object_name.startswith("SquareNut"):
+            k = "SquareNut"
+        else:
+            k = "RoundNut"
+        rot_angle = self.z_rotation[k][self._counter]
         return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
 
 
