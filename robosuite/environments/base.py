@@ -401,7 +401,7 @@ class MujocoEnv(metaclass=EnvMeta):
     def from_pixel_to_world(self, u, v, w, camera_name=None):
         """
         @input u, v: pixel
-        @input w: a scale, for homogeneous transformation
+        @input w: depth
         @returns X: numpy array of shape (3,); x, y, z in world coordinates
         """
         assert 0 <= u < self.camera_width
@@ -413,6 +413,23 @@ class MujocoEnv(metaclass=EnvMeta):
         P_inv = self.get_camera_inverse_transform_matrix(camera_name=camera_name)
         X = P_inv @ np.array([u * w, v * w, w, 1.])
         return X[:3]
+
+    def batch_from_pixel_to_world(self, pixels, depths, camera_name=None):
+        assert(len(pixels.shape) == 2)
+        assert(len(depths.shape) == 1)
+        assert(pixels.shape[1] == 2)
+        assert(depths.shape[0] == pixels.shape[0])
+        assert(np.all(np.logical_and(pixels[:, 0] >= 0, pixels[:, 0] < self.camera_width)))
+        assert(np.all(np.logical_and(pixels[:, 1] >= 0, pixels[:, 1] < self.camera_height)))
+        assert(np.all(depths >= 0))
+
+        if camera_name is None:
+            camera_name = self.camera_name
+        P_inv = self.get_camera_inverse_transform_matrix(camera_name=camera_name)
+        depths = depths[:, None]
+        pts = np.concatenate((pixels * depths, depths, np.ones_like(depths)), axis=1)  # [u * w, v * w, w, 1.]
+        pts_3d = (P_inv @ pts.transpose()).transpose()
+        return pts_3d[:, :3]
 
     def from_world_to_pixel(self, x, camera_name=None):
         """
@@ -435,6 +452,37 @@ class MujocoEnv(metaclass=EnvMeta):
         assert 0 <= u < self.camera_width
         assert 0 <= v < self.camera_height
         return u, v
+
+    def batch_from_world_to_pixel(self, pts, camera_name=None, return_valid_index=False):
+        assert(pts.shape[1] == 3)
+        assert(len(pts.shape) == 2)
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        P = self.get_camera_transform_matrix(camera_name=camera_name)
+        x_hom = np.concatenate((pts, np.ones_like(pts[:, [0]])), axis=1)   # [x, y, z, 1]
+        pixels = (P @ x_hom.transpose()).transpose()
+        pixels /= pixels[:, [2]]
+        valid_pixels_x = np.logical_and(pixels[:, 0] >= 0, pixels[:, 0] < (self.camera_width - 0.5))
+        valid_pixels_y = np.logical_and(pixels[:, 1] >= 0, pixels[:, 1] < (self.camera_height - 0.5))
+        valid_pixel_index = np.where(np.logical_and(valid_pixels_x, valid_pixels_y))[0]
+        pixels = pixels[valid_pixel_index, :2]
+        if return_valid_index:
+            return pixels, valid_pixel_index
+        else:
+            return pixels
+
+    def z_buffer_to_real_depth(self, z_buffer):
+        """
+        Converts z_buffer value (range [0, 1]) to real depth
+        source: https://github.com/deepmind/dm_control/blob/master/dm_control/mujoco/engine.py#L742
+        :param z_buffer: N-d array z buffer values from gl renderer
+        :return: real_depth: N-d array depth in meters
+        """
+        extent = self.sim.model.stat.extent
+        far = self.sim.model.vis.map.zfar * extent
+        near = self.sim.model.vis.map.znear * extent
+        return near / (1. - z_buffer * (1. - near / far))
 
     def close(self):
         """Do any cleanup necessary here."""
