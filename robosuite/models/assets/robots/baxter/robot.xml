@@ -175,39 +175,22 @@
   </worldbody>
   <actuator>
 
-<!--
-    <position joint="right_s0" ctrlrange="-1.70168 1.70168" ctrllimited="true" />
-    <position joint="right_s1" ctrlrange="-2.147 1.047" ctrllimited="true" />
-    <position joint="right_e0" ctrlrange="-3.05418 3.05418" ctrllimited="true" />
-    <position joint="right_e1" ctrlrange="-0.05 2.618" ctrllimited="true" />
-    <position joint="right_w0" ctrlrange="-3.059 3.059" ctrllimited="true" />
-    <position joint="right_w1" ctrlrange="-1.5708 2.094" ctrllimited="true" />
-    <position joint="right_w2" ctrlrange="-3.059 3.059" ctrllimited="true" />
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="right_s0" name="torq_right_j0"/>
+    <motor ctrllimited="true" ctrlrange="-100 100" joint="right_s1" name="torq_right_j1"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="right_e0" name="torq_right_j2"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="right_e1" name="torq_right_j3"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="right_w0" name="torq_right_j4"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="right_w1" name="torq_right_j5"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="right_w2" name="torq_right_j6"/>
 
-    <position joint="left_s0" ctrlrange="-1.70168 1.70168" ctrllimited="true" />
-    <position joint="left_s1" ctrlrange="-2.147 1.047" ctrllimited="true" />
-    <position joint="left_e0" ctrlrange="-3.05418 3.05418" ctrllimited="true" />
-    <position joint="left_e1" ctrlrange="-0.05 2.618" ctrllimited="true" />
-    <position joint="left_w0" ctrlrange="-3.059 3.059" ctrllimited="true" />
-    <position joint="left_w1" ctrlrange="-1.5708 2.094" ctrllimited="true" />
-    <position joint="left_w2" ctrlrange="-3.059 3.059" ctrllimited="true" />
--->
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="left_s0" name="torq_left_j0"/>
+    <motor ctrllimited="true" ctrlrange="-100 100" joint="left_s1" name="torq_left_j1"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="left_e0" name="torq_left_j2"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="left_e1" name="torq_left_j3"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="left_w0" name="torq_left_j4"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="left_w1" name="torq_left_j5"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="left_w2" name="torq_left_j6"/>
 
-    <velocity joint="right_s0" ctrlrange="-2 2" ctrllimited="true" kv="60"/>
-    <velocity joint="right_s1" ctrlrange="-2 2" ctrllimited="true" kv="50"/>
-    <velocity joint="right_e0" ctrlrange="-2 2" ctrllimited="true" kv="20"/>
-    <velocity joint="right_e1" ctrlrange="-2 2" ctrllimited="true" kv="20"/>
-    <velocity joint="right_w0" ctrlrange="-4 4" ctrllimited="true" kv="5" />
-    <velocity joint="right_w1" ctrlrange="-4 4" ctrllimited="true" kv="5" />
-    <velocity joint="right_w2" ctrlrange="-4 4" ctrllimited="true" kv="5" />
-
-    <velocity joint="left_s0" ctrlrange="-2 2" ctrllimited="true" kv="60"/>
-    <velocity joint="left_s1" ctrlrange="-2 2" ctrllimited="true" kv="50"/>
-    <velocity joint="left_e0" ctrlrange="-2 2" ctrllimited="true" kv="20"/>
-    <velocity joint="left_e1" ctrlrange="-2 2" ctrllimited="true" kv="20"/>
-    <velocity joint="left_w0" ctrlrange="-4 4" ctrllimited="true" kv="5" />
-    <velocity joint="left_w1" ctrlrange="-4 4" ctrllimited="true" kv="5" />
-    <velocity joint="left_w2" ctrlrange="-4 4" ctrllimited="true" kv="5" />
 
 </actuator>
 </mujoco>

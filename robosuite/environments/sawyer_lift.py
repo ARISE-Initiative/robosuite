@@ -111,6 +111,10 @@ class SawyerLift(SawyerEnv):
                 print("Error opening default controller filepath at: {}. "
                       "Please check filepath and try again.".format(controller_path))
 
+        # Assert that the controller config is a dict file
+        assert type(controller_config) == dict, \
+            "Inputted controller config must be a dict! Instead, got type: {}".format(type(controller_config))
+
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction

@@ -3,6 +3,8 @@ Defines a string based method of initializing controllers
 """
 from .ee_imp import EEImpController
 from .joint_vel import JointVelController
+from .joint_imp import JointImpController
+from .joint_torque import JointTorqueController
 from .ee_ik import EEIKController
 from .interpolators.linear_interpolator import LinearInterpolator
 
@@ -51,5 +53,9 @@ def controller_factory(name, params):
         return EEIKController(interpolator=interpolator, **params)
     if name == "JOINT_VEL":
         return JointVelController(interpolator=interpolator, **params)
+    if name == "JOINT_IMP":
+        return JointImpController(interpolator=interpolator, **params)
+    if name == "JOINT_TORQUE":
+        return JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))

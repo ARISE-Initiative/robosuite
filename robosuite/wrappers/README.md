@@ -29,12 +29,4 @@ GymWrapper
 pip install gym
 ```
 
-## IKWrapper
-
-[IKWrapper](ik_wrapper.py) allows for using an end effector action space to control the robot in an environment instead of the default joint velocity action space. It uses our inverse kinematics robot controllers, located in the [controllers](../controllers) directory, which depend on PyBullet. In order to use this wrapper, you must run the following command to install PyBullet.
-
-```bash
-pip install pybullet==1.9.5
-```
-
 The main difference between the joint velocity action space and the end effector action space supported by this wrapper is that instead of supplying joint velocities per arm, a **delta position** vector and **delta quaternion** (xyzw) should be supplied per arm, where these correspond to the relative changes in position and rotation of the end effector from its current pose.

@@ -105,11 +105,16 @@ class PandaEnv(MujocoEnv):
             NOTE: Type must be one of: {JOINT_IMP, JOINT_TORQUE, JOINT_VEL, EE_POS, EE_POS_ORI}
         """
         # Add to the controller dict additional relevant params:
-        #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq, policy (control) freq, and ndim (# joints)
+        #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq,
+        #   policy (control) freq, and ndim (# joints)
         controller_config["robot_name"] = self.mujoco_robot.name
         controller_config["sim"] = self.sim
         controller_config["robot_id"] = "right_hand"
-        controller_config["joint_indexes"] = self.joint_indexes
+        controller_config["joint_indexes"] = {
+            "joints": self.joint_indexes,
+            "qpos": self._ref_joint_pos_indexes,
+            "qvel": self._ref_joint_vel_indexes
+                                              }
         controller_config["controller_freq"] = 1.0 / self.model_timestep
         controller_config["policy_freq"] = self.control_freq
         controller_config["ndim"] = len(self.robot_joints)
@@ -176,6 +181,14 @@ class PandaEnv(MujocoEnv):
             self._ref_gripper_joint_vel_indexes = [
                 self.sim.model.get_joint_qvel_addr(x) for x in self.gripper_joints
             ]
+
+        # indices for joint indexes
+        self._ref_joint_indexes = [
+            self.sim.model.joint_name2id(joint)
+            for joint in self.sim.model.joint_names
+            # TODO: Will maybe need to standardize for robot arm refactoring
+            if joint.startswith("joint")
+        ]
 
         # indices for joint pos actuation, joint vel actuation, gripper actuation
         self._ref_joint_pos_actuator_indexes = [
@@ -250,7 +263,7 @@ class PandaEnv(MujocoEnv):
         torques = self.controller.run_controller()
 
         # Clip the torques
-        low, high = self.action_spec
+        low, high = self.torque_spec
         torques = np.clip(torques, low, high)
 
         # Get gripper action, if applicable
@@ -265,7 +278,7 @@ class PandaEnv(MujocoEnv):
 
         # Apply joint torque control (with gravity compensation)
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
-                                                              self.joint_indexes] + torques
+                                                              self._ref_joint_vel_indexes] + torques
 
         if self.use_indicator_object:
             # Apply gravity compensation to indicator object too
@@ -326,6 +339,18 @@ class PandaEnv(MujocoEnv):
 
     @property
     def action_spec(self):
+        """
+        Action lower/upper limits per dimension.
+        """
+        # Action limits based on controller limits
+        low, high = [-1] * self.has_gripper, [1] * self.has_gripper
+        low = np.concatenate([self.controller.input_min, low])
+        high = np.concatenate([self.controller.input_max, high])
+
+        return low, high
+
+    @property
+    def torque_spec(self):
         """
         Action lower/upper limits per dimension.
         """
@@ -460,7 +485,7 @@ class PandaEnv(MujocoEnv):
         """
         Returns mujoco internal indexes for the robot joints
         """
-        return self._ref_joint_vel_indexes
+        return self._ref_joint_indexes
 
     def _gripper_visualization(self):
         """

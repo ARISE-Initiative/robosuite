@@ -25,6 +25,7 @@ def test_all_environments():
             use_object_obs=False,  # no object feature when training on pixels
             reward_shaping=True,  # (optional) using a shaping reward
         )
+        print("Testing env: {}...".format(env_name))
 
         obs = env.reset()
 

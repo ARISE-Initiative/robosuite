@@ -138,6 +138,10 @@ class SawyerPickPlace(SawyerEnv):
                 print("Error opening default controller filepath at: {}. "
                       "Please check filepath and try again.".format(controller_path))
 
+        # Assert that the controller config is a dict file
+        assert type(controller_config) == dict, \
+            "Inputted controller config must be a dict! Instead, got type: {}".format(type(controller_config))
+
         # task settings
         self.single_object_mode = single_object_mode
         self.object_to_id = {"milk": 0, "bread": 1, "cereal": 2, "can": 3}

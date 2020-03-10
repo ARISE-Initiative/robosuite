@@ -9,6 +9,8 @@ from robosuite.models.arenas import EmptyArena
 from robosuite.models.robots import Baxter
 from robosuite.models import MujocoWorldBase
 
+import json
+import os
 
 class BaxterPegInHole(BaxterEnv):
     """
@@ -18,6 +20,7 @@ class BaxterPegInHole(BaxterEnv):
 
     def __init__(
         self,
+        controller_config=None,
         cylinder_radius=(0.015, 0.03),
         cylinder_length=0.13,
         use_object_obs=True,
@@ -26,6 +29,9 @@ class BaxterPegInHole(BaxterEnv):
     ):
         """
         Args:
+            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+                Else, uses the default controller for this specific task
+
             cylinder_radius (2-tuple): low and high limits of the (uniformly sampled)
                 radius of the cylinder
 
@@ -37,6 +43,17 @@ class BaxterPegInHole(BaxterEnv):
 
         Inherits the Baxter environment; refer to other parameters described there.
         """
+
+        # Load the default controller if none is specified
+        if not controller_config:
+            # TODO: Change to baxter default
+            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
+            try:
+                with open(controller_path) as f:
+                    controller_config = json.load(f)
+            except FileNotFoundError:
+                print("Error opening default controller filepath at: {}. "
+                      "Please check filepath and try again.".format(controller_path))
 
         # initialize objects of interest
         self.hole = PlateWithHoleObject()
@@ -55,7 +72,12 @@ class BaxterPegInHole(BaxterEnv):
         # reward configuration
         self.reward_shaping = reward_shaping
 
-        super().__init__(gripper_left=None, gripper_right=None, **kwargs)
+        super().__init__(
+            controller_config=controller_config,
+            gripper_left=None,
+            gripper_right=None,
+            **kwargs
+        )
 
     def _load_model(self):
         """

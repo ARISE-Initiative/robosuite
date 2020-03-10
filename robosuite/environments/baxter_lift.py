@@ -9,6 +9,8 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.robots import Baxter
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
+import json
+import os
 
 class BaxterLift(BaxterEnv):
     """
@@ -17,6 +19,7 @@ class BaxterLift(BaxterEnv):
 
     def __init__(
         self,
+        controller_config=None,
         gripper_type_right="TwoFingerGripper",
         gripper_type_left="LeftTwoFingerGripper",
         table_full_size=(0.8, 0.8, 0.8),
@@ -27,6 +30,8 @@ class BaxterLift(BaxterEnv):
     ):
         """
         Args:
+            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+                Else, uses the default controller for this specific task
 
             gripper_type_right (str): type of gripper used on the right hand.
 
@@ -44,6 +49,21 @@ class BaxterLift(BaxterEnv):
 
         Inherits the Baxter environment; refer to other parameters described there.
         """
+
+        # Load the default controller if none is specified
+        if not controller_config:
+            # TODO: Change to baxter default
+            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
+            try:
+                with open(controller_path) as f:
+                    controller_config = json.load(f)
+            except FileNotFoundError:
+                print("Error opening default controller filepath at: {}. "
+                      "Please check filepath and try again.".format(controller_path))
+
+        # Assert that the controller config is a dict file
+        assert type(controller_config) == dict, \
+            "Inputted controller config must be a dict! Instead, got type: {}".format(type(controller_config))
 
         # initialize the pot
         self.pot = PotWithHandlesObject()
@@ -67,7 +87,10 @@ class BaxterLift(BaxterEnv):
         )
 
         super().__init__(
-            gripper_left=gripper_type_left, gripper_right=gripper_type_right, **kwargs
+            controller_config=controller_config,
+            gripper_left=gripper_type_left,
+            gripper_right=gripper_type_right,
+            **kwargs
         )
 
     def _load_model(self):

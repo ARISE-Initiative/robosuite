@@ -30,7 +30,7 @@ class JointTorqueController(Controller):
         )
 
         # Control dimension
-        self.control_dim = len(joint_indexes)
+        self.control_dim = len(joint_indexes["joints"])
 
         # input and output max and min
         self.input_max = input_max
@@ -73,7 +73,7 @@ class JointTorqueController(Controller):
 
     def run_controller(self, action=None):
         # Make sure goal has been set
-        if not self.goal_torque.all():
+        if not self.goal_torque.any():
             self.set_goal(np.zeros(self.control_dim))
 
         # Then, update goal if action is not set to none

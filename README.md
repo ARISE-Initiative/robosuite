@@ -60,7 +60,7 @@ First download MuJoCo 2.0 ([Linux](https://www.roboti.us/download/mujoco200_linu
    ```
    This will also install our library as an editable package, such that local changes will be reflected elsewhere without having to reinstall the package.
 
-3. (Optional) We also provide add-on functionalities, such as [OpenAI Gym](https://github.com/openai/gym) [interfaces](robosuite/wrappers/gym_wrapper.py), [inverse kinematics controllers](robosuite/wrappers/ik_wrapper.py) powered by [PyBullet](http://bulletphysics.org), and [teleoperation](robosuite/scripts/demo_spacemouse_ik_control.py) with [SpaceMouse](https://www.3dconnexion.com/products/spacemouse.html) devices (Mac OS X only). To enable these additional features, please install the extra dependencies by running
+3. (Optional) We also provide add-on functionalities, such as [OpenAI Gym](https://github.com/openai/gym) [interfaces](robosuite/wrappers/gym_wrapper.py), [multiple controllers](robosuite/controllers/README.md), including an [inverse kinematics controller](robosuite/controllers/ee_ik.py) powered by [PyBullet](http://bulletphysics.org), and [teleoperation](robosuite/scripts/demo_device_control.py) with [SpaceMouse](https://www.3dconnexion.com/products/spacemouse.html) devices (Mac OS X only). To enable these additional features, please install the extra dependencies by running
    ```sh
    $ pip3 install -r requirements-extra.txt
    ```

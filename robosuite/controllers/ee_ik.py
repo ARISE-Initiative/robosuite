@@ -34,39 +34,9 @@ class EEIKController(JointVelController):
                  ik_pos_limit=None,
                  ik_ori_limit=None,
                  interpolator=None,
-                 converge_steps=20,
+                 converge_steps=5,
                  **kwargs
                  ):
-
-        # Initialize ik-specific attributes
-        self.robot_name = robot_name        # Name of robot (e.g.: "panda", "sawyer", etc.)
-
-        # Rotation offsets (for mujoco eef -> pybullet eef) and rest poses
-        self.rotation_offset = None
-        self.rest_poses = None
-
-
-        # Values for initializing pybullet env
-        self.ik_robot = None
-        self.robot_urdf = None
-        self.num_bullet_joints = None
-        self.converge_steps = converge_steps
-        self.ik_pos_limit = ik_pos_limit
-        self.ik_ori_limit = ik_ori_limit
-
-        # Target pos and ori
-        #self.ik_robot_target_pos = np.array([0,0,0])
-        #self.ik_robot_target_orn = np.array([0,0,0,1])
-
-        # Commanded pos and resulting commanded vel
-        self.commanded_joint_positions = None
-        self.commanded_joint_velocities = None
-
-        # Should be in (0, 1], smaller values mean less sensitivity.
-        self.user_sensitivity = .3
-
-        # Setup inverse kinematics
-        self.setup_inverse_kinematics()
 
         # Run sueprclass inits
         super().__init__(
@@ -83,6 +53,43 @@ class EEIKController(JointVelController):
             interpolator=interpolator,
             **kwargs
         )
+
+        # Initialize ik-specific attributes
+        self.robot_name = robot_name        # Name of robot (e.g.: "panda", "sawyer", etc.)
+
+        # Rotation offsets (for mujoco eef -> pybullet eef) and rest poses
+        self.rotation_offset = None
+        self.rest_poses = None
+
+        # Set the reference robot target orientation (to prevent drift / weird ik numerical behavior over time)
+        self.reference_target_orn = T.mat2quat(self.ee_ori_mat)
+
+
+        # Values for initializing pybullet env
+        self.ik_robot = None
+        self.robot_urdf = None
+        self.num_bullet_joints = None
+        self.bullet_ee_idx = None
+        self.bullet_joint_indexes = None   # Useful for splitting right and left hand indexes when controlling bimanual
+        self.ik_command_indexes = None     # Relevant indices from ik loop; useful for splitting bimanual into left / right
+        self.ik_robot_target_pos_offset = None
+        self.converge_steps = converge_steps
+        self.ik_pos_limit = ik_pos_limit
+        self.ik_ori_limit = ik_ori_limit
+
+        # Target pos and ori
+        self.ik_robot_target_pos = None
+        self.ik_robot_target_orn = None
+
+        # Commanded pos and resulting commanded vel
+        self.commanded_joint_positions = None
+        self.commanded_joint_velocities = None
+
+        # Should be in (0, 1], smaller values mean less sensitivity.
+        self.user_sensitivity = .3
+
+        # Setup inverse kinematics
+        self.setup_inverse_kinematics()
 
         # Lastly, sync pybullet state to mujoco state
         self.sync_state()
@@ -101,14 +108,35 @@ class EEIKController(JointVelController):
         # get paths to urdfs
         self.robot_urdf = pjoin(
             os.path.join(robosuite.models.assets_root, "bullet_data"),
-            "{}_description/urdf/{}_arm.urdf".format(self.robot_name, self.robot_name) # TODO: Needs to be fixed for baxter name (baxter mod)
+            "{}_description/urdf/{}_arm.urdf".format(self.robot_name, self.robot_name)
         )
 
         # load the urdfs
-        self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.9), useFixedBase=1)
+        if self.robot_name == "baxter":
+            self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.0), useFixedBase=1)
+        else:
+            self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.9), useFixedBase=1)
 
         # load the number of joints from the bullet data
         self.num_bullet_joints = p.getNumJoints(self.ik_robot)
+
+        # For now, hard code baxter bullet eef idx
+        if self.robot_name == "baxter":
+            self.ik_robot_target_pos_offset = np.array([0, 0, 0.913])
+            if self.id_name == "right_hand":
+                self.bullet_ee_idx = 27
+                self.bullet_joint_indexes = [13, 14, 15, 16, 17, 19, 20]
+                self.ik_command_indexes = np.arange(1, self.joint_dim + 1)
+            elif self.id_name == "left_hand":
+                self.bullet_ee_idx = 45
+                self.bullet_joint_indexes = [31, 32, 33, 34, 35, 37, 38]
+                self.ik_command_indexes = np.arange(self.joint_dim + 1, self.joint_dim * 2 + 1)
+        else:
+            # Default assumes pybullet has same number of joints compared to mujoco sim
+            self.bullet_ee_idx = self.num_bullet_joints - 1
+            self.bullet_joint_indexes = np.arange(self.joint_dim)
+            self.ik_command_indexes = np.arange(self.joint_dim)
+            self.ik_robot_target_pos_offset = np.zeros(3)
 
         # Set rotation offsets (for mujoco eef -> pybullet eef) and rest poses
         if self.robot_name == "sawyer":
@@ -118,9 +146,14 @@ class EEIKController(JointVelController):
             self.rotation_offset = T.rotation_matrix(angle=-3*np.pi/4, direction=[0., 0., 1.], point=None)
             self.rest_poses = [0, np.pi / 6, 0.00, -(np.pi - 2 * np.pi / 6), 0.00, (np.pi - np.pi / 6), np.pi / 4]
         elif self.robot_name == "baxter":
-            # TODO: Untested. Currently no rotation in old baxter ik anyways
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
-            self.rest_poses = None      # Default to None for now
+            if self.id_name == "right_hand":
+                self.rest_poses = [0.535, -0.093, 0.038, 0.166, 0.643, 1.960, -1.297]
+            elif self.id_name == "left_hand":
+                self.rest_poses = [-0.518, -0.026, -0.076, 0.175, -0.748, 1.641, -0.158]
+            else:
+                # Error with inputted id
+                print("Error loading ik controller for Baxter -- arm id's must be either 'right_hand' or 'left_hand'!")
         else:
             # No other robots supported, print out to user
             print("ERROR: Unsupported robot requested for ik controller. Only sawyer, panda, and baxter "
@@ -160,13 +193,13 @@ class EEIKController(JointVelController):
         if not joint_positions:
             joint_positions = self.joint_pos
         num_joints = self.joint_dim
-        if not sync_last:
+        if not sync_last and self.robot_name != "baxter":
             num_joints -= 1
         for i in range(num_joints):
             if simulate:
                 p.setJointMotorControl2(
                     self.ik_robot,
-                    i,
+                    self.bullet_joint_indexes[i],
                     p.POSITION_CONTROL,
                     targetVelocity=0,
                     targetPosition=joint_positions[i],
@@ -175,15 +208,15 @@ class EEIKController(JointVelController):
                     velocityGain=1.,
                 )
             else:
-                p.resetJointState(self.ik_robot, i, joint_positions[i], 0)
+                p.resetJointState(self.ik_robot, self.bullet_joint_indexes[i], joint_positions[i], 0)
 
     def ik_robot_eef_joint_cartesian_pose(self):
         """
         Returns the current cartesian pose of the last joint of the ik robot with respect to the base frame as
         a (pos, orn) tuple where orn is a x-y-z-w quaternion
         """
-        eef_pos_in_world = np.array(p.getLinkState(self.ik_robot, self.joint_dim - 1)[0])
-        eef_orn_in_world = np.array(p.getLinkState(self.ik_robot, self.joint_dim - 1)[1])
+        eef_pos_in_world = np.array(p.getLinkState(self.ik_robot, self.bullet_ee_idx)[0])
+        eef_orn_in_world = np.array(p.getLinkState(self.ik_robot, self.bullet_ee_idx)[1])
         eef_pose_in_world = T.pose2mat((eef_pos_in_world, eef_orn_in_world))
 
         base_pos_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot)[0])
@@ -214,15 +247,14 @@ class EEIKController(JointVelController):
             velocities (numpy array): a flat array of joint velocity commands to apply
                 to try and achieve the desired input control.
         """
-
         # Sync joint positions for IK.
         self.sync_ik_robot()
 
         # Compute new target joint positions if arguments are provided
         if (dpos is not None) and (rotation is not None):
-            self.commanded_joint_positions = self.joint_positions_for_eef_command(
+            self.commanded_joint_positions = np.array(self.joint_positions_for_eef_command(
                 dpos, rotation
-            )
+            ))
 
         # P controller from joint positions (from IK) to velocities
         velocities = np.zeros(self.joint_dim)
@@ -248,22 +280,21 @@ class EEIKController(JointVelController):
         Returns:
             A list of size @num_joints corresponding to the joint angle solution.
         """
-
         ik_solution = list(
             p.calculateInverseKinematics(
                 self.ik_robot,
-                self.num_bullet_joints - 1,
+                self.bullet_ee_idx,
                 target_position,
                 targetOrientation=target_orientation,
-                lowerLimits=list(self.sim.model.jnt_range[:self.joint_dim,0]),                     # TODO: currently only works with one hand (might not work with baxter)
-                upperLimits=list(self.sim.model.jnt_range[:self.joint_dim,1]),                     # TODO: currently only works with one hand (might not work with baxter)
-                jointRanges=list(self.sim.model.jnt_range[:self.joint_dim,1] - self.sim.model.jnt_range[:self.joint_dim,0]),    # TODO: currently only works with one hand (might not work with baxter)
+                lowerLimits=list(self.sim.model.jnt_range[self.joint_index, 0]),
+                upperLimits=list(self.sim.model.jnt_range[self.joint_index, 1]),
+                jointRanges=list(self.sim.model.jnt_range[self.joint_index, 1] -
+                                 self.sim.model.jnt_range[self.joint_index, 0]),
                 restPoses=self.rest_poses,
                 jointDamping=[0.1] * self.num_bullet_joints,
             )
         )
-
-        return ik_solution
+        return list(np.array(ik_solution)[self.ik_command_indexes])
 
     def joint_positions_for_eef_command(self, dpos, rotation):
         """
@@ -275,12 +306,13 @@ class EEIKController(JointVelController):
         Returns:
             A list of size @num_joints corresponding to the target joint angles.
         """
-
+        # Scale and increment target position
         self.ik_robot_target_pos += dpos * self.user_sensitivity
 
         # this rotation accounts for rotating the end effector (deviation between mujoco eef and pybullet eef)
         rotation = rotation.dot(self.rotation_offset[:3, :3])
 
+        # Convert the desired rotation into the target orientation quaternion
         self.ik_robot_target_orn = T.mat2quat(rotation)
 
         # convert from target pose in base frame to target pose in bullet world frame
@@ -318,8 +350,9 @@ class EEIKController(JointVelController):
 
     def set_goal(self, delta, set_ik=None):
         # Run ik prepropressing to convert pos, quat ori to desired velocities
-        requested_control = self._make_input(delta, T.mat2quat(self._pose_in_base_from_name(self.id_name)[:3, :3]))
+        requested_control = self._make_input(delta, self.reference_target_orn)
 
+        # Compute desired velocities to achieve eef pos / ori
         velocities = self.get_control(**requested_control)
 
         super().set_goal(delta=None, set_velocity=velocities)
@@ -327,6 +360,7 @@ class EEIKController(JointVelController):
     def run_controller(self, action=None):
         # First, update goal if action is not set to none
         # Action will be interpreted as delta value from current
+
         return super().run_controller(action)
 
     def _pose_in_base_from_name(self, name):
@@ -361,17 +395,14 @@ class EEIKController(JointVelController):
             clipped dpos, rotation (of same type)
         """
         # scale input range to desired magnitude
-
-
         if dpos.any():
             input_norm = np.linalg.norm(dpos)
             if input_norm > self.ik_pos_limit:
                 dpos = dpos * self.ik_pos_limit / input_norm
 
         # Clip orientation to desired magnitude
-        #TODO: Fix!!
+        #TODO: Fix -- clipping seems buggy
         #rotation = T.clip_rotation(rotation, self.ik_ori_limit)
-
 
         return dpos, rotation
 
@@ -386,10 +417,12 @@ class EEIKController(JointVelController):
         # Clip action appropriately
         dpos, rotation = self._clip_ik_input(action[:3], action[3:7])
 
+        self.reference_target_orn = T.quat_multiply(old_quat, rotation)
+
         return {
             "dpos": dpos,
             # IK controller takes an absolute orientation in robot base frame
-            "rotation": T.quat2mat(T.quat_multiply(old_quat, rotation))
+            "rotation": T.quat2mat(self.reference_target_orn)
         }
 
     @staticmethod

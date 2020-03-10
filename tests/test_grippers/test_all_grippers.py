@@ -8,6 +8,7 @@ from robosuite.models.grippers import (
     PushingGripper,
     RobotiqGripper,
     RobotiqThreeFingerGripper,
+    PandaGripper,
 )
 
 
@@ -19,6 +20,7 @@ def test_all_gripper():
         PushingGripper(),
         RobotiqGripper(),
         RobotiqThreeFingerGripper(),
+        PandaGripper(),
     ]
     for gripper in grippers:
         _test_gripper(gripper)

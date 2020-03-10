@@ -5,6 +5,7 @@ import robosuite.utils.transform_utils as T
 from robosuite.environments import MujocoEnv
 
 from robosuite.models.grippers import gripper_factory
+from robosuite.controllers import controller_factory
 from robosuite.models.robots import Baxter
 
 
@@ -13,6 +14,7 @@ class BaxterEnv(MujocoEnv):
 
     def __init__(
         self,
+        controller_config,
         gripper_right=None,
         gripper_left=None,
         gripper_visualization=False,
@@ -22,6 +24,9 @@ class BaxterEnv(MujocoEnv):
     ):
         """
         Args:
+            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+                Else, uses the default controller for this specific task
+
             gripper_right (str): type of gripper used on the right hand, used to
                 instantiate gripper models from gripper factory.
 
@@ -71,10 +76,44 @@ class BaxterEnv(MujocoEnv):
         self.gripper_visualization = gripper_visualization
         self.use_indicator_object = use_indicator_object
         self.rescale_actions = rescale_actions
+        self.controller_config = controller_config
         super().__init__(**kwargs)
 
+    def _load_controller(self, controller_config):
+        """
+        Loads controller to be used for dynamic trajectories
+
+        @controller_config (dict): Dict of relevant controller parameters, including controller type
+            NOTE: Type must be one of: {JOINT_IMP, JOINT_TORQUE, JOINT_VEL, EE_POS, EE_POS_ORI}
+        """
+        # Add to the controller dict additional relevant params:
+        #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq, policy (control) freq, and ndim (# joints)
+        controller_config["robot_name"] = self.mujoco_robot.name
+        controller_config["sim"] = self.sim
+        controller_config["controller_freq"] = 1.0 / self.model_timestep
+        controller_config["policy_freq"] = self.control_freq
+        controller_config["ndim"] = int(len(self.robot_joints) / 2)
+
+        # Instantiate the relevant controllers (one for each arm)
+        controller_config["robot_id"] = "right_hand"
+        controller_config["joint_indexes"] = {
+            "joints": self.joint_indexes[:controller_config["ndim"]],
+            "qpos": self._ref_joint_pos_indexes[:controller_config["ndim"]],
+            "qvel": self._ref_joint_vel_indexes[:controller_config["ndim"]]
+        }
+        self.right_controller = controller_factory(controller_config["type"], controller_config)
+        controller_config["robot_id"] = "left_hand"
+        controller_config["joint_indexes"] = {
+            "joints": self.joint_indexes[controller_config["ndim"]:],
+            "qpos": self._ref_joint_pos_indexes[controller_config["ndim"]:],
+            "qvel": self._ref_joint_vel_indexes[controller_config["ndim"]:]
+        }
+        self.left_controller = controller_factory(controller_config["type"], controller_config)
+
     def _load_model(self):
-        """Loads robot and optionally add grippers."""
+        """
+        Loads robot and optionally add grippers.
+        """
         super()._load_model()
         self.mujoco_robot = Baxter()
         if self.has_gripper_right:
@@ -93,6 +132,7 @@ class BaxterEnv(MujocoEnv):
         """Resets the pose of the arm and grippers."""
         super()._reset_internal()
         self.sim.data.qpos[self._ref_joint_pos_indexes] = self.mujoco_robot.init_qpos
+        self._load_controller(self.controller_config)
 
         if self.has_gripper_right:
             self.sim.data.qpos[
@@ -146,6 +186,13 @@ class BaxterEnv(MujocoEnv):
             ]
             self.right_eef_site_id = self.sim.model.site_name2id("grip_site")
 
+        # indices for joint indexes
+        self._ref_joint_indexes = [
+            self.sim.model.joint_name2id(joint)
+            for joint in self.sim.model.joint_names
+            if joint.startswith("right") or joint.startswith("left")
+        ]
+
         # indices for joint pos actuation, joint vel actuation, gripper actuation
         self._ref_joint_pos_actuator_indexes = [
             self.sim.model.actuator_name2id(actuator)
@@ -157,6 +204,12 @@ class BaxterEnv(MujocoEnv):
             self.sim.model.actuator_name2id(actuator)
             for actuator in self.sim.model.actuator_names
             if actuator.startswith("vel")
+        ]
+
+        self._ref_joint_torq_actuator_indexes = [
+            self.sim.model.actuator_name2id(actuator)
+            for actuator in self.sim.model.actuator_names
+            if actuator.startswith("torq")
         ]
 
         if self.has_gripper_left:
@@ -186,7 +239,7 @@ class BaxterEnv(MujocoEnv):
             ] = pos
 
     # Note: Overrides super
-    def _pre_action(self, action):
+    def _pre_action(self, action, policy_step=False):
         # Optionally (and by default) rescale actions to [-1, 1]. Not desirable
         # for certain controllers. They later get normalized to the control range.
         if self.rescale_actions:
@@ -194,45 +247,67 @@ class BaxterEnv(MujocoEnv):
 
         # Action is stored as [right arm, left arm, right gripper?, left gripper?]
         # We retrieve the relevant actions.
-        last = self.mujoco_robot.dof  # Degrees of freedom in arm, i.e. 14
-        arm_action = action[:last]
-
-        # Right gripper
-        if self.has_gripper_right:
-            gripper_right_action_in = action[last : last + self.gripper_right.dof]
-            gripper_right_action_actual = self.gripper_right.format_action(
-                gripper_right_action_in
-            )
-            arm_action = np.concatenate([arm_action, gripper_right_action_actual])
-            last = last + self.gripper_right.dof
+        last = len(action)
 
         # Left gripper
         if self.has_gripper_left:
-            gripper_left_action_in = action[last : last + self.gripper_left.dof]
+            gripper_left_action_in = action[last-self.gripper_left.dof: last]
             gripper_left_action_actual = self.gripper_left.format_action(
                 gripper_left_action_in
             )
-            arm_action = np.concatenate([arm_action, gripper_left_action_actual])
+            last -= self.gripper_left.dof
 
-        action = arm_action
+        # Right gripper
+        if self.has_gripper_right:
+            gripper_right_action_in = action[last-self.gripper_right.dof: last]
+            gripper_right_action_actual = self.gripper_right.format_action(
+                gripper_right_action_in
+            )
+            last -= self.gripper_right.dof
 
-        if self.rescale_actions:
+        arm_split = int(last / 2)
+        right_action = action[:arm_split]
+        left_action = action[arm_split:last]
+
+        # Update model in controller
+        self.left_controller.update()
+        self.right_controller.update()
+
+        # Update the controller goals if this is a new policy step
+        if policy_step:
+            self.left_controller.set_goal(delta=left_action)
+            self.right_controller.set_goal(delta=right_action)
+
+        # Now run the controller for a step
+        left_torques = self.left_controller.run_controller()
+        right_torques = self.right_controller.run_controller()
+
+        # Clip the torques
+        low, high = self.torque_spec
+        torques = np.clip(np.concatenate((right_torques, left_torques)), low, high)
+
+        # Control gripper if applicable
+        if self.has_gripper_left:
             # rescale normalized action to control ranges
-            ctrl_range = self.sim.model.actuator_ctrlrange
+            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_left_actuator_indexes]
             bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
             weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-            applied_action = bias + weight * action
-        else:
-            applied_action = action
+            applied_left_gripper_action = bias + weight * gripper_left_action_actual
+            self.sim.data.ctrl[self._ref_joint_gripper_left_actuator_indexes] = applied_left_gripper_action
+        if self.has_gripper_right:
+            # rescale normalized action to control ranges
+            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_right_actuator_indexes]
+            bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+            weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+            applied_right_gripper_action = bias + weight * gripper_right_action_actual
+            self.sim.data.ctrl[self._ref_joint_gripper_right_actuator_indexes] = applied_right_gripper_action
 
-        self.sim.data.ctrl[:] = applied_action
-
-        # gravity compensation
-        self.sim.data.qfrc_applied[
-            self._ref_joint_vel_indexes
-        ] = self.sim.data.qfrc_bias[self._ref_joint_vel_indexes]
+        # Apply joint torque control (with gravity compensation)
+        self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
+                                                                        self._ref_joint_vel_indexes] + torques
 
         if self.use_indicator_object:
+            # Apply gravity compensation to indicator object too
             self.sim.data.qfrc_applied[
                 self._ref_indicator_vel_low : self._ref_indicator_vel_high
             ] = self.sim.data.qfrc_bias[
@@ -312,6 +387,30 @@ class BaxterEnv(MujocoEnv):
         return di
 
     @property
+    def action_spec(self):
+        """
+        Action lower/upper limits per dimension.
+        """
+        # Action limits based on controller limits
+        gripper_count = int(self.has_gripper_left) + int(self.has_gripper_right)
+        low, high = [-1] * gripper_count, [1] * gripper_count
+        low = np.concatenate([self.right_controller.input_min, self.left_controller.input_min, low])
+        high = np.concatenate([self.right_controller.input_max, self.left_controller.input_max, high])
+
+        return low, high
+
+    @property
+    def torque_spec(self):
+        """
+        Action lower/upper limits per dimension.
+        """
+        # Torque limit values pulled from relevant robot.xml file
+        low = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 1]
+
+        return low, high
+
+    @property
     def dof(self):
         """Returns the DoF of the robot (with grippers)."""
         dof = self.mujoco_robot.dof
@@ -345,12 +444,6 @@ class BaxterEnv(MujocoEnv):
         """
         self.sim.data.qpos[self._ref_joint_pos_indexes] = jpos
         self.sim.forward()
-
-    @property
-    def action_spec(self):
-        low = np.ones(self.dof) * -1.
-        high = np.ones(self.dof) * 1.
-        return low, high
 
     @property
     def _right_hand_pose(self):
@@ -485,6 +578,13 @@ class BaxterEnv(MujocoEnv):
     def _joint_velocities(self):
         """Returns a numpy array of joint (angular) velocities, of dimension 14."""
         return self.sim.data.qvel[self._ref_joint_vel_indexes]
+
+    @property
+    def joint_indexes(self):
+        """
+        Returns mujoco internal indexes for the robot joints
+        """
+        return self._ref_joint_indexes
 
     @property
     def _l_eef_xpos(self):

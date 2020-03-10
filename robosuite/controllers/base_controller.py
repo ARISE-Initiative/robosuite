@@ -32,7 +32,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.sim = sim
         self.model_timestep = self.sim.model.opt.timestep
         self.id_name = id_name
-        self.joint_index = joint_indexes
+        self.joint_index = joint_indexes["joints"]
+        self.qpos_index = joint_indexes["qpos"]
+        self.qvel_index = joint_indexes["qvel"]
 
         # robot states
         self.ee_pos = None
@@ -49,7 +51,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.mass_matrix = None
 
         # Joint dimension
-        self.joint_dim = len(joint_indexes)
+        self.joint_dim = len(joint_indexes["joints"])
 
         # Torques being outputted by the controller
         self.torques = None
@@ -92,11 +94,11 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.id_name)])
         self.ee_ori_vel = np.array(self.sim.data.body_xvelr[self.sim.model.body_name2id(self.id_name)])
 
-        self.joint_pos = np.array(self.sim.data.qpos[self.joint_index])
-        self.joint_vel = np.array(self.sim.data.qvel[self.joint_index])
+        self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
+        self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
 
-        self.J_pos = np.array(self.sim.data.get_body_jacp(self.id_name).reshape((3, -1))[:, self.joint_index])
-        self.J_ori = np.array(self.sim.data.get_body_jacr(self.id_name).reshape((3, -1))[:, self.joint_index])
+        self.J_pos = np.array(self.sim.data.get_body_jacp(self.id_name).reshape((3, -1))[:, self.qvel_index])
+        self.J_ori = np.array(self.sim.data.get_body_jacr(self.id_name).reshape((3, -1))[:, self.qvel_index])
         self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
         mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')

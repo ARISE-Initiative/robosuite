@@ -64,7 +64,7 @@ class EEImpController(Controller):
         # interpolator
         self.interpolator_pos = interpolator_pos
         self.interpolator_ori = interpolator_ori
-        # todo: orientation interpolators change to relative! refactor!
+        # todo: orientation interpolators change to relative! refactor! (michelle)
 
         # whether or not pos and ori want to be uncoupled
         self.uncoupling = uncouple_pos_ori

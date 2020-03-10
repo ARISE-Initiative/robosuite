@@ -24,13 +24,13 @@ class JointVelController(Controller):
                  **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
                  ):
 
-        super(JointVelController, self).__init__(
+        super().__init__(
             sim,
             robot_id,
             joint_indexes,
         )
         # Control dimension
-        self.control_dim = len(joint_indexes)
+        self.control_dim = len(joint_indexes["joints"])
 
         # input and output max and min (allow for either explicit lists or single numbers)
         self.input_max = input_max
@@ -62,12 +62,16 @@ class JointVelController(Controller):
         if delta is not None:
             # Check to make sure delta is size self.joint_dim
             assert len(delta) == self.joint_dim,\
-                "Delta length must be equal to the robot's joint dimension space!"
+                "Delta length must be equal to the robot's joint dimension space! Expected {}, got {}".format(
+                    self.joint_dim, len(delta)
+                )
             scaled_delta = self.scale_action(delta)
         else:
             # Otherwise, check to make sure set_velocity is size self.joint_dim
             assert len(set_velocity) == self.joint_dim,\
-                "Goal action must be equal to the robot's joint dimension space!"
+                "Goal action must be equal to the robot's joint dimension space! Expected {}, got {}".format(
+                    self.joint_dim, len(set_velocity)
+                )
             scaled_delta = None
 
         self.goal_vel = set_goal_position(scaled_delta,
@@ -80,7 +84,7 @@ class JointVelController(Controller):
 
     def run_controller(self, action=None):
         # Make sure goal has been set
-        if not self.goal_vel.all():
+        if not self.goal_vel.any():
             self.set_goal(np.zeros(self.control_dim))
 
         # First, update goal if action is not set to none

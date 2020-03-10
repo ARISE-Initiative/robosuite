@@ -11,8 +11,8 @@
     </asset>
 
     <actuator>
-        <position ctrllimited="true" ctrlrange="0.0 0.04" joint="finger_joint1" kp="1000000" name="gripper_joint1" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.04 0.0" joint="finger_joint2" kp="1000000" name="gripper_joint2" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0.0 0.04" joint="finger_joint1" kp="1000000" name="gripper_finger_joint1" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-0.04 0.0" joint="finger_joint2" kp="1000000" name="gripper_finger_joint2" forcelimited="true" forcerange="-20 20"/>
     </actuator>
 
     <worldbody>
@@ -20,7 +20,7 @@
 
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"></site>
 
-            <inertial pos="0 0 0.17" quat="0.707107 0.707107 0 0" mass="0.0" diaginertia="0.09 0.07 0.05" />
+            <inertial pos="0 0 0.17" quat="0.707107 0.707107 0 0" mass="0.3" diaginertia="0.09 0.07 0.05" />
             <!--<geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link7" /> -->
       <!--       <geom pos="0 0 0.107" quat="0.92388 0 0 -0.382683" type="mesh" contype="0" conaffinity="0" group="1" mesh="hand" name="hand_collision"/> -->
 
