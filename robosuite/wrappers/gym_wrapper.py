@@ -35,15 +35,8 @@ class GymWrapper(Wrapper):
         high = np.inf * np.ones(self.obs_dim)
         low = -high
         self.observation_space = spaces.Box(low=low, high=high)
-        low = np.concatenate((self.env.controller.input_min, np.array([-1])))
-        high = np.concatenate((self.env.controller.input_max, np.array([1])))
+        low, high = self.env.action_spec
         self.action_space = spaces.Box(low=low, high=high)
-        # TODO: Fix: hacky workaround for ik for now
-        if self.env.controller.name == 'ee_ik':
-            self.action_space = spaces.Box(
-                low=np.array(np.ones(8) * -1),
-                high=np.array(np.ones(8))
-            )
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """

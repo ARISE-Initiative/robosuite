@@ -284,7 +284,7 @@ class BaxterEnv(MujocoEnv):
 
         # Clip the torques
         low, high = self.torque_spec
-        torques = np.clip(np.concatenate((right_torques, left_torques)), low, high)
+        self.torques = np.clip(np.concatenate((right_torques, left_torques)), low, high)
 
         # Control gripper if applicable
         if self.has_gripper_left:
@@ -304,7 +304,7 @@ class BaxterEnv(MujocoEnv):
 
         # Apply joint torque control (with gravity compensation)
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
-                                                                        self._ref_joint_vel_indexes] + torques
+                                                                        self._ref_joint_vel_indexes] + self.torques
 
         if self.use_indicator_object:
             # Apply gravity compensation to indicator object too

@@ -143,7 +143,7 @@ class EEIKController(JointVelController):
             self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)
             self.rest_poses = [0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161]
         elif self.robot_name == "panda":
-            self.rotation_offset = T.rotation_matrix(angle=-3*np.pi/4, direction=[0., 0., 1.], point=None)
+            self.rotation_offset = T.rotation_matrix(angle=np.pi/4, direction=[0., 0., 1.], point=None)
             self.rest_poses = [0, np.pi / 6, 0.00, -(np.pi - 2 * np.pi / 6), 0.00, (np.pi - np.pi / 6), np.pi / 4]
         elif self.robot_name == "baxter":
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)

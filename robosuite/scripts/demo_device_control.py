@@ -52,13 +52,13 @@ import json
 
 import robosuite
 import robosuite.utils.transform_utils as T
-from robosuite.wrappers import IKWrapper
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="SawyerLift")
+    parser.add_argument("--arm", type=str, default="right", help="Which arm to control (if bimanual) 'right' or 'left'")
     parser.add_argument("--controller", type=str, default="ik", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="spacemouse")
     parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
@@ -138,10 +138,14 @@ if __name__ == "__main__":
                 break
 
             # First process the raw drotation
-            drotation = raw_drotation[np.array([1,0,2])]
+            drotation = raw_drotation[[1,0,2]]
             if args.controller == 'ik':
-                # Flip x
-                drotation[0] = -drotation[0]
+                # If this is panda, want to flip y
+                if env.mujoco_robot.name == 'panda':
+                    drotation[1] = -drotation[1]
+                else:
+                    # Flip x
+                    drotation[0] = -drotation[0]
                 # relative rotation of desired from current eef orientation
                 # IK expects quat, so also convert to quat
                 drotation = T.mat2quat(T.euler2mat(drotation))
@@ -155,21 +159,24 @@ if __name__ == "__main__":
                 # No other controllers currently supported
                 print("Error: Unsupported controller specified -- must be either ik or osc!")
 
-            # map 0 to -1 (open) and leave 1 mapped as is (closed)
-            grasp = 1 if grasp else -1
+            # map 0 to 1 (open) and map 1 to -1 (closed)
+            grasp = -1 if grasp else 1
 
             # Create action based on action space of individual robot
             if env.mujoco_robot.name == 'baxter':
                 # Baxter takes double the action length
-                # TODO: Maybe double controlling of Right and Left??
-
                 nonactive = np.zeros(6)
                 if args.controller == 'ik':
                     nonactive = np.concatenate([nonactive, [1]])
-                # Right control
-                action = np.concatenate([dpos, drotation, nonactive, [grasp], [-1]])
-                # Left control
-                #action = np.concatenate([nonactive, dpos, drotation, [-1], [grasp]])
+                if args.arm == 'right':
+                    # Right control
+                    action = np.concatenate([dpos, drotation, nonactive, [grasp], [-1]])
+                elif args.arm == 'left':
+                    # Left control
+                    action = np.concatenate([nonactive, dpos, drotation, [-1], [grasp]])
+                else:
+                    # Only right and left arms supported
+                    print("Error: Unsupported arm specified -- must be either 'right' or 'left'!")
 
             else:
                 action = np.concatenate([dpos, drotation, [grasp]])

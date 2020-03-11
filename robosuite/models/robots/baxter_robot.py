@@ -34,12 +34,3 @@ class Baxter(Robot):
         return np.array([
             0.535, -0.093, 0.038, 0.166, 0.643, 1.960, -1.297,
             -0.518, -0.026, -0.076, 0.175, -0.748, 1.641, -0.158])
-
-        # TODO: Why is this code here? Is it meant to be substituted with above?
-        # Arms half extended
-        return np.array([
-            0.752, -0.038, -0.021, 0.161, 0.348, 2.095, -0.531,
-            -0.585, -0.117, -0.037, 0.164, -0.536, 1.543, 0.204])
-
-        # Arms fully extended
-        return np.zeros(14)

@@ -84,6 +84,9 @@ def test_all_controllers():
                 env.render()
             count += 1
 
+        # Tests passed!
+        print("All controller tests passed successfully!")
+
 
 if __name__ == "__main__":
 

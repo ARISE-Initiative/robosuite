@@ -23,7 +23,7 @@ class TwoFingerGripperBase(Gripper):
 
     @property
     def joints(self):
-        return ["r_gripper_l_finger_joint", "r_gripper_r_finger_joint"]
+        return ["r_gripper_r_finger_joint", "r_gripper_l_finger_joint"]
 
     @property
     def dof(self):
@@ -62,7 +62,7 @@ class TwoFingerGripper(TwoFingerGripperBase):
         1 => open, -1 => closed
         """
         assert len(action) == 1
-        return np.array([1 * action[0], -1 * action[0]])
+        return np.array([-1 * action[0], 1 * action[0]])
 
     @property
     def dof(self):
@@ -129,7 +129,7 @@ class LeftTwoFingerGripper(LeftTwoFingerGripperBase):
             action: 1 => open, -1 => closed
         """
         assert len(action) == 1
-        return np.array([1 * action[0], -1 * action[0]])
+        return np.array([-1 * action[0], 1 * action[0]])
 
     @property
     def dof(self):

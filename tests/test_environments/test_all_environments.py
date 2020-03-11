@@ -47,6 +47,9 @@ def test_all_environments():
             action = np.random.uniform(action_min, action_max)
             obs, reward, done, info = env.step(action)
 
+        # Tests passed!
+        print("All environment tests passed successfully!")
+
 
 if __name__ == "__main__":
 

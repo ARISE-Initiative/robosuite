@@ -46,8 +46,7 @@ class BaxterPegInHole(BaxterEnv):
 
         # Load the default controller if none is specified
         if not controller_config:
-            # TODO: Change to baxter default
-            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
+            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_baxter.json')
             try:
                 with open(controller_path) as f:
                     controller_config = json.load(f)

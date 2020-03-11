@@ -264,7 +264,7 @@ class SawyerEnv(MujocoEnv):
 
         # Clip the torques
         low, high = self.torque_spec
-        torques = np.clip(torques, low, high)
+        self.torques = np.clip(torques, low, high)
 
         # Get gripper action, if applicable
         if self.has_gripper:
@@ -278,7 +278,7 @@ class SawyerEnv(MujocoEnv):
 
         # Apply joint torque control (with gravity compensation)
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
-                                                              self._ref_joint_vel_indexes] + torques
+                                                              self._ref_joint_vel_indexes] + self.torques
 
         if self.use_indicator_object:
             # Apply gravity compensation to indicator object too
