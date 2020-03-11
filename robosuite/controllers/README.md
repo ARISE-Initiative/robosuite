@@ -32,7 +32,7 @@ import robosuite as suite
 import json
 
 # Path to config file
-controller_fpath = `/your/custom/config/filepath/here/filename.json}`
+controller_fpath = `/your/custom/config/filepath/here/filename.json`
 
 # Import the file as a dict
 with open(controller_fpath) as f:
