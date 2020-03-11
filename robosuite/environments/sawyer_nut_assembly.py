@@ -738,6 +738,39 @@ class SawyerNutAssemblySquareConstantRotation(SawyerNutAssemblySquare):
         z_rot_bounds = { "SquareNut" : (np.pi, np.pi, 1), "RoundNut" : (np.pi, np.pi, 1) }
         return x_bounds, y_bounds, z_bounds, z_rot_bounds
 
+class SawyerNutAssemblySquareConstantRotationPosition(SawyerNutAssemblySquare):
+    """
+    Same as SawyerNutAssemblySquareConstantRotation but if using OSC, use
+    position-only control.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomPegsSampler(
+            x_range={ "SquareNut" : [-0.115, -0.11], "RoundNut" : [-0.115, -0.11], },
+            y_range={ "SquareNut" : [0.11, 0.225], "RoundNut" : [-0.225, -0.11], },
+            z_range={ "SquareNut" : [0.02, 0.02], "RoundNut" : [0.02, 0.02], },
+            ensure_object_boundary_in_range=False,
+            z_rotation={ "SquareNut" : np.pi, "RoundNut" : np.pi, },
+        )
+        if kwargs["controller"] == "position_orientation":
+            kwargs["controller"] = "position"
+        super().__init__(**kwargs)
 
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, z positions,
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = { "SquareNut" : (-0.115, -0.11, 3), "RoundNut" : (-0.115, -0.11, 3) }
+        y_bounds = { "SquareNut" : (0.11, 0.225, 3), "RoundNut" : (-0.225, -0.11, 3) }
+        z_bounds = { "SquareNut" : (0.02, 0.02, 1), "RoundNut" : (0.02, 0.02, 1) }
+        z_rot_bounds = { "SquareNut" : (np.pi, np.pi, 1), "RoundNut" : (np.pi, np.pi, 1) }
+        return x_bounds, y_bounds, z_bounds, z_rot_bounds
 
 
