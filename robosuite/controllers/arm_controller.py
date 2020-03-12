@@ -215,6 +215,8 @@ class Controller():
         if self.impedance_flag:
             # Includes (stacked) state vector, kp vector, and damping vector
             dim = dim * 3
+        if self.force_control:
+            dim += 3
         return dim
 
     @property
@@ -535,6 +537,7 @@ class PositionOrientationController(Controller):
                  position_limits=[[0, 0, 0], [0, 0, 0]],
                  orientation_limits=[[0, 0, 0], [0, 0, 0]],
                  interpolation=None,
+                 force_control=False,
                  **kwargs
                  ):
         control_max = np.ones(3) * control_range_pos
@@ -551,6 +554,7 @@ class PositionOrientationController(Controller):
         initial_damping = np.ones(6) * initial_damping
 
         self.use_delta_impedance = use_delta_impedance
+        self.force_control = force_control
 
         if self.use_delta_impedance:
             # provide range of possible delta impedances
@@ -646,6 +650,13 @@ class PositionOrientationController(Controller):
         Given the next action, output joint torques for the robot.
         Assumes the robot's model is updated.
         """
+
+        force_action = None
+        if self.force_control:
+            # force_action = np.array(action[:3]) * 10.
+            force_action = np.array(action[:3]) * 25.
+            action = action[3:]
+
         action = self.transform_action(action)
 
         # This is computed only when we receive a new desired goal from policy
@@ -713,9 +724,9 @@ class PositionOrientationController(Controller):
         # always ensure critical damping TODO - technically this is called unneccessarily if the impedance_flag is not set
         self.impedance_kv = 2 * np.sqrt(self.impedance_kp) * self.impedance_damping
 
-        return self.calculate_impedance_torques(position_error, orientation_error)
+        return self.calculate_impedance_torques(position_error, orientation_error, force_action=force_action)
 
-    def calculate_impedance_torques(self, position_error, orientation_error):
+    def calculate_impedance_torques(self, position_error, orientation_error, force_action=None):
         """
         Given the current errors in position and orientation, return the desired torques per joint
         """
@@ -727,8 +738,15 @@ class PositionOrientationController(Controller):
 
         uncoupling = True
         if (uncoupling):
+            # if force_action is not None:
+            #     assert self.force_control
+            #     desired_force += force_action
             decoupled_force = np.dot(self.lambda_x_matrix, desired_force)
             decoupled_torque = np.dot(self.lambda_r_matrix, desired_torque)
+            if force_action is not None:
+                assert self.force_control
+                decoupled_force += force_action
+            # decoupled_torque[0] += 0.1
             decoupled_wrench = np.concatenate([decoupled_force, decoupled_torque])
         else:
             desired_wrench = np.concatenate([desired_force, desired_torque])
@@ -910,6 +928,7 @@ class PositionController(PositionOrientationController):
                  initial_joint=None,
                  control_freq=20,
                  interpolation=None,
+                 force_control=False,
                  **kwargs
                  ):
         super(PositionController, self).__init__(
@@ -931,6 +950,7 @@ class PositionController(PositionOrientationController):
             initial_impedance_ori=initial_impedance_ori,
             initial_damping=initial_damping,
             interpolation=interpolation,
+            force_control=force_control,
             **kwargs)
 
         self.goal_orientation_set = False

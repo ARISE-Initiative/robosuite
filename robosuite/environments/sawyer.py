@@ -430,8 +430,8 @@ class SawyerEnv(MujocoEnv):
             # Split action into joint control and peripheral (i.e.: gripper) control (as specified by individual gripper)
             gripper_action = []
             if self.has_gripper:
-                gripper_action = action[self.controller.control_dim:]  # all indexes past controller dimension indexes
-                action = action[:self.controller.control_dim]
+                gripper_action = action[-self.gripper.dof:]  # all indexes past controller dimension indexes
+                action = action[:-self.gripper.dof]
 
             # TODO
             # First, get joint space action
