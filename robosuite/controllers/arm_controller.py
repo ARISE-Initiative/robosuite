@@ -216,7 +216,13 @@ class Controller():
             # Includes (stacked) state vector, kp vector, and damping vector
             dim = dim * 3
         if self.force_control:
-            dim += 3
+            assert isinstance(self, PositionOrientationController)
+            if isinstance(self, PositionController):
+                # can only apply translational forces to arm
+                dim += 3
+            else:
+                # can apply both translational and rotational forces to arm
+                dim += 6
         return dim
 
     @property
@@ -653,9 +659,17 @@ class PositionOrientationController(Controller):
 
         force_action = None
         if self.force_control:
-            # force_action = np.array(action[:3]) * 10.
-            force_action = np.array(action[:3]) * 25.
-            action = action[3:]
+            if len(self.action_mask) > 3:
+                # control rotation too
+                force_action = np.concatenate([
+                    action[:3] * 25., 
+                    action[3:6] * 10.,
+                ])
+                action = action[6:]
+            else:
+                # translation only
+                force_action = np.array(action[:3]) * 25.
+                action = action[3:]
 
         action = self.transform_action(action)
 
@@ -745,7 +759,9 @@ class PositionOrientationController(Controller):
             decoupled_torque = np.dot(self.lambda_r_matrix, desired_torque)
             if force_action is not None:
                 assert self.force_control
-                decoupled_force += force_action
+                decoupled_force += force_action[:3]
+                if len(force_action) > 3:
+                    decoupled_torque += force_action[3:6]
             # decoupled_torque[0] += 0.1
             decoupled_wrench = np.concatenate([decoupled_force, decoupled_torque])
         else:

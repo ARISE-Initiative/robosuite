@@ -628,7 +628,7 @@ class SawyerEnv(MujocoEnv):
 
         if self.has_gripper:
             dof += self.gripper.dof
-            return dof
+        return dof
 
     def pose_in_base_from_name(self, name):
         """
