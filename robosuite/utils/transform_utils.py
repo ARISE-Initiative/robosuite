@@ -552,17 +552,31 @@ def rotation_matrix(angle, direction, point=None):
     return M
 
 
+def clip_translation(dpos, limit):
+    """
+    Limits a translation (delta position) to a specified limit
+
+    Scales down the norm of the dpos to 'limit' if norm(dpos) > limit, else returns immediately
+
+    :param dpos: n-dim Translation being clipped (e,g.: (x, y, z)) -- numpy array
+    :param limit: Value to limit translation by -- magnitude (scalar, in same units as input)
+    :return: Clipped translation (same dimension as inputs)
+    """
+    input_norm = np.linalg.norm(dpos)
+    return dpos * limit / input_norm if input_norm > limit else dpos
+
+
 def clip_rotation(quat, limit):
     """
-    Limits a rotation to a specified limit
+    Limits a (delta) rotation to a specified limit
 
     Converts rotation to axis-angle, clips, then re-converts back into quaternion
 
     :param quat: Rotation being clipped (x, y, z, w) -- numpy array
-    :param limit: Value to limit rotation by -- magnitude (scalar)
+    :param limit: Value to limit rotation by -- magnitude (scalar, in radians)
     :return: Clipped rotation quaternion (x, y, z, w)
     """
-    if np.isclose(quat[3], 1, 1e-3):
+    if np.isclose(quat[3], 1, 1e-8):
         # This is (close to) a zero degree rotation, immediately return
         return quat
     else:

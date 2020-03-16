@@ -396,13 +396,10 @@ class EEIKController(JointVelController):
         """
         # scale input range to desired magnitude
         if dpos.any():
-            input_norm = np.linalg.norm(dpos)
-            if input_norm > self.ik_pos_limit:
-                dpos = dpos * self.ik_pos_limit / input_norm
+            dpos = T.clip_translation(dpos, self.ik_pos_limit)
 
         # Clip orientation to desired magnitude
-        #TODO: Fix -- clipping seems buggy
-        #rotation = T.clip_rotation(rotation, self.ik_ori_limit)
+        rotation = T.clip_rotation(rotation, self.ik_ori_limit)
 
         return dpos, rotation
 

@@ -1,7 +1,7 @@
 {
   "type" : "EE_IK",
   "kv": 40.0,
-  "ik_pos_limit": 0.05,
-  "ik_ori_limit": 1.00,
+  "ik_pos_limit": 0.005,
+  "ik_ori_limit": 0.005,
   "interpolation": null
 }
