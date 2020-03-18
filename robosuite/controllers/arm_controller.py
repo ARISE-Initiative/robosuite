@@ -106,6 +106,16 @@ class Controller():
 
         return transformed_action
 
+    def untransform_action(self, action):
+        """
+        Unscale the action - inverse of @transform_action. If an action outside
+        the valid bounds is passed in, it will rescale the action to lie withiin
+        the valid action bounds (so it may not exactly correspond to the true inverse).
+        """
+        untransformed_action = ((action - self.action_output_transform) / self.action_scale) + self.action_input_transform
+        untransformed_action = np.clip(untransformed_action, self.input_min, self.input_max)
+        return untransformed_action
+
     def update_model(self, sim, joint_index, id_name='right_hand'):
         """
         Updates the state of the robot used to compute the control command
@@ -651,6 +661,44 @@ class PositionOrientationController(Controller):
             logger.error("[Controller] Invalid interpolation! Please specify 'cubic' or 'linear'.")
             exit(-1)
 
+    def modify_action_with_force_perturbation(self, action, force):
+        """
+        Modifies the passed action vector with a pose perturbation that
+        roughly corresponds to external force perturbations on the arm
+        with the passed force vector.
+        """
+
+        # copies
+        action = np.array(action)
+        force = np.array(force)
+
+        # get raw action from normalized actions
+        action = self.transform_action(action)
+
+        if len(self.action_mask) > 3:
+            assert force.shape[0] == 6
+            force[3:6] *= 10.
+
+            raise Exception("No support for force rotation yet!")
+
+            kp = np.array(self.impedance_kp[3:6])
+            mr_inv = scipy.linalg.inv(self.lambda_r_matrix)
+            rot_perturb = mr_inv.dot(force[3:6]) / kp
+            action[3:6] += rot_perturb
+        else:
+            assert force.shape[0] == 3
+
+        force[:3] *= 25.
+
+        # delta x' = delta x + 1/kp * M^-1 * F
+        kp = np.array(self.impedance_kp[0:3])
+        mx_inv = scipy.linalg.inv(self.lambda_x_matrix)
+        pos_perturb = mx_inv.dot(force[:3]) / kp
+        action[:3] += pos_perturb
+        
+        # re-normalize action
+        return self.untransform_action(action)
+
     def action_to_torques(self, action, policy_step):
         """
         Given the next action, output joint torques for the robot.
@@ -752,9 +800,6 @@ class PositionOrientationController(Controller):
 
         uncoupling = True
         if (uncoupling):
-            # if force_action is not None:
-            #     assert self.force_control
-            #     desired_force += force_action
             decoupled_force = np.dot(self.lambda_x_matrix, desired_force)
             decoupled_torque = np.dot(self.lambda_r_matrix, desired_torque)
             if force_action is not None:
@@ -762,7 +807,6 @@ class PositionOrientationController(Controller):
                 decoupled_force += force_action[:3]
                 if len(force_action) > 3:
                     decoupled_torque += force_action[3:6]
-            # decoupled_torque[0] += 0.1
             decoupled_wrench = np.concatenate([decoupled_force, decoupled_torque])
         else:
             desired_wrench = np.concatenate([desired_force, desired_torque])
