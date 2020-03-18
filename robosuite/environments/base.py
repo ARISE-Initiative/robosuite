@@ -56,6 +56,7 @@ class MujocoEnv(metaclass=EnvMeta):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        camera_segmentation=False
     ):
         """
         Args:
@@ -90,6 +91,8 @@ class MujocoEnv(metaclass=EnvMeta):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            camera_segmentation (bool): True if rendering semantic segmentation
         """
 
         self.has_renderer = has_renderer
@@ -113,6 +116,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.camera_height = camera_height
         self.camera_width = camera_width
         self.camera_depth = camera_depth
+        self.camera_segmentation = camera_segmentation
 
         self._reset_internal()
 

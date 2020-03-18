@@ -10,6 +10,7 @@ from robosuite.models.robots import Sawyer
 from robosuite.controllers.arm_controller import *
 from collections import deque
 import hjson
+from mujoco_py.generated.const import RND_SEGMENT, RND_IDCOLOR
 
 
 class SawyerEnv(MujocoEnv):
@@ -35,6 +36,7 @@ class SawyerEnv(MujocoEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        camera_segmentation=False,
         impedance_ctrl=True,    # TODO
         initial_policy=None,    # TODO - currently not included in the config file (should be a function)
         eval_mode=False,
@@ -89,6 +91,8 @@ class SawyerEnv(MujocoEnv):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            camera_segmentation (bool): True if rendering semantic segmentation
 
             impedance_ctrl (bool) : True if we want to control impedance of the end effector
 
@@ -164,6 +168,7 @@ class SawyerEnv(MujocoEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            camera_segmentation=camera_segmentation
         )
 
         # Current and previous policy step q values, joint torques, ft ee applied and actions
@@ -539,6 +544,29 @@ class SawyerEnv(MujocoEnv):
         self._gripper_visualization()
         return ret
 
+    def render_segmentation(self, camera_name):
+        """
+        Get semantic segmentation map of a given view
+        Ref: https://github.com/deepmind/dm_control/blob/master/dm_control/mujoco/engine.py#L751
+
+        :param camera_name: camera name
+        :return: a semantic segmentation map with each element corresponding to a object id
+        """
+        scn = self.sim.render_contexts[0].scn
+        scn.flags[RND_SEGMENT] = True
+        scn.flags[RND_IDCOLOR] = True
+        frame = self.sim.render(self.camera_width, self.camera_height, camera_name=camera_name)
+        frame = frame[..., 0] + frame[..., 1] * 2 ** 8 + frame[..., 2] * 2 ** 16
+        segid2output = np.full((self.sim.model.ngeom + 1), fill_value=-1,
+                               dtype=np.int32)  # Seg id cannot be > ngeom + 1.
+        geoms = self.sim.render_contexts[0].get_geoms()
+        mappings = np.array([(g['segid'], g['objid']) for g in geoms], dtype=np.int32)
+        segid2output[mappings[:, 0] + 1] = mappings[:, 1]
+        frame = segid2output[frame]
+        scn.flags[RND_SEGMENT] = False
+        scn.flags[RND_IDCOLOR] = False
+        return frame
+
     def _get_observation(self):
         """
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
@@ -559,6 +587,9 @@ class SawyerEnv(MujocoEnv):
                 di['image'], di['depth'] = camera_obs
             else:
                 di['image'] = camera_obs
+
+            if self.camera_segmentation:
+                di['segmentation'] = self.render_segmentation(self.camera_name)
 
                 # Skpping for now, not worth importing cv2 just for this
                 # if self.visualize_offscreen and not self.real_robot:

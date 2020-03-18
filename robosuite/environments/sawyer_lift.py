@@ -41,6 +41,7 @@ class SawyerLift(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        camera_segmentation=False,
         use_default_task_config=True,
         task_config_file=None,
         use_default_controller_config=True,
@@ -104,6 +105,8 @@ class SawyerLift(SawyerEnv):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            camera_segmentation (bool): True if rendering semantic segmentation
 
             use_default_task_config (bool): True if using default configuration file
                 for remaining environment parameters. Default is true
@@ -189,6 +192,7 @@ class SawyerLift(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            camera_segmentation=camera_segmentation,
             controller_config_file=controller_filepath,
             controller=controller,
             **kwargs
