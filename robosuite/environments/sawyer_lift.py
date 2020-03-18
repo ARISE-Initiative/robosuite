@@ -8,7 +8,7 @@ from robosuite.environments.sawyer import SawyerEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask
 import hjson
 import os
 
@@ -714,4 +714,143 @@ class SawyerLiftLargeGrid(SawyerLift):
         return super(SawyerLiftLargeGrid, self).step(action)
 
 
+class SawyerLiftTarget(SawyerLift):
+    """
+    Goal-driven placing
+    """
+    def __init__(
+        self,
+        hide_visual=False,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.hide_visual = hide_visual
 
+    def _load_model(self):
+        super()._load_model()
+        if not self.hide_visual:
+            # target visual object
+            target_size = np.array(self.mujoco_objects["cube"].size)
+            target = BoxObject(
+                size_min=target_size,
+                size_max=target_size,
+                rgba=[0, 1, 0, 0.0],
+            )
+            self.visual_objects = OrderedDict([("cube_target", target)])
+
+            # task includes arena, robot, and objects of interest
+            self.model = TableTopVisualTask(
+                self.mujoco_arena,
+                self.mujoco_robot,
+                self.mujoco_objects,
+                self.visual_objects,
+                initializer=self.placement_initializer,
+            )
+            self.model.place_objects()
+            self.model.place_visual()
+
+    def _get_reference(self):
+        super()._get_reference()
+        if not self.hide_visual:
+            self.target_body_id = self.sim.model.body_name2id("cube_target")
+            target_qpos = self.sim.model.get_joint_qpos_addr("cube_target")
+            target_qvel =  self.sim.model.get_joint_qvel_addr("cube_target")
+            self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
+            self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
+
+    def _pre_action(self, action, policy_step=None):
+        super()._pre_action(action, policy_step=policy_step)
+        if not self.hide_visual:
+            # gravity compensation for target object
+            self.sim.data.qfrc_applied[
+                    self._ref_target_vel_low : self._ref_target_vel_high
+                ] = self.sim.data.qfrc_bias[
+                    self._ref_target_vel_low : self._ref_target_vel_high
+                ]
+
+    def _set_target(self, pos, quat=None):
+        """
+        Set the target position and quaternion.
+        Quaternion should be (x, y, z, w).
+        """
+        if self.hide_visual:
+            print("Warning: visual targets hidden!")
+            return
+        # assert(not self.hide_visual)
+
+        index = self._ref_target_pos_low
+
+        sim_state = self.sim.get_state()
+        sim_state.qpos[index: index + 3] = np.array(pos)
+        if quat is not None:
+            sim_state.qpos[index + 3: index + 7] = convert_quat(quat, to="wxyz")
+        self.sim.set_state(sim_state)
+        self.sim.forward()
+
+    def _reduce_state(self, state):
+        """
+        Reduces full state to state without target visual object states.
+        """
+        assert not self.hide_visual
+
+        return np.concatenate([
+            state[:18],
+            state[25:41],
+            state[47:],
+        ])
+
+    def _merge_state(self, state):
+        """
+        Merges target visual object states into input state. Assumes that the
+        input state doesn't contain this information.
+        """
+        assert not self.use_hide_visual
+
+        full_state = self.sim.get_state().flatten()
+
+        # Lift (18, 41)
+        new_state = np.concatenate([
+            state[:18],
+            full_state[18:25], # 7 dim qpos for target
+            state[18:34], # 41 - (18 + 7) = 16, + 18 = 34
+            full_state[41:47], # 6 dim qvel for target
+            state[34:],
+        ])
+        return new_state
+
+    def set_target_from_obs(self, obs, object_only=False):
+        """
+        Takes a flat observation containing both robot-state and object-state,
+        or just object-state, and sets the target visual objects poses
+        appropriately.
+        """
+        if self.hide_visual:
+            print("Warning: visual targets hidden!")
+            return
+        # assert(not self.hide_visual)
+
+        # defensive copy
+        obs = np.array(obs)
+
+        # get object indices using quaternion indices
+        inds = self._get_quat_indices()
+        if not object_only:
+            inds = inds['object']
+
+        raise NotImplementedError('fix this')
+        for ind in inds:
+            pos = obs[ind - 3:ind]
+            quat = obs[ind: ind + 4]
+            self._set_target(pos=pos, quat=quat)
+
+    def reset_from_xml_string(self, xml_string):
+        """
+        Reloads the environment from an XML description of the environment.
+        Assumes the xml string doesn't contain target visual objects.
+        """
+        if not self.hide_visual:
+            xml_string = update_model_xml_from_visual_xml(
+                xml=xml_string,
+                visual_xml=self.model.get_xml(),
+                target_names=["cube_target"])
+        super().reset_from_xml_string(xml_string)

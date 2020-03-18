@@ -17,3 +17,4 @@ from .height_table_task import HeightTableTask
 from .wipe_force_table_task import WipeForceTableTask
 from .wiping_table_task import WipingTableTask
 from .tactile_table_task import TactileTableTask
+from .table_top_visual_task import TableTopVisualTask
