@@ -10,7 +10,11 @@ from robosuite.models.robots import Sawyer
 from robosuite.controllers.arm_controller import *
 from collections import deque
 import hjson
-from mujoco_py.generated.const import RND_SEGMENT, RND_IDCOLOR
+
+try:
+    from mujoco_py.generated.const import RND_SEGMENT, RND_IDCOLOR
+except:
+    print("WARNING: could not import Mujoco 200 constants!")
 
 
 class SawyerEnv(MujocoEnv):
