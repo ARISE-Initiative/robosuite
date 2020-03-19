@@ -2,60 +2,74 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.utils.transform_utils import convert_quat
-from robosuite.environments.sawyer import SawyerEnv
 
-from robosuite.models.arenas.table_arena import TableArena
+from robosuite.environments.robot_env import RobotEnv
+from robosuite.agents import SingleArm
+
+from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
-from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
-import json
-import os
 
-class SawyerStack(SawyerEnv):
+class Stack(RobotEnv):
     """
-    This class corresponds to the stacking task for the Sawyer robot arm.
+    This class corresponds to the stacking task for a single robot arm.
     """
 
     def __init__(
         self,
-        controller_config=None,
-        gripper_type="TwoFingerGripper",
+        robots,
+        controller_configs=None,
+        gripper_types="default",
+        gripper_visualizations=False,
         table_full_size=(0.8, 0.8, 0.8),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
         placement_initializer=None,
-        gripper_visualization=False,
         use_indicator_object=False,
         has_renderer=False,
-        has_offscreen_renderer=True,
+        has_offscreen_renderers=True,
         render_collision_mesh=False,
         render_visual_mesh=True,
         control_freq=10,
         horizon=1000,
         ignore_done=False,
-        camera_name="frontview",
-        camera_height=256,
-        camera_width=256,
-        camera_depth=False,
+        camera_names="frontview",
+        camera_heights=256,
+        camera_widths=256,
+        camera_depths=False,
     ):
         """
         Args:
-            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
-                Else, uses the default controller for this specific task
+            robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
+                (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
+                Note: Must be a single single-arm robot!
 
-            gripper_type (str): type of gripper, used to instantiate
-                gripper models from gripper factory.
+            controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
+                custom controller. Else, uses the default controller for this specific task. Should either be single
+                dict if same controller is to be used for all robots or else it should be a list of the same length as
+                "robots" param
+
+            gripper_types (str or list of str): type of gripper, used to instantiate
+                gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
+                with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
+                overrides the default gripper. Should either be single str if same gripper type is to be used for all
+                robots or else it should be a list of the same length as "robots" param
+
+            gripper_visualizations (bool or list of bool): True if using gripper visualization.
+                Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+                robots or else it should be a list of the same length as "robots" param
 
             table_full_size (3-tuple): x, y, and z dimensions of the table.
 
             table_friction (3-tuple): the three mujoco friction parameters for
                 the table.
 
-            use_camera_obs (bool): if True, every observation includes a
-                rendered image.
+            use_camera_obs (bool or list of bool): if True, every observation for a specific robot includes a rendered
+            image. Should either be single bool if camera obs value is to be used for all
+                robots or else it should be a list of the same length as "robots" param
 
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
@@ -66,16 +80,15 @@ class SawyerStack(SawyerEnv):
                 be used to place objects on every reset, else a UniformRandomSampler
                 is used by default.
 
-            gripper_visualization (bool): True if using gripper visualization.
-                Useful for teleoperation.
-
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
 
             has_renderer (bool): If true, render the simulation state in
                 a viewer instead of headless mode.
 
-            has_offscreen_renderer (bool): True if using off-screen rendering.
+            has_offscreen_renderers (bool or list of bool): True if using off-screen rendering. Should either be single
+                bool if same offscreen renderering setting is to be used for all cameras or else it should be a list of
+                the same length as "robots" param
 
             render_collision_mesh (bool): True if rendering collision meshes
                 in camera. False otherwise.
@@ -91,36 +104,31 @@ class SawyerStack(SawyerEnv):
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
 
-            camera_name (str): name of camera to be rendered. Must be
-                set if @use_camera_obs is True.
+            camera_names (str or list of str): name of camera to be rendered. Should either be single str if
+                same name is to be used for all cameras' rendering or else it should be a list of the same length as
+                "robots" param. Note: Each name must be set if the corresponding @use_camera_obs value is True.
 
-            camera_height (int): height of camera frame.
+            camera_heights (int or list of int): height of camera frame. Should either be single int if
+                same height is to be used for all cameras' frames or else it should be a list of the same length as
+                "robots" param.
 
-            camera_width (int): width of camera frame.
+            camera_widths (int or list of int): width of camera frame. Should either be single int if
+                same width is to be used for all cameras' frames or else it should be a list of the same length as
+                "robots" param.
 
-            camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+            camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
+                bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
+                "robots" param.
         """
-
-        # Load the default controller if none is specified
-        if not controller_config:
-            controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
-            try:
-                with open(controller_path) as f:
-                    controller_config = json.load(f)
-            except FileNotFoundError:
-                print("Error opening default controller filepath at: {}. "
-                      "Please check filepath and try again.".format(controller_path))
-
-        # Assert that the controller config is a dict file
-        assert type(controller_config) == dict, \
-            "Inputted controller config must be a dict! Instead, got type: {}".format(type(controller_config))
+        # First, verify that only one robot is being inputted
+        self._check_robot_configuration(robots)
 
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
 
-        # whether to show visual aid about where is the gripper
-        self.gripper_visualization = gripper_visualization
+        # reward configuration
+        self.reward_shaping = reward_shaping
 
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
@@ -137,108 +145,24 @@ class SawyerStack(SawyerEnv):
             )
 
         super().__init__(
-            controller_config=controller_config,
-            gripper_type=gripper_type,
-            gripper_visualization=gripper_visualization,
+            robots=robots,
+            controller_configs=controller_configs,
+            gripper_types=gripper_types,
+            gripper_visualizations=gripper_visualizations,
+            use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
-            has_offscreen_renderer=has_offscreen_renderer,
+            has_offscreen_renderers=has_offscreen_renderers,
             render_collision_mesh=render_collision_mesh,
             render_visual_mesh=render_visual_mesh,
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
-            use_camera_obs=use_camera_obs,
-            camera_name=camera_name,
-            camera_height=camera_height,
-            camera_width=camera_width,
-            camera_depth=camera_depth,
+            camera_names=camera_names,
+            camera_heights=camera_heights,
+            camera_widths=camera_widths,
+            camera_depths=camera_depths,
         )
-
-        # reward configuration
-        self.reward_shaping = reward_shaping
-
-        # information of objects
-        # self.object_names = [o['object_name'] for o in self.object_metadata]
-        self.object_names = list(self.mujoco_objects.keys())
-        self.object_site_ids = [
-            self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
-        ]
-
-        # id of grippers for contact checking
-        self.finger_names = self.gripper.contact_geoms()
-
-        # self.sim.data.contact # list, geom1, geom2
-        self.collision_check_geom_names = self.sim.model._geom_name2id.keys()
-        self.collision_check_geom_ids = [
-            self.sim.model._geom_name2id[k] for k in self.collision_check_geom_names
-        ]
-
-    def _load_model(self):
-        """
-        Loads an xml model, puts it in self.model
-        """
-        super()._load_model()
-        self.mujoco_robot.set_base_xpos([0, 0, 0])
-
-        # load model for table top workspace
-        self.mujoco_arena = TableArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
-        )
-        if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
-
-        # The sawyer robot has a pedestal, we want to align it with the table
-        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
-
-        # initialize objects of interest
-        cubeA = BoxObject(
-            size_min=[0.02, 0.02, 0.02], size_max=[0.02, 0.02, 0.02], rgba=[1, 0, 0, 1]
-        )
-        cubeB = BoxObject(
-            size_min=[0.025, 0.025, 0.025],
-            size_max=[0.025, 0.025, 0.025],
-            rgba=[0, 1, 0, 1],
-        )
-        self.mujoco_objects = OrderedDict([("cubeA", cubeA), ("cubeB", cubeB)])
-        self.n_objects = len(self.mujoco_objects)
-
-        # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
-        self.init_qpos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
-        self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
-
-        # task includes arena, robot, and objects of interest
-        self.model = TableTopTask(
-            self.mujoco_arena,
-            self.mujoco_robot,
-            self.mujoco_objects,
-            initializer=self.placement_initializer,
-        )
-        self.model.place_objects()
-
-    def _get_reference(self):
-        """
-        Sets up references to important components. A reference is typically an
-        index or a list of indices that point to the corresponding elements
-        in a flatten array, which is how MuJoCo stores physical simulation data.
-        """
-        super()._get_reference()
-        self.cubeA_body_id = self.sim.model.body_name2id("cubeA")
-        self.cubeB_body_id = self.sim.model.body_name2id("cubeB")
-        self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
-        ]
-        self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.gripper.right_finger_geoms
-        ]
-        self.cubeA_geom_id = self.sim.model.geom_name2id("cubeA")
-        self.cubeB_geom_id = self.sim.model.geom_name2id("cubeB")
-
-    def _reset_internal(self):
-        """
-        Resets simulation internal configurations.
-        """
-        super()._reset_internal()
 
     def reward(self, action):
         """
@@ -282,7 +206,7 @@ class SawyerStack(SawyerEnv):
         # the center of the cube
         cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
         cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
-        gripper_site_pos = self.sim.data.site_xpos[self.eef_site_id]
+        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
         dist = np.linalg.norm(gripper_site_pos - cubeA_pos)
         r_reach = (1 - np.tanh(10.0 * dist)) * 0.25
 
@@ -331,7 +255,89 @@ class SawyerStack(SawyerEnv):
         if not_touching and r_lift > 0 and touch_cubeA_cubeB:
             r_stack = 2.0
 
-        return (r_reach, r_lift, r_stack)
+        return r_reach, r_lift, r_stack
+
+    def _load_model(self):
+        """
+        Loads an xml model, puts it in self.model
+        """
+        super()._load_model()
+
+        # Vary the initial qpos of the robot
+        self.robots[0].init_qpos += np.random.randn(self.robots[0].init_qpos.shape[0]) * 0.02
+
+        # Verify the correct robot has been loaded
+        assert isinstance(self.robots[0], SingleArm), \
+            "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
+
+        # Adjust base pose accordingly
+        # TODO: Account for variations in robot start positions maybe?
+        self.robots[0].robot_model.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = TableArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator()
+
+        # Assumes the robot has a pedestal, we want to align it with the table
+        # TODO: Add specs in robot model to account for varying base positions maybe?
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+
+        # initialize objects of interest
+        cubeA = BoxObject(
+            size_min=[0.02, 0.02, 0.02], size_max=[0.02, 0.02, 0.02], rgba=[1, 0, 0, 1]
+        )
+        cubeB = BoxObject(
+            size_min=[0.025, 0.025, 0.025],
+            size_max=[0.025, 0.025, 0.025],
+            rgba=[0, 1, 0, 1],
+        )
+        self.mujoco_objects = OrderedDict([("cubeA", cubeA), ("cubeB", cubeB)])
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopTask(
+            self.mujoco_arena,
+            [robot.robot_model for robot in self.robots],
+            self.mujoco_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+
+    def _get_reference(self):
+        """
+        Sets up references to important components. A reference is typically an
+        index or a list of indices that point to the corresponding elements
+        in a flatten array, which is how MuJoCo stores physical simulation data.
+        """
+        super()._get_reference()
+
+        # Additional object references from this env
+        self.cubeA_body_id = self.sim.model.body_name2id("cubeA")
+        self.cubeB_body_id = self.sim.model.body_name2id("cubeB")
+
+        # information of objects
+        self.object_names = list(self.mujoco_objects.keys())
+        self.object_site_ids = [
+            self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
+        ]
+
+        # id of grippers for contact checking
+        self.l_finger_geom_ids = [
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.left_finger_geoms
+        ]
+        self.r_finger_geom_ids = [
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.right_finger_geoms
+        ]
+        self.cubeA_geom_id = self.sim.model.geom_name2id("cubeA")
+        self.cubeB_geom_id = self.sim.model.geom_name2id("cubeB")
+
+    def _reset_internal(self):
+        """
+        Resets simulation internal configurations.
+        """
+        super()._reset_internal()
 
     def _get_observation(self):
         """
@@ -347,20 +353,12 @@ class SawyerStack(SawyerEnv):
                 contains a rendered depth map from the simulation
         """
         di = super()._get_observation()
-        if self.use_camera_obs:
-            camera_obs = self.sim.render(
-                camera_name=self.camera_name,
-                width=self.camera_width,
-                height=self.camera_height,
-                depth=self.camera_depth,
-            )
-            if self.camera_depth:
-                di["image"], di["depth"] = camera_obs
-            else:
-                di["image"] = camera_obs
 
         # low-level object information
         if self.use_object_obs:
+            # Get robot prefix
+            pr = self.robots[0].robot_model.naming_prefix
+
             # position and rotation of the first cube
             cubeA_pos = np.array(self.sim.data.body_xpos[self.cubeA_body_id])
             cubeA_quat = convert_quat(
@@ -378,9 +376,9 @@ class SawyerStack(SawyerEnv):
             di["cubeB_quat"] = cubeB_quat
 
             # relative positions between gripper and cubes
-            gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
-            di["gripper_to_cubeA"] = gripper_site_pos - cubeA_pos
-            di["gripper_to_cubeB"] = gripper_site_pos - cubeB_pos
+            gripper_site_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
+            di[pr + "gripper_to_cubeA"] = gripper_site_pos - cubeA_pos
+            di[pr + "gripper_to_cubeB"] = gripper_site_pos - cubeB_pos
             di["cubeA_to_cubeB"] = cubeA_pos - cubeB_pos
 
             di["object-state"] = np.concatenate(
@@ -389,27 +387,13 @@ class SawyerStack(SawyerEnv):
                     cubeA_quat,
                     cubeB_pos,
                     cubeB_quat,
-                    di["gripper_to_cubeA"],
-                    di["gripper_to_cubeB"],
+                    di[pr + "gripper_to_cubeA"],
+                    di[pr + "gripper_to_cubeB"],
                     di["cubeA_to_cubeB"],
                 ]
             )
 
         return di
-
-    def _check_contact(self):
-        """
-        Returns True if gripper is in contact with an object.
-        """
-        collision = False
-        for contact in self.sim.data.contact[: self.sim.data.ncon]:
-            if (
-                self.sim.model.geom_id2name(contact.geom1) in self.finger_names
-                or self.sim.model.geom_id2name(contact.geom2) in self.finger_names
-            ):
-                collision = True
-                break
-        return collision
 
     def _check_success(self):
         """
@@ -418,20 +402,20 @@ class SawyerStack(SawyerEnv):
         _, _, r_stack = self.staged_rewards()
         return r_stack > 0
 
-    def _gripper_visualization(self):
+    def _visualization(self):
         """
         Do any needed visualization here. Overrides superclass implementations.
         """
 
-        # color the gripper site appropriately based on distance to nearest object
-        if self.gripper_visualization:
+        # color the gripper site appropriately based on distance to cube
+        if self.robots[0].gripper_visualization:
             # find closest object
             square_dist = lambda x: np.sum(
-                np.square(x - self.sim.data.get_site_xpos("grip_site"))
+                np.square(x - self.sim.data.get_site_xpos(self.robots[0].gripper.visualization_sites["grip_site"]))
             )
             dists = np.array(list(map(square_dist, self.sim.data.site_xpos)))
-            dists[self.eef_site_id] = np.inf  # make sure we don't pick the same site
-            dists[self.eef_cylinder_id] = np.inf
+            dists[self.robots[0].eef_site_id] = np.inf  # make sure we don't pick the same site
+            dists[self.robots[0].eef_cylinder_id] = np.inf
             ob_dists = dists[
                 self.object_site_ids
             ]  # filter out object sites we care about
@@ -445,4 +429,12 @@ class SawyerStack(SawyerEnv):
             rgba[1] = scaled
             rgba[3] = 0.5
 
-            self.sim.model.site_rgba[self.eef_site_id] = rgba
+            self.sim.model.site_rgba[self.robots[0].eef_site_id] = rgba
+
+    def _check_robot_configuration(self, robots):
+        """
+        Sanity check to make sure the inputted robots and configuration is acceptable
+        """
+        if type(robots) is list:
+            assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
+

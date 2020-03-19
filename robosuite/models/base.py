@@ -57,31 +57,34 @@ class MujocoXML(object):
         self.root.append(ele)
         return ele
 
-    def merge(self, other, merge_body=True):
+    def merge(self, others, merge_body=True):
         """
         Default merge method.
 
         Args:
-            other: another MujocoXML instance
-                raises XML error if @other is not a MujocoXML instance.
-                merges <worldbody/>, <actuator/> and <asset/> of @other into @self
-            merge_body: True if merging child bodies of @other. Defaults to True.
+            others: another MujocoXML instance (or list of instances)
+                raises XML error if @others is not a MujocoXML instance.
+                merges <worldbody/>, <actuator/> and <asset/> of @others into @self
+            merge_body: True if merging child bodies of @others. Defaults to True.
         """
-        if not isinstance(other, MujocoXML):
-            raise XMLError("{} is not a MujocoXML instance.".format(type(other)))
-        if merge_body:
-            for body in other.worldbody:
-                self.worldbody.append(body)
-        self.merge_asset(other)
-        for one_actuator in other.actuator:
-            self.actuator.append(one_actuator)
-        for one_equality in other.equality:
-            self.equality.append(one_equality)
-        for one_contact in other.contact:
-            self.contact.append(one_contact)
-        for one_default in other.default:
-            self.default.append(one_default)
-        # self.config.append(other.config)
+        if type(others) is not list:
+            others = [others]
+        for idx, other in enumerate(others):
+            if not isinstance(other, MujocoXML):
+                raise XMLError("{} is not a MujocoXML instance.".format(type(other)))
+            if merge_body:
+                for body in other.worldbody:
+                    self.worldbody.append(body)
+            self.merge_asset(other)
+            for one_actuator in other.actuator:
+                self.actuator.append(one_actuator)
+            for one_equality in other.equality:
+                self.equality.append(one_equality)
+            for one_contact in other.contact:
+                self.contact.append(one_contact)
+            for one_default in other.default:
+                self.default.append(one_default)
+            # self.config.append(other.config)
 
     def get_model(self, mode="mujoco_py"):
         """
@@ -137,3 +140,39 @@ class MujocoXML(object):
             pattern = "./{}[@name='{}']".format(asset_type, asset_name)
             if self.asset.find(pattern) is None:
                 self.asset.append(asset)
+
+    def add_prefix(self, prefix, tags=("body", "joint", "site", "geom", "camera", "actuator")):
+        """
+        Utility to add prefix to all body names to prevent name clashes
+        Args:
+            prefix (str): Prefix to be appended to all requested elements in this XML
+            tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
+                prepended to it
+        """
+        tags = set(tags)
+        if "actuator" in tags:
+            tags.discard("actuator")
+            for actuator in self.actuator:
+                actuator.attrib["name"] = prefix + actuator.attrib["name"]
+                if "joint" in tags:
+                    actuator.attrib["joint"] = prefix + actuator.attrib["joint"]
+        if "body" in tags:
+            for contact in self.contact:
+                contact.set("body1", prefix + contact.attrib["body1"])
+                contact.set("body2", prefix + contact.attrib["body2"])
+            for equality in self.equality:
+                equality.set("body1", prefix + equality.attrib["body1"])
+                equality.set("body2", prefix + equality.attrib["body2"])
+        for body in self.worldbody:
+            self._add_prefix_recursively(body, tags, prefix)
+
+    def _add_prefix_recursively(self, root, tags, prefix):
+        """
+        Iteratively searches through all children nodes in "root" element to append "prefix" to any named subelements
+        with a tag in "tags"
+        """
+        if "name" in root.attrib:
+            root.set("name", prefix + root.attrib["name"])
+        for child in root:
+            if child.tag in tags:
+                self._add_prefix_recursively(child, tags, prefix)

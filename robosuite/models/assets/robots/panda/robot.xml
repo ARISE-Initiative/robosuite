@@ -1,13 +1,13 @@
 <mujoco model="panda">
     <actuator>
         <!-- Physical limits of the actuator. -->
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_right_j1"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint2" name="torq_right_j2"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint3" name="torq_right_j3"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint4" name="torq_right_j4"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint5" name="torq_right_j5"/>
-        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint6" name="torq_right_j6"/>
-        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint7" name="torq_right_j7"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_j1"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint2" name="torq_j2"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint3" name="torq_j3"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint4" name="torq_j4"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint5" name="torq_j5"/>
+        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint6" name="torq_j6"/>
+        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint7" name="torq_j7"/>
     </actuator>
     <asset>
         <mesh name="link0" file="meshes/link0.stl" />

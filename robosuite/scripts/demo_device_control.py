@@ -1,5 +1,7 @@
 """Teleoperate robot with keyboard or SpaceMouse.
 
+***Choose user input option with the --device argument***
+
 Keyboard:
     We use the keyboard to control the end-effector of the robot.
     The keyboard provides 6-DoF control commands through various keys.
@@ -31,6 +33,12 @@ SpaceMouse:
         Download and install the driver before running the script:
             https://www.3dconnexion.com/service/drivers.html
 
+Additionally, --pos_sensitivity and --rot_sensitivity provide relative gains for increasing / decreasing the user input
+device sensitivity
+
+
+***Choose controller with the --controller argument***
+
 Choice of using either inverse kinematics controller (ik) or operational space controller (osc):
 Main difference is that user inputs with ik's rotations are always taken relative to eef coordinate frame, whereas
     user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
@@ -39,26 +47,56 @@ Main difference is that user inputs with ik's rotations are always taken relativ
         OSC also tends to be more efficient since IK relies on backend pybullet sim
         IK maintains initial orientation of robot env while OSC automatically initializes with gripper facing downwards
 
-Example:
-    $ python demo_device_control.py --environment SawyerPickPlaceCan --controller ik
+
+***Choose environment specifics with the following arguments***
+
+    --environment: Task to perform, e.g.: "Lift", "TwoArmPegInHole", "NutAssembly", etc.
+    --robots: Robot(s) with which to perform the task. Can be any in {"Panda", "Sawyer", "Baxter"}. Note that the
+        environments include sanity checks, such that a "TwoArm..." environment will only accept either a 2-tuple of
+        robot names or a single bimanual robot name, according to the specified configuration (see below), and all
+        other environments will only accept a single single-armed robot name
+    --config: Exclusively applicable and only should be specified for "TwoArm..." environments. Specifies the robot
+        configuration desired for the task. Options are {"bimanual", "single-arm-parallel", and "single-arm-opposed"}
+            -"bimanual": Sets up the environment for a single bimanual robot. Expects a single bimanual robot name to
+                be specified in the --robots argument
+            -"single-arm-parallel": Sets up the environment such that two single-armed robots are stationed next to
+                each other facing the same direction. Expects a 2-tuple of single-armed robot names to be specified
+                in the --robots argument.
+            -"single-arm-opposed": Sets up the environment such that two single-armed robots are stationed opposed from
+                each other, facing each other from opposite directions. Expects a 2-tuple of single-armed robot names
+                to be specified in the --robots argument.
+    --arm: Exclusively applicable and only should be specified for "TwoArm..." environments. Specifies which of the
+        multiple arm eef's to control. The other (passive) arm will remain stationary. Options are {"right", "left"}
+        (from the point of view of the robot(s) facing against the viewer direction)
+
+Examples:
+    For normal single-arm environment:
+        $ python demo_device_control.py --environment PickPlaceCan --robots Sawyer --controller osc
+    For two-arm bimanual environment:
+        $ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left --controller osc
+    For two-arm multi single-arm robot environment:
+        $ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config single-arm-parallel --controller osc
+
 
 """
 
 import argparse
 import numpy as np
-import sys
 import os
 import json
 
 import robosuite
 import robosuite.utils.transform_utils as T
+from robosuite.models.robots import *
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="SawyerLift")
-    parser.add_argument("--arm", type=str, default="right", help="Which arm to control (if bimanual) 'right' or 'left'")
+    parser.add_argument("--environment", type=str, default="Lift")
+    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+    parser.add_argument("--config", type=str, default="", help="Specified environment configuration if necessary")
+    parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--controller", type=str, default="ik", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="spacemouse")
     parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
@@ -86,17 +124,33 @@ if __name__ == "__main__":
         print("Error opening default controller filepath at: {}. "
               "Please check filepath and try again.".format(controller_path))
 
-    env = robosuite.make(
-        args.environment,
-        has_renderer=True,
-        ignore_done=True,
-        use_camera_obs=False,
-        gripper_visualization=True,
-        reward_shaping=True,
-        control_freq=100,
-        controller_config=controller_config
-    )
+    if args.config == "":
+        env = robosuite.make(
+            args.environment,
+            robots=args.robots,
+            has_renderer=True,
+            ignore_done=True,
+            use_camera_obs=False,
+            gripper_visualizations=True,
+            reward_shaping=True,
+            control_freq=100,
+            controller_configs=controller_config
+        )
+    else:
+        env = robosuite.make(
+            args.environment,
+            robots=args.robots,
+            env_configuration=args.config,
+            has_renderer=True,
+            ignore_done=True,
+            use_camera_obs=False,
+            gripper_visualizations=True,
+            reward_shaping=True,
+            control_freq=100,
+            controller_configs=controller_config
+        )
 
+    # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
     # initialize device
@@ -141,7 +195,7 @@ if __name__ == "__main__":
             drotation = raw_drotation[[1,0,2]]
             if args.controller == 'ik':
                 # If this is panda, want to flip y
-                if env.mujoco_robot.name == 'panda':
+                if isinstance(env.robots[args.arm == "left"].robot_model, Panda):
                     drotation[1] = -drotation[1]
                 else:
                     # Flip x
@@ -160,26 +214,39 @@ if __name__ == "__main__":
                 print("Error: Unsupported controller specified -- must be either ik or osc!")
 
             # map 0 to 1 (open) and map 1 to -1 (closed)
-            grasp = -1 if grasp else 1
+            grasp = [-1] if grasp else [1]
+
+            # Check to make sure robot actually has a gripper and clear grasp action if it doesn't
+            if hasattr(env, "env_configuration"):
+                # This is a multi-arm robot
+                if env.env_configuration == "bimanual":
+                    # We should check the correct arm to see if it has a gripper
+                    if not env.robots[0].has_gripper[args.arm]:
+                        grasp = []
+                else:
+                    # We should check the correct robot to see if it has a gripper (assumes 0 = right, 1 = left)
+                    if not env.robots[args.arm == "left"].has_gripper:
+                        grasp = []
+            else:
+                # This is a single-arm robot, simply check to see if it has a gripper
+                if not env.robots[0].has_gripper:
+                    grasp = []
 
             # Create action based on action space of individual robot
-            if env.mujoco_robot.name == 'baxter':
-                # Baxter takes double the action length
-                nonactive = np.zeros(6)
-                if args.controller == 'ik':
-                    nonactive = np.concatenate([nonactive, [1]])
-                if args.arm == 'right':
-                    # Right control
-                    action = np.concatenate([dpos, drotation, nonactive, [grasp], [-1]])
-                elif args.arm == 'left':
-                    # Left control
-                    action = np.concatenate([nonactive, dpos, drotation, [-1], [grasp]])
+            action = np.concatenate([dpos, drotation, grasp])
+
+            # Fill out the rest of the action space if necessary
+            rem_action_dim = env.action_dim - action.size
+            if rem_action_dim > 0:
+                # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
+                if args.arm == "right":
+                    action = np.concatenate([action, np.zeros(rem_action_dim)])
+                elif args.arm == "left":
+                    action = np.concatenate([np.zeros(rem_action_dim), action])
                 else:
                     # Only right and left arms supported
-                    print("Error: Unsupported arm specified -- must be either 'right' or 'left'!")
-
-            else:
-                action = np.concatenate([dpos, drotation, [grasp]])
+                    print("Error: Unsupported arm specified -- "
+                          "must be either 'right' or 'left'! Got: {}".format(args.arm))
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)

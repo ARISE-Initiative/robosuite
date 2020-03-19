@@ -15,11 +15,11 @@ class PickPlaceTask(Task):
     arena, and the objects into a single MJCF model of the task.
     """
 
-    def __init__(self, mujoco_arena, mujoco_robot, mujoco_objects, visual_objects):
+    def __init__(self, mujoco_arena, mujoco_robots, mujoco_objects, visual_objects):
         """
         Args:
             mujoco_arena: MJCF model of robot workspace
-            mujoco_robot: MJCF model of robot model
+            mujoco_robots: MJCF model of robot model(s) (list)
             mujoco_objects: a list of MJCF models of physical objects
             visual_objects: a list of MJCF models of visual objects. Visual
                 objects are excluded from physical computation, we use them to
@@ -32,14 +32,14 @@ class PickPlaceTask(Task):
 
         self.object_metadata = []
         self.merge_arena(mujoco_arena)
-        self.merge_robot(mujoco_robot)
+        for mujoco_robot in mujoco_robots:
+            self.merge_robot(mujoco_robot)
         self.merge_objects(mujoco_objects)
         self.merge_visual(OrderedDict(visual_objects))
         self.visual_objects = visual_objects
 
     def merge_robot(self, mujoco_robot):
         """Adds robot model to the MJCF model."""
-        self.robot = mujoco_robot
         self.merge(mujoco_robot)
 
     def merge_arena(self, mujoco_arena):

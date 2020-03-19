@@ -48,11 +48,6 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
-        use_camera_obs=False,
-        camera_name="frontview",
-        camera_height=256,
-        camera_width=256,
-        camera_depth=False,
     ):
         """
         Args:
@@ -75,18 +70,6 @@ class MujocoEnv(metaclass=EnvMeta):
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
-
-            use_camera_obs (bool): if True, every observation includes a 
-                rendered image.
-
-            camera_name (str): name of camera to be rendered. Must be 
-                set if @use_camera_obs is True.
-
-            camera_height (int): height of camera frame.
-
-            camera_width (int): width of camera frame.
-
-            camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
         """
 
         self.has_renderer = has_renderer
@@ -98,17 +81,6 @@ class MujocoEnv(metaclass=EnvMeta):
         self.ignore_done = ignore_done
         self.viewer = None
         self.model = None
-
-        # settings for camera observations
-        self.use_camera_obs = use_camera_obs
-        if self.use_camera_obs and not self.has_offscreen_renderer:
-            raise ValueError("Camera observations require an offscreen renderer.")
-        self.camera_name = camera_name
-        if self.use_camera_obs and self.camera_name is None:
-            raise ValueError("Must specify camera name when using camera obs")
-        self.camera_height = camera_height
-        self.camera_width = camera_width
-        self.camera_depth = camera_depth
 
         self._reset_internal()
 
@@ -150,6 +122,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
+        # TODO: Figure out how multiple offscreen rendererings will work for multiple robots
         # instantiate simulation from MJCF model
         self._load_model()
         self.mjpy_model = self.model.get_model(mode="mujoco_py")
@@ -246,6 +219,7 @@ class MujocoEnv(metaclass=EnvMeta):
         #     observation_spec[k] = v.shape
         # return observation_spec
 
+    @property
     def action_spec(self):
         """
         Action specification should be implemented in subclasses.

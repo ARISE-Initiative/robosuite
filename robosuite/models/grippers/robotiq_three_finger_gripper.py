@@ -2,9 +2,8 @@
 Gripper with 11-DoF controlling three fingers and its open/close variant.
 """
 import numpy as np
-
-from robosuite.models.grippers import Gripper
 from robosuite.utils.mjcf_utils import xml_path_completion
+from robosuite.models.grippers.gripper import Gripper
 
 
 class RobotiqThreeFingerGripperBase(Gripper):
@@ -12,18 +11,26 @@ class RobotiqThreeFingerGripperBase(Gripper):
     Gripper with 11 dof controlling three fingers.
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("grippers/robotiq_gripper_s.xml"))
+    def __init__(self, idn=0):
+        """
+        Args:
+            idn (int or str): Number or some other unique identification string for this gripper instance
+        """
+        super().__init__(xml_path_completion("grippers/robotiq_gripper_s.xml"), idn=idn)
 
     def format_action(self, action):
         return action
+
+    @property
+    def dof(self):
+        return 11
 
     @property
     def init_qpos(self):
         return np.zeros(11)
 
     @property
-    def joints(self):
+    def _joints(self):
         return [
             "palm_finger_1_joint",
             "finger_1_joint_1",
@@ -39,10 +46,23 @@ class RobotiqThreeFingerGripperBase(Gripper):
         ]
 
     @property
-    def dof(self):
-        return 11
+    def _actuators(self):
+        return [
+            "gripper_palm_finger_1_joint",
+            "gripper_finger_1_joint_1",
+            "gripper_finger_1_joint_2",
+            "gripper_finger_1_joint_3",
+            "gripper_palm_finger_2_joint",
+            "gripper_finger_2_joint_1",
+            "gripper_finger_2_joint_2",
+            "gripper_finger_2_joint_3",
+            "gripper_finger_middle_joint_1",
+            "gripper_finger_middle_joint_2",
+            "gripper_finger_middle_joint_3"
+        ]
 
-    def contact_geoms(self):
+    @property
+    def _contact_geoms(self):
         return [
             "f1_l0",
             "f1_l1",
@@ -58,10 +78,6 @@ class RobotiqThreeFingerGripperBase(Gripper):
             "f3_l3",
         ]
 
-    @property
-    def visualization_sites(self):
-        return ["grip_site", "grip_site_cylinder"]
-
 
 class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
     """
@@ -75,3 +91,7 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
         """
         movement = np.array([0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1])
         return -1 * movement * action
+
+    @property
+    def dof(self):
+        return 1

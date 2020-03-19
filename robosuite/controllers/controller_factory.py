@@ -33,7 +33,7 @@ def controller_factory(name, params):
     if params["interpolation"] == "linear":
         interpolator = LinearInterpolator(max_dx=0.5,
                                           ndim=params["ndim"],
-                                          controller_freq=params["controller_freq"],
+                                          controller_freq=params["sim"].model.opt.timestep,
                                           policy_freq=params["policy_freq"],
                                           ramp_ratio=0.5)
 

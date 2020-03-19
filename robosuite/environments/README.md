@@ -1,5 +1,6 @@
 Environments
 ============
+#TODO: UPDATE!!
 
 Environments load scene models from [Models](../models) and create a simulation of the task. In addition to model instantiation, the environment classes implement the definitions of observations, reward functions, success conditions, etc. that are required APIs for reinforcement learning.
 

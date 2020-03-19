@@ -3,7 +3,6 @@
 """
 from robosuite.models.grippers import (
     TwoFingerGripper,
-    LeftTwoFingerGripper,
     PR2Gripper,
     PushingGripper,
     RobotiqGripper,
@@ -15,7 +14,6 @@ from robosuite.models.grippers import (
 def test_all_gripper():
     grippers = [
         TwoFingerGripper(),
-        LeftTwoFingerGripper(),
         PR2Gripper(),
         PushingGripper(),
         RobotiqGripper(),

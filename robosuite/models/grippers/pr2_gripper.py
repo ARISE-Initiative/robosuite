@@ -2,9 +2,8 @@
     4 dof gripper with two fingers and its open/close variant
 """
 import numpy as np
-
-from robosuite.models.grippers import Gripper
 from robosuite.utils.mjcf_utils import xml_path_completion
+from robosuite.models.grippers.gripper import Gripper
 
 
 class PR2GripperBase(Gripper):
@@ -12,48 +11,58 @@ class PR2GripperBase(Gripper):
     A 4 dof gripper with two fingers.
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("grippers/pr2_gripper.xml"))
+    def __init__(self, idn=0):
+        """
+        Args:
+            idn (int or str): Number or some other unique identification string for this gripper instance
+        """
+        super().__init__(xml_path_completion("grippers/pr2_gripper.xml"), idn=idn)
 
     def format_action(self, action):
         return action
+
+    @property
+    def dof(self):
+        return 4
 
     @property
     def init_qpos(self):
         return np.zeros(4)
 
     @property
-    def joints(self):
+    def _joints(self):
         return [
-            "r_gripper_r_finger_joint",
-            "r_gripper_l_finger_joint",
-            "r_gripper_r_finger_tip_joint",
-            "r_gripper_l_finger_tip_joint",
+            "r_finger_joint",
+            "l_finger_joint",
+            "r_finger_tip_joint",
+            "l_finger_tip_joint",
         ]
 
     @property
-    def dof(self):
-        return 4
-
-    def contact_geoms(self):
+    def _actuators(self):
         return [
-            "r_gripper_l_finger",
-            "r_gripper_l_finger_tip",
-            "r_gripper_r_finger",
-            "r_gripper_r_finger_tip",
+            "gripper_r_finger_joint",
+            "gripper_l_finger_joint",
+            "gripper_r_finger_tip_joint",
+            "gripper_l_finger_tip_joint"
         ]
 
     @property
-    def visualization_sites(self):
-        return ["grip_site", "grip_site_cylinder"]
+    def _contact_geoms(self):
+        return [
+            "l_finger",
+            "l_finger_tip",
+            "r_finger",
+            "r_finger_tip",
+        ]
 
     @property
-    def left_finger_geoms(self):
-        return ["r_gripper_l_finger", "r_gripper_l_finger_tip"]
+    def _left_finger_geoms(self):
+        return ["l_finger", "l_finger_tip"]
 
     @property
     def right_finger_geoms(self):
-        return ["r_gripper_r_finger", "r_gripper_r_finger_tip"]
+        return ["r_finger", "r_finger_tip"]
 
 
 class PR2Gripper(PR2GripperBase):

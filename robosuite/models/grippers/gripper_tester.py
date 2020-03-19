@@ -142,10 +142,10 @@ class GripperTester:
         self.gripper_z_id = self.sim.model.actuator_name2id("gripper_z")
         self.gripper_z_is_low = False
 
-        self.gripper_joint_ids = [
-            self.sim.model.actuator_name2id("gripper_" + x)
-            for x in self.gripper.joints
+        self.gripper_actuator_ids = [
+            self.sim.model.actuator_name2id(x) for x in self.gripper.actuators
         ]
+
         self.gripper_open_action = self.gripper.format_action([1])
         self.gripper_closed_action = self.gripper.format_action(
             [-1]
@@ -181,9 +181,9 @@ class GripperTester:
         else:
             self.sim.data.ctrl[self.gripper_z_id] = self.gripper_high_pos
         if self.gripper_is_closed:
-            self.sim.data.ctrl[self.gripper_joint_ids] = self.gripper_closed_action
+            self.sim.data.ctrl[self.gripper_actuator_ids] = self.gripper_closed_action
         else:
-            self.sim.data.ctrl[self.gripper_joint_ids] = self.gripper_open_action
+            self.sim.data.ctrl[self.gripper_actuator_ids] = self.gripper_open_action
         self._apply_gravity_compensation()
         self.sim.step()
         if self.render:

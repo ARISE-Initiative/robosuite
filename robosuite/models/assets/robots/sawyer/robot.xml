@@ -50,7 +50,7 @@
           <inertial diaginertia="0.0651588 0.0510944 0.0186218" mass="5.3213" pos="0.024366 0.010969 0.14363" quat="0.894823 0.00899958 -0.170275 0.412573"/>
           <joint axis="0 0 1" limited="true" name="right_j0" pos="0 0 0" range="-3.0503 3.0503"/>
           <geom conaffinity="0" contype="0" group="1" mesh="l0" rgba="0.5 0.1 0.1 1" type="mesh"/>
-          <geom pos="0.08 0 0.23" rgba="0.5 0.1 0.1 1" size="0.07"/>
+          <geom pos="0.08 0 0.23" rgba="0.5 0.1 0.1 1" size="0.07" name="link0_collision"/>
           <body name="head" pos="0 0 0.2965">
             <inertial diaginertia="0.0118334 0.00827089 0.00496574" mass="1.5795" pos="0.0053207 -2.6549e-05 0.1021" quat="0.999993 7.08405e-05 -0.00359857 -0.000626247"/>
             <!--Don't want to control the head joint so remove it from the kinematic tree-->
@@ -73,22 +73,22 @@
             <inertial diaginertia="0.0224339 0.0221624 0.0097097" mass="4.505" pos="-0.0030849 -0.026811 0.092521" quat="0.424888 0.891987 0.132364 -0.0794296"/>
             <joint axis="0 0 1" limited="true" name="right_j1" pos="0 0 0" range="-3.8095 2.2736"/>
             <geom conaffinity="0" contype="0" group="1" mesh="l1" rgba="0.5 0.1 0.1 1" type="mesh"/>
-            <geom pos="0 0 0.1225" rgba="0.5 0.1 0.1 1" size="0.07"/>
+            <geom pos="0 0 0.1225" rgba="0.5 0.1 0.1 1" size="0.07" name="link1_collision"/>
             <body name="right_l2" pos="0 -0.14 0.1425" quat="0.707107 0.707107 0 0">
               <inertial diaginertia="0.0257928 0.025506 0.00292515" mass="1.745" pos="-0.00016044 -0.014967 0.13582" quat="0.707831 -0.0524761 0.0516007 0.702537"/>
               <joint axis="0 0 1" limited="true" name="right_j2" pos="0 0 0" range="-3.0426 3.0426"/>
               <geom conaffinity="0" contype="0" group="1" mesh="l2" rgba="0.5 0.1 0.1 1" type="mesh"/>
-              <geom pos="0 0 0.08" rgba="0.5 0.1 0.1 1" size="0.06 0.17" type="cylinder"/>
+              <geom pos="0 0 0.08" rgba="0.5 0.1 0.1 1" size="0.06 0.17" type="cylinder" name="link2_collision"/>
               <body name="right_l3" pos="0 -0.042 0.26" quat="0.707107 -0.707107 0 0">
                 <inertial diaginertia="0.0102404 0.0096997 0.00369622" mass="2.5097" pos="-0.0048135 -0.0281 -0.084154" quat="0.902999 0.385391 -0.0880901 0.168247"/>
                 <joint axis="0 0 1" limited="true" name="right_j3" pos="0 0 0" range="-3.0439 3.0439"/>
                 <geom conaffinity="0" contype="0" group="1" mesh="l3" rgba="0.5 0.1 0.1 1" type="mesh"/>
-                <geom pos="0 -0.01 -0.12" rgba="0.5 0.1 0.1 1" size="0.06"/>
+                <geom pos="0 -0.01 -0.12" rgba="0.5 0.1 0.1 1" size="0.06" name="link3_collision"/>
                 <body name="right_l4" pos="0 -0.125 -0.1265" quat="0.707107 0.707107 0 0">
                   <inertial diaginertia="0.0136549 0.0135493 0.00127353" mass="1.1136" pos="-0.0018844 0.0069001 0.1341" quat="0.803612 0.031257 -0.0298334 0.593582"/>
                   <joint axis="0 0 1" limited="true" name="right_j4" pos="0 0 0" range="-2.9761 2.9761"/>
                   <geom conaffinity="0" contype="0" group="1" mesh="l4" rgba="0.5 0.1 0.1 1" type="mesh"/>
-                  <geom pos="0 0 0.11" rgba="0.5 0.1 0.1 1" size="0.045 0.15" type="cylinder"/>
+                  <geom pos="0 0 0.11" rgba="0.5 0.1 0.1 1" size="0.045 0.15" type="cylinder" name="link4_collision"/>
                   <body name="right_arm_itb" pos="-0.055 0 0.075" quat="0.707107 0 -0.707107 0">
                     <inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
                   </body>
@@ -96,7 +96,7 @@
                     <inertial diaginertia="0.00474131 0.00422857 0.00190672" mass="1.5625" pos="0.0061133 -0.023697 0.076416" quat="0.404076 0.9135 0.0473125 0.00158335"/>
                     <joint axis="0 0 1" limited="true" name="right_j5" pos="0 0 0" range="-2.9761 2.9761" damping="0.2"/>
                     <geom conaffinity="0" contype="0" group="1" mesh="l5" rgba="0.5 0.1 0.1 1" type="mesh"/>
-                    <geom pos="0 0 0.1" rgba="0.5 0.1 0.1 1" size="0.06"/>
+                    <geom pos="0 0 0.1" rgba="0.5 0.1 0.1 1" size="0.06" name="link5_collision"/>
                     <body name="right_hand_camera" pos="0.039552 -0.033 0.0695" quat="0.707107 0 0.707107 0">
                       <inertial diaginertia="0 0 0" mass="0" pos="0.039552 -0.033 0.0695" quat="0.707107 0 0.707107 0"/>
                     </body>
@@ -107,7 +107,7 @@
                       <inertial diaginertia="0.000360258 0.000311068 0.000214974" mass="0.3292" pos="-8.0726e-06 0.0085838 -0.0049566" quat="0.479044 0.515636 -0.513069 0.491322"/>
                       <joint axis="0 0 1" limited="true" name="right_j6" pos="0 0 0" range="-4.7124 4.7124" damping="0.1"/>
                       <geom conaffinity="0" contype="0" group="1" mesh="l6" rgba="0.5 0.1 0.1 1" type="mesh"/>
-                      <geom pos="0 0.015 -0.01" rgba="0.5 0.1 0.1 1" size="0.055 0.025" type="cylinder"/>
+                      <geom pos="0 0.015 -0.01" rgba="0.5 0.1 0.1 1" size="0.055 0.025" type="cylinder" name="link6_collision"/>
                       <body name="right_hand" pos="0 0 0.0245" quat="0.707105 0 0 0.707108">
                                             <!-- This sites were added for visualization. -->
                                             <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>

@@ -11,11 +11,11 @@ class NutAssemblyTask(Task):
     the robot, the arena with pegs, and the nut objetcts into a single MJCF model.
     """
 
-    def __init__(self, mujoco_arena, mujoco_robot, mujoco_objects, initializer=None):
+    def __init__(self, mujoco_arena, mujoco_robots, mujoco_objects, initializer=None):
         """
         Args:
             mujoco_arena: MJCF model of robot workspace
-            mujoco_robot: MJCF model of robot model
+            mujoco_robots: MJCF model of robot model(s) (list)
             mujoco_objects: a list of MJCF models of physical objects
             initializer: placement sampler to initialize object positions.
         """
@@ -23,7 +23,8 @@ class NutAssemblyTask(Task):
 
         self.object_metadata = []
         self.merge_arena(mujoco_arena)
-        self.merge_robot(mujoco_robot)
+        for mujoco_robot in mujoco_robots:
+            self.merge_robot(mujoco_robot)
         self.merge_objects(mujoco_objects)
 
         if initializer is None:
@@ -33,7 +34,6 @@ class NutAssemblyTask(Task):
 
     def merge_robot(self, mujoco_robot):
         """Adds robot model to the MJCF model."""
-        self.robot = mujoco_robot
         self.merge(mujoco_robot)
 
     def merge_arena(self, mujoco_arena):
