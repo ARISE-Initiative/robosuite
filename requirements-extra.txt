@@ -1,5 +1,5 @@
 # required for IK controllers
-pybullet==1.9.5
+pybullet==2.6.9
 
 # required for GymWrapper
 gym
