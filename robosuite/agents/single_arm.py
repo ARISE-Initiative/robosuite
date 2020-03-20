@@ -88,11 +88,11 @@ class SingleArm(RobotAgent):
             "Inputted controller config must be a dict! Instead, got type: {}".format(type(self.controller_config))
 
         # Add to the controller dict additional relevant params:
-        #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq,
+        #   the robot name, mujoco sim, eef_name, joint_indexes, timestep (model) freq,
         #   policy (control) freq, and ndim (# joints)
-        self.controller_config["robot_name"] = self.name.lower()
+        self.controller_config["robot_name"] = self.name
         self.controller_config["sim"] = self.sim
-        self.controller_config["robot_id"] = self.robot_model.eef_name
+        self.controller_config["eef_name"] = self.robot_model.eef_name
         self.controller_config["joint_indexes"] = {
             "joints": self.joint_indexes,
             "qpos": self._ref_joint_pos_indexes,
@@ -198,14 +198,14 @@ class SingleArm(RobotAgent):
 
         # Update the controller goal if this is a new policy step
         if policy_step:
-            self.controller.set_goal(delta=action)
+            self.controller.set_goal(action)
 
         # Now run the controller for a step
         torques = self.controller.run_controller()
 
         # Clip the torques
         low, high = self.torque_limits
-        self.torques = np.clip(torques, low, high)
+        self.torques = np.clip(torques + self.sim.data.qfrc_bias[self._ref_joint_vel_indexes], low, high)
 
         # Get gripper action, if applicable
         if self.has_gripper:
@@ -218,8 +218,7 @@ class SingleArm(RobotAgent):
             self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
 
         # Apply joint torque control (with gravity compensation)
-        self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
-                                                              self._ref_joint_vel_indexes] + self.torques
+        self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
 
     def gripper_visualization(self):
         """

@@ -6,6 +6,8 @@ from robosuite.agents.single_arm import SingleArm
 from robosuite.agents.bimanual import Bimanual
 from robosuite.models.robots.robot import check_bimanual
 
+from robosuite.controllers.controller_factory import reset_controllers
+
 
 class RobotEnv(MujocoEnv):
     """
@@ -101,34 +103,25 @@ class RobotEnv(MujocoEnv):
         robots = robots if type(robots) is list else [robots]
         self.num_robots = len(robots)
         self.robot_names = robots
-        self.robots = [None] * self.num_robots
+        self.robots = self._input2list(None)
         self.action_dim = None
 
         # Controller
-        controller_configs = controller_configs if type(controller_configs) is list else \
-            [controller_configs for _ in range(self.num_robots)]
+        controller_configs = self._input2list(controller_configs)
 
         # Gripper
-        gripper_types = gripper_types if type(gripper_types) is list else \
-            [gripper_types for _ in range(self.num_robots)]
-        gripper_visualizations = gripper_visualizations if type(gripper_visualizations) is list else \
-            [gripper_visualizations for _ in range(self.num_robots)]
+        gripper_types = self._input2list(gripper_types)
+        gripper_visualizations = self._input2list(gripper_visualizations)
 
         # Observations -- Ground truth = object_obs, Image data = camera_obs
-        self.use_camera_obs = use_camera_obs if type(use_camera_obs) is list else \
-            [use_camera_obs for _ in range(self.num_robots)]
+        self.use_camera_obs = self._input2list(use_camera_obs)
 
         # Camera / Rendering Settings
-        self.has_offscreen_renderers = has_offscreen_renderers if type(has_offscreen_renderers) is list else \
-            [has_offscreen_renderers for _ in range(self.num_robots)]
-        self.camera_names = camera_names if type(camera_names) is list else \
-            [camera_names for _ in range(self.num_robots)]
-        self.camera_heights = camera_heights if type(camera_heights) is list else \
-            [camera_heights for _ in range(self.num_robots)]
-        self.camera_widths = camera_widths if type(camera_widths) is list else \
-            [camera_widths for _ in range(self.num_robots)]
-        self.camera_depths = camera_depths if type(camera_depths) is list else \
-            [camera_depths for _ in range(self.num_robots)]
+        self.has_offscreen_renderers = self._input2list(has_offscreen_renderers)
+        self.camera_names = self._input2list(camera_names)
+        self.camera_heights = self._input2list(camera_heights)
+        self.camera_widths = self._input2list(camera_widths)
+        self.camera_depths = self._input2list(camera_depths)
 
         # sanity checks for cameras
         for idx, (cam_name, use_cam_obs, has_offscreen_renderer) in \
@@ -161,11 +154,6 @@ class RobotEnv(MujocoEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
-            #use_camera_obs=use_camera_obs,
-            #camera_name=camera_name,
-            #camera_height=camera_height,
-            #camera_width=camera_width,
-            #camera_depth=camera_depth,
         )
 
     @property
@@ -186,6 +174,14 @@ class RobotEnv(MujocoEnv):
         if self.use_indicator_object:
             index = self._ref_indicator_pos_low
             self.sim.data.qpos[index : index + 3] = pos
+
+    def _input2list(self, inp):
+        """
+        Helper function that converts an input that is either a single value or a list into a list
+        @inp (str or list): Input value to be converted to list
+        """
+        # convert to list if necessary
+        return inp if type(inp) is list else [inp for _ in range(self.num_robots)]
 
     def _load_model(self):
         """
@@ -242,6 +238,10 @@ class RobotEnv(MujocoEnv):
         super()._reset_internal()
 
         self.action_dim = 0
+
+        # Reset controllers
+        reset_controllers()
+
         # Reset robot and update action space dimension along the way
         for robot in self.robots:
             robot.reset()
@@ -358,8 +358,7 @@ class RobotEnv(MujocoEnv):
         """
         Do any needed visualization here
         """
-
-        # Loop over robot grippers to visualize them indepdently
+        # Loop over robot grippers to visualize them indepedently
         for robot in self.robots:
             robot.gripper_visualization
 

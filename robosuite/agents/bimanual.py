@@ -75,6 +75,9 @@ class Bimanual(RobotAgent):
         """
         Loads controller to be used for dynamic trajectories
         """
+        # Flag for loading urdf once (only applicable for IK controllers)
+        urdf_loaded = False
+
         # Load controller configs for both left and right arm
         for arm in self.arms:
             # First, load the default controller if none is specified
@@ -97,11 +100,11 @@ class Bimanual(RobotAgent):
                     type(self.controller_config[arm]))
 
             # Add to the controller dict additional relevant params:
-            #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq,
+            #   the robot name, mujoco sim, eef_name, joint_indexes, timestep (model) freq,
             #   policy (control) freq, and ndim (# joints)
-            self.controller_config[arm]["robot_name"] = self.name.lower()
+            self.controller_config[arm]["robot_name"] = self.name
             self.controller_config[arm]["sim"] = self.sim
-            self.controller_config[arm]["robot_id"] = self.robot_model.eef_name[arm]
+            self.controller_config[arm]["eef_name"] = self.robot_model.eef_name[arm]
             self.controller_config[arm]["ndim"] = self._joint_split_idx
             self.controller_config[arm]["policy_freq"] = self.control_freq
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
@@ -110,6 +113,10 @@ class Bimanual(RobotAgent):
                 "qpos": self._ref_joint_pos_indexes[start:end],
                 "qvel": self._ref_joint_vel_indexes[start:end]
                                                   }
+
+            # Only load urdf the first time this controller gets called
+            self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
+            urdf_loaded = True
 
             # Instantiate the relevant controller
             self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
@@ -225,7 +232,7 @@ class Bimanual(RobotAgent):
 
             # Update the controller goal if this is a new policy step
             if policy_step:
-                self.controller[arm].set_goal(delta=sub_action)
+                self.controller[arm].set_goal(sub_action)
 
             # Now run the controller for a step and add it to the torques
             self.torques = np.concatenate((self.torques, self.controller[arm].run_controller()))
@@ -242,11 +249,10 @@ class Bimanual(RobotAgent):
 
         # Clip the torques
         low, high = self.torque_limits
-        self.torques = np.clip(self.torques, low, high)
+        self.torques = np.clip(self.torques + self.sim.data.qfrc_bias[self._ref_joint_vel_indexes], low, high)
 
         # Apply joint torque control (with gravity compensation)
-        self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.sim.data.qfrc_bias[
-                                                              self._ref_joint_vel_indexes] + self.torques
+        self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
 
     def gripper_visualization(self):
         """

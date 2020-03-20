@@ -10,6 +10,20 @@ from .interpolators.linear_interpolator import LinearInterpolator
 
 from copy import deepcopy
 
+# Global var for linking pybullet server to multiple ik controller instances if necessary
+pybullet_server = None
+
+
+def reset_controllers():
+    """Global function for doing one-time clears and restarting of any global controller-related
+    specifics before re-initializing each individual controller again.
+    """
+    global pybullet_server
+    # Disconnect and reconnect to pybullet server if it exists
+    if pybullet_server:
+        pybullet_server.disconnect()
+        pybullet_server.connect()
+
 
 def controller_factory(name, params):
     """
@@ -50,7 +64,11 @@ def controller_factory(name, params):
         params["control_ori"] = False
         return EEImpController(interpolator_pos=interpolator, **params)
     if name == "EE_IK":
-        return EEIKController(interpolator=interpolator, **params)
+        global pybullet_server
+        if not pybullet_server:
+            from robosuite.controllers.ee_ik import PybulletServer
+            pybullet_server = PybulletServer()
+        return EEIKController(interpolator=interpolator, bullet_server_id=pybullet_server.server_id, **params)
     if name == "JOINT_VEL":
         return JointVelController(interpolator=interpolator, **params)
     if name == "JOINT_IMP":

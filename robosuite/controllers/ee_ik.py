@@ -13,10 +13,47 @@ import os
 from os.path import join as pjoin
 import robosuite
 
+import robosuite.controllers.controller_factory as cf
 from robosuite.controllers.joint_vel import JointVelController
-from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
+
+
+class PybulletServer(object):
+    """
+    Helper class to encapsulate an alias for a single pybullet server
+    """
+
+    def __init__(self):
+        # Attributes
+        self.server_id = None
+        self.is_active = False
+        self.bodies = {}
+
+        # Automatically setup this pybullet server
+        self.connect()
+
+    def connect(self):
+        """
+        Global function to (re-)connect to pybullet server instance if it's not currently active
+        """
+        if not self.is_active:
+            self.server_id = p.connect(p.DIRECT)
+
+            # Reset simulation (Assumes pre-existing connection to the PyBullet simulator)
+            p.resetSimulation(physicsClientId=self.server_id)
+            self.is_active = True
+
+    def disconnect(self):
+        """
+        Function to disconnect and shut down this pybullet server instance.
+
+        Should be called externally before resetting / instantiating a new controller
+        """
+        if self.is_active:
+            p.disconnect(physicsClientId=self.server_id)
+            self.bodies = {}
+            self.is_active = False
 
 
 class EEIKController(JointVelController):
@@ -26,11 +63,13 @@ class EEIKController(JointVelController):
 
     def __init__(self,
                  sim,
-                 robot_id,
+                 eef_name,
                  joint_indexes,
                  robot_name,
+                 bullet_server_id=0,
                  kv=40.0,
                  policy_freq=20,
+                 load_urdf=True,
                  ik_pos_limit=None,
                  ik_ori_limit=None,
                  interpolator=None,
@@ -41,7 +80,7 @@ class EEIKController(JointVelController):
         # Run sueprclass inits
         super().__init__(
             sim=sim,
-            robot_id=robot_id,
+            eef_name=eef_name,
             joint_indexes=joint_indexes,
             input_max=50,
             input_min=-50,
@@ -64,6 +103,8 @@ class EEIKController(JointVelController):
         # Set the reference robot target orientation (to prevent drift / weird ik numerical behavior over time)
         self.reference_target_orn = T.mat2quat(self.ee_ori_mat)
 
+        # Bullet server id
+        self.bullet_server_id = bullet_server_id
 
         # Values for initializing pybullet env
         self.ik_robot = None
@@ -89,21 +130,21 @@ class EEIKController(JointVelController):
         self.user_sensitivity = .3
 
         # Setup inverse kinematics
-        self.setup_inverse_kinematics()
+        self.setup_inverse_kinematics(load_urdf)
 
         # Lastly, sync pybullet state to mujoco state
         self.sync_state()
 
-    def setup_inverse_kinematics(self):
+    def setup_inverse_kinematics(self, load_urdf=True):
         """
         This function is responsible for doing any setup for inverse kinematics.
         Inverse Kinematics maps end effector (EEF) poses to joint angles that
         are necessary to achieve those poses.
-        """
 
-        # Set up a connection to the PyBullet simulator.
-        p.connect(p.DIRECT)
-        p.resetSimulation()
+        load_urdf specifies whether the robot urdf should be loaded into the sim. Useful flag that
+            should be cleared in the case of multi-armed robots which might have multiple IK controller instances
+            but should all reference the same (single) robot urdf within the bullet sim
+        """
 
         # get paths to urdfs
         self.robot_urdf = pjoin(
@@ -112,25 +153,47 @@ class EEIKController(JointVelController):
         )
 
         # load the urdfs
-        if self.robot_name == "baxter":
-            self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.0), useFixedBase=1)
+        if load_urdf:
+            if self.robot_name == "Baxter":
+                self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.0),
+                                           useFixedBase=1, physicsClientId=self.bullet_server_id)
+            else:
+                self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.9),
+                                           useFixedBase=1, physicsClientId=self.bullet_server_id)
+            # Add this to the pybullet server
+            cf.pybullet_server.bodies[self.ik_robot] = self.robot_name
         else:
-            self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.9), useFixedBase=1)
+            # We'll simply assume the most recent robot (robot with highest pybullet id) ] is the relevant robot and
+            # mark this controller as belonging to that robot body
+            self.ik_robot = max(cf.pybullet_server.bodies)
 
         # load the number of joints from the bullet data
-        self.num_bullet_joints = p.getNumJoints(self.ik_robot)
+        self.num_bullet_joints = p.getNumJoints(self.ik_robot, physicsClientId=self.bullet_server_id)
+
+        # Disable collisions between all the joints
+        for joint in range(self.num_bullet_joints):
+            p.setCollisionFilterGroupMask(
+                bodyUniqueId=self.ik_robot,
+                linkIndexA=joint,
+                collisionFilterGroup=0,
+                collisionFilterMask=0,
+                physicsClientId=self.bullet_server_id
+            )
 
         # For now, hard code baxter bullet eef idx
-        if self.robot_name == "baxter":
+        if self.robot_name == "Baxter":
             self.ik_robot_target_pos_offset = np.array([0, 0, 0.913])
-            if self.id_name == "right_hand":
+            if "right" in self.eef_name:
                 self.bullet_ee_idx = 27
                 self.bullet_joint_indexes = [13, 14, 15, 16, 17, 19, 20]
                 self.ik_command_indexes = np.arange(1, self.joint_dim + 1)
-            elif self.id_name == "left_hand":
+            elif "left" in self.eef_name:
                 self.bullet_ee_idx = 45
                 self.bullet_joint_indexes = [31, 32, 33, 34, 35, 37, 38]
                 self.ik_command_indexes = np.arange(self.joint_dim + 1, self.joint_dim * 2 + 1)
+            else:
+                # Error with inputted id
+                print("Error loading ik controller for Baxter -- arm id's must contain 'right' or 'left'!")
         else:
             # Default assumes pybullet has same number of joints compared to mujoco sim
             self.bullet_ee_idx = self.num_bullet_joints - 1
@@ -139,29 +202,29 @@ class EEIKController(JointVelController):
             self.ik_robot_target_pos_offset = np.zeros(3)
 
         # Set rotation offsets (for mujoco eef -> pybullet eef) and rest poses
-        if self.robot_name == "sawyer":
+        if self.robot_name == "Sawyer":
             self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)
             self.rest_poses = [0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161]
-        elif self.robot_name == "panda":
+        elif self.robot_name == "Panda":
             self.rotation_offset = T.rotation_matrix(angle=np.pi/4, direction=[0., 0., 1.], point=None)
             self.rest_poses = [0, np.pi / 6, 0.00, -(np.pi - 2 * np.pi / 6), 0.00, (np.pi - np.pi / 6), np.pi / 4]
-        elif self.robot_name == "baxter":
+        elif self.robot_name == "Baxter":
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
-            if self.id_name == "right_hand":
+            if "right" in self.eef_name:
                 self.rest_poses = [0.535, -0.093, 0.038, 0.166, 0.643, 1.960, -1.297]
-            elif self.id_name == "left_hand":
+            elif "left" in self.eef_name:
                 self.rest_poses = [-0.518, -0.026, -0.076, 0.175, -0.748, 1.641, -0.158]
             else:
                 # Error with inputted id
-                print("Error loading ik controller for Baxter -- arm id's must be either 'right_hand' or 'left_hand'!")
+                print("Error loading ik controller for Baxter -- arm id's must contain 'right' or 'left'!")
         else:
             # No other robots supported, print out to user
-            print("ERROR: Unsupported robot requested for ik controller. Only sawyer, panda, and baxter "
+            print("ERROR: Unsupported robot requested for ik controller. Only Sawyer, Panda, and Baxter "
                   "currently supported.")
 
         # Simulation will update as fast as it can in real time, instead of waiting for
         # step commands like in the non-realtime case.
-        p.setRealTimeSimulation(1)
+        p.setRealTimeSimulation(1, physicsClientId=self.bullet_server_id)
 
     def sync_state(self):
         """
@@ -193,34 +256,45 @@ class EEIKController(JointVelController):
         if not joint_positions:
             joint_positions = self.joint_pos
         num_joints = self.joint_dim
-        if not sync_last and self.robot_name != "baxter":
+        if not sync_last and self.robot_name != "Baxter":
             num_joints -= 1
         for i in range(num_joints):
             if simulate:
                 p.setJointMotorControl2(
-                    self.ik_robot,
-                    self.bullet_joint_indexes[i],
-                    p.POSITION_CONTROL,
+                    bodyUniqueId=self.ik_robot,
+                    jointIndex=self.bullet_joint_indexes[i],
+                    controlMode=p.POSITION_CONTROL,
                     targetVelocity=0,
                     targetPosition=joint_positions[i],
                     force=500,
                     positionGain=0.5,
                     velocityGain=1.,
+                    physicsClientId=self.bullet_server_id
                 )
             else:
-                p.resetJointState(self.ik_robot, self.bullet_joint_indexes[i], joint_positions[i], 0)
+                p.resetJointState(
+                    bodyUniqueId=self.ik_robot,
+                    jointIndex=self.bullet_joint_indexes[i],
+                    targetValue=joint_positions[i],
+                    targetVelocity=0,
+                    physicsClientId=self.bullet_server_id
+                  )
 
     def ik_robot_eef_joint_cartesian_pose(self):
         """
         Returns the current cartesian pose of the last joint of the ik robot with respect to the base frame as
         a (pos, orn) tuple where orn is a x-y-z-w quaternion
         """
-        eef_pos_in_world = np.array(p.getLinkState(self.ik_robot, self.bullet_ee_idx)[0])
-        eef_orn_in_world = np.array(p.getLinkState(self.ik_robot, self.bullet_ee_idx)[1])
+        eef_pos_in_world = np.array(p.getLinkState(self.ik_robot, self.bullet_ee_idx,
+                                                   physicsClientId=self.bullet_server_id)[0])
+        eef_orn_in_world = np.array(p.getLinkState(self.ik_robot, self.bullet_ee_idx,
+                                                   physicsClientId=self.bullet_server_id)[1])
         eef_pose_in_world = T.pose2mat((eef_pos_in_world, eef_orn_in_world))
 
-        base_pos_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot)[0])
-        base_orn_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot)[1])
+        base_pos_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot,
+                                                                     physicsClientId=self.bullet_server_id)[0])
+        base_orn_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot,
+                                                                     physicsClientId=self.bullet_server_id)[1])
         base_pose_in_world = T.pose2mat((base_pos_in_world, base_orn_in_world))
         world_pose_in_base = T.pose_inv(base_pose_in_world)
 
@@ -282,9 +356,9 @@ class EEIKController(JointVelController):
         """
         ik_solution = list(
             p.calculateInverseKinematics(
-                self.ik_robot,
-                self.bullet_ee_idx,
-                target_position,
+                bodyUniqueId=self.ik_robot,
+                endEffectorLinkIndex=self.bullet_ee_idx,
+                targetPosition=target_position,
                 targetOrientation=target_orientation,
                 lowerLimits=list(self.sim.model.jnt_range[self.joint_index, 0]),
                 upperLimits=list(self.sim.model.jnt_range[self.joint_index, 1]),
@@ -292,6 +366,7 @@ class EEIKController(JointVelController):
                                  self.sim.model.jnt_range[self.joint_index, 0]),
                 restPoses=self.rest_poses,
                 jointDamping=[0.1] * self.num_bullet_joints,
+                physicsClientId=self.bullet_server_id
             )
         )
         return list(np.array(ik_solution)[self.ik_command_indexes])
@@ -339,8 +414,10 @@ class EEIKController(JointVelController):
         """
         pose_in_base = T.pose2mat(pose_in_base)
 
-        base_pos_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot)[0])
-        base_orn_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot)[1])
+        base_pos_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot,
+                                                                     physicsClientId=self.bullet_server_id)[0])
+        base_orn_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot,
+                                                                     physicsClientId=self.bullet_server_id)[1])
         base_pose_in_world = T.pose2mat((base_pos_in_world, base_orn_in_world))
 
         pose_in_world = T.pose_in_A_to_pose_in_B(
@@ -355,7 +432,7 @@ class EEIKController(JointVelController):
         # Compute desired velocities to achieve eef pos / ori
         velocities = self.get_control(**requested_control)
 
-        super().set_goal(delta=None, set_velocity=velocities)
+        super().set_goal(velocities)
 
     def run_controller(self, action=None):
         # First, update goal if action is not set to none

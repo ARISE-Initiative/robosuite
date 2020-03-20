@@ -1,6 +1,4 @@
 from robosuite.controllers.base_controller import Controller
-from robosuite.utils.control_utils import *
-import robosuite.utils.transform_utils as T
 import numpy as np
 
 
@@ -11,7 +9,7 @@ class JointTorqueController(Controller):
 
     def __init__(self,
                  sim,
-                 robot_id,
+                 eef_name,
                  joint_indexes,
                  input_max=1,
                  input_min=-1,
@@ -25,7 +23,7 @@ class JointTorqueController(Controller):
 
         super(JointTorqueController, self).__init__(
             sim,
-            robot_id,
+            eef_name,
             joint_indexes
         )
 
@@ -39,7 +37,7 @@ class JointTorqueController(Controller):
         self.output_min = output_min
 
         # limits
-        self.torque_limits = np.array(torque_limits)
+        self.torque_limits = torque_limits
 
         # control frequency
         self.control_freq = policy_freq
@@ -52,21 +50,15 @@ class JointTorqueController(Controller):
         self.current_torque = np.zeros(self.control_dim)  # Current torques being outputted, pre-compensation
         self.torques = None                               # Torques returned every time run_controller is called
 
-    def set_goal(self, delta, set_torque=None):
+    def set_goal(self, torques):
         self.update()
 
-        # Check to make sure delta is size self.joint_dim
-        assert len(delta) == self.control_dim, "Delta torque must be equal to the robot's joint dimension space!"
+        # Check to make sure torques is size self.joint_dim
+        assert len(torques) == self.control_dim, "Delta torque must be equal to the robot's joint dimension space!"
 
-        if delta is not None:
-            scaled_delta = self.scale_action(delta)
-        else:
-            scaled_delta = None
-
-        self.goal_torque = set_goal_position(scaled_delta,
-                                             self.current_torque,
-                                             position_limit=self.torque_limits,
-                                             set_pos=set_torque)
+        self.goal_torque = torques
+        if self.torque_limits is not None:
+            self.goal_torque = np.clip(self.goal_torque, self.torque_limits[0], self.torque_limits[1])
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_torque)

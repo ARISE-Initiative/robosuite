@@ -51,29 +51,41 @@ Main difference is that user inputs with ik's rotations are always taken relativ
 ***Choose environment specifics with the following arguments***
 
     --environment: Task to perform, e.g.: "Lift", "TwoArmPegInHole", "NutAssembly", etc.
+
     --robots: Robot(s) with which to perform the task. Can be any in {"Panda", "Sawyer", "Baxter"}. Note that the
         environments include sanity checks, such that a "TwoArm..." environment will only accept either a 2-tuple of
         robot names or a single bimanual robot name, according to the specified configuration (see below), and all
         other environments will only accept a single single-armed robot name
+
     --config: Exclusively applicable and only should be specified for "TwoArm..." environments. Specifies the robot
         configuration desired for the task. Options are {"bimanual", "single-arm-parallel", and "single-arm-opposed"}
+
             -"bimanual": Sets up the environment for a single bimanual robot. Expects a single bimanual robot name to
                 be specified in the --robots argument
+
             -"single-arm-parallel": Sets up the environment such that two single-armed robots are stationed next to
                 each other facing the same direction. Expects a 2-tuple of single-armed robot names to be specified
                 in the --robots argument.
+
             -"single-arm-opposed": Sets up the environment such that two single-armed robots are stationed opposed from
                 each other, facing each other from opposite directions. Expects a 2-tuple of single-armed robot names
                 to be specified in the --robots argument.
+
     --arm: Exclusively applicable and only should be specified for "TwoArm..." environments. Specifies which of the
         multiple arm eef's to control. The other (passive) arm will remain stationary. Options are {"right", "left"}
         (from the point of view of the robot(s) facing against the viewer direction)
 
+    --switch-on-click: Exclusively applicable and only should be specified for "TwoArm..." environments. If enabled,
+        will switch the current arm being controlled every time the gripper input is pressed
+
 Examples:
+
     For normal single-arm environment:
         $ python demo_device_control.py --environment PickPlaceCan --robots Sawyer --controller osc
+
     For two-arm bimanual environment:
         $ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left --controller osc
+
     For two-arm multi single-arm robot environment:
         $ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config single-arm-parallel --controller osc
 
@@ -97,6 +109,7 @@ if __name__ == "__main__":
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
     parser.add_argument("--config", type=str, default="", help="Specified environment configuration if necessary")
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
+    parser.add_argument("--switch-on-click", action="store_true", help="Switch gripper control on gripper click")
     parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="spacemouse")
     parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
@@ -175,6 +188,8 @@ if __name__ == "__main__":
         env.viewer.set_camera(camera_id=2)
         env.render()
 
+        last_grasp = 0
+
         device.start_control()
         while True:
             state = device.get_controller_state()
@@ -191,6 +206,13 @@ if __name__ == "__main__":
             if reset:
                 break
 
+            # If the current grasp is active and last grasp is not (i.e.: grasping input just pressed),
+            # toggle arm control if requested
+            if args.switch_on_click:
+                if grasp and not last_grasp:
+                    args.arm = "left" if args.arm == "right" else "right"
+                last_grasp = grasp
+
             # First process the raw drotation
             drotation = raw_drotation[[1,0,2]]
             if args.controller == 'ik':
@@ -203,6 +225,21 @@ if __name__ == "__main__":
                 # relative rotation of desired from current eef orientation
                 # IK expects quat, so also convert to quat
                 drotation = T.mat2quat(T.euler2mat(drotation))
+
+                # If we're using a non-forward facing configuration, need to adjust relative position / orientation
+                if hasattr(env, "env_configuration"):
+                    if env.env_configuration == "single-arm-opposed":
+                        # Swap x and y for pos and flip x,y signs for ori
+                        dpos = dpos[[1,0,2]]
+                        drotation[0] = -drotation[0]
+                        drotation[1] = -drotation[1]
+                        if args.arm == "left":
+                            # x pos needs to be flipped
+                            dpos[0] = -dpos[0]
+                        else:
+                            # y pos needs to be flipped
+                            dpos[1] = -dpos[1]
+
             elif args.controller == 'osc':
                 # Flip z
                 drotation[2] = -drotation[2]
