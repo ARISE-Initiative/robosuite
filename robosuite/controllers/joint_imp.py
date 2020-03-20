@@ -11,7 +11,7 @@ class JointImpController(Controller):
 
     def __init__(self,
                  sim,
-                 robot_id,
+                 eef_name,
                  joint_indexes,
                  input_max=1,
                  input_min=-1,
@@ -27,7 +27,7 @@ class JointImpController(Controller):
 
         super(JointImpController, self).__init__(
             sim,
-            robot_id,
+            eef_name,
             joint_indexes
         )
 
@@ -41,7 +41,7 @@ class JointImpController(Controller):
         self.output_min = output_min
 
         # limits
-        self.position_limits = np.array(qpos_limits)
+        self.position_limits = qpos_limits
 
         # kp kv
         self.kp = np.ones(self.joint_dim) * kp

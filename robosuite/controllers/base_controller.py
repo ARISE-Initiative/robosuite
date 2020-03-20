@@ -7,12 +7,12 @@ class Controller(object, metaclass=abc.ABCMeta):
     """
     General controller interface.
 
-    Requires reference to mujoco sim object, id_name of specific robot, relevant joint_indexes to that robot, and
+    Requires reference to mujoco sim object, eef_name of specific robot, relevant joint_indexes to that robot, and
     whether an initial_joint is used for nullspace torques or not
     """
     def __init__(self,
                  sim,
-                 id_name,
+                 eef_name,
                  joint_indexes,
     ):
 
@@ -31,7 +31,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         # mujoco simulator state
         self.sim = sim
         self.model_timestep = self.sim.model.opt.timestep
-        self.id_name = id_name
+        self.eef_name = eef_name
         self.joint_index = joint_indexes["joints"]
         self.qpos_index = joint_indexes["qpos"]
         self.qvel_index = joint_indexes["qvel"]
@@ -89,16 +89,16 @@ class Controller(object, metaclass=abc.ABCMeta):
 
     def update(self):
 
-        self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.id_name)])
-        self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.id_name)].reshape([3, 3]))
-        self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.id_name)])
-        self.ee_ori_vel = np.array(self.sim.data.body_xvelr[self.sim.model.body_name2id(self.id_name)])
+        self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.eef_name)])
+        self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.eef_name)].reshape([3, 3]))
+        self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.eef_name)])
+        self.ee_ori_vel = np.array(self.sim.data.body_xvelr[self.sim.model.body_name2id(self.eef_name)])
 
         self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
         self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
 
-        self.J_pos = np.array(self.sim.data.get_body_jacp(self.id_name).reshape((3, -1))[:, self.qvel_index])
-        self.J_ori = np.array(self.sim.data.get_body_jacr(self.id_name).reshape((3, -1))[:, self.qvel_index])
+        self.J_pos = np.array(self.sim.data.get_body_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index])
+        self.J_ori = np.array(self.sim.data.get_body_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
         self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
         mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')

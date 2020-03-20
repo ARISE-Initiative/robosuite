@@ -196,6 +196,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         self.timestep += 1
         policy_step = True
+
+        # Loop through the simulation at the model timestep rate until we're ready to take the next policy step
+        # (as defined by the control frequency specified at the environment level)
         for i in range(int(self.control_timestep / self.model_timestep)):
             self._pre_action(action, policy_step)
             self.sim.step()

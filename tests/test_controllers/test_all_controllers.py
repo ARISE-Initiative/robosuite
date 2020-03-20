@@ -9,6 +9,31 @@ Joint Impedance
 Joint Velocity
 Joint Torque
 
+This (non-exhaustive) test script checks for qualitative irregularities in controller behavior.
+However, this testing module also checks for action space correctness and dimensionality.
+For every controller action space, runs through each dimension and executes a perturbation "test_value" from its
+neutral (stationary) value for a certain amount of time "steps_per_action", and then returns to all neutral values
+for time "steps_per_rest" before proceeding with the next action dim.
+
+Please reference the controller README in the robosuite/controllers directory for an overview of each controller.
+Controllers are expected to behave in a generally controlled manner, according to their control space.
+    E.g.: the Pos / Ori controller should be expected to move linearly in the x direction first, then the y direction,
+        then the z direction, and then begin rotating about its x-axis, then y-axis, then z-axis.
+
+As this is strictly a qualitative set of tests, it is up to the developer / user to examine for specific irregularities.
+However, the expected qualitative behavior is described below for each controller:
+
+* EE_POS_ORI: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
+            z-axis, relative to the global coordinate frame
+* EE_POS: Gripper moves sequentially and linearly in x, y, z direction, relative to the global coordinate frame
+* EE_IK: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
+            z-axis, relative to the local robot end effector frame
+* JOINT_IMP: Robot Joints move sequentially in a controlled fashion
+* JOINT_VEL: Robot Joints move sequentially in a controlled fashion
+* JOINT_TORQUE: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the
+            "controller" is really just a wrapper for direct torque control of the mujoco actuators. Therefore, a
+            "neutral" value of 0 torque will not guarantee a stable robot when it has non-zero velocity!
+
 """
 import numpy as np
 
@@ -24,12 +49,13 @@ controllers = {
     "ee_pos":       [4, 3, 0.1, np.array([0,0,0,-1], dtype=float)],
     "ee_ik":        [8, 6, 0.01, np.array([0,0,0,0,0,0,1,-1], dtype=float)],
     "joint_imp":    [8, 7, 0.2, np.array([0,0,0,0,0,0,0,-1], dtype=float)],
-    "joint_vel":    [8, 7, -0.005, np.array([0,0,0,0,0,0,0,-1], dtype=float)],
-    "joint_torque": [8, 7, -0.005, np.array([0,0,0,0,0,0,0,-1], dtype=float)]
+    "joint_vel":    [8, 7, -0.05, np.array([0,0,0,0,0,0,0,-1], dtype=float)],
+    "joint_torque": [8, 7, 0.001, np.array([0,0,0,0,0,0,0,-1], dtype=float)]
 }
 
-# Define the number of timesteps to use per controller action
-steps_per_action = 25
+# Define the number of timesteps to use per controller action as well as timesteps in between actions
+steps_per_action = 50
+steps_per_rest = 25
 
 
 def test_all_controllers():
@@ -52,12 +78,13 @@ def test_all_controllers():
             has_renderer=True,  # use on-screen renderer for visual validation
             has_offscreen_renderer=False,
             use_camera_obs=False,
-            horizon=steps_per_action * num_test_steps,
+            horizon=(steps_per_action + steps_per_rest) * num_test_steps,
             controller_config=controller_config
         )
         print("Testing controller: {}...".format(controller_name))
 
         env.reset()
+        # For localised controllers, get a closer camera angle for better viewing
         if controller_name in {"ee_pos_ori", "ee_pos", "ee_ik"}:
             env.viewer.set_camera(camera_id=2)
 
@@ -83,9 +110,12 @@ def test_all_controllers():
                 _, _, done, _ = env.step(action)
                 env.render()
             count += 1
+            for i in range(steps_per_rest):
+                _, _, done, _ = env.step(neutral)
+                env.render()
 
         # Tests passed!
-        print("All controller tests passed successfully!")
+        print("All controller tests completed.")
 
 
 if __name__ == "__main__":

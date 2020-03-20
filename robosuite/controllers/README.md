@@ -22,7 +22,7 @@ Below, a brief overview and description of each subset of controller parameters 
 * `'kp', 'kv'`: Where relevant, specifies the positional / velocity gain for the controller. Can be either be a scalar (same value for all robot joints), or a list (specific values for each joint)
 * `'damping'`: Where relevant, specifies the damping constant for the controller.
 * `'control_delta'`: Only relevant for `'EE_POS_ORI'` or `'EE_POS'` controllers. `true` interprets input actions as delta values from the current robot end effector position. Otherwise, assumed to be absolute (global) values
-* `'uncouple_pos_ori'`: Only relevant for `'EE_POS_ORI'`. `true` decouples the desired position and orientation when executing the controller
+* `'uncouple_pos_ori'`: Only relevant for `'EE_POS_ORI'`. `true` decouples the desired position and orientation torques when executing the controller
 
 ## Using a Custom Controller Configuration
 A custom controller other than the environment defaults (which are normally are the default `JOINT_VEL` configurations) can be used by simply creating a new config (`.json`) file with the relevant parameters as specified above. All robosuite environments have an optional `controller_config` argument that can be used to pass in specific controller settings. Note that this is expected to be a `dict`, so the new configuration must be read in and parsed as a `dict` before passing it during the environment `robosuite.make(...)` call. A brief example script showing how to import a custom controller configuration is shown below.
@@ -36,7 +36,7 @@ controller_fpath = `/your/custom/config/filepath/here/filename.json`
 
 # Import the file as a dict
 with open(controller_fpath) as f:
-	config = json.load(f)
+    config = json.load(f)
 
 # Create environment
 env = suite.make("PandaLift", controller_config=config, ... )

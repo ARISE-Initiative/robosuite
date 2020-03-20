@@ -95,14 +95,14 @@ class BaxterEnv(MujocoEnv):
         controller_config["ndim"] = int(len(self.robot_joints) / 2)
 
         # Instantiate the relevant controllers (one for each arm)
-        controller_config["robot_id"] = "right_hand"
+        controller_config["eef_name"] = "right_hand"
         controller_config["joint_indexes"] = {
             "joints": self.joint_indexes[:controller_config["ndim"]],
             "qpos": self._ref_joint_pos_indexes[:controller_config["ndim"]],
             "qvel": self._ref_joint_vel_indexes[:controller_config["ndim"]]
         }
         self.right_controller = controller_factory(controller_config["type"], controller_config)
-        controller_config["robot_id"] = "left_hand"
+        controller_config["eef_name"] = "left_hand"
         controller_config["joint_indexes"] = {
             "joints": self.joint_indexes[controller_config["ndim"]:],
             "qpos": self._ref_joint_pos_indexes[controller_config["ndim"]:],
@@ -275,8 +275,8 @@ class BaxterEnv(MujocoEnv):
 
         # Update the controller goals if this is a new policy step
         if policy_step:
-            self.left_controller.set_goal(delta=left_action)
-            self.right_controller.set_goal(delta=right_action)
+            self.left_controller.set_goal(left_action)
+            self.right_controller.set_goal(right_action)
 
         # Now run the controller for a step
         left_torques = self.left_controller.run_controller()

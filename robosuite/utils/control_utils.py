@@ -44,7 +44,7 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
     svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
     lambda_ori = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
 
-    #nullspace
+    # nullspace
     Jbar = np.dot(mass_matrix_inv, J_full.transpose()).dot(lambda_full)
     nullspace_matrix = np.eye(J_full.shape[-1], J_full.shape[-1]) - np.dot(Jbar, J_full)
 
@@ -75,24 +75,28 @@ def orientation_error(desired, current):
 
 
 def set_goal_position(delta,
-                       current_position,
-                       position_limit=None,
-                       set_pos=None):
+                      current_position,
+                      position_limit=None,
+                      set_pos=None):
+    """
+    Calculates and returns the desired goal position, clipping the result accordingly to @position_limits.
+    @delta and @current_position must be specified if a relative goal is requested, else @set_pos must be
+    specified to define a global goal position
+    """
     n = len(current_position)
     if set_pos is not None:
         goal_position = set_pos
     else:
         goal_position = current_position + delta
 
-    if np.array(position_limit).any():
+    if position_limit is not None:
         if position_limit.shape != (2,n):
             raise ValueError("Position limit should be shaped (2,{}) "
                              "but is instead: {}".format(n, position_limit.shape))
 
-        for idx in range(3):
-            goal_position[idx] = np.clip(goal_position[idx],
-                                         position_limit[0][idx],
-                                         position_limit[1][idx])
+        # Clip goal position
+        goal_position = np.clip(goal_position, position_limit[0], position_limit[1])
+
     return goal_position
 
 
@@ -100,6 +104,11 @@ def set_goal_orientation(delta,
                          current_orientation,
                          orientation_limit=None,
                          set_ori=None):
+    """
+    Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
+    @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
+    specified to define a global orientation position
+    """
     # directly set orientation
     if set_ori is not None:
         goal_orientation = set_ori

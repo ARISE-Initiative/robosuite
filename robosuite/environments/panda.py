@@ -109,7 +109,7 @@ class PandaEnv(MujocoEnv):
         #   policy (control) freq, and ndim (# joints)
         controller_config["robot_name"] = self.mujoco_robot.name
         controller_config["sim"] = self.sim
-        controller_config["robot_id"] = "right_hand"
+        controller_config["eef_name"] = "right_hand"
         controller_config["joint_indexes"] = {
             "joints": self.joint_indexes,
             "qpos": self._ref_joint_pos_indexes,
@@ -257,7 +257,7 @@ class PandaEnv(MujocoEnv):
 
         # Update the controller goal if this is a new policy step
         if policy_step:
-            self.controller.set_goal(delta=action)
+            self.controller.set_goal(action)
 
         # Now run the controller for a step
         torques = self.controller.run_controller()

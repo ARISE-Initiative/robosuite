@@ -11,7 +11,7 @@ class JointVelController(Controller):
 
     def __init__(self,
                  sim,
-                 robot_id,
+                 eef_name,
                  joint_indexes,
                  input_max=1,
                  input_min=-1,
@@ -19,14 +19,14 @@ class JointVelController(Controller):
                  output_min=-1,
                  kv=4.0,
                  policy_freq=20,
-                 velocity_limits=None,
+                 velocity_limits=(-1, 1),
                  interpolator=None,
                  **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
                  ):
 
         super().__init__(
             sim,
-            robot_id,
+            eef_name,
             joint_indexes,
         )
         # Control dimension
@@ -42,8 +42,7 @@ class JointVelController(Controller):
         self.kv = np.array(kv) if type(kv) == list else np.array([kv] * self.control_dim)
 
         # limits
-        self.velocity_limits = np.array(velocity_limits) if type(velocity_limits[0]) == list else \
-            np.array([[velocity_limits[0]] * self.control_dim, [velocity_limits[1]] * self.control_dim])
+        self.velocity_limits = velocity_limits
 
         # control frequency
         self.control_freq = policy_freq
@@ -56,28 +55,18 @@ class JointVelController(Controller):
         self.current_vel = np.zeros(self.joint_dim)     # Current velocity setpoint, pre-compensation
         self.torques = None                             # Torques returned every time run_controller is called
 
-    def set_goal(self, delta, set_velocity=None):
+    def set_goal(self, velocities):
         self.update()
 
-        if delta is not None:
-            # Check to make sure delta is size self.joint_dim
-            assert len(delta) == self.joint_dim,\
-                "Delta length must be equal to the robot's joint dimension space! Expected {}, got {}".format(
-                    self.joint_dim, len(delta)
-                )
-            scaled_delta = self.scale_action(delta)
-        else:
-            # Otherwise, check to make sure set_velocity is size self.joint_dim
-            assert len(set_velocity) == self.joint_dim,\
-                "Goal action must be equal to the robot's joint dimension space! Expected {}, got {}".format(
-                    self.joint_dim, len(set_velocity)
-                )
-            scaled_delta = None
+        # Otherwise, check to make sure velocities is size self.joint_dim
+        assert len(velocities) == self.joint_dim,\
+            "Goal action must be equal to the robot's joint dimension space! Expected {}, got {}".format(
+                self.joint_dim, len(velocities)
+            )
 
-        self.goal_vel = set_goal_position(scaled_delta,
-                                          self.current_vel,
-                                          position_limit=self.velocity_limits,
-                                          set_pos=set_velocity)
+        self.goal_vel = velocities
+        if self.velocity_limits is not None:
+            self.goal_vel = np.clip(velocities, self.velocity_limits[0], self.velocity_limits[1])
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_vel)

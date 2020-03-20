@@ -26,7 +26,7 @@ class EEIKController(JointVelController):
 
     def __init__(self,
                  sim,
-                 robot_id,
+                 eef_name,
                  joint_indexes,
                  robot_name,
                  kv=40.0,
@@ -41,7 +41,7 @@ class EEIKController(JointVelController):
         # Run sueprclass inits
         super().__init__(
             sim=sim,
-            robot_id=robot_id,
+            eef_name=eef_name,
             joint_indexes=joint_indexes,
             input_max=50,
             input_min=-50,
@@ -123,11 +123,11 @@ class EEIKController(JointVelController):
         # For now, hard code baxter bullet eef idx
         if self.robot_name == "baxter":
             self.ik_robot_target_pos_offset = np.array([0, 0, 0.913])
-            if self.id_name == "right_hand":
+            if self.eef_name == "right_hand":
                 self.bullet_ee_idx = 27
                 self.bullet_joint_indexes = [13, 14, 15, 16, 17, 19, 20]
                 self.ik_command_indexes = np.arange(1, self.joint_dim + 1)
-            elif self.id_name == "left_hand":
+            elif self.eef_name == "left_hand":
                 self.bullet_ee_idx = 45
                 self.bullet_joint_indexes = [31, 32, 33, 34, 35, 37, 38]
                 self.ik_command_indexes = np.arange(self.joint_dim + 1, self.joint_dim * 2 + 1)
@@ -147,9 +147,9 @@ class EEIKController(JointVelController):
             self.rest_poses = [0, np.pi / 6, 0.00, -(np.pi - 2 * np.pi / 6), 0.00, (np.pi - np.pi / 6), np.pi / 4]
         elif self.robot_name == "baxter":
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
-            if self.id_name == "right_hand":
+            if self.eef_name == "right_hand":
                 self.rest_poses = [0.535, -0.093, 0.038, 0.166, 0.643, 1.960, -1.297]
-            elif self.id_name == "left_hand":
+            elif self.eef_name == "left_hand":
                 self.rest_poses = [-0.518, -0.026, -0.076, 0.175, -0.748, 1.641, -0.158]
             else:
                 # Error with inputted id
@@ -355,7 +355,7 @@ class EEIKController(JointVelController):
         # Compute desired velocities to achieve eef pos / ori
         velocities = self.get_control(**requested_control)
 
-        super().set_goal(delta=None, set_velocity=velocities)
+        super().set_goal(velocities)
 
     def run_controller(self, action=None):
         # First, update goal if action is not set to none

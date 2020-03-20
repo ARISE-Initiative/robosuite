@@ -11,7 +11,7 @@ class EEImpController(Controller):
 
     def __init__(self,
                  sim,
-                 robot_id,
+                 eef_name,
                  joint_indexes,
                  input_max=1,
                  input_min=-1,
@@ -32,7 +32,7 @@ class EEImpController(Controller):
 
         super().__init__(
             sim,
-            robot_id,
+            eef_name,
             joint_indexes,
         )
         # Determine whether this is pos ori or just pos
@@ -51,8 +51,8 @@ class EEImpController(Controller):
         self.output_min = output_min[:self.control_dim] if type(output_min) == tuple else output_min
 
         # limits
-        self.position_limits = np.array(position_limits)
-        self.orientation_limits = np.array(orientation_limits)
+        self.position_limits = position_limits
+        self.orientation_limits = orientation_limits
 
         # kp kv
         self.kp = np.ones(6) * kp
@@ -117,6 +117,14 @@ class EEImpController(Controller):
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
     def run_controller(self, action=None):
+        """
+        Executes Operational Space Control (OSC) -- either position only or position and orientation.
+
+        Note: Does not account for gravity compensation!
+
+        A detailed overview of derivation of OSC equations can be seen at:
+        http://khatib.stanford.edu/publications/pdfs/Khatib_1987_RA.pdf
+        """
         # First, update goal if action is not set to none
         # Action will be interpreted as delta value from current
         if action is not None:
@@ -146,19 +154,27 @@ class EEImpController(Controller):
             desired_ori = np.array(self.goal_ori)
             ori_error = orientation_error(desired_ori, self.ee_ori_mat)
 
+        # Compute desired force and torque based on errors
         position_error = desired_pos - self.ee_pos
         vel_pos_error = -self.ee_pos_vel
+
+        # F_r = kp * pos_err + kv * vel_err
         desired_force = (np.multiply(np.array(position_error), np.array(self.kp[0:3]))
                          + np.multiply(vel_pos_error, self.kv[0:3]))
 
         vel_ori_error = -self.ee_ori_vel
+
+        # Tau_r = kp * ori_err + kv * vel_err
         desired_torque = (np.multiply(np.array(ori_error), np.array(self.kp[3:6]))
                           + np.multiply(vel_ori_error, self.kv[3:6]))
 
+        # Compute nullspace matrix (I - Jbar * J) and lambda matrices ((J * M^-1 * J^T)^-1)
         lambda_full, lambda_pos, lambda_ori, nullspace_matrix = opspace_matrices(self.mass_matrix,
                                                                                  self.J_full,
                                                                                  self.J_pos,
                                                                                  self.J_ori)
+
+        # Decouples desired positional control from orientation control
         if self.uncoupling:
             decoupled_force = np.dot(lambda_pos, desired_force)
             decoupled_torque = np.dot(lambda_ori, desired_torque)
@@ -167,9 +183,12 @@ class EEImpController(Controller):
             desired_wrench = np.concatenate([desired_force, desired_torque])
             decoupled_wrench = np.dot(lambda_full, desired_wrench)
 
+        # Gamma (without null torques) = J^T * F + compensations
         self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
 
-        # Calculate nullspace torques
+        # Calculate and add nullspace torques (nullspace_matrix^T * Gamma_null) to final torques
+        # Note: Gamma_0 = desired nullspace pose torques, assumed to be positional joint control relative
+        #                   to the initial joint positions
         self.torques += nullspace_torques(self.mass_matrix, nullspace_matrix,
                                           self.initial_joint, self.joint_pos, self.joint_vel)
 
