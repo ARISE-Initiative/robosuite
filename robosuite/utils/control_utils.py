@@ -123,9 +123,11 @@ def set_goal_orientation(delta,
         if orientation_limit.shape != (2,3):
             raise ValueError("Orientation limit should be shaped (2,3) "
                              "but is instead: {}".format(orientation_limit.shape))
-        # TODO: Limit rotation!
+
+        # Convert to euler angles for clipping
         euler = trans.mat2euler(goal_orientation)
 
+        # Clip euler angles according to specified limits
         limited = False
         for idx in range(3):
             if orientation_limit[0][idx] < orientation_limit[1][idx]:  # Normal angle sector meaning
