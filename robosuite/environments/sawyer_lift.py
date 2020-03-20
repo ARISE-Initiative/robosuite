@@ -736,7 +736,8 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         self._target_name = target_name
         self._object_name = object_name
         self._target_rgba = target_color
-        if hide_target:
+        self._goal_render_segmentation = None
+        if kwargs.pop('eval_mode', False) or hide_target:
             self._target_rgba = (0., 0., 0., 0.,)
         # self._target_pos = None
         # self._target_quat = None
@@ -845,6 +846,9 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         # do nothing
         pass
 
+    def _set_goal_rendering(self, _):
+        pass
+
     def _get_goal(self):
         """
         Get goal observation by moving object to the target, get obs, and move back.
@@ -862,9 +866,30 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
 
         # get obs
         self._goal_dict = deepcopy(self._get_observation())
+
+        # set object back to initial pose
         EU.set_body_pose(self.sim, self._object_name, pos=obj_pos, quat=obj_quat)
         self.sim.forward()
         return self._goal_dict
+
+    def render_with_goal(self, height, width, camera_name):
+        im = self.sim.render(height=height, width=width, camera_name=camera_name)[::-1]
+
+        if self._goal_render_segmentation is None:
+            # get a segmentation of the goal state
+            tgt_pos = self.sim.data.body_xpos[self.target_body_id]
+            tgt_quat = self.sim.data.body_xquat[self.target_body_id]
+            obj_pos, obj_quat = EU.set_body_pose(self.sim, self._object_name, pos=tgt_pos, quat=tgt_quat)
+            self.sim.forward()
+
+            self._goal_render_segmentation = self.render_segmentation(camera_name=camera_name)[::-1]
+            EU.set_body_pose(self.sim, self._object_name, pos=obj_pos, quat=obj_quat)
+            self.sim.forward()
+
+        # compose image with goal
+        seg_mask = (self._goal_render_segmentation == EU.bodyid2geomids(self.sim, self.object_body_id)[0])
+        im[seg_mask] = [0, 255, 0]
+        return im
 
     def _check_success(self):
         """
