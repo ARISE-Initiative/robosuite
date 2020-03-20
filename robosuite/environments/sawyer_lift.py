@@ -4,6 +4,7 @@ import numpy as np
 from robosuite.utils.mjcf_utils import range_to_uniform_grid
 from robosuite.utils.transform_utils import convert_quat
 from robosuite.environments.sawyer import SawyerEnv
+import robosuite.utils.env_utils as EU
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
@@ -311,6 +312,11 @@ class SawyerLift(SawyerEnv):
             self.sim.model.geom_name2id(x) for x in self.gripper.right_finger_geoms
         ]
         self.cube_geom_id = self.sim.model.geom_name2id("cube")
+
+    def _get_body_addr(self, body_name):
+        body_id = self.sim.model.body_name2id(body_name)
+
+
 
     def _reset_internal(self):
         """
@@ -720,21 +726,29 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
     """
     def __init__(
         self,
+        object_name='cube',
+        target_name='cube_target',
+        target_color=(0, 1, 0, 0.3),
         **kwargs
     ):
+        self._target_name = target_name
+        self._object_name = object_name
+        self._target_rgba = target_color
+        # self._target_pos = None
+        # self._target_quat = None
         super().__init__(**kwargs)
 
     def _load_model(self):
         super()._load_model()
 
         # target visual object
-        target_size = np.array(self.mujoco_objects["cube"].size)
+        target_size = np.array(self.mujoco_objects[self._object_name].size)
         target = BoxObject(
             size_min=target_size,
             size_max=target_size,
-            rgba=[0, 1, 0, 0.3],
+            rgba=self._target_rgba,
         )
-        self.visual_objects = OrderedDict([("cube_target", target)])
+        self.visual_objects = OrderedDict([(self._target_name, target)])
 
         # task includes arena, robot, and objects of interest
         self.model = TableTopVisualTask(
@@ -750,9 +764,9 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
     def _get_reference(self):
         super()._get_reference()
 
-        self.target_body_id = self.sim.model.body_name2id("cube_target")
-        target_qpos = self.sim.model.get_joint_qpos_addr("cube_target")
-        target_qvel =  self.sim.model.get_joint_qvel_addr("cube_target")
+        self.target_body_id = self.sim.model.body_name2id(self._target_name)
+        target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name)
+        target_qvel =  self.sim.model.get_joint_qvel_addr(self._target_name)
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
 
@@ -800,24 +814,26 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         Set the target position and quaternion.
         Quaternion should be (x, y, z, w).
         """
-
-        index = self._ref_target_pos_low
-
-        sim_state = self.sim.get_state()
-        sim_state.qpos[index: index + 3] = np.array(pos)
-        if quat is not None:
-            sim_state.qpos[index + 3: index + 7] = convert_quat(quat, to="wxyz")
-        self.sim.set_state(sim_state)
+        EU.set_body_pose(self.sim, self._target_name, pos=pos, quat=quat)
+        # self._target_pos = pos.copy()
+        # self._target_quat = old_quat
         self.sim.forward()
+
+    def hide_target(self):
+        """make the target transparent for rendering"""
+        self.sim.model.geom_rgba[EU.bodyid2geomids(self.sim, self.target_body_id)[0]] = np.array([0., 0., 0., 0.])
+
+    @property
+    def target_pos(self):
+        return np.array(self.sim.data.body_xpos[self.target_body_id])
 
     def _get_observation(self):
         """
         Add in target location into observation.
         """
-
         ### TODO: handle this in batchRL appropriately ###
         di = super()._get_observation()
-        di["goal"] = np.array(self.sim.data.body_xpos[self.target_body_id])
+        di["goal"] = self.target_pos
         return di
 
     def _check_success(self):
@@ -825,5 +841,5 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         Returns True if task has been completed.
         """
         cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-        target_pos = np.array(self.sim.data.body_xpos[self.target_body_id])
-        return np.linalg.norm(cube_pos - target_pos) < 0.05
+        return np.linalg.norm(cube_pos - self.target_pos) < 0.05
+
