@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import numpy as np
+from copy import deepcopy
 
 from robosuite.utils.mjcf_utils import range_to_uniform_grid
 from robosuite.utils.transform_utils import convert_quat
@@ -729,11 +730,14 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         object_name='cube',
         target_name='cube_target',
         target_color=(0, 1, 0, 0.3),
+        hide_target=False,
         **kwargs
     ):
         self._target_name = target_name
         self._object_name = object_name
         self._target_rgba = target_color
+        if hide_target:
+            self._target_rgba = (0., 0., 0., 0.,)
         # self._target_pos = None
         # self._target_quat = None
         super().__init__(**kwargs)
@@ -764,6 +768,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
     def _get_reference(self):
         super()._get_reference()
 
+        self.object_body_id = self.sim.model.body_name2id(self._object_name)
         self.target_body_id = self.sim.model.body_name2id(self._target_name)
         target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name)
         target_qvel =  self.sim.model.get_joint_qvel_addr(self._target_name)
@@ -777,7 +782,6 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         super()._reset_internal()
 
         ### TODO: unclear why objects are placed twice... ###
-
         # reset positions of objects
         self.model.place_objects()
         self.model.place_visual()
@@ -798,6 +802,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         cube_pos[0] += 0.2 * np.cos(random_angle)
         cube_pos[1] += 0.2 * np.sin(random_angle)
         self._set_target(pos=cube_pos)
+        self._goal_dict = None
 
     def _pre_action(self, action, policy_step=None):
         super()._pre_action(action, policy_step=policy_step)
@@ -835,6 +840,31 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         di = super()._get_observation()
         di["goal"] = self.target_pos
         return di
+
+    def set_goal(self, obs):
+        # do nothing
+        pass
+
+    def _get_goal(self):
+        """
+        Get goal observation by moving object to the target, get obs, and move back.
+        :return: observation dict with goal
+        """
+        # avoid generating goal obs every time
+        if self._goal_dict is not None:
+            return self._goal_dict
+        assert(self._target_rgba[-1] == 0)  # make sure the target is hidden
+        # set cube to target position
+        tgt_pos = self.sim.data.body_xpos[self.target_body_id]
+        tgt_quat = self.sim.data.body_xquat[self.target_body_id]
+        obj_pos, obj_quat = EU.set_body_pose(self.sim, self._object_name, pos=tgt_pos, quat=tgt_quat)
+        self.sim.forward()
+
+        # get obs
+        self._goal_dict = deepcopy(self._get_observation())
+        EU.set_body_pose(self.sim, self._object_name, pos=obj_pos, quat=obj_quat)
+        self.sim.forward()
+        return self._goal_dict
 
     def _check_success(self):
         """
