@@ -30,7 +30,7 @@ However, the expected qualitative behavior is described below for each controlle
             z-axis, relative to the local robot end effector frame
 * JOINT_IMP: Robot Joints move sequentially in a controlled fashion
 * JOINT_VEL: Robot Joints move sequentially in a controlled fashion
-* JOINT_TORQUE: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the
+* JOINT_TOR: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the
             "controller" is really just a wrapper for direct torque control of the mujoco actuators. Therefore, a
             "neutral" value of 0 torque will not guarantee a stable robot when it has non-zero velocity!
 
@@ -50,7 +50,7 @@ controllers = {
     "ee_ik":        [8, 6, 0.01, np.array([0,0,0,0,0,0,1,-1], dtype=float)],
     "joint_imp":    [8, 7, 0.2, np.array([0,0,0,0,0,0,0,-1], dtype=float)],
     "joint_vel":    [8, 7, -0.05, np.array([0,0,0,0,0,0,0,-1], dtype=float)],
-    "joint_torque": [8, 7, 0.001, np.array([0,0,0,0,0,0,0,-1], dtype=float)]
+    "joint_tor":    [8, 7, 0.001, np.array([0,0,0,0,0,0,0,-1], dtype=float)]
 }
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions

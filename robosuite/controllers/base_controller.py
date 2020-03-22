@@ -9,6 +9,16 @@ class Controller(object, metaclass=abc.ABCMeta):
 
     Requires reference to mujoco sim object, eef_name of specific robot, relevant joint_indexes to that robot, and
     whether an initial_joint is used for nullspace torques or not
+
+    Args:
+        sim (MjSim): Simulator instance this controller will pull robot state updates from
+
+        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
+
+        joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
+            "joints" : list of indexes to relevant robot joints
+            "qpos" : list of indexes to relevant robot joint positions
+            "qvel" : list of indexes to relevant robot joint velocities
     """
     def __init__(self,
                  sim,
@@ -64,14 +74,14 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.initial_joint = self.joint_pos
         self.initial_ee_pos = self.ee_pos
         self.initial_ee_ori_mat = self.ee_ori_mat
-        self.torque_compensation = np.zeros(self.joint_dim)
 
     @abc.abstractmethod
     def run_controller(self, action):
         """
-        Go from actions to torques
+        Abstract method that should be implemented in all subclass controllers
+        Converts a given action into torques (pre gravity compensation) to be executed on the robot
         """
-        pass
+        raise NotImplementedError
 
     def scale_action(self, action):
         """
@@ -88,7 +98,10 @@ class Controller(object, metaclass=abc.ABCMeta):
         return transformed_action
 
     def update(self):
-
+        """
+        Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,
+        jacobian, and mass matrix
+        """
         self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.eef_name)])
         self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.eef_name)].reshape([3, 3]))
         self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.eef_name)])
@@ -108,50 +121,66 @@ class Controller(object, metaclass=abc.ABCMeta):
 
     @property
     def input_min(self):
+        """Returns input minimum below which an inputted action will be clipped"""
         return self._input_min
 
     @input_min.setter
     def input_min(self, input_min):
+        """Sets the minimum input"""
         self._input_min = np.array(input_min) if type(input_min) == list or type(input_min) == tuple \
             else np.array([input_min]*self.control_dim)
 
     @property
     def input_max(self):
+        """Returns input maximum above which an inputted action will be clipped"""
         return self._input_max
 
     @input_max.setter
     def input_max(self, input_max):
+        """Sets the maximum input"""
         self._input_max = np.array(input_max) if type(input_max) == list or type(input_max) == tuple \
             else np.array([input_max]*self.control_dim)
 
     @property
     def output_min(self):
+        """Returns output minimum which defines lower end of scaling range when scaling an input action"""
         return self._output_min
 
     @output_min.setter
     def output_min(self, output_min):
+        """Set the minimum output"""
         self._output_min = np.array(output_min) if type(output_min) == list or type(output_min) == tuple \
             else np.array([output_min]*self.control_dim)
 
     @property
     def output_max(self):
+        """Returns output maximum which defines upper end of scaling range when scaling an input action"""
         return self._output_max
 
     @output_max.setter
     def output_max(self, output_max):
+        """Set the maximum output"""
         self._output_max = np.array(output_max) if type(output_max) == list or type(output_max) == tuple \
                 else np.array([output_max]*self.control_dim)
 
     @property
     def control_dim(self):
+        """Returns the control dimension for this controller (specifies size of action space)"""
         return self._control_dim
 
     @control_dim.setter
     def control_dim(self, control_dim):
+        """Sets the control dimension for this controller"""
         self._control_dim = control_dim
 
     @property
+    def torque_compensation(self):
+        """Returns gravity compensation torques for the robot arm"""
+        return self.sim.data.qfrc_bias[self.qvel_index]
+
+    @property
     def name(self):
+        """Returns the name of this controller"""
         raise NotImplementedError
 
 

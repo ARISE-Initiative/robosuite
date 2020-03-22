@@ -1,14 +1,16 @@
 from robosuite.controllers.base_controller import Controller
-from robosuite.utils.control_utils import *
 import numpy as np
 
 
-class JointImpController(Controller):
+class JointTorController(Controller):
     """
-    Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
+    Controller for controlling the robot arm's joint torques. As the actuators at the mujoco sim level are already
+    torque actuators, this "controller" usually simply "passes through" desired torques, though it also includes the
+    typical input / output scaling and clipping, as well as interpolator features seen in other controllers classes
+    as well
 
-    NOTE: Control input actions assumed to be taken relative to the current joint positions. A given action to this
-    controller is assumed to be of the form: (dpos_j0, dpos_j1, ... , dpos_jn-1) for an n-joint robot
+    NOTE: Control input actions assumed to be taken as absolute joint torques. A given action to this
+    controller is assumed to be of the form: (torq_j0, torq_j1, ... , torq_jn-1) for an n-joint robot
 
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
@@ -36,21 +38,14 @@ class JointImpController(Controller):
             action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
             each dimension). If the latter, dimension should be the same as the control dimension for this controller
 
-        kp (float or list of float): positional gain for determining desired torques based upon the joint pos errors.
-            Can be either be a scalar (same value for all action dims), or a list (specific values for each dim)
-
-        damping (float or list of float): used in conjunction with kp to determine the velocity gain for determining
-            desired torques based upon the joint pos errors. Can be either be a scalar (same value for all action dims),
-            or a list (specific values for each dim)
-
         policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
 
-        qpos_limits (2-list of float or 2-list of list of floats): Limits (rad) below and above which the magnitude
-            of a calculated goal joint position will be clipped. Can be either be a 2-list (same min/max value for all
+        torque_limits (2-list of float or 2-list of list of floats): Limits (N-m) below and above which the magnitude
+            of a calculated goal joint torque will be clipped. Can be either be a 2-list (same min/max value for all
             joint dims), or a 2-list of list (specific min/max values for each dim)
 
-        interpolator (Interpolator): Interpolator object to be used for interpolating from the current joint position to
-            the goal joint position during each timestep between inputted actions
+        interpolator (Interpolator): Interpolator object to be used for interpolating from the current joint torques to
+            the goal joint torques during each timestep between inputted actions
 
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
@@ -64,10 +59,8 @@ class JointImpController(Controller):
                  input_min=-1,
                  output_max=0.05,
                  output_min=-0.05,
-                 kp=50,
-                 damping=1,
                  policy_freq=20,
-                 qpos_limits=None,
+                 torque_limits=None,
                  interpolator=None,
                  **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
                  ):
@@ -88,11 +81,7 @@ class JointImpController(Controller):
         self.output_min = output_min
 
         # limits
-        self.position_limits = qpos_limits
-
-        # kp kv
-        self.kp = np.ones(self.joint_dim) * kp
-        self.kv = np.ones(self.joint_dim) * 2 * np.sqrt(self.kp) * damping
+        self.torque_limits = torque_limits
 
         # control frequency
         self.control_freq = policy_freq
@@ -100,31 +89,27 @@ class JointImpController(Controller):
         # interpolator
         self.interpolator = interpolator
 
-        # initialize
-        self.goal_qpos = None
+        # initialize torques
+        self.goal_torque = None                           # Goal torque desired, pre-compensation
+        self.current_torque = np.zeros(self.control_dim)  # Current torques being outputted, pre-compensation
+        self.torques = None                               # Torques returned every time run_controller is called
 
-    def set_goal(self, delta, set_qpos=None):
+    def set_goal(self, torques):
         self.update()
 
-        # Check to make sure delta is size self.joint_dim
-        assert len(delta) == self.control_dim, "Delta qpos must be equal to the robot's joint dimension space!"
+        # Check to make sure torques is size self.joint_dim
+        assert len(torques) == self.control_dim, "Delta torque must be equal to the robot's joint dimension space!"
 
-        if delta is not None:
-            scaled_delta = self.scale_action(delta)
-        else:
-            scaled_delta = None
-
-        self.goal_qpos = set_goal_position(scaled_delta,
-                                           self.joint_pos,
-                                           position_limit=self.position_limits,
-                                           set_pos=set_qpos)
+        self.goal_torque = torques
+        if self.torque_limits is not None:
+            self.goal_torque = np.clip(self.goal_torque, self.torque_limits[0], self.torque_limits[1])
 
         if self.interpolator is not None:
-            self.interpolator.set_goal(self.goal_qpos)
+            self.interpolator.set_goal(self.goal_torque)
 
     def run_controller(self, action=None):
         # Make sure goal has been set
-        if not self.goal_qpos.any():
+        if not self.goal_torque.any():
             self.set_goal(np.zeros(self.control_dim))
 
         # Then, update goal if action is not set to none
@@ -134,30 +119,23 @@ class JointImpController(Controller):
         else:
             self.update()
 
-        desired_qpos = None
-
         # Only linear interpolator is currently supported
         if self.interpolator is not None:
             # Linear case
             if self.interpolator.order == 1:
-                desired_qpos = self.interpolator.get_interpolated_goal(self.joint_pos)
+                self.current_torque = self.interpolator.get_interpolated_goal(self.current_torque)
             else:
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_qpos = np.array(self.goal_qpos)
+            self.current_torque = np.array(self.goal_torque)
 
-        # torques = pos_err * kp + vel_err * kv
-        position_error = desired_qpos - self.joint_pos
-        vel_pos_error = -self.joint_vel
-        desired_torque = (np.multiply(np.array(position_error), np.array(self.kp))
-                          + np.multiply(vel_pos_error, self.kv))
+        # Add gravity compensation
+        self.torques = self.current_torque + self.torque_compensation
 
-        # Return desired torques plus gravity compensations
-        self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
-
+        # Return final torques
         return self.torques
 
     @property
     def name(self):
-        return 'joint_imp'
+        return 'joint_tor'
