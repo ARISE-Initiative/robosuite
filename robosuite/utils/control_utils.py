@@ -3,11 +3,27 @@ import robosuite.utils.transform_utils as trans
 import scipy.linalg
 
 
-def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, joint_vel):
-    joint_kp = 10
+def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, joint_vel, joint_kp=10):
+    """
+    For a robot with redundant DOF(s), a nullspace exists which is orthogonal to the remainder of the controllable
+     subspace of the robot's joints. Therefore, an additional secondary objective that does not impact the original
+     controller objective may attempt to be maintained using these nullspace torques.
+
+    This utility function specifically calculates nullspace torques that attempt to maintain a given robot joint
+     positions @initial_joint with zero velocity using proportinal gain @joint_kp
+
+    Note: @mass_matrix, @nullspace_matrix, @joint_pos, and @joint_vel should reflect the robot's state at the current
+     timestep
+    """
+
+    # kv calculated below corresponds to critical damping
     joint_kv = np.sqrt(joint_kp) * 2
+
+    # calculate desired torques based on gains and error
     pose_torques = np.dot(mass_matrix, (joint_kp * (
             initial_joint - joint_pos) - joint_kv * joint_vel))
+
+    # map desired torques to null subspace within joint torque actuator space
     nullspace_torques = np.dot(nullspace_matrix.transpose(), pose_torques)
     return nullspace_torques
 
