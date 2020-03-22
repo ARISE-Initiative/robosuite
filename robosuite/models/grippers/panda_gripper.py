@@ -62,10 +62,10 @@ class PandaGripper(PandaGripperBase):
 
     def format_action(self, action):
         """
-        1 => open, -1 => closed
+        -1 => open, 1 => closed
         """
         assert len(action) == 1
-        return np.array([1 * action[0], -1 * action[0]])
+        return np.array([-1 * action[0], 1 * action[0]])
 
     @property
     def dof(self):

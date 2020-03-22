@@ -146,9 +146,9 @@ class GripperTester:
             self.sim.model.actuator_name2id("gripper_" + x)
             for x in self.gripper.joints
         ]
-        self.gripper_open_action = self.gripper.format_action([1])
+        self.gripper_open_action = self.gripper.format_action([-1])
         self.gripper_closed_action = self.gripper.format_action(
-            [-1]
+            [1]
         )
         self.gripper_is_closed = True
 

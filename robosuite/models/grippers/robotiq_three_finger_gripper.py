@@ -71,7 +71,7 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
     def format_action(self, action):
         """
         Args:
-            action: 1 => open, -1 => closed
+            action: -1 => open, 1 => closed
         """
         movement = np.array([0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1])
-        return -1 * movement * action
+        return movement * action

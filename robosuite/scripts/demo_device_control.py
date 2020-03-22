@@ -159,8 +159,8 @@ if __name__ == "__main__":
                 # No other controllers currently supported
                 print("Error: Unsupported controller specified -- must be either ik or osc!")
 
-            # map 0 to 1 (open) and map 1 to -1 (closed)
-            grasp = -1 if grasp else 1
+            # map 0 to -1 (open) and map 1 to 1 (closed)
+            grasp = 1 if grasp else -1
 
             # Create action based on action space of individual robot
             if env.mujoco_robot.name == 'baxter':

@@ -77,10 +77,10 @@ class RobotiqGripper(RobotiqGripperBase):
     def format_action(self, action):
         """
         Args:
-            action: 1 => open, -1 => closed
+            action: -1 => open, 1 => closed
         """
         assert len(action) == 1
-        return -1 * np.ones(6) * action
+        return np.ones(6) * action
 
     @property
     def dof(self):

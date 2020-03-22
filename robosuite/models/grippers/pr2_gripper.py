@@ -64,10 +64,10 @@ class PR2Gripper(PR2GripperBase):
     def format_action(self, action):
         """
         Args:
-            action: 1 => open, -1 => closed
+            action: -1 => open, 1 => closed
         """
         assert len(action) == 1
-        return np.ones(4) * action
+        return -np.ones(4) * action
 
     @property
     def dof(self):
