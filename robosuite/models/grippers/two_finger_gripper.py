@@ -65,10 +65,10 @@ class TwoFingerGripper(TwoFingerGripperBase):
     def format_action(self, action):
         """
         Args:
-            action: 1 => open, -1 => closed
+            action: -1 => open, 1 => closed
         """
         assert len(action) == 1
-        return np.array([-1 * action[0], 1 * action[0]])
+        return np.array([1 * action[0], -1 * action[0]])
 
     @property
     def dof(self):
