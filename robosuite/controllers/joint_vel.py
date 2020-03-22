@@ -4,7 +4,52 @@ import numpy as np
 
 class JointVelController(Controller):
     """
-    Controller for joint velocity
+    Controller for controlling the robot arm's joint velocities. This is simply a P controller with desired torques
+    (pre gravity compensation) taken to be proportional to the velocity error of the robot joints.
+
+    NOTE: Control input actions assumed to be taken as absolute joint velocities. A given action to this
+    controller is assumed to be of the form: (vel_j0, vel_j1, ... , vel_jn-1) for an n-joint robot
+
+    Args:
+        sim (MjSim): Simulator instance this controller will pull robot state updates from
+
+        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
+
+        joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
+            "joints" : list of indexes to relevant robot joints
+            "qpos" : list of indexes to relevant robot joint positions
+            "qvel" : list of indexes to relevant robot joint velocities
+
+        input_max (float or list of float): Maximum above which an inputted action will be clipped. Can be either be
+            a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
+            latter, dimension should be the same as the control dimension for this controller
+
+        input_min (float or list of float): Minimum below which an inputted action will be clipped. Can be either be
+            a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
+            latter, dimension should be the same as the control dimension for this controller
+
+        output_max (float or list of float): Maximum which defines upper end of scaling range when scaling an input
+            action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
+            each dimension). If the latter, dimension should be the same as the control dimension for this controller
+
+        output_min (float or list of float): Minimum which defines upper end of scaling range when scaling an input
+            action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
+            each dimension). If the latter, dimension should be the same as the control dimension for this controller
+
+        kv (float or list of float): velocity gain for determining desired torques based upon the joint vel errors.
+            Can be either be a scalar (same value for all action dims), or a list (specific values for each dim)
+
+        policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
+
+        velocity_limits (2-list of float or 2-list of list of floats): Limits (m/s) below and above which the magnitude
+            of a calculated goal joint velocity will be clipped. Can be either be a 2-list (same min/max value for all
+            joint dims), or a 2-list of list (specific min/max values for each dim)
+
+        interpolator (Interpolator): Interpolator object to be used for interpolating from the current joint velocities
+            to the goal joint velocities during each timestep between inputted actions
+
+        **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
+            via an argument dict that has additional extraneous arguments won't raise an error
     """
 
     def __init__(self,
@@ -92,7 +137,7 @@ class JointVelController(Controller):
         else:
             self.current_vel = np.array(self.goal_vel)
 
-        # Compute torques (pre-compensation)
+        # Compute torques plus gravity compensation
         self.torques = np.multiply(self.kv, (self.current_vel - self.joint_vel)) + self.torque_compensation
 
         # Return final torques

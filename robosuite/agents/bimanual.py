@@ -249,9 +249,9 @@ class Bimanual(RobotAgent):
 
         # Clip the torques
         low, high = self.torque_limits
-        self.torques = np.clip(self.torques + self.sim.data.qfrc_bias[self._ref_joint_vel_indexes], low, high)
+        self.torques = np.clip(self.torques, low, high)
 
-        # Apply joint torque control (with gravity compensation)
+        # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
 
     def gripper_visualization(self):

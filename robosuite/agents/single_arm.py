@@ -205,7 +205,7 @@ class SingleArm(RobotAgent):
 
         # Clip the torques
         low, high = self.torque_limits
-        self.torques = np.clip(torques + self.sim.data.qfrc_bias[self._ref_joint_vel_indexes], low, high)
+        self.torques = np.clip(torques, low, high)
 
         # Get gripper action, if applicable
         if self.has_gripper:
@@ -217,7 +217,7 @@ class SingleArm(RobotAgent):
             applied_gripper_action = bias + weight * gripper_action_actual
             self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
 
-        # Apply joint torque control (with gravity compensation)
+        # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
 
     def gripper_visualization(self):

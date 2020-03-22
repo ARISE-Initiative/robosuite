@@ -58,7 +58,46 @@ class PybulletServer(object):
 
 class EEIKController(JointVelController):
     """
-    Controller for joint velocity
+    Controller for controlling robot arm via inverse kinematics. Allows position and orientation control of the
+    robot's end effector.
+
+    Inverse kinematics solving is handled by pybullet.
+
+    NOTE: Control input actions are assumed to be relative to the current position / orientation of the end effector
+    and are taken as the array (x_dpos, y_dpos, z_dpos, x_rot, y_rot, z_rot, w_rot).
+
+    Args:
+        sim (MjSim): Simulator instance this controller will pull robot state updates from
+
+        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
+
+        joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
+            "joints" : list of indexes to relevant robot joints
+            "qpos" : list of indexes to relevant robot joint positions
+            "qvel" : list of indexes to relevant robot joint velocities
+
+        robot_name (str): Name of robot being controlled. Can be {"Sawyer", "Panda", or "Baxter"}
+
+        kv (float or list of float): velocity gain for the the underlying velocity controller from which this inverse
+            kinematics controller extends. Can be either be a scalar (same value for all robot joints),
+            or a list (specific values for each joint)
+
+        policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
+
+        ik_pos_limit (float): Limit (meters) above which the magnitude of a given action's
+            positional inputs will be clipped
+
+        ik_ori_limit (float): Limit (radians) above which the magnitude of a given action's
+            orientation inputs will be clipped
+
+        interpolator (Interpolator): Interpolator object to be used for interpolating from the current state to
+            the goal state during each timestep between inputted actions
+
+        converge_steps (int): How many iterations to run the pybullet inverse kinematics solver to converge to a
+            solution
+
+        **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
+            via an argument dict that has additional extraneous arguments won't raise an error
     """
 
     def __init__(self,
