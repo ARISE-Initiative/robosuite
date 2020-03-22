@@ -190,9 +190,10 @@ class EEIKController(JointVelController):
             "{}_description/urdf/{}_arm.urdf".format(self.robot_name, self.robot_name)
         )
 
-        # load the urdfs
+        # import reference to the global pybullet server and load the urdfs
         import robosuite.controllers.controller_factory as cf
         if load_urdf:
+            # Determine where to place robot in pybullet sim based on its type
             if self.robot_name == "Baxter":
                 self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.0),
                                            useFixedBase=1, physicsClientId=self.bullet_server_id)
@@ -202,7 +203,7 @@ class EEIKController(JointVelController):
             # Add this to the pybullet server
             cf.pybullet_server.bodies[self.ik_robot] = self.robot_name
         else:
-            # We'll simply assume the most recent robot (robot with highest pybullet id) ] is the relevant robot and
+            # We'll simply assume the most recent robot (robot with highest pybullet id) is the relevant robot and
             # mark this controller as belonging to that robot body
             self.ik_robot = max(cf.pybullet_server.bodies)
 

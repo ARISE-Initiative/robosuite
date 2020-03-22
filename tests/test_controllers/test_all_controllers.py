@@ -15,6 +15,34 @@ For every controller action space, runs through each dimension and executes a pe
 neutral (stationary) value for a certain amount of time "steps_per_action", and then returns to all neutral values
 for time "steps_per_rest" before proceeding with the next action dim.
 
+    E.g.: Given that the expected action space of the Pos / Ori (EE_POS_ORI) controller (without a gripper) is
+    (dx, dy, dz, droll, dpitch, dyaw), the testing sequence of actions over time will be:
+
+        ***START OF TEST***
+        ( dx,  0,  0,  0,  0,  0, grip)     <-- Translation in x-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0, dy,  0,  0,  0,  0, grip)     <-- Translation in y-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0, dz,  0,  0,  0, grip)     <-- Translation in z-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0,  0, dr,  0,  0, grip)     <-- Rotation in roll (x) axis       for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0,  0,  0, dp,  0, grip)     <-- Rotation in pitch (y) axis      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0,  0,  0,  0, dy, grip)     <-- Rotation in yaw (z) axis        for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        ***END OF TEST***
+
+    Thus the EE_POS_ORI controller should be expected to sequentially move linearly in the x direction first,
+        then the y direction, then the z direction, and then begin sequentially rotating about its x-axis,
+        then y-axis, then z-axis.
+
+Please reference the controller README in the robosuite/controllers directory for an overview of each controller.
+Controllers are expected to behave in a generally controlled manner, according to their control space. As this is
+strictly a qualitative set of tests, it is up to the developer / user to examine for specific irregularities.
+However, the expected sequential qualitative behavior during the test is described below for each controller:
+
+
 Please reference the controller README in the robosuite/controllers directory for an overview of each controller.
 Controllers are expected to behave in a generally controlled manner, according to their control space.
     E.g.: the Pos / Ori controller should be expected to move linearly in the x direction first, then the y direction,

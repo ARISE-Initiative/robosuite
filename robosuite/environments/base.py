@@ -168,6 +168,11 @@ class MujocoEnv(metaclass=EnvMeta):
             raise ValueError("executing action in terminated episode")
 
         self.timestep += 1
+
+        # Since the env.step frequency is slower than the mjsim timestep frequency, the internal controller will output
+        # multiple torque commands in between new high level action commands. Therefore, we need to denote via
+        # 'policy_step' whether the current step we're taking is simply an internal update of the controller,
+        # or an actual policy update
         policy_step = True
 
         # Loop through the simulation at the model timestep rate until we're ready to take the next policy step
