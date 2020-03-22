@@ -13,7 +13,6 @@ import os
 from os.path import join as pjoin
 import robosuite
 
-import robosuite.controllers.controller_factory as cf
 from robosuite.controllers.joint_vel import JointVelController
 import robosuite.utils.transform_utils as T
 import numpy as np
@@ -192,6 +191,7 @@ class EEIKController(JointVelController):
         )
 
         # load the urdfs
+        import robosuite.controllers.controller_factory as cf
         if load_urdf:
             if self.robot_name == "Baxter":
                 self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.0),
