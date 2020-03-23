@@ -730,17 +730,23 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         object_name='cube',
         target_name='cube_target',
         target_color=(0, 1, 0, 0.3),
-        hide_target=False,
+        hide_target=True,
+        goal_tolerance=0.05,
+        goal_radius_low=0.1,
+        goal_radius_high=0.2,
         **kwargs
     ):
         self._target_name = target_name
         self._object_name = object_name
         self._target_rgba = target_color
         self._goal_render_segmentation = None
-        if kwargs.pop('eval_mode', False) or hide_target:
+        self._goal_tolerance = goal_tolerance
+        self._goal_radius_low = goal_radius_low
+        self._goal_radius_high = goal_radius_high
+        self._goal_grid = None
+        if kwargs.get('eval_mode', False) or hide_target:
             self._target_rgba = (0., 0., 0., 0.,)
-        # self._target_pos = None
-        # self._target_quat = None
+
         super().__init__(**kwargs)
 
     def _load_model(self):
@@ -772,14 +778,33 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         self.object_body_id = self.sim.model.body_name2id(self._object_name)
         self.target_body_id = self.sim.model.body_name2id(self._target_name)
         target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name)
-        target_qvel =  self.sim.model.get_joint_qvel_addr(self._target_name)
+        target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name)
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
+
+    def _get_placement_initializer_for_eval_mode(self):
+        super(SawyerLiftPositionTarget, self)._get_placement_initializer_for_eval_mode()
+
+        num_circles = 3
+        num_circle_angles = 9
+
+        num_placements = num_circles * num_circle_angles
+        self._goal_grid = np.zeros((num_placements, 3))  # [radius, angle, z_rotation]
+        r_list = np.linspace(self._goal_radius_low, self._goal_radius_high, num=num_circles)
+        a_list = np.linspace(0, np.pi * (2 - (2 / (num_circle_angles + 1))), num=num_circle_angles)
+        grid = np.meshgrid(r_list, a_list)
+        self._goal_grid[:, 0] = grid[0].ravel()
+        self._goal_grid[:, 1] = grid[1].ravel()
+
+        assert(self.placement_initializer.num_grid == self._goal_grid.shape[0])
 
     def _reset_internal(self):
         """
         Resets simulation internal configurations.
         """
+        self._goal_dict = None
+        self._goal_render_segmentation = None
+
         super()._reset_internal()
 
         ### TODO: unclear why objects are placed twice... ###
@@ -792,18 +817,19 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 
-        ### TODO: put some logic in for randomizing target location placement in the model ###
-        ###       (alternatively just put it here and use `self._set_target`)              ###
-
-        ### TODO: modify reward function, tune task completion magic numbers, observation  ###
-
         # for now, place target randomly in a radius of 0.2 around current cube pos
         cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-        random_angle = np.random.uniform(0., 2. * np.pi)
-        cube_pos[0] += 0.2 * np.cos(random_angle)
-        cube_pos[1] += 0.2 * np.sin(random_angle)
+        if self._goal_grid is not None:
+            radius, angle, z_rot = self._goal_grid[self.placement_initializer.counter]
+        else:
+            angle = np.random.uniform(0., 2. * np.pi)
+            radius = np.random.uniform(self._goal_radius_low, self._goal_radius_high)
+        assert(radius > self._goal_tolerance)
+
+        cube_pos[0] += radius * np.cos(angle)
+        cube_pos[1] += radius * np.sin(angle)
+        print(cube_pos)
         self._set_target(pos=cube_pos)
-        self._goal_dict = None
 
     def _pre_action(self, action, policy_step=None):
         super()._pre_action(action, policy_step=policy_step)
@@ -872,7 +898,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         self.sim.forward()
         return self._goal_dict
 
-    def render_with_goal(self, height, width, camera_name):
+    def render_with_goal(self, width, height, camera_name):
         im = self.sim.render(height=height, width=width, camera_name=camera_name)[::-1]
 
         if self._goal_render_segmentation is None:
@@ -882,7 +908,8 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
             obj_pos, obj_quat = EU.set_body_pose(self.sim, self._object_name, pos=tgt_pos, quat=tgt_quat)
             self.sim.forward()
 
-            self._goal_render_segmentation = self.render_segmentation(camera_name=camera_name)[::-1]
+            self._goal_render_segmentation = self.render_segmentation(
+                camera_name=camera_name, camera_width=width, camera_height=width)[::-1]
             EU.set_body_pose(self.sim, self._object_name, pos=obj_pos, quat=obj_quat)
             self.sim.forward()
 
@@ -896,5 +923,5 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         Returns True if task has been completed.
         """
         cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-        return np.linalg.norm(cube_pos - self.target_pos) < 0.05
+        return np.linalg.norm(cube_pos - self.target_pos) < self._goal_tolerance
 

@@ -548,7 +548,7 @@ class SawyerEnv(MujocoEnv):
         self._gripper_visualization()
         return ret
 
-    def render_segmentation(self, camera_name):
+    def render_segmentation(self, camera_name, camera_width=None, camera_height=None):
         """
         Get semantic segmentation map of a given view
         Ref: https://github.com/deepmind/dm_control/blob/master/dm_control/mujoco/engine.py#L751
@@ -559,7 +559,11 @@ class SawyerEnv(MujocoEnv):
         scn = self.sim.render_contexts[0].scn
         scn.flags[RND_SEGMENT] = True
         scn.flags[RND_IDCOLOR] = True
-        frame = self.sim.render(self.camera_width, self.camera_height, camera_name=camera_name)
+        if camera_width is None:
+            camera_width = self.camera_width
+        if camera_height is None:
+            camera_height = self.camera_height
+        frame = self.sim.render(camera_width, camera_height, camera_name=camera_name)
         frame = frame[..., 0] + frame[..., 1] * 2 ** 8 + frame[..., 2] * 2 ** 16
         segid2output = np.full((self.sim.model.ngeom + 1), fill_value=-1,
                                dtype=np.int32)  # Seg id cannot be > ngeom + 1.

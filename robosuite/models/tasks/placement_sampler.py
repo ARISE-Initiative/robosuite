@@ -360,6 +360,10 @@ class RoundRobinSampler(UniformRandomSampler):
             z_rotation=z_rotation,
         )
 
+    @property
+    def counter(self):
+        return self._counter
+
     def increment_counter(self):
         """
         Useful for moving on to next placement in the grid.
