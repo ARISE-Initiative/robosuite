@@ -18,7 +18,7 @@ def controller_factory(name, params):
     Creates a Controller instance with the provided name and relevant params.
 
     Args:
-        name: the name of the controller. Must be one of: {JOINT_IMP, JOINT_TORQUE, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
+        name: the name of the controller. Must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
         params: dict containing the relevant params to pass to the controller
         sim: Mujoco sim reference to pass to the controller
 
