@@ -136,8 +136,8 @@ def test_all_controllers():
         # Shut down this env before starting the next test
         env.close()
 
-        # Tests passed!
-        print("All controller tests completed.")
+    # Tests passed!
+    print("All controller tests completed.")
 
 
 if __name__ == "__main__":
