@@ -7,7 +7,7 @@ try:
     import pybullet as p
 except ImportError:
     raise Exception(
-        "Please make sure pybullet is installed. Run `pip install pybullet==1.9.5`"
+        "Please make sure pybullet is installed. Run `pip install pybullet==2.6.9`"
     )
 import os
 from os.path import join as pjoin
@@ -191,7 +191,7 @@ class EEIKController(JointVelController):
         )
 
         # import reference to the global pybullet server and load the urdfs
-        import robosuite.controllers.controller_factory as cf
+        from robosuite.controllers import get_pybullet_server
         if load_urdf:
             # Determine where to place robot in pybullet sim based on its type
             if self.robot_name == "Baxter":
@@ -201,11 +201,11 @@ class EEIKController(JointVelController):
                 self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.9),
                                            useFixedBase=1, physicsClientId=self.bullet_server_id)
             # Add this to the pybullet server
-            cf.pybullet_server.bodies[self.ik_robot] = self.robot_name
+            get_pybullet_server().bodies[self.ik_robot] = self.robot_name
         else:
             # We'll simply assume the most recent robot (robot with highest pybullet id) is the relevant robot and
             # mark this controller as belonging to that robot body
-            self.ik_robot = max(cf.pybullet_server.bodies)
+            self.ik_robot = max(get_pybullet_server().bodies)
 
         # load the number of joints from the bullet data
         self.num_bullet_joints = p.getNumJoints(self.ik_robot, physicsClientId=self.bullet_server_id)

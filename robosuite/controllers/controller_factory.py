@@ -5,7 +5,6 @@ from .ee_imp import EEImpController
 from .joint_vel import JointVelController
 from .joint_imp import JointImpController
 from .joint_tor import JointTorController
-from .ee_ik import EEIKController
 from .interpolators.linear_interpolator import LinearInterpolator
 
 from copy import deepcopy
@@ -25,6 +24,12 @@ def reset_controllers():
         pybullet_server.connect()
 
 
+def get_pybullet_server():
+    """Getter to return reference to pybullet server module variable"""
+    global pybullet_server
+    return pybullet_server
+
+
 def controller_factory(name, params):
     """
     Generator for controllers
@@ -32,7 +37,7 @@ def controller_factory(name, params):
     Creates a Controller instance with the provided name and relevant params.
 
     Args:
-        name: the name of the controller. Must be one of: {JOINT_IMP, JOINT_TORQUE, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
+        name: the name of the controller. Must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
         params: dict containing the relevant params to pass to the controller
         sim: Mujoco sim reference to pass to the controller
 
@@ -65,6 +70,7 @@ def controller_factory(name, params):
         return EEImpController(interpolator_pos=interpolator, **params)
     if name == "EE_IK":
         global pybullet_server
+        from .ee_ik import EEIKController
         if not pybullet_server:
             from robosuite.controllers.ee_ik import PybulletServer
             pybullet_server = PybulletServer()

@@ -83,7 +83,7 @@ class SingleArm(RobotAgent):
                       "Please check filepath and try again.".format(controller_path))
 
         # Assert that the controller config is a dict file:
-        #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TORQUE, JOINT_VEL, EE_POS, EE_POS_ORI}
+        #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI}
         assert type(self.controller_config) == dict, \
             "Inputted controller config must be a dict! Instead, got type: {}".format(type(self.controller_config))
 
