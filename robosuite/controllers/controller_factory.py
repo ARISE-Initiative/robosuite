@@ -5,7 +5,6 @@ from .ee_imp import EEImpController
 from .joint_vel import JointVelController
 from .joint_imp import JointImpController
 from .joint_tor import JointTorController
-from .ee_ik import EEIKController
 from .interpolators.linear_interpolator import LinearInterpolator
 
 from copy import deepcopy
@@ -50,6 +49,7 @@ def controller_factory(name, params):
         params["control_ori"] = False
         return EEImpController(interpolator_pos=interpolator, **params)
     if name == "EE_IK":
+        from .ee_ik import EEIKController
         return EEIKController(interpolator=interpolator, **params)
     if name == "JOINT_VEL":
         return JointVelController(interpolator=interpolator, **params)
