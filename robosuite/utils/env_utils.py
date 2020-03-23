@@ -1,5 +1,6 @@
 import numpy as np
 import robosuite.utils.transform_utils as T
+from contextlib import contextmanager
 
 
 def bodyid2geomids(sim, body_id):
@@ -21,3 +22,10 @@ def set_body_pose(sim, body_name, pos, quat=None):
     sim.set_state(sim_state)
     return old_pose[:3], old_pose[3:7]
 
+
+@contextmanager
+def world_saved(sim):
+    world_state = sim.get_state().flatten()
+    yield
+    sim.set_state_from_flattened(world_state)
+    sim.forward()

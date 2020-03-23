@@ -744,8 +744,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         self._goal_radius_low = goal_radius_low
         self._goal_radius_high = goal_radius_high
         self._goal_grid = None
-        if kwargs.get('eval_mode', False) or hide_target:
-            self._target_rgba = (0., 0., 0., 0.,)
+        self._hide_target = hide_target
 
         super().__init__(**kwargs)
 
@@ -826,10 +825,12 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
             radius = np.random.uniform(self._goal_radius_low, self._goal_radius_high)
         assert(radius > self._goal_tolerance)
 
-        cube_pos[0] += radius * np.cos(angle)
-        cube_pos[1] += radius * np.sin(angle)
-        print(cube_pos)
-        self._set_target(pos=cube_pos)
+        target_pos = cube_pos.copy()
+        target_pos[0] += radius * np.cos(angle)
+        target_pos[1] += radius * np.sin(angle)
+        self._set_target(pos=target_pos)
+        if self.eval_mode or self._hide_target:
+            self.hide_target()
 
     def _pre_action(self, action, policy_step=None):
         super()._pre_action(action, policy_step=policy_step)
@@ -847,13 +848,14 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         Quaternion should be (x, y, z, w).
         """
         EU.set_body_pose(self.sim, self._target_name, pos=pos, quat=quat)
-        # self._target_pos = pos.copy()
-        # self._target_quat = old_quat
         self.sim.forward()
 
     def hide_target(self):
         """make the target transparent for rendering"""
-        self.sim.model.geom_rgba[EU.bodyid2geomids(self.sim, self.target_body_id)[0]] = np.array([0., 0., 0., 0.])
+        self.sim.model.geom_rgba[EU.bodyid2geomids(self.sim, self.target_body_id)[0]][-1] = 0.0
+
+    def show_target(self):
+        self.sim.model.geom_rgba[EU.bodyid2geomids(self.sim, self.target_body_id)[0]][-1] = 0.3
 
     @property
     def target_pos(self):
@@ -875,6 +877,14 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
     def _set_goal_rendering(self, _):
         pass
 
+    def _set_state_to_goal(self):
+        """Set the environment to a goal state"""
+        # set cube to target position
+        tgt_pos = self.sim.data.body_xpos[self.target_body_id]
+        tgt_quat = self.sim.data.body_xquat[self.target_body_id]
+        EU.set_body_pose(self.sim, self._object_name, pos=tgt_pos, quat=tgt_quat)
+        self.sim.forward()
+
     def _get_goal(self):
         """
         Get goal observation by moving object to the target, get obs, and move back.
@@ -883,39 +893,17 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         # avoid generating goal obs every time
         if self._goal_dict is not None:
             return self._goal_dict
-        assert(self._target_rgba[-1] == 0)  # make sure the target is hidden
-        # set cube to target position
-        tgt_pos = self.sim.data.body_xpos[self.target_body_id]
-        tgt_quat = self.sim.data.body_xquat[self.target_body_id]
-        obj_pos, obj_quat = EU.set_body_pose(self.sim, self._object_name, pos=tgt_pos, quat=tgt_quat)
-        self.sim.forward()
 
-        # get obs
-        self._goal_dict = deepcopy(self._get_observation())
+        with EU.world_saved(self.sim):
+            self._set_state_to_goal()
+            self._goal_dict = deepcopy(self._get_observation())
 
-        # set object back to initial pose
-        EU.set_body_pose(self.sim, self._object_name, pos=obj_pos, quat=obj_quat)
-        self.sim.forward()
         return self._goal_dict
 
-    def render_with_goal(self, width, height, camera_name):
-        im = self.sim.render(height=height, width=width, camera_name=camera_name)[::-1]
-
-        if self._goal_render_segmentation is None:
-            # get a segmentation of the goal state
-            tgt_pos = self.sim.data.body_xpos[self.target_body_id]
-            tgt_quat = self.sim.data.body_xquat[self.target_body_id]
-            obj_pos, obj_quat = EU.set_body_pose(self.sim, self._object_name, pos=tgt_pos, quat=tgt_quat)
-            self.sim.forward()
-
-            self._goal_render_segmentation = self.render_segmentation(
-                camera_name=camera_name, camera_width=width, camera_height=width)[::-1]
-            EU.set_body_pose(self.sim, self._object_name, pos=obj_pos, quat=obj_quat)
-            self.sim.forward()
-
-        # compose image with goal
-        seg_mask = (self._goal_render_segmentation == EU.bodyid2geomids(self.sim, self.object_body_id)[0])
-        im[seg_mask] = [0, 255, 0]
+    def render_with_visual_target(self, width, height, camera_name):
+        self.show_target()
+        im = self.sim.render(height=height, width=width, camera_name=camera_name)[::-1].copy()
+        self.hide_target()
         return im
 
     def _check_success(self):
