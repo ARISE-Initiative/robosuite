@@ -1,6 +1,5 @@
 import numpy as np
 import robosuite.utils.transform_utils as trans
-import scipy.linalg
 
 
 def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, joint_vel, joint_kp=10):
@@ -29,7 +28,7 @@ def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, j
 
 
 def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
-    mass_matrix_inv = scipy.linalg.inv(mass_matrix)
+    mass_matrix_inv = np.linalg.inv(mass_matrix)
 
     # J M^-1 J^T
     lambda_full_inv = np.dot(
@@ -37,7 +36,7 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_full.transpose())
 
     # (J M^-1 J^T)^-1
-    lambda_full = scipy.linalg.inv(lambda_full_inv)
+    lambda_full = np.linalg.inv(lambda_full_inv)
 
     # Jx M^-1 Jx^T
     lambda_pos_inv = np.dot(

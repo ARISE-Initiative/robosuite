@@ -84,7 +84,7 @@ class BaxterEnv(MujocoEnv):
         Loads controller to be used for dynamic trajectories
 
         @controller_config (dict): Dict of relevant controller parameters, including controller type
-            NOTE: Type must be one of: {JOINT_IMP, JOINT_TORQUE, JOINT_VEL, EE_POS, EE_POS_ORI}
+            NOTE: Type must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI}
         """
         # Add to the controller dict additional relevant params:
         #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq, policy (control) freq, and ndim (# joints)
