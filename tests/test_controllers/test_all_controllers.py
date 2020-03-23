@@ -133,6 +133,8 @@ def test_all_controllers():
                 _, _, done, _ = env.step(neutral)
                 env.render()
 
+        env.close()
+
         # Tests passed!
         print("All controller tests completed.")
 
