@@ -32,14 +32,13 @@ A custom controller other than the environment defaults (which are normally are 
 
 ```python
 import robosuite as suite
-import json
+from robosuite.controllers import load_controller_config
 
 # Path to config file
 controller_fpath = `/your/custom/config/filepath/here/filename.json`
 
 # Import the file as a dict
-with open(controller_fpath) as f:
-    config = json.load(f)
+config = load_controller_config(custom_fpath=controller_fpath)
 
 # Create environment
 env = suite.make("PandaLift", controller_config=config, ... )

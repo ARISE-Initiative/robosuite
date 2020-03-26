@@ -4,7 +4,7 @@ import robosuite.utils.transform_utils as T
 import numpy as np
 
 
-class EEImpController(Controller):
+class EndEffectorImpedanceController(Controller):
     """
     Controller for controlling robot arm via operational space control. Allows position and / or orientation control
     of the robot's end effector. For detailed information as to the mathematical foundation for this controller, please
@@ -126,7 +126,6 @@ class EEImpController(Controller):
         # interpolator
         self.interpolator_pos = interpolator_pos
         self.interpolator_ori = interpolator_ori
-        # todo: orientation interpolators change to relative! refactor! (michelle)
 
         # whether or not pos and ori want to be uncoupled
         self.uncoupling = uncouple_pos_ori
@@ -207,8 +206,7 @@ class EEImpController(Controller):
             # relative orientation based on difference between current ori and ref
             self.relative_ori = orientation_error(self.ee_ori_mat, self.ori_ref)
 
-            interpolated_results = self.interpolator_ori.get_interpolated_goal(self.relative_ori)
-            ori_error = interpolated_results[0:3]
+            ori_error = self.interpolator_ori.get_interpolated_goal(self.relative_ori)
         else:
             desired_ori = np.array(self.goal_ori)
             ori_error = orientation_error(desired_ori, self.ee_ori_mat)
@@ -246,8 +244,8 @@ class EEImpController(Controller):
         self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
 
         # Calculate and add nullspace torques (nullspace_matrix^T * Gamma_null) to final torques
-        # Note: Gamma_0 = desired nullspace pose torques, assumed to be positional joint control relative
-        #                   to the initial joint positions
+        # Note: Gamma_null = desired nullspace pose torques, assumed to be positional joint control relative
+        #                     to the initial joint positions
         self.torques += nullspace_torques(self.mass_matrix, nullspace_matrix,
                                           self.initial_joint, self.joint_pos, self.joint_vel)
 

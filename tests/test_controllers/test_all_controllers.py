@@ -64,12 +64,12 @@ import robosuite.utils.transform_utils as T
 
 # Define the controllers to use (action_dim, num_test_steps, test_value, neutral control values)
 controllers = {
-    "ee_pos_ori":   [7, 6, 0.1, np.array([0,0,0,0,0,0,-1], dtype=float)],
-    "ee_pos":       [4, 3, 0.1, np.array([0,0,0,-1], dtype=float)],
-    "ee_ik":        [8, 6, 0.01, np.array([0,0,0,0,0,0,1,-1], dtype=float)],
-    "joint_imp":    [8, 7, 0.2, np.array([0,0,0,0,0,0,0,-1], dtype=float)],
-    "joint_vel":    [8, 7, -0.05, np.array([0,0,0,0,0,0,0,-1], dtype=float)],
-    "joint_tor":    [8, 7, 0.001, np.array([0,0,0,0,0,0,0,-1], dtype=float)]
+    "ee_pos_ori":   [7, 6, 0.1, np.array([0,0,0,0,0,0,0], dtype=float)],
+    "ee_pos":       [4, 3, 0.1, np.array([0,0,0,0], dtype=float)],
+    "ee_ik":        [8, 6, 0.01, np.array([0,0,0,0,0,0,1,0], dtype=float)],
+    "joint_imp":    [8, 7, 0.2, np.array([0,0,0,0,0,0,0,0], dtype=float)],
+    "joint_vel":    [8, 7, -0.05, np.array([0,0,0,0,0,0,0,0], dtype=float)],
+    "joint_tor":    [8, 7, 0.001, np.array([0,0,0,0,0,0,0,0], dtype=float)]
 }
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions
@@ -103,9 +103,8 @@ def test_all_controllers():
         print("Testing controller: {}...".format(controller_name))
 
         env.reset()
-        # For localised controllers, get a closer camera angle for better viewing
-        if controller_name in {"ee_pos_ori", "ee_pos", "ee_ik"}:
-            env.viewer.set_camera(camera_id=2)
+        # Set controller to front view to get best angle for viewing robot movements
+        env.viewer.set_camera(camera_id=0)
 
         # get action range
         action_min, action_max = env.action_spec

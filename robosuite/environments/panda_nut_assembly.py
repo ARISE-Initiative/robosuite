@@ -10,8 +10,7 @@ from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
 from robosuite.models.robots import Panda
 from robosuite.models.tasks import NutAssemblyTask, UniformRandomPegsSampler
-
-import json
+from robosuite.controllers import load_controller_config
 import os
 
 class PandaNutAssembly(PandaEnv):
@@ -124,16 +123,7 @@ class PandaNutAssembly(PandaEnv):
         # Load the default controller if none is specified
         if not controller_config:
             controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_panda.json')
-            try:
-                with open(controller_path) as f:
-                    controller_config = json.load(f)
-            except FileNotFoundError:
-                print("Error opening default controller filepath at: {}. "
-                      "Please check filepath and try again.".format(controller_path))
-
-        # Assert that the controller config is a dict file
-        assert type(controller_config) == dict, \
-            "Inputted controller config must be a dict! Instead, got type: {}".format(type(controller_config))
+            controller_config = load_controller_config(custom_fpath=controller_path)
 
         # task settings
         self.single_object_mode = single_object_mode

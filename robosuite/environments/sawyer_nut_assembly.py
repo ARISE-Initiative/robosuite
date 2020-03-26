@@ -10,8 +10,7 @@ from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import NutAssemblyTask, UniformRandomPegsSampler
-
-import json
+from robosuite.controllers import load_controller_config
 import os
 
 class SawyerNutAssembly(SawyerEnv):
@@ -124,12 +123,7 @@ class SawyerNutAssembly(SawyerEnv):
         # Load the default controller if none is specified
         if not controller_config:
             controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
-            try:
-                with open(controller_path) as f:
-                    controller_config = json.load(f)
-            except FileNotFoundError:
-                print("Error opening default controller filepath at: {}. "
-                      "Please check filepath and try again.".format(controller_path))
+            controller_config = load_controller_config(custom_fpath=controller_path)
 
         # Assert that the controller config is a dict file
         assert type(controller_config) == dict, \

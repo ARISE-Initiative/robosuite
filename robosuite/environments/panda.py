@@ -102,7 +102,7 @@ class PandaEnv(MujocoEnv):
         Loads controller to be used for dynamic trajectories
 
         @controller_config (dict): Dict of relevant controller parameters, including controller type
-            NOTE: Type must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI}
+            NOTE: Type must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
         """
         # Add to the controller dict additional relevant params:
         #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq,
@@ -115,6 +115,7 @@ class PandaEnv(MujocoEnv):
             "qpos": self._ref_joint_pos_indexes,
             "qvel": self._ref_joint_vel_indexes
                                               }
+        controller_config["actuator_range"] = self.torque_spec
         controller_config["controller_freq"] = 1.0 / self.model_timestep
         controller_config["policy_freq"] = self.control_freq
         controller_config["ndim"] = len(self.robot_joints)

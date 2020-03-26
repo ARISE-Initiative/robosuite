@@ -8,8 +8,8 @@ from robosuite.models.objects import PotWithHandlesObject
 from robosuite.models.arenas import TableArena
 from robosuite.models.robots import Baxter
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.controllers import load_controller_config
 
-import json
 import os
 
 class BaxterLift(BaxterEnv):
@@ -53,12 +53,7 @@ class BaxterLift(BaxterEnv):
         # Load the default controller if none is specified
         if not controller_config:
             controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_baxter.json')
-            try:
-                with open(controller_path) as f:
-                    controller_config = json.load(f)
-            except FileNotFoundError:
-                print("Error opening default controller filepath at: {}. "
-                      "Please check filepath and try again.".format(controller_path))
+            controller_config = load_controller_config(custom_fpath=controller_path)
 
         # Assert that the controller config is a dict file
         assert type(controller_config) == dict, \

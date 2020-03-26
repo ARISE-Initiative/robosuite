@@ -2,7 +2,7 @@ from robosuite.controllers.base_controller import Controller
 import numpy as np
 
 
-class JointVelController(Controller):
+class JointVelocityController(Controller):
     """
     Controller for controlling the robot arm's joint velocities. This is simply a P controller with desired torques
     (pre gravity compensation) taken to be proportional to the velocity error of the robot joints.
@@ -50,7 +50,7 @@ class JointVelController(Controller):
 
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
-        """
+    """
 
     def __init__(self,
                  sim,
@@ -62,7 +62,7 @@ class JointVelController(Controller):
                  output_min=-1,
                  kv=4.0,
                  policy_freq=20,
-                 velocity_limits=(-1, 1),
+                 velocity_limits=None,
                  interpolator=None,
                  **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
                  ):
@@ -102,7 +102,7 @@ class JointVelController(Controller):
         self.update()
 
         # Otherwise, check to make sure velocities is size self.joint_dim
-        assert len(velocities) == self.joint_dim,\
+        assert len(velocities) == self.joint_dim, \
             "Goal action must be equal to the robot's joint dimension space! Expected {}, got {}".format(
                 self.joint_dim, len(velocities)
             )

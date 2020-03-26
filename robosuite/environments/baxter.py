@@ -84,7 +84,7 @@ class BaxterEnv(MujocoEnv):
         Loads controller to be used for dynamic trajectories
 
         @controller_config (dict): Dict of relevant controller parameters, including controller type
-            NOTE: Type must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI}
+            NOTE: Type must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
         """
         # Add to the controller dict additional relevant params:
         #   the robot name, mujoco sim, robot_id, joint_indexes, timestep (model) freq, policy (control) freq, and ndim (# joints)
@@ -96,6 +96,8 @@ class BaxterEnv(MujocoEnv):
 
         # Instantiate the relevant controllers (one for each arm)
         controller_config["eef_name"] = "right_hand"
+        controller_config["actuator_range"] = (self.torque_spec[0][:controller_config["ndim"]],
+                                               self.torque_spec[1][:controller_config["ndim"]])
         controller_config["joint_indexes"] = {
             "joints": self.joint_indexes[:controller_config["ndim"]],
             "qpos": self._ref_joint_pos_indexes[:controller_config["ndim"]],
@@ -103,6 +105,8 @@ class BaxterEnv(MujocoEnv):
         }
         self.right_controller = controller_factory(controller_config["type"], controller_config)
         controller_config["eef_name"] = "left_hand"
+        controller_config["actuator_range"] = (self.torque_spec[0][controller_config["ndim"]:],
+                                               self.torque_spec[1][controller_config["ndim"]:])
         controller_config["joint_indexes"] = {
             "joints": self.joint_indexes[controller_config["ndim"]:],
             "qpos": self._ref_joint_pos_indexes[controller_config["ndim"]:],

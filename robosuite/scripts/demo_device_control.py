@@ -46,7 +46,6 @@ Example:
 
 import argparse
 import numpy as np
-import sys
 import os
 import json
 
@@ -61,8 +60,8 @@ if __name__ == "__main__":
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (if bimanual) 'right' or 'left'")
     parser.add_argument("--controller", type=str, default="ik", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="spacemouse")
-    parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
-    parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")
+    parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
+    parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
     args = parser.parse_args()
 
     # Import controller config for EE IK or OSC (pos/ori)
@@ -93,10 +92,11 @@ if __name__ == "__main__":
         use_camera_obs=False,
         gripper_visualization=True,
         reward_shaping=True,
-        control_freq=100,
+        control_freq=20,
         controller_config=controller_config
     )
 
+    # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
     # initialize device
@@ -146,15 +146,18 @@ if __name__ == "__main__":
                 else:
                     # Flip x
                     drotation[0] = -drotation[0]
+                # Scale rotation for teleoperation (tuned for IK)
+                drotation *= 10
+                dpos *= 5
                 # relative rotation of desired from current eef orientation
                 # IK expects quat, so also convert to quat
                 drotation = T.mat2quat(T.euler2mat(drotation))
             elif args.controller == 'osc':
                 # Flip z
                 drotation[2] = -drotation[2]
-                # OSC expects raw delta euler angles, so convert raw rotations to euler
-                drotation = (drotation * 75)
-                dpos = dpos * 200
+                # Scale rotation for teleoperation (tuned for OSC)
+                drotation *= 75
+                dpos *= 200
             else:
                 # No other controllers currently supported
                 print("Error: Unsupported controller specified -- must be either ik or osc!")
