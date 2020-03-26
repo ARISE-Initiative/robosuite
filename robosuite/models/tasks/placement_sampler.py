@@ -90,7 +90,7 @@ class UniformRandomSampler(ObjectPositionSampler):
     def sample_quat(self):
         if self.z_rotation is None:
             rot_angle = np.random.uniform(high=2 * np.pi, low=0)
-        elif isinstance(self.z_rotation, collections.Iterable):
+        elif isinstance(self.z_rotation, collections.abc.Iterable):
             rot_angle = np.random.uniform(
                 high=max(self.z_rotation), low=min(self.z_rotation)
             )
