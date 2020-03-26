@@ -246,6 +246,12 @@ class SawyerEnv(MujocoEnv):
         else:
             self.controller = JointVelocityController(**controller_params)
 
+    def update_controller_model(self):
+        """
+        Allows updating the controller model (e.g. mass matrices, etc.) externally.
+        """
+        self.controller.update_model(self.sim, id_name='right_hand', joint_index=(self._ref_joint_pos_indexes, self._ref_joint_vel_indexes))
+
     def _load_model(self):
         """
         Loads robot and optionally add grippers.
