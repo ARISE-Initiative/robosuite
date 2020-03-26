@@ -143,8 +143,11 @@ def test_all_controllers():
                 _, _, done, _ = env.step(neutral)
                 env.render()
 
-        # Tests passed!
-        print("All controller tests completed.")
+        # Shut down this env before starting the next test
+        env.close()
+
+    # Tests passed!
+    print("All controller tests completed.")
 
 
 if __name__ == "__main__":

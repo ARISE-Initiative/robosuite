@@ -105,6 +105,15 @@ def quat_inverse(quaternion):
     return quat_conjugate(quaternion) / np.dot(quaternion, quaternion)
 
 
+def quat_distance(quaternion1, quaternion0):
+    """
+    Returns distance between two quaternions, such that distance * quaternion0 = quaternion1
+
+    Note: Assumes quaternion in form: {x,y,z,w}
+    """
+    return quat_multiply(quaternion1, quat_inverse(quaternion0))
+
+
 def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
     """Return spherical linear interpolation between two quaternions.
     >>> q0 = random_quat()
@@ -128,14 +137,14 @@ def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
     elif fraction == 1.0:
         return q1
     d = np.dot(q0, q1)
-    if abs(abs(d) - 1.0) < _EPS:
+    if abs(abs(d) - 1.0) < EPS:
         return q0
     if shortestpath and d < 0.0:
         # invert rotation
         d = -d
         q1 *= -1.0
-    angle = math.acos(d) + spin * math.pi
-    if abs(angle) < _EPS:
+    angle = math.acos(np.clip(d, -1, 1)) + spin * math.pi
+    if abs(angle) < EPS:
         return q0
     isin = 1.0 / math.sin(angle)
     q0 *= math.sin((1.0 - fraction) * angle) * isin
@@ -560,10 +569,10 @@ def clip_translation(dpos, limit):
 
     :param dpos: n-dim Translation being clipped (e,g.: (x, y, z)) -- numpy array
     :param limit: Value to limit translation by -- magnitude (scalar, in same units as input)
-    :return: Clipped translation (same dimension as inputs)
+    :return: Clipped translation (same dimension as inputs) and whether the value was clipped or not
     """
     input_norm = np.linalg.norm(dpos)
-    return dpos * limit / input_norm if input_norm > limit else dpos
+    return (dpos * limit / input_norm, True) if input_norm > limit else (dpos, False)
 
 
 def clip_rotation(quat, limit):
@@ -574,14 +583,15 @@ def clip_rotation(quat, limit):
 
     :param quat: Rotation being clipped (x, y, z, w) -- numpy array
     :param limit: Value to limit rotation by -- magnitude (scalar, in radians)
-    :return: Clipped rotation quaternion (x, y, z, w)
+    :return: Clipped rotation quaternion (x, y, z, w) and whether the value was clipped or not
     """
-    if np.isclose(quat[3], 1, 1e-8):
-        # This is (close to) a zero degree rotation, immediately return
-        return quat
+    clipped = False
+    den = np.sqrt(max(1 - quat[3] * quat[3], 0))
+    if den == 0:
+        # This is a zero degree rotation, immediately return
+        return quat, clipped
     else:
         # This is all other cases
-        den = np.sqrt(1 - quat[3]*quat[3])
         x = quat[0] / den
         y = quat[1] / den
         z = quat[2] / den
@@ -598,8 +608,9 @@ def clip_rotation(quat, limit):
             z * sa,
             ca
         ])
+        clipped = True
 
-    return quat
+    return quat, clipped
 
 
 def make_pose(translation, rotation):

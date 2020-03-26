@@ -2,7 +2,7 @@ from robosuite.controllers.base_controller import Controller
 import numpy as np
 
 
-class JointTorController(Controller):
+class JointTorqueController(Controller):
     """
     Controller for controlling the robot arm's joint torques. As the actuators at the mujoco sim level are already
     torque actuators, this "controller" usually simply "passes through" desired torques, though it also includes the

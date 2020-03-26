@@ -146,7 +146,7 @@ if __name__ == "__main__":
             use_camera_obs=False,
             gripper_visualizations=True,
             reward_shaping=True,
-            control_freq=100,
+            control_freq=20,
             controller_configs=controller_config
         )
     else:
@@ -159,7 +159,7 @@ if __name__ == "__main__":
             use_camera_obs=False,
             gripper_visualizations=True,
             reward_shaping=True,
-            control_freq=100,
+            control_freq=20,
             controller_configs=controller_config
         )
 
@@ -217,11 +217,14 @@ if __name__ == "__main__":
             drotation = raw_drotation[[1,0,2]]
             if args.controller == 'ik':
                 # If this is panda, want to flip y
-                if isinstance(env.robots[args.arm == "left"].robot_model, Panda):
+                if args.config != "bimanual" and isinstance(env.robots[args.arm == "left"].robot_model, Panda):
                     drotation[1] = -drotation[1]
                 else:
                     # Flip x
                     drotation[0] = -drotation[0]
+                # Scale rotation for teleoperation (tuned for IK)
+                drotation *= 10
+                dpos *= 5
                 # relative rotation of desired from current eef orientation
                 # IK expects quat, so also convert to quat
                 drotation = T.mat2quat(T.euler2mat(drotation))
@@ -243,9 +246,9 @@ if __name__ == "__main__":
             elif args.controller == 'osc':
                 # Flip z
                 drotation[2] = -drotation[2]
-                # OSC expects raw delta euler angles, so convert raw rotations to euler
-                drotation = (drotation * 75)
-                dpos = dpos * 200
+                # Scale rotation for teleoperation (tuned for OSC)
+                drotation *= 75
+                dpos *= 200
             else:
                 # No other controllers currently supported
                 print("Error: Unsupported controller specified -- must be either ik or osc!")

@@ -5,12 +5,11 @@ from collections import OrderedDict
 import robosuite.utils.transform_utils as T
 
 from robosuite.models.grippers import gripper_factory
-from robosuite.controllers import controller_factory
+from robosuite.controllers import controller_factory, load_controller_config
 
 from robosuite.agents.robot_agent import RobotAgent
 
 import os
-import json
 
 
 class Bimanual(RobotAgent):
@@ -86,21 +85,16 @@ class Bimanual(RobotAgent):
                 controller_path = os.path.join(os.path.dirname(__file__), '..',
                                                'controllers/config/{}.json'.format(
                                                    self.robot_model.default_controller_config[arm]))
-                try:
-                    with open(controller_path) as f:
-                        self.controller_config[arm] = json.load(f)
-                except FileNotFoundError:
-                    print("Error opening default controller filepath at: {}. "
-                          "Please check filepath and try again.".format(controller_path))
+                self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
-            #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI}
+            #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
             assert type(self.controller_config[arm]) == dict, \
                 "Inputted controller config must be a dict! Instead, got type: {}".format(
                     type(self.controller_config[arm]))
 
             # Add to the controller dict additional relevant params:
-            #   the robot name, mujoco sim, eef_name, joint_indexes, timestep (model) freq,
+            #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
             #   policy (control) freq, and ndim (# joints)
             self.controller_config[arm]["robot_name"] = self.name
             self.controller_config[arm]["sim"] = self.sim
@@ -113,6 +107,8 @@ class Bimanual(RobotAgent):
                 "qpos": self._ref_joint_pos_indexes[start:end],
                 "qvel": self._ref_joint_vel_indexes[start:end]
                                                   }
+            self.controller_config[arm]["actuator_range"] = (self.torque_limits[0][start:end],
+                                                             self.torque_limits[1][start:end])
 
             # Only load urdf the first time this controller gets called
             self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False

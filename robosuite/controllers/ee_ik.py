@@ -1,7 +1,7 @@
 """
 NOTE: requires pybullet module.
 
-Run `pip install pybullet==1.9.5`.
+Run `pip install pybullet==2.6.9`.
 """
 try:
     import pybullet as p
@@ -13,7 +13,8 @@ import os
 from os.path import join as pjoin
 import robosuite
 
-from robosuite.controllers.joint_vel import JointVelController
+from robosuite.controllers.joint_vel import JointVelocityController
+from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
 
@@ -55,7 +56,7 @@ class PybulletServer(object):
             self.is_active = False
 
 
-class EEIKController(JointVelController):
+class EndEffectorInverseKinematicsController(JointVelocityController):
     """
     Controller for controlling robot arm via inverse kinematics. Allows position and orientation control of the
     robot's end effector.
@@ -77,9 +78,7 @@ class EEIKController(JointVelController):
 
         robot_name (str): Name of robot being controlled. Can be {"Sawyer", "Panda", or "Baxter"}
 
-        kv (float or list of float): velocity gain for the the underlying velocity controller from which this inverse
-            kinematics controller extends. Can be either be a scalar (same value for all robot joints),
-            or a list (specific values for each joint)
+        actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
         policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
 
@@ -104,13 +103,14 @@ class EEIKController(JointVelController):
                  eef_name,
                  joint_indexes,
                  robot_name,
+                 actuator_range,
                  bullet_server_id=0,
-                 kv=40.0,
                  policy_freq=20,
                  load_urdf=True,
                  ik_pos_limit=None,
                  ik_ori_limit=None,
-                 interpolator=None,
+                 interpolator_pos=None,
+                 interpolator_ori=None,
                  converge_steps=5,
                  **kwargs
                  ):
@@ -120,14 +120,13 @@ class EEIKController(JointVelController):
             sim=sim,
             eef_name=eef_name,
             joint_indexes=joint_indexes,
-            input_max=50,
-            input_min=-50,
-            output_max=50,
-            output_min=-50,
-            kv=kv,
+            input_max=5,
+            input_min=-5,
+            output_max=5,
+            output_min=-5,
+            kv=list(actuator_range[1] / 2),
             policy_freq=policy_freq,
-            velocity_limits=[-50,50],
-            interpolator=interpolator,
+            velocity_limits=[-5, 5],
             **kwargs
         )
 
@@ -138,11 +137,20 @@ class EEIKController(JointVelController):
         self.rotation_offset = None
         self.rest_poses = None
 
-        # Set the reference robot target orientation (to prevent drift / weird ik numerical behavior over time)
+        # Set the reference robot target pos / orientation (to prevent drift / weird ik numerical behavior over time)
+        self.reference_target_pos = self.ee_pos
         self.reference_target_orn = T.mat2quat(self.ee_ori_mat)
 
         # Bullet server id
         self.bullet_server_id = bullet_server_id
+
+        # Interpolator
+        self.interpolator_pos = interpolator_pos
+        self.interpolator_ori = interpolator_ori
+
+        # Interpolator-related attributes
+        self.ori_ref = None
+        self.relative_ori = None
 
         # Values for initializing pybullet env
         self.ik_robot = None
@@ -150,7 +158,7 @@ class EEIKController(JointVelController):
         self.num_bullet_joints = None
         self.bullet_ee_idx = None
         self.bullet_joint_indexes = None   # Useful for splitting right and left hand indexes when controlling bimanual
-        self.ik_command_indexes = None     # Relevant indices from ik loop; useful for splitting bimanual into left / right
+        self.ik_command_indexes = None     # Relevant indices from ik loop; useful for splitting bimanual left / right
         self.ik_robot_target_pos_offset = None
         self.converge_steps = converge_steps
         self.ik_pos_limit = ik_pos_limit
@@ -280,6 +288,9 @@ class EEIKController(JointVelController):
             self.ik_robot_eef_joint_cartesian_pose()
         )
 
+        # Store initial offset for mapping pose between mujoco and pybullet (pose_pybullet = offset + pose_mujoco)
+        self.ik_robot_target_pos_offset = self.ik_robot_target_pos - self.ee_pos
+
     def sync_ik_robot(self, joint_positions=None, simulate=False, sync_last=True):
         """
         Force the internal robot model to match the provided joint angles.
@@ -344,7 +355,7 @@ class EEIKController(JointVelController):
 
         return T.mat2pose(eef_pose_in_base)
 
-    def get_control(self, dpos=None, rotation=None):
+    def get_control(self, dpos=None, rotation=None, update_targets=False):
         """
         Returns joint velocities to control the robot after the target end effector
         position and orientation are updated from arguments @dpos and @rotation.
@@ -355,7 +366,8 @@ class EEIKController(JointVelController):
             dpos (numpy array): a 3 dimensional array corresponding to the desired
                 change in x, y, and z end effector position.
             rotation (numpy array): a rotation matrix of shape (3, 3) corresponding
-                to the desired orientation of the end effector.
+                to the desired rotation from the current orientation of the end effector.
+            update_targets (bool): whether to update ik target pos / ori attributes or not
 
         Returns:
             velocities (numpy array): a flat array of joint velocity commands to apply
@@ -367,7 +379,7 @@ class EEIKController(JointVelController):
         # Compute new target joint positions if arguments are provided
         if (dpos is not None) and (rotation is not None):
             self.commanded_joint_positions = np.array(self.joint_positions_for_eef_command(
-                dpos, rotation
+                dpos, rotation, update_targets
             ))
 
         # P controller from joint positions (from IK) to velocities
@@ -411,7 +423,7 @@ class EEIKController(JointVelController):
         )
         return list(np.array(ik_solution)[self.ik_command_indexes])
 
-    def joint_positions_for_eef_command(self, dpos, rotation):
+    def joint_positions_for_eef_command(self, dpos, rotation, update_targets=False):
         """
         This function runs inverse kinematics to back out target joint positions
         from the provided end effector command.
@@ -421,20 +433,31 @@ class EEIKController(JointVelController):
         Returns:
             A list of size @num_joints corresponding to the target joint angles.
         """
-        # Scale and increment target position
-        self.ik_robot_target_pos += dpos * self.user_sensitivity
+
+        # Calculate the rotation
+        rotation = self.ee_ori_mat @ rotation
 
         # this rotation accounts for rotating the end effector (deviation between mujoco eef and pybullet eef)
         rotation = rotation.dot(self.rotation_offset[:3, :3])
 
-        # Convert the desired rotation into the target orientation quaternion
-        self.ik_robot_target_orn = T.mat2quat(rotation)
+        # Determine targets based on whether we're using interpolator(s) or not
+        if self.interpolator_pos or self.interpolator_ori:
+            targets = (self.ee_pos + dpos + self.ik_robot_target_pos_offset, T.mat2quat(rotation))
+        else:
+            targets = (self.ik_robot_target_pos + dpos, T.mat2quat(rotation))
 
         # convert from target pose in base frame to target pose in bullet world frame
-        world_targets = self.bullet_base_pose_to_world_pose(
-            (self.ik_robot_target_pos, self.ik_robot_target_orn)
-        )
+        world_targets = self.bullet_base_pose_to_world_pose(targets)
 
+        # Update targets if required
+        if update_targets:
+            # Scale and increment target position
+            self.ik_robot_target_pos += dpos
+
+            # Convert the desired rotation into the target orientation quaternion
+            self.ik_robot_target_orn = T.mat2quat(rotation)
+
+        # Converge to IK solution
         arm_joint_pos = None
         for bullet_i in range(self.converge_steps):
             arm_joint_pos = self.inverse_kinematics(world_targets[0], world_targets[1])
@@ -466,18 +489,71 @@ class EEIKController(JointVelController):
         return T.mat2pose(pose_in_world)
 
     def set_goal(self, delta, set_ik=None):
+
+        # Get requested delta inputs if we're using interpolators
+        (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
+
+        # Set interpolated goals if necessary
+        if self.interpolator_pos is not None:
+            # Absolute position goal
+            self.interpolator_pos.set_goal(dpos * self.user_sensitivity + self.reference_target_pos)
+
+        if self.interpolator_ori is not None:
+            # Relative orientation goal
+            self.interpolator_ori.set_goal(dquat)  # goal is the relative change in orientation
+            self.ori_ref = np.array(self.ee_ori_mat)  # reference is the current orientation at start
+            self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
+
         # Run ik prepropressing to convert pos, quat ori to desired velocities
         requested_control = self._make_input(delta, self.reference_target_orn)
 
         # Compute desired velocities to achieve eef pos / ori
-        velocities = self.get_control(**requested_control)
+        velocities = self.get_control(**requested_control, update_targets=True)
 
+        # Set the goal velocities for the underlying velocity controller
         super().set_goal(velocities)
 
     def run_controller(self, action=None):
-        # First, update goal if action is not set to none
-        # Action will be interpreted as delta value from current
+        # Update state
+        self.update()
 
+        # Update interpolated action if necessary
+        desired_pos = None
+        rotation = None
+        update_velocity_goal = False
+
+        # Update interpolated goals if active
+        if self.interpolator_pos is not None:
+            # Linear case
+            if self.interpolator_pos.order == 1:
+                desired_pos = self.interpolator_pos.get_interpolated_goal(self.ee_pos)
+            else:
+                # Nonlinear case not currently supported
+                pass
+            update_velocity_goal = True
+        else:
+            desired_pos = self.reference_target_pos
+
+        if self.interpolator_ori is not None:
+            # Linear case
+            if self.interpolator_ori.order == 1:
+                # relative orientation based on difference between current ori and ref
+                self.relative_ori = orientation_error(self.ee_ori_mat, self.ori_ref)
+                ori_error = self.interpolator_ori.get_interpolated_goal(T.mat2quat(T.euler2mat(self.relative_ori)))
+                rotation = T.quat2mat(ori_error)
+            else:
+                # Nonlinear case not currently supported
+                pass
+            update_velocity_goal = True
+        else:
+            rotation = T.quat2mat(self.reference_target_orn)
+
+        # Only update the velocity goals if we're interpolating
+        if update_velocity_goal:
+            velocities = self.get_control(dpos=(desired_pos - self.ee_pos), rotation=rotation)
+            super().set_goal(velocities)
+
+        # Run controller with given action
         return super().run_controller(action)
 
     def _pose_in_base_from_name(self, name):
@@ -513,10 +589,10 @@ class EEIKController(JointVelController):
         """
         # scale input range to desired magnitude
         if dpos.any():
-            dpos = T.clip_translation(dpos, self.ik_pos_limit)
+            dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
 
         # Clip orientation to desired magnitude
-        rotation = T.clip_rotation(rotation, self.ik_ori_limit)
+        rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
 
         return dpos, rotation
 
@@ -531,12 +607,13 @@ class EEIKController(JointVelController):
         # Clip action appropriately
         dpos, rotation = self._clip_ik_input(action[:3], action[3:7])
 
+        # Update reference targets
+        self.reference_target_pos += dpos * self.user_sensitivity
         self.reference_target_orn = T.quat_multiply(old_quat, rotation)
 
         return {
-            "dpos": dpos,
-            # IK controller takes an absolute orientation in robot base frame
-            "rotation": T.quat2mat(self.reference_target_orn)
+            "dpos": dpos * self.user_sensitivity,
+            "rotation": T.quat2mat(rotation)
         }
 
     @staticmethod
@@ -558,4 +635,3 @@ class EEIKController(JointVelController):
     @property
     def name(self):
         return 'ee_ik'
-

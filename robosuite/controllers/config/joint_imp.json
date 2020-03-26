@@ -7,5 +7,6 @@
   "kp": 50,
   "damping": 1,
   "qpos_limits": null,
-  "interpolation": null
+  "interpolation": null,
+  "ramp_ratio": 0.2
 }

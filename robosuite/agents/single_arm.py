@@ -5,12 +5,11 @@ from collections import OrderedDict
 import robosuite.utils.transform_utils as T
 
 from robosuite.models.grippers import gripper_factory
-from robosuite.controllers import controller_factory
+from robosuite.controllers import controller_factory, load_controller_config
 
 from robosuite.agents.robot_agent import RobotAgent
 
 import os
-import json
 
 
 class SingleArm(RobotAgent):
@@ -75,15 +74,10 @@ class SingleArm(RobotAgent):
             controller_path = os.path.join(os.path.dirname(__file__), '..',
                                            'controllers/config/{}.json'.format(
                                                self.robot_model.default_controller_config))
-            try:
-                with open(controller_path) as f:
-                    self.controller_config = json.load(f)
-            except FileNotFoundError:
-                print("Error opening default controller filepath at: {}. "
-                      "Please check filepath and try again.".format(controller_path))
+            self.controller_config = load_controller_config(custom_fpath=controller_path)
 
         # Assert that the controller config is a dict file:
-        #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI}
+        #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
         assert type(self.controller_config) == dict, \
             "Inputted controller config must be a dict! Instead, got type: {}".format(type(self.controller_config))
 
@@ -98,6 +92,7 @@ class SingleArm(RobotAgent):
             "qpos": self._ref_joint_pos_indexes,
             "qvel": self._ref_joint_vel_indexes
                                               }
+        self.controller_config["actuator_range"] = self.torque_limits
         self.controller_config["policy_freq"] = self.control_freq
         self.controller_config["ndim"] = len(self.robot_joints)
 

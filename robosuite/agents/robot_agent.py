@@ -171,8 +171,8 @@ class RobotAgent(object):
         rot_in_world = self.sim.data.get_body_xmat(name).reshape((3, 3))
         pose_in_world = T.make_pose(pos_in_world, rot_in_world)
 
-        base_pos_in_world = self.sim.data.get_body_xpos(self.robot_model.robot_base_name)
-        base_rot_in_world = self.sim.data.get_body_xmat(self.robot_model.robot_base_name).reshape((3, 3))
+        base_pos_in_world = self.sim.data.get_body_xpos(self.robot_model.robot_base)
+        base_rot_in_world = self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3))
         base_pose_in_world = T.make_pose(base_pos_in_world, base_rot_in_world)
         world_pose_in_base = T.pose_inv(base_pose_in_world)
 

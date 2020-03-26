@@ -6,5 +6,6 @@
   "output_min": -1,
   "kv": 4.0,
   "velocity_limits": [-1,1],
-  "interpolation": null
+  "interpolation": null,
+  "ramp_ratio": 0.2
 }

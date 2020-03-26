@@ -8,5 +8,6 @@
   "damping": 1,
   "position_limits": null,
   "control_delta": true,
-  "interpolation": null
+  "interpolation": null,
+  "ramp_ratio": 0.2
 }

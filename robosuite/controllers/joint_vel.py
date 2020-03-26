@@ -2,7 +2,7 @@ from robosuite.controllers.base_controller import Controller
 import numpy as np
 
 
-class JointVelController(Controller):
+class JointVelocityController(Controller):
     """
     Controller for controlling the robot arm's joint velocities. This is simply a P controller with desired torques
     (pre gravity compensation) taken to be proportional to the velocity error of the robot joints.

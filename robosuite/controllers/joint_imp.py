@@ -3,7 +3,7 @@ from robosuite.utils.control_utils import *
 import numpy as np
 
 
-class JointImpController(Controller):
+class JointImpedanceController(Controller):
     """
     Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
 
