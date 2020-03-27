@@ -554,6 +554,7 @@ class PositionOrientationController(Controller):
                  orientation_limits=[[0, 0, 0], [0, 0, 0]],
                  interpolation=None,
                  force_control=False,
+                 axis_angle=False,
                  **kwargs
                  ):
         control_max = np.ones(3) * control_range_pos
@@ -571,6 +572,7 @@ class PositionOrientationController(Controller):
 
         self.use_delta_impedance = use_delta_impedance
         self.force_control = force_control
+        self.axis_angle = axis_angle
 
         if self.use_delta_impedance:
             # provide range of possible delta impedances
@@ -677,10 +679,10 @@ class PositionOrientationController(Controller):
 
         if len(self.action_mask) > 3:
             assert force.shape[0] == 6
+
+            # the following equation only holds when directly controlling rotation error with action
+            assert self.axis_angle
             force[3:6] *= 10.
-
-            raise Exception("No support for force rotation yet!")
-
             kp = np.array(self.impedance_kp[3:6])
             mr_inv = scipy.linalg.inv(self.lambda_r_matrix)
             rot_perturb = mr_inv.dot(force[3:6]) / kp
@@ -780,8 +782,20 @@ class PositionOrientationController(Controller):
 
         position_error = self.last_goal_position - self.current_position
         #print("Position err: {}".format(position_error))
-        orientation_error = self.calculate_orientation_error(desired=self.last_goal_orientation,
-                                                             current=self.current_orientation_mat)
+
+        if self.axis_angle:
+            # interpret action as a scaled axis-angle delta rotation
+            orientation_error = np.array(action[3:6])
+
+            # note: corresponds to the following delta rotation error
+            #
+            # angle = np.linalg.norm(action[3:6])
+            # axis = -action[3:6] / angle
+            # quat_error = T.axisangle2quat(axis=axis, angle=angle)
+            # rotation_mat_error = T.quat2mat(quat_error)
+        else:
+            orientation_error = self.calculate_orientation_error(desired=self.last_goal_orientation,
+                                                                 current=self.current_orientation_mat)
 
         # always ensure critical damping TODO - technically this is called unneccessarily if the impedance_flag is not set
         self.impedance_kv = 2 * np.sqrt(self.impedance_kp) * self.impedance_damping
@@ -989,6 +1003,7 @@ class PositionController(PositionOrientationController):
                  control_freq=20,
                  interpolation=None,
                  force_control=False,
+                 axis_angle=False,
                  **kwargs
                  ):
         super(PositionController, self).__init__(
@@ -1011,6 +1026,7 @@ class PositionController(PositionOrientationController):
             initial_damping=initial_damping,
             interpolation=interpolation,
             force_control=force_control,
+            axis_angle=axis_angle,
             **kwargs)
 
         self.goal_orientation_set = False
