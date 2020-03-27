@@ -154,6 +154,11 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         """
 
         # Set up a connection to the PyBullet simulator.
+        # Make sure to disconnect first so that multiple sims aren't inadvertantly created between episode sessions
+        try:
+            p.disconnect()
+        except:
+            pass
         p.connect(p.DIRECT)
         p.resetSimulation()
 
