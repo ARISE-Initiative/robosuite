@@ -48,11 +48,8 @@ def load_controller_config(custom_fpath=None, default_controller=None):
     """
     # First check if default controller is not None; if it is not, load the appropriate controller
     if default_controller is not None:
-        # Map default_controller to lower case so it is case invariant
-        default_controller = default_controller.lower()
-
         # Dict mapping expected inputs to str value for loading the appropriate default
-        controllers = {"joint_vel", "joint_tor", "joint_imp", "ee_pos", "ee_pos_ori", "ee_ik"}
+        controllers = {"JOINT_VEL", "JOINT_TOR", "JOINT_IMP", "EE_POS", "EE_POS_ORI", "EE_IK"}
 
         # Assert that requested default controller is in the available default controllers
         assert default_controller in controllers, "Error: Unknown default controller specified. Requested {}," \
@@ -60,7 +57,7 @@ def load_controller_config(custom_fpath=None, default_controller=None):
 
         # Store the default controller config fpath associated with the requested controller
         custom_fpath = os.path.join(os.path.dirname(__file__), '..',
-                                    'controllers/config/{}.json'.format(default_controller))
+                                    'controllers/config/{}.json'.format(default_controller.lower()))
 
     # Assert that the fpath to load the controller is not empty
     assert custom_fpath is not None, "Error: Either custom_fpath or default_controller must be specified!"
@@ -99,7 +96,7 @@ def controller_factory(name, params):
     if params["interpolation"] == "linear":
         interpolator = LinearInterpolator(max_delta=0.5,
                                           ndim=params["ndim"],
-                                          controller_freq=1 / params["sim"].model.opt.timestep,
+                                          controller_freq=(1 / params["sim"].model.opt.timestep),
                                           policy_freq=params["policy_freq"],
                                           ramp_ratio=params["ramp_ratio"])
 

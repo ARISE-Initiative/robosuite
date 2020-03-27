@@ -160,4 +160,4 @@ class JointImpedanceController(Controller):
 
     @property
     def name(self):
-        return 'joint_imp'
+        return 'JOINT_IMP'

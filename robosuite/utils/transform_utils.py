@@ -586,6 +586,10 @@ def clip_rotation(quat, limit):
     :return: Clipped rotation quaternion (x, y, z, w) and whether the value was clipped or not
     """
     clipped = False
+
+    # First, normalize the quaternion
+    quat = quat / np.linalg.norm(quat)
+
     den = np.sqrt(max(1 - quat[3] * quat[3], 0))
     if den == 0:
         # This is a zero degree rotation, immediately return

@@ -76,7 +76,7 @@ args = parser.parse_args()
 # Running the actual test #
 def test_linear_interpolator():
 
-    for controller_name in ["ee_pos_ori", "ee_ik"]:
+    for controller_name in ["EE_POS_ORI", "EE_IK"]:
 
         for traj in ["pos", "ori"]:
 
@@ -89,7 +89,8 @@ def test_linear_interpolator():
 
                 # Define controller path to load
                 controller_path = os.path.join(os.path.dirname(__file__),
-                                               '../../robosuite', 'controllers/config/{}.json'.format(controller_name))
+                                               '../../robosuite',
+                                               'controllers/config/{}.json'.format(controller_name.lower))
                 with open(controller_path) as f:
                     controller_config = json.load(f)
                     controller_config["interpolation"] = interpolator
