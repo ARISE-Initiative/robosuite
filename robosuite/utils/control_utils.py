@@ -49,7 +49,6 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_ori.transpose())
 
     # take the inverse, but zero out elements in cases of a singularity
-    # todo: maybe there is an error here? check with danfei and ajay
     svd_u, svd_s, svd_v = np.linalg.svd(lambda_pos_inv)
     singularity_threshold = 0.00025
     svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
