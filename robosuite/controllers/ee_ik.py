@@ -119,8 +119,15 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         self.ik_command_indexes = None     # Relevant indices from ik loop; useful for splitting bimanual left / right
         self.ik_robot_target_pos_offset = None
         self.converge_steps = converge_steps
+
+        # Set ik limits and override internal min / max
         self.ik_pos_limit = ik_pos_limit
         self.ik_ori_limit = ik_ori_limit
+        max_quat_mag = T.mat2quat(T.euler2mat([ik_ori_limit, 0, 0]))[0]
+        self.input_min = [-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1]
+        self.input_max = [ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1]
+        self.output_min = [-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1]
+        self.output_max = [ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1]
 
         # Target pos and ori
         self.ik_robot_target_pos = None
@@ -508,7 +515,7 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
             dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
 
         # Clip orientation to desired magnitude
-        rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
+        rotation, clipped = T.clip_rotation(rotation, self.ik_ori_limit)
 
         return dpos, rotation
 
