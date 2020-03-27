@@ -1,28 +1,20 @@
 import numpy as np
 import robosuite as suite
-import argparse
 from robosuite.controllers import load_controller_config
 
 
 if __name__ == "__main__":
-    # Arguments for this demo script
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--controller", type=str, default="joint_vel", help="Choice of controller. Can be:"
-                                                                            "'ee_ik', 'ee_pos_ori', 'ee_pos', "
-                                                                            "'joint_imp', 'joint_tor', 'joint_vel'")
-    args = parser.parse_args()
-
     # get the list of all environments
     envs = sorted(suite.environments.ALL_ENVS)
 
     # get the list of all controllers
     controllers = {
-        "Joint Velocity": "joint_vel",
-        "Joint Torque": "joint_tor",
-        "Joint Impedance": "joint_imp",
-        "End Effector Position": "ee_pos",
-        "End Effector Position Orientation": "ee_pos_ori",
-        "End Effector Inverse Kinematics (note: must have pybullet installed!)": "ee_ik",
+        "Joint Velocity": "JOINT_VEL",
+        "Joint Torque": "JOINT_TOR",
+        "Joint Impedance": "JOINT_IMP",
+        "End Effector Position": "EE_POS",
+        "End Effector Position Orientation": "EE_POS_ORI",
+        "End Effector Inverse Kinematics (note: must have pybullet installed!)": "EE_IK",
     }
 
     # print info and select an environment

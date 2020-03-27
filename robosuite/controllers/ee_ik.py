@@ -557,4 +557,4 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
 
     @property
     def name(self):
-        return 'ee_ik'
+        return 'EE_IK'

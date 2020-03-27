@@ -145,4 +145,4 @@ class JointVelocityController(Controller):
 
     @property
     def name(self):
-        return 'joint_vel'
+        return 'JOINT_VEL'

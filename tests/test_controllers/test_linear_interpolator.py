@@ -60,7 +60,6 @@ delta_rot_r = 0.01
 rot_action_osc = [-delta_rot_r * 40, 0, 0]
 rot_action_ik = T.mat2quat(T.euler2mat([delta_rot_r * 5, 0, 0]))
 
-
 # Concatenated thresholds and corresponding indexes (y = 1 in x,y,z; roll = 0 in r,p,y)
 thresholds = [pos_y_threshold, rot_r_threshold]
 indexes = [1, 0]
@@ -77,7 +76,7 @@ args = parser.parse_args()
 # Running the actual test #
 def test_linear_interpolator():
 
-    for controller_name in ["ee_pos_ori", "ee_ik"]:
+    for controller_name in ["EE_POS_ORI", "EE_IK"]:
 
         for traj in ["pos", "ori"]:
 
@@ -90,7 +89,8 @@ def test_linear_interpolator():
 
                 # Define controller path to load
                 controller_path = os.path.join(os.path.dirname(__file__),
-                                               '../../robosuite', 'controllers/config/{}.json'.format(controller_name))
+                                               '../../robosuite',
+                                               'controllers/config/{}.json'.format(controller_name.lower))
                 with open(controller_path) as f:
                     controller_config = json.load(f)
                     controller_config["interpolation"] = interpolator

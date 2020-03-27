@@ -64,12 +64,12 @@ import robosuite.utils.transform_utils as T
 
 # Define the controllers to use (action_dim, num_test_steps, test_value, neutral control values)
 controllers = {
-    "ee_pos_ori":   [7, 6, 0.1, np.array([0,0,0,0,0,0,0], dtype=float)],
-    "ee_pos":       [4, 3, 0.1, np.array([0,0,0,0], dtype=float)],
-    "ee_ik":        [8, 6, 0.01, np.array([0,0,0,0,0,0,1,0], dtype=float)],
-    "joint_imp":    [8, 7, 0.2, np.array([0,0,0,0,0,0,0,0], dtype=float)],
-    "joint_vel":    [8, 7, -0.05, np.array([0,0,0,0,0,0,0,0], dtype=float)],
-    "joint_tor":    [8, 7, 0.001, np.array([0,0,0,0,0,0,0,0], dtype=float)]
+    "EE_POS_ORI":   [7, 6, 0.1, np.array([0,0,0,0,0,0,0], dtype=float)],
+    "EE_POS":       [4, 3, 0.1, np.array([0,0,0,0], dtype=float)],
+    "EE_IK":        [8, 6, 0.01, np.array([0,0,0,0,0,0,1,0], dtype=float)],
+    "JOINT_IMP":    [8, 7, 0.2, np.array([0,0,0,0,0,0,0,0], dtype=float)],
+    "JOINT_VEL":    [8, 7, -0.05, np.array([0,0,0,0,0,0,0,0], dtype=float)],
+    "JOINT_TOR":    [8, 7, 0.001, np.array([0,0,0,0,0,0,0,0], dtype=float)]
 }
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions
@@ -87,7 +87,7 @@ def test_all_controllers():
 
         # Define controller path to load
         controller_path = os.path.join(os.path.dirname(__file__),
-                                       '../../robosuite', 'controllers/config/{}.json'.format(controller_name))
+                                       '../../robosuite', 'controllers/config/{}.json'.format(controller_name.lower()))
         with open(controller_path) as f:
             controller_config = json.load(f)
 

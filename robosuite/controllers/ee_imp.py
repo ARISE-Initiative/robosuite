@@ -253,4 +253,4 @@ class EndEffectorImpedanceController(Controller):
 
     @property
     def name(self):
-        return 'ee_imp'
+        return 'EE_IMP'
