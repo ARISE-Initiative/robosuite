@@ -54,7 +54,20 @@ class TableTopTask(Task):
             self.merge_asset(obj_mjcf)
             # Load object
             obj = obj_mjcf.get_collision(name=obj_name, site=True)
-            obj.append(new_joint(name=obj_name, type="free"))
+            if not obj_mjcf.fixed:
+                obj.append(new_joint(name=obj_name, type="free"))
+            else:
+                obj.append(new_joint(
+                    name="Button_Joint1",
+                    pos = "0 0 0",
+                    axis = "0 0 1",
+                    type= "slide",
+                    springref = "1",
+                    limited = "true",
+                    stiffness = "0.5",
+                    range = "-0.1 0",
+                    damping = "1"
+                ))
             self.objects.append(obj)
             self.worldbody.append(obj)
 

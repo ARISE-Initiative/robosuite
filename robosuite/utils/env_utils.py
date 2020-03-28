@@ -25,7 +25,34 @@ def set_body_pose(sim, body_name, pos, quat=None):
 
 @contextmanager
 def world_saved(sim):
+    """
+    Context scope for saved world state
+    """
     world_state = sim.get_state().flatten()
     yield
     sim.set_state_from_flattened(world_state)
     sim.forward()
+
+
+def all_contacting_geom_ids(sim, geom_id):
+    """
+    Returns a list of geom ids that are in contact with the target geom id
+    """
+    contact_gids = []
+    for contact in sim.data.contact[:sim.data.ncon]:
+        if contact.geom1 == geom_id:
+            contact_gids.append(contact.geom2)
+        elif contact.geom2 == geom_id:
+            contact_gids.append(contact.geom1)
+    return contact_gids
+
+
+def all_contacting_body_ids(sim, body_id):
+    """
+    Returns a list of body ids that are in contact with the target body id
+    """
+    contact_gids = []
+    for gid in bodyid2geomids(sim, body_id):
+        contact_gids += all_contacting_geom_ids(sim, gid)
+    contact_bids = list(set([sim.model.geom_bodyid[gid] for gid in contact_gids]))
+    return contact_bids

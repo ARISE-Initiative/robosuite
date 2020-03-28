@@ -8,7 +8,8 @@ from robosuite.environments.sawyer import SawyerEnv
 import robosuite.utils.env_utils as EU
 
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import BoxObject
+from robosuite.models.objects import BoxObject, CylinderObject
+from robosuite.models.objects.interactive_objects import ButtonObject
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask
 import hjson
@@ -313,11 +314,6 @@ class SawyerLift(SawyerEnv):
             self.sim.model.geom_name2id(x) for x in self.gripper.right_finger_geoms
         ]
         self.cube_geom_id = self.sim.model.geom_name2id("cube")
-
-    def _get_body_addr(self, body_name):
-        body_id = self.sim.model.body_name2id(body_name)
-
-
 
     def _reset_internal(self):
         """
@@ -727,8 +723,6 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
     """
     def __init__(
         self,
-        object_name='cube',
-        target_name='cube_target',
         target_color=(0, 1, 0, 0.3),
         hide_target=True,
         goal_tolerance=0.05,
@@ -736,8 +730,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         goal_radius_high=0.2,
         **kwargs
     ):
-        self._target_name = target_name
-        self._object_name = object_name
+
         self._target_rgba = target_color
         self._goal_render_segmentation = None
         self._goal_tolerance = goal_tolerance
@@ -746,10 +739,29 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         self._goal_grid = None
         self._hide_target = hide_target
 
+        self._target_name = 'cube_target'
+        self._object_name = 'cube'
+        self.interactive_objects = OrderedDict()
+
         super().__init__(**kwargs)
 
     def _load_model(self):
         super()._load_model()
+
+        cube = BoxObject(
+            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
+            size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
+            rgba=[1, 0, 0, 1],
+        )
+
+        # cube1 = BoxObject(
+        #     size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
+        #     size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
+        #     rgba=[1, 0, 0, 1],
+        # )
+        button = CylinderObject(size=[0.03, 0.01], fixed=True)
+
+        self.mujoco_objects = OrderedDict([("cube", cube), ("button", button)])
 
         # target visual object
         target_size = np.array(self.mujoco_objects[self._object_name].size)
@@ -780,6 +792,8 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name)
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
+        button_body_id = self.sim.model.body_name2id("button")
+        self.button = ButtonObject(self.sim, body_id=button_body_id, on_rgba=(0, 1, 0, 1))
 
     def _get_placement_initializer_for_eval_mode(self):
         super(SawyerLiftPositionTarget, self)._get_placement_initializer_for_eval_mode()
@@ -813,7 +827,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
 
         # reset joint positions
         init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
-        init_pos += np.random.randn(init_pos.shape[0]) * 0.02
+        # init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 
         # for now, place target randomly in a radius of 0.2 around current cube pos
@@ -831,6 +845,12 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         self._set_target(pos=target_pos)
         if self.eval_mode or self._hide_target:
             self.hide_target()
+
+    def step(self, action):
+        contacts = EU.all_contacting_body_ids(self.sim, self.button.body_id)
+        contacts = [c for c in contacts if c != self.sim.model.body_name2id('table')]
+        self.button.step(sim_step=self.timestep, collided_body_ids=contacts)
+        super(SawyerLiftPositionTarget, self).step(action)
 
     def _pre_action(self, action, policy_step=None):
         super()._pre_action(action, policy_step=policy_step)

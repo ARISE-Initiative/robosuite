@@ -124,6 +124,10 @@ class MujocoObject:
             "type": "sphere",
         }
 
+    @property
+    def fixed(self):
+        return False
+
 
 class MujocoXMLObject(MujocoXML, MujocoObject):
     """
@@ -202,6 +206,7 @@ class MujocoGeneratedObject(MujocoObject):
         friction=None,
         density_range=None,
         friction_range=None,
+        fixed=False
     ):
         """
         Provides default initialization of physical attributes:
@@ -223,6 +228,7 @@ class MujocoGeneratedObject(MujocoObject):
             friction_range ([float,float], optional): range for random choice
         """
         super().__init__()
+        self._fixed = fixed
         if size is None:
             self.size = [0.05, 0.05, 0.05]
         else:
@@ -255,6 +261,10 @@ class MujocoGeneratedObject(MujocoObject):
         else:
             self.friction = [friction, 0.005, 0.0001]
         self.sanity_check()
+
+    @property
+    def fixed(self):
+        return self._fixed
 
     def sanity_check(self):
         """
