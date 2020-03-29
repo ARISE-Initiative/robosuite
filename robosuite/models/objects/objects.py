@@ -125,8 +125,8 @@ class MujocoObject:
         }
 
     @property
-    def fixed(self):
-        return False
+    def joint(self):
+        return {'type': 'free'}
 
 
 class MujocoXMLObject(MujocoXML, MujocoObject):
@@ -206,7 +206,7 @@ class MujocoGeneratedObject(MujocoObject):
         friction=None,
         density_range=None,
         friction_range=None,
-        fixed=False
+        joint={'type': 'free'}
     ):
         """
         Provides default initialization of physical attributes:
@@ -228,7 +228,7 @@ class MujocoGeneratedObject(MujocoObject):
             friction_range ([float,float], optional): range for random choice
         """
         super().__init__()
-        self._fixed = fixed
+        self._joint = joint
         if size is None:
             self.size = [0.05, 0.05, 0.05]
         else:
@@ -263,8 +263,8 @@ class MujocoGeneratedObject(MujocoObject):
         self.sanity_check()
 
     @property
-    def fixed(self):
-        return self._fixed
+    def joint(self):
+        return self._joint
 
     def sanity_check(self):
         """

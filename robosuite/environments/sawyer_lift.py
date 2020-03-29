@@ -9,7 +9,7 @@ import robosuite.utils.env_utils as EU
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject, CylinderObject
-from robosuite.models.objects.interactive_objects import ButtonObject
+from robosuite.models.objects.interactive_objects import MaintainedButtonObject, MomentaryButtonObject
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask
 import hjson
@@ -741,7 +741,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
 
         self._target_name = 'cube_target'
         self._object_name = 'cube'
-        self.interactive_objects = OrderedDict()
+        self.interactive_objects = {}
 
         super().__init__(**kwargs)
 
@@ -754,12 +754,17 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
             rgba=[1, 0, 0, 1],
         )
 
-        # cube1 = BoxObject(
-        #     size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
-        #     size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
-        #     rgba=[1, 0, 0, 1],
-        # )
-        button = CylinderObject(size=[0.03, 0.01], fixed=True)
+        slide_joint = dict(
+            pos="0 0 0",
+            axis="0 0 1",
+            type="slide",
+            springref="1",
+            limited="true",
+            stiffness="0.5",
+            range="-0.1 0",
+            damping="1"
+        )
+        button = CylinderObject(rgba=(1, 0, 0, 1), size=[0.03, 0.01], joint=slide_joint)
 
         self.mujoco_objects = OrderedDict([("cube", cube), ("button", button)])
 
@@ -792,8 +797,8 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name)
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
-        button_body_id = self.sim.model.body_name2id("button")
-        self.button = ButtonObject(self.sim, body_id=button_body_id, on_rgba=(0, 1, 0, 1))
+        self.interactive_objects['button'] = MomentaryButtonObject(
+            self.sim, body_id=self.sim.model.body_name2id("button"), on_rgba=(0, 1, 0, 1))
 
     def _get_placement_initializer_for_eval_mode(self):
         super(SawyerLiftPositionTarget, self)._get_placement_initializer_for_eval_mode()
@@ -843,13 +848,36 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         target_pos[0] += radius * np.cos(angle)
         target_pos[1] += radius * np.sin(angle)
         self._set_target(pos=target_pos)
+        for _, o in self.interactive_objects.items():
+            o.reset()
+        # with open('default.xml') as f:
+        #     xml_str = str(f.read())
+        # self.reset_from_xml_string(xml_str)
+        # self.sim.reset()
+
+  #       initial_mjstate = [ 0., -0.5538,  -0.8208 ,  0.4155 ,  1.8409 , -0.4955 ,  0.6482 ,  1.9628 ,
+  # 0.02083, -0.02083,  0.54,    -0.02,     0.82137,  1.  ,     0. ,      0. ,
+  #   0.,       0.64,    -0.02,     0.82137,  1.,       0.  ,     0. ,      0. ,
+  #     0. ,      0.,       0.,       0.,       0.,       0. ,      0.,       0. ,
+  #       0.,       0.,       0.,       0.,      0.,       0. ,      0. ,      0. ,
+  #         0.,       0.,       0.,       0.,       0.,     ]
+  #
+  #       xml_str = self.model.get_xml()
+  #       with open('default1.xml', 'w+') as f:
+  #           f.write(xml_str)
+  #       from IPython import embed;
+  #       embed()
+  #       self.sim.set_state_from_flattened(initial_mjstate)
+  #       self.sim.forward()
+
+        # print(self.sim.get_state().flatten())
+
         if self.eval_mode or self._hide_target:
             self.hide_target()
 
     def step(self, action):
-        contacts = EU.all_contacting_body_ids(self.sim, self.button.body_id)
-        contacts = [c for c in contacts if c != self.sim.model.body_name2id('table')]
-        self.button.step(sim_step=self.timestep, collided_body_ids=contacts)
+        for _, o in self.interactive_objects.items():
+            o.step(sim_step=self.timestep)
         super(SawyerLiftPositionTarget, self).step(action)
 
     def _pre_action(self, action, policy_step=None):

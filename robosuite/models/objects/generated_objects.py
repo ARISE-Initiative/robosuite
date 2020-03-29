@@ -395,7 +395,7 @@ class CylinderObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
-        fixed=False
+        joint={"type": "free"}
     ):
         size = _get_size(size,
                          size_max,
@@ -413,7 +413,7 @@ class CylinderObject(MujocoGeneratedObject):
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
-            fixed=fixed
+            joint=joint
         )
 
     def sanity_check(self):
