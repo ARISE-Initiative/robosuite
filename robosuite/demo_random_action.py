@@ -1,3 +1,5 @@
+# TODO: NEED TO UPDATE THIS FOR REFACTORED ENVS
+
 import numpy as np
 import robosuite as suite
 from robosuite.controllers import load_controller_config

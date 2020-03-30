@@ -308,14 +308,6 @@ class SingleArm(RobotAgent):
         return dof
 
     @property
-    def _right_hand_joint_cartesian_pose(self):
-        """
-        Returns the cartesian pose of the last robot joint in base frame of robot.
-        """
-        # TODO: Might need to update which name this refers to?
-        return self.pose_in_base_from_name("right_l6")
-
-    @property
     def _right_hand_pose(self):
         """
         Returns eef pose in base frame of robot.
