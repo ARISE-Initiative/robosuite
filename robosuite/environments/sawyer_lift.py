@@ -167,7 +167,7 @@ class SawyerLift(SawyerEnv):
         self.reward_shaping = reward_shaping
 
         # object placement initializer
-        if placement_initializer:
+        if placement_initializer is not None:
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
