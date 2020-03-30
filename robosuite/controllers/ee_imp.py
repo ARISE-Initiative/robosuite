@@ -3,6 +3,8 @@ from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
 
+# Support for new rotation action space
+USE_AXIS_ANGLE_ACTION = True
 
 class EndEffectorImpedanceController(Controller):
     """
@@ -162,7 +164,9 @@ class EndEffectorImpedanceController(Controller):
             self.goal_ori = set_goal_orientation(scaled_delta[3:],
                                                  self.ee_ori_mat,
                                                  orientation_limit=self.orientation_limits,
-                                                 set_ori=set_ori)
+                                                 set_ori=set_ori,
+                                                 axis_angle=USE_AXIS_ANGLE_ACTION)
+            
         self.goal_pos = set_goal_position(scaled_delta[:3],
                                           self.ee_pos,
                                           position_limit=self.position_limits,

@@ -117,7 +117,8 @@ def set_goal_position(delta,
 def set_goal_orientation(delta,
                          current_orientation,
                          orientation_limit=None,
-                         set_ori=None):
+                         set_ori=None,
+                         axis_angle=False):
     """
     Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
     @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
@@ -129,7 +130,14 @@ def set_goal_orientation(delta,
 
     # otherwise use delta to set goal orientation
     else:
-        rotation_mat_error = trans.euler2mat(-delta)
+        if axis_angle:
+            # convert from euler vector to axis-angle, and then to rotation matrix
+            angle = np.linalg.norm(delta)
+            axis = -delta / angle
+            quat_error = trans.axisangle2quat(axis=axis, angle=angle)
+            rotation_mat_error = trans.quat2mat(quat_error)
+        else:
+            rotation_mat_error = trans.euler2mat(-delta)
         goal_orientation = np.dot(rotation_mat_error.T, current_orientation)
 
     #check for orientation limits
