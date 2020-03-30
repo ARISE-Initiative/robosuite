@@ -53,6 +53,9 @@ However, the expected sequential qualitative behavior during the test is describ
             "controller" is really just a wrapper for direct torque control of the mujoco actuators. Therefore, a
             "neutral" value of 0 torque will not guarantee a stable robot when it has non-zero velocity!
 
+Note that by default, there is no rendering. Rendering can be enabled by setting the --render flag when calling this
+test script.
+
 """
 import numpy as np
 
@@ -61,6 +64,13 @@ import robosuite as suite
 import os
 import json
 import robosuite.utils.transform_utils as T
+import argparse
+
+# Arguments for this test script
+parser = argparse.ArgumentParser()
+parser.add_argument("--render", action='store_true', help="Whether to render this test or not for visual validation")
+args = parser.parse_args()
+
 
 # Define the controllers to use (action_dim, num_test_steps, test_value, neutral control values)
 controllers = {
@@ -94,7 +104,7 @@ def test_all_controllers():
         # Now, create a test env for testing the controller on
         env = suite.make(
             "SawyerLift",
-            has_renderer=True,  # use on-screen renderer for visual validation
+            has_renderer=args.render,  # use on-screen renderer for visual validation only if requested
             has_offscreen_renderer=False,
             use_camera_obs=False,
             horizon=(steps_per_action + steps_per_rest) * num_test_steps,
@@ -102,9 +112,11 @@ def test_all_controllers():
         )
         print("Testing controller: {}...".format(controller_name))
 
+        # Reset environment
         env.reset()
-        # Set controller to front view to get best angle for viewing robot movements
-        env.viewer.set_camera(camera_id=0)
+        # If rendering, set controller to front view to get best angle for viewing robot movements
+        if args.render:
+            env.viewer.set_camera(camera_id=0)
 
         # get action range
         action_min, action_max = env.action_spec
@@ -112,10 +124,9 @@ def test_all_controllers():
         assert action_min.shape[0] == action_dim, "Expected {}, got {}".format(action_dim, action_min.shape[0])
 
         # Keep track of done variable to know when to break loop
-        done = False
         count = 0
         # Loop through controller space
-        while not done:
+        while count < num_test_steps:
             action = neutral.copy()
             for i in range(steps_per_action):
                 if controller_name == 'ee_ik' and count > 2:
@@ -125,12 +136,14 @@ def test_all_controllers():
                     action[3:7] = T.mat2quat(T.euler2mat(angle))
                 else:
                     action[count] = test_value
-                _, _, done, _ = env.step(action)
-                env.render()
-            count += 1
+                env.step(action)
+                if args.render:
+                    env.render()
             for i in range(steps_per_rest):
-                _, _, done, _ = env.step(neutral)
-                env.render()
+                env.step(neutral)
+                if args.render:
+                    env.render()
+            count += 1
 
         # Shut down this env before starting the next test
         env.close()

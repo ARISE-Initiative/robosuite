@@ -176,19 +176,15 @@ class EndEffectorImpedanceController(Controller):
             self.interpolator_ori.set_goal(orientation_error(self.goal_ori, self.ori_ref))  # goal is the total orientation error
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
-    def run_controller(self, action=None):
+    def run_controller(self):
         """
         Executes Operational Space Control (OSC) -- either position only or position and orientation.
 
         A detailed overview of derivation of OSC equations can be seen at:
         http://khatib.stanford.edu/publications/pdfs/Khatib_1987_RA.pdf
         """
-        # First, update goal if action is not set to none
-        # Action will be interpreted as delta value from current
-        if action is not None:
-            self.set_goal(action)
-        else:
-            self.update()
+        # Update state
+        self.update()
 
         desired_pos = None
         # Only linear interpolator is currently supported

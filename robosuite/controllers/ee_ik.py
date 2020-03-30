@@ -441,7 +441,7 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         velocities = self.get_control(**requested_control, update_targets=True)
         super().set_goal(velocities)
 
-    def run_controller(self, action=None):
+    def run_controller(self):
         # Update state
         self.update()
 
@@ -482,7 +482,7 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
             super().set_goal(velocities)
 
         # Run controller with given action
-        return super().run_controller(action)
+        return super().run_controller()
 
     def _pose_in_base_from_name(self, name):
         """

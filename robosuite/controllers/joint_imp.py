@@ -122,17 +122,13 @@ class JointImpedanceController(Controller):
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_qpos)
 
-    def run_controller(self, action=None):
+    def run_controller(self):
         # Make sure goal has been set
         if not self.goal_qpos.any():
             self.set_goal(np.zeros(self.control_dim))
 
-        # Then, update goal if action is not set to none
-        # Action will be interpreted as delta value from current
-        if action is not None:
-            self.set_goal(action)
-        else:
-            self.update()
+        # Update state
+        self.update()
 
         desired_qpos = None
 

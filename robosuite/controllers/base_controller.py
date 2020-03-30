@@ -76,7 +76,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.initial_ee_ori_mat = self.ee_ori_mat
 
     @abc.abstractmethod
-    def run_controller(self, action):
+    def run_controller(self):
         """
         Abstract method that should be implemented in all subclass controllers
         Converts a given action into torques (pre gravity compensation) to be executed on the robot
