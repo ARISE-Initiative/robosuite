@@ -3,18 +3,27 @@ from copy import copy, deepcopy
 
 
 def satisfies(state, cond):
+    """
+    Checks if a state satisfies a condition
+    :param state: (dict) a logical state
+    :param cond: (dict) a set of conditions, must be a subset of state
+    :return: bool
+    """
     for k, v in cond.items():
         if state[k] != v:
             return False
     return True
 
 
-class InteractiveObject(object):
-    """Base class for interactive object"""
-    def __init__(self, sim, body_id, cooldown_interval=-1):
+class EventObject(object):
+    """Abstract object class that defines basic event-handling functions"""
+    def __init__(self, sim, body_id):
+        """
+        :param sim: Mujoco simulation
+        :param body_id: body id of the physical object that the interactive logic should attach to
+        """
         self.sim = sim
-        self._cooldown_interval = cooldown_interval
-        self._last_event_step = 0
+        self._sim_step = 0  # simulation step
         self._body_id = body_id
 
     @property
@@ -30,19 +39,17 @@ class InteractiveObject(object):
         return EU.bodyid2geomids(self.sim, self._body_id)
 
     def reset(self):
-        self._last_event_step = 0
+        self._sim_step = 0
 
     def _on_contact(self, contacting_body_ids):
+        """Event handling given a list of contacting bodies"""
         pass
 
     def _on_customized_condition(self):
+        """Customized event handling"""
         pass
 
     def step(self, sim_step, contacting_body_ids=None):
-        if sim_step - self._last_event_step < self._cooldown_interval:
-            return
-        self._last_event_step = sim_step
-
         if contacting_body_ids is None:
             contacting_body_ids = EU.all_contacting_body_ids(self.sim, self.body_id)
 
@@ -51,8 +58,12 @@ class InteractiveObject(object):
 
 
 class StatefulObject(object):
-    """Base class for object that maintains state"""
+    """Maintains state of an interactive object. Defines callback functions associated with object states. """
     def __init__(self, all_state_names, default_state):
+        """
+        :param all_state_names: (list) A list of state names
+        :param default_state: (dict) The default state at the beginning of an episode
+        """
         self._default_state = deepcopy(default_state)
         self._all_state_names = copy(all_state_names)
         self._state = self.default_state
@@ -71,22 +82,42 @@ class StatefulObject(object):
         self.reset()
 
     def _set_state_behaviors(self):
-        """Fills in state behaviors"""
+        """Define callback functions that get triggered by the object state"""
         raise NotImplementedError
 
     def add_on_enter_state_funcs(self, cond, func):
+        """
+        Adds a callback function that gets triggered once when the condition is satisfied
+        :param cond: (dict) a condition
+        :param func: (function) a callback function
+        """
         assert(self.is_valid_condition(cond))
         self._on_enter_state_funcs.append((deepcopy(cond), func))
 
     def add_on_exit_state_funcs(self, cond, func):
+        """
+        Adds a callback function that gets triggered once when the condition is no longer satisfied
+        :param cond: (dict) a condition
+        :param func: (function) a callback function
+        """
         assert(self.is_valid_condition(cond))
         self._on_exit_state_funcs.append((deepcopy(cond), func))
 
     def add_on_state_funcs(self, cond, func):
+        """
+        Adds a callback function that gets triggered every simulation step when the condition is satisfied
+        :param cond: (dict) a condition
+        :param func: (function) a callback function
+        """
         assert(self.is_valid_condition(cond))
         self._on_state_funcs.append((deepcopy(cond), func))
 
-    def add_on_not_enter_state_funcs(self, cond, func):
+    def add_on_not_state_funcs(self, cond, func):
+        """
+        Adds a callback function that gets triggered every simulation step when the condition is NOT satisfied
+        :param cond: (dict) a condition
+        :param func: (function) a callback function
+        """
         assert(self.is_valid_condition(cond))
         self._on_not_state_funcs.append((deepcopy(cond), func))
 
@@ -113,6 +144,10 @@ class StatefulObject(object):
 
     @state.setter
     def state(self, new_state):
+        """
+        Setter function for the object state. Also invokes callback functions that
+        should only be invoked when state changes.
+        """
         assert(self.is_valid_state(new_state))
 
         prev_state = self.state
@@ -126,28 +161,43 @@ class StatefulObject(object):
             if not satisfies(self.state, cond) and satisfies(prev_state, cond):
                 func()
 
-
-class StatefulInteractiveObject(StatefulObject, InteractiveObject):
-    def __init__(self, sim, body_id, all_state_names, default_state, cooldown_interval=-1):
-        StatefulObject.__init__(self, all_state_names=all_state_names, default_state=default_state)
-        InteractiveObject.__init__(self, sim=sim, body_id=body_id, cooldown_interval=cooldown_interval)
-
-    def step(self, sim_step, contacting_body_ids=None):
+    def step(self):
+        """Invokes callback functions that should be invoked every simulation step"""
         for cond, func in self._on_state_funcs:
             if satisfies(self.state, cond):
                 func()
         for cond, func in self._on_not_state_funcs:
             if not satisfies(self.state, cond):
                 func()
-        InteractiveObject.step(self, sim_step=sim_step, contacting_body_ids=contacting_body_ids)
+
+
+class InteractiveObject(EventObject, StatefulObject):
+    """
+    A wrapper class that defines interactive events (e.g., collision) and the subsequent logic triggered by the event.
+    """
+    def __init__(self, sim, body_id, all_state_names, default_state):
+        EventObject.__init__(self, sim=sim, body_id=body_id)
+        StatefulObject.__init__(self, all_state_names=all_state_names, default_state=default_state)
+
+    def step(self, sim_step, contacting_body_ids=None):
+        StatefulObject.step(self)
+        EventObject.step(self, sim_step=sim_step, contacting_body_ids=contacting_body_ids)
 
     def reset(self):
-        InteractiveObject.reset(self)
+        EventObject.reset(self)
         StatefulObject.reset(self)
 
 
-class BinaryStateObject(StatefulInteractiveObject):
-    def __init__(self, sim, body_id, state_name='ON', cooldown_interval=-1):
+class BinaryStateObject(InteractiveObject):
+    """
+    An interactive class with binary state.
+    """
+    def __init__(self, sim, body_id, state_name='ON'):
+        """
+        :param sim: Mujoco simulation
+        :param body_id: body id of the physical object that the interactive logic should attach to
+        :param state_name: the name of the binary state
+        """
         self._state_name = state_name
         default_state = {self.state_name: False}
         super(BinaryStateObject, self).__init__(
@@ -155,7 +205,6 @@ class BinaryStateObject(StatefulInteractiveObject):
             body_id=body_id,
             all_state_names=list(default_state.keys()),
             default_state=default_state,
-            cooldown_interval=cooldown_interval
         )
 
     @property
@@ -163,6 +212,7 @@ class BinaryStateObject(StatefulInteractiveObject):
         return self._state_name
 
     def _set_state_behaviors(self):
+        """Define callback functions that get triggered by the object state"""
         self.add_on_enter_state_funcs(
             cond={self.state_name: True}, func=self._on_activated
         )

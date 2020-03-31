@@ -4,6 +4,7 @@ from contextlib import contextmanager
 
 
 def bodyid2geomids(sim, body_id):
+    """Finds the list of geom ids given a body id"""
     geoms = []
     for i, bid in enumerate(sim.model.geom_bodyid):
         if bid == body_id:
@@ -12,6 +13,14 @@ def bodyid2geomids(sim, body_id):
 
 
 def set_body_pose(sim, body_name, pos, quat=None):
+    """
+    Sets an body to a target pose
+    :param sim: Mujoco simulation
+    :param body_name: name of the body
+    :param pos: target position
+    :param quat: target quaternion
+    :return: the object pose before the function call.
+    """
     sim_state = sim.get_state()
     qpos_addr = sim.model.get_joint_qpos_addr(body_name)
     pos_addr = qpos_addr[0]
@@ -26,7 +35,8 @@ def set_body_pose(sim, body_name, pos, quat=None):
 @contextmanager
 def world_saved(sim):
     """
-    Context scope for saved world state
+    Context scope for saved world state.
+    Simulation state gets saved when entering the scope and gets reset when leaving the scope.
     """
     world_state = sim.get_state().flatten()
     yield
