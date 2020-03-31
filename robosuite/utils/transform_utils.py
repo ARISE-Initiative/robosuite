@@ -678,9 +678,6 @@ def quat2axisangle(quat):
     Converts (x, y, z, w) quaternion to axis-angle format.
     Returns a unit vector direction and an angle.
     """
-    if np.isclose(quat[3], 1, 1e-5):
-        # This is (close to) a zero degree rotation, immediately return
-        return np.zeros(3), 0.
 
     # conversion from axis-angle to quaternion:
     #   qw = cos(theta / 2); qx, qy, qz = u * sin(theta / 2)
@@ -688,6 +685,10 @@ def quat2axisangle(quat):
     # normalize qx, qy, qz by sqrt(qx^2 + qy^2 + qz^2) = sqrt(1 - qw^2)
     # to extract the unit vector
     den = np.sqrt(1. - quat[3] * quat[3])
+    if np.isclose(den, 0.):
+        # This is (close to) a zero degree rotation, immediately return
+        return np.zeros(3), 0.
+
     x = quat[0] / den
     y = quat[1] / den
     z = quat[2] / den
