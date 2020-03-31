@@ -205,24 +205,6 @@ class Controller():
         orientation_error = T.axisangle2vec(axis=delta_rotation_axis, angle=delta_rotation_angle)
         return orientation_error
 
-        # def cross_product(vec1, vec2):
-        #     S = np.array(([0, -vec1[2], vec1[1]],
-        #                   [vec1[2], 0, -vec1[0]],
-        #                   [-vec1[1], vec1[0], 0]))
-
-        #     return np.dot(S, vec2)
-
-        # rc1 = current[0:3, 0]
-        # rc2 = current[0:3, 1]
-        # rc3 = current[0:3, 2]
-        # rd1 = desired[0:3, 0]
-        # rd2 = desired[0:3, 1]
-        # rd3 = desired[0:3, 2]
-
-        # orientation_error = 0.5 * (cross_product(rc1, rd1) + cross_product(rc2, rd2) + cross_product(rc3, rd3))
-
-        # return orientation_error
-
     def action_to_torques(self, action, policy_step):
         raise NotImplementedError
 
@@ -564,7 +546,6 @@ class PositionOrientationController(Controller):
                  orientation_limits=[[0, 0, 0], [0, 0, 0]],
                  interpolation=None,
                  force_control=False,
-                 axis_angle=False,
                  **kwargs
                  ):
         control_max = np.ones(3) * control_range_pos
@@ -582,7 +563,6 @@ class PositionOrientationController(Controller):
 
         self.use_delta_impedance = use_delta_impedance
         self.force_control = force_control
-        self.axis_angle = axis_angle
 
         if self.use_delta_impedance:
             # provide range of possible delta impedances
@@ -696,14 +676,7 @@ class PositionOrientationController(Controller):
             kp = np.array(self.impedance_kp[3:6])
             mr_inv = scipy.linalg.inv(self.lambda_r_matrix)
             rot_perturb = mr_inv.dot(force[3:6]) / kp
-
-            if self.axis_angle:
-                action[3:6] += rot_perturb
-            else:
-                # convert from euler to aa, add the force perturbation, then convert back
-                r_exp = T.axisangle2vec(*T.quat2axisangle(T.mat2quat(T.euler2mat(action[3:6]))))
-                r_exp += rot_perturb
-                action[3:6] = T.mat2euler(T.quat2mat(T.axisangle2quat(*T.vec2axisangle(r_exp))))
+            action[3:6] += rot_perturb
         else:
             assert force.shape[0] == 3
 
@@ -913,14 +886,10 @@ class PositionOrientationController(Controller):
         if orientation is not None:
             self._goal_orientation = orientation
         else:
-            if self.axis_angle:
-                # interpret input as scaled axis-angle (exponential coordinates)
-                axis, angle = T.vec2axisangle(-action[3:6])
-                quat_error = T.axisangle2quat(axis=axis, angle=angle)
-                rotation_mat_error = T.quat2mat(quat_error)
-            else:
-                # interpret input as delta euler
-                rotation_mat_error = T.euler2mat(-action[3:6])
+            # interpret input as scaled axis-angle (exponential coordinates)
+            axis, angle = T.vec2axisangle(-action[3:6])
+            quat_error = T.axisangle2quat(axis=axis, angle=angle)
+            rotation_mat_error = T.quat2mat(quat_error)
             self._goal_orientation = np.dot(rotation_mat_error.T, self.current_orientation_mat)
 
             if np.array(self.orientation_limits).any():
@@ -1015,7 +984,6 @@ class PositionController(PositionOrientationController):
                  control_freq=20,
                  interpolation=None,
                  force_control=False,
-                 axis_angle=False,
                  **kwargs
                  ):
         super(PositionController, self).__init__(
@@ -1038,7 +1006,6 @@ class PositionController(PositionOrientationController):
             initial_damping=initial_damping,
             interpolation=interpolation,
             force_control=force_control,
-            axis_angle=axis_angle,
             **kwargs)
 
         self.goal_orientation_set = False
