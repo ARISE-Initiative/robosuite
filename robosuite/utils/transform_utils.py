@@ -678,7 +678,7 @@ def quat2axisangle(quat):
     Converts (x, y, z, w) quaternion to axis-angle format.
     Returns a unit vector direction and an angle.
     """
-    if np.isclose(quat[3], 1, 1e-3):
+    if np.isclose(quat[3], 1, 1e-5):
         # This is (close to) a zero degree rotation, immediately return
         return np.zeros(3), 0.
 
@@ -702,7 +702,7 @@ def axisangle2quat(axis, angle):
     """
 
     # handle zero-rotation case
-    if np.isclose(angle, 0., 1e-3):
+    if np.isclose(angle, 0.):
         return np.array([0., 0., 0., 1.])
 
     # make sure that axis is a unit vector
@@ -712,3 +712,21 @@ def axisangle2quat(axis, angle):
     q[3] = np.cos(angle / 2.)
     q[:3] = axis * np.sin(angle / 2.)
     return q
+
+def vec2axisangle(vec):
+    """
+    Converts Euler vector (exponential coordinates) to axis-angle.
+    """
+    angle = np.linalg.norm(vec)
+    if np.isclose(angle, 0.):
+        # treat as a zero rotation
+        return np.array([1., 0., 0.]), 0.
+    axis = vec / angle
+    return axis, angle
+
+
+def axisangle2vec(axis, angle):
+    """
+    Converts axis-angle to Euler vector (exponential coordinates).
+    """
+    return axis * angle
