@@ -18,6 +18,7 @@ class SawyerEnv(MujocoEnv):
         gripper_type=None,
         gripper_visualization=False,
         use_indicator_object=False,
+        indicator_num=1,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -81,6 +82,7 @@ class SawyerEnv(MujocoEnv):
         self.gripper_type = gripper_type
         self.gripper_visualization = gripper_visualization
         self.use_indicator_object = use_indicator_object
+        self.indicator_num = indicator_num
         self.controller_config = controller_config
         super().__init__(
             has_renderer=has_renderer,
@@ -165,13 +167,19 @@ class SawyerEnv(MujocoEnv):
         ]
 
         if self.use_indicator_object:
-            ind_qpos = self.sim.model.get_joint_qpos_addr("pos_indicator")
-            self._ref_indicator_pos_low, self._ref_indicator_pos_high = ind_qpos
+            self._ref_indicator_pos_low = [0] * self.indicator_num
+            self._ref_indicator_pos_high = [0] * self.indicator_num
+            self._ref_indicator_vel_low = [0] * self.indicator_num
+            self._ref_indicator_vel_high = [0] * self.indicator_num
+            self.indicator_id = [0] * self.indicator_num
+            for i in range(self.indicator_num):
+                ind_qpos = self.sim.model.get_joint_qpos_addr("pos_indicator_{}".format(i))
+                self._ref_indicator_pos_low[i], self._ref_indicator_pos_high[i] = ind_qpos
 
-            ind_qvel = self.sim.model.get_joint_qvel_addr("pos_indicator")
-            self._ref_indicator_vel_low, self._ref_indicator_vel_high = ind_qvel
+                ind_qvel = self.sim.model.get_joint_qvel_addr("pos_indicator_{}".format(i))
+                self._ref_indicator_vel_low[i], self._ref_indicator_vel_high[i] = ind_qvel
 
-            self.indicator_id = self.sim.model.body_name2id("pos_indicator")
+                self.indicator_id[i] = self.sim.model.body_name2id("pos_indicator_{}".format(i))
 
         # indices for grippers in qpos, qvel
         if self.has_gripper:
@@ -221,13 +229,13 @@ class SawyerEnv(MujocoEnv):
         self.eef_site_id = self.sim.model.site_name2id("grip_site")
         self.eef_cylinder_id = self.sim.model.site_name2id("grip_site_cylinder")
 
-    def move_indicator(self, pos):
+    def move_indicator(self, pos, indicator_index=0):
         """
         Sets 3d position of indicator object to @pos.
         """
         if self.use_indicator_object:
-            index = self._ref_indicator_pos_low
-            self.sim.data.qpos[index : index + 3] = pos
+            index = self._ref_indicator_pos_low[indicator_index]
+            self.sim.data.qpos[index: index + 3] = pos
 
     def _pre_action(self, action, policy_step=False):
         """

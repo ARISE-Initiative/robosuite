@@ -340,6 +340,7 @@ class BoxObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        joint=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -357,6 +358,7 @@ class BoxObject(MujocoGeneratedObject):
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            joint=joint
         )
 
     def sanity_check(self):
@@ -395,6 +397,7 @@ class CylinderObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        joint=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -412,6 +415,7 @@ class CylinderObject(MujocoGeneratedObject):
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            joint=joint
         )
 
     def sanity_check(self):
@@ -450,6 +454,7 @@ class BallObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        joint=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -467,6 +472,7 @@ class BallObject(MujocoGeneratedObject):
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            joint=joint
         )
 
     def sanity_check(self):
@@ -505,6 +511,7 @@ class CapsuleObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        joint=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -522,6 +529,7 @@ class CapsuleObject(MujocoGeneratedObject):
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            joint=joint
         )
 
     def sanity_check(self):

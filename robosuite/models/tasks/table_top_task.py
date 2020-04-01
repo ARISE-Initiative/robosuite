@@ -1,4 +1,5 @@
 from robosuite.models.tasks import Task, UniformRandomSampler
+from robosuite.models.objects import MujocoGeneratedObject
 from robosuite.utils.mjcf_utils import new_joint, array_to_string
 
 
@@ -51,10 +52,11 @@ class TableTopTask(Task):
         self.max_horizontal_radius = 0
 
         for obj_name, obj_mjcf in mujoco_objects.items():
+            assert(isinstance(obj_mjcf, MujocoGeneratedObject))
             self.merge_asset(obj_mjcf)
             # Load object
             obj = obj_mjcf.get_collision(name=obj_name, site=True)
-            obj.append(new_joint(name=obj_name, type="free"))
+            obj.append(new_joint(name=obj_name, **obj_mjcf.joint))
             self.objects.append(obj)
             self.worldbody.append(obj)
 

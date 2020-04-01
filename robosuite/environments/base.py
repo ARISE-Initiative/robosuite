@@ -1,8 +1,16 @@
 from collections import OrderedDict
+import numpy as np
+
 from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
+import robosuite.utils.transform_utils as T
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
+try:
+    from mujoco_py.generated.const import RND_SEGMENT, RND_IDCOLOR
+except:
+    print("WARNING: could not import Mujoco 200 constants!")
+
 
 REGISTERED_ENVS = {}
 
@@ -329,6 +337,181 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns True if task has been completed.
         """
         return False
+
+    def _get_camera_intrinsic_matrix(self, camera_name=None):
+        """
+        Obtains camera internal matrix from other parameters. A 3X3 matrix.
+        """
+        if camera_name is None:
+            camera_name = self.camera_name
+        cam_id = self.sim.model.camera_name2id(camera_name)
+        height, width = self.camera_height, self.camera_width
+        fovy = self.sim.model.cam_fovy[cam_id]
+        f = 0.5 * height / np.tan(fovy * np.pi / 360)
+        K = np.array([[f, 0, width / 2], [0, f, height / 2], [0, 0, 1]])
+        return K
+
+    def _get_camera_extrinsic_matrix(self, camera_name=None):
+        """
+        Returns a 4x4 homogenous matrix corresponding to the camera pose in the
+        world frame. MuJoCo has a weird convention for how it sets up the
+        camera body axis, so we also apply a correction so that the x and y
+        axis are along the camera view and the z axis points along the
+        viewpoint.
+        Normal camera convention: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+        """
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        cam_id = self.sim.model.camera_name2id(camera_name)
+        camera_pos = self.sim.model.cam_pos[cam_id]
+        camera_rot = self.sim.model.cam_mat0[cam_id].reshape(3, 3)
+        R = T.make_pose(camera_pos, camera_rot)
+
+        # IMPORTANT! This is a correction so that the camera axis is set up along the viewpoint correctly.
+        camera_axis_correction = np.array([
+            [1., 0., 0., 0.],
+            [0., -1., 0., 0.],
+            [0., 0., -1., 0.],
+            [0., 0., 0., 1.]]
+        )
+        R = R @ camera_axis_correction
+        return R
+
+    def get_camera_transform_matrix(self, camera_name=None):
+        """
+        Camera transform matrix to project from world coordinates to pixel coordinates.
+        """
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        R = self._get_camera_extrinsic_matrix(camera_name=camera_name)
+        K = self._get_camera_intrinsic_matrix(camera_name=camera_name)
+        K_exp = np.eye(4)
+        K_exp[:3, :3] = K
+
+        # Takes a point in world, transforms to camera frame, and then projects onto image plane.
+        return K_exp @ T.pose_inv(R)
+
+    def get_camera_inverse_transform_matrix(self, camera_name=None):
+        """Exposes the 4X4 homogeneous transform matrix from camera frame to world frame."""
+        if camera_name is None:
+            camera_name = self.camera_name
+        P = self.get_camera_transform_matrix(camera_name=camera_name)
+        return np.linalg.inv(P)
+
+    def from_pixel_to_world(self, u, v, w, camera_name=None):
+        """
+        @input u, v: pixel
+        @input w: depth
+        @returns X: numpy array of shape (3,); x, y, z in world coordinates
+        """
+        assert 0 <= u < self.camera_width
+        assert 0 <= v < self.camera_height
+
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        P_inv = self.get_camera_inverse_transform_matrix(camera_name=camera_name)
+        X = P_inv @ np.array([u * w, v * w, w, 1.])
+        return X[:3]
+
+    def batch_from_pixel_to_world(self, pixels, depths, camera_name=None):
+        assert(len(pixels.shape) == 2)
+        assert(len(depths.shape) == 1)
+        assert(pixels.shape[1] == 2)
+        assert(depths.shape[0] == pixels.shape[0])
+        assert(np.all(np.logical_and(pixels[:, 0] >= 0, pixels[:, 0] < self.camera_width)))
+        assert(np.all(np.logical_and(pixels[:, 1] >= 0, pixels[:, 1] < self.camera_height)))
+        assert(np.all(depths >= 0))
+
+        if camera_name is None:
+            camera_name = self.camera_name
+        P_inv = self.get_camera_inverse_transform_matrix(camera_name=camera_name)
+        depths = depths[:, None]
+        pts = np.concatenate((pixels * depths, depths, np.ones_like(depths)), axis=1)  # [u * w, v * w, w, 1.]
+        pts_3d = (P_inv @ pts.transpose()).transpose()
+        return pts_3d[:, :3]
+
+    def from_world_to_pixel(self, x, camera_name=None):
+        """
+        @input x: numpy array of shape (3,); x, y, z in world coordinates
+        @returns u, v: pixel coordinates (not rounded)
+        """
+        assert x.shape[0] == 3
+        assert len(x.shape) == 1
+
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        P = self.get_camera_transform_matrix(camera_name=camera_name)
+        pixel = P @ np.array([x[0], x[1], x[2], 1.])
+
+        # account for homogenous coordinates
+        pixel /= pixel[2]
+        u, v = pixel[:2]
+
+        assert 0 <= u < self.camera_width
+        assert 0 <= v < self.camera_height
+        return u, v
+
+    def batch_from_world_to_pixel(self, pts, camera_name=None, return_valid_index=False):
+        assert(pts.shape[1] == 3)
+        assert(len(pts.shape) == 2)
+        if camera_name is None:
+            camera_name = self.camera_name
+
+        P = self.get_camera_transform_matrix(camera_name=camera_name)
+        x_hom = np.concatenate((pts, np.ones_like(pts[:, [0]])), axis=1)   # [x, y, z, 1]
+        pixels = (P @ x_hom.transpose()).transpose()
+        pixels /= pixels[:, [2]]
+        valid_pixels_x = np.logical_and(pixels[:, 0] >= 0, pixels[:, 0] < (self.camera_width - 0.5))
+        valid_pixels_y = np.logical_and(pixels[:, 1] >= 0, pixels[:, 1] < (self.camera_height - 0.5))
+        valid_pixel_index = np.where(np.logical_and(valid_pixels_x, valid_pixels_y))[0]
+        pixels = pixels[valid_pixel_index, :2]
+        if return_valid_index:
+            return pixels, valid_pixel_index
+        else:
+            return pixels
+
+    def z_buffer_to_real_depth(self, z_buffer):
+        """
+        Converts z_buffer value (range [0, 1]) to real depth
+        source: https://github.com/deepmind/dm_control/blob/master/dm_control/mujoco/engine.py#L742
+        :param z_buffer: N-d array z buffer values from gl renderer
+        :return: real_depth: N-d array depth in meters
+        """
+        extent = self.sim.model.stat.extent
+        far = self.sim.model.vis.map.zfar * extent
+        near = self.sim.model.vis.map.znear * extent
+        return near / (1. - z_buffer * (1. - near / far))
+
+    def render_segmentation(self, camera_name, camera_width=None, camera_height=None):
+        """
+        Get semantic segmentation map of a given view
+        Note that this requires a fork of mujoco-py: https://github.com/StanfordVL/mujoco-py
+        Ref: https://github.com/deepmind/dm_control/blob/master/dm_control/mujoco/engine.py#L751
+        :param camera_name: camera name
+        :return: a semantic segmentation map with each element corresponding to a object id
+        """
+        scn = self.sim.render_contexts[0].scn
+        scn.flags[RND_SEGMENT] = True
+        scn.flags[RND_IDCOLOR] = True
+        if camera_width is None:
+            camera_width = self.camera_width
+        if camera_height is None:
+            camera_height = self.camera_height
+        frame = self.sim.render(camera_width, camera_height, camera_name=camera_name)
+        frame = frame[..., 0] + frame[..., 1] * 2 ** 8 + frame[..., 2] * 2 ** 16
+        segid2output = np.full((self.sim.model.ngeom + 1), fill_value=-1,
+                               dtype=np.int32)  # Seg id cannot be > ngeom + 1.
+        geoms = self.sim.render_contexts[0].get_geoms()
+        mappings = np.array([(g['segid'], g['objid']) for g in geoms], dtype=np.int32)
+        segid2output[mappings[:, 0] + 1] = mappings[:, 1]
+        frame = segid2output[frame]
+        scn.flags[RND_SEGMENT] = False
+        scn.flags[RND_IDCOLOR] = False
+        return frame
 
     def _destroy_viewer(self):
         # if there is an active viewer window, destroy it

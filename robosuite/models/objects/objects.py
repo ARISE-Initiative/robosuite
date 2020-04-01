@@ -202,6 +202,7 @@ class MujocoGeneratedObject(MujocoObject):
         friction=None,
         density_range=None,
         friction_range=None,
+        joint=None,
     ):
         """
         Provides default initialization of physical attributes:
@@ -227,6 +228,11 @@ class MujocoGeneratedObject(MujocoObject):
             self.size = [0.05, 0.05, 0.05]
         else:
             self.size = size
+
+        if joint is None:
+            self.joint = {'type': 'free'}  # default free joint
+        else:
+            self.joint = joint
 
         if rgba is None:
             self.rgba = [1, 0, 0, 1]
