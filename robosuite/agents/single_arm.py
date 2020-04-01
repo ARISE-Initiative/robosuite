@@ -138,6 +138,9 @@ class SingleArm(RobotAgent):
                 self._ref_gripper_joint_pos_indexes
             ] = self.gripper.init_qpos
 
+        # Update base pos / ori references in controller
+        self.controller.update_base_pos_ori(self.base_pos, self.base_ori)
+
     def setup_references(self):
         """
         Sets up necessary reference for robots, grippers, and objects.

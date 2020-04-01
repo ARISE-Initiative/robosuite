@@ -159,6 +159,9 @@ class Bimanual(RobotAgent):
                     self._ref_gripper_joint_pos_indexes[arm]
                 ] = self.gripper[arm].init_qpos
 
+            # Update base pos / ori references in controller (technically only needs to be called once)
+            self.controller[arm].update_base_pos_ori(self.base_pos, self.base_ori)
+
     def setup_references(self):
         """
         Sets up necessary reference for robots, grippers, and objects.

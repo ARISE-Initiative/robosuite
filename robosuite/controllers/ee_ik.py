@@ -28,6 +28,8 @@ class PybulletServer(object):
         # Attributes
         self.server_id = None
         self.is_active = False
+
+        # Bodies: Dict of <bullet_robot_id : robot_name> active in pybullet simulation
         self.bodies = {}
 
         # Automatically setup this pybullet server
@@ -160,6 +162,7 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         self.bullet_joint_indexes = None   # Useful for splitting right and left hand indexes when controlling bimanual
         self.ik_command_indexes = None     # Relevant indices from ik loop; useful for splitting bimanual left / right
         self.ik_robot_target_pos_offset = None
+        self.base_orn_offset_inv = None         # inverse orientation offset from pybullet base to world
         self.converge_steps = converge_steps
 
         # Set ik limits and override internal min / max
@@ -173,7 +176,7 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
 
         # Target pos and ori
         self.ik_robot_target_pos = None
-        self.ik_robot_target_orn = None
+        self.ik_robot_target_orn = None                 # note: this currently isn't being used at all
 
         # Commanded pos and resulting commanded vel
         self.commanded_joint_positions = None
@@ -208,13 +211,9 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         # import reference to the global pybullet server and load the urdfs
         from robosuite.controllers import get_pybullet_server
         if load_urdf:
-            # Determine where to place robot in pybullet sim based on its type
-            if self.robot_name == "Baxter":
-                self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.0),
-                                           useFixedBase=1, physicsClientId=self.bullet_server_id)
-            else:
-                self.ik_robot = p.loadURDF(self.robot_urdf, (0, 0, 0.9),
-                                           useFixedBase=1, physicsClientId=self.bullet_server_id)
+            self.ik_robot = p.loadURDF(fileName=self.robot_urdf,
+                                       useFixedBase=1,
+                                       physicsClientId=self.bullet_server_id)
             # Add this to the pybullet server
             get_pybullet_server().bodies[self.ik_robot] = self.robot_name
         else:
@@ -356,6 +355,12 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         base_pose_in_world = T.pose2mat((base_pos_in_world, base_orn_in_world))
         world_pose_in_base = T.pose_inv(base_pose_in_world)
 
+        # Update reference to inverse orientation offset from pybullet base frame to world frame
+        self.base_orn_offset_inv = T.quat2mat(T.quat_inverse(base_orn_in_world))
+
+        # Update reference target orientation
+        self.reference_target_orn = T.quat_multiply(self.reference_target_orn, base_orn_in_world)
+
         eef_pose_in_base = T.pose_in_A_to_pose_in_B(
             pose_A=eef_pose_in_world, pose_A_in_B=world_pose_in_base
         )
@@ -442,10 +447,8 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         """
 
         # Calculate the rotation
-        rotation = self.ee_ori_mat @ rotation
-
-        # this rotation accounts for rotating the end effector (deviation between mujoco eef and pybullet eef)
-        rotation = rotation.dot(self.rotation_offset[:3, :3])
+        # This equals: inv base offset * eef * offset accounting for deviation between mujoco eef and pybullet eef
+        rotation = self.base_orn_offset_inv @ self.ee_ori_mat @ rotation @ self.rotation_offset[:3, :3]
 
         # Determine targets based on whether we're using interpolator(s) or not
         if self.interpolator_pos or self.interpolator_ori:
@@ -484,10 +487,9 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         """
         pose_in_base = T.pose2mat(pose_in_base)
 
-        base_pos_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot,
-                                                                     physicsClientId=self.bullet_server_id)[0])
-        base_orn_in_world = np.array(p.getBasePositionAndOrientation(self.ik_robot,
-                                                                     physicsClientId=self.bullet_server_id)[1])
+        base_pos_in_world, base_orn_in_world = \
+            np.array(p.getBasePositionAndOrientation(self.ik_robot, physicsClientId=self.bullet_server_id))
+
         base_pose_in_world = T.pose2mat((base_pos_in_world, base_orn_in_world))
 
         pose_in_world = T.pose_in_A_to_pose_in_B(
@@ -563,23 +565,17 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         # Run controller with given action
         return super().run_controller()
 
-    def _pose_in_base_from_name(self, name):
-        """
-        A helper function that takes in a named data field and returns the pose
-        of that object in the base frame.
-        """
+    def update_base_pos_ori(self, base_pos, base_ori):
+        # Update pybullet robot base and orientation according to values
+        p.resetBasePositionAndOrientation(
+            bodyUniqueId=self.ik_robot,
+            posObj=base_pos,
+            ornObj=base_ori,
+            physicsClientId=self.bullet_server_id
+        )
 
-        pos_in_world = self.sim.data.get_body_xpos(name)
-        rot_in_world = self.sim.data.get_body_xmat(name).reshape((3, 3))
-        pose_in_world = T.make_pose(pos_in_world, rot_in_world)
-
-        base_pos_in_world = self.sim.data.get_body_xpos("base")
-        base_rot_in_world = self.sim.data.get_body_xmat("base").reshape((3, 3))
-        base_pose_in_world = T.make_pose(base_pos_in_world, base_rot_in_world)
-        world_pose_in_base = T.pose_inv(base_pose_in_world)
-
-        pose_in_base = T.pose_in_A_to_pose_in_B(pose_in_world, world_pose_in_base)
-        return pose_in_base
+        # Re-sync pybullet state
+        self.sync_state()
 
     def _clip_ik_input(self, dpos, rotation):
         """

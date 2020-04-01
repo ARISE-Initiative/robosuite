@@ -1,5 +1,3 @@
-# TODO: UPDATE FOR REFACTOR_ARM ENV INTERFACE
-
 """
 This demo script demonstrates the various functionalities of each controller available within robosuite (list of
 supported controllers are shown at the bottom of this docstring).
@@ -49,74 +47,59 @@ sequential qualitative behavior during the test is described below for each cont
 
 
 import numpy as np
-import robosuite as suite
 from robosuite.controllers import load_controller_config
 import robosuite.utils.transform_utils as T
+from robosuite.utils.input_utils import *
 
 
 if __name__ == "__main__":
-    # get the list of all environments
-    envs = sorted(suite.environments.ALL_ENVS)
 
-    # get the list of all controllers
-    controllers = {
-        "Joint Velocity": "JOINT_VEL",
-        "Joint Torque": "JOINT_TOR",
-        "Joint Impedance": "JOINT_IMP",
-        "End Effector Position": "EE_POS",
-        "End Effector Position Orientation": "EE_POS_ORI",
-        "End Effector Inverse Kinematics (note: must have pybullet installed!)": "EE_IK",
-    }
+    # Create dict to hold options that will be passed to env creation call
+    options = {}
 
-    # print info and select an environment
+    # print welcome info
     print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
     print(suite.__logo__)
-    print("Here is a list of environments in the suite:\n")
 
-    for k, env in enumerate(envs):
-        print("[{}] {}".format(k, env))
-    print()
-    try:
-        s = input(
-            "Choose an environment to run "
-            + "(enter a number from 0 to {}): ".format(len(envs) - 1)
-        )
-        # parse input into a number within range
-        k = min(max(int(s), 0), len(envs))
-    except:
-        k = 0
-        print("Input is not valid. Use {} by default.\n".format(envs[k]))
+    # Choose environment and add it to options
+    options["env_name"] = choose_environment()
 
-    print("Here is a list of controllers in the suite:\n")
+    # If a multi-arm environment has been chosen, choose configuration and appropriate robot(s)
+    if "TwoArm" in options["env_name"]:
+        # Choose env config and add it to options
+        options["env_configuration"] = choose_multi_arm_config()
 
-    for j, controller in enumerate(list(controllers)):
-        print("[{}] {}".format(j, controller))
-    print()
-    try:
-        s = input(
-            "Choose a controller for the robot "
-            + "(enter a number from 0 to {}): ".format(len(controllers) - 1)
-        )
-        # parse input into a number within range
-        j = min(max(int(s), 0), len(controllers))
-    except:
-        j = 0
-        print("Input is not valid. Use {} by default.".format(list(controllers)[j]))
+        # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
+        if options["env_configuration"] == 'bimanual':
+            options["robots"] = 'Baxter'
+        else:
+            options["robots"] = []
 
-    # Get chosen controller
-    controller_name = list(controllers.values())[j]
+            # Have user choose two robots
+            print("A multiple single-arm configuration was chosen.\n")
+
+            for i in range(2):
+                print("Please choose Robot {}...\n".format(i))
+                options["robots"].append(choose_robots(exclude_bimanual=True))
+
+    # Else, we simply choose a single (single-armed) robot to instantiate in the environment
+    else:
+        options["robots"] = choose_robots(exclude_bimanual=True)
+
+    # Choose controller
+    controller_name = choose_controller()
 
     # Load the desired controller
-    config = load_controller_config(default_controller=controller_name)
+    options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
     # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value, neutral control values)
     controller_settings = {
-        "EE_POS_ORI": [6, 6, 0.1, np.array([0, 0, 0, 0, 0, 0], dtype=float)],
-        "EE_POS": [3, 3, 0.1, np.array([0, 0, 0], dtype=float)],
-        "EE_IK": [7, 6, 0.01, np.array([0, 0, 0, 0, 0, 0, 1], dtype=float)],
-        "JOINT_IMP": [7, 7, 0.2, np.array([0, 0, 0, 0, 0, 0, 0], dtype=float)],
-        "JOINT_VEL": [7, 7, -0.05, np.array([0, 0, 0, 0, 0, 0, 0], dtype=float)],
-        "JOINT_TOR": [7, 7, 0.001, np.array([0, 0, 0, 0, 0, 0, 0], dtype=float)]
+        "EE_POS_ORI": [7, 6, 0.1, np.array([0, 0, 0, 0, 0, 0, 0], dtype=float)],
+        "EE_POS": [4, 3, 0.1, np.array([0, 0, 0, 0], dtype=float)],
+        "EE_IK": [8, 6, 0.01, np.array([0, 0, 0, 0, 0, 0, 1, 0], dtype=float)],
+        "JOINT_IMP": [8, 7, 0.2, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
+        "JOINT_VEL": [8, 7, -0.05, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
+        "JOINT_TOR": [8, 7, 0.001, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)]
     }
 
     # Define variables for each controller test
@@ -131,8 +114,7 @@ if __name__ == "__main__":
 
     # initialize the task
     env = suite.make(
-        envs[k],
-        controller_config=config,
+        **options,
         has_renderer=True,
         ignore_done=True,
         use_camera_obs=False,
@@ -142,13 +124,11 @@ if __name__ == "__main__":
     env.reset()
     env.viewer.set_camera(camera_id=0)
 
-    # To accommodate for multi-armed robots (e.g.: Baxter), we need to make sure to fill any extra action space
-    # Get total action dimension
-    low, _ = env.action_spec
-    total_action_dim = len(low)
-    filler = np.zeros(total_action_dim - 2 * action_dim) if env.mujoco_robot.name == 'baxter' else \
-        np.zeros(total_action_dim - action_dim)
-
+    # To accommodate for multi-arm settings (e.g.: Baxter), we need to make sure to fill any extra action space
+    # Get total number of arms being controlled
+    n = 0
+    for robot in env.robots:
+        n += int(robot.action_dim / action_dim)
 
     # Keep track of done variable to know when to break loop
     count = 0
@@ -156,20 +136,18 @@ if __name__ == "__main__":
     while count < num_test_steps:
         action = neutral.copy()
         for i in range(steps_per_action):
-            if controller_name == 'ee_ik' and count > 2:
+            if controller_name == 'EE_IK' and count > 2:
                 # Convert from euler angle to quat here since we're working with quats
                 angle = np.zeros(3)
                 angle[count - 3] = test_value
                 action[3:7] = T.mat2quat(T.euler2mat(angle))
             else:
                 action[count] = test_value
-            total_action = np.concatenate([action, action, filler]) if env.mujoco_robot.name == 'baxter' else \
-                np.concatenate([action, filler])
+            total_action = np.tile(action, n)
             env.step(total_action)
             env.render()
         for i in range(steps_per_rest):
-            total_action = np.concatenate([neutral, neutral, filler]) if env.mujoco_robot.name == 'baxter' else \
-                np.concatenate([neutral, filler])
+            total_action = np.tile(neutral, n)
             env.step(total_action)
             env.render()
         count += 1

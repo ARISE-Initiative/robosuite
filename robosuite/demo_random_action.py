@@ -1,66 +1,51 @@
-# TODO: NEED TO UPDATE THIS FOR REFACTORED ENVS
-
 import numpy as np
-import robosuite as suite
 from robosuite.controllers import load_controller_config
+from robosuite.utils.input_utils import *
 
 
 if __name__ == "__main__":
-    # get the list of all environments
-    envs = sorted(suite.environments.ALL_ENVS)
 
-    # get the list of all controllers
-    controllers = {
-        "Joint Velocity": "JOINT_VEL",
-        "Joint Torque": "JOINT_TOR",
-        "Joint Impedance": "JOINT_IMP",
-        "End Effector Position": "EE_POS",
-        "End Effector Position Orientation": "EE_POS_ORI",
-        "End Effector Inverse Kinematics (note: must have pybullet installed!)": "EE_IK",
-    }
+    # Create dict to hold options that will be passed to env creation call
+    options = {}
 
-    # print info and select an environment
+    # print welcome info
     print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
     print(suite.__logo__)
-    print("Here is a list of environments in the suite:\n")
 
-    for k, env in enumerate(envs):
-        print("[{}] {}".format(k, env))
-    print()
-    try:
-        s = input(
-            "Choose an environment to run "
-            + "(enter a number from 0 to {}): ".format(len(envs) - 1)
-        )
-        # parse input into a number within range
-        k = min(max(int(s), 0), len(envs))
-    except:
-        k = 0
-        print("Input is not valid. Use {} by default.\n".format(envs[k]))
+    # Choose environment and add it to options
+    options["env_name"] = choose_environment()
 
-    print("Here is a list of controllers in the suite:\n")
+    # If a multi-arm environment has been chosen, choose configuration and appropriate robot(s)
+    if "TwoArm" in options["env_name"]:
+        # Choose env config and add it to options
+        options["env_configuration"] = choose_multi_arm_config()
 
-    for j, controller in enumerate(list(controllers)):
-        print("[{}] {}".format(j, controller))
-    print()
-    try:
-        s = input(
-            "Choose a controller for the robot "
-            + "(enter a number from 0 to {}): ".format(len(controllers) - 1)
-        )
-        # parse input into a number within range
-        j = min(max(int(s), 0), len(controllers))
-    except:
-        j = 0
-        print("Input is not valid. Use {} by default.".format(list(controllers)[j]))
+        # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
+        if options["env_configuration"] == 'bimanual':
+            options["robots"] = 'Baxter'
+        else:
+            options["robots"] = []
+
+            # Have user choose two robots
+            print("A multiple single-arm configuration was chosen.\n")
+
+            for i in range(2):
+                print("Please choose Robot {}...\n".format(i))
+                options["robots"].append(choose_robots(exclude_bimanual=True))
+
+    # Else, we simply choose a single (single-armed) robot to instantiate in the environment
+    else:
+        options["robots"] = choose_robots(exclude_bimanual=True)
+
+    # Choose controller
+    controller_name = choose_controller()
 
     # Load the desired controller
-    config = load_controller_config(default_controller=list(controllers.values())[j])
+    options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
     # initialize the task
     env = suite.make(
-        envs[k],
-        controller_config=config,
+        **options,
         has_renderer=True,
         ignore_done=True,
         use_camera_obs=False,

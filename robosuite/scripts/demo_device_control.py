@@ -277,12 +277,16 @@ if __name__ == "__main__":
 
             # Fill out the rest of the action space if necessary
             rem_action_dim = env.action_dim - action.size
+            rem_action = np.zeros(rem_action_dim)
+            # Make sure ik input isn't degenerate
+            if rem_action_dim > 0 and args.controller == 'ik':
+                rem_action[6] = 1
             if rem_action_dim > 0:
                 # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
                 if args.arm == "right":
-                    action = np.concatenate([action, np.zeros(rem_action_dim)])
+                    action = np.concatenate([action, rem_action])
                 elif args.arm == "left":
-                    action = np.concatenate([np.zeros(rem_action_dim), action])
+                    action = np.concatenate([rem_action, action])
                 else:
                     # Only right and left arms supported
                     print("Error: Unsupported arm specified -- "

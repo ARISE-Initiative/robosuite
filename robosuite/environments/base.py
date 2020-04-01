@@ -127,6 +127,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self._load_model()
         self.mjpy_model = self.model.get_model(mode="mujoco_py")
         self.sim = MjSim(self.mjpy_model)
+        self.sim.step()                 # Run a single step to make sure changes have propagated through sim state
         self.initialize_time(self.control_freq)
 
         # create visualization screen or renderer

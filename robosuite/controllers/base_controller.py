@@ -119,6 +119,18 @@ class Controller(object, metaclass=abc.ABCMeta):
         mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
         self.mass_matrix = mass_matrix[self.joint_index, :][:, self.joint_index]
 
+    def update_base_pos_ori(self, base_pos, base_ori):
+        """
+        Optional function to implement in subclass controllers that will take in @base_pos and @base_ori and update
+        internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
+        is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
+
+        Args:
+            @base_pos (3-tuple): x,y,z position of robot base in mujoco world coordinates
+            @base_ori (4-tuple): x,y,z,w orientation or robot base in mujoco world coordinates
+        """
+        pass
+
     @property
     def input_min(self):
         """Returns input minimum below which an inputted action will be clipped"""

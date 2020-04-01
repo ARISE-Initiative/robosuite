@@ -31,6 +31,8 @@ class RobotAgent(object):
 
         self.init_qpos = None                               # n-dim list of robot joints
         self.robot_joints = None                            # xml joint names for robot
+        self.base_pos = None                                # Base position in world coordinates (x,y,z)
+        self.base_ori = None                                # Base rotation in world coordinates (x,y,z,w quat)
         self._ref_joint_indexes = None                      # xml joint indexes for robot in mjsim
         self._ref_joint_pos_indexes = None                  # xml joint position indexes in mjsim
         self._ref_joint_vel_indexes = None                  # xml joint velocity indexes in mjsim
@@ -102,6 +104,10 @@ class RobotAgent(object):
             for actuator in self.robot_model.actuators["torq"]
         ]
 
+        # Update base pos / ori references
+        self.base_pos = self.sim.data.get_body_xpos(self.robot_model.robot_base)
+        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3)))
+
     def control(self, action, policy_step=False):
         """
         Actuate the robot with the
@@ -156,7 +162,7 @@ class RobotAgent(object):
     @property
     def dof(self):
         """
-        Returns the DoF of the robot (with grippers).
+        Returns the active DoF of the robot (Number of robot joints + active gripper DoF).
         """
         dof = self.robot_model.dof
         return dof
