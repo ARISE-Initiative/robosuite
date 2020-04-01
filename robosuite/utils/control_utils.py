@@ -67,24 +67,16 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
 
 def orientation_error(desired, current):
     """
-    Optimized function to determine orientation error from matrices
+    This function calculates a 3-dimensional orientation error vector for use in the
+    impedance controller. It does this by computing the delta rotation between the 
+    inputs and converting that rotation to exponential coordinates (axis-angle
+    representation, where the 3d vector is axis * angle). 
+    See https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation for more information.
     """
-
-    def cross_product(vec1, vec2):
-        mat = np.array(([0, -vec1[2], vec1[1]],
-                        [vec1[2], 0, -vec1[0]],
-                        [-vec1[1], vec1[0], 0]))
-        return np.dot(mat, vec2)
-
-    rc1 = current[0:3, 0]
-    rc2 = current[0:3, 1]
-    rc3 = current[0:3, 2]
-    rd1 = desired[0:3, 0]
-    rd2 = desired[0:3, 1]
-    rd3 = desired[0:3, 2]
-
-    error = 0.5 * (cross_product(rc1, rd1) + cross_product(rc2, rd2) + cross_product(rc3, rd3))
-
+    delta_rotation_mat = desired.dot(current.T)
+    delta_rotation_quat = trans.mat2quat(delta_rotation_mat)
+    delta_rotation_axis, delta_rotation_angle = trans.quat2axisangle(delta_rotation_quat)
+    error = trans.axisangle2vec(axis=delta_rotation_axis, angle=delta_rotation_angle)
     return error
 
 
@@ -129,7 +121,10 @@ def set_goal_orientation(delta,
 
     # otherwise use delta to set goal orientation
     else:
-        rotation_mat_error = trans.euler2mat(-delta)
+        # interpret input as scaled axis-angle (exponential coordinates)
+        axis, angle = trans.vec2axisangle(-delta)
+        quat_error = trans.axisangle2quat(axis=axis, angle=angle)
+        rotation_mat_error = trans.quat2mat(quat_error)
         goal_orientation = np.dot(rotation_mat_error.T, current_orientation)
 
     #check for orientation limits

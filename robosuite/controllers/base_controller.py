@@ -97,6 +97,16 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         return transformed_action
 
+    def unscale_action(self, action):
+        """
+        Inverse of @scale_action. If an action outside the valid bounds is passed in, it will rescale
+        the action to lie within the valid action bounds (so it may not correspond to the true
+        inverse).
+        """
+        untransformed_action = ((action - self.action_output_transform) / self.action_scale) + self.action_input_transform
+        untransformed_action = np.clip(untransformed_action, self.input_min, self.input_max)
+        return untransformed_action
+
     def update(self):
         """
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,

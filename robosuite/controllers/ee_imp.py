@@ -89,6 +89,7 @@ class EndEffectorImpedanceController(Controller):
                  control_ori=True,
                  control_delta=True,
                  uncouple_pos_ori=True,
+                 force_control=False,
                  **kwargs # does nothing; used so no error raised when dict is passed with extra terms used previously
                  ):
 
@@ -111,6 +112,13 @@ class EndEffectorImpedanceController(Controller):
         self.input_min = input_min
         self.output_max = output_max[:self.control_dim] if type(output_max) == tuple else output_max
         self.output_min = output_min[:self.control_dim] if type(output_min) == tuple else output_min
+
+        # force control
+        self.force_control = force_control
+        if self.force_control:
+            assert uncouple_pos_ori
+            # translational / rotational forces
+            self.control_dim *= 2
 
         # limits
         self.position_limits = position_limits
@@ -139,6 +147,17 @@ class EndEffectorImpedanceController(Controller):
 
     def set_goal(self, delta, set_pos=None, set_ori=None):
         self.update()
+
+        if self.force_control:
+            if self.use_ori:
+                self.force = np.array(delta[:3]) * 25.
+                delta = delta[3:]
+            else:
+                self.force = np.concatenate([
+                    delta[:3] * 25.,
+                    delta[3:6] * 10.,
+                ])
+                delta = delta[6:]
 
         # If we're using deltas, interpret actions as such
         if self.use_delta:
@@ -231,6 +250,11 @@ class EndEffectorImpedanceController(Controller):
         if self.uncoupling:
             decoupled_force = np.dot(lambda_pos, desired_force)
             decoupled_torque = np.dot(lambda_ori, desired_torque)
+            if self.force_control:
+                # add in desired force biases
+                decoupled_force += self.force[:3]
+                if self.use_ori:
+                    decoupled_torque += self.force[3:6]
             decoupled_wrench = np.concatenate([decoupled_force, decoupled_torque])
         else:
             desired_wrench = np.concatenate([desired_force, desired_torque])
@@ -250,3 +274,47 @@ class EndEffectorImpedanceController(Controller):
     @property
     def name(self):
         return 'EE_IMP'
+
+    def modify_action_with_force_perturbation(self, action, force):
+        """
+        Modifies the passed action vector with a pose perturbation that
+        roughly corresponds to external force perturbations on the arm
+        with the passed force vector.
+        """
+
+        # copies
+        action = np.array(action)
+        force = np.array(force)
+
+        # get raw action from normalized actions
+        action = self.scale_action(action)
+
+        # need opspace mass matrices
+        _, lambda_pos, lambda_ori, _ = opspace_matrices(self.mass_matrix,
+                                                        self.J_full,
+                                                        self.J_pos,
+                                                        self.J_ori)
+
+        if self.use_ori:
+            assert force.shape[0] == 6
+
+            # this perturbation is computed assuming that the action space is
+            # axis-angle - (exponential coordinates)
+            force[3:6] *= 10.
+            kp = np.array(self.kp[3:6])
+            mr_inv = np.linalg.inv(lambda_ori)
+            rot_perturb = mr_inv.dot(force[3:6]) / kp
+            action[3:6] += rot_perturb
+        else:
+            assert force.shape[0] == 3
+
+        force[:3] *= 25.
+
+        # delta x' = delta x + 1/kp * M^-1 * F
+        kp = np.array(self.kp[0:3])
+        mx_inv = np.linalg.inv(lambda_pos)
+        pos_perturb = mx_inv.dot(force[:3]) / kp
+        action[:3] += pos_perturb
+        
+        # re-normalize action
+        return self.unscale_action(action)
