@@ -43,7 +43,6 @@ class PandaStack(PandaEnv):
         camera_real_depth=False,
         camera_segmentation=False,
         eval_mode=False,
-        num_evals=50,
         perturb_evals=False,
     ):
         """
@@ -164,7 +163,6 @@ class PandaStack(PandaEnv):
             camera_real_depth=camera_real_depth,
             camera_segmentation=camera_segmentation,
             eval_mode=eval_mode,
-            num_evals=num_evals,
             perturb_evals=perturb_evals,
         )
 

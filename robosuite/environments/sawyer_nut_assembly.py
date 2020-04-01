@@ -47,7 +47,6 @@ class SawyerNutAssembly(SawyerEnv):
         camera_real_depth=False,
         camera_segmentation=False,
         eval_mode=False,
-        num_evals=50,
         perturb_evals=False,
     ):
         """
@@ -197,7 +196,6 @@ class SawyerNutAssembly(SawyerEnv):
             camera_real_depth=camera_real_depth,
             camera_segmentation=camera_segmentation,
             eval_mode=eval_mode,
-            num_evals=num_evals,
             perturb_evals=perturb_evals,
         )
 
@@ -231,7 +229,7 @@ class SawyerNutAssembly(SawyerEnv):
             z_rotation = grid[3].ravel()
             grid_length = x_grid.shape[0]
 
-            round_robin_period = self.num_evals
+            round_robin_period = grid_length
             if self.perturb_evals:
                 # sample 100 rounds of perturbations and then sampler will repeat
                 round_robin_period *= 100
@@ -726,8 +724,8 @@ class SawyerNutAssemblySquareConstantRotationPosition(SawyerNutAssemblySquare):
             ensure_object_boundary_in_range=False,
             z_rotation={ "SquareNut" : np.pi, "RoundNut" : np.pi, },
         )
-        if kwargs["controller"] == "position_orientation":
-            kwargs["controller"] = "position"
+        if kwargs["controller_config"]["type"] == "EE_POS_ORI":
+            kwargs["controller_config"]["type"] = "EE_POS"
         super().__init__(**kwargs)
 
     def _grid_bounds_for_eval_mode(self):
