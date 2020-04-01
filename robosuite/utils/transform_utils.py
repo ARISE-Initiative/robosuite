@@ -5,7 +5,7 @@ NOTE: convention for quaternions is (x, y, z, w)
 """
 
 import math
-import numpy as np
+import numpy as np 
 
 
 PI = np.pi
