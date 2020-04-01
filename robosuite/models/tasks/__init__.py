@@ -5,7 +5,7 @@ from .placement_sampler import (
     UniformRandomSampler,
     UniformRandomPegsSampler,
     RoundRobinSampler,
-    RoundRobinPegsSampler
+    RoundRobinPegsSampler,
 )
 
 from .pick_place_task import PickPlaceTask
