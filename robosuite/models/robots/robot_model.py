@@ -33,7 +33,7 @@ def check_bimanual(robot_name):
     return robot_name in BIMANUAL_ROBOTS
 
 
-class RobotMeta(type):
+class RobotModelMeta(type):
     """Metaclass for registering robot arms"""
 
     def __new__(meta, name, bases, class_dict):
@@ -47,7 +47,7 @@ class RobotMeta(type):
         return cls
 
 
-class Robot(MujocoXML, metaclass=RobotMeta):
+class RobotModel(MujocoXML, metaclass=RobotModelMeta):
     """Base class for all robot models."""
 
     def __init__(self, fname, idn=0, bottom_offset=(0, 0, 0)):

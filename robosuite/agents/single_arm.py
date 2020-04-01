@@ -7,13 +7,13 @@ import robosuite.utils.transform_utils as T
 from robosuite.models.grippers import gripper_factory
 from robosuite.controllers import controller_factory, load_controller_config
 
-from robosuite.agents.robot_agent import RobotAgent
+from robosuite.agents.robot import Robot
 
 import os
 
 
-class SingleArm(RobotAgent):
-    """Initializes a single-armed robot agent, as defined by a single corresponding XML"""
+class SingleArm(Robot):
+    """Initializes a single-armed robot, as defined by a single corresponding XML"""
 
     def __init__(
         self,

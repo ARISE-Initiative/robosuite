@@ -234,9 +234,10 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
                 physicsClientId=self.bullet_server_id
             )
 
+        # TODO: Very ugly initialization - any way to automate this? Maybe move the hardcoded magic numbers to the robot model files?
+
         # For now, hard code baxter bullet eef idx
         if self.robot_name == "Baxter":
-            self.ik_robot_target_pos_offset = np.array([0, 0, 0.913])
             if "right" in self.eef_name:
                 self.bullet_ee_idx = 27
                 self.bullet_joint_indexes = [13, 14, 15, 16, 17, 19, 20]
@@ -253,7 +254,6 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
             self.bullet_ee_idx = self.num_bullet_joints - 1
             self.bullet_joint_indexes = np.arange(self.joint_dim)
             self.ik_command_indexes = np.arange(self.joint_dim)
-            self.ik_robot_target_pos_offset = np.zeros(3)
 
         # Set rotation offsets (for mujoco eef -> pybullet eef) and rest poses
         if self.robot_name == "Sawyer":

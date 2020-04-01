@@ -7,13 +7,13 @@ import robosuite.utils.transform_utils as T
 from robosuite.models.grippers import gripper_factory
 from robosuite.controllers import controller_factory, load_controller_config
 
-from robosuite.agents.robot_agent import RobotAgent
+from robosuite.agents.robot import Robot
 
 import os
 
 
-class Bimanual(RobotAgent):
-    """Initializes a bimanual robot agent, as defined by a single corresponding XML"""
+class Bimanual(Robot):
+    """Initializes a bimanual robot, as defined by a single corresponding XML"""
 
     def __init__(
         self,

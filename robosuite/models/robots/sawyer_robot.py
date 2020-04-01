@@ -1,9 +1,9 @@
 import numpy as np
-from robosuite.models.robots.robot import Robot
+from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class Sawyer(Robot):
+class Sawyer(RobotModel):
     """Sawyer is a witty single-arm robot designed by Rethink Robotics."""
 
     def __init__(self, idn=0, bottom_offset=(0, 0, -0.913)):
@@ -49,8 +49,8 @@ class Sawyer(Robot):
     @property
     def _actuators(self):
         return {
-            "pos": [],  # No position actuators for panda
-            "vel": [],  # No velocity actuators for panda
+            "pos": [],  # No position actuators for sawyer
+            "vel": [],  # No velocity actuators for sawyer
             "torq": ["torq_right_j0", "torq_right_j1", "torq_right_j2", "torq_right_j3",
                      "torq_right_j4", "torq_right_j5", "torq_right_j6"]
         }

@@ -1,9 +1,9 @@
 import numpy as np
-from robosuite.models.robots.robot import Robot
+from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class Panda(Robot):
+class Panda(RobotModel):
     """Panda is a sensitive single-arm robot designed by Franka."""
 
     def __init__(self, idn=0, bottom_offset=(0, 0, -0.913)):

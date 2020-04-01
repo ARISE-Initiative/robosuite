@@ -4,7 +4,7 @@ from robosuite.environments.base import MujocoEnv
 
 from robosuite.agents.single_arm import SingleArm
 from robosuite.agents.bimanual import Bimanual
-from robosuite.models.robots.robot import check_bimanual
+from robosuite.models.robots.robot_model import check_bimanual
 
 from robosuite.controllers import reset_controllers
 

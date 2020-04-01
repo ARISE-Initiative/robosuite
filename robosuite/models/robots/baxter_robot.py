@@ -1,9 +1,9 @@
 import numpy as np
-from robosuite.models.robots.robot import Robot
-from robosuite.utils.mjcf_utils import xml_path_completion, array_to_string
+from robosuite.models.robots.robot_model import RobotModel
+from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class Baxter(Robot):
+class Baxter(RobotModel):
     """Baxter is a hunky bimanual robot designed by Rethink Robotics."""
 
     def __init__(self, idn=0, bottom_offset=(0, 0, -0.913)):

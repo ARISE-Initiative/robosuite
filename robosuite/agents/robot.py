@@ -1,5 +1,3 @@
-import numpy as np
-
 from collections import OrderedDict
 
 import robosuite.utils.transform_utils as T
@@ -9,8 +7,8 @@ from mujoco_py import MjSim
 from robosuite.models.robots import create_robot
 
 
-class RobotAgent(object):
-    """Initializes a robot agent, as defined by a single corresponding XML"""
+class Robot(object):
+    """Initializes a robot, as defined by a single corresponding XML"""
 
     def __init__(
         self,

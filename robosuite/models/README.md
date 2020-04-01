@@ -9,11 +9,11 @@ Below we describe the types of scene elements that we support:
 
 Robots
 ------
-The [robots](robots) folder contains robot classes which load robot specifications from MJCF/URDF files and instantiate a robot mjModel. All robot classes should inherit a base [Robot](robots/robot.py) class which defines a set of common robot APIs.
+The [robots](robots) folder contains robot classes which load robot specifications from MJCF/URDF files and instantiate a robot mjModel. All robot classes should inherit a base [Robot](robots/robot_model.py) class which defines a set of common robot APIs.
 
 Grippers
 --------
-The [grippers](grippers) folder consists of a variety of end-effector models that can be mounted to the arms of a robot model by the [`add_gripper`](robots/robot.py#L20) method in the robot class.
+The [grippers](grippers) folder consists of a variety of end-effector models that can be mounted to the arms of a robot model by the [`add_gripper`](robots/robot_model.py#L20) method in the robot class.
 
 Objects
 -------
