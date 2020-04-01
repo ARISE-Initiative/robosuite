@@ -31,6 +31,9 @@ class SawyerEnv(MujocoEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        eval_mode=False,
+        num_evals=50,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -45,6 +48,9 @@ class SawyerEnv(MujocoEnv):
 
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
+
+            indicator_num (int): number of indicator objects to add to the environment.
+                Only used if @use_indicator_object is True.
 
             has_renderer (bool): If true, render the simulation state in
                 a viewer instead of headless mode.
@@ -84,6 +90,14 @@ class SawyerEnv(MujocoEnv):
         self.use_indicator_object = use_indicator_object
         self.indicator_num = indicator_num
         self.controller_config = controller_config
+
+        self.eval_mode = eval_mode
+        self.num_evals = num_evals
+        self.perturb_evals = perturb_evals
+        if self.eval_mode:
+            # replace placement initializer with one for consistent task evaluations!
+            self._get_placement_initializer_for_eval_mode()
+
         super().__init__(
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
@@ -98,6 +112,15 @@ class SawyerEnv(MujocoEnv):
             camera_width=camera_width,
             camera_depth=camera_depth,
         )
+
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        This method is used by subclasses to implement a 
+        placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+        raise Exception("Must implement this in subclass.")
 
     def _load_controller(self, controller_config):
         """
@@ -143,6 +166,8 @@ class SawyerEnv(MujocoEnv):
         Sets initial pose of arm and grippers.
         """
         super()._reset_internal()
+        self._has_interaction = False
+
         self.sim.data.qpos[self._ref_joint_pos_indexes] = self.init_qpos
         self._load_controller(self.controller_config)
 
@@ -237,6 +262,13 @@ class SawyerEnv(MujocoEnv):
             index = self._ref_indicator_pos_low[indicator_index]
             self.sim.data.qpos[index: index + 3] = pos
 
+    def step(self, action):
+        if not self._has_interaction and self.eval_mode:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super().step(action)
+
     def _pre_action(self, action, policy_step=False):
         """
         Overrides the superclass method to actuate the robot with the 
@@ -258,8 +290,8 @@ class SawyerEnv(MujocoEnv):
 
         gripper_action = None
         if self.has_gripper:
-            gripper_action = action[self.controller.control_dim:]  # all indexes past controller dimension indexes
-            action = action[:self.controller.control_dim]
+            gripper_action = action[-self.gripper.dof:]  # all indexes at end
+            action = action[:-self.gripper.dof]
 
         # Update model in controller
         self.controller.update()
@@ -289,11 +321,12 @@ class SawyerEnv(MujocoEnv):
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
 
         if self.use_indicator_object:
-            # Apply gravity compensation to indicator object too
-            self.sim.data.qfrc_applied[
-            self._ref_indicator_vel_low: self._ref_indicator_vel_high
-            ] = self.sim.data.qfrc_bias[
-                self._ref_indicator_vel_low: self._ref_indicator_vel_high]
+            for i in range(self.indicator_num):
+                # Apply gravity compensation to indicator object too
+                self.sim.data.qfrc_applied[
+                self._ref_indicator_vel_low[i]: self._ref_indicator_vel_high[i]
+                ] = self.sim.data.qfrc_bias[
+                    self._ref_indicator_vel_low[i]: self._ref_indicator_vel_high[i]]
 
     def _post_action(self, action):
         """

@@ -19,30 +19,34 @@ class PandaNutAssembly(PandaEnv):
     """
 
     def __init__(
-            self,
-            controller_config=None,
-            gripper_type="PandaGripper",
-            table_full_size=(0.45, 0.69, 0.82),
-            table_friction=(1, 0.005, 0.0001),
-            use_camera_obs=True,
-            use_object_obs=True,
-            reward_shaping=False,
-            placement_initializer=None,
-            single_object_mode=0,
-            nut_type=None,
-            gripper_visualization=False,
-            use_indicator_object=False,
-            has_renderer=False,
-            has_offscreen_renderer=True,
-            render_collision_mesh=False,
-            render_visual_mesh=True,
-            control_freq=10,
-            horizon=1000,
-            ignore_done=False,
-            camera_name="frontview",
-            camera_height=256,
-            camera_width=256,
-            camera_depth=False,
+        self,
+        controller_config=None,
+        gripper_type="PandaGripper",
+        table_full_size=(0.45, 0.69, 0.82),
+        table_friction=(1, 0.005, 0.0001),
+        use_camera_obs=True,
+        use_object_obs=True,
+        reward_shaping=False,
+        placement_initializer=None,
+        single_object_mode=0,
+        nut_type=None,
+        gripper_visualization=False,
+        use_indicator_object=False,
+        indicator_num=1,
+        has_renderer=False,
+        has_offscreen_renderer=True,
+        render_collision_mesh=False,
+        render_visual_mesh=True,
+        control_freq=10,
+        horizon=1000,
+        ignore_done=False,
+        camera_name="frontview",
+        camera_height=256,
+        camera_width=256,
+        camera_depth=False,
+        eval_mode=False,
+        num_evals=50,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -90,6 +94,9 @@ class PandaNutAssembly(PandaEnv):
 
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
+
+            indicator_num (int): number of indicator objects to add to the environment.
+                Only used if @use_indicator_object is True.
 
             has_renderer (bool): If true, render the simulation state in
                 a viewer instead of headless mode.
@@ -164,6 +171,7 @@ class PandaNutAssembly(PandaEnv):
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
+            indicator_num=indicator_num,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_collision_mesh=render_collision_mesh,
@@ -176,6 +184,9 @@ class PandaNutAssembly(PandaEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            eval_mode=eval_mode,
+            num_evals=num_evals,
+            perturb_evals=perturb_evals,
         )
 
     def _load_model(self):
@@ -190,7 +201,7 @@ class PandaNutAssembly(PandaEnv):
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
 
         # The panda robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([.5, -0.15, 0])

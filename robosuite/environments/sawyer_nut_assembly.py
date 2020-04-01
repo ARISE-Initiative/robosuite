@@ -3,13 +3,13 @@ import random
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.utils.mjcf_utils import string_to_array
+from robosuite.utils.mjcf_utils import string_to_array, range_to_uniform_grid
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import NutAssemblyTask, UniformRandomPegsSampler
+from robosuite.models.tasks import NutAssemblyTask, UniformRandomPegsSampler, RoundRobinPegsSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -32,6 +32,7 @@ class SawyerNutAssembly(SawyerEnv):
         nut_type=None,
         gripper_visualization=False,
         use_indicator_object=False,
+        indicator_num=1,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -43,6 +44,9 @@ class SawyerNutAssembly(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        eval_mode=False,
+        num_evals=50,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -90,6 +94,9 @@ class SawyerNutAssembly(SawyerEnv):
 
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
+
+            indicator_num (int): number of indicator objects to add to the environment.
+                Only used if @use_indicator_object is True.
 
             has_renderer (bool): If true, render the simulation state in
                 a viewer instead of headless mode.
@@ -156,11 +163,11 @@ class SawyerNutAssembly(SawyerEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomPegsSampler(
-                x_range=[-0.15, 0.],
-                y_range=[-0.2, 0.2],
-                z_range=[0.02, 0.10],
+                x_range={ "SquareNut" : [-0.115, -0.11], "RoundNut" : [-0.115, -0.11], },
+                y_range={ "SquareNut" : [0.11, 0.225], "RoundNut" : [-0.225, -0.11], },
+                z_range={ "SquareNut" : [0.02, 0.10], "RoundNut" : [0.02, 0.10], },
                 ensure_object_boundary_in_range=False,
-                z_rotation=True,
+                z_rotation=None,
             )
 
         super().__init__(
@@ -168,6 +175,7 @@ class SawyerNutAssembly(SawyerEnv):
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
+            indicator_num=indicator_num,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_collision_mesh=render_collision_mesh,
@@ -180,7 +188,94 @@ class SawyerNutAssembly(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            eval_mode=eval_mode,
+            num_evals=num_evals,
+            perturb_evals=perturb_evals,
         )
+
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        Sets a placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+
+        assert(self.eval_mode)
+
+        # set up placement grid by getting bounds per dimension and then
+        # using meshgrid to get all combinations
+        x_bounds, y_bounds, z_bounds, z_rot_bounds = self._grid_bounds_for_eval_mode()
+        
+        # iterate over nut types to get a grid per nut type
+        final_x_grid = {}
+        final_y_grid = {}
+        final_z_grid = {}
+        final_z_rot_grid = {}
+        for k in x_bounds:
+            x_grid = range_to_uniform_grid(a=x_bounds[k][0], b=x_bounds[k][1], n=x_bounds[k][2])
+            y_grid = range_to_uniform_grid(a=y_bounds[k][0], b=y_bounds[k][1], n=y_bounds[k][2])
+            z_grid = range_to_uniform_grid(a=z_bounds[k][0], b=z_bounds[k][1], n=z_bounds[k][2])
+            z_rotation = range_to_uniform_grid(a=z_rot_bounds[k][0], b=z_rot_bounds[k][1], n=z_rot_bounds[k][2])
+            grid = np.meshgrid(x_grid, y_grid, z_grid, z_rotation)
+            x_grid = grid[0].ravel()
+            y_grid = grid[1].ravel()
+            z_grid = grid[2].ravel()
+            z_rotation = grid[3].ravel()
+            grid_length = x_grid.shape[0]
+
+            round_robin_period = self.num_evals
+            if self.perturb_evals:
+                # sample 100 rounds of perturbations and then sampler will repeat
+                round_robin_period *= 100
+
+                # perturbation size should be half the grid spacing
+                x_pos_perturb_size = ((x_bounds[k][1] - x_bounds[k][0]) / x_bounds[k][2]) / 2.
+                y_pos_perturb_size = ((y_bounds[k][1] - y_bounds[k][0]) / y_bounds[k][2]) / 2.
+                z_pos_perturb_size = ((z_bounds[k][1] - z_bounds[k][0]) / z_bounds[k][2]) / 2.
+                z_rot_perturb_size = ((z_rot_bounds[k][1] - z_rot_bounds[k][0]) / z_rot_bounds[k][2]) / 2.
+
+            # assign grid locations for the full round robin schedule
+            final_x_grid[k] = np.zeros(round_robin_period)
+            final_y_grid[k] = np.zeros(round_robin_period)
+            final_z_grid[k] = np.zeros(round_robin_period)
+            final_z_rot_grid[k] = np.zeros(round_robin_period)
+            for t in range(round_robin_period):
+                g_ind = t % grid_length
+                x, y, z, z_rot = x_grid[g_ind], y_grid[g_ind], z_grid[g_ind], z_rotation[g_ind]
+                if self.perturb_evals:
+                    x += np.random.uniform(low=-x_pos_perturb_size, high=x_pos_perturb_size)
+                    y += np.random.uniform(low=-y_pos_perturb_size, high=y_pos_perturb_size)
+                    z += np.random.uniform(low=-z_pos_perturb_size, high=z_pos_perturb_size)
+                    z_rot += np.random.uniform(low=-z_rot_perturb_size, high=z_rot_perturb_size)
+                final_x_grid[k][t], final_y_grid[k][t], final_z_grid[k][t], final_z_rot_grid[k][t] = x, y, z, z_rot
+
+        self.placement_initializer = RoundRobinPegsSampler(
+            x_range=final_x_grid,
+            y_range=final_y_grid,
+            z_range=final_z_grid,
+            ensure_object_boundary_in_range=False,
+            z_rotation=final_z_rot_grid
+        )
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, z positions,
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        print("")
+        print("*" * 50)
+        print("WARNING! TODO: figure out nice way to have all combinations of objects...")
+        print("*" * 50)
+        print("")
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = { "SquareNut" : (-0.115, -0.11, 3), "RoundNut" : (-0.115, -0.11, 3) }
+        y_bounds = { "SquareNut" : (0.11, 0.225, 3), "RoundNut" : (-0.225, -0.11, 3) }
+        z_bounds = { "SquareNut" : (0.02, 0.02, 1), "RoundNut" : (0.02, 0.02, 1) }
+        z_rot_bounds = { "SquareNut" : (0., 2. * np.pi, 3), "RoundNut" : (0., 2. * np.pi, 3) }
+        return x_bounds, y_bounds, z_bounds, z_rot_bounds
 
     def _load_model(self):
         """
@@ -194,7 +289,7 @@ class SawyerNutAssembly(SawyerEnv):
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
 
         # The sawyer robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([.5, -0.15, 0])
@@ -581,3 +676,73 @@ class SawyerNutAssemblyRound(SawyerNutAssembly):
             "single_object_mode" not in kwargs and "nut_type" not in kwargs
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="round", **kwargs)
+
+### Some new environments... ###
+
+class SawyerNutAssemblySquareConstantRotation(SawyerNutAssemblySquare):
+    """
+    Square nut is initialized in the same orientation each time, and with
+    a fixed z-offset corresponding to lying flat on the table.
+    The original environment had a random z-offset to initialize the nut 
+    in the air for some reason...
+    """
+
+    def __init__(self, **kwargs):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomPegsSampler(
+            x_range={ "SquareNut" : [-0.115, -0.11], "RoundNut" : [-0.115, -0.11], },
+            y_range={ "SquareNut" : [0.11, 0.225], "RoundNut" : [-0.225, -0.11], },
+            z_range={ "SquareNut" : [0.02, 0.02], "RoundNut" : [0.02, 0.02], },
+            ensure_object_boundary_in_range=False,
+            z_rotation={ "SquareNut" : np.pi, "RoundNut" : np.pi, },
+        )
+        super().__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, z positions,
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = { "SquareNut" : (-0.115, -0.11, 3), "RoundNut" : (-0.115, -0.11, 3) }
+        y_bounds = { "SquareNut" : (0.11, 0.225, 3), "RoundNut" : (-0.225, -0.11, 3) }
+        z_bounds = { "SquareNut" : (0.02, 0.02, 1), "RoundNut" : (0.02, 0.02, 1) }
+        z_rot_bounds = { "SquareNut" : (np.pi, np.pi, 1), "RoundNut" : (np.pi, np.pi, 1) }
+        return x_bounds, y_bounds, z_bounds, z_rot_bounds
+
+class SawyerNutAssemblySquareConstantRotationPosition(SawyerNutAssemblySquare):
+    """
+    Same as SawyerNutAssemblySquareConstantRotation but if using OSC, use
+    position-only control.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomPegsSampler(
+            x_range={ "SquareNut" : [-0.115, -0.11], "RoundNut" : [-0.115, -0.11], },
+            y_range={ "SquareNut" : [0.11, 0.225], "RoundNut" : [-0.225, -0.11], },
+            z_range={ "SquareNut" : [0.02, 0.02], "RoundNut" : [0.02, 0.02], },
+            ensure_object_boundary_in_range=False,
+            z_rotation={ "SquareNut" : np.pi, "RoundNut" : np.pi, },
+        )
+        if kwargs["controller"] == "position_orientation":
+            kwargs["controller"] = "position"
+        super().__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, z positions,
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = { "SquareNut" : (-0.115, -0.11, 3), "RoundNut" : (-0.115, -0.11, 3) }
+        y_bounds = { "SquareNut" : (0.11, 0.225, 3), "RoundNut" : (-0.225, -0.11, 3) }
+        z_bounds = { "SquareNut" : (0.02, 0.02, 1), "RoundNut" : (0.02, 0.02, 1) }
+        z_rot_bounds = { "SquareNut" : (np.pi, np.pi, 1), "RoundNut" : (np.pi, np.pi, 1) }
+        return x_bounds, y_bounds, z_bounds, z_rot_bounds

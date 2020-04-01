@@ -1,13 +1,14 @@
 from collections import OrderedDict
 import numpy as np
 
+from robosuite.utils.mjcf_utils import range_to_uniform_grid
 from robosuite.utils.transform_utils import convert_quat
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -28,6 +29,7 @@ class SawyerLift(SawyerEnv):
         placement_initializer=None,
         gripper_visualization=False,
         use_indicator_object=False,
+        indicator_num=1,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -39,6 +41,9 @@ class SawyerLift(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        eval_mode=False,
+        num_evals=50,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -70,6 +75,9 @@ class SawyerLift(SawyerEnv):
 
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
+
+            indicator_num (int): number of indicator objects to add to the environment.
+                Only used if @use_indicator_object is True.
 
             has_renderer (bool): If true, render the simulation state in
                 a viewer instead of headless mode.
@@ -120,7 +128,7 @@ class SawyerLift(SawyerEnv):
         self.reward_shaping = reward_shaping
 
         # object placement initializer
-        if placement_initializer:
+        if placement_initializer is not None:
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
@@ -135,6 +143,7 @@ class SawyerLift(SawyerEnv):
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
+            indicator_num=indicator_num,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_collision_mesh=render_collision_mesh,
@@ -147,7 +156,74 @@ class SawyerLift(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            eval_mode=eval_mode,
+            num_evals=num_evals,
+            perturb_evals=perturb_evals,
         )
+
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        Sets a placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+
+        assert(self.eval_mode)
+
+        # set up placement grid by getting bounds per dimension and then
+        # using meshgrid to get all combinations
+        x_bounds, y_bounds, z_rot_bounds = self._grid_bounds_for_eval_mode()
+        x_grid = range_to_uniform_grid(a=x_bounds[0], b=x_bounds[1], n=x_bounds[2])
+        y_grid = range_to_uniform_grid(a=y_bounds[0], b=y_bounds[1], n=y_bounds[2])
+        z_rotation = range_to_uniform_grid(a=z_rot_bounds[0], b=z_rot_bounds[1], n=z_rot_bounds[2])
+        grid = np.meshgrid(x_grid, y_grid, z_rotation)
+        x_grid = grid[0].ravel()
+        y_grid = grid[1].ravel()
+        z_rotation = grid[2].ravel()
+        grid_length = x_grid.shape[0]
+
+        round_robin_period = self.num_evals
+        if self.perturb_evals:
+            # sample 100 rounds of perturbations and then sampler will repeat
+            round_robin_period *= 100
+
+            # perturbation size should be half the grid spacing
+            x_pos_perturb_size = ((x_bounds[1] - x_bounds[0]) / x_bounds[2]) / 2.
+            y_pos_perturb_size = ((y_bounds[1] - y_bounds[0]) / y_bounds[2]) / 2.
+            z_rot_perturb_size = ((z_rot_bounds[1] - z_rot_bounds[0]) / z_rot_bounds[2]) / 2.
+
+        # assign grid locations for the full round robin schedule
+        final_x_grid = np.zeros(round_robin_period)
+        final_y_grid = np.zeros(round_robin_period)
+        final_z_grid = np.zeros(round_robin_period)
+        for t in range(round_robin_period):
+            g_ind = t % grid_length
+            x, y, z = x_grid[g_ind], y_grid[g_ind], z_rotation[g_ind]
+            if self.perturb_evals:
+                x += np.random.uniform(low=-x_pos_perturb_size, high=x_pos_perturb_size)
+                y += np.random.uniform(low=-y_pos_perturb_size, high=y_pos_perturb_size)
+                z += np.random.uniform(low=-z_rot_perturb_size, high=z_rot_perturb_size)
+            final_x_grid[t], final_y_grid[t], final_z_grid[t] = x, y, z
+
+        self.placement_initializer = RoundRobinSampler(
+            x_range=final_x_grid,
+            y_range=final_y_grid,
+            ensure_object_boundary_in_range=False,
+            z_rotation=final_z_grid
+        )
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.03, 0.03, 3)
+        y_bounds = (-0.03, 0.03, 3)
+        z_rot_bounds = (1., 1., 1)
+        return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):
         """
@@ -161,7 +237,7 @@ class SawyerLift(SawyerEnv):
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
 
         # The sawyer robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
@@ -358,3 +434,210 @@ class SawyerLift(SawyerEnv):
             rgba[3] = 0.5
 
             self.sim.model.site_rgba[self.eef_site_id] = rgba
+
+
+### Some new environments... ###
+
+class SawyerLiftPosition(SawyerLift):
+    """
+    Cube is initialized with a constant z-rotation of 0.
+    If using OSC control, force control to be position-only.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.03, 0.03],
+            y_range=[-0.03, 0.03],
+            ensure_object_boundary_in_range=False,
+            z_rotation=0.
+        )
+        if kwargs["controller_config"]["type"] == "EE_POS_ORI":
+            kwargs["controller_config"]["type"] = "EE_POS"
+        super(SawyerLiftPosition, self).__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.03, 0.03, 3)
+        y_bounds = (-0.03, 0.03, 3)
+        z_rot_bounds = (0., 0., 1)
+        return x_bounds, y_bounds, z_rot_bounds
+
+
+class SawyerLiftWidePositionInit(SawyerLift):
+    """
+    Cube is initialized with a wider set of positions, but with
+    a fixed z-rotation of 1 radian.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.1, 0.1],
+            y_range=[-0.1, 0.1],
+            ensure_object_boundary_in_range=False,
+            z_rotation=True
+        )
+        super(SawyerLiftWidePositionInit, self).__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.1, 0.1, 3)
+        y_bounds = (-0.1, 0.1, 3)
+        z_rot_bounds = (1., 1., 1)
+        return x_bounds, y_bounds, z_rot_bounds
+
+class SawyerLiftWideInit(SawyerLift):
+    """
+    Cube is initialized with a wider set of positions with
+    uniformly random z-rotations.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.1, 0.1],
+            y_range=[-0.1, 0.1],
+            ensure_object_boundary_in_range=False,
+            z_rotation=None
+        )
+        super(SawyerLiftWideInit, self).__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.1, 0.1, 3)
+        y_bounds = (-0.1, 0.1, 3)
+        z_rot_bounds = (0., 2. * np.pi, 3)
+        return x_bounds, y_bounds, z_rot_bounds
+
+class SawyerLiftSmallGrid(SawyerLift):
+    """
+    Cube is initialized on a grid of points.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+
+        # set up uniform 3x3 grid
+        GRID_SIZE = 0.05
+        x_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        y_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        grid = np.meshgrid(x_grid, y_grid)
+        self.x_grid = grid[0].ravel()
+        self.y_grid = grid[1].ravel()
+
+        # remember when we have interaction
+        self._has_interaction = False
+
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = RoundRobinSampler(
+            x_range=self.x_grid,
+            y_range=self.y_grid,
+            ensure_object_boundary_in_range=False,
+            z_rotation=np.zeros_like(self.x_grid)
+        )
+        super(SawyerLiftSmallGrid, self).__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.075, 0.075, 3)
+        y_bounds = (-0.075, 0.075, 3)
+        z_rot_bounds = (0., 0., 1)
+        return x_bounds, y_bounds, z_rot_bounds
+
+    def reset(self):
+        self._has_interaction = False
+        return super(SawyerLiftSmallGrid, self).reset()
+
+    def step(self, action):
+        if not self._has_interaction:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super(SawyerLiftSmallGrid, self).step(action)
+
+class SawyerLiftLargeGrid(SawyerLift):
+    """
+    Cube is initialized on a grid of points.
+    """
+    def __init__(
+        self,
+        **kwargs
+    ):
+
+        # set up uniform 3x3 grid
+        GRID_SIZE = 0.1
+        x_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        y_grid = np.linspace(-GRID_SIZE, GRID_SIZE, num=3)
+        grid = np.meshgrid(x_grid, y_grid)
+        self.x_grid = grid[0].ravel()
+        self.y_grid = grid[1].ravel()
+
+        # remember when we have interaction
+        self._has_interaction = False
+
+        assert("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = RoundRobinSampler(
+            x_range=self.x_grid,
+            y_range=self.y_grid,
+            ensure_object_boundary_in_range=False,
+            z_rotation=np.zeros_like(self.x_grid)
+        )
+        super(SawyerLiftLargeGrid, self).__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.1, 0.1, 3)
+        y_bounds = (-0.1, 0.1, 3)
+        z_rot_bounds = (0., 0., 1)
+        return x_bounds, y_bounds, z_rot_bounds
+
+    def reset(self):
+        self._has_interaction = False
+        return super(SawyerLiftLargeGrid, self).reset()
+
+    def step(self, action):
+        if not self._has_interaction:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super(SawyerLiftLargeGrid, self).step(action)
+
+
