@@ -3,6 +3,8 @@ from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
 
+FORCE_POSITION_FACTOR = 25.
+FORCE_ROTATION_FACTOR = 5.
 
 class EndEffectorImpedanceController(Controller):
     """
@@ -150,14 +152,14 @@ class EndEffectorImpedanceController(Controller):
 
         if self.force_control:
             if self.use_ori:
-                self.force = np.array(delta[:3]) * 25.
-                delta = delta[3:]
-            else:
                 self.force = np.concatenate([
-                    delta[:3] * 25.,
-                    delta[3:6] * 10.,
+                    delta[:3] * FORCE_POSITION_FACTOR,
+                    delta[3:6] * FORCE_ROTATION_FACTOR,
                 ])
                 delta = delta[6:]
+            else:
+                self.force = np.array(delta[:3]) * FORCE_POSITION_FACTOR
+                delta = delta[3:]
 
         # If we're using deltas, interpret actions as such
         if self.use_delta:
@@ -290,6 +292,7 @@ class EndEffectorImpedanceController(Controller):
         action = self.scale_action(action)
 
         # need opspace mass matrices
+        self.update()
         _, lambda_pos, lambda_ori, _ = opspace_matrices(self.mass_matrix,
                                                         self.J_full,
                                                         self.J_pos,
@@ -300,7 +303,7 @@ class EndEffectorImpedanceController(Controller):
 
             # this perturbation is computed assuming that the action space is
             # axis-angle - (exponential coordinates)
-            force[3:6] *= 10.
+            force[3:6] *= FORCE_ROTATION_FACTOR
             kp = np.array(self.kp[3:6])
             mr_inv = np.linalg.inv(lambda_ori)
             rot_perturb = mr_inv.dot(force[3:6]) / kp
@@ -308,7 +311,7 @@ class EndEffectorImpedanceController(Controller):
         else:
             assert force.shape[0] == 3
 
-        force[:3] *= 25.
+        force[:3] *= FORCE_POSITION_FACTOR
 
         # delta x' = delta x + 1/kp * M^-1 * F
         kp = np.array(self.kp[0:3])
