@@ -45,7 +45,6 @@ class SawyerPush(SawyerLift):
         target_color=(0, 1, 0, 0.3),
         hide_target=False,
         eval_mode=False,
-        num_evals=50,
         perturb_evals=False,
     ):
         """
@@ -150,7 +149,6 @@ class SawyerPush(SawyerLift):
             camera_width=camera_width,
             camera_depth=camera_depth,
             eval_mode=eval_mode,
-            num_evals=num_evals,
             perturb_evals=perturb_evals,
         )
 

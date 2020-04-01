@@ -45,7 +45,6 @@ class PandaNutAssembly(PandaEnv):
         camera_width=256,
         camera_depth=False,
         eval_mode=False,
-        num_evals=50,
         perturb_evals=False,
     ):
         """
@@ -185,7 +184,6 @@ class PandaNutAssembly(PandaEnv):
             camera_width=camera_width,
             camera_depth=camera_depth,
             eval_mode=eval_mode,
-            num_evals=num_evals,
             perturb_evals=perturb_evals,
         )
 

@@ -42,7 +42,6 @@ class SawyerLift(SawyerEnv):
         camera_width=256,
         camera_depth=False,
         eval_mode=False,
-        num_evals=50,
         perturb_evals=False,
     ):
         """
@@ -157,7 +156,6 @@ class SawyerLift(SawyerEnv):
             camera_width=camera_width,
             camera_depth=camera_depth,
             eval_mode=eval_mode,
-            num_evals=num_evals,
             perturb_evals=perturb_evals,
         )
 
@@ -182,7 +180,7 @@ class SawyerLift(SawyerEnv):
         z_rotation = grid[2].ravel()
         grid_length = x_grid.shape[0]
 
-        round_robin_period = self.num_evals
+        round_robin_period = grid_length
         if self.perturb_evals:
             # sample 100 rounds of perturbations and then sampler will repeat
             round_robin_period *= 100
@@ -222,7 +220,8 @@ class SawyerLift(SawyerEnv):
         # (low, high, number of grid points for this dimension)
         x_bounds = (-0.03, 0.03, 3)
         y_bounds = (-0.03, 0.03, 3)
-        z_rot_bounds = (1., 1., 1)
+        # z_rot_bounds = (1., 1., 1)
+        z_rot_bounds = (0., 2. * np.pi, 3)
         return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):

@@ -32,7 +32,6 @@ class SawyerEnv(MujocoEnv):
         camera_width=256,
         camera_depth=False,
         eval_mode=False,
-        num_evals=50,
         perturb_evals=False,
     ):
         """
@@ -92,7 +91,6 @@ class SawyerEnv(MujocoEnv):
         self.controller_config = controller_config
 
         self.eval_mode = eval_mode
-        self.num_evals = num_evals
         self.perturb_evals = perturb_evals
         if self.eval_mode:
             # replace placement initializer with one for consistent task evaluations!
