@@ -330,9 +330,11 @@ class PandaEnv(MujocoEnv):
             di["eef_quat"] = T.convert_quat(
                 self.sim.data.get_body_xquat("right_hand"), to="xyzw"
             )
+            di["eef_vlin"] = np.array(self.sim.data.get_body_xvelp("right_hand"))
+            di["eef_vang"] = np.array(self.sim.data.get_body_xvelr("right_hand"))
 
             # add in gripper information
-            robot_states.extend([di["gripper_qpos"], di["eef_pos"], di["eef_quat"]])
+            robot_states.extend([di["gripper_qpos"], di["eef_pos"], di["eef_quat"], di["eef_vlin"], di["eef_vang"]])
 
         di["robot-state"] = np.concatenate(robot_states)
         return di
