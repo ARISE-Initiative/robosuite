@@ -1,16 +1,20 @@
 from collections import OrderedDict
 import numpy as np
+from copy import deepcopy
 
 from robosuite.utils.mjcf_utils import range_to_uniform_grid
 from robosuite.utils.transform_utils import convert_quat
+import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import BoxObject
+from robosuite.models.objects import BoxObject, CylinderObject
+from robosuite.models.objects.interactive_objects import MomentaryButtonObject, MaintainedButtonObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask
 from robosuite.controllers import load_controller_config
 import os
+
 
 class SawyerLift(SawyerEnv):
     """
@@ -41,6 +45,8 @@ class SawyerLift(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        camera_real_depth=False,
+        camera_segmentation=False,
         eval_mode=False,
         num_evals=50,
         perturb_evals=False,
@@ -106,6 +112,10 @@ class SawyerLift(SawyerEnv):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            camera_real_depth (bool): True if convert depth to real depth in meters
+
+            camera_segmentation (bool): True if also return semantic segmentation of the camera view
         """
 
         # Load the default controller if none is specified
@@ -156,6 +166,8 @@ class SawyerLift(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            camera_real_depth=camera_real_depth,
+            camera_segmentation=camera_segmentation,
             eval_mode=eval_mode,
             num_evals=num_evals,
             perturb_evals=perturb_evals,
@@ -351,18 +363,6 @@ class SawyerLift(SawyerEnv):
                 contains a rendered depth map from the simulation
         """
         di = super()._get_observation()
-        # camera observations
-        if self.use_camera_obs:
-            camera_obs = self.sim.render(
-                camera_name=self.camera_name,
-                width=self.camera_width,
-                height=self.camera_height,
-                depth=self.camera_depth,
-            )
-            if self.camera_depth:
-                di["image"], di["depth"] = camera_obs
-            else:
-                di["image"] = camera_obs
 
         # low-level object information
         if self.use_object_obs:
@@ -503,6 +503,7 @@ class SawyerLiftWidePositionInit(SawyerLift):
         z_rot_bounds = (1., 1., 1)
         return x_bounds, y_bounds, z_rot_bounds
 
+
 class SawyerLiftWideInit(SawyerLift):
     """
     Cube is initialized with a wider set of positions with
@@ -533,6 +534,7 @@ class SawyerLiftWideInit(SawyerLift):
         y_bounds = (-0.1, 0.1, 3)
         z_rot_bounds = (0., 2. * np.pi, 3)
         return x_bounds, y_bounds, z_rot_bounds
+
 
 class SawyerLiftSmallGrid(SawyerLift):
     """
@@ -586,6 +588,7 @@ class SawyerLiftSmallGrid(SawyerLift):
             self.placement_initializer.increment_counter()
         self._has_interaction = True
         return super(SawyerLiftSmallGrid, self).step(action)
+
 
 class SawyerLiftLargeGrid(SawyerLift):
     """
@@ -641,3 +644,249 @@ class SawyerLiftLargeGrid(SawyerLift):
         return super(SawyerLiftLargeGrid, self).step(action)
 
 
+class SawyerLiftPositionTarget(SawyerLiftPosition):
+    """
+    Goal-driven placing environment
+    """
+    def __init__(
+        self,
+        target_color=(0, 1, 0, 0.3),
+        hide_target=True,
+        goal_tolerance=0.05,
+        goal_radius_low=0.1,
+        goal_radius_high=0.2,
+        **kwargs
+    ):
+
+        self._target_rgba = target_color
+        self._goal_render_segmentation = None
+        self._goal_tolerance = goal_tolerance
+        self._goal_radius_low = goal_radius_low
+        self._goal_radius_high = goal_radius_high
+        self._goal_grid = None
+        self._hide_target = hide_target
+
+        self._target_name = 'cube_target'
+        self._object_name = 'cube'
+        self.interactive_objects = {}
+
+        super().__init__(**kwargs)
+
+    def _load_model(self):
+        super()._load_model()
+
+        cube = BoxObject(
+            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
+            size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
+            rgba=[1, 0, 0, 1],
+        )
+
+        cube1 = BoxObject(
+            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
+            size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
+            rgba=[0, 0, 1, 1]
+        )
+
+        slide_joint = dict(
+            pos="0 0 0",
+            axis="0 0 1",
+            type="slide",
+            springref="1",
+            limited="true",
+            stiffness="0.5",
+            range="-0.1 0",
+            damping="1"
+        )
+        button = CylinderObject(rgba=(1, 0, 0, 1), size=[0.03, 0.01], joint=slide_joint)
+
+        self.mujoco_objects = OrderedDict([(self._object_name, cube), ("cube1", cube1), ("button", button)])
+
+        # target visual object
+        target_size = np.array(self.mujoco_objects[self._object_name].size)
+        target = BoxObject(
+            size_min=target_size,
+            size_max=target_size,
+            rgba=self._target_rgba,
+        )
+        self.visual_objects = OrderedDict([(self._target_name, target)])
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopVisualTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            self.visual_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+        self.model.place_visual()
+
+    def _get_reference(self):
+        super()._get_reference()
+
+        self.object_body_id = self.sim.model.body_name2id(self._object_name)
+        self.target_body_id = self.sim.model.body_name2id(self._target_name)
+        target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name)
+        target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name)
+        self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
+        self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
+        button = MomentaryButtonObject(self.sim, body_id=self.sim.model.body_name2id("button"), on_rgba=(0, 1, 0, 1))
+
+        def color_trigger(sim, body_id, color):
+            for gid in EU.bodyid2geomids(sim, body_id):
+                self.sim.model.geom_rgba[gid] = color
+
+        button.add_on_state_funcs(
+            cond={button.state_name: True},
+            func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(0, 1, 0, 1))
+        )
+
+        button.add_on_state_funcs(
+            cond={button.state_name: False},
+            func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(1, 0, 0, 1))
+        )
+
+        self.interactive_objects['button'] = button
+
+    def _get_placement_initializer_for_eval_mode(self):
+        super(SawyerLiftPositionTarget, self)._get_placement_initializer_for_eval_mode()
+
+        num_circles = 3
+        num_circle_angles = 9
+
+        num_placements = num_circles * num_circle_angles
+        self._goal_grid = np.zeros((num_placements, 3))  # [radius, angle, z_rotation]
+        r_list = np.linspace(self._goal_radius_low, self._goal_radius_high, num=num_circles)
+        a_list = np.linspace(0, np.pi * (2 - (2 / (num_circle_angles + 1))), num=num_circle_angles)
+        grid = np.meshgrid(r_list, a_list)
+        self._goal_grid[:, 0] = grid[0].ravel()
+        self._goal_grid[:, 1] = grid[1].ravel()
+
+        assert(self.placement_initializer.num_grid == self._goal_grid.shape[0])
+
+    def _reset_internal(self):
+        """
+        Resets simulation internal configurations.
+        """
+        self._goal_dict = None
+        self._goal_render_segmentation = None
+
+        super()._reset_internal()
+
+        ### TODO: unclear why objects are placed twice... ###
+        # reset positions of objects
+        self.model.place_objects()
+        self.model.place_visual()
+
+        # reset joint positions
+        init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
+        # init_pos += np.random.randn(init_pos.shape[0]) * 0.02
+        self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
+
+        # for now, place target randomly in a radius of 0.2 around current cube pos
+
+        cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
+        if self._goal_grid is not None:
+            radius, angle, z_rot = self._goal_grid[self.placement_initializer.counter]
+        else:
+            angle = np.random.uniform(0., 2. * np.pi)
+            radius = np.random.uniform(self._goal_radius_low, self._goal_radius_high)
+        assert(radius > self._goal_tolerance)
+
+        target_pos = cube_pos.copy()
+        target_pos[0] += radius * np.cos(angle)
+        target_pos[1] += radius * np.sin(angle)
+        self._set_target(pos=target_pos)
+        for _, o in self.interactive_objects.items():
+            o.reset()
+
+        if self.eval_mode or self._hide_target:
+            self.hide_target()
+
+    def step(self, action):
+        for _, o in self.interactive_objects.items():
+            o.step(sim_step=self.timestep)
+        super(SawyerLiftPositionTarget, self).step(action)
+        if self.eval_mode or self._hide_target:
+            self.hide_target()
+
+    def _pre_action(self, action, policy_step=None):
+        super()._pre_action(action, policy_step=policy_step)
+
+        # gravity compensation for target object
+        self.sim.data.qfrc_applied[
+                self._ref_target_vel_low : self._ref_target_vel_high
+            ] = self.sim.data.qfrc_bias[
+                self._ref_target_vel_low : self._ref_target_vel_high
+            ]
+
+    def _set_target(self, pos, quat=None):
+        """
+        Set the target position and quaternion.
+        Quaternion should be (x, y, z, w).
+        """
+        EU.set_body_pose(self.sim, self._target_name, pos=pos, quat=quat)
+        self.sim.forward()
+
+    def hide_target(self):
+        """make the target transparent for rendering"""
+        self.sim.model.geom_rgba[EU.bodyid2geomids(self.sim, self.target_body_id)[0]][-1] = 0.0
+
+    def show_target(self):
+        self.sim.model.geom_rgba[EU.bodyid2geomids(self.sim, self.target_body_id)[0]][-1] = 0.3
+
+    @property
+    def target_pos(self):
+        return np.array(self.sim.data.body_xpos[self.target_body_id])
+
+    def _get_observation(self):
+        """
+        Add in target location into observation.
+        """
+        ### TODO: handle this in batchRL appropriately ###
+        di = super()._get_observation()
+        di["goal"] = self.target_pos
+        return di
+
+    def set_goal(self, obs):
+        # do nothing
+        pass
+
+    def _set_goal_rendering(self, _):
+        pass
+
+    def _set_state_to_goal(self):
+        """Set the environment to a goal state"""
+        # set cube to target position
+        tgt_pos = self.sim.data.body_xpos[self.target_body_id]
+        tgt_quat = self.sim.data.body_xquat[self.target_body_id]
+        EU.set_body_pose(self.sim, self._object_name, pos=tgt_pos, quat=tgt_quat)
+        self.sim.forward()
+
+    def _get_goal(self):
+        """
+        Get goal observation by moving object to the target, get obs, and move back.
+        :return: observation dict with goal
+        """
+        # avoid generating goal obs every time
+        if self._goal_dict is not None:
+            return self._goal_dict
+
+        with EU.world_saved(self.sim):
+            self._set_state_to_goal()
+            self._goal_dict = deepcopy(self._get_observation())
+
+        return self._goal_dict
+
+    def render_with_visual_target(self, width, height, camera_name):
+        self.show_target()
+        im = self.sim.render(height=height, width=width, camera_name=camera_name)[::-1].copy()
+        self.hide_target()
+        return im
+
+    def _check_success(self):
+        """
+        Returns True if task has been completed.
+        """
+        cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
+        return np.linalg.norm(cube_pos - self.target_pos) < self._goal_tolerance

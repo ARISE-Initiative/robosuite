@@ -31,6 +31,8 @@ class SawyerEnv(MujocoEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        camera_real_depth=False,
+        camera_segmentation=False,
         eval_mode=False,
         num_evals=50,
         perturb_evals=False,
@@ -82,6 +84,10 @@ class SawyerEnv(MujocoEnv):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            camera_real_depth (bool): True if convert depth to real depth in meters
+
+            camera_segmentation (bool): True if also return semantic segmentation of the camera view
         """
 
         self.has_gripper = gripper_type is not None
@@ -111,6 +117,8 @@ class SawyerEnv(MujocoEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            camera_real_depth=camera_real_depth,
+            camera_segmentation=camera_segmentation
         )
 
     def _get_placement_initializer_for_eval_mode(self):

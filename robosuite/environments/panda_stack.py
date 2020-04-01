@@ -40,6 +40,8 @@ class PandaStack(PandaEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        camera_real_depth=False,
+        camera_segmentation=False,
         eval_mode=False,
         num_evals=50,
         perturb_evals=False,
@@ -105,6 +107,10 @@ class PandaStack(PandaEnv):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            camera_real_depth (bool): True if convert depth to real depth in meters
+
+            camera_segmentation (bool): True if also return semantic segmentation of the camera view
         """
 
         # Load the default controller if none is specified
@@ -155,6 +161,8 @@ class PandaStack(PandaEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            camera_real_depth=camera_real_depth,
+            camera_segmentation=camera_segmentation,
             eval_mode=eval_mode,
             num_evals=num_evals,
             perturb_evals=perturb_evals,
@@ -352,17 +360,6 @@ class PandaStack(PandaEnv):
                 contains a rendered depth map from the simulation
         """
         di = super()._get_observation()
-        if self.use_camera_obs:
-            camera_obs = self.sim.render(
-                camera_name=self.camera_name,
-                width=self.camera_width,
-                height=self.camera_height,
-                depth=self.camera_depth,
-            )
-            if self.camera_depth:
-                di["image"], di["depth"] = camera_obs
-            else:
-                di["image"] = camera_obs
 
         # low-level object information
         if self.use_object_obs:

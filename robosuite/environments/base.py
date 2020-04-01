@@ -61,6 +61,8 @@ class MujocoEnv(metaclass=EnvMeta):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        camera_real_depth=False,
+        camera_segmentation=False,
     ):
         """
         Args:
@@ -95,6 +97,10 @@ class MujocoEnv(metaclass=EnvMeta):
             camera_width (int): width of camera frame.
 
             camera_depth (bool): True if rendering RGB-D, and RGB otherwise.
+
+            camera_real_depth (bool): True if convert depth to real depth in meters
+
+            camera_segmentation (bool): True if also return semantic segmentation of the camera view
         """
 
         self.has_renderer = has_renderer
@@ -117,6 +123,8 @@ class MujocoEnv(metaclass=EnvMeta):
         self.camera_height = camera_height
         self.camera_width = camera_width
         self.camera_depth = camera_depth
+        self.camera_real_depth = camera_real_depth
+        self.camera_segmentation = camera_segmentation
 
         self._reset_internal()
 
@@ -195,7 +203,26 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def _get_observation(self):
         """Returns an OrderedDict containing observations [(name_string, np.array), ...]."""
-        return OrderedDict()
+        di = OrderedDict()
+        # camera observations
+        if self.use_camera_obs:
+            camera_obs = self.sim.render(
+                camera_name=self.camera_name,
+                width=self.camera_width,
+                height=self.camera_height,
+                depth=self.camera_depth,
+            )
+            if self.camera_depth:
+                di["image"], di["depth"] = camera_obs
+                if self.camera_real_depth:
+                    di["depth"] = self.z_buffer_to_real_depth(di["depth"])
+            else:
+                di["image"] = camera_obs
+
+            if self.camera_segmentation:
+                di["segmentation"] = self.render_segmentation(
+                    self.camera_name, camera_width=self.camera_width, camera_height=self.camera_height)
+        return di
 
     def step(self, action):
         """Takes a step in simulation with control command @action."""
