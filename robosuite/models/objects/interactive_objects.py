@@ -254,8 +254,8 @@ class BinaryStateObject(InteractiveObject):
 
 class ButtonObject(BinaryStateObject):
     """Base class for a button object."""
-    def __init__(self, sim, body_id, off_rgba=(1, 0, 0, 1), on_rgba=(0, 1, 0, 1), cooldown_interval=-1):
-        super(ButtonObject, self).__init__(sim=sim, body_id=body_id, cooldown_interval=cooldown_interval)
+    def __init__(self, sim, body_id, off_rgba=(1, 0, 0, 1), on_rgba=(0, 1, 0, 1)):
+        super(ButtonObject, self).__init__(sim=sim, body_id=body_id)
         self._off_rgba = off_rgba
         self._on_rgba = on_rgba
         self._prev_contacts = []
