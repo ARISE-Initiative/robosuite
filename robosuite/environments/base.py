@@ -126,7 +126,8 @@ class MujocoEnv(metaclass=EnvMeta):
         self.camera_real_depth = camera_real_depth
         self.camera_segmentation = camera_segmentation
 
-        self._reset_internal()
+        # self._reset_internal()
+        self.reset()
 
     def initialize_time(self, control_freq):
         """
@@ -160,16 +161,18 @@ class MujocoEnv(metaclass=EnvMeta):
         # TODO(yukez): investigate black screen of death
         # if there is an active viewer window, destroy it
         self._destroy_viewer()
+
+        # instantiate simulation from MJCF model
+        self._load_model()
+        self.mjpy_model = self.model.get_model(mode="mujoco_py")
+        self.sim = MjSim(self.mjpy_model)
+
         self._reset_internal()
         self.sim.forward()
         return self._get_observation()
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
-        # instantiate simulation from MJCF model
-        self._load_model()
-        self.mjpy_model = self.model.get_model(mode="mujoco_py")
-        self.sim = MjSim(self.mjpy_model)
         self.initialize_time(self.control_freq)
 
         # create visualization screen or renderer
@@ -306,32 +309,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # load model from xml
         self.mjpy_model = load_model_from_xml(xml_string)
-
         self.sim = MjSim(self.mjpy_model)
-        self.initialize_time(self.control_freq)
-        if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (
-                1 if self.render_collision_mesh else 0
-            )
-            self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
 
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
-
-        elif self.has_offscreen_renderer:
-            render_context = MjRenderContextOffscreen(self.sim)
-            render_context.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
-            render_context.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
-            self.sim.add_render_context(render_context)
-
-        self.sim_state_initial = self.sim.get_state()
-        self._get_reference()
-        self.cur_time = 0
-        self.timestep = 0
-        self.done = False
-
-        # necessary to refresh MjData
+        self._reset_internal()
         self.sim.forward()
 
     def find_contacts(self, geoms_1, geoms_2):
