@@ -443,6 +443,8 @@ class SawyerEnv(MujocoEnv):
         """
         self.sim.data.qpos[self._ref_joint_pos_indexes] = jpos
         self.sim.forward()
+        # update null space OSC controller to keep us near these joint positions
+        self.controller.initial_joint = np.array(jpos)
 
     @property
     def _right_hand_joint_cartesian_pose(self):
