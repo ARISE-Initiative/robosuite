@@ -411,6 +411,7 @@ def quat2axisangle(quat):
 
     # normalize qx, qy, qz by sqrt(qx^2 + qy^2 + qz^2) = sqrt(1 - qw^2)
     # to extract the unit vector
+    quat[3] = np.clip(quat[3], -1., 1.)
     den = np.sqrt(1. - quat[3] * quat[3])
     if np.isclose(den, 0.):
         # This is (close to) a zero degree rotation, immediately return
