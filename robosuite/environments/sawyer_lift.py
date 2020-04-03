@@ -643,7 +643,7 @@ class SawyerLiftLargeGrid(SawyerLift):
         return super(SawyerLiftLargeGrid, self).step(action)
 
 
-class SawyerLiftPositionTarget(SawyerLiftPosition):
+class SawyerLiftPositionTarget(SawyerLift):
     """
     Goal-driven placing environment
     """
@@ -669,7 +669,29 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         self._object_name = 'cube'
         self.interactive_objects = {}
 
+        assert ("placement_initializer" not in kwargs)
+        kwargs["placement_initializer"] = UniformRandomSampler(
+            x_range=[-0.03, 0.03],
+            y_range=[-0.03, 0.03],
+            ensure_object_boundary_in_range=False,
+            z_rotation=0.
+        )
+        if kwargs["controller_config"]["type"] == "EE_POS_ORI":
+            kwargs["controller_config"]["type"] = "EE_POS"
         super().__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions,
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.03, 0.03, 3)
+        y_bounds = (-0.03, 0.03, 3)
+        z_rot_bounds = (0., 0., 1)
+        return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):
         super()._load_model()
@@ -679,26 +701,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
             size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
             rgba=[1, 0, 0, 1],
         )
-
-        cube1 = BoxObject(
-            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
-            size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
-            rgba=[0, 0, 1, 1]
-        )
-
-        slide_joint = dict(
-            pos="0 0 0",
-            axis="0 0 1",
-            type="slide",
-            springref="1",
-            limited="true",
-            stiffness="0.5",
-            range="-0.1 0",
-            damping="1"
-        )
-        button = CylinderObject(rgba=(1, 0, 0, 1), size=[0.03, 0.01], joint=slide_joint)
-
-        self.mujoco_objects = OrderedDict([(self._object_name, cube), ("cube1", cube1), ("button", button)])
+        self.mujoco_objects = OrderedDict([(self._object_name, cube)])
 
         # target visual object
         target_size = np.array(self.mujoco_objects[self._object_name].size)
@@ -725,27 +728,10 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
 
         self.object_body_id = self.sim.model.body_name2id(self._object_name)
         self.target_body_id = self.sim.model.body_name2id(self._target_name)
-        target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name)
-        target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name)
+        target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name + '_0')
+        target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name + '_0')
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
-        button = MomentaryButtonObject(self.sim, body_id=self.sim.model.body_name2id("button"), on_rgba=(0, 1, 0, 1))
-
-        def color_trigger(sim, body_id, color):
-            for gid in EU.bodyid2geomids(sim, body_id):
-                self.sim.model.geom_rgba[gid] = color
-
-        button.add_on_state_funcs(
-            cond={button.state_name: True},
-            func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(0, 1, 0, 1))
-        )
-
-        button.add_on_state_funcs(
-            cond={button.state_name: False},
-            func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(1, 0, 0, 1))
-        )
-
-        self.interactive_objects['button'] = button
 
     def _get_placement_initializer_for_eval_mode(self):
         super(SawyerLiftPositionTarget, self)._get_placement_initializer_for_eval_mode()
@@ -760,8 +746,9 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         grid = np.meshgrid(r_list, a_list)
         self._goal_grid[:, 0] = grid[0].ravel()
         self._goal_grid[:, 1] = grid[1].ravel()
+        self._goal_grid = np.tile(self._goal_grid, (100, 1))
 
-        assert(self.placement_initializer.num_grid == self._goal_grid.shape[0])
+        assert(self.placement_initializer.num_grid <= self._goal_grid.shape[0])
 
     def _reset_internal(self):
         """
@@ -796,21 +783,18 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         target_pos[0] += radius * np.cos(angle)
         target_pos[1] += radius * np.sin(angle)
         self._set_target(pos=target_pos)
-        for _, o in self.interactive_objects.items():
-            o.reset()
 
-        if self.eval_mode or self._hide_target:
+        if self._hide_target:
             self.hide_target()
 
     def step(self, action):
-        for _, o in self.interactive_objects.items():
-            o.step(sim_step=self.timestep)
-        super(SawyerLiftPositionTarget, self).step(action)
-        if self.eval_mode or self._hide_target:
+        result = super(SawyerLiftPositionTarget, self).step(action)
+        if self._hide_target:
             self.hide_target()
+        return result
 
     def _pre_action(self, action, policy_step=None):
-        super()._pre_action(action, policy_step=policy_step)
+        result = super()._pre_action(action, policy_step=policy_step)
 
         # gravity compensation for target object
         self.sim.data.qfrc_applied[
@@ -818,6 +802,7 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
             ] = self.sim.data.qfrc_bias[
                 self._ref_target_vel_low : self._ref_target_vel_high
             ]
+        return result
 
     def _set_target(self, pos, quat=None):
         """
@@ -889,3 +874,117 @@ class SawyerLiftPositionTarget(SawyerLiftPosition):
         """
         cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
         return np.linalg.norm(cube_pos - self.target_pos) < self._goal_tolerance
+
+
+class SawyerPositionTargetPress(SawyerLiftPositionTarget):
+    """
+    Goal-driven placing environment
+    """
+    def _load_model(self):
+        super()._load_model()
+
+        slide_joint = dict(
+            pos="0 0 0",
+            axis="0 0 1",
+            type="slide",
+            springref="1",
+            limited="true",
+            stiffness="0.5",
+            range="-0.1 0",
+            damping="1"
+        )
+        button = CylinderObject(rgba=(1, 0, 0, 1), size=[0.03, 0.01], joint=slide_joint)
+
+        self.mujoco_objects["button"] = button
+        self.interactive_objects = OrderedDict([("button", None)])
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopVisualTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            self.visual_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+        self.model.place_visual()
+
+    def _get_reference(self):
+        super()._get_reference()
+
+        self.object_body_id = self.sim.model.body_name2id("cube")
+        button = MaintainedButtonObject(self.sim, body_id=self.sim.model.body_name2id("button"), on_rgba=(1, 0, 0, 1))
+
+        def color_trigger(sim, body_id, color):
+            for gid in EU.bodyid2geomids(sim, body_id):
+                self.sim.model.geom_rgba[gid] = color
+
+        button.add_on_state_funcs(
+            cond={button.state_name: True},
+            func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(0, 1, 0, 1))
+        )
+
+        button.add_on_state_funcs(
+            cond={button.state_name: False},
+            func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(1, 0, 0, 1))
+        )
+
+        self.interactive_objects['button'] = button
+
+    def _reset_internal(self):
+        """
+        Resets simulation internal configurations.
+        """
+        super()._reset_internal()
+        for _, o in self.interactive_objects.items():
+            o.reset()
+
+    def step(self, action):
+        for _, o in self.interactive_objects.items():
+            o.step(sim_step=self.timestep)
+        super().step(action)
+
+    def _set_state_to_goal(self):
+        super()._set_state_to_goal()
+        self.interactive_objects['button'].activate()
+
+    def _get_goal(self):
+        """
+        Get goal observation by moving object to the target, get obs, and move back.
+        :return: observation dict with goal
+        """
+        # avoid generating goal obs every time
+        if self._goal_dict is not None:
+            return self._goal_dict
+
+        with EU.world_saved(self.sim):
+            self._set_state_to_goal()
+            self._goal_dict = deepcopy(self._get_observation())
+
+        for k, v in self.interactive_objects.items():
+            v.reset()
+
+        return self._goal_dict
+
+    def _check_success(self):
+        loc_success = super()._check_success()
+        state_name = self.interactive_objects['button'].state_name
+        but_success = self.interactive_objects['button'].satisfies({state_name: True})
+        return loc_success and but_success
+
+
+class SawyerPositionPress(SawyerPositionTargetPress):
+    def _set_state_to_goal(self):
+        self.interactive_objects['button'].activate()
+
+    def _check_success(self):
+        state_name = self.interactive_objects['button'].state_name
+        return self.interactive_objects['button'].satisfies({state_name: True})
+
+
+class SawyerPositionTarget(SawyerPositionTargetPress):
+    def _set_state_to_goal(self):
+        SawyerLiftPositionTarget._set_state_to_goal(self)
+
+    def _check_success(self):
+        return SawyerLiftPositionTarget._check_success(self)
