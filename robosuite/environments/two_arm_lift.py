@@ -2,7 +2,7 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.agents import *
+from robosuite.robots import *
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import PotWithHandlesObject

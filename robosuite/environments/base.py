@@ -74,18 +74,30 @@ class MujocoEnv(metaclass=EnvMeta):
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
         """
-
+        # Rendering-specific attributes
         self.has_renderer = has_renderer
         self.has_offscreen_renderer = has_offscreen_renderer
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
+        self.viewer = None
+
+        # Simulation-specific attributes
         self.control_freq = control_freq
         self.horizon = horizon
         self.ignore_done = ignore_done
-        self.viewer = None
         self.model = None
+        self.cur_time = None
+        self.model_timestep = None
+        self.control_timestep = None
 
+        # Load the model
+        self._load_model()
+
+        # Initialize the simulation
+        self._initialize_sim()
+
+        # Run all further internal (re-)initialization required
         self._reset_internal()
 
     def initialize_time(self, control_freq):
@@ -115,31 +127,36 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         pass
 
+    def _initialize_sim(self, xml_string=None):
+        """
+        Creates a MjSim object and stores it in self.sim. If @xml_string is specified, the MjSim object will be created
+        from the specified xml_string. Else, it will pull from self.model to instantiate the simulation
+        """
+        # if we have an xml string, use that to create the sim. Otherwise, use the local model
+        self.mjpy_model = load_model_from_xml(xml_string) if xml_string else self.model.get_model(mode="mujoco_py")
+
+        # Create the simulation instance and run a single step to make sure changes have propagated through sim state
+        self.sim = MjSim(self.mjpy_model)
+        self.sim.step()
+
+        # Setup sim time based on control frequency
+        self.initialize_time(self.control_freq)
+
     def reset(self):
         """Resets simulation."""
         # TODO(yukez): investigate black screen of death
-        # if there is an active viewer window, destroy it
-        self._destroy_viewer()
         self._reset_internal()
         self.sim.forward()
         return self._get_observation()
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
-        # instantiate simulation from MJCF model
-        self._load_model()
-        self.mjpy_model = self.model.get_model(mode="mujoco_py")
-        self.sim = MjSim(self.mjpy_model)
-        self.sim.step()                 # Run a single step to make sure changes have propagated through sim state
-        self.initialize_time(self.control_freq)
 
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
             self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (
-                1 if self.render_collision_mesh else 0
-            )
-            self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
+            self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
+            self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
 
             # hiding the overlay speeds up rendering significantly
             self.viewer.viewer._hide_overlay = True
@@ -155,12 +172,8 @@ class MujocoEnv(metaclass=EnvMeta):
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim)
                 self.sim.add_render_context(render_context)
-            self.sim._render_context_offscreen.vopt.geomgroup[0] = (
-                1 if self.render_collision_mesh else 0
-            )
-            self.sim._render_context_offscreen.vopt.geomgroup[1] = (
-                1 if self.render_visual_mesh else 0
-            )
+            self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
+            self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
 
         # additional housekeeping
         self.sim_state_initial = self.sim.get_state()
@@ -254,35 +267,11 @@ class MujocoEnv(metaclass=EnvMeta):
         # if there is an active viewer window, destroy it
         self.close()
 
-        # load model from xml
-        self.mjpy_model = load_model_from_xml(xml_string)
+        # initialize sim from xml
+        self._initialize_sim(xml_string=xml_string)
 
-        self.sim = MjSim(self.mjpy_model)
-        self.initialize_time(self.control_freq)
-        if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (
-                1 if self.render_collision_mesh else 0
-            )
-            self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
-
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
-
-        elif self.has_offscreen_renderer:
-            render_context = MjRenderContextOffscreen(self.sim)
-            render_context.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
-            render_context.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
-            self.sim.add_render_context(render_context)
-
-        self.sim_state_initial = self.sim.get_state()
-        self._get_reference()
-        self.cur_time = 0
-        self.timestep = 0
-        self.done = False
-
-        # necessary to refresh MjData
-        self.sim.forward()
+        # Now reset as normal
+        self.reset()
 
     def find_contacts(self, geoms_1, geoms_2):
         """

@@ -2,8 +2,8 @@ import numpy as np
 
 from robosuite.environments.base import MujocoEnv
 
-from robosuite.agents.single_arm import SingleArm
-from robosuite.agents.bimanual import Bimanual
+from robosuite.robots.single_arm import SingleArm
+from robosuite.robots.bimanual import Bimanual
 from robosuite.models.robots.robot_model import check_bimanual
 
 from robosuite.controllers import reset_controllers
@@ -202,24 +202,8 @@ class RobotEnv(MujocoEnv):
         """
         super()._load_model()
 
-        # Loop through robots and load each model
-        for idx, (name, config) in enumerate(zip(self.robot_names, self.robot_configs)):
-            # Create the robot instance
-            if not check_bimanual(name):
-                self.robots[idx] = SingleArm(
-                    robot_type=name,
-                    idn=idx,
-                    **config
-                )
-            else:
-                self.robots[idx] = Bimanual(
-                    robot_type=name,
-                    idn=idx,
-                    **config
-                )
-
-            # Now, load the robot models
-            self.robots[idx].load_model()
+        # Load robots
+        self._load_robots()
 
     def _get_reference(self):
         """
@@ -248,12 +232,17 @@ class RobotEnv(MujocoEnv):
         """
         Resets simulation internal configurations.
         """
-        super()._reset_internal()
+        # Load robots
+        self._load_robots()
 
-        self.action_dim = 0
+        # Run superclass reset functionality
+        super()._reset_internal()
 
         # Reset controllers
         reset_controllers()
+
+        # Reset action dim
+        self.action_dim = 0
 
         # Reset robot and update action space dimension along the way
         for robot in self.robots:
@@ -403,6 +392,29 @@ class RobotEnv(MujocoEnv):
         # Loop over robot grippers to visualize them indepedently
         for robot in self.robots:
             robot.gripper_visualization
+
+    def _load_robots(self):
+        """
+        Instantiates robots and stores them within the self.robots attribute
+        """
+        # Loop through robots and instantiate Robot object for each
+        for idx, (name, config) in enumerate(zip(self.robot_names, self.robot_configs)):
+            # Create the robot instance
+            if not check_bimanual(name):
+                self.robots[idx] = SingleArm(
+                    robot_type=name,
+                    idn=idx,
+                    **config
+                )
+            else:
+                self.robots[idx] = Bimanual(
+                    robot_type=name,
+                    idn=idx,
+                    **config
+                )
+
+            # Now, load the robot models
+            self.robots[idx].load_model()
 
     def _check_robot_configuration(self, robots):
         """

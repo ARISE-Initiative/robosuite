@@ -4,7 +4,7 @@ import numpy as np
 from robosuite.utils.transform_utils import convert_quat
 
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.agents import SingleArm
+from robosuite.robots import SingleArm
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject

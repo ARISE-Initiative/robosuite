@@ -3,7 +3,7 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.agents import *
+from robosuite.robots import *
 
 from robosuite.models.objects import CylinderObject, PlateWithHoleObject
 from robosuite.models.arenas import EmptyArena

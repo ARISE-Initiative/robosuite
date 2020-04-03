@@ -5,7 +5,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.utils.mjcf_utils import string_to_array
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.agents import SingleArm
+from robosuite.robots import SingleArm
 
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
