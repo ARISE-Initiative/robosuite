@@ -73,6 +73,9 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
         # key: gripper name and value: gripper model
         self.grippers = OrderedDict()
 
+        # Get camera names for this robot
+        self.cameras = self.get_element_names(self.worldbody, "camera")
+
     def add_gripper(self, gripper, arm_name=None):
         """
         Mounts gripper to arm.
@@ -107,6 +110,9 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
 
         self.merge(gripper, merge_body=False)
         self.grippers[arm_name] = gripper
+
+        # Update cameras in this model
+        self.cameras = self.get_element_names(self.worldbody, "camera")
 
     def set_base_xpos(self, pos):
         """Places the robot on position @pos."""

@@ -3,10 +3,10 @@ Gripper for Franka's Panda (has two fingers).
 """
 import numpy as np
 from robosuite.utils.mjcf_utils import xml_path_completion
-from robosuite.models.grippers.gripper import Gripper
+from robosuite.models.grippers.gripper_model import GripperModel
 
 
-class PandaGripperBase(Gripper):
+class PandaGripperBase(GripperModel):
     """
     Gripper for Franka's Panda (has two fingers).
     """

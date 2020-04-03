@@ -31,6 +31,9 @@
     <worldbody>
         <body name="link0" pos="0 0 0">
             <body name="base" pos="0 0 0">
+
+                <!-- robot view -->
+                <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
                 <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
                 <body name="controller_box" pos="0 0 0">
                     <inertial diaginertia="1.71363 1.27988 0.809981" mass="46.64" pos="-0.325 0 -0.38"/>

@@ -11,16 +11,16 @@ from .panda_gripper import PandaGripper
 
 def gripper_factory(name, idn=0):
     """
-    Genreator for grippers
+    Generator for grippers
 
-    Creates a Gripper instance with the provided name.
+    Creates a GripperModel instance with the provided name.
 
     Args:
         name: the name of the gripper class
         idn: idn (int or str): Number or some other unique identification string for this gripper instance
 
     Returns:
-        gripper: Gripper instance
+        gripper: GripperModel instance
 
     Raises:
         XMLError: [description]
@@ -37,4 +37,4 @@ def gripper_factory(name, idn=0):
         return RobotiqThreeFingerGripper(idn=idn)
     if name == "PandaGripper":
         return PandaGripper(idn=idn)
-    raise ValueError("Unknown gripper name {}".format(name))
+    raise ValueError("Unknown gripper name: {}".format(name))

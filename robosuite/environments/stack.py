@@ -30,13 +30,14 @@ class Stack(RobotEnv):
         placement_initializer=None,
         use_indicator_object=False,
         has_renderer=False,
-        has_offscreen_renderers=True,
+        has_offscreen_renderer=True,
+        render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         control_freq=10,
         horizon=1000,
         ignore_done=False,
-        camera_names="frontview",
+        camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
@@ -67,9 +68,7 @@ class Stack(RobotEnv):
             table_friction (3-tuple): the three mujoco friction parameters for
                 the table.
 
-            use_camera_obs (bool or list of bool): if True, every observation for a specific robot includes a rendered
-            image. Should either be single bool if camera obs value is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+            use_camera_obs (bool): if True, every observation includes rendered image(s)
 
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
@@ -86,39 +85,40 @@ class Stack(RobotEnv):
             has_renderer (bool): If true, render the simulation state in
                 a viewer instead of headless mode.
 
-            has_offscreen_renderers (bool or list of bool): True if using off-screen rendering. Should either be single
-                bool if same offscreen renderering setting is to be used for all cameras or else it should be a list of
-                the same length as "robots" param
+            has_offscreen_renderer (bool): True if using off-screen rendering
 
-            render_collision_mesh (bool): True if rendering collision meshes
-                in camera. False otherwise.
+            render_camera (str): Name of camera to render if `has_renderer` is True.
 
-            render_visual_mesh (bool): True if rendering visual meshes
-                in camera. False otherwise.
+            render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
 
-            control_freq (float): how many control signals to receive
-                in every second. This sets the amount of simulation time
-                that passes between every action input.
+            render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
+
+            control_freq (float): how many control signals to receive in every second. This sets the amount of
+                simulation time that passes between every action input.
 
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
 
             camera_names (str or list of str): name of camera to be rendered. Should either be single str if
-                same name is to be used for all cameras' rendering or else it should be a list of the same length as
-                "robots" param. Note: Each name must be set if the corresponding @use_camera_obs value is True.
+                same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
+                Note: At least one camera must be specified if @use_camera_obs is True.
+                Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
+                    convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
+                    robot's camera list).
 
             camera_heights (int or list of int): height of camera frame. Should either be single int if
                 same height is to be used for all cameras' frames or else it should be a list of the same length as
-                "robots" param.
+                "camera names" param.
 
             camera_widths (int or list of int): width of camera frame. Should either be single int if
                 same width is to be used for all cameras' frames or else it should be a list of the same length as
-                "robots" param.
+                "camera names" param.
 
             camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
                 bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
-                "robots" param.
+                "camera names" param.
+
         """
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
@@ -152,7 +152,8 @@ class Stack(RobotEnv):
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
-            has_offscreen_renderers=has_offscreen_renderers,
+            has_offscreen_renderer=has_offscreen_renderer,
+            render_camera=render_camera,
             render_collision_mesh=render_collision_mesh,
             render_visual_mesh=render_visual_mesh,
             control_freq=control_freq,

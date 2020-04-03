@@ -3,10 +3,10 @@ Gripper with 11-DoF controlling three fingers and its open/close variant.
 """
 import numpy as np
 from robosuite.utils.mjcf_utils import xml_path_completion
-from robosuite.models.grippers.gripper import Gripper
+from robosuite.models.grippers.gripper_model import GripperModel
 
 
-class RobotiqThreeFingerGripperBase(Gripper):
+class RobotiqThreeFingerGripperBase(GripperModel):
     """
     Gripper with 11 dof controlling three fingers.
     """

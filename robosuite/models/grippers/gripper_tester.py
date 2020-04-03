@@ -34,7 +34,7 @@ class GripperTester:
         Initializes world and gripper positioning
 
         Args:
-            gripper: A Gripper instance
+            gripper: A GripperModel instance
             pos: position to place the gripper
                  e.g. '0 0 0.3'
             quat: rotation to apply to gripper

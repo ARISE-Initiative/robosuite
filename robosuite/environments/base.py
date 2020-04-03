@@ -43,6 +43,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self,
         has_renderer=False,
         has_offscreen_renderer=True,
+        render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         control_freq=10,
@@ -56,6 +57,8 @@ class MujocoEnv(metaclass=EnvMeta):
                 a viewer instead of headless mode.
 
             has_offscreen_renderer (bool): True if using off-screen rendering.
+
+            render_camera (str): Name of camera to render if `has_renderer` is True.
 
             render_collision_mesh (bool): True if rendering collision meshes 
                 in camera. False otherwise.
@@ -74,6 +77,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         self.has_renderer = has_renderer
         self.has_offscreen_renderer = has_offscreen_renderer
+        self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
         self.control_freq = control_freq
@@ -122,7 +126,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
-        # TODO: Figure out how multiple offscreen rendererings will work for multiple robots
         # instantiate simulation from MJCF model
         self._load_model()
         self.mjpy_model = self.model.get_model(mode="mujoco_py")
@@ -140,6 +143,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
             # hiding the overlay speeds up rendering significantly
             self.viewer.viewer._hide_overlay = True
+
+            # Set the camera angle for viewing
+            self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
 
         elif self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:

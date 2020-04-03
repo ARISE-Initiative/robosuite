@@ -1,4 +1,4 @@
-from .gripper import Gripper
+from .gripper_model import GripperModel
 from .gripper_factory import gripper_factory
 from .two_finger_gripper import TwoFingerGripper
 from .gripper_tester import GripperTester

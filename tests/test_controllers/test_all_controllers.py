@@ -114,7 +114,7 @@ def test_all_controllers():
             "Lift",
             robots="Sawyer",
             has_renderer=args.render,  # use on-screen renderer for visual validation only if requested
-            has_offscreen_renderers=False,
+            has_offscreen_renderer=False,
             use_camera_obs=False,
             horizon=(steps_per_action + steps_per_rest) * num_test_steps,
             controller_configs=controller_config

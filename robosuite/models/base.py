@@ -141,6 +141,22 @@ class MujocoXML(object):
             if self.asset.find(pattern) is None:
                 self.asset.append(asset)
 
+    def get_element_names(self, root, element_type):
+        """
+        Searches recursively through the @root and returns a list of names of the specified @element_type
+
+        Args:
+            root (XML Mujoco instance): Root of the xml element tree to start recursively searching through
+                (e.g.: `self.worldbody`)
+            element_type (str): Name of element to return names of. (e.g.: "site", "geom", etc.)
+        """
+        names = []
+        for child in root:
+            if child.tag == element_type:
+                names.append(child.get("name"))
+            names += self.get_element_names(child, element_type)
+        return names
+
     def add_prefix(self, prefix, tags=("body", "joint", "site", "geom", "camera", "actuator")):
         """
         Utility to add prefix to all body names to prevent name clashes

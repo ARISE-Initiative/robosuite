@@ -101,7 +101,7 @@ def test_linear_interpolator():
                     "Lift",
                     robots="Sawyer",
                     has_renderer=args.render,  # by default, don't use on-screen renderer for visual validation
-                    has_offscreen_renderers=False,
+                    has_offscreen_renderer=False,
                     use_camera_obs=False,
                     horizon=10000,
                     control_freq=20,

@@ -27,7 +27,7 @@ def test_all_environments():
                     robots=robots,
                     env_configuration=config,
                     has_renderer=False,  # no on-screen renderer
-                    has_offscreen_renderers=True,  # off-screen renderer is required for camera observations
+                    has_offscreen_renderer=True,   # off-screen renderer is required for camera observations
                     ignore_done=True,  # (optional) never terminates episode
                     use_camera_obs=True,  # use camera observations
                     camera_heights=84,  # set camera height
@@ -44,7 +44,7 @@ def test_all_environments():
                     env_name,
                     robots=robots,
                     has_renderer=False,  # no on-screen renderer
-                    has_offscreen_renderers=True,  # off-screen renderer is required for camera observations
+                    has_offscreen_renderer=True,  # off-screen renderer is required for camera observations
                     ignore_done=True,  # (optional) never terminates episode
                     use_camera_obs=True,  # use camera observations
                     camera_heights=84,  # set camera height

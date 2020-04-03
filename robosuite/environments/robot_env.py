@@ -23,7 +23,8 @@ class RobotEnv(MujocoEnv):
         use_camera_obs=True,
         use_indicator_object=False,
         has_renderer=False,
-        has_offscreen_renderers=True,
+        has_offscreen_renderer=True,
+        render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         control_freq=10,
@@ -54,9 +55,7 @@ class RobotEnv(MujocoEnv):
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
-            use_camera_obs (bool or list of bool): if True, every observation for a specific robot includes a rendered
-            image. Should either be single bool if camera obs value is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+            use_camera_obs (bool): if True, every observation includes rendered image(s)
 
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
@@ -64,72 +63,73 @@ class RobotEnv(MujocoEnv):
             has_renderer (bool): If true, render the simulation state in
                 a viewer instead of headless mode.
 
-            has_offscreen_renderers (bool or list of bool): True if using off-screen rendering. Should either be single
-                bool if same offscreen renderering setting is to be used for all cameras or else it should be a list of
-                the same length as "robots" param
+            has_offscreen_renderer (bool): True if using off-screen rendering
 
-            render_collision_mesh (bool): True if rendering collision meshes
-                in camera. False otherwise.
+            render_camera (str): Name of camera to render if `has_renderer` is True.
 
-            render_visual_mesh (bool): True if rendering visual meshes
-                in camera. False otherwise.
+            render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
 
-            control_freq (float): how many control signals to receive
-                in every second. This sets the amount of simulation time
-                that passes between every action input.
+            render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
+
+            control_freq (float): how many control signals to receive in every second. This sets the amount of
+                simulation time that passes between every action input.
 
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
 
             camera_names (str or list of str): name of camera to be rendered. Should either be single str if
-                same name is to be used for all cameras' rendering or else it should be a list of the same length as
-                "robots" param. Note: Each name must be set if the corresponding @use_camera_obs value is True.
+                same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
+                Note: At least one camera must be specified if @use_camera_obs is True.
+                Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
+                    convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
+                    robot's camera list).
 
             camera_heights (int or list of int): height of camera frame. Should either be single int if
                 same height is to be used for all cameras' frames or else it should be a list of the same length as
-                "robots" param.
+                "camera names" param.
 
             camera_widths (int or list of int): width of camera frame. Should either be single int if
                 same width is to be used for all cameras' frames or else it should be a list of the same length as
-                "robots" param.
+                "camera names" param.
 
             camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
                 bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
-                "robots" param.
+                "camera names" param.
 
         """
         # Robot
-        robots = robots if type(robots) is list else [robots]
+        robots = list(robots) if type(robots) is list or type(robots) is tuple else [robots]
         self.num_robots = len(robots)
         self.robot_names = robots
-        self.robots = self._input2list(None)
+        self.robots = self._input2list(None, self.num_robots)
         self.action_dim = None
 
         # Controller
-        controller_configs = self._input2list(controller_configs)
+        controller_configs = self._input2list(controller_configs, self.num_robots)
 
         # Gripper
-        gripper_types = self._input2list(gripper_types)
-        gripper_visualizations = self._input2list(gripper_visualizations)
+        gripper_types = self._input2list(gripper_types, self.num_robots)
+        gripper_visualizations = self._input2list(gripper_visualizations, self.num_robots)
 
         # Observations -- Ground truth = object_obs, Image data = camera_obs
-        self.use_camera_obs = self._input2list(use_camera_obs)
+        self.use_camera_obs = use_camera_obs
 
         # Camera / Rendering Settings
-        self.has_offscreen_renderers = self._input2list(has_offscreen_renderers)
-        self.camera_names = self._input2list(camera_names)
-        self.camera_heights = self._input2list(camera_heights)
-        self.camera_widths = self._input2list(camera_widths)
-        self.camera_depths = self._input2list(camera_depths)
+        self.has_offscreen_renderer = has_offscreen_renderer
+        self.camera_names = list(camera_names) if type(camera_names) is list or \
+            type(camera_names) is tuple else [camera_names]
+        self.num_cameras = len(self.camera_names)
 
-        # sanity checks for cameras
-        for idx, (cam_name, use_cam_obs, has_offscreen_renderer) in \
-            enumerate(zip(self.camera_names, self.use_camera_obs, self.has_offscreen_renderers)):
-            if use_cam_obs and not has_offscreen_renderer:
-                raise ValueError("Camera #{} observations require an offscreen renderer.".format(idx))
-            if use_cam_obs and cam_name is None:
-                raise ValueError("Must specify camera #{} name when using camera obs".format(idx))
+        self.camera_heights = self._input2list(camera_heights, self.num_cameras)
+        self.camera_widths = self._input2list(camera_widths, self.num_cameras)
+        self.camera_depths = self._input2list(camera_depths, self.num_cameras)
+
+        # sanity checks for camera rendering
+        if self.use_camera_obs and not self.has_offscreen_renderer:
+            raise ValueError("Error: Camera observations require an offscreen renderer!")
+        if self.use_camera_obs and self.camera_names is None:
+            raise ValueError("Must specify at least one camera name when using camera obs")
 
         # Robot configurations
         self.robot_configs = [
@@ -148,7 +148,8 @@ class RobotEnv(MujocoEnv):
         # Run superclass init
         super().__init__(
             has_renderer=has_renderer,
-            has_offscreen_renderer=any(self.has_offscreen_renderers),
+            has_offscreen_renderer=self.has_offscreen_renderer,
+            render_camera=render_camera,
             render_collision_mesh=render_collision_mesh,
             render_visual_mesh=render_visual_mesh,
             control_freq=control_freq,
@@ -175,13 +176,15 @@ class RobotEnv(MujocoEnv):
             index = self._ref_indicator_pos_low
             self.sim.data.qpos[index : index + 3] = pos
 
-    def _input2list(self, inp):
+    @staticmethod
+    def _input2list(inp, length):
         """
         Helper function that converts an input that is either a single value or a list into a list
         @inp (str or list): Input value to be converted to list
+        @length (int): Length of list to broadcast input to
         """
         # convert to list if necessary
-        return inp if type(inp) is list else [inp for _ in range(self.num_robots)]
+        return list(inp) if type(inp) is list or type(inp) is tuple else [inp for _ in range(length)]
 
     def _load_model(self):
         """
@@ -247,6 +250,35 @@ class RobotEnv(MujocoEnv):
             robot.reset()
             self.action_dim += robot.action_dim
 
+        # Update cameras if appropriate
+        if self.use_camera_obs:
+            temp_names = []
+            for cam_name in self.camera_names:
+                if "all-" in cam_name:
+                    # We need to add all robot-specific camera names that include the key after the tag "all-"
+                    start_idx = len(temp_names) - 1
+                    key = cam_name.replace("all-", "")
+                    for robot in self.robots:
+                        for robot_cam_name in robot.robot_model.cameras:
+                            if key in robot_cam_name:
+                                temp_names.append(robot_cam_name)
+                    # We also need to broadcast the corresponding values from each camera dimensions as well
+                    end_idx = len(temp_names) - 1
+                    self.camera_widths = self.camera_widths[:start_idx] + \
+                        [self.camera_widths[start_idx]] * (end_idx - start_idx) + \
+                        self.camera_widths[(start_idx + 1):]
+                    self.camera_heights = self.camera_heights[:start_idx] + \
+                        [self.camera_heights[start_idx]] * (end_idx - start_idx) + \
+                        self.camera_heights[(start_idx + 1):]
+                    self.camera_depths = self.camera_depths[:start_idx] + \
+                        [self.camera_depths[start_idx]] * (end_idx - start_idx) + \
+                        self.camera_depths[(start_idx + 1):]
+                else:
+                    # We simply add this camera to the temp_names
+                    temp_names.append(cam_name)
+            # Lastly, replace camera names with the updated ones
+            self.camera_names = temp_names
+
     def _pre_action(self, action, policy_step=False):
         """
         Overrides the superclass method to control the robot(s) within this enviornment using their respective
@@ -300,16 +332,16 @@ class RobotEnv(MujocoEnv):
         """
         di = super()._get_observation()
 
-        # Loop through all robots and their respective cameras and update the observations
-        for idx, (robot, use_cam_obs, cam_name, cam_w, cam_h, cam_d) in \
-                enumerate(zip(self.robots, self.use_camera_obs,
-                              self.camera_names, self.camera_widths, self.camera_heights, self.camera_depths)):
-
-            # Add robot observations to the dict
+        # Loop through robots and update the observations
+        for robot in self.robots:
             di = robot.get_observations(di)
 
-            # camera observations
-            if use_cam_obs:
+        # Loop through cameras and update the observations
+        if self.use_camera_obs:
+            for (cam_name, cam_w, cam_h, cam_d) in \
+                    zip(self.camera_names, self.camera_widths, self.camera_heights, self.camera_depths):
+
+                # Add camera observations to the dict
                 camera_obs = self.sim.render(
                     # TODO: May need to update cameras to correspond to each robot-specific view
                     camera_name=cam_name,
@@ -318,9 +350,9 @@ class RobotEnv(MujocoEnv):
                     depth=cam_d,
                 )
                 if cam_d:
-                    di["image"], di["depth"] = camera_obs
+                    di[cam_name + "_image"], di[cam_name + "_depth"] = camera_obs
                 else:
-                    di["image"] = camera_obs
+                    di[cam_name + "_image"] = camera_obs
 
         return di
 

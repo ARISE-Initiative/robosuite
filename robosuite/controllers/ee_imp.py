@@ -2,6 +2,7 @@ from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
+from collections.abc import Iterable
 
 
 class EndEffectorImpedanceController(Controller):
@@ -109,8 +110,8 @@ class EndEffectorImpedanceController(Controller):
         # input and output max and min
         self.input_max = input_max
         self.input_min = input_min
-        self.output_max = output_max[:self.control_dim] if type(output_max) == tuple else output_max
-        self.output_min = output_min[:self.control_dim] if type(output_min) == tuple else output_min
+        self.output_max = output_max[:self.control_dim] if isinstance(output_max, Iterable) else output_max
+        self.output_min = output_min[:self.control_dim] if isinstance(output_min, Iterable) else output_min
 
         # limits
         self.position_limits = position_limits

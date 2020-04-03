@@ -28,6 +28,8 @@ class Sawyer(RobotModel):
 
     @property
     def init_qpos(self):
+        # TODO: Determine which start is better
+        #return np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
         return np.array([0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161])
 
     @property

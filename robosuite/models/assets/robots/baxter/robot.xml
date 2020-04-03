@@ -39,6 +39,8 @@
   </contact>
   <worldbody>
     <body name="base" pos="0 0 0">
+      <!-- robot view -->
+      <camera mode="fixed" name="robotview" pos="1.3 0 0.4" quat="0.653 0.271 0.271 0.653"/>
       <inertial pos="0 0 0" mass="10" diaginertia="0.001 0.001 0.001" />
       <body name="collision_head_link_1" pos="0.11 0 0.75">
         <inertial pos="0 0 0" mass="0.0001" diaginertia="1e-008 1e-008 1e-008" />

@@ -78,6 +78,8 @@ Main difference is that user inputs with ik's rotations are always taken relativ
     --switch-on-click: Exclusively applicable and only should be specified for "TwoArm..." environments. If enabled,
         will switch the current arm being controlled every time the gripper input is pressed
 
+    --toggle-camera-on-click: If enabled, gripper input presses will cycle through the available camera angles
+
 Examples:
 
     For normal single-arm environment:
@@ -110,6 +112,7 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default="", help="Specified environment configuration if necessary")
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-click", action="store_true", help="Switch gripper control on gripper click")
+    parser.add_argument("--toggle-camera-on-click", action="store_true", help="Switch camera angle on gripper click")
     parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
@@ -137,31 +140,26 @@ if __name__ == "__main__":
         print("Error opening default controller filepath at: {}. "
               "Please check filepath and try again.".format(controller_path))
 
-    if args.config == "":
-        env = robosuite.make(
-            args.environment,
-            robots=args.robots,
-            has_renderer=True,
-            ignore_done=True,
-            use_camera_obs=False,
-            gripper_visualizations=True,
-            reward_shaping=True,
-            control_freq=20,
-            controller_configs=controller_config
-        )
-    else:
-        env = robosuite.make(
-            args.environment,
-            robots=args.robots,
-            env_configuration=args.config,
-            has_renderer=True,
-            ignore_done=True,
-            use_camera_obs=False,
-            gripper_visualizations=True,
-            reward_shaping=True,
-            control_freq=20,
-            controller_configs=controller_config
-        )
+    # Create argument configuration
+    config = {
+        "env_name": args.environment,
+        "robots": args.robots,
+        "controller_configs": controller_config,
+    }
+
+    if args.config != "":
+        config["env_configuration"] = args.config
+
+    # Create environment
+    env = robosuite.make(
+        **config,
+        has_renderer=True,
+        ignore_done=True,
+        use_camera_obs=False,
+        gripper_visualizations=True,
+        reward_shaping=True,
+        control_freq=20,
+    )
 
     # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
@@ -185,7 +183,8 @@ if __name__ == "__main__":
 
     while True:
         obs = env.reset()
-        env.viewer.set_camera(camera_id=2)
+        cam_id = 0
+        num_cam = len(env.sim.model.camera_names)
         env.render()
 
         last_grasp = 0
@@ -206,18 +205,26 @@ if __name__ == "__main__":
             if reset:
                 break
 
+            # Set active robot
+            active_robot = env.robots[0] if not args.config or args.config == "bimanual" else \
+                env.robots[args.arm == "left"]
+
             # If the current grasp is active and last grasp is not (i.e.: grasping input just pressed),
-            # toggle arm control if requested
-            if args.switch_on_click:
-                if grasp and not last_grasp:
+            # toggle arm control and / or camera viewing angle if requested
+            if grasp and not last_grasp:
+                if args.switch_on_click:
                     args.arm = "left" if args.arm == "right" else "right"
-                last_grasp = grasp
+                if args.toggle_camera_on_click:
+                    cam_id = (cam_id + 1) % num_cam
+                    env.viewer.set_camera(camera_id=cam_id)
+            # Update last grasp
+            last_grasp = grasp
 
             # First process the raw drotation
             drotation = raw_drotation[[1,0,2]]
             if args.controller == 'ik':
                 # If this is panda, want to flip y
-                if args.config != "bimanual" and isinstance(env.robots[args.arm == "left"].robot_model, Panda):
+                if isinstance(active_robot.robot_model, Panda):
                     drotation[1] = -drotation[1]
                 else:
                     # Flip x
@@ -261,15 +268,15 @@ if __name__ == "__main__":
                 # This is a multi-arm robot
                 if env.env_configuration == "bimanual":
                     # We should check the correct arm to see if it has a gripper
-                    if not env.robots[0].has_gripper[args.arm]:
+                    if not active_robot.has_gripper[args.arm]:
                         grasp = []
                 else:
                     # We should check the correct robot to see if it has a gripper (assumes 0 = right, 1 = left)
-                    if not env.robots[args.arm == "left"].has_gripper:
+                    if not active_robot.has_gripper:
                         grasp = []
             else:
                 # This is a single-arm robot, simply check to see if it has a gripper
-                if not env.robots[0].has_gripper:
+                if not active_robot.has_gripper:
                     grasp = []
 
             # Create action based on action space of individual robot

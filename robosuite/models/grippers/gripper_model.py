@@ -4,7 +4,7 @@ Defines the base class of all grippers
 from robosuite.models.base import MujocoXML
 
 
-class Gripper(MujocoXML):
+class GripperModel(MujocoXML):
     """Base class for grippers"""
 
     def __init__(self, fname, idn=0):

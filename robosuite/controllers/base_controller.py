@@ -1,4 +1,5 @@
 import abc
+from collections.abc import Iterable
 import numpy as np
 import mujoco_py
 
@@ -139,7 +140,7 @@ class Controller(object, metaclass=abc.ABCMeta):
     @input_min.setter
     def input_min(self, input_min):
         """Sets the minimum input"""
-        self._input_min = np.array(input_min) if type(input_min) == list or type(input_min) == tuple \
+        self._input_min = np.array(input_min) if isinstance(input_min, Iterable) \
             else np.array([input_min]*self.control_dim)
 
     @property
@@ -150,7 +151,7 @@ class Controller(object, metaclass=abc.ABCMeta):
     @input_max.setter
     def input_max(self, input_max):
         """Sets the maximum input"""
-        self._input_max = np.array(input_max) if type(input_max) == list or type(input_max) == tuple \
+        self._input_max = np.array(input_max) if isinstance(input_max, Iterable) \
             else np.array([input_max]*self.control_dim)
 
     @property
@@ -161,7 +162,7 @@ class Controller(object, metaclass=abc.ABCMeta):
     @output_min.setter
     def output_min(self, output_min):
         """Set the minimum output"""
-        self._output_min = np.array(output_min) if type(output_min) == list or type(output_min) == tuple \
+        self._output_min = np.array(output_min) if isinstance(output_min, Iterable) \
             else np.array([output_min]*self.control_dim)
 
     @property
@@ -172,7 +173,7 @@ class Controller(object, metaclass=abc.ABCMeta):
     @output_max.setter
     def output_max(self, output_max):
         """Set the maximum output"""
-        self._output_max = np.array(output_max) if type(output_max) == list or type(output_max) == tuple \
+        self._output_max = np.array(output_max) if isinstance(output_max, Iterable) \
                 else np.array([output_max]*self.control_dim)
 
     @property

@@ -3,10 +3,10 @@
 """
 import numpy as np
 from robosuite.utils.mjcf_utils import xml_path_completion
-from robosuite.models.grippers.gripper import Gripper
+from robosuite.models.grippers.gripper_model import GripperModel
 
 
-class RobotiqGripperBase(Gripper):
+class RobotiqGripperBase(GripperModel):
     """
     6-DoF Robotiq gripper.
     """
