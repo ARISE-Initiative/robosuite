@@ -256,21 +256,13 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
             self.ik_command_indexes = np.arange(self.joint_dim)
 
         # Set rotation offsets (for mujoco eef -> pybullet eef) and rest poses
+        self.rest_poses = list(self.initial_joint)
         if self.robot_name == "Sawyer":
             self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)
-            self.rest_poses = [0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161]
         elif self.robot_name == "Panda":
             self.rotation_offset = T.rotation_matrix(angle=np.pi/4, direction=[0., 0., 1.], point=None)
-            self.rest_poses = [0, np.pi / 6, 0.00, -(np.pi - 2 * np.pi / 6), 0.00, (np.pi - np.pi / 6), np.pi / 4]
         elif self.robot_name == "Baxter":
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
-            if "right" in self.eef_name:
-                self.rest_poses = [0.535, -0.093, 0.038, 0.166, 0.643, 1.960, -1.297]
-            elif "left" in self.eef_name:
-                self.rest_poses = [-0.518, -0.026, -0.076, 0.175, -0.748, 1.641, -0.158]
-            else:
-                # Error with inputted id
-                print("Error loading ik controller for Baxter -- arm id's must contain 'right' or 'left'!")
         else:
             # No other robots supported, print out to user
             print("ERROR: Unsupported robot requested for ik controller. Only Sawyer, Panda, and Baxter "
@@ -565,7 +557,7 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         # Run controller with given action
         return super().run_controller()
 
-    def update_base_pos_ori(self, base_pos, base_ori):
+    def update_base_pose(self, base_pos, base_ori):
         # Update pybullet robot base and orientation according to values
         p.resetBasePositionAndOrientation(
             bodyUniqueId=self.ik_robot,
@@ -576,6 +568,13 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
 
         # Re-sync pybullet state
         self.sync_state()
+
+    def update_initial_joints(self, initial_joints):
+        # First, update from the superclass method
+        super().update_initial_joints(initial_joints)
+
+        # Then, update the rest pose from the initial joints
+        self.rest_poses = list(self.initial_joint)
 
     def _clip_ik_input(self, dpos, rotation):
         """

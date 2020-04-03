@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import numpy as np
 
 import robosuite.utils.transform_utils as T
 
@@ -13,19 +14,27 @@ class Robot(object):
     def __init__(
         self,
         robot_type: str,
-        idn=0
+        idn=0,
+        initialization_noise=None,
     ):
         """
         Args:
             robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
 
             idn (int or str): Unique ID of this robot. Should be different from others
+
+            initialization_noise (float): The scale factor of uni-variate Gaussian random noise
+                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
+                in no noise being applied
         """
 
         self.sim = None                                     # MjSim this robot is tied to
         self.name = robot_type                              # Specific robot to instantiate
         self.idn = idn                                      # Unique ID of this robot
         self.robot_model = None                             # object holding robot model-specific info
+
+        # Scaling of Gaussian initial noise applied to robot joints
+        self.initialization_noise = initialization_noise if initialization_noise else 0.0
 
         self.init_qpos = None                               # n-dim list of robot joints
         self.robot_joints = None                            # xml joint names for robot
@@ -64,7 +73,10 @@ class Robot(object):
         Sets initial pose of arm and grippers.
 
         """
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = self.init_qpos
+        # Set initial position in sim
+        self.sim.data.qpos[self._ref_joint_pos_indexes] = \
+            self.init_qpos + np.random.randn(len(self.init_qpos)) * self.initialization_noise
+        # Load controllers
         self._load_controller()
 
     def setup_references(self):

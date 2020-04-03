@@ -20,6 +20,7 @@ class RobotEnv(MujocoEnv):
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
+        initialization_noise=None,
         use_camera_obs=True,
         use_indicator_object=False,
         has_renderer=False,
@@ -53,6 +54,11 @@ class RobotEnv(MujocoEnv):
 
             gripper_visualizations (bool or list of bool): True if using gripper visualization.
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+                robots or else it should be a list of the same length as "robots" param
+
+            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
+                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
+                in no noise being applied. Should either be single float if same noise value is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
             use_camera_obs (bool): if True, every observation includes rendered image(s)
@@ -108,6 +114,9 @@ class RobotEnv(MujocoEnv):
         # Controller
         controller_configs = self._input2list(controller_configs, self.num_robots)
 
+        # Initialization Noise
+        initialization_noise = self._input2list(initialization_noise, self.num_robots)
+
         # Gripper
         gripper_types = self._input2list(gripper_types, self.num_robots)
         gripper_visualizations = self._input2list(gripper_visualizations, self.num_robots)
@@ -135,6 +144,7 @@ class RobotEnv(MujocoEnv):
         self.robot_configs = [
             {
                 "controller_config": controller_configs[idx],
+                "initialization_noise": initialization_noise[idx],
                 "gripper_type": gripper_types[idx],
                 "gripper_visualization": gripper_visualizations[idx],
                 "control_freq": control_freq

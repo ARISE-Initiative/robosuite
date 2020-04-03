@@ -120,7 +120,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
         self.mass_matrix = mass_matrix[self.joint_index, :][:, self.joint_index]
 
-    def update_base_pos_ori(self, base_pos, base_ori):
+    def update_base_pose(self, base_pos, base_ori):
         """
         Optional function to implement in subclass controllers that will take in @base_pos and @base_ori and update
         internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
@@ -131,6 +131,18 @@ class Controller(object, metaclass=abc.ABCMeta):
             @base_ori (4-tuple): x,y,z,w orientation or robot base in mujoco world coordinates
         """
         pass
+
+    def update_initial_joints(self, initial_joints):
+        """
+        Updates the internal attribute self.initial_joints. This is useful for updating changes in controller-specific
+        behavior, such as with OSC where self.initial_joints is used for determine nullspace actions
+
+        This function can also be extended by subclassed controllers for additional controller-specific updates
+
+        Args:
+            initial_joints (array): Array of joint position values to update the initial joints
+        """
+        self.initial_joint = np.array(initial_joints)
 
     @property
     def input_min(self):

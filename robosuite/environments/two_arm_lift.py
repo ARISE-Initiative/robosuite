@@ -22,13 +22,14 @@ class TwoArmLift(RobotEnv):
         env_configuration="single-arm-opposed",
         controller_configs=None,
         gripper_types="default",
+        gripper_visualizations=False,
+        initialization_noise=0.02,
         table_full_size=(0.8, 0.8, 0.8),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
         placement_initializer=None,
-        gripper_visualizations=False,
         use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
@@ -70,6 +71,11 @@ class TwoArmLift(RobotEnv):
 
             gripper_visualizations (bool or list of bool): True if using gripper visualization.
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+                robots or else it should be a list of the same length as "robots" param
+
+            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
+                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
+                in no noise being applied. Should either be single float if same noise value is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
             table_full_size (3-tuple): x, y, and z dimensions of the table.
@@ -159,6 +165,7 @@ class TwoArmLift(RobotEnv):
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
+            initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
@@ -270,16 +277,12 @@ class TwoArmLift(RobotEnv):
         """
         super()._load_model()
 
-        # Vary the initial qpos of the robot
-        for robot in self.robots:
-            robot.init_qpos += np.random.randn(robot.init_qpos.shape[0]) * 0.02
-
         # Verify the correct robots have been loaded and adjust base pose accordingly
         # TODO: Account for variations in robot start position? Where 2nd robot will be placed?
         if self.env_configuration == "bimanual":
             assert isinstance(self.robots[0], Bimanual), "Error: For bimanual configuration, expected a " \
                 "bimanual robot! Got {} type instead.".format(type(self.robots[0]))
-            self.robots[0].robot_model.set_base_xpos([-0.29, 0, 0])
+            self.robots[0].robot_model.set_base_xpos([-0.10, 0, 0])
         else:
             assert isinstance(self.robots[0], SingleArm) and isinstance(self.robots[1], SingleArm), \
                 "Error: For multi single arm configurations, expected two single-armed robot! " \

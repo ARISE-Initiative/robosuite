@@ -20,6 +20,7 @@ class Bimanual(Robot):
         robot_type: str,
         idn=0,
         controller_config=None,
+        initialization_noise=None,
         gripper_type="default",
         gripper_visualization=False,
         control_freq=10
@@ -34,6 +35,10 @@ class Bimanual(Robot):
                 custom controllers. Else, uses the default controller for this specific task. Should either be single
                 dict if same controller is to be used for both robot arms or else it should be a list of length 2.
                 NOTE: In the latter case, assumes convention of [right, left]
+
+            initialization_noise (float): The scale factor of uni-variate Gaussian random noise
+                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
+                in no noise being applied
 
             gripper_type (str or list of str): type of gripper, used to instantiate
                 gripper models from gripper factory. Default is "default", which is the default gripper associated
@@ -68,7 +73,11 @@ class Bimanual(Robot):
         self.eef_cylinder_id = self._input2dict(None)                           # xml element id for eef cylinder in mjsim
         self.torques = None                                                     # Current torques being applied
 
-        super().__init__(robot_type=robot_type, idn=idn)
+        super().__init__(
+            robot_type=robot_type,
+            idn=idn,
+            initialization_noise=initialization_noise,
+        )
 
     def _load_controller(self):
         """
@@ -160,7 +169,7 @@ class Bimanual(Robot):
                 ] = self.gripper[arm].init_qpos
 
             # Update base pos / ori references in controller (technically only needs to be called once)
-            self.controller[arm].update_base_pos_ori(self.base_pos, self.base_ori)
+            self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
 
     def setup_references(self):
         """

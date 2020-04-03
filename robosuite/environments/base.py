@@ -144,6 +144,10 @@ class MujocoEnv(metaclass=EnvMeta):
             # hiding the overlay speeds up rendering significantly
             self.viewer.viewer._hide_overlay = True
 
+            # make sure mujoco-py doesn't block rendering frames
+            # (see https://github.com/StanfordVL/robosuite/issues/39)
+            self.viewer.viewer._render_every_frame = True
+
             # Set the camera angle for viewing
             self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
 

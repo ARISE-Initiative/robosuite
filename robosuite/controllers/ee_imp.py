@@ -80,7 +80,7 @@ class EndEffectorImpedanceController(Controller):
                  input_min=-1,
                  output_max=(0.05, 0.05, 0.05, 0.5, 0.5, 0.5),
                  output_min=(-0.05, -0.05, -0.05, -0.5, -0.5, -0.5),
-                 kp=50,
+                 kp=150,
                  damping=1,
                  policy_freq=20,
                  position_limits=None,
@@ -131,9 +131,9 @@ class EndEffectorImpedanceController(Controller):
         # whether or not pos and ori want to be uncoupled
         self.uncoupling = uncouple_pos_ori
 
-        # initialize
-        self.goal_ori = np.array([[-1,0,0],[0,1,0],[0,0,-1]])
-        self.goal_pos = np.array([0,0,0])
+        # initialize goals based on initial pos / ori
+        self.goal_ori = np.array(self.initial_ee_ori_mat)
+        self.goal_pos = np.array(self.initial_ee_pos)
 
         self.relative_ori = np.zeros(3)
         self.ori_ref = None

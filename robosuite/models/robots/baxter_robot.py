@@ -30,11 +30,10 @@ class Baxter(RobotModel):
 
     @property
     def init_qpos(self):
-        # TODO: Find better start pose. Near a singularity for IK when starting with arms extended
-        # Arms ready to work on the table
-        return np.array([
-            0.535, -0.093, 0.038, 0.166, 0.643, 1.960, -1.297,
-            -0.518, -0.026, -0.076, 0.175, -0.748, 1.641, -0.158])
+        # [right, left]
+        # Arms half extended
+        return np.array([0.403, -0.636, 0.114, 1.432, 0.735, 1.205, -0.269,
+                        -0.403, -0.636, -0.114, 1.432, -0.735, 1.205, 0.269])
 
     @property
     def arm_type(self):

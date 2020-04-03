@@ -42,9 +42,9 @@ def choose_controller():
         "Joint Velocity": "JOINT_VEL",
         "Joint Torque": "JOINT_TOR",
         "Joint Impedance": "JOINT_IMP",
-        "End Effector Position": "EE_POS",
-        "End Effector Position Orientation": "EE_POS_ORI",
-        "End Effector Inverse Kinematics (note: must have pybullet installed!)": "EE_IK",
+        "End Effector Position (Operational Space Control)": "EE_POS",
+        "End Effector Pose (Operational Space Control)": "EE_POS_ORI",
+        "End Effector Pose (Inverse Kinematics) (note: must have pybullet installed!)": "EE_IK",
     }
 
     # Select controller to use

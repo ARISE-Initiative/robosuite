@@ -21,12 +21,13 @@ class TwoArmPegInHole(RobotEnv):
         env_configuration="single-arm-opposed",
         controller_configs=None,
         gripper_types=None,
+        gripper_visualizations=False,
+        initialization_noise=0.02,
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
         cylinder_radius=(0.015, 0.03),
         cylinder_length=0.13,
-        gripper_visualizations=False,
         use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
@@ -68,6 +69,11 @@ class TwoArmPegInHole(RobotEnv):
 
             gripper_visualizations (bool or list of bool): True if using gripper visualization.
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+                robots or else it should be a list of the same length as "robots" param
+
+            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
+                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
+                in no noise being applied. Should either be single float if same noise value is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
             use_camera_obs (bool or list of bool): if True, every observation for a specific robot includes a rendered
@@ -144,6 +150,7 @@ class TwoArmPegInHole(RobotEnv):
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
+            initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
@@ -202,10 +209,6 @@ class TwoArmPegInHole(RobotEnv):
         Loads an xml model, puts it in self.model
         """
         super()._load_model()
-
-        # Vary the initial qpos of the robot
-        for robot in self.robots:
-            robot.init_qpos += np.random.randn(robot.init_qpos.shape[0]) * 0.02
 
         # Verify the correct robots have been loaded and adjust base pose accordingly
         # TODO: Account for variations in robot start position? Where 2nd robot will be placed?

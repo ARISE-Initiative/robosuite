@@ -34,6 +34,7 @@ class PickPlace(RobotEnv):
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
+        initialization_noise=0.02,
         table_full_size=(0.39, 0.49, 0.82),
         table_friction=(1, 0.005, 0.0001),
         use_camera_obs=True,
@@ -74,6 +75,11 @@ class PickPlace(RobotEnv):
 
             gripper_visualizations (bool or list of bool): True if using gripper visualization.
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+                robots or else it should be a list of the same length as "robots" param
+
+            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
+                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
+                in no noise being applied. Should either be single float if same noise value is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
             table_full_size (3-tuple): x, y, and z dimensions of the table.
@@ -177,6 +183,7 @@ class PickPlace(RobotEnv):
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
+            initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
@@ -341,9 +348,6 @@ class PickPlace(RobotEnv):
         Loads an xml model, puts it in self.model
         """
         super()._load_model()
-
-        # Vary the initial qpos of the robot
-        self.robots[0].init_qpos += np.random.randn(self.robots[0].init_qpos.shape[0]) * 0.02
 
         # Verify the correct robot has been loaded
         assert isinstance(self.robots[0], SingleArm), \

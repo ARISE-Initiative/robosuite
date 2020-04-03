@@ -4,7 +4,7 @@
   "input_min": -1,
   "output_max": [0.05, 0.05, 0.05],
   "output_min": [-0.05, -0.05, -0.05],
-  "kp": 50,
+  "kp": 150,
   "damping": 1,
   "position_limits": null,
   "control_delta": true,
