@@ -186,6 +186,10 @@ class MujocoEnv(metaclass=EnvMeta):
             # hiding the overlay speeds up rendering significantly
             self.viewer.viewer._hide_overlay = True
 
+            # make sure mujoco-py doesn't block rendering frames.
+            # (see https://github.com/StanfordVL/robosuite/issues/39)
+            self.viewer.viewer._render_every_frame = True
+
         elif self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim)
