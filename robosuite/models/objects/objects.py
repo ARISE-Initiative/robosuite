@@ -203,6 +203,8 @@ class MujocoGeneratedObject(MujocoObject):
         density_range=None,
         friction_range=None,
         joint=None,
+        solref=None,
+        solimp=None,
     ):
         """
         Provides default initialization of physical attributes:
@@ -233,6 +235,16 @@ class MujocoGeneratedObject(MujocoObject):
             self.joint = {'type': 'free'}  # default free joint
         else:
             self.joint = joint
+
+        if solref is None:
+            self.solref = [0.02, 1.] # mujoco default
+        else:
+            self.solref = solref
+
+        if solimp is None:
+            self.solimp = [0.9, 0.95, 0.001] # mujoco default
+        else:
+            self.solimp = solimp
 
         if rgba is None:
             self.rgba = [1, 0, 0, 1]
@@ -288,6 +300,8 @@ class MujocoGeneratedObject(MujocoObject):
         template["size"] = array_to_string(self.size)
         template["density"] = str(self.density)
         template["friction"] = array_to_string(self.friction)
+        template["solref"] = array_to_string(self.solref)
+        template["solimp"] = array_to_string(self.solimp)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well

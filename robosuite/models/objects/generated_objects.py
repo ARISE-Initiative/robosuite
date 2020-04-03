@@ -341,6 +341,8 @@ class BoxObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         joint=None,
+        solref=None,
+        solimp=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -357,8 +359,11 @@ class BoxObject(MujocoGeneratedObject):
             size=size,
             rgba=rgba,
             density_range=density_range,
+            friction=friction,
             friction_range=friction_range,
-            joint=joint
+            joint=joint,
+            solref=solref,
+            solimp=solimp,
         )
 
     def sanity_check(self):
@@ -398,6 +403,8 @@ class CylinderObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         joint=None,
+        solref=None,
+        solimp=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -414,8 +421,11 @@ class CylinderObject(MujocoGeneratedObject):
             size=size,
             rgba=rgba,
             density_range=density_range,
+            friction=friction,
             friction_range=friction_range,
-            joint=joint
+            joint=joint,
+            solref=solref,
+            solimp=solimp,
         )
 
     def sanity_check(self):
@@ -455,6 +465,8 @@ class BallObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         joint=None,
+        solref=None,
+        solimp=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -471,8 +483,11 @@ class BallObject(MujocoGeneratedObject):
             size=size,
             rgba=rgba,
             density_range=density_range,
+            friction=friction,
             friction_range=friction_range,
-            joint=joint
+            joint=joint,
+            solref=solref,
+            solimp=solimp,
         )
 
     def sanity_check(self):
@@ -512,6 +527,8 @@ class CapsuleObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         joint=None,
+        solref=None,
+        solimp=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -528,8 +545,11 @@ class CapsuleObject(MujocoGeneratedObject):
             size=size,
             rgba=rgba,
             density_range=density_range,
+            friction=friction,
             friction_range=friction_range,
-            joint=joint
+            joint=joint,
+            solref=solref,
+            solimp=solimp,
         )
 
     def sanity_check(self):

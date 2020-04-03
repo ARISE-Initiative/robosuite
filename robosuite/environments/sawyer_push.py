@@ -3,7 +3,8 @@ import numpy as np
 
 from robosuite.environments.sawyer_lift import SawyerLift
 
-from robosuite.models.objects import BoxObject
+from robosuite.models.objects import BoxObject, CylinderObject
+from robosuite.models.objects.interactive_objects import MomentaryButtonObject, MaintainedButtonObject
 import robosuite.utils.env_utils as EU
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask
@@ -11,7 +12,13 @@ from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobi
 
 class SawyerPush(SawyerLift):
     """
-    This class corresponds to the lifting task for the Sawyer robot arm.
+    This class corresponds to the pushing task for the Sawyer robot arm.
+
+    NOTE: The table is the same as the lifting task, with one important difference.
+    We make the first friction coefficient (corresponding to translational motion)
+    very small in order to enable sliding objects. In this way, the object friction
+    value determines how hard it is to push objects (since MuJoCo will take a maximum
+    over the two values in contact).
     """
 
     def __init__(
@@ -19,7 +26,7 @@ class SawyerPush(SawyerLift):
         controller_config=None,
         gripper_type="TwoFingerGripper",
         table_full_size=(0.8, 0.8, 0.8),
-        table_friction=(1., 5e-3, 1e-4),
+        table_friction=(0.01, 5e-3, 1e-4), 
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
@@ -166,7 +173,7 @@ class SawyerPush(SawyerLift):
         # (low, high, number of grid points for this dimension)
         x_bounds = (-0.16, -0.1, 3)
         y_bounds = (-0.03, 0.03, 3)
-        z_rot_bounds = (1., 1., 1)
+        z_rot_bounds = (0., 0., 1)
         return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):
@@ -176,52 +183,46 @@ class SawyerPush(SawyerLift):
         super()._load_model()
 
         # initialize objects of interest
-        cube = BoxObject(
-            size_min=[0.020, 0.020, 0.020],
-            size_max=[0.022, 0.022, 0.022],
-            rgba=[1, 0, 0, 1],
+
+        ### wide bar ###
+        # cube = BoxObject(
+        #     # size_min=[0.020, 0.020, 0.020],
+        #     # size_max=[0.022, 0.022, 0.022],
+        #     size=[0.02, 0.02, 0.02],
+        #     # size=[0.01, 0.1, 0.01],
+        #     rgba=[1, 0, 0, 1],
+        #     friction=[0.01, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        # )
+
+        ### long bar ###
+        # cube = BoxObject(
+        #     # size_min=[0.020, 0.020, 0.020],
+        #     # size_max=[0.022, 0.022, 0.022],
+        #     size=[0.02, 0.02, 0.02],
+        #     # size=[0.01, 0.1, 0.01],
+        #     rgba=[1, 0, 0, 1],
+        #     friction=[0.01, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        # )
+
+        ### cylinder ###
+        cube = CylinderObject(
+            size=[0.04, 0.02],
+            rgba=(1, 0, 0, 1),
+            friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+            solref=[0.001, 1], # NOTE: added to make sure puck can't sink into table much
+            # solimp=[0.998, 0.998, 0.001], 
         )
         self.mujoco_objects = OrderedDict([("cube", cube)])
 
         # target visual object
         target_size = np.array(self.mujoco_objects["cube"].size)
-        target = BoxObject(
-            size_min=target_size,
-            size_max=target_size,
-            rgba=self._target_rgba,
-        )
-        self.visual_objects = OrderedDict([(self._target_name, target)])
-
-        # task includes arena, robot, and objects of interest
-        self.model = TableTopVisualTask(
-            self.mujoco_arena,
-            self.mujoco_robot,
-            self.mujoco_objects,
-            self.visual_objects,
-            initializer=self.placement_initializer,
-        )
-        self.model.place_objects()
-        self.model.place_visual()
-
-    def _load_model(self):
-        """
-        Loads an xml model, puts it in self.model
-        """
-        super()._load_model()
-
-        # initialize objects of interest
-        cube = BoxObject(
-            size_min=[0.020, 0.020, 0.020],
-            size_max=[0.022, 0.022, 0.022],
-            rgba=[1, 0, 0, 1],
-        )
-        self.mujoco_objects = OrderedDict([(self._object_name, cube)])
-
-        # target visual object
-        target_size = np.array(self.mujoco_objects[self._object_name].size)
-        target = BoxObject(
-            size_min=target_size,
-            size_max=target_size,
+        # target = BoxObject(
+        #     size_min=target_size,
+        #     size_max=target_size,
+        #     rgba=self._target_rgba,
+        # )
+        target = CylinderObject(
+            size=target_size,
             rgba=self._target_rgba,
         )
         self.visual_objects = OrderedDict([(self._target_name, target)])
@@ -358,7 +359,7 @@ class SawyerPush(SawyerLift):
 
         # successful if object within close range of target
         object_pos = self.sim.data.body_xpos[self.cube_body_id]
-        return (np.linalg.norm(object_pos[:2] - self.target_pos[:2]) <= 0.03)
+        return (np.linalg.norm(object_pos[:2] - self.target_pos[:2]) <= 0.02)
 
 
 ### Some new environments... ###
