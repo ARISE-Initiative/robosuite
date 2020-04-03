@@ -56,7 +56,8 @@ class TableTopTask(Task):
             self.merge_asset(obj_mjcf)
             # Load object
             obj = obj_mjcf.get_collision(name=obj_name, site=True)
-            obj.append(new_joint(name=obj_name, **obj_mjcf.joint))
+            for i, joint in enumerate(obj_mjcf.joint):
+                obj.append(new_joint(name="{}_{}".format(obj_name, i), **joint))
             self.objects.append(obj)
             self.worldbody.append(obj)
 

@@ -186,32 +186,49 @@ class SawyerPush(SawyerLift):
 
         ### wide bar ###
         # cube = BoxObject(
-        #     # size_min=[0.020, 0.020, 0.020],
-        #     # size_max=[0.022, 0.022, 0.022],
-        #     size=[0.02, 0.02, 0.02],
+        #     size=[0.02, 0.1, 0.01],
         #     # size=[0.01, 0.1, 0.01],
         #     rgba=[1, 0, 0, 1],
-        #     friction=[0.01, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        #     friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
         # )
 
         ### long bar ###
         # cube = BoxObject(
-        #     # size_min=[0.020, 0.020, 0.020],
-        #     # size_max=[0.022, 0.022, 0.022],
-        #     size=[0.02, 0.02, 0.02],
-        #     # size=[0.01, 0.1, 0.01],
+        #     # size=[0.05, 0.01, 0.01],
+        #     size=[0.05, 0.015, 0.01],
         #     rgba=[1, 0, 0, 1],
-        #     friction=[0.01, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        #     friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
         # )
 
         ### cylinder ###
+        # cube = CylinderObject(
+        #     size=[0.04, 0.02],
+        #     rgba=(1, 0, 0, 1),
+        #     friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        #     solref=[0.001, 1], # NOTE: added to make sure puck can't sink into table much
+        #     # solimp=[0.998, 0.998, 0.001], 
+        # )
+
+        ### cylinder with 2 slide joints###
+        slide_joint1 = dict(
+            pos="0 0 0",
+            axis="1 0 0",
+            type="slide",
+            limited="false",
+        )
+        slide_joint2 = dict(
+            pos="0 0 0",
+            axis="0 1 0",
+            type="slide",
+            limited="false",
+        )
+        joints = [slide_joint1, slide_joint2]
         cube = CylinderObject(
             size=[0.04, 0.02],
             rgba=(1, 0, 0, 1),
-            friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
-            solref=[0.001, 1], # NOTE: added to make sure puck can't sink into table much
-            # solimp=[0.998, 0.998, 0.001], 
+            joint=joints,
         )
+
         self.mujoco_objects = OrderedDict([("cube", cube)])
 
         # target visual object

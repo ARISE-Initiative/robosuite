@@ -232,7 +232,7 @@ class MujocoGeneratedObject(MujocoObject):
             self.size = size
 
         if joint is None:
-            self.joint = {'type': 'free'}  # default free joint
+            self.joint = [{'type': 'free'}]  # default free joint
         else:
             self.joint = joint
 
