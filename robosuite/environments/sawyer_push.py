@@ -271,8 +271,8 @@ class SawyerPush(SawyerLift):
         super()._get_reference()
 
         self.target_body_id = self.sim.model.body_name2id(self._target_name)
-        target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name)
-        target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name)
+        target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name + '_0')
+        target_qvel = self.sim.model.get_joint_qvel_addr(self._target_name + '_0')
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
 
