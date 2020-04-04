@@ -275,16 +275,7 @@ class SawyerPush(SawyerLift):
         """
         super()._reset_internal()
 
-        # reset positions of objects
-        self.model.place_objects()
-        self.model.place_visual()
-
-        # reset joint positions
-        init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
-        init_pos += np.random.randn(init_pos.shape[0]) * 0.02
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
-
-        # for now, place target 0.5 in front of cube location
+        # for now, place target 0.3 in front of cube location
         cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
         cube_pos[0] += 0.3
         self._set_target(pos=cube_pos)

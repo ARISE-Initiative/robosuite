@@ -2,6 +2,7 @@ from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
+from scipy import linalg
 from collections.abc import Iterable
 
 FORCE_POSITION_FACTOR = 25.
@@ -307,7 +308,7 @@ class EndEffectorImpedanceController(Controller):
             # axis-angle - (exponential coordinates)
             force[3:6] *= FORCE_ROTATION_FACTOR
             kp = np.array(self.kp[3:6])
-            mr_inv = np.linalg.inv(lambda_ori)
+            mr_inv = linalg.inv(lambda_ori)
             rot_perturb = mr_inv.dot(force[3:6]) / kp
             action[3:6] += rot_perturb
         else:
@@ -317,7 +318,7 @@ class EndEffectorImpedanceController(Controller):
 
         # delta x' = delta x + 1/kp * M^-1 * F
         kp = np.array(self.kp[0:3])
-        mx_inv = np.linalg.inv(lambda_pos)
+        mx_inv = linalg.inv(lambda_pos)
         pos_perturb = mx_inv.dot(force[:3]) / kp
         action[:3] += pos_perturb
         
