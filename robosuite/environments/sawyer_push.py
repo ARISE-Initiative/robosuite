@@ -183,6 +183,12 @@ class SawyerPush(SawyerLift):
         super()._load_model()
 
         # initialize objects of interest
+        cube = BoxObject(
+            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
+            size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
+            rgba=[1, 0, 0, 1],
+            friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        )
 
         ### wide bar ###
         # cube = BoxObject(
@@ -210,38 +216,39 @@ class SawyerPush(SawyerLift):
         # )
 
         ### cylinder with 2 slide joints###
-        slide_joint1 = dict(
-            pos="0 0 0",
-            axis="1 0 0",
-            type="slide",
-            limited="false",
-        )
-        slide_joint2 = dict(
-            pos="0 0 0",
-            axis="0 1 0",
-            type="slide",
-            limited="false",
-        )
-        joints = [slide_joint1, slide_joint2]
-        cube = CylinderObject(
-            size=[0.04, 0.02],
-            rgba=(1, 0, 0, 1),
-            joint=joints,
-        )
+        # slide_joint1 = dict(
+        #     pos="0 0 0",
+        #     axis="1 0 0",
+        #     type="slide",
+        #     limited="false",
+        # )
+        # slide_joint2 = dict(
+        #     pos="0 0 0",
+        #     axis="0 1 0",
+        #     type="slide",
+        #     limited="false",
+        # )
+        # joints = [slide_joint1, slide_joint2]
+        # cube = CylinderObject(
+        #     size=[0.04, 0.01],
+        #     rgba=(1, 0, 0, 1),
+        #     friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        #     joint=joints,
+        # )
 
         self.mujoco_objects = OrderedDict([("cube", cube)])
 
         # target visual object
         target_size = np.array(self.mujoco_objects["cube"].size)
-        # target = BoxObject(
-        #     size_min=target_size,
-        #     size_max=target_size,
-        #     rgba=self._target_rgba,
-        # )
-        target = CylinderObject(
-            size=target_size,
+        target = BoxObject(
+            size_min=target_size,
+            size_max=target_size,
             rgba=self._target_rgba,
         )
+        # target = CylinderObject(
+        #     size=target_size,
+        #     rgba=self._target_rgba,
+        # )
         self.visual_objects = OrderedDict([(self._target_name, target)])
 
         # task includes arena, robot, and objects of interest
@@ -383,7 +390,7 @@ class SawyerPushPosition(SawyerPush):
     ):
         assert("placement_initializer" not in kwargs)
         kwargs["placement_initializer"] = UniformRandomSampler(
-            x_range=[-0.03, 0.03],
+            x_range=[-0.16, -0.1],
             y_range=[-0.03, 0.03],
             ensure_object_boundary_in_range=False,
             z_rotation=0.
@@ -400,7 +407,152 @@ class SawyerPushPosition(SawyerPush):
         """
 
         # (low, high, number of grid points for this dimension)
-        x_bounds = (-0.03, 0.03, 3)
+        x_bounds = (-0.16, -0.1, 3)
         y_bounds = (-0.03, 0.03, 3)
         z_rot_bounds = (0., 0., 1)
         return x_bounds, y_bounds, z_rot_bounds
+
+class SawyerPushPuck(SawyerPush):
+    """
+    Pushing with a puck object that can move in 2D on top of the table.
+    """
+    def _load_model(self):
+        super()._load_model()
+        
+        # initialize objects of interest
+
+        ### cylinder with 2 slide joints###
+        slide_joint1 = dict(
+            pos="0 0 0",
+            axis="1 0 0",
+            type="slide",
+            limited="false",
+        )
+        slide_joint2 = dict(
+            pos="0 0 0",
+            axis="0 1 0",
+            type="slide",
+            limited="false",
+        )
+        joints = [slide_joint1, slide_joint2]
+        cube = CylinderObject(
+            size=[0.04, 0.01],
+            rgba=(1, 0, 0, 1),
+            friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+            joint=joints,
+        )
+
+        ### cylinder ###
+        # cube = CylinderObject(
+        #     size=[0.04, 0.02],
+        #     rgba=(1, 0, 0, 1),
+        #     friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        #     solref=[0.001, 1], # NOTE: added to make sure puck can't sink into table much
+        #     # solimp=[0.998, 0.998, 0.001], 
+        # )
+
+        self.mujoco_objects = OrderedDict([("cube", cube)])
+
+        # target visual object
+        target_size = np.array(self.mujoco_objects["cube"].size)
+        target = CylinderObject(
+            size=target_size,
+            rgba=self._target_rgba,
+        )
+        self.visual_objects = OrderedDict([(self._target_name, target)])
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopVisualTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            self.visual_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+        self.model.place_visual()
+
+class SawyerPushWideBar(SawyerPush):
+    """
+    Pushing with a wide bar object.
+    """
+    def _load_model(self):
+        super()._load_model()
+
+        # initialize objects of interest
+
+        ### wide bar ###
+        cube = BoxObject(
+            size=[0.02, 0.1, 0.01],
+            # size=[0.01, 0.1, 0.01],
+            rgba=[1, 0, 0, 1],
+            friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        )
+
+        self.mujoco_objects = OrderedDict([("cube", cube)])
+
+        # target visual object
+        target_size = np.array(self.mujoco_objects["cube"].size)
+        target = BoxObject(
+            size_min=target_size,
+            size_max=target_size,
+            rgba=self._target_rgba,
+        )
+        self.visual_objects = OrderedDict([(self._target_name, target)])
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopVisualTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            self.visual_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+        self.model.place_visual()
+
+class SawyerPushLongBar(SawyerPush):
+    """
+    Pushing with a long bar object.
+    """
+    def _load_model(self):
+        super()._load_model()
+        # initialize objects of interest
+        cube = BoxObject(
+            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
+            size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
+            rgba=[1, 0, 0, 1],
+            friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        )
+
+        ### long bar ###
+        cube = BoxObject(
+            # size=[0.05, 0.01, 0.01],
+            size=[0.05, 0.015, 0.01],
+            rgba=[1, 0, 0, 1],
+            friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
+        )
+
+        self.mujoco_objects = OrderedDict([("cube", cube)])
+
+        # target visual object
+        target_size = np.array(self.mujoco_objects["cube"].size)
+        target = BoxObject(
+            size_min=target_size,
+            size_max=target_size,
+            rgba=self._target_rgba,
+        )
+        self.visual_objects = OrderedDict([(self._target_name, target)])
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopVisualTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            self.visual_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+        self.model.place_visual()
+
+
