@@ -17,7 +17,7 @@ setup(
     ],
     install_requires=[
         "numpy>=1.13.3",
-        "mujoco-py==2.0.2.9",
+        "scipy>=1.1.0"
     ],
     eager_resources=['*'],
     include_package_data=True,
