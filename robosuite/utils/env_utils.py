@@ -12,7 +12,7 @@ def bodyid2geomids(sim, body_id):
     return geoms
 
 
-def set_body_pose(sim, body_name, pos, quat=None):
+def set_body_pose(sim, body_name, pos, quat=None, joint_id=0):
     """
     Sets an body to a target pose
     :param sim: Mujoco simulation
@@ -22,7 +22,8 @@ def set_body_pose(sim, body_name, pos, quat=None):
     :return: the object pose before the function call.
     """
     sim_state = sim.get_state()
-    qpos_addr = sim.model.get_joint_qpos_addr(body_name)
+    joint_name = '{}_{}'.format(body_name, joint_id)
+    qpos_addr = sim.model.get_joint_qpos_addr(joint_name)
     pos_addr = qpos_addr[0]
     old_pose = np.array(sim_state.qpos[pos_addr: pos_addr + 7])
     sim_state.qpos[pos_addr: pos_addr + 3] = np.array(pos)

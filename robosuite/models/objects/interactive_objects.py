@@ -134,6 +134,9 @@ class StatefulObject(object):
                 return False
         return True
 
+    def satisfies(self, cond):
+        return satisfies(self.state, cond)
+
     @property
     def default_state(self):
         return deepcopy(self._default_state)

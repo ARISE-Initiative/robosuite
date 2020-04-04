@@ -43,7 +43,8 @@ class TableTopVisualTask(TableTopTask):
 
             # Load object
             obj = obj_mjcf.get_visual(name=obj_name, site=False)
-            obj.append(new_joint(name=obj_name, type="free"))
+            for i, joint in enumerate(obj_mjcf.joint):
+                obj.append(new_joint(name="{}_{}".format(obj_name, i), **joint))
             self.visual_obj_mjcf.append(obj)
             self.worldbody.append(obj)
 
