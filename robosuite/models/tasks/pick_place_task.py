@@ -105,7 +105,7 @@ class PickPlaceTask(Task):
                 object_xy = np.array([object_x, object_y, 0])
                 pos = self.bin_offset - bottom_offset + object_xy
                 location_valid = True
-                for pos2, r in placed_objects:
+                for pos2, _, r in placed_objects:
                     dist = np.linalg.norm(pos[:2] - pos2[:2], np.inf)
                     if dist <= r + horizontal_radius:
                         location_valid = False
@@ -113,12 +113,12 @@ class PickPlaceTask(Task):
 
                 # place the object
                 if location_valid:
-                    # add object to the position
-                    placed_objects.append((pos, horizontal_radius))
                     self.objects[index].set("pos", array_to_string(pos))
                     # random z-rotation
                     quat = self.sample_quat()
                     self.objects[index].set("quat", array_to_string(quat))
+                    # add object to the position
+                    placed_objects.append((pos, quat, horizontal_radius))
                     success = True
                     break
 
@@ -126,6 +126,9 @@ class PickPlaceTask(Task):
             if not success:
                 raise RandomizationError("Cannot place all objects in the bins")
             index += 1
+
+        # Return the placed objects position and orientation
+        return placed_objects
 
     def place_visual(self):
         """Places visual objects randomly until no collisions or max iterations hit."""

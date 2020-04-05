@@ -438,6 +438,16 @@ class NutAssembly(RobotEnv):
         """
         super()._reset_internal()
 
+        # Reset all object positions using initializer sampler if we're not directly loading from an xml
+        if not self.deterministic_reset:
+
+            # Sample from the placement initializer for all objects
+            obj_pos, obj_quat = self.placement_initializer.sample()
+
+            # Loop through all objects and reset their positions
+            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
+                self.sim.data.set_joint_qpos(obj_name, np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+
         # information of objects
         self.object_names = list(self.mujoco_objects.keys())
         self.object_site_ids = [

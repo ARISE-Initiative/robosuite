@@ -461,6 +461,17 @@ class PickPlace(RobotEnv):
         """
         super()._reset_internal()
 
+        # Reset all object positions using initializer sampler if we're not directly loading from an xml
+        if not self.deterministic_reset:
+
+            # Sample from the placement initializer for all objects
+            obj_placements = self.model.place_objects()
+
+            # Loop through all objects and reset their positions
+            for (obj_name, _), placement in zip(self.mujoco_objects.items(), obj_placements):
+                self.sim.data.set_joint_qpos(obj_name,
+                                             np.concatenate([np.array(placement[0]), np.array(placement[1])]))
+
         # information of objects
         self.object_names = list(self.mujoco_objects.keys())
         self.object_site_ids = [

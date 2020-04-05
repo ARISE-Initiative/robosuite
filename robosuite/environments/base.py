@@ -90,6 +90,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = None
         self.model_timestep = None
         self.control_timestep = None
+        self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
 
         # Load the model
         self._load_model()
@@ -267,11 +268,17 @@ class MujocoEnv(metaclass=EnvMeta):
         # if there is an active viewer window, destroy it
         self.close()
 
+        # Since we are reloading from an xml_string, we are deterministically resetting
+        self.deterministic_reset = True
+
         # initialize sim from xml
         self._initialize_sim(xml_string=xml_string)
 
         # Now reset as normal
         self.reset()
+
+        # Turn off deterministic reset
+        self.deterministic_reset = False
 
     def find_contacts(self, geoms_1, geoms_2):
         """
