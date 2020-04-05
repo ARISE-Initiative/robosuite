@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import linalg
 import robosuite.utils.transform_utils as trans
 
 
@@ -28,7 +29,7 @@ def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, j
 
 
 def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
-    mass_matrix_inv = np.linalg.inv(mass_matrix)
+    mass_matrix_inv = linalg.inv(mass_matrix)
 
     # J M^-1 J^T
     lambda_full_inv = np.dot(
@@ -36,7 +37,7 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_full.transpose())
 
     # (J M^-1 J^T)^-1
-    lambda_full = np.linalg.inv(lambda_full_inv)
+    lambda_full = linalg.inv(lambda_full_inv)
 
     # Jx M^-1 Jx^T
     lambda_pos_inv = np.dot(
@@ -49,12 +50,12 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_ori.transpose())
 
     # take the inverse, but zero out elements in cases of a singularity
-    svd_u, svd_s, svd_v = np.linalg.svd(lambda_pos_inv)
+    svd_u, svd_s, svd_v = linalg.svd(lambda_pos_inv)
     singularity_threshold = 0.00025
     svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
     lambda_pos = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
 
-    svd_u, svd_s, svd_v = np.linalg.svd(lambda_ori_inv)
+    svd_u, svd_s, svd_v = linalg.svd(lambda_ori_inv)
     svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
     lambda_ori = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
 

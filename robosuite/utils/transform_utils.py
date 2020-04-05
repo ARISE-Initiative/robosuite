@@ -6,6 +6,7 @@ NOTE: convention for quaternions is (x, y, z, w)
 
 import math
 import numpy as np
+from scipy import linalg
 
 
 PI = np.pi
@@ -277,7 +278,7 @@ def mat2quat(rmat, precise=False):
         )
         K /= 3.0
         # quaternion is Eigen vector of K that corresponds to largest eigenvalue
-        w, V = np.linalg.eigh(K)
+        w, V = linalg.eigh(K)
         q = V[[3, 0, 1, 2], np.argmax(w)]
     if q[0] < 0.0:
         np.negative(q, q)
@@ -571,7 +572,7 @@ def clip_translation(dpos, limit):
     :param limit: Value to limit translation by -- magnitude (scalar, in same units as input)
     :return: Clipped translation (same dimension as inputs) and whether the value was clipped or not
     """
-    input_norm = np.linalg.norm(dpos)
+    input_norm = linalg.norm(dpos)
     return (dpos * limit / input_norm, True) if input_norm > limit else (dpos, False)
 
 
@@ -588,7 +589,7 @@ def clip_rotation(quat, limit):
     clipped = False
 
     # First, normalize the quaternion
-    quat = quat / np.linalg.norm(quat)
+    quat = quat / linalg.norm(quat)
 
     den = np.sqrt(max(1 - quat[3] * quat[3], 0))
     if den == 0:
