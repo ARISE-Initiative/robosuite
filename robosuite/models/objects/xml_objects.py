@@ -2,6 +2,22 @@ from robosuite.models.objects import MujocoXMLObject
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
+class DoorObject(MujocoXMLObject):
+  """
+  Door with handle
+  """
+
+  def __init__(self):
+        super().__init__(xml_path_completion("objects/door_small.xml"))
+
+class SpinningPoleObject(MujocoXMLObject):
+    """
+    Pole object
+    """
+
+    def __init__(self):
+        super().__init__(xml_path_completion("objects/spinning_pole.xml"))
+
 class BottleObject(MujocoXMLObject):
     """
     Bottle object

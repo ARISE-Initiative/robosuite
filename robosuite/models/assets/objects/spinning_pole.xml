@@ -1,0 +1,21 @@
+<mujoco model="spinning_pole">
+  <worldbody>
+    <body>
+      <body name="collision">
+        <geom name="spinningpole_base" euler="0 0 0" pos="0.0 0 -0.1" size="0.1 0.1 0.002"  solimp="0.998 0.998 0.001" solref="0.02 1" density="100"  type="box" friction="0.95 0.3 0.2" rgba="0 0 1 1"  group="1" contype="1" conaffinity="1" condim="4"/>
+        <geom name="spinningpole" euler="0 0 0" pos="0 0 0" size="0.01 0.1" solimp="0.998 0.998 0.001" solref="0.02 1" density="10000000"  type="cylinder" friction="0.95 0.3 0.2" rgba="0 0 1 1"  group="1" contype="1" conaffinity="1" condim="4"/>
+        <body>0
+          <joint axis="0 0 1" name="hinge" pos="0.0 0 0" range="0 6.28" type="hinge" damping=".0001"/>
+          <geom name="g_tile" euler="0 0 0" pos="0.04 0 0.0" size="0.03 0.002 0.03 "  solimp="0.998 0.998 0.001" solref="0.02 1" density="5"  type="box" friction="0.95 0.3 0.2" rgba="0 1 0 1"  group="1" contype="1" conaffinity="1" condim="4"/>
+        </body>
+        <body>
+          <joint axis="0 0 1" name="hinge2" pos="0.0 0 0" range="0 6.28" type="hinge" damping=".0001"/>
+          <geom name="r_tile" euler="0 0 0" pos="0.04 0 0.06" size="0.03 0.002 0.03 "  solimp="0.998 0.998 0.001" solref="0.02 1" density="5"  type="box" friction="0.95 0.3 0.2" rgba="1 0 0 1"  group="1" contype="1" conaffinity="1" condim="4"/>
+        </body>
+      </body>
+      <site name="bottom_site" pos="0 0 -0.1" rgba="0 0 0 0" size="0.005"/>
+      <site name="top_site" pos="0 0 0.1" rgba="0 0 0 0" size="0.005"/>
+      <site name="horizontal_radius_site" pos="0.0 0 0" rgba="0 0 0 0" size="0.1"/>
+    </body>
+  </worldbody>
+</mujoco>
