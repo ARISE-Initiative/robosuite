@@ -1,5 +1,6 @@
 from robosuite.controllers.base_controller import Controller
 import numpy as np
+from collections.abc import Iterable
 
 
 class JointVelocityController(Controller):
@@ -82,7 +83,7 @@ class JointVelocityController(Controller):
         self.output_min = output_min
 
         # kv
-        self.kv = np.array(kv) if type(kv) == list else np.array([kv] * self.control_dim)
+        self.kv = np.array(kv) if isinstance(kv, Iterable) else np.array([kv] * self.control_dim)
 
         # limits
         self.velocity_limits = velocity_limits
