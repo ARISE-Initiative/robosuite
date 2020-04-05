@@ -504,7 +504,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Note that this requires a fork of mujoco-py: https://github.com/StanfordVL/mujoco-py
         Ref: https://github.com/deepmind/dm_control/blob/master/dm_control/mujoco/engine.py#L751
         :param camera_name: camera name
-        :return: a semantic segmentation map with each element corresponding to a object id
+        :return: a semantic segmentation map with each element corresponding to a body id
         """
         scn = self.sim.render_contexts[0].scn
         scn.flags[RND_SEGMENT] = True
@@ -518,7 +518,7 @@ class MujocoEnv(metaclass=EnvMeta):
         segid2output = np.full((self.sim.model.ngeom + 1), fill_value=-1,
                                dtype=np.int32)  # Seg id cannot be > ngeom + 1.
         geoms = self.sim.render_contexts[0].get_geoms()
-        mappings = np.array([(g['segid'], g['objid']) for g in geoms], dtype=np.int32)
+        mappings = np.array([(g['segid'], self.sim.model.geom_bodyid[g['objid']]) for g in geoms], dtype=np.int32)
         segid2output[mappings[:, 0] + 1] = mappings[:, 1]
         frame = segid2output[frame]
         scn.flags[RND_SEGMENT] = False
