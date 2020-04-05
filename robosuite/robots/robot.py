@@ -68,14 +68,17 @@ class Robot(object):
         """
         self.sim = sim
 
-    def reset(self):
+    def reset(self, deterministic=False):
         """
-        Sets initial pose of arm and grippers.
+        Sets initial pose of arm and grippers. Overrides robot joint configuration if we're using a
+        deterministic reset (e.g.: hard reset from xml file)
 
         """
-        # Set initial position in sim
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = \
-            self.init_qpos + np.random.randn(len(self.init_qpos)) * self.initialization_noise
+        if not deterministic:
+            # Set initial position in sim
+            self.sim.data.qpos[self._ref_joint_pos_indexes] = \
+                self.init_qpos + np.random.randn(len(self.init_qpos)) * self.initialization_noise
+
         # Load controllers
         self._load_controller()
 

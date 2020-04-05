@@ -153,21 +153,24 @@ class Bimanual(Robot):
                     self.gripper[arm].hide_visualization()
                 self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
 
-    def reset(self):
+    def reset(self, deterministic=False):
         """
-        Sets initial pose of arm and grippers.
+        Sets initial pose of arm and grippers. Overrides gripper joint configuration if we're using a
+        deterministic reset (e.g.: hard reset from xml file)
 
         """
         # First, run the superclass method to reset the position and controller
-        super().reset()
+        super().reset(deterministic)
 
-        # Now, reset the griipper if necessary
+        if not deterministic:
+            # Now, reset the griipper if necessary
+            for arm in self.arms:
+                if self.has_gripper[arm]:
+                    self.sim.data.qpos[
+                        self._ref_gripper_joint_pos_indexes[arm]
+                    ] = self.gripper[arm].init_qpos
+
         for arm in self.arms:
-            if self.has_gripper[arm]:
-                self.sim.data.qpos[
-                    self._ref_gripper_joint_pos_indexes[arm]
-                ] = self.gripper[arm].init_qpos
-
             # Update base pos / ori references in controller (technically only needs to be called once)
             self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
 
