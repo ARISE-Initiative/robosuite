@@ -2,6 +2,7 @@ import collections
 import numpy as np
 
 from robosuite.utils import RandomizationError
+from copy import deepcopy
 
 
 class ObjectPositionSampler:
@@ -18,6 +19,7 @@ class ObjectPositionSampler:
             table_size(float * 3): x,y,z-FULLsize of the table
         """
         self.mujoco_objects = mujoco_objects
+        assert isinstance(self.mujoco_objects, collections.OrderedDict)
         self.n_obj = len(self.mujoco_objects)
         self.table_top_offset = table_top_offset
         self.table_size = table_size
@@ -53,7 +55,7 @@ class UniformRandomSampler(ObjectPositionSampler):
             ensure_object_boundary_in_range:
                 True: The center of object is at position:
                      [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
-                False: 
+                False:
                     [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
             z_rotation:
                 None: Add uniform random random z-rotation
@@ -99,12 +101,16 @@ class UniformRandomSampler(ObjectPositionSampler):
 
         return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
 
-    def sample(self):
+    def sample(self, fixtures=None, return_placements=False):
         pos_arr = []
         quat_arr = []
-        placed_objects = []
+        if fixtures is None:
+            placed_objects = []
+        else:
+            placed_objects = deepcopy(fixtures)
+
         index = 0
-        for obj_mjcf in self.mujoco_objects:
+        for obj_name, obj_mjcf in self.mujoco_objects.items():
             horizontal_radius = obj_mjcf.get_horizontal_radius()
             bottom_offset = obj_mjcf.get_bottom_offset()
             success = False
@@ -141,7 +147,10 @@ class UniformRandomSampler(ObjectPositionSampler):
             if not success:
                 raise RandomizationError("Cannot place all objects on the desk")
             index += 1
-        return pos_arr, quat_arr
+        if return_placements:
+            return pos_arr, quat_arr, placed_objects
+        else:
+            return pos_arr, quat_arr
 
 
 class UniformRandomPegsSampler(ObjectPositionSampler):
@@ -230,10 +239,13 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
 
         return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
 
-    def sample(self):
+    def sample(self, fixtures=None, return_placements=False):
         pos_arr = []
         quat_arr = []
-        placed_objects = []
+        if fixtures is None:
+            placed_objects = []
+        else:
+            placed_objects = deepcopy(fixtures)
 
         for obj_name, obj_mjcf in self.mujoco_objects.items():
             horizontal_radius = obj_mjcf.get_horizontal_radius()
@@ -275,7 +287,10 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
             if not success:
                 raise RandomizationError("Cannot place all objects on the desk")
 
-        return pos_arr, quat_arr
+        if return_placements:
+            return pos_arr, quat_arr, placed_objects
+        else:
+            return pos_arr, quat_arr
 
     def setup(self, mujoco_objects, table_top_offset, table_size):
         """
@@ -310,22 +325,22 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
         if self.x_range is None:
             self.x_range = {
                 "SquareNut": [
-                    -self.table_size[0] / 2 + all_horizontal_radius["SquareNut"], 
+                    -self.table_size[0] / 2 + all_horizontal_radius["SquareNut"],
                     -all_horizontal_radius["SquareNut"],
                 ],
                 "RoundNut": [
-                    -self.table_size[0] / 2 + all_horizontal_radius["RoundNut"], 
+                    -self.table_size[0] / 2 + all_horizontal_radius["RoundNut"],
                     -all_horizontal_radius["RoundNut"],
                 ],
             }
         if self.y_range is None:
             self.y_range = {
                 "SquareNut": [
-                    all_horizontal_radius["SquareNut"], 
+                    all_horizontal_radius["SquareNut"],
                     self.table_size[0] / 2,
                 ],
                 "RoundNut": [
-                    -self.table_size[0] / 2, 
+                    -self.table_size[0] / 2,
                     -all_horizontal_radius["RoundNut"]
                 ],
             }
@@ -334,6 +349,47 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
                 "SquareNut": [0., 1.],
                 "RoundNut": [0., 1.],
             }
+
+
+class SequentialCompositeSampler(ObjectPositionSampler):
+    """Samples position for each object sequentially. """
+    def __init__(self):
+        self.mujoco_objects = None
+        self.samplers = collections.OrderedDict()
+
+    def append_sampler(self, object_name, sampler):
+        assert object_name not in self.samplers
+        self.samplers[object_name] = sampler
+
+    def sample(self, fixtures=None, return_placements=False):
+        """
+        Run samplers according to the appending order.
+        Return samples based on the ordering of self.mujoco_objects
+        :param fixtures:
+        :param return_placements:
+        :return:
+        """
+        if fixtures is None:
+            placements = []
+        else:
+            placements = deepcopy(fixtures)
+        # make sure all objects have samplers specified
+        named_samples = collections.OrderedDict()
+        for k in self.mujoco_objects:
+            assert k in self.samplers
+            named_samples[k] = None
+        for obj_name, sampler in self.samplers.items():
+            pos_arr, quat_arr, new_placements = sampler.sample(fixtures=placements, return_placements=True)
+            named_samples[obj_name] = (pos_arr[0], quat_arr[0])
+            placements.extend(new_placements)
+
+        all_pos_arr = [p[0] for p in named_samples.values()]
+        all_quat_arr = [p[1] for p in named_samples.values()]
+
+        if return_placements:
+            return all_pos_arr, all_quat_arr, placements
+        else:
+            return all_pos_arr, all_quat_arr
 
 
 class RoundRobinSampler(UniformRandomSampler):
@@ -353,9 +409,9 @@ class RoundRobinSampler(UniformRandomSampler):
         self.num_grid = len(x_range)
 
         super(RoundRobinSampler, self).__init__(
-            x_range=x_range, 
-            y_range=y_range, 
-            ensure_object_boundary_in_range=ensure_object_boundary_in_range, 
+            x_range=x_range,
+            y_range=y_range,
+            ensure_object_boundary_in_range=ensure_object_boundary_in_range,
             z_rotation=z_rotation,
         )
 
@@ -418,10 +474,10 @@ class RoundRobinPegsSampler(UniformRandomPegsSampler):
         self.num_grid = len(x_range[k])
 
         super(RoundRobinPegsSampler, self).__init__(
-            x_range=x_range, 
-            y_range=y_range, 
+            x_range=x_range,
+            y_range=y_range,
             z_range=z_range,
-            ensure_object_boundary_in_range=ensure_object_boundary_in_range, 
+            ensure_object_boundary_in_range=ensure_object_boundary_in_range,
             z_rotation=z_rotation,
         )
 

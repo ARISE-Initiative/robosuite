@@ -11,7 +11,8 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject, CylinderObject
 from robosuite.models.objects.interactive_objects import MomentaryButtonObject, MaintainedButtonObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask, \
+    SequentialCompositeSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -118,7 +119,7 @@ class SawyerLift(SawyerEnv):
         """
 
         # Load the default controller if none is specified
-        if not controller_config:
+        if controller_config is None:
             controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/default_sawyer.json')
             controller_config = load_controller_config(custom_fpath=controller_path)
 
@@ -669,13 +670,13 @@ class SawyerLiftPositionTarget(SawyerLift):
         self._object_name = 'cube'
         self.interactive_objects = {}
 
-        assert ("placement_initializer" not in kwargs)
-        kwargs["placement_initializer"] = UniformRandomSampler(
-            x_range=[-0.03, 0.03],
-            y_range=[-0.03, 0.03],
-            ensure_object_boundary_in_range=False,
-            z_rotation=0.
-        )
+        if 'placement_initializer' not in kwargs:
+            kwargs["placement_initializer"] = UniformRandomSampler(
+                x_range=[-0.1, 0.1],
+                y_range=[-0.1, 0.1],
+                ensure_object_boundary_in_range=False,
+                z_rotation=0.
+            )
         if kwargs["controller_config"]["type"] == "EE_POS_ORI":
             kwargs["controller_config"]["type"] = "EE_POS"
         super().__init__(**kwargs)
@@ -756,6 +757,7 @@ class SawyerLiftPositionTarget(SawyerLift):
         """
         self._goal_dict = None
         self._goal_render_segmentation = None
+        self._has_interaction = False
 
         super()._reset_internal()
 
@@ -788,6 +790,10 @@ class SawyerLiftPositionTarget(SawyerLift):
             self.hide_target()
 
     def step(self, action):
+        if not self._has_interaction:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
         result = super(SawyerLiftPositionTarget, self).step(action)
         if self._hide_target:
             self.hide_target()
@@ -880,6 +886,9 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
     """
     Goal-driven placing environment
     """
+    def __init__(self, **kwargs):
+        super(SawyerPositionTargetPress, self).__init__(**kwargs)
+
     def _load_model(self):
         super()._load_model()
 
@@ -893,18 +902,38 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             range="-0.1 0",
             damping="1"
         )
-        button = CylinderObject(rgba=(1, 0, 0, 1), size=[0.03, 0.01], joint=slide_joint)
+        button = CylinderObject(rgba=(1, 0, 0, 1), size=[0.03, 0.01], joint=[slide_joint])
 
         self.mujoco_objects["button"] = button
         self.interactive_objects = OrderedDict([("button", None)])
+
+        sampler = SequentialCompositeSampler()
+        self.placement_initializer.setup(
+            OrderedDict([("cube", self.mujoco_objects["cube"])]),
+            table_size=self.mujoco_arena.table_full_size,
+            table_top_offset=self.mujoco_arena.table_top_abs
+        )
+        sampler.append_sampler('cube', self.placement_initializer)
+        button_sampler = UniformRandomSampler(
+            x_range=[-0.1, 0.1],
+            y_range=[-0.1, 0.1],
+            ensure_object_boundary_in_range=False,
+            z_rotation=0.
+        )
+        button_sampler.setup(
+            mujoco_objects=OrderedDict([("button", button)]),
+            table_size=self.mujoco_arena.table_full_size,
+            table_top_offset=self.mujoco_arena.table_top_abs
+        )
+        sampler.append_sampler('button', button_sampler)
 
         # task includes arena, robot, and objects of interest
         self.model = TableTopVisualTask(
             self.mujoco_arena,
             self.mujoco_robot,
             self.mujoco_objects,
-            self.visual_objects,
-            initializer=self.placement_initializer,
+            visual_objects=self.visual_objects,
+            initializer=sampler,
         )
         self.model.place_objects()
         self.model.place_visual()
@@ -935,18 +964,21 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
         """
         Resets simulation internal configurations.
         """
-        super()._reset_internal()
+        ret = super()._reset_internal()
         for _, o in self.interactive_objects.items():
             o.reset()
+        return ret
 
     def step(self, action):
         for _, o in self.interactive_objects.items():
             o.step(sim_step=self.timestep)
-        super().step(action)
+
+        return super().step(action)
 
     def _set_state_to_goal(self):
-        super()._set_state_to_goal()
+        ret = super()._set_state_to_goal()
         self.interactive_objects['button'].activate()
+        return ret
 
     def _get_goal(self):
         """
