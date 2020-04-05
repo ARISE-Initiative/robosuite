@@ -105,7 +105,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         pos_arr = []
         quat_arr = []
         if fixtures is None:
-            placed_objects = []
+            placed_objects = {}
         else:
             placed_objects = deepcopy(fixtures)
 
@@ -119,7 +119,7 @@ class UniformRandomSampler(ObjectPositionSampler):
                 object_y = self.sample_y(horizontal_radius)
                 # objects cannot overlap
                 location_valid = True
-                for x, y, r in placed_objects:
+                for x, y, r in placed_objects.values():
                     if (
                         np.linalg.norm([object_x - x, object_y - y], 2)
                         <= r + horizontal_radius
@@ -133,7 +133,7 @@ class UniformRandomSampler(ObjectPositionSampler):
                         - bottom_offset
                         + np.array([object_x, object_y, 0])
                     )
-                    placed_objects.append((object_x, object_y, horizontal_radius))
+                    placed_objects[obj_name] = (object_x, object_y, horizontal_radius)
                     # random z-rotation
 
                     quat = self.sample_quat()
@@ -243,7 +243,7 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
         pos_arr = []
         quat_arr = []
         if fixtures is None:
-            placed_objects = []
+            placed_objects = {}
         else:
             placed_objects = deepcopy(fixtures)
 
@@ -264,7 +264,7 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
                     + np.array([object_x, object_y, object_z])
                 )
 
-                for pos2, r in placed_objects:
+                for pos2, r in placed_objects.values():
                     if (
                         np.linalg.norm(pos - pos2, 2) <= r + horizontal_radius
                         and abs(pos[2] - pos2[2]) < 0.021
@@ -273,7 +273,7 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
                         break
                 if location_valid:
                     # location is valid, put the object down
-                    placed_objects.append((pos, horizontal_radius))
+                    placed_objects[obj_name] = (pos, horizontal_radius)
                     # random z-rotation
 
                     quat = self.sample_quat(obj_name)
@@ -356,21 +356,62 @@ class SequentialCompositeSampler(ObjectPositionSampler):
     def __init__(self):
         self.mujoco_objects = None
         self.samplers = collections.OrderedDict()
+        self.table_top_offset = None
+        self.table_size = None
+        self.n_obj = None
 
-    def append_sampler(self, object_name, sampler):
+    def append_sampler(self, object_name, sampler, object_names=None):
         assert object_name not in self.samplers
-        self.samplers[object_name] = sampler
+        self.samplers[object_name] = {'sampler': sampler, 'object_names': [object_name]}
+        if object_names is not None:
+            self.samplers[object_name]['object_names'] = object_names
+
+    def sample_on_top(
+            self,
+            object_name,
+            surface_name='table',
+            x_range=None,
+            y_range=None,
+            z_rotation=None,
+            ensure_object_boundary_in_range=True
+    ):
+        """Sample placement on top of a surface object"""
+        if surface_name == 'table':
+            self.append_sampler(
+                object_name,
+                UniformRandomSampler(
+                    x_range=x_range,
+                    y_range=y_range,
+                    z_rotation=z_rotation,
+                    ensure_object_boundary_in_range=ensure_object_boundary_in_range
+                )
+            )
+        else:
+            assert surface_name in self.samplers  # surface needs to be placed first
+            raise NotImplementedError
+
+    def setup(self, mujoco_objects, table_top_offset, table_size):
+        self.mujoco_objects = mujoco_objects
+        assert(isinstance(mujoco_objects, collections.OrderedDict))
+        self.table_top_offset = table_top_offset
+        self.table_size = table_size
+        self.n_obj = len(self.mujoco_objects)
+        for object_name, sampler_config in self.samplers.items():
+            object_names = sampler_config['object_names']
+            objs = collections.OrderedDict((o, mujoco_objects[o]) for o in object_names)
+            sampler_config['sampler'].setup(
+                mujoco_objects=objs, table_top_offset=table_top_offset, table_size=table_size)
 
     def sample(self, fixtures=None, return_placements=False):
         """
         Run samplers according to the appending order.
         Return samples based on the ordering of self.mujoco_objects
-        :param fixtures:
-        :param return_placements:
-        :return:
+        :param fixtures: a dictionary of object_name: (x, y, r) for the objects that have already been placed
+        :param return_placements: return the accumulated placements in the scene
+        :return: a list of position and quaternion placements in the order of self.mujoco_objects.
         """
         if fixtures is None:
-            placements = []
+            placements = {}
         else:
             placements = deepcopy(fixtures)
         # make sure all objects have samplers specified
@@ -379,9 +420,9 @@ class SequentialCompositeSampler(ObjectPositionSampler):
             assert k in self.samplers
             named_samples[k] = None
         for obj_name, sampler in self.samplers.items():
-            pos_arr, quat_arr, new_placements = sampler.sample(fixtures=placements, return_placements=True)
+            pos_arr, quat_arr, new_placements = sampler['sampler'].sample(fixtures=placements, return_placements=True)
             named_samples[obj_name] = (pos_arr[0], quat_arr[0])
-            placements.extend(new_placements)
+            placements.update(new_placements)
 
         all_pos_arr = [p[0] for p in named_samples.values()]
         all_quat_arr = [p[1] for p in named_samples.values()]

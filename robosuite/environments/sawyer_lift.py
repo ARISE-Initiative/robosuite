@@ -908,24 +908,15 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
         self.interactive_objects = OrderedDict([("button", None)])
 
         sampler = SequentialCompositeSampler()
-        self.placement_initializer.setup(
-            OrderedDict([("cube", self.mujoco_objects["cube"])]),
-            table_size=self.mujoco_arena.table_full_size,
-            table_top_offset=self.mujoco_arena.table_top_abs
-        )
         sampler.append_sampler('cube', self.placement_initializer)
-        button_sampler = UniformRandomSampler(
+        sampler.sample_on_top(
+            object_name='button',
+            surface_name="table",
             x_range=[-0.1, 0.1],
             y_range=[-0.1, 0.1],
             ensure_object_boundary_in_range=False,
             z_rotation=0.
         )
-        button_sampler.setup(
-            mujoco_objects=OrderedDict([("button", button)]),
-            table_size=self.mujoco_arena.table_full_size,
-            table_top_offset=self.mujoco_arena.table_top_abs
-        )
-        sampler.append_sampler('button', button_sampler)
 
         # task includes arena, robot, and objects of interest
         self.model = TableTopVisualTask(
