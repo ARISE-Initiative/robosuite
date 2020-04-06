@@ -5,17 +5,11 @@ from robosuite.controllers import load_controller_config
 
 if __name__ == "__main__":
     # get the list of all environments
-    envs = sorted(suite.environments.ALL_ENVS)
+    envs = list(suite.environments.ALL_ENVIRONMENTS)
 
     # get the list of all controllers
-    controllers = {
-        "Joint Velocity": "JOINT_VEL",
-        "Joint Torque": "JOINT_TOR",
-        "Joint Impedance": "JOINT_IMP",
-        "End Effector Position": "EE_POS",
-        "End Effector Position Orientation": "EE_POS_ORI",
-        "End Effector Inverse Kinematics (note: must have pybullet installed!)": "EE_IK",
-    }
+    controllers_info = suite.controllers.ALL_CONTROLLERS_INFO
+    controllers = list(suite.controllers.ALL_CONTROLLERS)
 
     # print info and select an environment
     print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
@@ -38,8 +32,8 @@ if __name__ == "__main__":
 
     print("Here is a list of controllers in the suite:\n")
 
-    for j, controller in enumerate(list(controllers)):
-        print("[{}] {}".format(j, controller))
+    for j, c in enumerate(controllers):
+        print("[{}] {}".format(j, controllers_info[c]))
     print()
     try:
         s = input(
@@ -47,13 +41,16 @@ if __name__ == "__main__":
             + "(enter a number from 0 to {}): ".format(len(controllers) - 1)
         )
         # parse input into a number within range
-        j = min(max(int(s), 0), len(controllers))
+        j = min(max(int(s), 0), len(controllers) - 1)
     except:
         j = 0
-        print("Input is not valid. Use {} by default.".format(list(controllers)[j]))
+        print("Input is not valid. Use {} by default.".format(controllers[j]))
+
+    print()
+    print("Press \"H\" to show the viewer control panel.")
 
     # Load the desired controller
-    config = load_controller_config(default_controller=list(controllers.values())[j])
+    config = load_controller_config(default_controller=controllers[j])
 
     # initialize the task
     env = suite.make(
@@ -71,7 +68,7 @@ if __name__ == "__main__":
     low, high = env.action_spec
 
     # do visualization
-    for i in range(1000):
+    for i in range(10000):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
         env.render()

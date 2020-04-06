@@ -8,7 +8,7 @@ import robosuite as suite
 
 def test_all_environments():
 
-    envs = sorted(suite.environments.ALL_ENVS)
+    envs = sorted(suite.environments.ALL_ENVIRONMENTS)
 
     for env_name in envs:
 

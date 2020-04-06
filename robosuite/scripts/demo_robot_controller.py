@@ -54,17 +54,11 @@ import robosuite.utils.transform_utils as T
 
 if __name__ == "__main__":
     # get the list of all environments
-    envs = sorted(suite.environments.ALL_ENVS)
+    envs = list(suite.environments.ALL_ENVIRONMENTS)
 
     # get the list of all controllers
-    controllers = {
-        "Joint Velocity": "JOINT_VEL",
-        "Joint Torque": "JOINT_TOR",
-        "Joint Impedance": "JOINT_IMP",
-        "End Effector Position": "EE_POS",
-        "End Effector Position Orientation": "EE_POS_ORI",
-        "End Effector Inverse Kinematics (note: must have pybullet installed!)": "EE_IK",
-    }
+    controllers_info = suite.controllers.ALL_CONTROLLERS_INFO
+    controllers = list(suite.controllers.ALL_CONTROLLERS)
 
     # print info and select an environment
     print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
@@ -87,8 +81,8 @@ if __name__ == "__main__":
 
     print("Here is a list of controllers in the suite:\n")
 
-    for j, controller in enumerate(list(controllers)):
-        print("[{}] {}".format(j, controller))
+    for j, c in enumerate(controllers):
+        print("[{}] {}".format(j, controllers_info[c]))
     print()
     try:
         s = input(
@@ -96,13 +90,16 @@ if __name__ == "__main__":
             + "(enter a number from 0 to {}): ".format(len(controllers) - 1)
         )
         # parse input into a number within range
-        j = min(max(int(s), 0), len(controllers))
+        j = min(max(int(s), 0), len(controllers) - 1)
     except:
         j = 0
-        print("Input is not valid. Use {} by default.".format(list(controllers)[j]))
+        print("Input is not valid. Use {} by default.".format(controllers[j]))
+
+    print()
+    print("Press \"H\" to show the viewer control panel.")
 
     # Get chosen controller
-    controller_name = list(controllers.values())[j]
+    controller_name = controllers[j]
 
     # Load the desired controller
     config = load_controller_config(default_controller=controller_name)
@@ -146,7 +143,6 @@ if __name__ == "__main__":
     total_action_dim = len(low)
     filler = np.zeros(total_action_dim - 2 * action_dim) if env.mujoco_robot.name == 'baxter' else \
         np.zeros(total_action_dim - action_dim)
-
 
     # Keep track of done variable to know when to break loop
     count = 0

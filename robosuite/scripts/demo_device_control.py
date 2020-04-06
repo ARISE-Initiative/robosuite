@@ -187,5 +187,3 @@ if __name__ == "__main__":
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
             env.render()
-
-
