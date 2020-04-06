@@ -1,0 +1,28 @@
+<mujoco model="table_arena">
+  <asset>
+    <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
+    <texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" type="2d" width="512"/>
+    <material name="floorplane" reflectance="0.7" texrepeat="1 1" texture="texplane" texuniform="true"/>
+    <texture file="../textures/lego.png" type="2d" name="tex-lego"/>
+    <material name="lego" reflectance="0.7" texrepeat="10 10" texture="tex-lego" texuniform="true"/>
+    <texture file="../textures/lego1.png" type="2d" name="tex-lego1"/>
+    <material name="lego1" reflectance="0.7" texrepeat="10 10" texture="tex-lego1" texuniform="true"/>
+  </asset>
+  <worldbody>
+    <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
+    <body name="table" pos="0 0 0.4">
+      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" name="table_collision" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual"/>
+      <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
+    </body>
+
+    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <!-- front view -->
+    <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
+    <!-- bird view -->
+    <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
+    <!-- agent view -->
+    <camera mode="fixed" name="agentview" pos="0.8 0 1.65" quat="0.723 0.32 0.32 0.723"/>
+  </worldbody>
+</mujoco>

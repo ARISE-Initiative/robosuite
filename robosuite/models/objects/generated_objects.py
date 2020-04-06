@@ -1,4 +1,6 @@
+import random
 import numpy as np
+import xml.etree.ElementTree as ET
 
 from robosuite.models.objects import MujocoGeneratedObject
 from robosuite.utils.mjcf_utils import new_body, new_geom, new_site
@@ -325,6 +327,257 @@ def _get_randomized_range(val,
         return [val]
 
 
+class BoundingObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object for sawyer fit
+    """
+
+    def __init__(
+        self,
+        size=[0.1,0.1],
+        hole_size = [0.05,0.05,0.05],
+        tolerance = 1.03,
+        offset = [0.1,0.05,0.4]
+    ):
+        super().__init__()
+        self.size = size
+        self.hole_size = tolerance*np.asarray(hole_size)
+        self.offset=np.asarray(offset)
+    def get_bottom_offset(self):
+        return np.array([0, 0, 0])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.size])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(2) * (self.size)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+        if name is not None:
+            main_body.set("name", name)
+        x = self.size[0]-self.hole_size[0]
+        y = self.size[1]-self.hole_size[1]
+        x1 = np.random.uniform(x/5,4*x/5)
+        x2 = x-x1
+        y1 = np.random.uniform(y/5,4*y/5)
+        y2 = y-y1
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[x1, self.size[1],self.hole_size[2]],pos=self.offset+[self.size[0]-x1, 0.0, self.hole_size[2]], group=1,
+            material="lego", rgba=None)
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[x2, self.size[1],self.hole_size[2]],pos=self.offset+[-self.size[0]+x2, 0.0, self.hole_size[2]], group=1,
+            material="lego", rgba=None)
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.size[0],y1,self.hole_size[2]],pos=self.offset+[0.0,-self.size[1]+y1, self.hole_size[2]], group=1,
+            material="lego", rgba=None)
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.size[0],y2,self.hole_size[2]],pos=self.offset+[0.0,self.size[1]-y2, self.hole_size[2]], group=1,
+            material="lego", rgba=None)
+        )
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def in_grid(self,point,size):
+        # checks if an object centered at point of dimensions size is within the hole
+        result = True
+        x,y,z = point
+        if not (x -size[0] > self.offset[0]-self.size[0] and x + size[0] < self.offset[0]+self.size[0]):
+            result = False
+        if not (y-size[1] > self.offset[1]-self.size[1] and y + size[1] < self.offset[1]+self.size[1]):
+            result = False
+        if not (z - size[2] > self.offset[2] and z + size[2] < 1.1*(self.offset[2]+2*self.hole_size[2])):
+            #Hack for z tolerance
+            #print("z",self.offset[2],self.offset[2]+2*self.hole_size[2])
+            result = False
+        return result
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+
+class HoleObject(MujocoGeneratedObject):
+    """
+    Generates 2d lego brick
+    """
+
+    def __init__(
+        self,
+        size=0.01,
+        tolerance = 0.98,
+        pattern = [[1,1,1],[1,0,1]],
+        z_compress = 1.0,
+        name = ''    ):
+        super().__init__()
+        self.size = tolerance*size
+        self.pattern = pattern
+        self.z_compress = z_compress
+        self.name = name
+    def get_bottom_offset(self):
+        return np.array([0, 0, -1 * self.size])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.size])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(2) * (self.size)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+        if name is not None:
+            main_body.set("name", name)
+
+        pattern = self.pattern
+        cnt = 0
+        for i in range(len(pattern)):
+            for j in range(len(pattern[0])):
+                mat = 'lego1'
+                if self.name =='1':
+                    mat = 'lego'
+                if(pattern[i][j]):
+                    main_body.append(
+                    new_geom(
+                        geom_type="box", size=[self.size, self.size, self.z_compress*self.size], pos=[2*i*self.size-self.size*len(pattern), 2*j*self.size-self.size*len(pattern), 0.0], group=1,
+                        material=mat, rgba=None)
+                    )
+                    main_body[-1].set('name','block'+self.name+'-'+str(cnt))
+                    cnt +=1
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+
+class Hole3dObject(MujocoGeneratedObject):
+    """
+    Generates the 3d grid object for assembly task
+    """
+
+    def __init__(
+        self,
+        size=0.01,
+        pattern=[[1,1,1,1,1,1,1],[1,1,0,1,1,1,1],[1,1,0,0,0,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
+        offset =0,
+        z_compress = 1.0):
+        super().__init__()
+        self.size = size
+        self.pattern = pattern
+        self.offset = offset
+        self.z_compress = z_compress
+    def get_bottom_offset(self):
+        return np.array([0, 0, 0])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.size*2*len(self.pattern)])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(2) * (4*self.size)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+        if name is not None:
+            main_body.set("name", name)
+        pattern = self.pattern
+        for k in range(len(pattern)):
+            for i in range(len(pattern[0])):
+                for j in range(len(pattern[0][0])):
+                    if(pattern[k][i][j]>0):
+                        mat = 'lego'
+                        if k < len(pattern)-1 and i > 0 and j > 0 and i < len(pattern[0]) -1 and j < len(pattern[0][0])-1 :
+                            mat = 'lego1'
+                        main_body.append(
+                        new_geom(
+                            geom_type="box", size=[pattern[k][i][j]*self.size,pattern[k][i][j]*self.size, self.z_compress*self.size], pos=[self.offset+2*i*self.size-self.size*len(pattern[0]), self.offset+2*j*self.size-self.size*len(pattern[0][0]),self.size+2*k*self.z_compress*self.size], group=1,
+                            material=mat, rgba=None, density='100')
+                        )
+
+        return main_body
+
+        # Check if point is within the grid
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+
+class GridObject(MujocoGeneratedObject):
+    """
+    Generates the hole object
+    """
+
+    def __init__(
+        self,
+        size=0.01,
+        pattern=[[1,1,1,1,1,1,1],[1,1,0,1,1,1,1],[1,1,0,0,0,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
+        offset =0,
+        z_compress = 1.0):
+        super().__init__()
+        self.size = size
+        self.pattern = pattern
+        self.offset = offset
+        self.z_compress = z_compress
+    def get_bottom_offset(self):
+        return np.array([0, 0, -1 * self.size])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.size])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(2) * (4*self.size)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+        if name is not None:
+            main_body.set("name", name)
+        pattern = self.pattern
+        for k in range(len(pattern)):
+            for i in range(len(pattern[0])):
+                for j in range(len(pattern[0][0])):
+                    if(pattern[k][i][j]>0):
+                        mat = 'lego'
+                        if k < len(pattern)-1 and i > 0 and j > 0 and i < len(pattern[0]) -1 and j < len(pattern[0][0])-1 :
+                            mat = 'lego1'
+                        main_body.append(
+                        new_geom(
+                            geom_type="box", size=[pattern[k][i][j]*self.size,pattern[k][i][j]*self.size, self.z_compress*self.size], pos=[self.offset+2*i*self.size-self.size*len(pattern[0]), self.offset+2*j*self.size-self.size*len(pattern[0][0]), 0.4+self.size+2*k*self.z_compress*self.size], group=1,
+                            material=mat, rgba=None, density='100')
+                        )
+
+        return main_body
+    def in_grid(self,point):
+        # checks if point is within the hole
+        result = True
+        pattern = self.pattern
+        x,y,z = point
+        if not (x > self.offset-self.size*len(pattern[0]) and x < self.offset+self.size*len(pattern[0])):
+            result = False
+        if not (y > self.offset-self.size*len(pattern[0][0]) and y < self.offset+self.size*len(pattern[0][0])):
+            result = False
+        if not (z > 0.4 and z < 0.4+2*len(pattern)*self.z_compress*self.size):
+            result = False
+        return result
+
+        # Check if point is within the grid
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+
 class BoxObject(MujocoGeneratedObject):
     """
     An object that is a box
@@ -571,3 +824,497 @@ class CapsuleObject(MujocoGeneratedObject):
     # returns a copy, Returns xml body node
     def get_visual(self, name=None, site=False):
         return self._get_visual(name=name, site=site, ob_type="capsule")
+
+
+### More Miscellaneous Objects ###
+
+
+class AnimalObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object
+    """
+
+    def __init__(self):
+        super().__init__()
+        # generate random vector
+        self.body_x = random.uniform(0.02,0.033)
+        self.body_y = random.uniform(0.015,0.03)
+        self.body_z = random.uniform(0.01,0.035)
+        self.legs_x = random.uniform(0.005,0.01)
+        self.legs_z = random.uniform(0.01,0.035)
+        self.neck_x = random.uniform(0.005,0.01)
+        self.neck_z = random.uniform(0.005,0.01)
+        self.head_y = random.uniform(0.010,0.015)
+        self.head_z = random.uniform(0.005,0.01)
+    def get_bottom_offset(self):
+        return np.array([0, 0, -self.body_z-2*self.legs_z])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.body_z+2*self.neck_z+2*self.head_z])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(self.body_x**2+self.body_y**2)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+
+        if name is not None:
+            main_body.set("name", name)
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.body_x,self.body_y,self.body_z],pos=[0, 0, 0], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #legs
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.legs_x,self.legs_x,self.legs_z],pos=[0.9*self.body_x-self.legs_x, 0.9*self.body_y-self.legs_x, -self.legs_z-self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.legs_x,self.legs_x,self.legs_z],pos=[-0.9*self.body_x+self.legs_x, 0.9*self.body_y-self.legs_x, -self.legs_z-self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.legs_x,self.legs_x,self.legs_z],pos=[0.9*self.body_x-self.legs_x, -0.9*self.body_y+self.legs_x, -self.legs_z-self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.legs_x,self.legs_x,self.legs_z],pos=[-0.9*self.body_x+self.legs_x, -0.9*self.body_y+self.legs_x, -self.legs_z-self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1),)
+        )
+        #neck
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.neck_x,self.neck_x,self.neck_z],pos=[self.body_x-self.neck_x, 0, self.neck_z+self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #head
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.head_y,self.neck_x*1.5,self.head_z],pos=[self.body_x-2*self.neck_x+self.head_y, 0, 2*self.neck_z+self.body_z+self.head_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+class CarObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object
+    """
+
+    def __init__(self):
+        super().__init__()
+        # generate random vector
+        self.body_x = random.uniform(0.02,0.031)
+        self.body_y = random.uniform(0.015,0.03)
+        self.body_z = random.uniform(0.01,self.body_x/2)
+        self.wheels_r = random.uniform(self.body_x/4.0,self.body_x/3.0)
+        self.wheels_z = random.uniform(0.002,0.004)
+        self.top_x = random.uniform(0.008,0.9*self.body_x)
+        self.top_y = random.uniform(0.007,0.9*self.body_y)
+        self.top_z = random.uniform(0.004,0.9*self.body_z)
+    def get_bottom_offset(self):
+        return np.array([0, 0, -self.body_z-self.wheels_r])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.body_z+2*self.top_z])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(self.body_x**2+(self.body_y+2*self.wheels_z)**2)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+
+        if name is not None:
+            main_body.set("name", name)
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.body_x,self.body_y,self.body_z],pos=[0, 0, 0], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #wheels
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[self.body_x, self.body_y-self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[-self.body_x, self.body_y-self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[self.body_x, -self.body_y+self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[-self.body_x, -self.body_y+self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1),)
+        )
+        #top
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.top_x,self.top_y,self.top_z],pos=[0, 0, self.top_z+self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+class TrainObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object
+    """
+
+    def __init__(self):
+        super().__init__()
+        # generate random vector
+        self.body_x = random.uniform(0.017,0.031)
+        self.body_y = random.uniform(0.025,0.045)
+        self.body_z = random.uniform(0.01,0.025)
+        self.wheels_r = random.uniform(self.body_x/4.0,self.body_x/3.0)
+        self.wheels_z = random.uniform(0.002,0.006)
+        self.top_x = random.uniform(0.01,0.9*self.body_x)
+        self.top_r = 0.99*self.body_x
+        self.top_z = 0.99*self.body_y
+        self.cabin_x = 0.99*self.body_x
+        self.cabin_y = random.uniform(0.20,0.3)*self.body_y
+        self.cabin_z = random.uniform(0.5,0.8)*self.top_r
+        self.chimney_r = random.uniform(0.004,0.01)
+        self.chimney_z = random.uniform(0.01,0.03)
+    def get_bottom_offset(self):
+        return np.array([0, 0, -self.body_z-self.wheels_r])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.body_z+2*self.chimney_z+self.top_r])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(self.body_x**2+(self.body_y+2*self.wheels_z)**2)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+
+        if name is not None:
+            main_body.set("name", name)
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.body_x,self.body_y,self.body_z],pos=[0, 0, 0], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #wheels
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[self.body_x, self.body_y-self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[-self.body_x, self.body_y-self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[self.body_x, -self.body_y+self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.wheels_r,self.wheels_z],pos=[-self.body_x, -self.body_y+self.wheels_r, -self.body_z], group=1, zaxis='1 0 0',
+             rgba=np.append(np.random.uniform(size=3),1),)
+        )
+        #top
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.top_r,self.top_z],pos=[0, 0, self.body_z], group=1, zaxis="0 1 0",
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #cabin
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.cabin_x,self.cabin_y,self.cabin_z],pos=[0, -self.body_y+self.cabin_y, self.body_z+self.cabin_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #chimney
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.chimney_r,self.chimney_z],pos=[0, self.body_y*.5, self.body_z+self.top_r], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+class BipedObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object
+    """
+
+    def __init__(self):
+        super().__init__()
+        # generate random vector
+        self.body_x = random.uniform(0.02,0.031)
+        self.body_y = random.uniform(0.017,0.022)
+        self.body_z = random.uniform(0.015,0.03)
+        self.legs_x = random.uniform(0.005,0.01)
+        self.legs_z = random.uniform(0.005,self.body_z)
+        self.hands_x = random.uniform(0.005,0.01)
+        self.hands_z = random.uniform(0.01,0.3*self.legs_z)
+        self.head_y = self.body_y
+        self.head_z = random.uniform(0.01,0.02)
+    def get_bottom_offset(self):
+        return np.array([0, 0, -self.body_z-2*self.legs_z])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.body_z+2*self.head_z])
+
+    def get_horizontal_radius(self):
+        return np.sqrt(self.body_x**2+self.body_y**2)
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+
+        if name is not None:
+            main_body.set("name", name)
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.body_x,self.body_y,self.body_z],pos=[0, 0, 0], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #legs
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.legs_x,self.body_y,self.legs_z],pos=[self.body_x-self.legs_x, 0, -self.legs_z-self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.legs_x,self.body_y,self.legs_z],pos=[-self.body_x+self.legs_x, 0, -self.legs_z-self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+
+        #hands
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.hands_x,2*self.body_y,self.hands_z],pos=[self.body_x+self.hands_x, self.body_y, -self.hands_z+self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.hands_x,2*self.body_y,self.hands_z],pos=[-self.body_x-self.hands_x, self.body_y, -self.hands_z+self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #head
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.head_y,self.head_y,self.head_z],pos=[0, 0, self.body_z+self.head_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+
+class DumbbellObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object
+    """
+
+    def __init__(self):
+        super().__init__()
+        # generate random vector
+        self.body_r = random.uniform(0.009,0.013)
+        self.body_z = random.uniform(0.015,0.025)
+        self.head_r = random.uniform(1.6*self.body_r,2*self.body_r)
+        self.head_z = random.uniform(0.005,0.01)
+    def get_bottom_offset(self):
+        return np.array([0, 0, -self.body_z-2*self.head_z])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.body_z+2*self.head_z])
+
+    def get_horizontal_radius(self):
+        return self.body_z+self.head_z
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+
+        if name is not None:
+            main_body.set("name", name)
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.body_r,self.body_z],pos=[0, 0, 0], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #head
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.head_r,self.head_z],pos=[0, 0, -self.head_z-self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.head_r,self.head_z],pos=[0, 0, self.head_z+self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )        
+
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+class HammerObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object
+    """
+
+    def __init__(self):
+        super().__init__()
+        # generate random vector
+        self.body_r = random.uniform(0.009,0.013)
+        self.body_z = random.uniform(0.027,0.037)
+        self.head_r = random.uniform(1.6*self.body_r,3*self.body_r)
+        self.head_z = random.uniform(1.5*self.body_r,2*self.body_r)
+    def get_bottom_offset(self):
+        return np.array([0, 0, -self.body_z])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.body_z+2*self.head_z])
+
+    def get_horizontal_radius(self):
+        return self.body_r+self.head_r
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+
+        if name is not None:
+            main_body.set("name", name)
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.body_r,self.body_z],pos=[0, 0, 0], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        #head
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.head_r,self.head_z],pos=[0, 0, 0.95*self.head_r+self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1),zaxis='1 0 0')
+        )
+    
+
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+
+class GuitarObject(MujocoGeneratedObject):
+    """
+    Generates bounding box hole object
+    """
+
+    def __init__(self):
+        super().__init__()
+        # generate random vector
+        self.body_r = random.uniform(0.021,0.027)/1.7
+        self.body_z = random.uniform(0.017,0.025)/1.4
+        self.head_r = random.uniform(1.5,2)*self.body_r
+        self.head_z = self.body_z
+        self.arm_x = random.uniform(0.008,0.010)/2
+        self.arm_y = random.uniform(1.2,1.6)*(self.body_r+self.head_r)
+        self.arm_z = 0.007/2
+    def get_bottom_offset(self):
+        return np.array([0, 0, -self.body_z])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.body_z+2*self.head_z])
+
+    def get_horizontal_radius(self):
+        return self.body_r+self.head_r
+
+    def get_collision(self, name=None, site=None):
+        main_body = new_body()
+        color = np.append(np.random.uniform(size=3),1)
+        if name is not None:
+            main_body.set("name", name)
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.body_r,self.body_z],pos=[0, self.head_r+0.5*self.body_r, 0], group=1,
+             rgba=color)
+        )
+        #head
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.head_r,self.head_z],pos=[0, 0, 0], group=1,
+             rgba=color)
+        )
+        main_body.append(
+        new_geom(
+            geom_type="cylinder", size=[self.head_r*0.5,self.head_z],pos=[0, 0, 0.001], group=1,
+             rgba=[0,0,0,1])
+        )
+        #arm
+        main_body.append(
+        new_geom(
+            geom_type="box", size=[self.arm_x,self.arm_y,self.arm_z],pos=[0, self.arm_y, self.body_z], group=1,
+             rgba=np.append(np.random.uniform(size=3),1))
+        )
+        if site:
+            # add a site as well
+            template = self.get_site_attrib_template()
+            if name is not None:
+                template["name"] = name
+            main_body.append(ET.Element("site", attrib=template))
+        return main_body
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
+
+
