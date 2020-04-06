@@ -33,7 +33,7 @@ if __name__ == "__main__":
     print("Here is a list of controllers in the suite:\n")
 
     for j, c in enumerate(controllers):
-        print("[{}] {}".format(j, controllers_info[c]))
+        print("[{}] {} - {}".format(j, c, controllers_info[c]))
     print()
     try:
         s = input(
