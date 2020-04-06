@@ -4,14 +4,14 @@ Test all environments with random policies.
 import numpy as np
 
 import robosuite as suite
-# TODO: Figure out why PickPlace single with Sawyer is crashing on use_object_obs
 
 
 def test_all_environments():
 
     envs = sorted(suite.environments.ALL_ENVS)
-
     for env_name in envs:
+        # Create config dict
+        env_config = {"env_name": env_name}
         for robot_name in ("Panda", "Sawyer", "Baxter"):
             # create an environment for learning on pixels
             config = None
@@ -22,38 +22,30 @@ def test_all_environments():
                 else:
                     robots = [robot_name, robot_name]
                     config = "single-arm-opposed"
-                env = suite.make(
-                    env_name,
-                    robots=robots,
-                    env_configuration=config,
-                    has_renderer=False,  # no on-screen renderer
-                    has_offscreen_renderer=True,   # off-screen renderer is required for camera observations
-                    ignore_done=True,  # (optional) never terminates episode
-                    use_camera_obs=True,  # use camera observations
-                    camera_heights=84,  # set camera height
-                    camera_widths=84,  # set camera width
-                    camera_names="agentview",  # use "agentview" camera
-                    use_object_obs=False,  # no object feature when training on pixels
-                    reward_shaping=True,  # (optional) using a shaping reward
-                )
+                # compile configuration specs
+                env_config["robots"] = robots
+                env_config["env_configuration"] = config
             else:
                 if robot_name == "Baxter":
                     continue
-                robots = robot_name
-                env = suite.make(
-                    env_name,
-                    robots=robots,
-                    has_renderer=False,  # no on-screen renderer
-                    has_offscreen_renderer=True,  # off-screen renderer is required for camera observations
-                    ignore_done=True,  # (optional) never terminates episode
-                    use_camera_obs=True,  # use camera observations
-                    camera_heights=84,  # set camera height
-                    camera_widths=84,  # set camera width
-                    camera_names="agentview",  # use "agentview" camera
-                    use_object_obs=False,  # no object feature when training on pixels
-                    reward_shaping=True,  # (optional) using a shaping reward
-                )
-            print("Testing env: {} with robots {} with config {}...".format(env_name, robots, config))
+                env_config["robots"] = robot_name
+
+            # Notify user of which test we are currently on
+            print("Testing env: {} with robots {} with config {}...".format(env_name, env_config["robots"], config))
+
+            # Create environment
+            env = suite.make(
+                **env_config,
+                has_renderer=False,  # no on-screen renderer
+                has_offscreen_renderer=True,  # off-screen renderer is required for camera observations
+                ignore_done=True,  # (optional) never terminates episode
+                use_camera_obs=True,  # use camera observations
+                camera_heights=84,  # set camera height
+                camera_widths=84,  # set camera width
+                camera_names="agentview",  # use "agentview" camera
+                use_object_obs=False,  # no object feature when training on pixels
+                reward_shaping=True,  # (optional) using a shaping reward
+            )
 
             obs = env.reset()
 
@@ -70,8 +62,8 @@ def test_all_environments():
                 assert pr + "robot-state" in obs
                 assert obs[pr + "robot-state"].ndim == 1
 
-                assert "image" in obs
-                assert obs["image"].shape == (84, 84, 3)
+                assert "agentview_image" in obs
+                assert obs["agentview_image"].shape == (84, 84, 3)
 
                 assert "object-state" not in obs
 

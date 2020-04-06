@@ -33,6 +33,15 @@ class Sawyer(RobotModel):
         return np.array([0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161])
 
     @property
+    def base_xpos_offset(self):
+        return {
+            "bins": (-0.5, 0.3, 0),
+            "empty": (-0.6, 0, 0),
+            "pegs": (-0.5, 0.15, 0),
+            "table": lambda table_length: (-0.16 - table_length/2, 0, 0)
+        }
+
+    @property
     def arm_type(self):
         return "single"
 

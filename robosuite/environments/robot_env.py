@@ -4,7 +4,7 @@ from robosuite.environments.base import MujocoEnv
 
 from robosuite.robots.single_arm import SingleArm
 from robosuite.robots.bimanual import Bimanual
-from robosuite.models.robots.robot_model import check_bimanual
+from robosuite.models.robots import check_bimanual
 
 from robosuite.controllers import reset_controllers
 
@@ -342,7 +342,6 @@ class RobotEnv(MujocoEnv):
 
                 # Add camera observations to the dict
                 camera_obs = self.sim.render(
-                    # TODO: May need to update cameras to correspond to each robot-specific view
                     camera_name=cam_name,
                     width=cam_w,
                     height=cam_h,

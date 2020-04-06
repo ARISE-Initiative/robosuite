@@ -20,6 +20,7 @@ class Bimanual(Robot):
         robot_type: str,
         idn=0,
         controller_config=None,
+        initial_qpos=None,
         initialization_noise=None,
         gripper_type="default",
         gripper_visualization=False,
@@ -35,6 +36,9 @@ class Bimanual(Robot):
                 custom controllers. Else, uses the default controller for this specific task. Should either be single
                 dict if same controller is to be used for both robot arms or else it should be a list of length 2.
                 NOTE: In the latter case, assumes convention of [right, left]
+
+            initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
+                instantiated for the task
 
             initialization_noise (float): The scale factor of uni-variate Gaussian random noise
                 applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
@@ -76,6 +80,7 @@ class Bimanual(Robot):
         super().__init__(
             robot_type=robot_type,
             idn=idn,
+            initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
         )
 

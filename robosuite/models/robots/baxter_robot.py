@@ -36,6 +36,15 @@ class Baxter(RobotModel):
                         -0.403, -0.636, -0.114, 1.432, -0.735, 1.205, 0.269])
 
     @property
+    def base_xpos_offset(self):
+        return {
+            "bins": (-0.5, 0.3, 0),
+            "empty": (-0.29, 0, 0),
+            "pegs": (-0.5, 0.15, 0),
+            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0)
+        }
+
+    @property
     def arm_type(self):
         return "bimanual"
 

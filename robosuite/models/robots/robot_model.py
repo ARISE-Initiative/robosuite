@@ -234,6 +234,15 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
+    def base_xpos_offset(self):
+        """
+        Returns dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+        Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+        arena case; i.e.: "bins", "empty", "pegs", and "table")
+        """
+        raise NotImplementedError
+
+    @property
     def arm_type(self):
         """
         Type of robot arm. Should be either "bimanual" or "single" (or something else if it gets added in the future)

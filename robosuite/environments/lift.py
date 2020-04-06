@@ -235,8 +235,8 @@ class Lift(RobotEnv):
             "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
 
         # Adjust base pose accordingly
-        # TODO: Account for variations in robot start positions maybe?
-        self.robots[0].robot_model.set_base_xpos([0, 0, 0])
+        xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
+        self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
         self.mujoco_arena = TableArena(
@@ -245,9 +245,8 @@ class Lift(RobotEnv):
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
 
-        # Assumes the robot has a pedestal, we want to align it with the table
-        # TODO: Add specs in robot model to account for varying base positions maybe?
-        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+        # Arena always gets set to zero origin
+        self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
         cube = BoxObject(

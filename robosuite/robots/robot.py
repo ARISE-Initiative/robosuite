@@ -15,6 +15,7 @@ class Robot(object):
         self,
         robot_type: str,
         idn=0,
+        initial_qpos=None,
         initialization_noise=None,
     ):
         """
@@ -22,6 +23,9 @@ class Robot(object):
             robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
 
             idn (int or str): Unique ID of this robot. Should be different from others
+
+            initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
+                instantiated for the task
 
             initialization_noise (float): The scale factor of uni-variate Gaussian random noise
                 applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
@@ -35,8 +39,8 @@ class Robot(object):
 
         # Scaling of Gaussian initial noise applied to robot joints
         self.initialization_noise = initialization_noise if initialization_noise else 0.0
+        self.init_qpos = initial_qpos  # n-dim list / array of robot joints
 
-        self.init_qpos = None                               # n-dim list of robot joints
         self.robot_joints = None                            # xml joint names for robot
         self.base_pos = None                                # Base position in world coordinates (x,y,z)
         self.base_ori = None                                # Base rotation in world coordinates (x,y,z,w quat)
@@ -58,7 +62,10 @@ class Robot(object):
         Loads robot and optionally add grippers.
         """
         self.robot_model = create_robot(self.name, idn=self.idn)
-        self.init_qpos = self.robot_model.init_qpos
+
+        # Use default from robot model for initial joint positions if not specified
+        if self.init_qpos is None:
+            self.init_qpos = self.robot_model.init_qpos
 
     def reset_sim(self, sim: MjSim):
         """

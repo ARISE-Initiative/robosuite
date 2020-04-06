@@ -7,6 +7,7 @@ from robosuite.robots import *
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import PotWithHandlesObject
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.robots import check_bimanual
 
 import robosuite.utils.transform_utils as T
 
@@ -277,24 +278,25 @@ class TwoArmLift(RobotEnv):
         """
         super()._load_model()
 
-        # Verify the correct robots have been loaded and adjust base pose accordingly
-        # TODO: Account for variations in robot start position? Where 2nd robot will be placed?
+        # Adjust base pose(s) accordingly
         if self.env_configuration == "bimanual":
-            assert isinstance(self.robots[0], Bimanual), "Error: For bimanual configuration, expected a " \
-                "bimanual robot! Got {} type instead.".format(type(self.robots[0]))
-            self.robots[0].robot_model.set_base_xpos([-0.10, 0, 0])
+            xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
+            self.robots[0].robot_model.set_base_xpos(xpos)
         else:
-            assert isinstance(self.robots[0], SingleArm) and isinstance(self.robots[1], SingleArm), \
-                "Error: For multi single arm configurations, expected two single-armed robot! " \
-                "Got {} and {} types instead.".format(type(self.robots[0]), type(self.robots[1]))
             if self.env_configuration == "single-arm-opposed":
-                self.robots[0].robot_model.set_base_xpos([0.55, -0.55, 0])
-                self.robots[0].robot_model.set_base_ori([0,0,np.pi / 2])
-                self.robots[1].robot_model.set_base_xpos([0.55, 0.55, 0])
-                self.robots[1].robot_model.set_base_ori([0, 0, -np.pi/2])
+                # Set up robots facing towards each other by rotating them from their default position
+                for robot, rotation in zip(self.robots, (np.pi/2, -np.pi/2)):
+                    xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
+                    rot = np.array((0, 0, rotation))
+                    xpos = T.euler2mat(rot) @ np.array(xpos)
+                    robot.robot_model.set_base_xpos(xpos)
+                    robot.robot_model.set_base_ori(rot)
             else:   # "single-arm-parallel" configuration setting
-                self.robots[0].robot_model.set_base_xpos([0, -0.25, 0])
-                self.robots[1].robot_model.set_base_xpos([0, 0.25, 0])
+                # Set up robots parallel to each other but offset from the center
+                for robot, offset in zip(self.robots, (-0.25, 0.25)):
+                    xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
+                    xpos = np.array(xpos) + np.array((0, offset, 0))
+                    robot.robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
         self.mujoco_arena = TableArena(
@@ -303,9 +305,8 @@ class TwoArmLift(RobotEnv):
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
 
-        # Assumes the robot has a pedestal, we want to align it with the table
-        # TODO: Add specs in robot model to account for varying base positions maybe?
-        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+        # Arena always gets set to zero origin
+        self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
         self.pot = PotWithHandlesObject()
@@ -420,12 +421,15 @@ class TwoArmLift(RobotEnv):
         """
         Sanity check to make sure the inputted robots and configuration is acceptable
         """
+        robots = robots if type(robots) == list or type(robots) == tuple else [robots]
         if self.env_configuration == "single-arm-opposed" or self.env_configuration == "single-arm-parallel":
             # Specifically two robots should be inputted!
+            is_bimanual = False
             if type(robots) is not list or len(robots) != 2:
                 raise ValueError("Error: Exactly two single-armed robots should be inputted "
                                  "for this task configuration!")
         elif self.env_configuration == "bimanual":
+            is_bimanual = True
             # Specifically one robot should be inputted!
             if type(robots) is list and len(robots) != 1:
                 raise ValueError("Error: Exactly one bimanual robot should be inputted "
@@ -435,6 +439,12 @@ class TwoArmLift(RobotEnv):
             raise ValueError("Error: Unknown environment configuration received. Only 'bimanual',"
                              "'single-arm-parallel', and 'single-arm-opposed' are supported. Got: {}"
                              .format(self.env_configuration))
+
+        # Lastly, check to make sure all inputted robot names are of their correct type (bimanual / not bimanual)
+        for robot in robots:
+            if check_bimanual(robot) != is_bimanual:
+                raise ValueError("Error: For {} configuration, expected bimanual check to return {}; "
+                                 "instead, got {}.".format(self.env_configuration, is_bimanual, check_bimanual(robot)))
 
     @property
     def _handle_0_xpos(self):
