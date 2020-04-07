@@ -14,7 +14,8 @@ class GymWrapper(Wrapper):
 
     def __init__(self, env, keys=None):
         """
-        Initializes the Gym wrapper.
+        Initializes the Gym wrapper. Mimics many of the required functionalities of the Wrapper class
+        found in the gym.core module
 
         Args:
             env (MujocoEnv instance): The environment to wrap.
@@ -22,12 +23,21 @@ class GymWrapper(Wrapper):
                 consist of concatenated keys from the wrapped environment's
                 observation dictionary. Defaults to robot-state and object-state.
         """
+        # Get env reference and create name for gym
         self.env = env
+        robots = "".join([type(robot.robot_model).__name__ for robot in self.env.robots])
+        self.name = robots + "_" + type(self.env).__name__
+
+        # Get reward range
+        self.reward_range = (0, self.env.reward_scale)
 
         if keys is None:
             assert self.env.use_object_obs, "Object observations need to be enabled."
             keys = ["robot-state", "object-state"]
         self.keys = keys
+
+        # TODO: What is this?
+        self.env.spec = None
 
         # set up observation and action spaces
         flat_ob = self._flatten_obs(self.env.reset(), verbose=True)
@@ -60,3 +70,14 @@ class GymWrapper(Wrapper):
     def step(self, action):
         ob_dict, reward, done, info = self.env.step(action)
         return self._flatten_obs(ob_dict), reward, done, info
+
+    def seed(self, seed=None):
+        # Seed the generator
+        try:
+            np.random.seed(seed)
+        except:
+            TypeError("Seed must be an integer type!")
+
+    def compute_reward(self, achieved_goal, desired_goal, info):
+        # Dummy args used to mimic Wrapper interface
+        return self.env.reward()
