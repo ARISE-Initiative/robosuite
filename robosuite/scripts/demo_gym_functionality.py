@@ -45,6 +45,7 @@ We demonstrate equivalent functionality below.
 
 import robosuite as suite
 
+# TODO: Update!
 # get the list of all environments
 envs = sorted(suite.environments.ALL_ENVS)
 print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))

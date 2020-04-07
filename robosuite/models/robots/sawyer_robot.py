@@ -20,7 +20,7 @@ class Sawyer(RobotModel):
 
     @property
     def gripper(self):
-        return "TwoFingerGripper"
+        return "SawyerGripper"
 
     @property
     def default_controller_config(self):

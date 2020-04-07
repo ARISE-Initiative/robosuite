@@ -20,8 +20,8 @@ class Baxter(RobotModel):
 
     @property
     def gripper(self):
-        return {"right": "TwoFingerGripper",
-                "left": "TwoFingerGripper"}
+        return {"right": "SawyerGripper",
+                "left": "SawyerGripper"}
 
     @property
     def default_controller_config(self):

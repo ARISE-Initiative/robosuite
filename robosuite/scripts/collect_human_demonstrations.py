@@ -17,7 +17,6 @@ import numpy as np
 
 import robosuite
 import robosuite.utils.transform_utils as T
-from robosuite.wrappers import IKWrapper
 from robosuite.wrappers import DataCollectionWrapper
 
 
@@ -35,6 +34,7 @@ def collect_human_trajectory(env, device):
     obs = env.reset()
 
     # rotate the gripper so we can see it easily
+    # TODO: Fix initial robot poses based on task
     env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
 
     env.viewer.set_camera(camera_id=2)

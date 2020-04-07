@@ -55,7 +55,6 @@ class GripperTester:
         world.merge(arena)
 
         # Add a gripper
-        # gripper = TwoFingerGripper()
         self.gripper = gripper
         gripper_body = ET.Element("body")
         for body in gripper.worldbody:
