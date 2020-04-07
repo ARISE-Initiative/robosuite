@@ -42,11 +42,11 @@
                 </body>
                 <body name="torso" pos="0 0 0">
                     <inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
-                    <geom conaffinity="0" contype="0" group="1" rgba="0.2 0.2 0.2 1" size="0.05 0.05 0.05" type="box" name="torso_col"/>
+                    <geom conaffinity="0" contype="0" group="1" rgba="0.2 0.2 0.2 1" pos="0 0 -0.05" size="0.05 0.05 0.05" type="box" name="torso_col"/>
                 </body>
                 <body name="pedestal" pos="0 0 0">
                     <inertial diaginertia="6.0869 5.81635 4.20915" mass="60.864" pos="0 0 0" quat="0.659267 -0.259505 -0.260945 0.655692"/>
-                    <geom conaffinity="0" contype="0" group="1" mesh="pedestal" pos="0.26 0.345 -0.91488" quat="0.5 0.5 -0.5 -0.5" rgba="0.2 0.2 0.2 1" type="mesh" name="pedestal_col1"/>
+                    <geom conaffinity="0" contype="0" group="1" mesh="pedestal" rgba="0.2 0.2 0.2 1" type="mesh" name="pedestal_col1"/>
                     <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col2"/>
                 </body>
             </body>
