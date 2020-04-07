@@ -215,7 +215,7 @@ def mat2pose(hmat):
 
     Returns:
         (pos, orn) tuple where pos is vec3 float in cartesian,
-            orn is vec4 float quaternion
+            orn is vec4 float quaternion xyzw
     """
     pos = hmat[:3, 3]
     orn = mat2quat(hmat[:3, :3])
@@ -232,7 +232,7 @@ def mat2quat(rmat, precise=False):
              rotation matrix and a faster algorithm is used.
 
     Returns:
-        vec4 float quaternion angles
+        vec4 float quaternion angles [x, y , z, w]
     """
     M = np.array(rmat, dtype=np.float32, copy=False)[:3, :3]
     if precise:
