@@ -28,6 +28,7 @@ class NutAssembly(RobotEnv):
         table_friction=(1, 0.005, 0.0001),
         use_camera_obs=True,
         use_object_obs=True,
+        reward_scale=2.0,
         reward_shaping=False,
         placement_initializer=None,
         single_object_mode=0,
@@ -81,6 +82,8 @@ class NutAssembly(RobotEnv):
 
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
+
+            reward_scale (float): Scales the normalized reward function by the amount specified
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -165,6 +168,7 @@ class NutAssembly(RobotEnv):
         self.table_friction = table_friction
 
         # reward configuration
+        self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
 
         # whether to use ground-truth object states
@@ -213,7 +217,7 @@ class NutAssembly(RobotEnv):
         if self.reward_shaping:
             staged_rewards = self.staged_rewards()
             reward += max(staged_rewards)
-        return reward
+        return reward * self.reward_scale / 2.0
 
     def staged_rewards(self):
         """

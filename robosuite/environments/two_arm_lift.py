@@ -2,7 +2,6 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.robots import *
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import PotWithHandlesObject
@@ -29,6 +28,7 @@ class TwoArmLift(RobotEnv):
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
+        reward_scale=2.0,
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
@@ -89,6 +89,8 @@ class TwoArmLift(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
+            reward_scale (float): Scales the normalized reward function by the amount specified
+
             reward_shaping (bool): if True, use dense rewards.
 
             placement_initializer (ObjectPositionSampler instance): if provided, will
@@ -145,6 +147,7 @@ class TwoArmLift(RobotEnv):
         self.table_friction = table_friction
 
         # reward configuration
+        self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
 
         # whether to use ground-truth object states
@@ -187,6 +190,8 @@ class TwoArmLift(RobotEnv):
         """
         Reward function for the task.
 
+        Un-normalized components:
+
           1. the agent only gets the lifting reward when flipping no more than 30 degrees.
           2. the lifting reward is smoothed and ranged from 0 to 2, capped at 2.0.
              the initial lifting reward is 0 when the pot is on the table;
@@ -194,6 +199,9 @@ class TwoArmLift(RobotEnv):
           3. the reaching reward is 0.5 when the left gripper touches the left handle,
              or when the right gripper touches the right handle before the gripper geom
              touches the handle geom, and once it touches we use 0.5
+
+        Note that the final reward is normalized and scaled by reward_scale / 2.0 as
+        well so that the max score is equal to reward_scale
 
         Args:
             action (np array): unused for this task
@@ -270,7 +278,7 @@ class TwoArmLift(RobotEnv):
             else:
                 reward += 0.5 * (1 - np.tanh(_g1h_dist))
 
-        return reward
+        return reward * self.reward_scale / 2.0
 
     def _load_model(self):
         """

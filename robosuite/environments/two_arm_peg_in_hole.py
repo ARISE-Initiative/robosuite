@@ -3,7 +3,6 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.robots import *
 
 from robosuite.models.objects import CylinderObject, PlateWithHoleObject
 from robosuite.models.arenas import EmptyArena
@@ -26,6 +25,7 @@ class TwoArmPegInHole(RobotEnv):
         initialization_noise=0.02,
         use_camera_obs=True,
         use_object_obs=True,
+        reward_scale=5.0,
         reward_shaping=False,
         cylinder_radius=(0.015, 0.03),
         cylinder_length=0.13,
@@ -84,6 +84,8 @@ class TwoArmPegInHole(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
+            reward_scale (float): Scales the normalized reward function by the amount specified
+
             reward_shaping (bool): if True, use dense rewards.
 
             cylinder_radius (2-tuple): low and high limits of the (uniformly sampled)
@@ -137,6 +139,7 @@ class TwoArmPegInHole(RobotEnv):
         self._check_robot_configuration(robots)
 
         # reward configuration
+        self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
 
         # whether to use ground-truth object states
@@ -172,14 +175,20 @@ class TwoArmPegInHole(RobotEnv):
         """
         Reward function for the task.
 
+        The un-normalized rewards are as follows:
+
         The sparse reward is 0 if the peg is outside the hole, and 1 if it's inside.
         We enforce that it's inside at an appropriate angle (cos(theta) > 0.95).
 
-        The dense reward has four components.
+        The dense reward has four additional components.
 
             Reaching: in [0, 1], to encourage the arms to get together.
             Perpendicular and parallel distance: in [0,1], for the same purpose.
             Cosine of the angle: in [0, 1], to encourage having the right orientation.
+
+        Note that the final reward is normalized and scaled by reward_scale / 5.0 as
+        well so that the max score is equal to reward_scale
+
         """
         reward = 0
 
@@ -203,7 +212,7 @@ class TwoArmPegInHole(RobotEnv):
             reward += 1 - np.tanh(np.abs(t))
             reward += cos
 
-        return reward
+        return reward * self.reward_scale / 5.0
 
     def _load_model(self):
         """

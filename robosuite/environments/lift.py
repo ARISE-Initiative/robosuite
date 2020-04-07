@@ -27,6 +27,7 @@ class Lift(RobotEnv):
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
+        reward_scale=2.25,
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
@@ -78,6 +79,8 @@ class Lift(RobotEnv):
 
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
+
+            reward_scale (float): Scales the normalized reward function by the amount specified
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -134,6 +137,7 @@ class Lift(RobotEnv):
         self.table_friction = table_friction
 
         # reward configuration
+        self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
 
         # whether to use ground-truth object states
@@ -176,13 +180,16 @@ class Lift(RobotEnv):
         """
         Reward function for the task.
 
-        The dense reward has three components.
+        The dense un-normalized reward has three components.
 
             Reaching: in [0, 1], to encourage the arm to reach the cube
             Grasping: in {0, 0.25}, non-zero if arm is grasping the cube
             Lifting: in {0, 1}, non-zero if arm has lifted the cube
 
         The sparse reward only consists of the lifting component.
+
+        Note that the final reward is normalized and scaled by
+        reward_scale / 2.25 as well so that the max score is equal to reward_scale
 
         Args:
             action (np array): unused for this task
@@ -222,7 +229,7 @@ class Lift(RobotEnv):
             if touch_left_finger and touch_right_finger:
                 reward += 0.25
 
-        return reward
+        return reward * self.reward_scale / 2.25
 
     def _load_model(self):
         """

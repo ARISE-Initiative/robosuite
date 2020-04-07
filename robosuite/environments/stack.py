@@ -27,6 +27,7 @@ class Stack(RobotEnv):
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
+        reward_scale=2.0,
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
@@ -78,6 +79,8 @@ class Stack(RobotEnv):
 
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
+
+            reward_scale (float): Scales the normalized reward function by the amount specified
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -134,6 +137,7 @@ class Stack(RobotEnv):
         self.table_friction = table_friction
 
         # reward configuration
+        self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
 
         # whether to use ground-truth object states
@@ -176,16 +180,23 @@ class Stack(RobotEnv):
         """
         Reward function for the task.
 
-        The dense reward has five components.
+        The dense (un-normalized) reward has five progressive stages.
 
-            Reaching: in [0, 1], to encourage the arm to reach the cube
+            Reaching: in [0, 0.25], to encourage the arm to reach the cube
             Grasping: in {0, 0.25}, non-zero if arm is grasping the cube
             Lifting: in {0, 1}, non-zero if arm has lifted the cube
             Aligning: in [0, 0.5], encourages aligning one cube over the other
             Stacking: in {0, 2}, non-zero if cube is stacked on other cube
 
+        The reward is max over the following:
+            Reaching + Grasping
+            Lifting + Aligning
+            Stacking
+
         The sparse reward only consists of the stacking component.
-        However, the sparse reward is either 0 or 1.
+
+        Note that the final reward is normalized and scaled by
+        reward_scale / 2.0 as well so that the max score is equal to reward_scale
 
         Args:
             action (np array): unused for this task
@@ -197,9 +208,9 @@ class Stack(RobotEnv):
         if self.reward_shaping:
             reward = max(r_reach, r_lift, r_stack)
         else:
-            reward = 1.0 if r_stack > 0 else 0.0
+            reward = 2.0 if r_stack > 0 else 0.0
 
-        return reward
+        return reward * self.reward_scale / 2.0
 
     def staged_rewards(self):
         """
