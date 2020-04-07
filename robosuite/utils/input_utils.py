@@ -10,7 +10,7 @@ def choose_environment():
     Prints out environment options, and returns the selected env_name choice
     """
     # get the list of all environments
-    envs = sorted(suite.environments.ALL_ENVS)
+    envs = sorted(suite.ALL_ENVIRONMENTS)
 
     # Select environment to run
     print("Here is a list of environments in the suite:\n")
@@ -38,20 +38,14 @@ def choose_controller():
     Prints out controller options, and returns the requested controller name
     """
     # get the list of all controllers
-    controllers = {
-        "Joint Velocity": "JOINT_VEL",
-        "Joint Torque": "JOINT_TOR",
-        "Joint Impedance": "JOINT_IMP",
-        "End Effector Position (Operational Space Control)": "EE_POS",
-        "End Effector Pose (Operational Space Control)": "EE_POS_ORI",
-        "End Effector Pose (Inverse Kinematics) (note: must have pybullet installed!)": "EE_IK",
-    }
+    controllers_info = suite.ALL_CONTROLLERS_INFO
+    controllers = list(suite.ALL_CONTROLLERS)
 
     # Select controller to use
     print("Here is a list of controllers in the suite:\n")
 
-    for k, controller in enumerate(list(controllers)):
-        print("[{}] {}".format(k, controller))
+    for k, controller in enumerate(controllers):
+        print("[{}] {} - {}".format(k, controller, controllers_info[controller]))
     print()
     try:
         s = input(
@@ -59,13 +53,13 @@ def choose_controller():
             + "(enter a number from 0 to {}): ".format(len(controllers) - 1)
         )
         # parse input into a number within range
-        k = min(max(int(s), 0), len(controllers))
+        k = min(max(int(s), 0), len(controllers) - 1)
     except:
         k = 0
-        print("Input is not valid. Use {} by default.".format(list(controllers)[k]))
+        print("Input is not valid. Use {} by default.".format(controllers)[k])
 
     # Return chosen controller
-    return list(controllers.values())[k]
+    return controllers[k]
 
 
 def choose_multi_arm_config():
@@ -114,6 +108,9 @@ def choose_robots(exclude_bimanual=False):
     # Add Baxter if bimanual robots are not excluded
     if not exclude_bimanual:
         robots.add("Baxter")
+
+    # Make sure set is deterministically sorted
+    robots = sorted(robots)
 
     # Select robot
     print("Here is a list of available robots:\n")

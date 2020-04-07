@@ -43,6 +43,10 @@ if __name__ == "__main__":
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
+    # Help message to user
+    print()
+    print("Press \"H\" to show the viewer control panel.")
+
     # initialize the task
     env = suite.make(
         **options,
@@ -58,7 +62,7 @@ if __name__ == "__main__":
     low, high = env.action_spec
 
     # do visualization
-    for i in range(1000):
+    for i in range(10000):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
         env.render()
