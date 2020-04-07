@@ -10,6 +10,9 @@ from robosuite.environments.sawyer_nut_assembly import SawyerNutAssembly
 from robosuite.environments.sawyer_pole import SawyerPole
 from robosuite.environments.sawyer_door import SawyerDoor
 from robosuite.environments.sawyer_fit import SawyerFit
+from robosuite.environments.sawyer_assembly import SawyerAssembly
+from robosuite.environments.sawyer_lego import SawyerLego
+from robosuite.environments.sawyer_clutter import SawyerClutter
 
 from robosuite.environments.panda_lift import PandaLift
 from robosuite.environments.panda_stack import PandaStack
