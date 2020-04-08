@@ -1,16 +1,19 @@
 from collections import OrderedDict
 import numpy as np
 
+from robosuite.environments.sawyer import SawyerEnv
 from robosuite.environments.sawyer_lift import SawyerLift
 
 import robosuite.utils.env_utils as EU
 import robosuite.utils.control_utils as CU
 import robosuite.utils.transform_utils as TU
-from robosuite.utils.mjcf_utils import range_to_uniform_grid
+from robosuite.utils.mjcf_utils import bounds_to_grid
 
+from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject, CylinderObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask, \
+    TableTopMergedTask, SequentialCompositeSampler
 
 
 class SawyerPush(SawyerLift):
@@ -122,7 +125,8 @@ class SawyerPush(SawyerLift):
             camera_segmentation (bool): True if also return semantic segmentation of the camera view
         """
 
-        self._target_name = 'cube_target'
+        self._object_name = 'object'
+        self._target_name = 'target'
         self._target_rgba = target_color
         self._hide_target = hide_target
         if self._hide_target:
@@ -130,20 +134,7 @@ class SawyerPush(SawyerLift):
 
         # object placement initializer
         if placement_initializer is None:
-            placement_initializer = UniformRandomSampler(
-                # x_range=[-0.16, -0.1],
-                x_range=[-0.13, -0.13],
-                y_range=[-0.05, 0.05],
-                ensure_object_boundary_in_range=False,
-                z_rotation=0.,
-            )
-
-            self.visual_placement_initializer = UniformRandomSampler(
-                x_range=[0.17, 0.17],
-                y_range=[-0.05, 0.05],
-                ensure_object_boundary_in_range=False,
-                z_rotation=0.,
-            )
+            placement_initializer = self._get_default_initializer()
 
         super().__init__(
             controller_config=controller_config,
@@ -174,6 +165,26 @@ class SawyerPush(SawyerLift):
             camera_segmentation=camera_segmentation,
         )
 
+    def _get_default_initializer(self):
+        initializer = SequentialCompositeSampler()
+        initializer.sample_on_top(
+            self._object_name,
+            surface_name="table",
+            x_range=(-0.13, -0.13),
+            y_range=(-0.05, 0.05),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=False,
+        )
+        initializer.sample_on_top(
+            self._target_name,
+            surface_name="table",
+            x_range=(0.17, 0.17),
+            y_range=(-0.05, 0.05),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=False,
+        )
+        return initializer
+
     def _get_placement_initializer_for_eval_mode(self):
         """
         Sets a placement initializer that is used to initialize the
@@ -183,49 +194,43 @@ class SawyerPush(SawyerLift):
 
         assert(self.eval_mode)
 
-        # set up placement grid by getting bounds per dimension and then
-        # using meshgrid to get all combinations
+        # get bounds and perturbation ranges too
         bounds = self._grid_bounds_for_eval_mode()
-        all_bounds = list(bounds["object"]) + list(bounds["target"])
-        grid_dims = []
-        for b in all_bounds:
-            dim_grid = range_to_uniform_grid(a=b[0], b=b[1], n=b[2])
-            grid_dims.append(dim_grid)
-        grid = np.meshgrid(*grid_dims)
-        grid_dims = [x.ravel() for x in grid]
-        grid_length = grid_dims[0].shape[0]
-
-        round_robin_period = grid_length
         if self.perturb_evals:
-            # sample 100 rounds of perturbations and then sampler will repeat
-            round_robin_period *= 100
+            # perturbation sizes should be half the grid spacing
+            object_perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[self._object_name]]
+            target_perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[self._target_name]]
+        else:
+            object_perturb_sizes = [None for b in bounds[self._object_name]]
+            target_perturb_sizes = [None for b in bounds[self._target_name]]
 
-            # perturbation size should be half the grid spacing
-            perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in all_bounds]
-
-        # assign grid locations for the full round robin schedule
-        final_grid_dims = [np.zeros(round_robin_period) for x in grid]
-        for t in range(round_robin_period):
-            g_ind = t % grid_length
-            for dim_i in range(len(grid_dims)):
-                dim_val = grid_dims[dim_i][g_ind]
-                if self.perturb_evals:
-                    dim_val += np.random.uniform(low=-perturb_sizes[dim_i], high=perturb_sizes[dim_i])
-                final_grid_dims[dim_i][t] = dim_val
-
-        self.placement_initializer = RoundRobinSampler(
-            x_range=final_grid_dims[0],
-            y_range=final_grid_dims[1],
+        object_grid = bounds_to_grid(bounds[self._object_name])
+        object_sampler = RoundRobinSampler(
+            x_range=object_grid[0],
+            y_range=object_grid[1],
             ensure_object_boundary_in_range=False,
-            z_rotation=final_grid_dims[2],
+            z_rotation=object_grid[2],
+            x_perturb=object_perturb_sizes[0],
+            y_perturb=object_perturb_sizes[1],
+            z_rotation_perturb=object_perturb_sizes[2],
         )
 
-        self.visual_placement_initializer = RoundRobinSampler(
-            x_range=final_grid_dims[3],
-            y_range=final_grid_dims[4],
+        target_grid = bounds_to_grid(bounds[self._target_name])
+        target_sampler = RoundRobinSampler(
+            x_range=target_grid[0],
+            y_range=target_grid[1],
             ensure_object_boundary_in_range=False,
-            z_rotation=final_grid_dims[5],
+            z_rotation=target_grid[2],
+            x_perturb=target_perturb_sizes[0],
+            y_perturb=target_perturb_sizes[1],
+            z_rotation_perturb=target_perturb_sizes[2],
         )
+
+        initializer = SequentialCompositeSampler(round_robin_all_pairs=True)
+        initializer.append_sampler(self._object_name, object_sampler)
+        initializer.append_sampler(self._target_name, target_sampler)
+        self.placement_initializer = initializer
+        return initializer
 
     def _grid_bounds_for_eval_mode(self):
         """
@@ -240,12 +245,12 @@ class SawyerPush(SawyerLift):
         x_bounds = (-0.13, -0.13, 1)
         y_bounds = (-0.05, 0.05, 3)
         z_rot_bounds = (0., 0., 1)
-        ret["object"] = (x_bounds, y_bounds, z_rot_bounds)
+        ret[self._object_name] = [x_bounds, y_bounds, z_rot_bounds]
 
         goal_x_bounds = (0.17, 0.17, 1)
         goal_y_bounds = (-0.05, 0.05, 3)
         goal_z_rot_bounds = (0., 0., 1)
-        ret["target"] = (goal_x_bounds, goal_y_bounds, goal_z_rot_bounds)
+        ret[self._target_name] = [goal_x_bounds, goal_y_bounds, goal_z_rot_bounds]
 
         return ret
 
@@ -253,19 +258,31 @@ class SawyerPush(SawyerLift):
         """
         Loads an xml model, puts it in self.model
         """
-        super()._load_model()
+        SawyerEnv._load_model(self)
+
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = TableArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
         # initialize objects of interest
-        cube = BoxObject(
+        obj = BoxObject(
             size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
             size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
             rgba=[1, 0, 0, 1],
             friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
         )
-        self.mujoco_objects = OrderedDict([("cube", cube)])
+        self.mujoco_objects = OrderedDict([(self._object_name, obj)])
 
         # target visual object
-        target_size = np.array(self.mujoco_objects["cube"].size)
+        target_size = np.array(self.mujoco_objects[self._object_name].size)
         target = BoxObject(
             size_min=target_size,
             size_max=target_size,
@@ -274,16 +291,14 @@ class SawyerPush(SawyerLift):
         self.visual_objects = OrderedDict([(self._target_name, target)])
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopVisualTask(
+        self.model = TableTopMergedTask(
             self.mujoco_arena,
             self.mujoco_robot,
-            self.mujoco_objects,
-            self.visual_objects,
+            mujoco_objects=self.mujoco_objects,
+            visual_objects=self.visual_objects,
             initializer=self.placement_initializer,
-            visual_initializer=self.visual_placement_initializer,
         )
         self.model.place_objects()
-        self.model.place_visual()
 
     def _get_reference(self):
         """
@@ -291,7 +306,15 @@ class SawyerPush(SawyerLift):
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        SawyerEnv._get_reference(self)
+
+        self.object_body_id = self.sim.model.body_name2id(self._object_name)
+        self.l_finger_geom_ids = [
+            self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
+        ]
+        self.r_finger_geom_ids = [
+            self.sim.model.geom_name2id(x) for x in self.gripper.right_finger_geoms
+        ]
 
         self.target_body_id = self.sim.model.body_name2id(self._target_name)
         target_qpos = self.sim.model.get_joint_qpos_addr(self._target_name + '_0')
@@ -345,7 +368,7 @@ class SawyerPush(SawyerLift):
         if self.reward_shaping:
 
             # reaching reward for object close to target
-            object_pos = self.sim.data.body_xpos[self.cube_body_id]
+            object_pos = self.sim.data.body_xpos[self.object_body_id]
             dist = np.linalg.norm(object_pos[:2] - self.target_pos[:2])
             reaching_reward = 1. - np.tanh(10.0 * dist)
             reward += reaching_reward
@@ -376,12 +399,23 @@ class SawyerPush(SawyerLift):
             depth: requires @self.use_camera_obs and @self.camera_depth to be True.
                 contains a rendered depth map from the simulation
         """
-        di = super()._get_observation()
+        di = SawyerEnv._get_observation(self)
 
         # add in target position
         if self.use_object_obs:
+            # position and rotation of object
+            object_pos = np.array(self.sim.data.body_xpos[self.object_body_id])
+            object_quat = TU.convert_quat(
+                np.array(self.sim.data.body_xquat[self.object_body_id]), to="xyzw"
+            )
+            di["object_pos"] = object_pos
+            di["object_quat"] = object_quat
+
+            gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
+            di["gripper_to_object"] = gripper_site_pos - object_pos
+
             di["object-state"] = np.concatenate(
-                [di["object-state"], self.target_pos]
+                [object_pos, object_quat, di["gripper_to_object"], self.target_pos]
             )
         return di
 
@@ -391,12 +425,12 @@ class SawyerPush(SawyerLift):
         """
 
         # successful if object within close range of target
-        object_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
+        object_pos = np.array(self.sim.data.body_xpos[self.object_body_id])
         target_pos = np.array(self.sim.data.body_xpos[self.target_body_id])
         pos_dist = np.abs(object_pos - target_pos)
 
         # axis-angle representation of delta rotation - interpret the angle as rotation distance
-        object_rot = np.array(self.sim.data.body_xmat[self.cube_body_id]).reshape(3, 3)
+        object_rot = np.array(self.sim.data.body_xmat[self.object_body_id]).reshape(3, 3)
         target_rot = np.array(self.sim.data.body_xmat[self.target_body_id]).reshape(3, 3)
         _, rot_dist = TU.vec2axisangle(CU.orientation_error(object_rot, target_rot))
 
@@ -431,7 +465,19 @@ class SawyerPushPuck(SawyerPush):
     Pushing with a puck object that can move in 2D on top of the table.
     """
     def _load_model(self):
-        super()._load_model()
+        SawyerEnv._load_model(self)
+
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = TableArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
         
         # initialize objects of interest
 
@@ -449,7 +495,7 @@ class SawyerPushPuck(SawyerPush):
             limited="false",
         )
         joints = [slide_joint1, slide_joint2]
-        cube = CylinderObject(
+        obj = CylinderObject(
             size=[0.04, 0.01],
             rgba=(1, 0, 0, 1),
             friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
@@ -457,7 +503,7 @@ class SawyerPushPuck(SawyerPush):
         )
 
         ### cylinder ###
-        # cube = CylinderObject(
+        # obj = CylinderObject(
         #     size=[0.04, 0.02],
         #     rgba=(1, 0, 0, 1),
         #     friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
@@ -465,10 +511,10 @@ class SawyerPushPuck(SawyerPush):
         #     # solimp=[0.998, 0.998, 0.001], 
         # )
 
-        self.mujoco_objects = OrderedDict([("cube", cube)])
+        self.mujoco_objects = OrderedDict([(self._object_name, obj)])
 
         # target visual object
-        target_size = np.array(self.mujoco_objects["cube"].size)
+        target_size = np.array(self.mujoco_objects[self._object_name].size)
         target = CylinderObject(
             size=target_size,
             rgba=self._target_rgba,
@@ -476,38 +522,48 @@ class SawyerPushPuck(SawyerPush):
         self.visual_objects = OrderedDict([(self._target_name, target)])
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopVisualTask(
+        self.model = TableTopMergedTask(
             self.mujoco_arena,
             self.mujoco_robot,
-            self.mujoco_objects,
-            self.visual_objects,
+            mujoco_objects=self.mujoco_objects,
+            visual_objects=self.visual_objects,
             initializer=self.placement_initializer,
-            visual_initializer=self.visual_placement_initializer,
         )
         self.model.place_objects()
-        self.model.place_visual()
 
 class SawyerPushWideBar(SawyerPush):
     """
     Pushing with a wide bar object.
     """
     def _load_model(self):
-        super()._load_model()
+        SawyerEnv._load_model(self)
+
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = TableArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
         # initialize objects of interest
 
         ### wide bar ###
-        cube = BoxObject(
+        obj = BoxObject(
             size=[0.02, 0.1, 0.01],
             # size=[0.01, 0.1, 0.01],
             rgba=[1, 0, 0, 1],
             friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
         )
 
-        self.mujoco_objects = OrderedDict([("cube", cube)])
+        self.mujoco_objects = OrderedDict([(self._object_name, obj)])
 
         # target visual object
-        target_size = np.array(self.mujoco_objects["cube"].size)
+        target_size = np.array(self.mujoco_objects[self._object_name].size)
         target = BoxObject(
             size_min=target_size,
             size_max=target_size,
@@ -516,37 +572,48 @@ class SawyerPushWideBar(SawyerPush):
         self.visual_objects = OrderedDict([(self._target_name, target)])
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopVisualTask(
+        self.model = TableTopMergedTask(
             self.mujoco_arena,
             self.mujoco_robot,
-            self.mujoco_objects,
-            self.visual_objects,
+            mujoco_objects=self.mujoco_objects,
+            visual_objects=self.visual_objects,
             initializer=self.placement_initializer,
-            visual_initializer=self.visual_placement_initializer,
         )
         self.model.place_objects()
-        self.model.place_visual()
 
 class SawyerPushLongBar(SawyerPush):
     """
     Pushing with a long bar object.
     """
     def _load_model(self):
-        super()._load_model()
+        SawyerEnv._load_model(self)
+
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = TableArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+
         # initialize objects of interest
 
         ### long bar ###
-        cube = BoxObject(
+        obj = BoxObject(
             # size=[0.05, 0.01, 0.01],
             size=[0.05, 0.015, 0.01],
             rgba=[1, 0, 0, 1],
             friction=[0.3, 5e-3, 1e-4], # NOTE: make friction low for sliding
         )
 
-        self.mujoco_objects = OrderedDict([("cube", cube)])
+        self.mujoco_objects = OrderedDict([(self._object_name, obj)])
 
         # target visual object
-        target_size = np.array(self.mujoco_objects["cube"].size)
+        target_size = np.array(self.mujoco_objects[self._object_name].size)
         target = BoxObject(
             size_min=target_size,
             size_max=target_size,
@@ -555,15 +622,13 @@ class SawyerPushLongBar(SawyerPush):
         self.visual_objects = OrderedDict([(self._target_name, target)])
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopVisualTask(
+        self.model = TableTopMergedTask(
             self.mujoco_arena,
             self.mujoco_robot,
-            self.mujoco_objects,
-            self.visual_objects,
+            mujoco_objects=self.mujoco_objects,
+            visual_objects=self.visual_objects,
             initializer=self.placement_initializer,
-            visual_initializer=self.visual_placement_initializer,
         )
         self.model.place_objects()
-        self.model.place_visual()
 
 

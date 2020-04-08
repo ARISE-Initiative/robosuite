@@ -448,7 +448,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         else:
             # decrement each round robin sampler in parallel
             for sampler in self._rr_samplers:
-                sampler.increment_counter()
+                sampler.decrement_counter()
 
     def sample(self, fixtures=None, return_placements=False):
         """
@@ -490,12 +490,23 @@ class RoundRobinSampler(UniformRandomSampler):
         y_range=None,
         ensure_object_boundary_in_range=True,
         z_rotation=None,
+        x_perturb=None,
+        y_perturb=None,
+        z_rotation_perturb=None,
     ):
         # x_range, y_range, and z_rotation should all be lists of values to rotate between
         assert(len(x_range) == len(y_range))
         assert(len(z_rotation) == len(y_range))
         self._counter = 0
         self.num_grid = len(x_range)
+
+        # support perturbing the grid locations in each dimension
+        self.x_perturb = x_perturb if x_perturb is not None else 0.
+        self.y_perturb = y_perturb if y_perturb is not None else 0.
+        self.z_rotation_perturb = z_rotation_perturb if z_rotation_perturb is not None else 0.
+
+        # must be false for evaluating on a grid of points
+        assert (not ensure_object_boundary_in_range)
 
         super(RoundRobinSampler, self).__init__(
             x_range=x_range,
@@ -527,23 +538,18 @@ class RoundRobinSampler(UniformRandomSampler):
             self._counter = self.num_grid - 1
 
     def sample_x(self, object_horizontal_radius):
-        minimum = self.x_range[self._counter]
-        maximum = self.x_range[self._counter]
-        if self.ensure_object_boundary_in_range:
-            minimum += object_horizontal_radius
-            maximum -= object_horizontal_radius
+        minimum = self.x_range[self._counter] - self.x_perturb
+        maximum = self.x_range[self._counter] + self.x_perturb
         return np.random.uniform(high=maximum, low=minimum)
 
     def sample_y(self, object_horizontal_radius):
-        minimum = self.y_range[self._counter]
-        maximum = self.y_range[self._counter]
-        if self.ensure_object_boundary_in_range:
-            minimum += object_horizontal_radius
-            maximum -= object_horizontal_radius
+        minimum = self.y_range[self._counter] - self.y_perturb
+        maximum = self.y_range[self._counter] + self.y_perturb
         return np.random.uniform(high=maximum, low=minimum)
 
     def sample_quat(self):
         rot_angle = self.z_rotation[self._counter]
+        rot_angle += np.random.uniform(high=self.z_rotation_perturb, low=-self.z_rotation_perturb)
         return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
 
 

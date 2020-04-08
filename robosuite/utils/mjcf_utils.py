@@ -197,3 +197,34 @@ def range_to_uniform_grid(a, b, n):
     offset = a + spacing / 2.
     return np.arange(n) * spacing + offset
 
+def bounds_to_grid(bounds):
+    """
+    Utility function to take a list of bounds per dimension and 
+    convert this to a final grid. Each element in @bounds should
+    correspond to (low, high, num_grid_points) per dimension.
+    """
+
+    # set up placement grid by getting bounds per dimension and then
+    # using meshgrid to get all combinations
+    grid_dims = []
+    for b in bounds:
+        dim_grid = range_to_uniform_grid(a=b[0], b=b[1], n=b[2])
+        grid_dims.append(dim_grid)
+    grid = np.meshgrid(*grid_dims)
+    grid_dims = [x.ravel() for x in grid]
+    grid_length = grid_dims[0].shape[0]
+    round_robin_period = grid_length
+
+    # assign grid locations for the full round robin schedule
+    final_grid_dims = [np.zeros(round_robin_period) for x in grid]
+    for t in range(round_robin_period):
+        g_ind = t % grid_length
+        for dim_i in range(len(grid_dims)):
+            final_grid_dims[dim_i][t] = grid_dims[dim_i][g_ind]
+
+    return final_grid_dims
+
+
+
+
+
