@@ -51,12 +51,13 @@ class TableTopTask(Task):
         self.max_horizontal_radius = 0
 
         for obj_name, obj_mjcf in mujoco_objects.items():
-            assert(isinstance(obj_mjcf, MujocoGeneratedObject))
+            # assert(isinstance(obj_mjcf, MujocoGeneratedObject))
             self.merge_asset(obj_mjcf)
             # Load object
             obj = obj_mjcf.get_collision(name=obj_name, site=True)
-            for i, joint in enumerate(obj_mjcf.joint):
-                obj.append(new_joint(name="{}_{}".format(obj_name, i), **joint))
+            if isinstance(obj_mjcf, MujocoGeneratedObject):
+                for i, joint in enumerate(obj_mjcf.joint):
+                    obj.append(new_joint(name="{}_{}".format(obj_name, i), **joint))
             self.objects.append(obj)
             self.worldbody.append(obj)
 

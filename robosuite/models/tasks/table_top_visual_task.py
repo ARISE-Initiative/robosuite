@@ -16,7 +16,7 @@ class TableTopVisualTask(TableTopTask):
     arena, and the objetcts into a single MJCF model.
     """
 
-    def __init__(self, mujoco_arena, mujoco_robot, mujoco_objects, visual_objects=[], initializer=None):
+    def __init__(self, mujoco_arena, mujoco_robot, mujoco_objects, visual_objects=[], initializer=None, visual_initializer=None):
         """
         Args:
             mujoco_arena: MJCF model of robot workspace
@@ -30,6 +30,10 @@ class TableTopVisualTask(TableTopTask):
         super(TableTopVisualTask, self).__init__(mujoco_arena, mujoco_robot, mujoco_objects, initializer=initializer)
         self.merge_visual(visual_objects)
         self.visual_objects = visual_objects
+
+        self.visual_initializer = visual_initializer
+        if self.visual_initializer is not None:
+            self.visual_initializer.setup(self.visual_objects, self.table_top_offset, self.table_size)
 
     def merge_visual(self, mujoco_objects):
         """
@@ -52,6 +56,12 @@ class TableTopVisualTask(TableTopTask):
         """
         Place objects randomly until no more collisions or max iterations hit.
         """
+        if self.visual_initializer is not None:
+            pos_arr, quat_arr = self.visual_initializer.sample()
+            for i in range(len(self.visual_obj_mjcf)):
+                self.visual_obj_mjcf[i].set("pos", array_to_string(pos_arr[i]))
+                self.visual_obj_mjcf[i].set("quat", array_to_string(quat_arr[i]))
+            return
 
         if len(self.objects) > 0:
             # position of first object (used to get z-offset)

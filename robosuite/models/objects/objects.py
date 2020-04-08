@@ -151,6 +151,18 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
+    def get_bounding_box(self):
+        horizontal_radius_site = self.worldbody.find(
+            "./body/site[@name='horizontal_radius_site']"
+        )
+        scale = self.asset.find("./mesh").attrib['scale']
+        #Only supports symmetric scaling
+        if scale:
+            scale = string_to_array(scale)
+        else:
+            scale = np.asarray([1.0,1.0,1.0])
+        return scale*string_to_array(horizontal_radius_site.get("pos"))
+
     def get_collision(self, name=None, site=False):
 
         collision = copy.deepcopy(self.worldbody.find("./body/body[@name='collision']"))
