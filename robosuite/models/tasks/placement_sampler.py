@@ -1,4 +1,5 @@
 import collections
+import itertools
 import numpy as np
 
 from robosuite.utils import RandomizationError
@@ -353,12 +354,20 @@ class UniformRandomPegsSampler(ObjectPositionSampler):
 
 class SequentialCompositeSampler(ObjectPositionSampler):
     """Samples position for each object sequentially. """
-    def __init__(self):
+    def __init__(self, round_robin_all_pairs=False):
+        """
+        :param round_robin_all_pairs: True if iterating all pairs of round robin sampler
+        """
         self.mujoco_objects = None
         self.samplers = collections.OrderedDict()
         self.table_top_offset = None
         self.table_size = None
         self.n_obj = None
+        self._round_robin_all_pairs = round_robin_all_pairs
+        self._rr_counter = 0  # a global round robin counter
+        self._rr_counter_mapping = None
+        self._rr_num_grid = 0
+        self._rr_samplers = None
 
     def append_sampler(self, object_name, sampler, object_names=None):
         assert object_name not in self.samplers
@@ -396,27 +405,50 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         self.table_top_offset = table_top_offset
         self.table_size = table_size
         self.n_obj = len(self.mujoco_objects)
+        rr_ranges = []
+        self._rr_samplers = []
+
         for object_name, sampler_config in self.samplers.items():
             object_names = sampler_config['object_names']
+            sampler = sampler_config['sampler']
             objs = collections.OrderedDict((o, mujoco_objects[o]) for o in object_names)
-            sampler_config['sampler'].setup(
-                mujoco_objects=objs, table_top_offset=table_top_offset, table_size=table_size)
+            sampler.setup(mujoco_objects=objs, table_top_offset=table_top_offset, table_size=table_size)
+            if hasattr(sampler, "increment_counter"):
+                rr_ranges.append(np.arange(sampler.num_grid))
+                self._rr_samplers.append(sampler)
+
+        self._rr_counter_mapping = list(itertools.product(*rr_ranges))
+        self._rr_num_grid = len(self._rr_counter_mapping)
 
     def increment_counter(self):
         """
         Useful for moving on to next placement in the grid.
         """
-        for obj_name, sampler in self.samplers.items():
-            if hasattr(sampler['sampler'], 'increment_counter'):
-                sampler['sampler'].increment_counter()
+        if self._round_robin_all_pairs:
+            # increment round robin samplers pair-wise
+            self._rr_counter = (self._rr_counter + 1) % self._rr_num_grid
+            for i, sampler in enumerate(self._rr_samplers):
+                sampler.counter = self._rr_counter_mapping[self._rr_counter][i]
+        else:
+            # increment each round robin sampler in parallel
+            for sampler in self._rr_samplers:
+                sampler.increment_counter()
 
     def decrement_counter(self):
         """
         Useful to reverting to the last placement in the grid.
         """
-        for obj_name, sampler in self.samplers.items():
-            if hasattr(sampler['sampler'], 'decrement_counter'):
-                sampler['sampler'].decrement_counter()
+        if self._round_robin_all_pairs:
+            # decrement round robin samplers pair-wise
+            self._rr_counter -= 1
+            if self._rr_counter < 0:
+                self._rr_counter = self._rr_num_grid - 1
+            for i, sampler in enumerate(self._rr_samplers):
+                sampler.counter = self._rr_counter_mapping[self._rr_counter][i]
+        else:
+            # decrement each round robin sampler in parallel
+            for sampler in self._rr_samplers:
+                sampler.increment_counter()
 
     def sample(self, fixtures=None, return_placements=False):
         """
@@ -475,6 +507,10 @@ class RoundRobinSampler(UniformRandomSampler):
     @property
     def counter(self):
         return self._counter
+
+    @counter.setter
+    def counter(self, v):
+        self._counter = v
 
     def increment_counter(self):
         """
@@ -537,6 +573,14 @@ class RoundRobinPegsSampler(UniformRandomPegsSampler):
             ensure_object_boundary_in_range=ensure_object_boundary_in_range,
             z_rotation=z_rotation,
         )
+
+    @property
+    def counter(self):
+        return self._counter
+
+    @counter.setter
+    def counter(self, v):
+        self._counter = v
 
     def increment_counter(self):
         """
