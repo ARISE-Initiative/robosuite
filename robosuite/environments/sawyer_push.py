@@ -133,14 +133,14 @@ class SawyerPush(SawyerLift):
             placement_initializer = UniformRandomSampler(
                 # x_range=[-0.16, -0.1],
                 x_range=[-0.13, -0.13],
-                y_range=[-0.1, 0.1],
+                y_range=[-0.05, 0.05],
                 ensure_object_boundary_in_range=False,
                 z_rotation=0.,
             )
 
             self.visual_placement_initializer = UniformRandomSampler(
                 x_range=[0.17, 0.17],
-                y_range=[-0.1, 0.1],
+                y_range=[-0.05, 0.05],
                 ensure_object_boundary_in_range=False,
                 z_rotation=0.,
             )
@@ -238,12 +238,12 @@ class SawyerPush(SawyerLift):
         # (low, high, number of grid points for this dimension)
         # x_bounds = (-0.16, -0.1, 3)
         x_bounds = (-0.13, -0.13, 1)
-        y_bounds = (-0.1, 0.1, 3)
+        y_bounds = (-0.05, 0.05, 3)
         z_rot_bounds = (0., 0., 1)
         ret["object"] = (x_bounds, y_bounds, z_rot_bounds)
 
         goal_x_bounds = (0.17, 0.17, 1)
-        goal_y_bounds = (-0.1, 0.1, 3)
+        goal_y_bounds = (-0.05, 0.05, 3)
         goal_z_rot_bounds = (0., 0., 1)
         ret["target"] = (goal_x_bounds, goal_y_bounds, goal_z_rot_bounds)
 
@@ -401,7 +401,7 @@ class SawyerPush(SawyerLift):
         _, rot_dist = TU.vec2axisangle(CU.orientation_error(object_rot, target_rot))
 
         # rotation angle tolerance corresponds to about 5 degrees of error
-        return (pos_dist[0] <= 0.005) and (pos_dist[1] <= 0.005) and (rot_dist <= 0.08)
+        return (pos_dist[0] <= 0.01) and (pos_dist[1] <= 0.01) and (rot_dist <= 0.08)
 
 
 ### Some new environments... ###
