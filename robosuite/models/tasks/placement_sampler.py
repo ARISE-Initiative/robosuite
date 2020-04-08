@@ -402,6 +402,22 @@ class SequentialCompositeSampler(ObjectPositionSampler):
             sampler_config['sampler'].setup(
                 mujoco_objects=objs, table_top_offset=table_top_offset, table_size=table_size)
 
+    def increment_counter(self):
+        """
+        Useful for moving on to next placement in the grid.
+        """
+        for obj_name, sampler in self.samplers.items():
+            if hasattr(sampler['sampler'], 'increment_counter'):
+                sampler['sampler'].increment_counter()
+
+    def decrement_counter(self):
+        """
+        Useful to reverting to the last placement in the grid.
+        """
+        for obj_name, sampler in self.samplers.items():
+            if hasattr(sampler['sampler'], 'decrement_counter'):
+                sampler['sampler'].decrement_counter()
+
     def sample(self, fixtures=None, return_placements=False):
         """
         Run samplers according to the appending order.

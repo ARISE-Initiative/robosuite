@@ -11,7 +11,7 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject, CylinderObject
 from robosuite.models.objects.interactive_objects import MomentaryButtonObject, MaintainedButtonObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopVisualTask, \
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler, RoundRobinSampler, TableTopMergedTask, \
     SequentialCompositeSampler
 from robosuite.controllers import load_controller_config
 import os
@@ -223,6 +223,8 @@ class SawyerLift(SawyerEnv):
             z_rotation=final_z_grid
         )
 
+        return self.placement_initializer
+
     def _grid_bounds_for_eval_mode(self):
         """
         Helper function to get grid bounds of x positions, y positions, 
@@ -290,12 +292,6 @@ class SawyerLift(SawyerEnv):
             self.sim.model.geom_name2id(x) for x in self.gripper.right_finger_geoms
         ]
         self.cube_geom_id = self.sim.model.geom_name2id("cube")
-
-    def _reset_internal(self):
-        """
-        Resets simulation internal configurations.
-        """
-        super()._reset_internal()
 
     def reward(self, action=None):
         """
@@ -653,8 +649,8 @@ class SawyerLiftPositionTarget(SawyerLift):
         target_color=(0, 1, 0, 0.3),
         hide_target=True,
         goal_tolerance=0.05,
-        goal_radius_low=0.1,
-        goal_radius_high=0.2,
+        goal_radius_low=0.09,
+        goal_radius_high=0.15,
         **kwargs
     ):
 
@@ -670,16 +666,42 @@ class SawyerLiftPositionTarget(SawyerLift):
         self._object_name = 'cube'
         self.interactive_objects = {}
 
-        if 'placement_initializer' not in kwargs:
-            kwargs["placement_initializer"] = UniformRandomSampler(
-                x_range=[-0.1, 0.1],
-                y_range=[-0.1, 0.1],
-                ensure_object_boundary_in_range=False,
-                z_rotation=0.
-            )
+        assert 'placement_initializer' not in kwargs
+        kwargs['placement_initializer'] = self._get_default_initializer()
+
         if kwargs["controller_config"]["type"] == "EE_POS_ORI":
             kwargs["controller_config"]["type"] = "EE_POS"
         super().__init__(**kwargs)
+
+    def _get_default_initializer(self):
+        initializer = SequentialCompositeSampler()
+        initializer.sample_on_top(
+            self._object_name,
+            surface_name="table",
+            x_range=(-0.03, 0.03),
+            y_range=(-0.03, 0.03),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=True
+        )
+        initializer.sample_on_top(
+            self._target_name,
+            surface_name="table",
+            x_range=(-0.2, 0.2),
+            y_range=(-0.2, 0.2),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=True
+        )
+        self.placement_initializer = initializer
+        return initializer
+
+    def _get_placement_initializer_for_eval_mode(self):
+        initializer = SequentialCompositeSampler()
+        cube_initializer = SawyerLift._get_placement_initializer_for_eval_mode(self)
+        goal_initializer = self._get_target_initializer_for_eval_mode()
+        initializer.append_sampler(self._object_name, cube_initializer)
+        initializer.append_sampler(self._target_name, goal_initializer)
+        self.placement_initializer = initializer
+        return initializer
 
     def _grid_bounds_for_eval_mode(self):
         """
@@ -691,38 +713,46 @@ class SawyerLiftPositionTarget(SawyerLift):
         # (low, high, number of grid points for this dimension)
         x_bounds = (-0.03, 0.03, 3)
         y_bounds = (-0.03, 0.03, 3)
-        z_rot_bounds = (0., 0., 1)
+        z_rot_bounds = (0., 0., 3)
         return x_bounds, y_bounds, z_rot_bounds
 
-    def _load_model(self):
-        super()._load_model()
-
-        cube = BoxObject(
-            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
-            size_max=[0.020, 0.020, 0.020],  # [0.018, 0.018, 0.018])
-            rgba=[1, 0, 0, 1],
-        )
-        self.mujoco_objects = OrderedDict([(self._object_name, cube)])
+    def _load_objects(self):
+        # setup objects and initializers
+        cube = BoxObject(size=(0.02, 0.02, 0.02), rgba=(1, 0, 0, 1))
+        mujoco_objects = OrderedDict([(self._object_name, cube)])
 
         # target visual object
-        target_size = np.array(self.mujoco_objects[self._object_name].size)
-        target = BoxObject(
-            size_min=target_size,
-            size_max=target_size,
-            rgba=self._target_rgba,
-        )
-        self.visual_objects = OrderedDict([(self._target_name, target)])
+        target = BoxObject(size=(0.02, 0.02, 0.02), rgba=self._target_rgba)
+        visual_objects = OrderedDict([(self._target_name, target)])
+        return mujoco_objects, visual_objects
 
+    def _load_model(self):
+        SawyerEnv._load_model(self)
+
+        # setup robot and arena
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = TableArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+
+        mujoco_objects, visual_objects = self._load_objects()
         # task includes arena, robot, and objects of interest
-        self.model = TableTopVisualTask(
+        self.model = TableTopMergedTask(
             self.mujoco_arena,
             self.mujoco_robot,
-            self.mujoco_objects,
-            self.visual_objects,
+            mujoco_objects=mujoco_objects,
+            visual_objects=visual_objects,
             initializer=self.placement_initializer,
         )
+        print(self.placement_initializer)
         self.model.place_objects()
-        self.model.place_visual()
 
     def _get_reference(self):
         super()._get_reference()
@@ -734,22 +764,25 @@ class SawyerLiftPositionTarget(SawyerLift):
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
 
-    def _get_placement_initializer_for_eval_mode(self):
-        super(SawyerLiftPositionTarget, self)._get_placement_initializer_for_eval_mode()
-
+    def _get_target_initializer_for_eval_mode(self):
         num_circles = 3
         num_circle_angles = 9
 
-        num_placements = num_circles * num_circle_angles
-        self._goal_grid = np.zeros((num_placements, 3))  # [radius, angle, z_rotation]
         r_list = np.linspace(self._goal_radius_low, self._goal_radius_high, num=num_circles)
         a_list = np.linspace(0, np.pi * (2 - (2 / (num_circle_angles + 1))), num=num_circle_angles)
         grid = np.meshgrid(r_list, a_list)
-        self._goal_grid[:, 0] = grid[0].ravel()
-        self._goal_grid[:, 1] = grid[1].ravel()
-        self._goal_grid = np.tile(self._goal_grid, (100, 1))
+        grid_r = grid[0].ravel()
+        grid_a = grid[1].ravel()
 
-        assert(self.placement_initializer.num_grid <= self._goal_grid.shape[0])
+        goal_grid_x = grid_r * np.cos(grid_a)
+        goal_grid_y = grid_r * np.sin(grid_a)
+        goal_initializer = RoundRobinSampler(
+            x_range=goal_grid_x,
+            y_range=goal_grid_y,
+            z_rotation=np.zeros_like(goal_grid_x),
+            ensure_object_boundary_in_range=True
+        )
+        return goal_initializer
 
     def _reset_internal(self):
         """
@@ -761,30 +794,10 @@ class SawyerLiftPositionTarget(SawyerLift):
 
         super()._reset_internal()
 
-        ### TODO: unclear why objects are placed twice... ###
-        # reset positions of objects
-        self.model.place_objects()
-        self.model.place_visual()
-
         # reset joint positions
         init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
         # init_pos += np.random.randn(init_pos.shape[0]) * 0.02
         self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
-
-        # for now, place target randomly in a radius of 0.2 around current cube pos
-
-        cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-        if self._goal_grid is not None:
-            radius, angle, z_rot = self._goal_grid[self.placement_initializer.counter]
-        else:
-            angle = np.random.uniform(0., 2. * np.pi)
-            radius = np.random.uniform(self._goal_radius_low, self._goal_radius_high)
-        assert(radius > self._goal_tolerance)
-
-        target_pos = cube_pos.copy()
-        target_pos[0] += radius * np.cos(angle)
-        target_pos[1] += radius * np.sin(angle)
-        self._set_target(pos=target_pos)
 
         if self._hide_target:
             self.hide_target()
@@ -794,7 +807,7 @@ class SawyerLiftPositionTarget(SawyerLift):
             # this is the first step call of the episode
             self.placement_initializer.increment_counter()
         self._has_interaction = True
-        result = super(SawyerLiftPositionTarget, self).step(action)
+        result = super().step(action)
         if self._hide_target:
             self.hide_target()
         return result
@@ -833,7 +846,6 @@ class SawyerLiftPositionTarget(SawyerLift):
         """
         Add in target location into observation.
         """
-        ### TODO: handle this in batchRL appropriately ###
         di = super()._get_observation()
         di["goal"] = self.target_pos
         return di
@@ -886,12 +898,48 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
     """
     Goal-driven placing environment
     """
-    def __init__(self, **kwargs):
-        super(SawyerPositionTargetPress, self).__init__(**kwargs)
+    def _get_default_initializer(self):
+        initializer = SequentialCompositeSampler()
+        initializer.sample_on_top(
+            self._object_name,
+            surface_name="table",
+            x_range=(-0.03, 0.03),
+            y_range=(-0.03, 0.03),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=True
+        )
+        initializer.sample_on_top(
+            self._target_name,
+            surface_name="table",
+            x_range=(-0.2, 0.2),
+            y_range=(-0.2, 0.2),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=True
+        )
+        initializer.sample_on_top(
+            "button",
+            surface_name="table",
+            x_range=(-0.2, 0.2),
+            y_range=(-0.2, 0.2),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=True
+        )
+        self.placement_initializer = initializer
+        return initializer
 
-    def _load_model(self):
-        super()._load_model()
+    def _get_placement_initializer_for_eval_mode(self):
+        initializer = SequentialCompositeSampler()
+        cube_initializer = SawyerLift._get_placement_initializer_for_eval_mode(self)
+        goal_initializer = self._get_target_initializer_for_eval_mode()
+        button_initializer = self._get_button_initializer_for_eval_mode()
+        initializer.append_sampler(self._object_name, cube_initializer)
+        initializer.append_sampler(self._target_name, goal_initializer)
+        initializer.append_sampler("button", button_initializer)
+        self.placement_initializer = initializer
+        return initializer
 
+    def _load_objects(self):
+        mujoco_objects, visual_objects = super()._load_objects()
         slide_joint = dict(
             pos="0 0 0",
             axis="0 0 1",
@@ -902,38 +950,35 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             range="-0.1 0",
             damping="1"
         )
-        button = CylinderObject(rgba=(1, 0, 0, 1), size=[0.03, 0.01], joint=[slide_joint])
+        mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01], joint=[slide_joint])
+        return mujoco_objects, visual_objects
 
-        self.mujoco_objects["button"] = button
-        self.interactive_objects = OrderedDict([("button", None)])
+    def _get_button_initializer_for_eval_mode(self):
+        num_circles = 3
+        num_circle_angles = 9
 
-        sampler = SequentialCompositeSampler()
-        sampler.append_sampler('cube', self.placement_initializer)
-        sampler.sample_on_top(
-            object_name='button',
-            surface_name="table",
-            x_range=[-0.1, 0.1],
-            y_range=[-0.1, 0.1],
-            ensure_object_boundary_in_range=False,
-            z_rotation=0.
+        angle_range = np.pi * (2 - (2 / (num_circle_angles + 1)))
+        r_list = np.linspace(0.14, 0.2, num=num_circles)
+        a_list = np.linspace(-angle_range * 0.5, angle_range * 0.5, num=num_circle_angles)
+        grid = np.meshgrid(r_list, a_list)
+        grid_r = grid[0].ravel()
+        grid_a = grid[1].ravel()
+
+        goal_grid_x = grid_r * np.cos(grid_a)
+        goal_grid_y = grid_r * np.sin(grid_a)
+        goal_initializer = RoundRobinSampler(
+            x_range=goal_grid_x,
+            y_range=goal_grid_y,
+            z_rotation=np.zeros_like(goal_grid_x),
+            ensure_object_boundary_in_range=True
         )
-
-        # task includes arena, robot, and objects of interest
-        self.model = TableTopVisualTask(
-            self.mujoco_arena,
-            self.mujoco_robot,
-            self.mujoco_objects,
-            visual_objects=self.visual_objects,
-            initializer=sampler,
-        )
-        self.model.place_objects()
-        self.model.place_visual()
+        return goal_initializer
 
     def _get_reference(self):
         super()._get_reference()
 
-        self.object_body_id = self.sim.model.body_name2id("cube")
-        button = MaintainedButtonObject(self.sim, body_id=self.sim.model.body_name2id("button"), on_rgba=(1, 0, 0, 1))
+        button = MaintainedButtonObject(
+            self.sim, body_id=self.sim.model.body_name2id("button"), on_rgba=(0, 0, 1, 1), off_rgba=(0, 0, 1, 1))
 
         def color_trigger(sim, body_id, color):
             for gid in EU.bodyid2geomids(sim, body_id):
@@ -963,7 +1008,6 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
     def step(self, action):
         for _, o in self.interactive_objects.items():
             o.step(sim_step=self.timestep)
-
         return super().step(action)
 
     def _set_state_to_goal(self):
