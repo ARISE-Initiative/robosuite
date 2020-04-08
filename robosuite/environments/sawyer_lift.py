@@ -2,7 +2,7 @@ from collections import OrderedDict
 import numpy as np
 from copy import deepcopy
 
-from robosuite.utils.mjcf_utils import range_to_uniform_grid
+from robosuite.utils.mjcf_utils import bounds_to_grid
 from robosuite.utils.transform_utils import convert_quat
 import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
