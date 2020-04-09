@@ -681,7 +681,7 @@ class SawyerLiftPositionTarget(SawyerLift):
             x_range=(-0.03, 0.03),
             y_range=(-0.03, 0.03),
             z_rotation=(0.0, 0.0),
-            ensure_object_boundary_in_range=True
+            ensure_object_boundary_in_range=False
         )
         initializer.sample_on_top(
             self._target_name,
@@ -689,7 +689,7 @@ class SawyerLiftPositionTarget(SawyerLift):
             x_range=(-0.2, 0.2),
             y_range=(-0.2, 0.2),
             z_rotation=(0.0, 0.0),
-            ensure_object_boundary_in_range=True
+            ensure_object_boundary_in_range=False
         )
         self.placement_initializer = initializer
         return initializer
@@ -751,7 +751,6 @@ class SawyerLiftPositionTarget(SawyerLift):
             visual_objects=visual_objects,
             initializer=self.placement_initializer,
         )
-        print(self.placement_initializer)
         self.model.place_objects()
 
     def _get_reference(self):
@@ -780,7 +779,7 @@ class SawyerLiftPositionTarget(SawyerLift):
             x_range=goal_grid_x,
             y_range=goal_grid_y,
             z_rotation=np.zeros_like(goal_grid_x),
-            ensure_object_boundary_in_range=True
+            ensure_object_boundary_in_range=False
         )
         return goal_initializer
 
@@ -906,7 +905,7 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             x_range=(-0.03, 0.03),
             y_range=(-0.03, 0.03),
             z_rotation=(0.0, 0.0),
-            ensure_object_boundary_in_range=True
+            ensure_object_boundary_in_range=False
         )
         initializer.sample_on_top(
             self._target_name,
@@ -914,7 +913,7 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             x_range=(-0.2, 0.2),
             y_range=(-0.2, 0.2),
             z_rotation=(0.0, 0.0),
-            ensure_object_boundary_in_range=True
+            ensure_object_boundary_in_range=False
         )
         initializer.sample_on_top(
             "button",
@@ -922,7 +921,7 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             x_range=(-0.2, 0.2),
             y_range=(-0.2, 0.2),
             z_rotation=(0.0, 0.0),
-            ensure_object_boundary_in_range=True
+            ensure_object_boundary_in_range=False
         )
         self.placement_initializer = initializer
         return initializer
@@ -970,7 +969,7 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             x_range=goal_grid_x,
             y_range=goal_grid_y,
             z_rotation=np.zeros_like(goal_grid_x),
-            ensure_object_boundary_in_range=True
+            ensure_object_boundary_in_range=False
         )
         return goal_initializer
 
