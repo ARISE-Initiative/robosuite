@@ -272,8 +272,6 @@ class PandaEnv(MujocoEnv):
         if not self._has_interaction and self.eval_mode:
             # this is the first step call of the episode
             self.placement_initializer.increment_counter()
-            if hasattr(self, "visual_placement_initializer"):
-                self.visual_placement_initializer.increment_counter()
         self._has_interaction = True
         return super().step(action)
 
