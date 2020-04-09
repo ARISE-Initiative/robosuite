@@ -28,24 +28,24 @@ ICML 2002
 """
 
 import os
-import time
-import numpy as np
 
 import robosuite
 from robosuite import make
 from robosuite.wrappers import DemoSamplerWrapper
 
+# TODO: Demonstrations path is now depreceated. Need to update and/or get new demonstrations!!
 
 if __name__ == "__main__":
 
     env = make(
-        "SawyerPickPlace",
+        "PickPlace",
+        robots="Sawyer",
         has_renderer=True,
         has_offscreen_renderer=False,
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
-        gripper_visualization=True,
+        gripper_visualizations=True,
     )
 
     env = DemoSamplerWrapper(

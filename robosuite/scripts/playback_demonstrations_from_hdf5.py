@@ -11,6 +11,9 @@ Arguments:
 Example:
     $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/SawyerPickPlace/
 """
+
+# TODO: Old structure / demos are depreceated, need to update!
+
 import os
 import h5py
 import argparse

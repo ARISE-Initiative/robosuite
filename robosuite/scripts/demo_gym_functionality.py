@@ -45,9 +45,8 @@ We demonstrate equivalent functionality below.
 
 import robosuite as suite
 
-# TODO: Update!
 # get the list of all environments
-envs = sorted(suite.environments.ALL_ENVS)
+envs = sorted(suite.ALL_ENVIRONMENTS)
 print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
 print(suite.__logo__)
 print("Here is a list of environments in the suite:\n")
@@ -82,7 +81,8 @@ if __name__ == "__main__":
     # Notice how the environment is wrapped by the wrapper
     env = GymWrapper(
         suite.make(
-            "SawyerLift",
+            "Lift",
+            robots="Sawyer",        # use Sawyer robot
             use_camera_obs=False,  # do not use pixel observations
             has_offscreen_renderer=False,  # not needed since not using pixel obs
             has_renderer=True,  # make sure we can render to the screen

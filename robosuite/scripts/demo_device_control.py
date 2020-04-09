@@ -99,9 +99,9 @@ import numpy as np
 import os
 import json
 
-import robosuite
-import robosuite.utils.transform_utils as T
-from robosuite.models.robots import *
+import robosuite as suite
+from robosuite import load_controller_config
+from robosuite.utils.input_utils import input2action
 
 
 if __name__ == "__main__":
@@ -109,7 +109,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-    parser.add_argument("--config", type=str, default="", help="Specified environment configuration if necessary")
+    parser.add_argument("--config", type=str, default="single-arm-opposed",
+                        help="Specified environment configuration if necessary")
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-click", action="store_true", help="Switch gripper control on gripper click")
     parser.add_argument("--toggle-camera-on-click", action="store_true", help="Switch camera angle on gripper click")
@@ -120,25 +121,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Import controller config for EE IK or OSC (pos/ori)
-    controller_config = None
-    controller_path = None
     if args.controller == 'ik':
-        controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/ee_ik.json')
+        controller_name = 'EE_IK'
     elif args.controller == 'osc':
-        controller_path = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/ee_pos_ori.json')
+        controller_name = 'EE_POS_ORI'
     else:
         print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
         raise ValueError
-    try:
-        with open(controller_path) as f:
-            controller_config = json.load(f)
-            if args.controller == 'osc':
-                controller_config["max_action"] = 1
-                controller_config["min_action"] = -1
-                controller_config["control_delta"] = True
-    except FileNotFoundError:
-        print("Error opening default controller filepath at: {}. "
-              "Please check filepath and try again.".format(controller_path))
+
+    # Get controller config
+    controller_config = load_controller_config(default_controller=controller_name)
 
     # Create argument configuration
     config = {
@@ -147,13 +139,15 @@ if __name__ == "__main__":
         "controller_configs": controller_config,
     }
 
-    if args.config != "":
+    # Check if we're using a multi-armed environment and use env_configuration argument if so
+    if "TwoArm" in args.environment:
         config["env_configuration"] = args.config
 
     # Create environment
-    env = robosuite.make(
+    env = suite.make(
         **config,
         has_renderer=True,
+        render_camera="agentview",
         ignore_done=True,
         use_camera_obs=False,
         gripper_visualizations=True,
@@ -182,36 +176,42 @@ if __name__ == "__main__":
         )
 
     while True:
+        # Reset the environment
         obs = env.reset()
+
+        # Setup rendering
         cam_id = 0
         num_cam = len(env.sim.model.camera_names)
         env.render()
 
+        # Initialize variables that should the maintained between resets
         last_grasp = 0
 
+        # Initialize device control
         device.start_control()
+
         while True:
-            state = device.get_controller_state()
-            # Note: Devices output rotation with x and z flipped to account for robots starting with gripper facing down
-            #       Also note that the outputted rotation is an absolute rotation, while outputted dpos is delta pos
-            #       Raw delta rotations from neutral user input is captured in raw_drotation (roll, pitch, yaw)
-            dpos, rotation, raw_drotation, grasp, reset = (
-                state["dpos"],
-                state["rotation"],
-                state["raw_drotation"],
-                state["grasp"],
-                state["reset"],
+            # Set active robot
+            active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
+
+            # Get the newest action
+            action = input2action(
+                device=device,
+                robot=active_robot,
+                active_arm=args.arm,
+                env_configuration=args.config
             )
-            if reset:
+
+            # If action is none, then this a reset so we should break
+            if action is None:
                 break
 
-            # Set active robot
-            active_robot = env.robots[0] if not args.config or args.config == "bimanual" else \
-                env.robots[args.arm == "left"]
+            # Get the grasp action as the last component of the returned action
+            grasp = action[-1]
 
-            # If the current grasp is active and last grasp is not (i.e.: grasping input just pressed),
+            # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
             # toggle arm control and / or camera viewing angle if requested
-            if grasp and not last_grasp:
+            if last_grasp < 0 < grasp:
                 if args.switch_on_click:
                     args.arm = "left" if args.arm == "right" else "right"
                 if args.toggle_camera_on_click:
@@ -220,67 +220,21 @@ if __name__ == "__main__":
             # Update last grasp
             last_grasp = grasp
 
-            # First process the raw drotation
-            drotation = raw_drotation[[1,0,2]]
-            if args.controller == 'ik':
-                # If this is panda, want to flip y
-                if isinstance(active_robot.robot_model, Panda):
-                    drotation[1] = -drotation[1]
-                else:
-                    # Flip x
-                    drotation[0] = -drotation[0]
-                # Scale rotation for teleoperation (tuned for IK)
-                drotation *= 10
-                dpos *= 5
-                # relative rotation of desired from current eef orientation
-                # IK expects quat, so also convert to quat
-                drotation = T.mat2quat(T.euler2mat(drotation))
-
-                # If we're using a non-forward facing configuration, need to adjust relative position / orientation
-                if hasattr(env, "env_configuration"):
-                    if env.env_configuration == "single-arm-opposed":
-                        # Swap x and y for pos and flip x,y signs for ori
-                        dpos = dpos[[1,0,2]]
-                        drotation[0] = -drotation[0]
-                        drotation[1] = -drotation[1]
-                        if args.arm == "left":
-                            # x pos needs to be flipped
-                            dpos[0] = -dpos[0]
-                        else:
-                            # y pos needs to be flipped
-                            dpos[1] = -dpos[1]
-
-            elif args.controller == 'osc':
-                # Flip z
-                drotation[2] = -drotation[2]
-                # Scale rotation for teleoperation (tuned for OSC)
-                drotation *= 75
-                dpos *= 200
-            else:
-                # No other controllers currently supported
-                print("Error: Unsupported controller specified -- must be either ik or osc!")
-
-            # map 0 to -1 (open) and map 1 to 1 (closed)
-            grasp = [1] if grasp else [-1]
-
             # Check to make sure robot actually has a gripper and clear grasp action if it doesn't
             if hasattr(env, "env_configuration"):
                 # This is a multi-arm robot
                 if env.env_configuration == "bimanual":
                     # We should check the correct arm to see if it has a gripper
                     if not active_robot.has_gripper[args.arm]:
-                        grasp = []
+                        action = action[:-1]
                 else:
                     # We should check the correct robot to see if it has a gripper (assumes 0 = right, 1 = left)
                     if not active_robot.has_gripper:
-                        grasp = []
+                        action = action[:-1]
             else:
                 # This is a single-arm robot, simply check to see if it has a gripper
                 if not active_robot.has_gripper:
-                    grasp = []
-
-            # Create action based on action space of individual robot
-            action = np.concatenate([dpos, drotation, grasp])
+                    action = action[:-1]
 
             # Fill out the rest of the action space if necessary
             rem_action_dim = env.action_dim - action.size

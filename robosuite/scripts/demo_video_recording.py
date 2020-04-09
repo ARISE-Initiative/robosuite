@@ -3,7 +3,7 @@ Record video of agent episodes with the imageio library.
 This script uses offscreen rendering.
 
 Example:
-    $ python demo_video_recording.py --environment SawyerLift
+    $ python demo_video_recording.py --environment Lift --robots Panda
 """
 
 import argparse
@@ -16,7 +16,8 @@ from robosuite import make
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="SawyerStack")
+    parser.add_argument("--environment", type=str, default="Stack")
+    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
     parser.add_argument("--video_path", type=str, default="video.mp4")
     parser.add_argument("--timesteps", type=int, default=500)
     parser.add_argument("--height", type=int, default=512)
@@ -27,16 +28,17 @@ if __name__ == "__main__":
     # initialize an environment with offscreen renderer
     env = make(
         args.environment,
+        args.robots,
         has_renderer=False,
         ignore_done=True,
         use_camera_obs=True,
         use_object_obs=False,
-        camera_height=args.height,
-        camera_width=args.width,
+        camera_heights=args.height,
+        camera_widths=args.width,
     )
 
     obs = env.reset()
-    dof = env.dof
+    ndim = env.action_dim
 
     # create a video writer with imageio
     writer = imageio.get_writer(args.video_path, fps=20)
@@ -45,7 +47,7 @@ if __name__ == "__main__":
     for i in range(args.timesteps):
 
         # run a uniformly random agent
-        action = 0.5 * np.random.randn(dof)
+        action = 0.5 * np.random.randn(ndim)
         obs, reward, done, info = env.step(action)
 
         # dump a frame from every K frames

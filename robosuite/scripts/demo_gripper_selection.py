@@ -5,18 +5,21 @@ This is controlled by gripper_type keyword argument
 import robosuite as suite
 from robosuite.wrappers import GymWrapper
 
+# TODO: Why are we wrapping this in a GymWrapper?
+
 
 if __name__ == "__main__":
 
-    grippers = ["SawyerGripper", "PR2Gripper", "RobotiqGripper"]
+    grippers = ["SawyerGripper", "PR2Gripper", "RobotiqGripper", "RobotiqThreeFingerGripper", "PandaGripper"]
 
     for gripper in grippers:
 
         # create environment with selected grippers
         env = GymWrapper(
             suite.make(
-                "SawyerPickPlace",
-                gripper_type=gripper,
+                "PickPlace",
+                robots="Sawyer",
+                gripper_types=gripper,
                 use_camera_obs=False,  # do not use pixel observations
                 has_offscreen_renderer=False,  # not needed since not using pixel obs
                 has_renderer=True,  # make sure we can render to the screen

@@ -109,7 +109,7 @@ class RobotEnv(MujocoEnv):
         self.num_robots = len(robots)
         self.robot_names = robots
         self.robots = self._input2list(None, self.num_robots)
-        self.action_dim = None
+        self._action_dim = None
 
         # Controller
         controller_configs = self._input2list(controller_configs, self.num_robots)
@@ -178,6 +178,13 @@ class RobotEnv(MujocoEnv):
             low, high = np.concatenate([low, lo]), np.concatenate([high, hi])
         return low, high
 
+    @property
+    def action_dim(self):
+        """
+        Action dimension
+        """
+        return self._action_dim
+
     def move_indicator(self, pos):
         """
         Sets 3d position of indicator object to @pos.
@@ -242,12 +249,12 @@ class RobotEnv(MujocoEnv):
         reset_controllers()
 
         # Reset action dim
-        self.action_dim = 0
+        self._action_dim = 0
 
         # Reset robot and update action space dimension along the way
         for robot in self.robots:
             robot.reset(deterministic=self.deterministic_reset)
-            self.action_dim += robot.action_dim
+            self._action_dim += robot.action_dim
 
         # Update cameras if appropriate
         if self.use_camera_obs:

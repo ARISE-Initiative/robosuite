@@ -10,8 +10,8 @@ import argparse
 from glob import glob
 import numpy as np
 
-import robosuite
-from robosuite import DataCollectionWrapper
+import robosuite as suite
+from robosuite.wrappers import DataCollectionWrapper
 
 
 def collect_random_trajectory(env, timesteps=1000):
@@ -21,12 +21,12 @@ def collect_random_trajectory(env, timesteps=1000):
     Modify the DataCollectionWrapper wrapper to add new fields or change data formats.
     """
 
-    obs = env.reset()
+    env.reset()
     dof = env.dof
 
     for t in range(timesteps):
         action = 0.5 * np.random.randn(dof)
-        obs, reward, done, info = env.step(action)
+        env.step(action)
         env.render()
         if t % 100 == 0:
             print(t)
@@ -64,14 +64,16 @@ def playback_trajectory(env, ep_dir):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="SawyerStack")
+    parser.add_argument("--environment", type=str, default="Stack")
+    parser.add_argument("--robots", nargs="+", type=str, default="Sawyer", help="Which robot(s) to use in the env")
     parser.add_argument("--directory", type=str, default="/tmp/")
     parser.add_argument("--timesteps", type=int, default=2000)
     args = parser.parse_args()
 
     # create original environment
-    env = robosuite.make(
+    env = suite.make(
         args.environment,
+        robots=args.robots,
         ignore_done=True,
         use_camera_obs=False,
         has_renderer=True,

@@ -14,6 +14,8 @@ import numpy as np
 
 import robosuite
 
+# TODO: No pygame module installed or in requirements-extra.txt? Will this also be depreceated once gibson is integrated?
+# TODO: If not deleting, need to update this to new robosuite structure
 
 if __name__ == "__main__":
 

@@ -15,9 +15,29 @@ import h5py
 from glob import glob
 import numpy as np
 
-import robosuite
-import robosuite.utils.transform_utils as T
+import robosuite as suite
+from robosuite import load_controller_config
 from robosuite.wrappers import DataCollectionWrapper
+from robosuite.utils.input_utils import input2action
+
+# Arguments
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--directory",
+    type=str,
+    default=os.path.join(suite.models.assets_root, "demonstrations"),
+)
+parser.add_argument("--environment", type=str, default="SawyerLift")
+parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+parser.add_argument("--config", type=str, default="single-arm-opposed",
+                    help="Specified environment configuration if necessary")
+parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
+parser.add_argument("--controller", type=str, default="EE_POS_ORI",
+                    help="Choice of controller. Can be 'EE_IK' or 'EE_POS_ORI'")
+parser.add_argument("--device", type=str, default="keyboard")
+parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
+parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")
+args = parser.parse_args()
 
 
 def collect_human_trajectory(env, device):
@@ -31,38 +51,36 @@ def collect_human_trajectory(env, device):
         device (instance of Device class): to receive controls from the device
     """
 
-    obs = env.reset()
+    env.reset()
 
-    # rotate the gripper so we can see it easily
-    # TODO: Fix initial robot poses based on task
-    env.set_robot_joint_positions([0, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
-
+    # ID = 2 always corresponds to agentview
     env.viewer.set_camera(camera_id=2)
     env.render()
 
     is_first = True
 
-    # episode terminates on a spacenav reset input or if task is completed
-    reset = False
     task_completion_hold_count = -1 # counter to collect 10 timesteps after reaching goal
     device.start_control()
-    while not reset:
-        state = device.get_controller_state()
-        dpos, rotation, grasp, reset = (
-            state["dpos"],
-            state["rotation"],
-            state["grasp"],
-            state["reset"],
+
+    # Loop until we get a reset from the input or the task completes
+    while True:
+        # Set active robot
+        active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
+
+        # Get the newest action
+        action = input2action(
+            device=device,
+            robot=active_robot,
+            active_arm=args.arm,
+            env_configuration=args.config
         )
 
-        # convert into a suitable end effector action for the environment
-        current = env._right_hand_orn
-        drotation = current.T.dot(rotation)  # relative rotation of desired from current
-        dquat = T.mat2quat(drotation)
-        grasp = grasp - 1.  # map 0 to -1 (open) and 1 to 0 (closed halfway)
-        action = np.concatenate([dpos, dquat, [grasp]])
+        # If action is none, then this a reset so we should break
+        if action is None:
+            break
 
-        obs, reward, done, info = env.step(action)
+        # Run environment step
+        env.step(action)
 
         if is_first:
             is_first = False
@@ -83,6 +101,7 @@ def collect_human_trajectory(env, device):
 
         env.render()
 
+        # Also break if we complete the task
         if task_completion_hold_count == 0:
             break
 
@@ -217,35 +236,38 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
     now = datetime.datetime.now()
     grp.attrs["date"] = "{}-{}-{}".format(now.month, now.day, now.year)
     grp.attrs["time"] = "{}:{}:{}".format(now.hour, now.minute, now.second)
-    grp.attrs["repository_version"] = robosuite.__version__
+    grp.attrs["repository_version"] = suite.__version__
     grp.attrs["env"] = env_name
 
     f.close()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--directory",
-        type=str,
-        default=os.path.join(robosuite.models.assets_root, "demonstrations"),
-    )
-    parser.add_argument("--environment", type=str, default="SawyerLift")
-    parser.add_argument("--device", type=str, default="keyboard")
-    args = parser.parse_args()
+    # Get controller config
+    controller_config = load_controller_config(default_controller=args.controller)
 
-    # create original environment
-    env = robosuite.make(
-        args.environment,
+    # Create argument configuration
+    config = {
+        "env_name": args.environment,
+        "robots": args.robots,
+        "controller_configs": controller_config,
+    }
+
+    # Check if we're using a multi-armed environment and use env_configuration argument if so
+    if "TwoArm" in args.environment:
+        config["env_configuration"] = args.config
+
+    # Create environment
+    env = suite.make(
+        **config,
+        has_renderer=True,
+        render_camera="agentview",
         ignore_done=True,
         use_camera_obs=False,
-        has_renderer=True,
-        control_freq=100,
-        gripper_visualization=True,
+        gripper_visualizations=True,
+        reward_shaping=True,
+        control_freq=20,
     )
-
-    # enable controlling the end effector directly instead of using joint velocities
-    env = IKWrapper(env)
 
     # wrap the environment with data collection wrapper
     tmp_directory = "/tmp/{}".format(str(time.time()).replace(".", "_"))
@@ -255,14 +277,14 @@ if __name__ == "__main__":
     if args.device == "keyboard":
         from robosuite.devices import Keyboard
 
-        device = Keyboard()
+        device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
         env.viewer.add_keypress_callback("any", device.on_press)
         env.viewer.add_keyup_callback("any", device.on_release)
         env.viewer.add_keyrepeat_callback("any", device.on_press)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
-        device = SpaceMouse()
+        device = SpaceMouse(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     else:
         raise Exception(
             "Invalid device choice: choose either 'keyboard' or 'spacemouse'."

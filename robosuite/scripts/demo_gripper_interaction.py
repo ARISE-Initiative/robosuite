@@ -9,8 +9,7 @@ Example:
 """
 
 import xml.etree.ElementTree as ET
-import gc
-from mujoco_py import load_model_from_path, MjSim, MjViewer
+from mujoco_py import MjSim, MjViewer
 
 from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas.table_arena import TableArena
