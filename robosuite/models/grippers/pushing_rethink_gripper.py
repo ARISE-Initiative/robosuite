@@ -1,13 +1,13 @@
 """
-A version of SawyerGripper but always closed.
+A version of RethinkGripper but always closed.
 """
 import numpy as np
-from robosuite.models.grippers.sawyer_gripper import SawyerGripper
+from robosuite.models.grippers.rethink_gripper import RethinkGripper
 
 
-class PushingSawyerGripper(SawyerGripper):
+class PushingRethinkGripper(RethinkGripper):
     """
-    Same as SawyerGripper, but always closed
+    Same as RethinkGripper, but always closed
     """
 
     def format_action(self, action):
