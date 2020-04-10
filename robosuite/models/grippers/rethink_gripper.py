@@ -16,7 +16,7 @@ class RethinkGripperBase(GripperModel):
         Args:
             idn (int or str): Number or some other unique identification string for this gripper instance
         """
-        super().__init__(xml_path_completion("grippers/sawyer_gripper.xml"), idn=idn)
+        super().__init__(xml_path_completion("grippers/rethink_gripper.xml"), idn=idn)
 
     def format_action(self, action):
         return action

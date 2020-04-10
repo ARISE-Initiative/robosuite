@@ -10,7 +10,7 @@ from robosuite.wrappers import GymWrapper
 
 if __name__ == "__main__":
 
-    grippers = ["SawyerGripper", "PR2Gripper", "RobotiqGripper", "RobotiqThreeFingerGripper", "PandaGripper"]
+    grippers = ["RethinkGripper", "PR2Gripper", "RobotiqGripper", "RobotiqThreeFingerGripper", "PandaGripper"]
 
     for gripper in grippers:
 

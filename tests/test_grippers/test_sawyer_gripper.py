@@ -2,7 +2,7 @@
 Tests two finger gripper and left two finger gripper on grabbing task
 """
 from robosuite.models.grippers import (
-    SawyerGripper,
+    RethinkGripper,
     GripperTester,
 )
 
@@ -14,7 +14,7 @@ def test_two_finger():
 def two_finger_tester(render,
                       total_iters=1,
                       test_y=True):
-    gripper = SawyerGripper()
+    gripper = RethinkGripper()
     tester = GripperTester(
         gripper=gripper,
         pos="0 0 0.3",

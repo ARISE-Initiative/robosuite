@@ -2,9 +2,9 @@
     Tests the basic interface of all grippers
 """
 from robosuite.models.grippers import (
-    SawyerGripper,
+    RethinkGripper,
     PR2Gripper,
-    PushingSawyerGripper,
+    PushingRethinkGripper,
     RobotiqGripper,
     RobotiqThreeFingerGripper,
     PandaGripper,
@@ -13,9 +13,9 @@ from robosuite.models.grippers import (
 
 def test_all_gripper():
     grippers = [
-        SawyerGripper(),
+        RethinkGripper(),
         PR2Gripper(),
-        PushingSawyerGripper(),
+        PushingRethinkGripper(),
         RobotiqGripper(),
         RobotiqThreeFingerGripper(),
         PandaGripper(),

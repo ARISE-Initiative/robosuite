@@ -1,10 +1,10 @@
 """
 Defines a string based method of initializing grippers
 """
-from .sawyer_gripper import RethinkGripper
+from .rethink_gripper import RethinkGripper
 from .pr2_gripper import PR2Gripper
 from .robotiq_gripper import RobotiqGripper
-from .pushing_sawyer_gripper import PushingRethinkGripper
+from .pushing_rethink_gripper import PushingRethinkGripper
 from .robotiq_three_finger_gripper import RobotiqThreeFingerGripper
 from .panda_gripper import PandaGripper
 

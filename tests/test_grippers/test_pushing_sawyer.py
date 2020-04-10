@@ -1,4 +1,4 @@
-from robosuite.models.grippers import GripperTester, PushingSawyerGripper
+from robosuite.models.grippers import GripperTester, PushingRethinkGripper
 
 
 def test_pushing():
@@ -8,7 +8,7 @@ def test_pushing():
 def pushing_tester(render,
                    total_iters=1,
                    test_y=False):
-    gripper = PushingSawyerGripper()
+    gripper = PushingRethinkGripper()
     tester = GripperTester(
         gripper=gripper,
         pos="0 0 0.3",
