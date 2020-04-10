@@ -5,6 +5,10 @@ import numpy as np
 from collections.abc import Iterable
 
 
+# Support for new rotation action space
+USE_AXIS_ANGLE_ACTION = True
+
+
 class EndEffectorOperationalSpaceController(Controller):
     """
     Controller for controlling robot arm via operational space control. Allows position and / or orientation control
@@ -106,6 +110,7 @@ class EndEffectorOperationalSpaceController(Controller):
 
         # Control dimension
         self.control_dim = 6 if self.use_ori else 3
+        self.name_suffix = "POSE" if self.use_ori else "POSITION"
 
         # input and output max and min
         self.input_max = input_max
@@ -163,7 +168,8 @@ class EndEffectorOperationalSpaceController(Controller):
             self.goal_ori = set_goal_orientation(scaled_delta[3:],
                                                  self.ee_ori_mat,
                                                  orientation_limit=self.orientation_limits,
-                                                 set_ori=set_ori)
+                                                 set_ori=set_ori,
+                                                 axis_angle=USE_AXIS_ANGLE_ACTION)
         self.goal_pos = set_goal_position(scaled_delta[:3],
                                           self.ee_pos,
                                           position_limit=self.position_limits,
@@ -250,4 +256,4 @@ class EndEffectorOperationalSpaceController(Controller):
 
     @property
     def name(self):
-        return 'EE_IMP'
+        return 'EE_OSC_' + self.name_suffix

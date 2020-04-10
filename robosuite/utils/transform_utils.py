@@ -401,6 +401,70 @@ def quat2mat(quaternion):
     )
 
 
+def quat2axisangle(quat):
+    """
+    Converts (x, y, z, w) quaternion to axis-angle format.
+    Returns a unit vector direction and an angle.
+    """
+    # conversion from axis-angle to quaternion:
+    #   qw = cos(theta / 2); qx, qy, qz = u * sin(theta / 2)
+
+    # normalize qx, qy, qz by sqrt(qx^2 + qy^2 + qz^2) = sqrt(1 - qw^2)
+    # to extract the unit vector
+
+    # Clip w so that it's not greater than 1
+    quat[3] = min(quat[3], 1.0)
+
+    den = np.sqrt(1. - quat[3] * quat[3])
+    if np.isclose(den, 0.):
+        # This is (close to) a zero degree rotation, immediately return
+        return np.zeros(3), 0.
+    x = quat[0] / den
+    y = quat[1] / den
+    z = quat[2] / den
+
+    # convert qw to theta
+    theta = 2. * math.acos(quat[3])
+    return np.array([x, y, z]), theta
+
+
+def axisangle2quat(axis, angle):
+    """
+    Converts axis-angle to (x, y, z, w) quat.
+    """
+
+    # handle zero-rotation case
+    if np.isclose(angle, 0.):
+        return np.array([0., 0., 0., 1.])
+
+    # make sure that axis is a unit vector
+    assert np.isclose(np.linalg.norm(axis), 1., 1e-3)
+
+    q = np.zeros(4)
+    q[3] = np.cos(angle / 2.)
+    q[:3] = axis * np.sin(angle / 2.)
+    return q
+
+
+def vec2axisangle(vec):
+    """
+    Converts Euler vector (exponential coordinates) to axis-angle.
+    """
+    angle = np.linalg.norm(vec)
+    if np.isclose(angle, 0.):
+        # treat as a zero rotation
+        return np.array([1., 0., 0.]), 0.
+    axis = vec / angle
+    return axis, angle
+
+
+def axisangle2vec(axis, angle):
+    """
+    Converts axis-angle to Euler vector (exponential coordinates).
+    """
+    return axis * angle
+
+
 def pose_in_A_to_pose_in_B(pose_A, pose_A_in_B):
     """
     Converts a homogenous matrix corresponding to a point C in frame A
@@ -596,24 +660,16 @@ def clip_rotation(quat, limit):
         # This is a zero degree rotation, immediately return
         return quat, clipped
     else:
-        # This is all other cases
-        x = quat[0] / den
-        y = quat[1] / den
-        z = quat[2] / den
-        a = 2 * math.acos(quat[3])
+        # This is all other cases; convert quat to axis-angle
+        axis, angle = quat2axisangle(quat)
 
-    # Clip rotation if necessary and return clipped quat
-    if abs(a) > limit:
-        a = limit * np.sign(a) / 2
-        sa = math.sin(a)
-        ca = math.cos(a)
-        quat = np.array([
-            x * sa,
-            y * sa,
-            z * sa,
-            ca
-        ])
+    # Clip rotation if necessary
+    if abs(angle) > limit:
+        angle = limit * np.sign(angle)
         clipped = True
+
+    # Convert back to quat and return quat
+    quat = axisangle2quat(axis, angle)
 
     return quat, clipped
 
