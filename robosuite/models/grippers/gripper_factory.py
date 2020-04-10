@@ -1,10 +1,10 @@
 """
 Defines a string based method of initializing grippers
 """
-from .sawyer_gripper import SawyerGripper
+from .sawyer_gripper import RethinkGripper
 from .pr2_gripper import PR2Gripper
 from .robotiq_gripper import RobotiqGripper
-from .pushing_sawyer_gripper import PushingSawyerGripper
+from .pushing_sawyer_gripper import PushingRethinkGripper
 from .robotiq_three_finger_gripper import RobotiqThreeFingerGripper
 from .panda_gripper import PandaGripper
 
@@ -25,14 +25,14 @@ def gripper_factory(name, idn=0):
     Raises:
         XMLError: [description]
     """
-    if name == "SawyerGripper":
-        return SawyerGripper(idn=idn)
+    if name == "RethinkGripper":
+        return RethinkGripper(idn=idn)
     if name == "PR2Gripper":
         return PR2Gripper(idn=idn)
     if name == "RobotiqGripper":
         return RobotiqGripper(idn=idn)
-    if name == "PushingSawyerGripper":
-        return PushingSawyerGripper(idn=idn)
+    if name == "PushingRethinkGripper":
+        return PushingRethinkGripper(idn=idn)
     if name == "RobotiqThreeFingerGripper":
         return RobotiqThreeFingerGripper(idn=idn)
     if name == "PandaGripper":
