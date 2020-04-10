@@ -1,5 +1,5 @@
 {
-  "type" : "EE_IK",
+  "type" : "EE_IK_POSE",
   "ik_pos_limit": 0.02,
   "ik_ori_limit": 0.2,
   "interpolation": null,

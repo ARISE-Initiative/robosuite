@@ -76,7 +76,7 @@ args = parser.parse_args()
 # Running the actual test #
 def test_linear_interpolator():
 
-    for controller_name in ["EE_POS_ORI", "EE_IK"]:
+    for controller_name in ["EE_OSC_POSE", "EE_IK_POSE"]:
 
         for traj in ["pos", "ori"]:
 
@@ -126,11 +126,11 @@ def test_linear_interpolator():
 
                 # Define the uniform trajectory action
                 if traj == "pos":
-                    pos_act = pos_action_ik if controller_name == "ee_ik" else pos_action_osc
-                    rot_act = T.mat2quat(T.euler2mat(np.zeros(3))) if controller_name == "ee_ik" else np.zeros(3)
+                    pos_act = pos_action_ik if controller_name == "EE_IK_POSE" else pos_action_osc
+                    rot_act = T.mat2quat(T.euler2mat(np.zeros(3))) if controller_name == "EE_IK_POSE" else np.zeros(3)
                 else:
                     pos_act = np.zeros(3)
-                    rot_act = rot_action_ik if controller_name == "ee_ik" else rot_action_osc
+                    rot_act = rot_action_ik if controller_name == "EE_IK_POSE" else rot_action_osc
 
                 # Compose the action
                 action = np.concatenate([pos_act, rot_act, [0]])

@@ -5,7 +5,7 @@ import numpy as np
 from collections.abc import Iterable
 
 
-class EndEffectorImpedanceController(Controller):
+class EndEffectorOperationalSpaceController(Controller):
     """
     Controller for controlling robot arm via operational space control. Allows position and / or orientation control
     of the robot's end effector. For detailed information as to the mathematical foundation for this controller, please

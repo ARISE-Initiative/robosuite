@@ -152,8 +152,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         active_arm (str): Only applicable for multi-armed setups (e.g.: multi-arm environments or bimanual robots).
             Allows inputs to be converted correctly if the control type (e.g.: IK) is dependent on arm choice.
             Choices are {right, left}
-        env_configuration (str): Only applicable for multi-armed environments. Allows inputs to be converted correctly
-            if the control type (e.g.: IK) is dependent on the environment setup. Options are:
+        env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
+            correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
             {bimanual, single-arm-parallel, single-arm-opposed}
 
     """
@@ -205,7 +205,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
                 # y pos needs to be flipped
                 dpos[1] = -dpos[1]
 
-    elif isinstance(controller, EndEffectorImpedanceController):
+    elif isinstance(controller, EndEffectorOperationalSpaceController):
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC)

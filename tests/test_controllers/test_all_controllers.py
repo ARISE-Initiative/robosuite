@@ -2,9 +2,9 @@
 Test all controllers on the Lift task with Sawyer robot environment as a test case.
 
 The following controllers are tested:
-OSC - Position & Orientation
-OSC - Position only
-IK - Position & Orientation
+Operational Space Control - Position & Orientation
+Operational Space Control - Position only
+Inverse Kinematics - Position & Orientation
 Joint Impedance
 Joint Velocity
 Joint Torque
@@ -15,7 +15,7 @@ For every controller action space, runs through each dimension and executes a pe
 neutral (stationary) value for a certain amount of time "steps_per_action", and then returns to all neutral values
 for time "steps_per_rest" before proceeding with the next action dim.
 
-    E.g.: Given that the expected action space of the Pos / Ori (EE_POS_ORI) controller (without a gripper) is
+    E.g.: Given that the expected action space of the Pos / Ori (EE_OSC_POSE) controller (without a gripper) is
     (dx, dy, dz, droll, dpitch, dyaw), the testing sequence of actions over time will be:
 
         ***START OF TEST***
@@ -33,7 +33,7 @@ for time "steps_per_rest" before proceeding with the next action dim.
         (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
         ***END OF TEST***
 
-    Thus the EE_POS_ORI controller should be expected to sequentially move linearly in the x direction first,
+    Thus the EE_OSC_POSE controller should be expected to sequentially move linearly in the x direction first,
         then the y direction, then the z direction, and then begin sequentially rotating about its x-axis,
         then y-axis, then z-axis.
 
@@ -51,14 +51,14 @@ Controllers are expected to behave in a generally controlled manner, according t
 As this is strictly a qualitative set of tests, it is up to the developer / user to examine for specific irregularities.
 However, the expected qualitative behavior is described below for each controller:
 
-* EE_POS_ORI: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
-            z-axis, relative to the global coordinate frame
-* EE_POS: Gripper moves sequentially and linearly in x, y, z direction, relative to the global coordinate frame
-* EE_IK: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
+* EE_OSC_POSE: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis,
+            y-axis, z-axis, relative to the global coordinate frame
+* EE_OSC_POSITION: Gripper moves sequentially and linearly in x, y, z direction, relative to the global coordinate frame
+* EE_IK_POSE: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
             z-axis, relative to the local robot end effector frame
-* JOINT_IMP: Robot Joints move sequentially in a controlled fashion
-* JOINT_VEL: Robot Joints move sequentially in a controlled fashion
-* JOINT_TOR: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the
+* JOINT_POSITION: Robot Joints move sequentially in a controlled fashion
+* JOINT_VELOCITY: Robot Joints move sequentially in a controlled fashion
+* JOINT_TORQUE: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the
             "controller" is really just a wrapper for direct torque control of the mujoco actuators. Therefore, a
             "neutral" value of 0 torque will not guarantee a stable robot when it has non-zero velocity!
 
@@ -69,6 +69,7 @@ test script.
 import numpy as np
 
 import robosuite as suite
+from robosuite import load_controller_config
 
 import os
 import json
@@ -82,12 +83,12 @@ args = parser.parse_args()
 
 # Define the controllers to use (action_dim, num_test_steps, test_value, neutral control values)
 controllers = {
-    "EE_POS_ORI":   [7, 6, 0.1, np.array([0,0,0,0,0,0,0], dtype=float)],
-    "EE_POS":       [4, 3, 0.1, np.array([0,0,0,0], dtype=float)],
-    "EE_IK":        [8, 6, 0.01, np.array([0,0,0,0,0,0,1,0], dtype=float)],
-    "JOINT_IMP":    [8, 7, 0.2, np.array([0,0,0,0,0,0,0,0], dtype=float)],
-    "JOINT_VEL":    [8, 7, -0.05, np.array([0,0,0,0,0,0,0,0], dtype=float)],
-    "JOINT_TOR":    [8, 7, 0.001, np.array([0,0,0,0,0,0,0,0], dtype=float)]
+    "EE_OSC_POSE":          [7, 6, 0.1, np.array([0,0,0,0,0,0,0], dtype=float)],
+    "EE_OSC_POSITION":      [4, 3, 0.1, np.array([0,0,0,0], dtype=float)],
+    "EE_IK_POSE":           [8, 6, 0.01, np.array([0,0,0,0,0,0,1,0], dtype=float)],
+    "JOINT_POSITION":       [8, 7, 0.2, np.array([0,0,0,0,0,0,0,0], dtype=float)],
+    "JOINT_VELOCITY":       [8, 7, -0.05, np.array([0,0,0,0,0,0,0,0], dtype=float)],
+    "JOINT_TORQUE":         [8, 7, 0.001, np.array([0,0,0,0,0,0,0,0], dtype=float)]
 }
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions
@@ -104,10 +105,7 @@ def test_all_controllers():
         neutral = controllers[controller_name][3]
 
         # Define controller path to load
-        controller_path = os.path.join(os.path.dirname(__file__),
-                                       '../../robosuite', 'controllers/config/{}.json'.format(controller_name.lower()))
-        with open(controller_path) as f:
-            controller_config = json.load(f)
+        controller_config = load_controller_config(default_controller=controller_name)
 
         # Now, create a test env for testing the controller on
         env = suite.make(
@@ -132,13 +130,12 @@ def test_all_controllers():
         assert action_min.shape[0] == action_dim, "Expected {}, got {}".format(action_dim, action_min.shape[0])
 
         # Keep track of done variable to know when to break loop
-        done = False
         count = 0
         # Loop through controller space
         while count < num_test_steps:
             action = neutral.copy()
             for i in range(steps_per_action):
-                if controller_name == 'ee_ik' and count > 2:
+                if controller_name == 'EE_IK_POSE' and count > 2:
                     # Convert from euler angle to quat here since we're working with quats
                     angle = np.zeros(3)
                     angle[count - 3] = test_value

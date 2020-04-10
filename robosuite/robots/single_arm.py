@@ -91,7 +91,8 @@ class SingleArm(Robot):
             self.controller_config = load_controller_config(custom_fpath=controller_path)
 
         # Assert that the controller config is a dict file:
-        #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
+        #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+        #                                           EE_OSC_POSITION, EE_OSC_POSE, EE_IK_POSE}
         assert type(self.controller_config) == dict, \
             "Inputted controller config must be a dict! Instead, got type: {}".format(type(self.controller_config))
 

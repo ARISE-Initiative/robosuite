@@ -134,4 +134,4 @@ class JointTorqueController(Controller):
 
     @property
     def name(self):
-        return 'JOINT_TOR'
+        return 'JOINT_TORQUE'
