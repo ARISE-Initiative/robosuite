@@ -1,6 +1,5 @@
 from .controller_factory import controller_factory, load_controller_config, reset_controllers, get_pybullet_server
 from .ee_osc import EndEffectorOperationalSpaceController
-from .ee_ik import EndEffectorInverseKinematicsController
 from .joint_pos import JointPositionController
 from .joint_vel import JointVelocityController
 from .joint_tor import JointTorqueController

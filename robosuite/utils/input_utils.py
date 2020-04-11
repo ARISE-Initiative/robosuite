@@ -4,7 +4,6 @@ Utility functions for grabbing user inputs
 
 import robosuite as suite
 from robosuite.models.robots import *
-from robosuite.controllers import *
 from robosuite.robots import *
 import robosuite.utils.transform_utils as T
 
@@ -178,7 +177,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
-    if isinstance(controller, EndEffectorInverseKinematicsController):
+    if controller.name == 'EE_IK_POSE':
         # If this is panda, want to flip y
         if isinstance(robot.robot_model, Panda):
             drotation[1] = -drotation[1]
@@ -205,7 +204,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
                 # y pos needs to be flipped
                 dpos[1] = -dpos[1]
 
-    elif isinstance(controller, EndEffectorOperationalSpaceController):
+    elif controller.name == 'EE_OSC_POSE':
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC)
