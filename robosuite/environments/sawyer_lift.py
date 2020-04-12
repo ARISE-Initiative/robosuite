@@ -188,7 +188,7 @@ class SawyerLift(SawyerEnv):
             perturb_sizes = [None for b in bounds]
 
         object_grid = bounds_to_grid(bounds)
-        self.placement_initializer  = RoundRobinSampler(
+        self.placement_initializer = RoundRobinSampler(
             x_range=object_grid[0],
             y_range=object_grid[1],
             ensure_object_boundary_in_range=False,
@@ -197,6 +197,7 @@ class SawyerLift(SawyerEnv):
             y_perturb=perturb_sizes[1],
             z_rotation_perturb=perturb_sizes[2],
         )
+        return self.placement_initializer
 
     def _grid_bounds_for_eval_mode(self):
         """
@@ -752,6 +753,8 @@ class SawyerLiftPositionTarget(SawyerLift):
             x_range=goal_grid_x,
             y_range=goal_grid_y,
             z_rotation=np.zeros_like(goal_grid_x),
+            x_perturb=0.01,
+            y_perturb=0.01,
             ensure_object_boundary_in_range=False
         )
         return goal_initializer
@@ -912,18 +915,40 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
 
     def _load_objects(self):
         mujoco_objects, visual_objects = super()._load_objects()
-        slide_joint = dict(
-            pos="0 0 0",
-            axis="0 0 1",
-            type="slide",
-            springref="1",
-            limited="true",
-            stiffness="0.5",
-            range="-0.1 0",
-            damping="1"
-        )
-        mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01], joint=[slide_joint])
+        # slide_joint = dict(
+        #     type="slide",
+        #     pos="0 0 0",
+        #     axis="0 0 1",
+        #     springref="1",
+        #     limited="true",
+        #     stiffness="0.5",
+        #     range="-0.1 0",
+        #     damping="1"
+        # )
+        # mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01], joint=[slide_joint])
+        mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01])
         return mujoco_objects, visual_objects
+
+    def randomize_distractors(self):
+        button_bid = self.sim.model.body_name2id("button")
+        cube_pos = self.sim.data.body_xpos[self.cube_body_id]
+        z = self.sim.data.body_xpos[button_bid][-1]
+        quat = self.sim.data.body_xquat[button_bid]
+
+        for _ in range(500):
+            angle = np.random.uniform(0, np.pi * 2)
+            radius = np.random.uniform(0.05, 0.2)
+            pos_x = radius * np.cos(angle) + cube_pos[0]
+            pos_y = radius * np.sin(angle) + cube_pos[1]
+            EU.set_body_pose(self.sim, "button", pos=np.array([pos_x, pos_y, z]), quat=quat)
+            self.sim.forward()
+
+            for bid in EU.all_contacting_body_ids(self.sim, button_bid):
+                if bid != self.sim.model.body_name2id("table"):
+                    continue
+            break
+        else:
+            raise StopIteration("Cannot find valid placement for button")
 
     def _get_button_initializer_for_eval_mode(self):
         num_circles = 3
@@ -942,6 +967,8 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             x_range=goal_grid_x,
             y_range=goal_grid_y,
             z_rotation=np.zeros_like(goal_grid_x),
+            x_perturb=0.01,
+            y_perturb=0.01,
             ensure_object_boundary_in_range=False
         )
         return goal_initializer
@@ -1027,3 +1054,22 @@ class SawyerPositionTarget(SawyerPositionTargetPress):
 
     def _check_success(self):
         return SawyerLiftPositionTarget._check_success(self)
+
+
+class SawyerPositionTargetRandom(SawyerPositionTarget):
+    def _get_placement_initializer_for_eval_mode(self):
+        initializer = SequentialCompositeSampler()
+        cube_initializer = SawyerLift._get_placement_initializer_for_eval_mode(self)
+        goal_initializer = self._get_target_initializer_for_eval_mode()
+        initializer.append_sampler(self._object_name, cube_initializer)
+        initializer.append_sampler(self._target_name, goal_initializer)
+        initializer.sample_on_top(
+            "button",
+            surface_name="table",
+            x_range=(-0.2, 0.2),
+            y_range=(-0.2, 0.2),
+            z_rotation=(0.0, 0.0),
+            ensure_object_boundary_in_range=False
+        )
+        self.placement_initializer = initializer
+        return initializer
