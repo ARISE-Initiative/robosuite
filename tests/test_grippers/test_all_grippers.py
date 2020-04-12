@@ -37,7 +37,7 @@ def _test_gripper(gripper):
     assert gripper.joints is not None
     joints = list(gripper.joints)
 
-    assert gripper.contact_geoms() is not None
+    assert gripper.contact_geoms is not None
 
     assert gripper.visualization_sites is not None
 
