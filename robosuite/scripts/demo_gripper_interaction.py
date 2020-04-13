@@ -13,7 +13,7 @@ from mujoco_py import MjSim, MjViewer
 
 from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas.table_arena import TableArena
-from robosuite.models.grippers import SawyerGripper
+from robosuite.models.grippers import RethinkGripper
 from robosuite.models.objects import BoxObject
 from robosuite.utils.mjcf_utils import new_joint, new_actuator
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     world.merge(arena)
 
     # add a gripper
-    gripper = SawyerGripper()
+    gripper = RethinkGripper()
     gripper_body = ET.Element("body")
     for body in gripper.worldbody:
         gripper_body.append(body)

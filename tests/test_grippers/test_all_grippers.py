@@ -2,23 +2,21 @@
     Tests the basic interface of all grippers
 """
 from robosuite.models.grippers import (
-    SawyerGripper,
+    PandaGripper,
     PR2Gripper,
-    PushingSawyerGripper,
+    RethinkGripper,
     RobotiqGripper,
     RobotiqThreeFingerGripper,
-    PandaGripper,
 )
 
 
 def test_all_gripper():
     grippers = [
-        SawyerGripper(),
+        PandaGripper(),
         PR2Gripper(),
-        PushingSawyerGripper(),
+        RethinkGripper(),
         RobotiqGripper(),
         RobotiqThreeFingerGripper(),
-        PandaGripper(),
     ]
     for gripper in grippers:
         _test_gripper(gripper)
@@ -37,7 +35,7 @@ def _test_gripper(gripper):
     assert gripper.joints is not None
     joints = list(gripper.joints)
 
-    assert gripper.contact_geoms() is not None
+    assert gripper.contact_geoms is not None
 
     assert gripper.visualization_sites is not None
 
