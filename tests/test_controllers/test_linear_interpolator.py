@@ -90,7 +90,7 @@ def test_linear_interpolator():
                 # Define controller path to load
                 controller_path = os.path.join(os.path.dirname(__file__),
                                                '../../robosuite',
-                                               'controllers/config/{}.json'.format(controller_name.lower))
+                                               'controllers/config/{}.json'.format(controller_name.lower()))
                 with open(controller_path) as f:
                     controller_config = json.load(f)
                     controller_config["interpolation"] = interpolator
