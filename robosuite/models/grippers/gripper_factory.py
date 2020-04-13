@@ -1,12 +1,11 @@
 """
 Defines a string based method of initializing grippers
 """
-from .rethink_gripper import RethinkGripper
-from .pr2_gripper import PR2Gripper
-from .robotiq_gripper import RobotiqGripper
-from .pushing_rethink_gripper import PushingRethinkGripper
-from .robotiq_three_finger_gripper import RobotiqThreeFingerGripper
 from .panda_gripper import PandaGripper
+from .pr2_gripper import PR2Gripper
+from .rethink_gripper import RethinkGripper
+from .robotiq_gripper import RobotiqGripper
+from .robotiq_three_finger_gripper import RobotiqThreeFingerGripper
 
 
 def gripper_factory(name, idn=0):
@@ -31,8 +30,6 @@ def gripper_factory(name, idn=0):
         return PR2Gripper(idn=idn)
     if name == "RobotiqGripper":
         return RobotiqGripper(idn=idn)
-    if name == "PushingRethinkGripper":
-        return PushingRethinkGripper(idn=idn)
     if name == "RobotiqThreeFingerGripper":
         return RobotiqThreeFingerGripper(idn=idn)
     if name == "PandaGripper":
