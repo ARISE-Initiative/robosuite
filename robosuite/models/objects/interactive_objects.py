@@ -77,12 +77,18 @@ class StatefulObject(object):
         self._on_state_funcs = []  # gets called when the object is in the specified state
         self._on_not_state_funcs = []  # gets called when the object is NOT in the specified state
 
+        self._reset_funcs = []  # for resetting the object state
+
         self._set_state_behaviors()
+        self._set_reset_behaviors()
 
         self.reset()
 
     def _set_state_behaviors(self):
         """Define callback functions that get triggered by the object state"""
+        raise NotImplementedError
+
+    def _set_reset_behaviors(self):
         raise NotImplementedError
 
     def add_on_enter_state_funcs(self, cond, func):
@@ -121,9 +127,18 @@ class StatefulObject(object):
         assert(self.is_valid_condition(cond))
         self._on_not_state_funcs.append((deepcopy(cond), func))
 
+    def add_reset_funcs(self, func):
+        """
+        Adds a callback function that resets the object state when calling reset()
+        :param func: (function) a callback function
+        """
+        self._reset_funcs.append(({}, func))
+
     def reset(self):
         # reset state without triggering state functions
         self._state = self.default_state
+        for _, func in self._reset_funcs:
+            func()
 
     def is_valid_state(self, state):
         return sorted(list(state.keys())) == sorted(self._all_state_names)
@@ -163,6 +178,15 @@ class StatefulObject(object):
         for cond, func in self._on_exit_state_funcs:
             if not satisfies(self.state, cond) and satisfies(prev_state, cond):
                 func()
+
+        # TODO: decide if this is needed
+        # for cond, func in self._on_state_funcs:
+        #     if satisfies(self.state, cond):
+        #         func()
+        #
+        # for cond, func in self._on_not_state_funcs:
+        #     if not satisfies(self.state, cond):
+        #         func()
 
     def step(self):
         """Invokes callback functions that should be invoked every simulation step"""
@@ -258,14 +282,20 @@ class BinaryStateObject(InteractiveObject):
 class ButtonObject(BinaryStateObject):
     """Base class for a button object."""
     def __init__(self, sim, body_id, off_rgba=(1, 0, 0, 1), on_rgba=(0, 1, 0, 1)):
-        super(ButtonObject, self).__init__(sim=sim, body_id=body_id)
         self._off_rgba = off_rgba
         self._on_rgba = on_rgba
         self._prev_contacts = []
+        super(ButtonObject, self).__init__(sim=sim, body_id=body_id)
 
     def reset(self):
         super(ButtonObject, self).reset()
         self._prev_contacts = []
+
+    def _set_reset_behaviors(self):
+        def reset_color():
+            for gid in self.body_geom_ids:
+                self.sim.model.geom_rgba[gid] = self._off_rgba
+        self.add_reset_funcs(reset_color)
 
     def _on_active(self):
         """Internal function that gets called once when object becomes activated """

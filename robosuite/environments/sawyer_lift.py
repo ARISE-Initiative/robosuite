@@ -625,6 +625,7 @@ class SawyerLiftPositionTarget(SawyerLift):
         goal_tolerance=0.05,
         goal_radius_low=0.09,
         goal_radius_high=0.15,
+        perturb_range=0.01,
         **kwargs
     ):
 
@@ -635,6 +636,7 @@ class SawyerLiftPositionTarget(SawyerLift):
         self._goal_radius_high = goal_radius_high
         self._goal_grid = None
         self._hide_target = hide_target
+        self._perturb_range = perturb_range
 
         self._target_name = 'cube_target'
         self._object_name = 'cube'
@@ -670,7 +672,7 @@ class SawyerLiftPositionTarget(SawyerLift):
 
     def _get_placement_initializer_for_eval_mode(self):
         initializer = SequentialCompositeSampler()
-        cube_initializer = SawyerLift._get_placement_initializer_for_eval_mode(self)
+        cube_initializer = self._get_cube_initializer_for_eval_mode()
         goal_initializer = self._get_target_initializer_for_eval_mode()
         initializer.append_sampler(self._object_name, cube_initializer)
         initializer.append_sampler(self._target_name, goal_initializer)
@@ -737,6 +739,26 @@ class SawyerLiftPositionTarget(SawyerLift):
         self._ref_target_pos_low, self._ref_target_pos_high = target_qpos
         self._ref_target_vel_low, self._ref_target_vel_high = target_qvel
 
+    def _get_cube_initializer_for_eval_mode(self):
+        """
+        Sets a placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+        assert(self.eval_mode)
+
+        bounds = list(self._grid_bounds_for_eval_mode())
+        object_grid = bounds_to_grid(bounds)
+        self.placement_initializer = RoundRobinSampler(
+            x_range=object_grid[0],
+            y_range=object_grid[1],
+            ensure_object_boundary_in_range=False,
+            z_rotation=object_grid[2],
+            x_perturb=self._perturb_range,
+            y_perturb=self._perturb_range,
+        )
+        return self.placement_initializer
+
     def _get_target_initializer_for_eval_mode(self):
         num_circles = 3
         num_circle_angles = 9
@@ -753,8 +775,8 @@ class SawyerLiftPositionTarget(SawyerLift):
             x_range=goal_grid_x,
             y_range=goal_grid_y,
             z_rotation=np.zeros_like(goal_grid_x),
-            x_perturb=0.01,
-            y_perturb=0.01,
+            x_perturb=self._perturb_range,
+            y_perturb=self._perturb_range,
             ensure_object_boundary_in_range=False
         )
         return goal_initializer
@@ -904,7 +926,7 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
 
     def _get_placement_initializer_for_eval_mode(self):
         initializer = SequentialCompositeSampler()
-        cube_initializer = SawyerLift._get_placement_initializer_for_eval_mode(self)
+        cube_initializer = self._get_cube_initializer_for_eval_mode()
         goal_initializer = self._get_target_initializer_for_eval_mode()
         button_initializer = self._get_button_initializer_for_eval_mode()
         initializer.append_sampler(self._object_name, cube_initializer)
@@ -915,18 +937,18 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
 
     def _load_objects(self):
         mujoco_objects, visual_objects = super()._load_objects()
-        # slide_joint = dict(
-        #     type="slide",
-        #     pos="0 0 0",
-        #     axis="0 0 1",
-        #     springref="1",
-        #     limited="true",
-        #     stiffness="0.5",
-        #     range="-0.1 0",
-        #     damping="1"
-        # )
-        # mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01], joint=[slide_joint])
-        mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01])
+        slide_joint = dict(
+            type="slide",
+            pos="0 0 0",
+            axis="0 0 1",
+            springref="1",
+            limited="true",
+            stiffness="0.5",
+            range="-0.1 0",
+            damping="1"
+        )
+        mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01], joint=[slide_joint])
+        # mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01])
         return mujoco_objects, visual_objects
 
     def randomize_distractors(self):
@@ -967,8 +989,8 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             x_range=goal_grid_x,
             y_range=goal_grid_y,
             z_rotation=np.zeros_like(goal_grid_x),
-            x_perturb=0.01,
-            y_perturb=0.01,
+            x_perturb=self._perturb_range,
+            y_perturb=self._perturb_range,
             ensure_object_boundary_in_range=False
         )
         return goal_initializer
@@ -990,6 +1012,10 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
 
         button.add_on_state_funcs(
             cond={button.state_name: False},
+            func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(1, 0, 0, 1))
+        )
+
+        button.add_reset_funcs(
             func=lambda: color_trigger(sim=self.sim, body_id=self.object_body_id, color=(1, 0, 0, 1))
         )
 
@@ -1059,7 +1085,7 @@ class SawyerPositionTarget(SawyerPositionTargetPress):
 class SawyerPositionTargetRandom(SawyerPositionTarget):
     def _get_placement_initializer_for_eval_mode(self):
         initializer = SequentialCompositeSampler()
-        cube_initializer = SawyerLift._get_placement_initializer_for_eval_mode(self)
+        cube_initializer = self._get_cube_initializer_for_eval_mode()
         goal_initializer = self._get_target_initializer_for_eval_mode()
         initializer.append_sampler(self._object_name, cube_initializer)
         initializer.append_sampler(self._target_name, goal_initializer)
