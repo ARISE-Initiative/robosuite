@@ -1,6 +1,6 @@
 import collections
 from robosuite.models.tasks import Task, UniformRandomSampler
-from robosuite.models.objects import MujocoGeneratedObject
+from robosuite.models.objects import MujocoGeneratedObject, MujocoXMLObject
 from robosuite.utils.mjcf_utils import new_joint, array_to_string
 from copy import deepcopy
 
@@ -55,10 +55,11 @@ class TableTopMergedTask(Task):
 
     def merge_objects(self, mujoco_objects, is_visual=False):
         """Adds physical objects to the MJCF model."""
-        self.max_horizontal_radius = 0
+        if not is_visual:
+            self.max_horizontal_radius = 0
 
         for obj_name, obj_mjcf in mujoco_objects.items():
-            assert(isinstance(obj_mjcf, MujocoGeneratedObject))
+            assert(isinstance(obj_mjcf, MujocoGeneratedObject) or isinstance(obj_mjcf, MujocoXMLObject))
             self.merge_asset(obj_mjcf)
             # Load object
             if is_visual:

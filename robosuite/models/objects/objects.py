@@ -130,12 +130,16 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
     MujocoObjects that are loaded from xml files
     """
 
-    def __init__(self, fname):
+    def __init__(self, fname, joint=None):
         """
         Args:
             fname (TYPE): XML File path
         """
         MujocoXML.__init__(self, fname)
+        if joint is None:
+            self.joint = [{'type': 'free'}]  # default free joint
+        else:
+            self.joint = joint
 
     def get_bottom_offset(self):
         bottom_site = self.worldbody.find("./body/site[@name='bottom_site']")

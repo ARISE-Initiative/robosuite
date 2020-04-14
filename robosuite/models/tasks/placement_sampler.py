@@ -45,6 +45,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         y_range=None,
         ensure_object_boundary_in_range=True,
         z_rotation=None,
+        z_offset=None,
     ):
         """
         Args:
@@ -67,6 +68,9 @@ class UniformRandomSampler(ObjectPositionSampler):
         self.y_range = y_range
         self.ensure_object_boundary_in_range = ensure_object_boundary_in_range
         self.z_rotation = z_rotation
+        self.z_offset = 0.
+        if z_offset is not None:
+            self.z_offset = z_offset
 
     def sample_x(self, object_horizontal_radius):
         x_range = self.x_range
@@ -132,7 +136,7 @@ class UniformRandomSampler(ObjectPositionSampler):
                     pos = (
                         self.table_top_offset
                         - bottom_offset
-                        + np.array([object_x, object_y, 0])
+                        + np.array([object_x, object_y, self.z_offset])
                     )
                     placed_objects[obj_name] = (object_x, object_y, horizontal_radius)
                     # random z-rotation
@@ -382,6 +386,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
             x_range=None,
             y_range=None,
             z_rotation=None,
+            z_offset=None,
             ensure_object_boundary_in_range=True
     ):
         """Sample placement on top of a surface object"""

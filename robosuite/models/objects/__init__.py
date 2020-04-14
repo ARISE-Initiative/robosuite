@@ -1,6 +1,7 @@
 from .objects import MujocoObject, MujocoXMLObject, MujocoGeneratedObject
 
 from .xml_objects import (
+    WoodenPieceObject,
     DoorObject,
     SpinningPoleObject,
     BottleObject,
@@ -20,9 +21,8 @@ from .xml_objects import (
 
 from .generated_objects import (
     BoundingObject,
-    HoleObject,
-    Hole3dObject,
-    GridObject,
+    BoxPatternObject,
+    BoundingPatternObject,
     PotWithHandlesObject,
     BoxObject,
     CylinderObject,

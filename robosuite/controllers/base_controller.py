@@ -112,6 +112,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,
         jacobian, and mass matrix
         """
+        # self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("grip_site")])
         self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.eef_name)])
         self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.eef_name)].reshape([3, 3]))
         self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.eef_name)])

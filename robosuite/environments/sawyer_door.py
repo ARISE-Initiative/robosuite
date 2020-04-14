@@ -2,7 +2,7 @@ from collections import OrderedDict
 import numpy as np
 from copy import deepcopy
 
-from robosuite.utils.mjcf_utils import range_to_uniform_grid
+from robosuite.utils.mjcf_utils import bounds_to_grid
 from robosuite.utils.transform_utils import convert_quat
 import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
@@ -10,7 +10,7 @@ from robosuite.environments.sawyer import SawyerEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import DoorObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import DoorTask, UniformRandomSampler, RoundRobinSampler
+from robosuite.models.tasks import TableTopMergedTask, DoorTask, UniformRandomSampler, RoundRobinSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -24,8 +24,7 @@ class SawyerDoor(SawyerEnv):
         self,
         controller_config=None,
         gripper_type="TwoFingerGripper",
-        # table_full_size=(0.8, 0.8, 0.8),
-        table_full_size=(0.8, 0.8, 0.68),
+        table_full_size=(0.8, 0.8, 0.8),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
@@ -130,13 +129,6 @@ class SawyerDoor(SawyerEnv):
         self.table_full_size = table_full_size
         self.table_friction = table_friction
 
-        # # door friction
-        # self.change_door_friction = task['change_door_friction']
-        # self.door_damping_max = task['door_damping_max']
-        # self.door_damping_min = task['door_damping_min']
-        # self.door_friction_max = task['door_friction_max']
-        # self.door_friction_min = task['door_friction_min']
-
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
 
@@ -148,11 +140,20 @@ class SawyerDoor(SawyerEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.03, 0.03],
-                y_range=[-0.03, 0.03],
+                x_range=[0.1, 0.1],
+                y_range=[-0.35, -0.35],
                 ensure_object_boundary_in_range=False,
-                z_rotation=None,
+                # z_rotation=None,
+                z_rotation=(-np.pi / 2.),
+                z_offset=0.02,
             )
+            # self.placement_initializer = UniformRandomSampler(
+            #     x_range=[-0.4, -0.4],
+            #     y_range=[-0.35, -0.35],
+            #     ensure_object_boundary_in_range=False,
+            #     # z_rotation=None,
+            #     z_rotation=(np.pi / 2.),
+            # )
 
         super().__init__(
             controller_config=controller_config,
@@ -184,49 +185,24 @@ class SawyerDoor(SawyerEnv):
         environment into a fixed set of known task instances.
         This is for reproducibility in policy evaluation.
         """
-
         assert(self.eval_mode)
 
-        # set up placement grid by getting bounds per dimension and then
-        # using meshgrid to get all combinations
-        x_bounds, y_bounds, z_rot_bounds = self._grid_bounds_for_eval_mode()
-        x_grid = range_to_uniform_grid(a=x_bounds[0], b=x_bounds[1], n=x_bounds[2])
-        y_grid = range_to_uniform_grid(a=y_bounds[0], b=y_bounds[1], n=y_bounds[2])
-        z_rotation = range_to_uniform_grid(a=z_rot_bounds[0], b=z_rot_bounds[1], n=z_rot_bounds[2])
-        grid = np.meshgrid(x_grid, y_grid, z_rotation)
-        x_grid = grid[0].ravel()
-        y_grid = grid[1].ravel()
-        z_rotation = grid[2].ravel()
-        grid_length = x_grid.shape[0]
-
-        round_robin_period = grid_length
+        bounds = list(self._grid_bounds_for_eval_mode())
         if self.perturb_evals:
-            # sample 100 rounds of perturbations and then sampler will repeat
-            round_robin_period *= 100
+            # perturbation sizes should be half the grid spacing
+            perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds]
+        else:
+            perturb_sizes = [None for b in bounds]
 
-            # perturbation size should be half the grid spacing
-            x_pos_perturb_size = ((x_bounds[1] - x_bounds[0]) / x_bounds[2]) / 2.
-            y_pos_perturb_size = ((y_bounds[1] - y_bounds[0]) / y_bounds[2]) / 2.
-            z_rot_perturb_size = ((z_rot_bounds[1] - z_rot_bounds[0]) / z_rot_bounds[2]) / 2.
-
-        # assign grid locations for the full round robin schedule
-        final_x_grid = np.zeros(round_robin_period)
-        final_y_grid = np.zeros(round_robin_period)
-        final_z_grid = np.zeros(round_robin_period)
-        for t in range(round_robin_period):
-            g_ind = t % grid_length
-            x, y, z = x_grid[g_ind], y_grid[g_ind], z_rotation[g_ind]
-            if self.perturb_evals:
-                x += np.random.uniform(low=-x_pos_perturb_size, high=x_pos_perturb_size)
-                y += np.random.uniform(low=-y_pos_perturb_size, high=y_pos_perturb_size)
-                z += np.random.uniform(low=-z_rot_perturb_size, high=z_rot_perturb_size)
-            final_x_grid[t], final_y_grid[t], final_z_grid[t] = x, y, z
-
-        self.placement_initializer = RoundRobinSampler(
-            x_range=final_x_grid,
-            y_range=final_y_grid,
+        object_grid = bounds_to_grid(bounds)
+        self.placement_initializer  = RoundRobinSampler(
+            x_range=object_grid[0],
+            y_range=object_grid[1],
             ensure_object_boundary_in_range=False,
-            z_rotation=final_z_grid
+            z_rotation=object_grid[2],
+            x_perturb=perturb_sizes[0],
+            y_perturb=perturb_sizes[1],
+            z_rotation_perturb=perturb_sizes[2],
         )
 
     def _grid_bounds_for_eval_mode(self):
@@ -237,10 +213,9 @@ class SawyerDoor(SawyerEnv):
         """
 
         # (low, high, number of grid points for this dimension)
-        x_bounds = (-0.03, 0.03, 3)
-        y_bounds = (-0.03, 0.03, 3)
-        # z_rot_bounds = (1., 1., 1)
-        z_rot_bounds = (0., 2. * np.pi, 3)
+        x_bounds = (0., 0., 1)
+        y_bounds = (-0.1, -0.1, 1)
+        z_rot_bounds = (0., 0., 1)
         return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):
@@ -260,8 +235,17 @@ class SawyerDoor(SawyerEnv):
         # The sawyer robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
+        ### TODO: test different frictions and damping for hinge. Current are 10 and 10 ###
+
         # initialize objects of interest
-        door = DoorObject()
+        door = DoorObject(
+            joint=[],
+            # friction=None,
+            # damping=None,
+            friction=0.0,
+            damping=0.1,
+            lock=True,
+        )
         self.mujoco_objects = OrderedDict([("Door", door)])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
@@ -272,19 +256,18 @@ class SawyerDoor(SawyerEnv):
         #     self.init_qpos = np.array([-0.26730423, -1.85458729, 0.63220668, 2.40196438, 0.9033082, -0.80319783, -0.42571791])
 
         # task includes arena, robot, and objects of interest
-        self.model = DoorTask(
+        self.model = TableTopMergedTask(
             self.mujoco_arena,
             self.mujoco_robot,
             self.mujoco_objects,
             initializer=self.placement_initializer,
         )
-
-        # if self.change_door_friction:
-        #     damping = np.random.uniform(high=np.array([self.door_damping_max]), low=np.array([self.door_damping_min]))
-        #     friction = np.random.uniform(high=np.array([self.door_friction_max]),
-        #                                  low=np.array([self.door_friction_min]))
-        #     self.model.set_door_damping(damping)
-        #     self.model.set_door_friction(friction)
+        # self.model = DoorTask(
+        #     self.mujoco_arena,
+        #     self.mujoco_robot,
+        #     self.mujoco_objects,
+        #     initializer=self.placement_initializer,
+        # )
 
         self.model.place_objects()
 
@@ -372,6 +355,7 @@ class SawyerDoor(SawyerEnv):
                 contains a rendered depth map from the simulation
         """
         di = super()._get_observation()
+        di['object-state'] = np.zeros(3)
 
         # # low-level object information
         # if self.use_object_obs:
@@ -412,6 +396,7 @@ class SawyerDoor(SawyerEnv):
         """
         Returns True if task has been completed.
         """
+        return False
         return (self.hinge_diff < self.max_hinge_diff and abs(self.hinge_qvel) < self.max_hinge_vel)
 
     def _gripper_visualization(self):
