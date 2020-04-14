@@ -194,41 +194,29 @@ class SawyerPush(SawyerLift):
 
         assert(self.eval_mode)
 
-        # get bounds and perturbation ranges too
+        ordered_object_names = [self._object_name, self._target_name]
         bounds = self._grid_bounds_for_eval_mode()
-        if self.perturb_evals:
-            # perturbation sizes should be half the grid spacing
-            object_perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[self._object_name]]
-            target_perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[self._target_name]]
-        else:
-            object_perturb_sizes = [None for b in bounds[self._object_name]]
-            target_perturb_sizes = [None for b in bounds[self._target_name]]
-
-        object_grid = bounds_to_grid(bounds[self._object_name])
-        object_sampler = RoundRobinSampler(
-            x_range=object_grid[0],
-            y_range=object_grid[1],
-            ensure_object_boundary_in_range=False,
-            z_rotation=object_grid[2],
-            x_perturb=object_perturb_sizes[0],
-            y_perturb=object_perturb_sizes[1],
-            z_rotation_perturb=object_perturb_sizes[2],
-        )
-
-        target_grid = bounds_to_grid(bounds[self._target_name])
-        target_sampler = RoundRobinSampler(
-            x_range=target_grid[0],
-            y_range=target_grid[1],
-            ensure_object_boundary_in_range=False,
-            z_rotation=target_grid[2],
-            x_perturb=target_perturb_sizes[0],
-            y_perturb=target_perturb_sizes[1],
-            z_rotation_perturb=target_perturb_sizes[2],
-        )
-
         initializer = SequentialCompositeSampler(round_robin_all_pairs=True)
-        initializer.append_sampler(self._object_name, object_sampler)
-        initializer.append_sampler(self._target_name, target_sampler)
+
+        for name in ordered_object_names:
+            if self.perturb_evals:
+                # perturbation sizes should be half the grid spacing
+                perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[name]]
+            else:
+                perturb_sizes = [None for b in bounds[name]]
+
+            grid = bounds_to_grid(bounds[name])
+            sampler = RoundRobinSampler(
+                x_range=grid[0],
+                y_range=grid[1],
+                ensure_object_boundary_in_range=False,
+                z_rotation=grid[2],
+                x_perturb=perturb_sizes[0],
+                y_perturb=perturb_sizes[1],
+                z_rotation_perturb=perturb_sizes[2],
+            )
+            initializer.append_sampler(name, sampler)
+
         self.placement_initializer = initializer
         return initializer
 

@@ -203,6 +203,7 @@ class SawyerDoor(SawyerEnv):
             x_perturb=perturb_sizes[0],
             y_perturb=perturb_sizes[1],
             z_rotation_perturb=perturb_sizes[2],
+            z_offset=0.02,
         )
 
     def _grid_bounds_for_eval_mode(self):
@@ -213,9 +214,9 @@ class SawyerDoor(SawyerEnv):
         """
 
         # (low, high, number of grid points for this dimension)
-        x_bounds = (0., 0., 1)
-        y_bounds = (-0.1, -0.1, 1)
-        z_rot_bounds = (0., 0., 1)
+        x_bounds = (0.1, 0.1, 1)
+        y_bounds = (-0.35, -0.35, 1)
+        z_rot_bounds = (-np.pi / 2., -np.pi / 2., 1)
         return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):

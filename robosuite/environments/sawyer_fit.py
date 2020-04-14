@@ -3,14 +3,14 @@ import numpy as np
 from copy import deepcopy
 
 from robosuite.utils.mjcf_utils import xml_path_completion, bounds_to_grid
-from robosuite.utils.transform_utils import convert_quat
+import robosuite.utils.transform_utils as T
 import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import LegoArena
-from robosuite.models.objects import BoxObject, WoodenPieceObject, BoundingObject, BoundingPatternObject
+from robosuite.models.objects import BoxObject, WoodenPieceObject, BoundingObject, BoxPatternObject, BoundingPatternObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler
+from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler, RoundRobinSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -191,25 +191,35 @@ class SawyerFit(SawyerEnv):
         environment into a fixed set of known task instances.
         This is for reproducibility in policy evaluation.
         """
+
         assert(self.eval_mode)
 
-        bounds = list(self._grid_bounds_for_eval_mode())
-        if self.perturb_evals:
-            # perturbation sizes should be half the grid spacing
-            perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds]
-        else:
-            perturb_sizes = [None for b in bounds]
+        ordered_object_names = ["hole", "block"]
+        bounds = self._grid_bounds_for_eval_mode()
+        initializer = SequentialCompositeSampler(round_robin_all_pairs=True)
 
-        object_grid = bounds_to_grid(bounds)
-        self.placement_initializer  = RoundRobinSampler(
-            x_range=object_grid[0],
-            y_range=object_grid[1],
-            ensure_object_boundary_in_range=False,
-            z_rotation=object_grid[2],
-            x_perturb=perturb_sizes[0],
-            y_perturb=perturb_sizes[1],
-            z_rotation_perturb=perturb_sizes[2],
-        )
+        for name in ordered_object_names:
+            if self.perturb_evals:
+                # perturbation sizes should be half the grid spacing
+                perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[name][:3]]
+            else:
+                perturb_sizes = [None for b in bounds[name][:3]]
+
+            grid = bounds_to_grid(bounds[name][:3])
+            sampler = RoundRobinSampler(
+                x_range=grid[0],
+                y_range=grid[1],
+                ensure_object_boundary_in_range=False,
+                z_rotation=grid[2],
+                x_perturb=perturb_sizes[0],
+                y_perturb=perturb_sizes[1],
+                z_rotation_perturb=perturb_sizes[2],
+                z_offset=bounds[name][3],
+            )
+            initializer.append_sampler(name, sampler)
+
+        self.placement_initializer = initializer
+        return initializer
 
     def _grid_bounds_for_eval_mode(self):
         """
@@ -217,13 +227,22 @@ class SawyerFit(SawyerEnv):
         and z-rotations for reproducible evaluations, and number of points
         per dimension.
         """
+        ret = {}
 
         # (low, high, number of grid points for this dimension)
-        x_bounds = (-0.3, -0.1, 3)
-        y_bounds = (-0.3, -0.1, 3)
-        # z_rot_bounds = (1., 1., 1)
-        z_rot_bounds = (0., 2. * np.pi, 3)
-        return x_bounds, y_bounds, z_rot_bounds
+        hole_x_bounds = (0., 0., 1)
+        hole_y_bounds = (0., 0., 1)
+        hole_z_rot_bounds = (0., 0., 1)
+        hole_z_offset = None
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
+
+        block_x_bounds = (-0.3, -0.1, 3)
+        block_y_bounds = (-0.3, -0.1, 3)
+        block_z_rot_bounds = (0., 2. * np.pi, 3)
+        block_z_offset = None
+        ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds, block_z_offset]
+
+        return ret
 
     def _load_model(self):
         """
@@ -258,7 +277,7 @@ class SawyerFit(SawyerEnv):
             rgba=[1, 0, 0, 1],
         )
 
-        self.grid = BoundingObject(
+        self.hole = BoundingObject(
             size=[0.1, 0.1, 0.1],
             hole_size=self.hole_size, 
             joint=[],
@@ -268,7 +287,7 @@ class SawyerFit(SawyerEnv):
 
         self.mujoco_objects = OrderedDict([
             ("block", piece), 
-            ("hole", self.grid),
+            ("hole", self.hole),
         ])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
@@ -292,8 +311,10 @@ class SawyerFit(SawyerEnv):
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
         super()._get_reference()
-        self.block_body_id = self.sim.model.body_name2id("block")
-        self.hole_body_id = self.sim.model.body_name2id("hole")
+        self.object_body_ids = {}
+        self.object_body_ids["hole"]  = self.sim.model.body_name2id("hole")
+        self.object_body_ids["block"] = self.sim.model.body_name2id("block")
+
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
         ]
@@ -354,20 +375,37 @@ class SawyerFit(SawyerEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # position and rotation of object
-            block_pos = np.array(self.sim.data.body_xpos[self.block_body_id])
-            block_quat = convert_quat(
-                np.array(self.sim.data.body_xquat[self.block_body_id]), to="xyzw"
-            )
-            di["block_pos"] = block_pos
-            di["block_quat"] = block_quat
 
-            gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
-            di["gripper_to_block"] = gripper_site_pos - block_pos
+            # remember the keys to collect into object info
+            object_state_keys = []
 
-            di["object-state"] = np.concatenate(
-                [block_pos, block_quat, di["gripper_to_block"]]
-            )
+            # for conversion to relative gripper frame
+            gripper_pose = T.pose2mat((di["eef_pos"], di["eef_quat"]))
+            world_pose_in_gripper = T.pose_inv(gripper_pose)
+
+            for k in self.object_body_ids:
+                # position and rotation of the pieces
+                body_id = self.object_body_ids[k]
+                block_pos = np.array(self.sim.data.body_xpos[body_id])
+                block_quat = T.convert_quat(
+                    np.array(self.sim.data.body_xquat[body_id]), to="xyzw"
+                )
+                di["{}_pos".format(k)] = block_pos
+                di["{}_quat".format(k)] = block_quat
+
+                # get relative pose of object in gripper frame
+                block_pose = T.pose2mat((block_pos, block_quat))
+                rel_pose = T.pose_in_A_to_pose_in_B(block_pose, world_pose_in_gripper)
+                rel_pos, rel_quat = T.mat2pose(rel_pose)
+                di["{}_to_eef_pos".format(k)] = rel_pos
+                di["{}_to_eef_quat".format(k)] = rel_quat
+
+                object_state_keys.append("{}_pos".format(k))
+                object_state_keys.append("{}_quat".format(k))
+                object_state_keys.append("{}_to_eef_pos".format(k))
+                object_state_keys.append("{}_to_eef_quat".format(k))
+
+            di["object-state"] = np.concatenate([di[k] for k in object_state_keys])
 
         return di
 
@@ -391,9 +429,9 @@ class SawyerFit(SawyerEnv):
         """
         Returns True if task has been completed.
         """
-        block_pos = np.array(self.sim.data.body_xpos[self.block_body_id])
-        hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
-        result = self.grid.in_box(
+        block_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["block"]])
+        hole_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["hole"]])
+        result = self.hole.in_box(
             position=hole_pos, 
             object_position=block_pos, 
             # object_size=self.obj_size,
@@ -479,7 +517,7 @@ class SawyerFitPushLongBar(SawyerFit):
             rgba=[1, 0, 0, 1],
         )
 
-        self.grid = BoundingObject(
+        self.hole = BoundingObject(
             size=[0.2, 0.2, 0.02],
             hole_size=self.hole_size, 
             joint=[],
@@ -490,7 +528,7 @@ class SawyerFitPushLongBar(SawyerFit):
         # self.hole_size = np.array([0.05, 0.05, 0.01])
         # pattern = [np.eye(5)]
         # unit_size = 0.01
-        # self.grid = BoundingPatternObject(
+        # self.hole = BoundingPatternObject(
         #     unit_size,
         #     pattern,
         #     size=[0.2, 0.2, 0.02],
@@ -502,7 +540,7 @@ class SawyerFitPushLongBar(SawyerFit):
 
         self.mujoco_objects = OrderedDict([
             ("block", piece), 
-            ("hole", self.grid),
+            ("hole", self.hole),
         ])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
@@ -519,8 +557,144 @@ class SawyerFitPushLongBar(SawyerFit):
         self.model.place_objects()
 
 
+class SawyerThreading(SawyerFit):
+    """Threading task."""
 
+    def _get_default_initializer(self):
+        initializer = SequentialCompositeSampler()
 
+        # NOTE: this z-offset accounts for small errors with placement (problem for slide joints)
+        initializer.sample_on_top(
+            "hole",
+            surface_name="table",
+            x_range=(-0.1, 0.15),
+            y_range=(-0.15, -0.15),
+            z_rotation=(-np.pi / 3., 0.),
+            z_offset=0.001, 
+            ensure_object_boundary_in_range=False,
+        )
+        initializer.sample_on_top(
+            "block",
+            surface_name="table",
+            x_range=[-0.2, -0.2],
+            y_range=[0.2, 0.2],
+            z_rotation=(np.pi / 2.),
+            ensure_object_boundary_in_range=False,
+        )
+        return initializer
 
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = {}
 
+        # (low, high, number of grid points for this dimension)
+        hole_x_bounds = (-0.1, 0.15, 3)
+        hole_y_bounds = (-0.15, -0.15, 1)
+        hole_z_rot_bounds = (-np.pi / 3., 0., 3)
+        hole_z_offset = 0.001
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
 
+        block_x_bounds = (-0.2, -0.2, 1)
+        block_y_bounds = (0.2, 0.2, 1)
+        block_z_rot_bounds = (np.pi / 2., np.pi / 2., 1)
+        block_z_offset = None
+        ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds, block_z_offset]
+
+        return ret
+
+    def _load_model(self):
+        """
+        Loads an xml model, puts it in self.model
+        """
+        SawyerEnv._load_model(self)
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = LegoArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+
+        self.obj_size = np.array([0.02, 0.1, 0.02])
+
+        # make density light so object is not too heavy to pick up
+        piece = BoxObject(
+            size=self.obj_size,
+            rgba=[1, 0, 0, 1],
+            density=0.1,
+        )
+
+        # cross-section hole
+        pattern = np.zeros((3, 3, 1))
+        pattern[0] = [[1], [1], [1]]
+        pattern[1] = [[1], [0], [1]]
+        pattern[2] = [[1], [1], [1]]
+
+        # 2D slide and hinge joints for hole
+        slide_joint1 = dict(
+            pos="0 0 0",
+            axis="1 0 0",
+            type="slide",
+            limited="false",
+            damping="0.5",
+        )
+        slide_joint2 = dict(
+            pos="0 0 0",
+            axis="0 1 0",
+            type="slide",
+            limited="false",
+            damping="0.5",
+        )
+        hinge_joint = dict(
+            pos="0 0 0",
+            axis="0 0 1",
+            type="hinge",
+            limited="false",
+            damping="0.005",
+        )
+        joints = [slide_joint1, slide_joint2, hinge_joint]
+
+        self.hole = BoxPatternObject(
+            unit_size=[0.025, 0.01, 0.025],
+            pattern=pattern,
+            joint=joints,
+            rgba=[0, 1, 0, 1],
+        )
+        self.hole_size = np.array(self.hole.total_size)
+
+        self.mujoco_objects = OrderedDict([
+            ("block", piece), 
+            ("hole", self.hole),
+        ])
+
+        # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
+        self.init_qpos = np.array([0.00, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
+        self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopMergedTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+
+    def _check_success(self):
+        """
+        Returns True if task has been completed.
+        """
+
+        # just check if the center of the block and the hole are close enough
+        block_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["block"]])
+        hole_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["hole"]])
+        radius = self.hole_size[1]
+        return (np.linalg.norm(block_pos - hole_pos) < radius)

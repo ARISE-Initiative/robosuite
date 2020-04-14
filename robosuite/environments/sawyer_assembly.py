@@ -4,14 +4,14 @@ import numpy as np
 from copy import deepcopy
 
 from robosuite.utils.mjcf_utils import bounds_to_grid
-from robosuite.utils.transform_utils import convert_quat
+import robosuite.utils.transform_utils as T
 import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import LegoArena
 from robosuite.models.objects import BoxPatternObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler
+from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler, RoundRobinSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -169,7 +169,7 @@ class SawyerAssembly(SawyerEnv):
     def _get_default_initializer(self):
         initializer = SequentialCompositeSampler()
         initializer.sample_on_top(
-            "grid",
+            "base",
             surface_name="table",
             x_range=[0.25, 0.25],
             y_range=[0.25, 0.25],
@@ -200,25 +200,34 @@ class SawyerAssembly(SawyerEnv):
         environment into a fixed set of known task instances.
         This is for reproducibility in policy evaluation.
         """
+
         assert(self.eval_mode)
 
-        bounds = list(self._grid_bounds_for_eval_mode())
-        if self.perturb_evals:
-            # perturbation sizes should be half the grid spacing
-            perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds]
-        else:
-            perturb_sizes = [None for b in bounds]
+        ordered_object_names = ["base", "block1", "block2"]
+        bounds = self._grid_bounds_for_eval_mode()
+        initializer = SequentialCompositeSampler(round_robin_all_pairs=True)
 
-        object_grid = bounds_to_grid(bounds)
-        self.placement_initializer  = RoundRobinSampler(
-            x_range=object_grid[0],
-            y_range=object_grid[1],
-            ensure_object_boundary_in_range=False,
-            z_rotation=object_grid[2],
-            x_perturb=perturb_sizes[0],
-            y_perturb=perturb_sizes[1],
-            z_rotation_perturb=perturb_sizes[2],
-        )
+        for name in ordered_object_names:
+            if self.perturb_evals:
+                # perturbation sizes should be half the grid spacing
+                perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[name]]
+            else:
+                perturb_sizes = [None for b in bounds[name]]
+
+            grid = bounds_to_grid(bounds[name])
+            sampler = RoundRobinSampler(
+                x_range=grid[0],
+                y_range=grid[1],
+                ensure_object_boundary_in_range=False,
+                z_rotation=grid[2],
+                x_perturb=perturb_sizes[0],
+                y_perturb=perturb_sizes[1],
+                z_rotation_perturb=perturb_sizes[2],
+            )
+            initializer.append_sampler(name, sampler)
+
+        self.placement_initializer = initializer
+        return initializer
 
     def _grid_bounds_for_eval_mode(self):
         """
@@ -226,17 +235,29 @@ class SawyerAssembly(SawyerEnv):
         and z-rotations for reproducible evaluations, and number of points
         per dimension.
         """
+        ret = {}
 
         # (low, high, number of grid points for this dimension)
-        x_bounds = (-0.3, 0.2, 3)
-        y_bounds = (-0.3, 0.2, 3)
-        # z_rot_bounds = (1., 1., 1)
-        z_rot_bounds = (0., 2. * np.pi, 3)
-        return x_bounds, y_bounds, z_rot_bounds
+        base_x_bounds = (0.25, 0.25, 1)
+        base_y_bounds = (0.25, 0.25, 1)
+        base_z_rot_bounds = (0., 0., 1)
+        ret["base"] = [base_x_bounds, base_y_bounds, base_z_rot_bounds]
+
+        block1_x_bounds = (-0.3, 0.2, 3)
+        block1_y_bounds = (-0.3, 0.2, 3)
+        block1_z_rot_bounds = (0., 2. * np.pi, 3)
+        ret["block1"] = [block1_x_bounds, block1_y_bounds, block1_z_rot_bounds]
+
+        block2_x_bounds = (-0.3, 0.2, 3)
+        block2_y_bounds = (-0.3, 0.2, 3)
+        block2_z_rot_bounds = (0., 2. * np.pi, 3)
+        ret["block2"] = [block2_x_bounds, block2_y_bounds, block2_z_rot_bounds]
+
+        return ret
 
     def lego_sample(self):
         """
-        Returns a randomly sampled block,hole
+        Samples patterns to make assembly pieces.
         """
         blocks = [[1,1,1],[1,0,1],[1,1,0],[1,0,0]]
         hole_side = [[0,0,0],[0,0.95,0],[0,0,1],[0,1,1]]
@@ -253,7 +274,6 @@ class SawyerAssembly(SawyerEnv):
         block1 = [[[1,1,1],[1,1,1],[1,1,1]],
                 [[0,0,0],[0.9,.9,.9],[0,0,0]],
                 [[0,0,0],[.9,.9,.9],[0,0,0]],]
-        hole = [[[0,0,0],[0,0,0],[0,0,0]]]
 
         block1[0][0] = side1
         block1[0][2] = side2
@@ -261,19 +281,19 @@ class SawyerAssembly(SawyerEnv):
         hole[0][2] = hole2
 
         # Generate hole
-        grid_x = 8
-        grid_z = 1
-        grid = np.ones((grid_z, grid_x, grid_x))
+        base_x = 8
+        base_z = 1
+        base = np.ones((base_z, base_x, base_x))
 
-        offset_x = random.randint(1,grid_x-4)
-        offset_y = random.randint(1,grid_x-3)
+        offset_x = random.randint(1, base_x - 4)
+        offset_y = random.randint(1, base_x - 3)
 
         for z in range(len(hole)):
             for y in range(len(hole[0])):
                 for x in range(len(hole[0][0])):
-                    grid[z][offset_y+y][offset_x+x] = hole[z][y][x]
-        grid = np.rot90(grid,random.randint(0,3),(1,2))
-        # Generate Pieces
+                    base[z][offset_y + y][offset_x + x] = base[z][y][x]
+        base = np.rot90(base,random.randint(0,3),(1,2))
+
 
         block2 = [[[1,1,1],[0,0,0],[1,1,1]],
                 [[1,1,1],[0,0,0],[1,1,1]],
@@ -310,7 +330,7 @@ class SawyerAssembly(SawyerEnv):
             unit_size=[0.017, 0.017, 0.017], 
             pattern=h2,
         )
-        self.grid = BoxPatternObject(
+        self.base = BoxPatternObject(
             unit_size=[0.0175, 0.0175, 0.0175], 
             pattern=pg, 
             joint=[],
@@ -318,7 +338,7 @@ class SawyerAssembly(SawyerEnv):
         self.mujoco_objects = OrderedDict([
             ("block1", h1), 
             ("block2", h2), 
-            ("grid", self.grid),
+            ("base", self.base),
         ])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
@@ -341,7 +361,11 @@ class SawyerAssembly(SawyerEnv):
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
         super()._get_reference()
-        self.block_body_id = self.sim.model.body_name2id("block1")
+        self.object_body_ids = {}
+        self.object_body_ids["base"]  = self.sim.model.body_name2id("base")
+        self.object_body_ids["block1"] = self.sim.model.body_name2id("block1")
+        self.object_body_ids["block2"]  = self.sim.model.body_name2id("block2")
+
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
         ]
@@ -396,20 +420,37 @@ class SawyerAssembly(SawyerEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # position and rotation of object
-            block_pos = np.array(self.sim.data.body_xpos[self.block_body_id])
-            block_quat = convert_quat(
-                np.array(self.sim.data.body_xquat[self.block_body_id]), to="xyzw"
-            )
-            di["block_pos"] = block_pos
-            di["block_quat"] = block_quat
 
-            gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
-            di["gripper_to_block"] = gripper_site_pos - block_pos
+            # remember the keys to collect into object info
+            object_state_keys = []
 
-            di["object-state"] = np.concatenate(
-                [block_pos, block_quat, di["gripper_to_block"]]
-            )
+            # for conversion to relative gripper frame
+            gripper_pose = T.pose2mat((di["eef_pos"], di["eef_quat"]))
+            world_pose_in_gripper = T.pose_inv(gripper_pose)
+
+            for k in self.object_body_ids:
+                # position and rotation of the pieces
+                body_id = self.object_body_ids[k]
+                block_pos = np.array(self.sim.data.body_xpos[body_id])
+                block_quat = T.convert_quat(
+                    np.array(self.sim.data.body_xquat[body_id]), to="xyzw"
+                )
+                di["{}_pos".format(k)] = block_pos
+                di["{}_quat".format(k)] = block_quat
+
+                # get relative pose of object in gripper frame
+                block_pose = T.pose2mat((block_pos, block_quat))
+                rel_pose = T.pose_in_A_to_pose_in_B(block_pose, world_pose_in_gripper)
+                rel_pos, rel_quat = T.mat2pose(rel_pose)
+                di["{}_to_eef_pos".format(k)] = rel_pos
+                di["{}_to_eef_quat".format(k)] = rel_quat
+
+                object_state_keys.append("{}_pos".format(k))
+                object_state_keys.append("{}_quat".format(k))
+                object_state_keys.append("{}_to_eef_pos".format(k))
+                object_state_keys.append("{}_to_eef_quat".format(k))
+
+            di["object-state"] = np.concatenate([di[k] for k in object_state_keys])
 
         return di
 
