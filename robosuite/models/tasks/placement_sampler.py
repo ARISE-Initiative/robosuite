@@ -397,6 +397,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
                     x_range=x_range,
                     y_range=y_range,
                     z_rotation=z_rotation,
+                    z_offset=z_offset,
                     ensure_object_boundary_in_range=ensure_object_boundary_in_range
                 )
             )
@@ -498,6 +499,7 @@ class RoundRobinSampler(UniformRandomSampler):
         x_perturb=None,
         y_perturb=None,
         z_rotation_perturb=None,
+        z_offset=None,
     ):
         # x_range, y_range, and z_rotation should all be lists of values to rotate between
         assert(len(x_range) == len(y_range))
@@ -518,6 +520,7 @@ class RoundRobinSampler(UniformRandomSampler):
             y_range=y_range,
             ensure_object_boundary_in_range=ensure_object_boundary_in_range,
             z_rotation=z_rotation,
+            z_offset=z_offset,
         )
 
     @property

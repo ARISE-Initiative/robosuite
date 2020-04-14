@@ -11,7 +11,7 @@ from robosuite.environments.sawyer import SawyerEnv
 from robosuite.models.arenas import LegoArena
 from robosuite.models.objects import BoxPatternObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler
+from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler, RoundRobinSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -169,7 +169,7 @@ class SawyerLego(SawyerEnv):
     def _get_default_initializer(self):
         initializer = SequentialCompositeSampler()
         initializer.sample_on_top(
-            "grid",
+            "hole",
             surface_name="table",
             x_range=(0.0, 0.0),
             y_range=(0.0, 0.0),
@@ -192,25 +192,34 @@ class SawyerLego(SawyerEnv):
         environment into a fixed set of known task instances.
         This is for reproducibility in policy evaluation.
         """
+
         assert(self.eval_mode)
 
-        bounds = list(self._grid_bounds_for_eval_mode())
-        if self.perturb_evals:
-            # perturbation sizes should be half the grid spacing
-            perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds]
-        else:
-            perturb_sizes = [None for b in bounds]
+        ordered_object_names = ["hole", "block"]
+        bounds = self._grid_bounds_for_eval_mode()
+        initializer = SequentialCompositeSampler(round_robin_all_pairs=True)
 
-        object_grid = bounds_to_grid(bounds)
-        self.placement_initializer  = RoundRobinSampler(
-            x_range=object_grid[0],
-            y_range=object_grid[1],
-            ensure_object_boundary_in_range=False,
-            z_rotation=object_grid[2],
-            x_perturb=perturb_sizes[0],
-            y_perturb=perturb_sizes[1],
-            z_rotation_perturb=perturb_sizes[2],
-        )
+        for name in ordered_object_names:
+            if self.perturb_evals:
+                # perturbation sizes should be half the grid spacing
+                perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds[name]]
+            else:
+                perturb_sizes = [None for b in bounds[name]]
+
+            grid = bounds_to_grid(bounds[name])
+            sampler = RoundRobinSampler(
+                x_range=grid[0],
+                y_range=grid[1],
+                ensure_object_boundary_in_range=False,
+                z_rotation=grid[2],
+                x_perturb=perturb_sizes[0],
+                y_perturb=perturb_sizes[1],
+                z_rotation_perturb=perturb_sizes[2],
+            )
+            initializer.append_sampler(name, sampler)
+
+        self.placement_initializer = initializer
+        return initializer
 
     def _grid_bounds_for_eval_mode(self):
         """
@@ -218,13 +227,20 @@ class SawyerLego(SawyerEnv):
         and z-rotations for reproducible evaluations, and number of points
         per dimension.
         """
+        ret = {}
 
         # (low, high, number of grid points for this dimension)
-        x_bounds = (-0.3, -0.1, 3)
-        y_bounds = (-0.3, -0.1, 3)
-        # z_rot_bounds = (1., 1., 1)
-        z_rot_bounds = (0., 2. * np.pi, 3)
-        return x_bounds, y_bounds, z_rot_bounds
+        hole_x_bounds = (0., 0., 1)
+        hole_y_bounds = (0., 0., 1)
+        hole_z_rot_bounds = (0., 0., 1)
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds]
+
+        block_x_bounds = (-0.3, -0.1, 3)
+        block_y_bounds = (-0.3, -0.1, 3)
+        block_z_rot_bounds = (0., 2. * np.pi, 3)
+        ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds]
+
+        return ret
 
     def lego_sample(self):
         """
@@ -286,14 +302,14 @@ class SawyerLego(SawyerEnv):
             unit_size=[0.017, 0.017, 0.017],
             pattern=[ph],
         )
-        self.grid = BoxPatternObject(
+        self.hole = BoxPatternObject(
             unit_size=[0.0175, 0.0175, 0.0175], 
             pattern=pg,
             joint=[],
         )
         self.mujoco_objects = OrderedDict([
             ("block", piece),
-            ("grid", self.grid),
+            ("hole", self.hole),
         ])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
@@ -317,7 +333,7 @@ class SawyerLego(SawyerEnv):
         """
         super()._get_reference()
         self.block_body_id = self.sim.model.body_name2id("block")
-        self.grid_body_id = self.sim.model.body_name2id("grid")
+        self.hole_body_id = self.sim.model.body_name2id("hole")
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
         ]
@@ -411,8 +427,8 @@ class SawyerLego(SawyerEnv):
         """
         Returns True if task has been completed.
         """
-        check = self.grid.in_box(
-            position=np.array(self.sim.data.body_xpos[self.grid_body_id]), 
+        check = self.hole.in_box(
+            position=np.array(self.sim.data.body_xpos[self.hole_body_id]), 
             object_position=np.array(self.sim.data.body_xpos[self.block_body_id]),
         )
         return check
@@ -542,17 +558,16 @@ class SawyerLegoFit(SawyerLego):
         ph,pg = self.lego_sample()
 
         piece = BoxPatternObject(
-            unit_size=[0.017, 0.017, 0.017], 
+            unit_size=[0.017, 0.017, 0.017 * 0.5], 
             pattern=[ph], 
-            z_compress=0.5,
         )
-        self.grid = BoxPatternObject(
+        self.hole = BoxPatternObject(
             unit_size=[0.0175, 0.0175, 0.0175 * 0.5], 
             pattern=pg, 
         )
         self.mujoco_objects = OrderedDict([
             ("block", piece),
-            ("grid", self.grid),
+            ("hole", self.hole),
         ])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
