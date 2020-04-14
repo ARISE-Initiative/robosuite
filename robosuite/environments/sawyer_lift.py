@@ -948,6 +948,7 @@ class SawyerPositionTargetPress(SawyerLiftPositionTarget):
             damping="1"
         )
         mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01], joint=[slide_joint])
+        # mujoco_objects["cube2"] = BoxObject(size=(0.02, 0.02, 0.02))
         # mujoco_objects["button"] = CylinderObject(rgba=(0, 0, 1, 1), size=[0.03, 0.01])
         return mujoco_objects, visual_objects
 
