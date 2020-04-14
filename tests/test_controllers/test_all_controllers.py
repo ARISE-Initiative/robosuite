@@ -138,7 +138,7 @@ def test_all_controllers():
         while count < num_test_steps:
             action = neutral.copy()
             for i in range(steps_per_action):
-                if controller_name == 'ee_ik' and count > 2:
+                if controller_name.lower() == 'ee_ik' and count > 2:
                     # Convert from euler angle to quat here since we're working with quats
                     angle = np.zeros(3)
                     angle[count - 3] = test_value
