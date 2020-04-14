@@ -3,15 +3,15 @@ import random
 import numpy as np
 from copy import deepcopy
 
-from robosuite.utils.mjcf_utils import range_to_uniform_grid
+from robosuite.utils.mjcf_utils import bounds_to_grid
 from robosuite.utils.transform_utils import convert_quat
 import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import LegoArena
-from robosuite.models.objects import Hole3dObject, GridObject
+from robosuite.models.objects import BoxPatternObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler
 from robosuite.controllers import load_controller_config
 import os
 
@@ -140,12 +140,7 @@ class SawyerAssembly(SawyerEnv):
         if placement_initializer is not None:
             self.placement_initializer = placement_initializer
         else:
-            self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.3, 0.2],
-                y_range=[-0.3, 0.2],
-                ensure_object_boundary_in_range=False,
-                z_rotation=None,
-            )
+            self.placement_initializer = self._get_default_initializer()
 
         super().__init__(
             controller_config=controller_config,
@@ -171,55 +166,58 @@ class SawyerAssembly(SawyerEnv):
             perturb_evals=perturb_evals,
         )
 
+    def _get_default_initializer(self):
+        initializer = SequentialCompositeSampler()
+        initializer.sample_on_top(
+            "grid",
+            surface_name="table",
+            x_range=[0.25, 0.25],
+            y_range=[0.25, 0.25],
+            z_rotation=0.,
+            ensure_object_boundary_in_range=False,
+        )
+        initializer.sample_on_top(
+            "block1",
+            surface_name="table",
+            x_range=[-0.3, 0.2],
+            y_range=[-0.3, 0.2],
+            z_rotation=None,
+            ensure_object_boundary_in_range=False,
+        )
+        initializer.sample_on_top(
+            "block2",
+            surface_name="table",
+            x_range=[-0.3, 0.2],
+            y_range=[-0.3, 0.2],
+            z_rotation=None,
+            ensure_object_boundary_in_range=False,
+        )
+        return initializer
+
     def _get_placement_initializer_for_eval_mode(self):
         """
         Sets a placement initializer that is used to initialize the
         environment into a fixed set of known task instances.
         This is for reproducibility in policy evaluation.
         """
-
         assert(self.eval_mode)
 
-        # set up placement grid by getting bounds per dimension and then
-        # using meshgrid to get all combinations
-        x_bounds, y_bounds, z_rot_bounds = self._grid_bounds_for_eval_mode()
-        x_grid = range_to_uniform_grid(a=x_bounds[0], b=x_bounds[1], n=x_bounds[2])
-        y_grid = range_to_uniform_grid(a=y_bounds[0], b=y_bounds[1], n=y_bounds[2])
-        z_rotation = range_to_uniform_grid(a=z_rot_bounds[0], b=z_rot_bounds[1], n=z_rot_bounds[2])
-        grid = np.meshgrid(x_grid, y_grid, z_rotation)
-        x_grid = grid[0].ravel()
-        y_grid = grid[1].ravel()
-        z_rotation = grid[2].ravel()
-        grid_length = x_grid.shape[0]
-
-        round_robin_period = grid_length
+        bounds = list(self._grid_bounds_for_eval_mode())
         if self.perturb_evals:
-            # sample 100 rounds of perturbations and then sampler will repeat
-            round_robin_period *= 100
+            # perturbation sizes should be half the grid spacing
+            perturb_sizes = [((b[1] - b[0]) / b[2]) / 2. for b in bounds]
+        else:
+            perturb_sizes = [None for b in bounds]
 
-            # perturbation size should be half the grid spacing
-            x_pos_perturb_size = ((x_bounds[1] - x_bounds[0]) / x_bounds[2]) / 2.
-            y_pos_perturb_size = ((y_bounds[1] - y_bounds[0]) / y_bounds[2]) / 2.
-            z_rot_perturb_size = ((z_rot_bounds[1] - z_rot_bounds[0]) / z_rot_bounds[2]) / 2.
-
-        # assign grid locations for the full round robin schedule
-        final_x_grid = np.zeros(round_robin_period)
-        final_y_grid = np.zeros(round_robin_period)
-        final_z_grid = np.zeros(round_robin_period)
-        for t in range(round_robin_period):
-            g_ind = t % grid_length
-            x, y, z = x_grid[g_ind], y_grid[g_ind], z_rotation[g_ind]
-            if self.perturb_evals:
-                x += np.random.uniform(low=-x_pos_perturb_size, high=x_pos_perturb_size)
-                y += np.random.uniform(low=-y_pos_perturb_size, high=y_pos_perturb_size)
-                z += np.random.uniform(low=-z_rot_perturb_size, high=z_rot_perturb_size)
-            final_x_grid[t], final_y_grid[t], final_z_grid[t] = x, y, z
-
-        self.placement_initializer = RoundRobinSampler(
-            x_range=final_x_grid,
-            y_range=final_y_grid,
+        object_grid = bounds_to_grid(bounds)
+        self.placement_initializer  = RoundRobinSampler(
+            x_range=object_grid[0],
+            y_range=object_grid[1],
             ensure_object_boundary_in_range=False,
-            z_rotation=final_z_grid
+            z_rotation=object_grid[2],
+            x_perturb=perturb_sizes[0],
+            y_perturb=perturb_sizes[1],
+            z_rotation_perturb=perturb_sizes[2],
         )
 
     def _grid_bounds_for_eval_mode(self):
@@ -254,8 +252,9 @@ class SawyerAssembly(SawyerEnv):
 
         block1 = [[[1,1,1],[1,1,1],[1,1,1]],
                 [[0,0,0],[0.9,.9,.9],[0,0,0]],
-                [[0,0,0],[.9,.9,.9],[0,0,0]],
-                    ]
+                [[0,0,0],[.9,.9,.9],[0,0,0]],]
+        hole = [[[0,0,0],[0,0,0],[0,0,0]]]
+
         block1[0][0] = side1
         block1[0][2] = side2
         hole[0][0] = hole1
@@ -264,7 +263,7 @@ class SawyerAssembly(SawyerEnv):
         # Generate hole
         grid_x = 8
         grid_z = 1
-        grid = np.ones((grid_z,grid_x,grid_x))
+        grid = np.ones((grid_z, grid_x, grid_x))
 
         offset_x = random.randint(1,grid_x-4)
         offset_y = random.randint(1,grid_x-3)
@@ -276,12 +275,12 @@ class SawyerAssembly(SawyerEnv):
         grid = np.rot90(grid,random.randint(0,3),(1,2))
         # Generate Pieces
 
-        block2 = [ [[1,1,1],[0,0,0],[1,1,1]],
+        block2 = [[[1,1,1],[0,0,0],[1,1,1]],
                 [[1,1,1],[0,0,0],[1,1,1]],
                 [[1,1,1],[1,1,1],[1,1,1]],
                 [[0,0,0],[0,1,0],[0,0,0]]
                     ]
-        return block1, block2,grid
+        return block1, block2, grid
 
     def _load_model(self):
         """
@@ -301,20 +300,33 @@ class SawyerAssembly(SawyerEnv):
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
         # initialize objects of interest
-        h1,h2,pg = self.lego_sample()
+        h1, h2, pg = self.lego_sample()
 
-        h1 = Hole3dObject(size= 0.017, pattern = h1)
-        h2 = Hole3dObject(size= 0.017, pattern = h2)
-        self.grid = GridObject(size=0.0175, pattern=pg, offset=0.25)
-        self.mujoco_arena.table_body.append(self.grid.get_collision(name='grid',site=True))
-        self.mujoco_objects = OrderedDict([("block1", h1),("block2", h2)])
+        h1 = BoxPatternObject(
+            unit_size=[0.017, 0.017, 0.017], 
+            pattern=h1,
+        )
+        h2 = BoxPatternObject(
+            unit_size=[0.017, 0.017, 0.017], 
+            pattern=h2,
+        )
+        self.grid = BoxPatternObject(
+            unit_size=[0.0175, 0.0175, 0.0175], 
+            pattern=pg, 
+            joint=[],
+        )
+        self.mujoco_objects = OrderedDict([
+            ("block1", h1), 
+            ("block2", h2), 
+            ("grid", self.grid),
+        ])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
         self.init_qpos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
         self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopTask(
+        self.model = TableTopMergedTask(
             self.mujoco_arena,
             self.mujoco_robot,
             self.mujoco_objects,

@@ -326,256 +326,436 @@ def _get_randomized_range(val,
                              .format(str(val), str(provided_range)))
         return [val]
 
-
-class BoundingObject(MujocoGeneratedObject):
+class CompositeBoxObject(MujocoGeneratedObject):
     """
-    Generates bounding box hole object for sawyer fit
+    An object constructed out of box geoms to make more intricate shapes.
     """
 
     def __init__(
         self,
-        size=[0.1,0.1],
-        hole_size = [0.05,0.05,0.05],
-        tolerance = 1.03,
-        offset = [0.1,0.05,0.4]
+        total_size,
+        unit_size,
+        geom_locations,
+        geom_sizes,
+        geom_names=None,
+        geom_rgbas=None,
+        joint=None,
+        rgba=None,
     ):
-        super().__init__()
-        self.size = size
-        self.hole_size = tolerance*np.asarray(hole_size)
-        self.offset=np.asarray(offset)
+        """
+        Args:
+            total_size (list): half-size in each dimension for the complete box
+
+            unit_size (list): half-size in each dimension for the geom grid. The
+                @geom_locations are specified in these units.
+
+            geom_locations (list): list of geom locations in the composite. Each 
+                location should be a list or tuple of 3 elements and all 
+                locations are specified in terms of 2 * @unit_size and are relative
+                to the lower left corner of the total box (e.g. (0, 0, 0)
+                corresponds to this corner). Note the factor of 2! The x, y, and z
+                directions are aligned with the MuJoCo world frame.
+
+            geom_sizes (list): list of geom sizes ordered the same as @geom_locations
+
+            geom_names (list): list of geom names ordered the same as @geom_locations. The
+                names will get appended with an underscore to the passed name in @get_collision
+                and @get_visual
+
+            geom_rgbas (list): list of geom colors ordered the same as @geom_locations. If 
+                passed as an argument, @rgba is ignored.
+        """
+        super().__init__(joint=joint, rgba=rgba)
+
+        self.total_size = np.array(total_size)
+        self.unit_size = np.array(unit_size)
+        self.geom_locations = np.array(geom_locations)
+        self.geom_sizes = np.array(geom_sizes)
+        self.geom_names = list(geom_names) if geom_names is not None else None
+        self.geom_rgbas = list(geom_rgbas) if geom_rgbas is not None else None
+        self.rgba = rgba
+
     def get_bottom_offset(self):
-        return np.array([0, 0, 0])
+        return np.array([0., 0., -self.total_size[2]])
 
     def get_top_offset(self):
-        return np.array([0, 0, self.size])
+        return np.array(0., 0., self.total_size[2])
 
     def get_horizontal_radius(self):
-        return np.sqrt(2) * (self.size)
+        return np.linalg.norm(self.total_size[:2], 2)
 
-    def get_collision(self, name=None, site=None):
+    def _make_geoms(self, name=None, site=None, **geom_properties):
         main_body = new_body()
         if name is not None:
             main_body.set("name", name)
-        x = self.size[0]-self.hole_size[0]
-        y = self.size[1]-self.hole_size[1]
-        x1 = np.random.uniform(x/5,4*x/5)
-        x2 = x-x1
-        y1 = np.random.uniform(y/5,4*y/5)
-        y2 = y-y1
-        main_body.append(
-        new_geom(
-            geom_type="box", size=[x1, self.size[1],self.hole_size[2]],pos=self.offset+[self.size[0]-x1, 0.0, self.hole_size[2]], group=1,
-            material="lego", rgba=None)
-        )
-        main_body.append(
-        new_geom(
-            geom_type="box", size=[x2, self.size[1],self.hole_size[2]],pos=self.offset+[-self.size[0]+x2, 0.0, self.hole_size[2]], group=1,
-            material="lego", rgba=None)
-        )
-        main_body.append(
-        new_geom(
-            geom_type="box", size=[self.size[0],y1,self.hole_size[2]],pos=self.offset+[0.0,-self.size[1]+y1, self.hole_size[2]], group=1,
-            material="lego", rgba=None)
-        )
-        main_body.append(
-        new_geom(
-            geom_type="box", size=[self.size[0],y2,self.hole_size[2]],pos=self.offset+[0.0,self.size[1]-y2, self.hole_size[2]], group=1,
-            material="lego", rgba=None)
-        )
-        if site:
-            # add a site as well
-            template = self.get_site_attrib_template()
-            if name is not None:
-                template["name"] = name
-            main_body.append(ET.Element("site", attrib=template))
+
+        for i in range(self.geom_locations.shape[0]):
+
+            # scale each dimension's size by the unit size in that dimension
+            size = [
+                self.geom_sizes[i][0] * self.unit_size[0],
+                self.geom_sizes[i][1] * self.unit_size[1],
+                self.geom_sizes[i][2] * self.unit_size[2],
+            ]
+
+            # use geom location to convert to position coordinate (the origin is the
+            # center of the composite object)
+            loc = self.geom_locations[i]
+            pos = [
+                (-self.total_size[0] + size[0]) + loc[0] * (2. * self.unit_size[0]),
+                (-self.total_size[1] + size[1]) + loc[1] * (2. * self.unit_size[1]),
+                (-self.total_size[2] + size[2]) + loc[2] * (2. * self.unit_size[2]),
+            ]
+
+            # geom name
+            if self.geom_names is not None:
+                geom_name = "{}_{}".format(name, self.geom_names[i])
+            else:
+                geom_name = "{}_{}".format(name, i)
+
+            # geom rgba
+            if self.geom_rgbas is not None and self.geom_rgbas[i] is not None:
+                geom_rgba = self.geom_rgbas[i]
+            else:
+                geom_rgba = self.rgba
+
+            # add geom
+            main_body.append(
+                new_geom(
+                    size=size, 
+                    pos=pos, 
+                    name=geom_name,
+                    rgba=geom_rgba,
+                    **geom_properties,
+                )
+            )
+
         return main_body
 
-    def in_grid(self,point,size):
-        # checks if an object centered at point of dimensions size is within the hole
-        result = True
-        x,y,z = point
-        if not (x -size[0] > self.offset[0]-self.size[0] and x + size[0] < self.offset[0]+self.size[0]):
-            result = False
-        if not (y-size[1] > self.offset[1]-self.size[1] and y + size[1] < self.offset[1]+self.size[1]):
-            result = False
-        if not (z - size[2] > self.offset[2] and z + size[2] < 1.1*(self.offset[2]+2*self.hole_size[2])):
-            #Hack for z tolerance
-            #print("z",self.offset[2],self.offset[2]+2*self.hole_size[2])
-            result = False
-        return result
+    def get_collision(self, name=None, site=None):
+        geom_properties = {
+            'geom_type': 'box',
+            'group': 1,
+            'density': '100',
+        }
+        if self.rgba is None:
+            # if no color, default to lego material
+            geom_properties['material'] = 'lego'
+        return self._make_geoms(name=name, site=site, **geom_properties)
 
     def get_visual(self, name=None, site=None):
-        return self.get_collision(name, site)
+        geom_properties = {
+            'geom_type': 'box',
+            'group': 1,
+            'conaffinity': '0', 
+            'contype': '0',
+            'density': '100',
+        }
+        if self.rgba is None:
+            # if no color, default to lego material
+            geom_properties['material'] = 'lego'
+        return self._make_geoms(name=name, site=site, **geom_properties)
+
+    def in_box(self, position, object_position):
+        """
+        Checks whether the object is contained within this CompositeBoxObject.
+        Useful for when the CompositeBoxObject has holes and the object should
+        be within one of the holes. Makes an approximation by treating the
+        object as a point, and the CompositeBoxObject as an axis-aligned grid.
+
+        Args:
+            position: 3D body position of CompositeBoxObject
+            object_position: 3D position of object to test for insertion
+        """
+        ub = position + self.total_size
+        lb = position - self.total_size
+
+        # fudge factor for the z-check, since after insertion the object falls to table
+        lb[2] -= 0.01
+
+        return np.all(object_position > lb) and np.all(object_position < ub)
 
 
-class HoleObject(MujocoGeneratedObject):
+class BoundingObject(CompositeBoxObject):
     """
-    Generates 2d lego brick
+    Generates a box with a box-shaped hole cut out of it.
     """
 
     def __init__(
         self,
-        size=0.01,
-        tolerance = 0.98,
-        pattern = [[1,1,1],[1,0,1]],
-        z_compress = 1.0,
-        name = ''    ):
-        super().__init__()
-        self.size = tolerance*size
-        self.pattern = pattern
-        self.z_compress = z_compress
-        self.name = name
-    def get_bottom_offset(self):
-        return np.array([0, 0, -1 * self.size])
+        size=[0.1, 0.1, 0.1],
+        hole_size=[0.05, 0.05, 0.05],
+        hole_location=[0., 0.],
+        hole_rgba=None,
+        joint=None,
+        rgba=None,
+    ):
+        """
+        NOTE: @hole_location should be relative to the center of the object, and be 2D, since
+              the z-location is inferred to be at the top of the box.
+        """
+        # make sure hole fits within box
+        assert np.all(hole_size < size)
 
-    def get_top_offset(self):
-        return np.array([0, 0, self.size])
+        self.hole_size = np.array(hole_size)
+        self.hole_rgba = np.array(hole_rgba) if hole_rgba is not None else None
+        self.hole_location = np.array(hole_location)
 
-    def get_horizontal_radius(self):
-        return np.sqrt(2) * (self.size)
+        # if hole_location is None:
+        #     # find amount the hole can move within the bounding object, and sample a location
+        #     # that's relative to the center of the object
+        #     x_hole_lim = size[0] - self.hole_size[0] # these are half-sizes
+        #     y_hole_lim = size[1] - self.hole_size[1]
+        #     x_hole = np.random.uniform(-0.6 * x_hole_lim, 0.6 * x_hole_lim)
+        #     y_hole = np.random.uniform(-0.6 * y_hole_lim, 0.6 * y_hole_lim)
+        #     self.hole_location = np.array([x_hole, y_hole])
 
-    def get_collision(self, name=None, site=None):
-        main_body = new_body()
-        if name is not None:
-            main_body.set("name", name)
+        # specify all geoms in unnormalized position coordinates
+        unit_size = [1., 1., 1.]
+        geom_args = self._geoms_from_init(
+            size=size, 
+            hole_size=self.hole_size, 
+            hole_location=self.hole_location, 
+            hole_rgba=self.hole_rgba,
+        )
 
-        pattern = self.pattern
-        cnt = 0
-        for i in range(len(pattern)):
-            for j in range(len(pattern[0])):
-                mat = 'lego1'
-                if self.name =='1':
-                    mat = 'lego'
-                if(pattern[i][j]):
-                    main_body.append(
-                    new_geom(
-                        geom_type="box", size=[self.size, self.size, self.z_compress*self.size], pos=[2*i*self.size-self.size*len(pattern), 2*j*self.size-self.size*len(pattern), 0.0], group=1,
-                        material=mat, rgba=None)
-                    )
-                    main_body[-1].set('name','block'+self.name+'-'+str(cnt))
-                    cnt +=1
-        if site:
-            # add a site as well
-            template = self.get_site_attrib_template()
-            if name is not None:
-                template["name"] = name
-            main_body.append(ET.Element("site", attrib=template))
-        return main_body
+        super().__init__(
+            total_size=size, 
+            unit_size=unit_size, 
+            joint=joint, 
+            rgba=rgba,
+            **geom_args,
+        )
 
-    def get_visual(self, name=None, site=None):
-        return self.get_collision(name, site)
+    def _geoms_from_init(self, size, hole_size, hole_location, hole_rgba):
+        """
+        Helper function to retrieve geoms to pass to super class, from the size,
+        hole size, and hole location.
+        """
+
+        # total size - hole size = remaining space on object
+        x_hole_lim = size[0] - hole_size[0]
+        y_hole_lim = size[1] - hole_size[1]
+        x_hole, y_hole = hole_location[0], hole_location[1]
+
+        # we add a top, bottom, left, and right geom that surround the hole, and
+        # a lower base geom that can fill up the bottom of the box to make
+        # the hole as shallow as it needs to be.
+        geom_names = ['top', 'bottom', 'left', 'right', 'hole_base']
+        geom_rgbas = [None, None, None, None, hole_rgba]
+
+        # geom sizes
+        #
+        # take sizes with hole at center and add sampled hole translation
+        top_size = [(x_hole_lim + x_hole) / 2., size[1], size[2]]
+        bottom_size = [(x_hole_lim - x_hole) / 2., size[1], size[2]]
+        left_size = [size[0], (y_hole_lim + y_hole) / 2., size[2]]
+        right_size = [size[0], (y_hole_lim - y_hole) / 2., size[2]]
+        hole_base_size = [hole_size[0], hole_size[1], (size[2] - hole_size[2])]
+        geom_sizes = [top_size, bottom_size, left_size, right_size, hole_base_size]
+
+        # geom locations
+        #
+        # top and left are at (0, 0), and bottom and right are just translated by 
+        # size of hole, and top and left respectively
+        top_loc = [0, 0, 0]
+        bottom_loc = [top_size[0] + hole_size[0], 0, 0]
+        left_loc = [0, 0, 0]
+        right_loc = [0, left_size[1] + hole_size[1], 0]
+        hole_base_loc = [top_size[0], left_size[1], 0]
+        geom_locations = [top_loc, bottom_loc, left_loc, right_loc, hole_base_loc]
+
+        return {
+            "geom_locations" : geom_locations,
+            "geom_sizes" : geom_sizes,
+            "geom_names" : geom_names,
+            "geom_rgbas" : geom_rgbas,
+        }
+
+#     def in_grid(self, position, object_position, object_size):
+#         """
+#         Args:
+#             position: 3D body position of BoundingObject
+#             object_position: 3D position of object to test for insertion
+#             object_size: 3D array of x, y, and z half-size bounding box dimensions for object
+#         """
+
+#         # convert into hole frame
+#         rel_pos = np.array(object_position) - np.array(position)
+
+#         # some tolerance for the object size
+#         object_size = np.array(object_size) * 0.95
+
+#         # bounds for object and for hole location
+#         object_lb = rel_pos - object_size
+#         object_ub = rel_pos + object_size
+#         hole_lb = self.hole_location - self.hole_size
+#         hole_ub = self.hole_location + self.hole_size
+
+#         # fudge factor for the z-check, since after insertion the object falls to table
+#         hole_lb[2] -= 0.01
+#         return np.all(object_lb > hole_lb) and np.all(object_ub < hole_ub)        
 
 
-class Hole3dObject(MujocoGeneratedObject):
+class BoxPatternObject(CompositeBoxObject):
     """
-    Generates the 3d grid object for assembly task
+    An object constructed out of box geoms to make more intricate shapes.
     """
 
     def __init__(
         self,
-        size=0.01,
-        pattern=[[1,1,1,1,1,1,1],[1,1,0,1,1,1,1],[1,1,0,0,0,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
-        offset =0,
-        z_compress = 1.0):
-        super().__init__()
-        self.size = size
-        self.pattern = pattern
-        self.offset = offset
-        self.z_compress = z_compress
-    def get_bottom_offset(self):
-        return np.array([0, 0, 0])
+        unit_size,
+        pattern,
+        joint=None,
+        rgba=None,
+    ):
+        """
+        Args:
+            unit_size (3d array / list): size of each unit block in each dimension
 
-    def get_top_offset(self):
-        return np.array([0, 0, self.size*2*len(self.pattern)])
+            pattern (3d array / list): array of normalized sizes specifying the
+                geometry of the shape. A "0" indicates the absence of a cube and
+                a "1" indicates the presence of a full unit block. The dimensions
+                correspond to z, x, and y respectively. 
+        """
 
-    def get_horizontal_radius(self):
-        return np.sqrt(2) * (4*self.size)
+        # number of blocks in z, x, and y
+        self.pattern = np.array(pattern)
+        self.nz, self.nx, self.ny = self.pattern.shape
 
-    def get_collision(self, name=None, site=None):
-        main_body = new_body()
-        if name is not None:
-            main_body.set("name", name)
-        pattern = self.pattern
-        for k in range(len(pattern)):
-            for i in range(len(pattern[0])):
-                for j in range(len(pattern[0][0])):
-                    if(pattern[k][i][j]>0):
-                        mat = 'lego'
-                        if k < len(pattern)-1 and i > 0 and j > 0 and i < len(pattern[0]) -1 and j < len(pattern[0][0])-1 :
-                            mat = 'lego1'
-                        main_body.append(
-                        new_geom(
-                            geom_type="box", size=[pattern[k][i][j]*self.size,pattern[k][i][j]*self.size, self.z_compress*self.size], pos=[self.offset+2*i*self.size-self.size*len(pattern[0]), self.offset+2*j*self.size-self.size*len(pattern[0][0]),self.size+2*k*self.z_compress*self.size], group=1,
-                            material=mat, rgba=None, density='100')
-                        )
+        total_size = [self.nx * unit_size[0], self.ny * unit_size[1], self.nz * unit_size[2]]
+        geom_args = self._geoms_from_init(self.pattern)
+        super().__init__(
+            total_size=total_size, 
+            unit_size=unit_size, 
+            joint=joint, 
+            rgba=rgba,
+            **geom_args,
+        )
 
-        return main_body
+    def _geoms_from_init(self, pattern):
+        """
+        Helper function to retrieve geoms to pass to super class.
+        """
+        geom_locations = []
+        geom_sizes = []
+        geom_names = []
+        nz, nx, ny = pattern.shape
+        for k in range(nz):
+            for i in range(nx):
+                for j in range(ny):
+                    if pattern[k, i, j] > 0:
+                        geom_sizes.append([1, 1, 1])
+                        geom_locations.append([i, j, k])
+                        geom_names.append("{}_{}_{}".format(k, i, j))
+        return {
+            "geom_locations" : geom_locations,
+            "geom_sizes" : geom_sizes,
+            "geom_names" : geom_names,
+        }
 
-        # Check if point is within the grid
-    def get_visual(self, name=None, site=None):
-        return self.get_collision(name, site)
 
-
-class GridObject(MujocoGeneratedObject):
+class BoundingPatternObject(BoundingObject, BoxPatternObject):
     """
-    Generates the hole object
+    Generates a box with a box-shaped hole cut out of it.
+    The box-shaped hole satisfies a pattern so that more intricate
+    voxelized holes are created.
     """
 
     def __init__(
         self,
-        size=0.01,
-        pattern=[[1,1,1,1,1,1,1],[1,1,0,1,1,1,1],[1,1,0,0,0,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1]],
-        offset =0,
-        z_compress = 1.0):
-        super().__init__()
-        self.size = size
-        self.pattern = pattern
-        self.offset = offset
-        self.z_compress = z_compress
-    def get_bottom_offset(self):
-        return np.array([0, 0, -1 * self.size])
+        unit_size,
+        pattern,
+        size=[0.1, 0.1, 0.1],
+        hole_size=[0.05, 0.05, 0.05],
+        hole_location=[0., 0.],
+        hole_rgba=None,
+        joint=None,
+        rgba=None,
+    ):
+        """
+        NOTE: @hole_location should be relative to the center of the object, and be 2D, since
+              the z-location is inferred to be at the top of the box.
+        """
 
-    def get_top_offset(self):
-        return np.array([0, 0, self.size])
+        # make sure hole fits within box
+        assert np.all(hole_size < size)
 
-    def get_horizontal_radius(self):
-        return np.sqrt(2) * (4*self.size)
+        # number of blocks in z, x, and y for the pattern
+        self.pattern = np.array(pattern)
+        self.nz, self.nx, self.ny = self.pattern.shape
 
-    def get_collision(self, name=None, site=None):
-        main_body = new_body()
-        if name is not None:
-            main_body.set("name", name)
-        pattern = self.pattern
-        for k in range(len(pattern)):
-            for i in range(len(pattern[0])):
-                for j in range(len(pattern[0][0])):
-                    if(pattern[k][i][j]>0):
-                        mat = 'lego'
-                        if k < len(pattern)-1 and i > 0 and j > 0 and i < len(pattern[0]) -1 and j < len(pattern[0][0])-1 :
-                            mat = 'lego1'
-                        main_body.append(
-                        new_geom(
-                            geom_type="box", size=[pattern[k][i][j]*self.size,pattern[k][i][j]*self.size, self.z_compress*self.size], pos=[self.offset+2*i*self.size-self.size*len(pattern[0]), self.offset+2*j*self.size-self.size*len(pattern[0][0]), 0.4+self.size+2*k*self.z_compress*self.size], group=1,
-                            material=mat, rgba=None, density='100')
-                        )
+        self.hole_size = np.array(hole_size)
+        self.hole_rgba = np.array(hole_rgba) if hole_rgba is not None else None
+        self.hole_location = np.array(hole_location)
 
-        return main_body
-    def in_grid(self,point):
-        # checks if point is within the hole
-        result = True
-        pattern = self.pattern
-        x,y,z = point
-        if not (x > self.offset-self.size*len(pattern[0]) and x < self.offset+self.size*len(pattern[0])):
-            result = False
-        if not (y > self.offset-self.size*len(pattern[0][0]) and y < self.offset+self.size*len(pattern[0][0])):
-            result = False
-        if not (z > 0.4 and z < 0.4+2*len(pattern)*self.z_compress*self.size):
-            result = False
-        return result
+        geom_args = self._geoms_from_init(
+            unit_size=unit_size,
+            pattern=self.pattern,
+            size=size, 
+            hole_size=self.hole_size, 
+            hole_location=self.hole_location, 
+            hole_rgba=self.hole_rgba,
+        )
 
-        # Check if point is within the grid
-    def get_visual(self, name=None, site=None):
-        return self.get_collision(name, site)
+        # specify all geoms in unnormalized position coordinates
+        unit_size = [1., 1., 1.]
+
+        CompositeBoxObject.__init__(
+            self,
+            total_size=size, 
+            unit_size=unit_size, 
+            joint=joint, 
+            rgba=rgba,
+            **geom_args,
+        )
+
+    def _geoms_from_init(self, unit_size, pattern, size, hole_size, hole_location, hole_rgba):
+        """
+        Helper function to retrieve geoms to pass to super class, from the size,
+        hole size, and hole location.
+        """
+        bounding_geom_args = BoundingObject._geoms_from_init(
+            self, 
+            size=size, 
+            hole_size=hole_size, 
+            hole_location=hole_location, 
+            hole_rgba=hole_rgba,
+        )
+        pattern_geom_args = BoxPatternObject._geoms_from_init(
+            self, 
+            pattern,
+        )
+
+        # use the bottom geom of hole to determine offset for pattern
+        hole_base_size = bounding_geom_args["geom_sizes"][-1]
+        hole_base_loc = bounding_geom_args["geom_locations"][-1]
+
+        for i in range(len(pattern_geom_args["geom_sizes"])):
+            # convert to unnormalized coordinates, since this class
+            # does not use normalized coordinates for specifying geoms
+            pattern_geom_args["geom_sizes"][i][0] *= unit_size
+            pattern_geom_args["geom_sizes"][i][1] *= unit_size
+            pattern_geom_args["geom_sizes"][i][2] *= unit_size
+            pattern_geom_args["geom_locations"][i][0] *= unit_size
+            pattern_geom_args["geom_locations"][i][1] *= unit_size
+            pattern_geom_args["geom_locations"][i][2] *= unit_size
+
+            # move locations to account for the bounding box object
+            pattern_geom_args["geom_locations"][i][0] += hole_base_loc[0]
+            pattern_geom_args["geom_locations"][i][1] += hole_base_loc[1]
+            pattern_geom_args["geom_locations"][i][2] += hole_base_loc[2] + hole_base_size[2]
+
+        # add in dummy geom rgbas to merge with bounding geoms
+        pattern_geom_args["geom_rgbas"] = [None for _ in range(len(pattern_geom_args["geom_sizes"]))]
+
+        # merge geom lists together
+        return {
+            "geom_locations" : bounding_geom_args["geom_locations"] + pattern_geom_args["geom_locations"],
+            "geom_sizes" : bounding_geom_args["geom_sizes"] + pattern_geom_args["geom_sizes"],
+            "geom_names" : bounding_geom_args["geom_names"] + pattern_geom_args["geom_names"],
+            "geom_rgbas" : bounding_geom_args["geom_rgbas"] + pattern_geom_args["geom_rgbas"],
+        }
 
 
 class BoxObject(MujocoGeneratedObject):

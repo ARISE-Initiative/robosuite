@@ -75,24 +75,24 @@ class DoorTask(Task):
             self.objects[index].set("quat", array_to_string(quat))
 
 
-    def set_door_friction(self, friction):
-        node = self.objects[0].find("./body[@name='frame']")
-        node = node.find("./body[@name='door']")
-        hinge = node.find("./joint[@name='door_hinge']")
-        hinge.set("frictionloss", array_to_string(np.array([friction])))
+    # def set_door_friction(self, friction):
+    #     node = self.objects[0].find("./body[@name='frame']")
+    #     node = node.find("./body[@name='door']")
+    #     hinge = node.find("./joint[@name='door_hinge']")
+    #     hinge.set("frictionloss", array_to_string(np.array([friction])))
 
-    def set_door_damping(self, damping):
-        hinge = self._base_body.find("./joint[@name='door_hinge']")
-        node = self.objects[0].find("./body[@name='frame']")
-        node = node.find("./body[@name='door']")
-        hinge = node.find("./joint[@name='door_hinge']")
-        hinge.set("damping", array_to_string(np.array([damping])))
+    # def set_door_damping(self, damping):
+    #     hinge = self._base_body.find("./joint[@name='door_hinge']")
+    #     node = self.objects[0].find("./body[@name='frame']")
+    #     node = node.find("./body[@name='door']")
+    #     hinge = node.find("./joint[@name='door_hinge']")
+    #     hinge.set("damping", array_to_string(np.array([damping])))
 
-    @property
-    def _base_body(self):
-        node = self.mujoco_objects['Door'].worldbody.find("./body[@name='door_body']")
-        node = node.find("./body[@name='collision']")
-        node = node.find("./body[@name='frame']")
-        node = node.find("./body[@name='door']")
-        return node
+    # @property
+    # def _base_body(self):
+    #     node = self.mujoco_objects['Door'].worldbody.find("./body[@name='door_body']")
+    #     node = node.find("./body[@name='collision']")
+    #     node = node.find("./body[@name='frame']")
+    #     node = node.find("./body[@name='door']")
+    #     return node
     
