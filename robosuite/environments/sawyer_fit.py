@@ -8,7 +8,7 @@ import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import LegoArena
-from robosuite.models.objects import BoxObject, WoodenPieceObject, BoundingObject, BoxPatternObject, BoundingPatternObject
+from robosuite.models.objects import BoxObject, WoodenPieceObject, BoundingObject, BoxPatternObject, BoundingPatternObject, CompositeBoxObject, CompositeObject
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopMergedTask, UniformRandomSampler, SequentialCompositeSampler, RoundRobinSampler
 from robosuite.controllers import load_controller_config
@@ -233,13 +233,13 @@ class SawyerFit(SawyerEnv):
         hole_x_bounds = (0., 0., 1)
         hole_y_bounds = (0., 0., 1)
         hole_z_rot_bounds = (0., 0., 1)
-        hole_z_offset = None
+        hole_z_offset = 0.
         ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
 
         block_x_bounds = (-0.3, -0.1, 3)
         block_y_bounds = (-0.3, -0.1, 3)
         block_z_rot_bounds = (0., 2. * np.pi, 3)
-        block_z_offset = None
+        block_z_offset = 0.
         ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds, block_z_offset]
 
         return ret
@@ -482,11 +482,11 @@ class SawyerFitPushLongBar(SawyerFit):
         )
         initializer.sample_on_top(
             "block",
-            surface_name="table",
+            surface_name="hole",
             x_range=[-0.3, -0.1],
             y_range=[-0.3, -0.1],
             z_rotation=None,
-            z_offset=0.2,
+            # z_offset=0.2,
             ensure_object_boundary_in_range=False,
         )
         return initializer
@@ -518,7 +518,7 @@ class SawyerFitPushLongBar(SawyerFit):
         )
 
         self.hole = BoundingObject(
-            size=[0.2, 0.2, 0.02],
+            size=[0.4, 0.4, 0.02],
             hole_size=self.hole_size, 
             joint=[],
             rgba=[0, 0, 1, 1],
@@ -601,7 +601,7 @@ class SawyerThreading(SawyerFit):
         block_x_bounds = (-0.2, -0.2, 1)
         block_y_bounds = (0.2, 0.2, 1)
         block_z_rot_bounds = (np.pi / 2., np.pi / 2., 1)
-        block_z_offset = None
+        block_z_offset = 0.
         ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds, block_z_offset]
 
         return ret
@@ -698,3 +698,411 @@ class SawyerThreading(SawyerFit):
         hole_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["hole"]])
         radius = self.hole_size[1]
         return (np.linalg.norm(block_pos - hole_pos) < radius)
+
+    def _gripper_visualization(self):
+        """
+        Do any needed visualization here. Overrides superclass implementations.
+        """
+        pass
+
+
+class SawyerThreadingPrecise(SawyerThreading):
+    """Threading task."""
+
+    def _get_default_initializer(self):
+        initializer = SequentialCompositeSampler()
+
+        # NOTE: this z-offset accounts for small errors with placement (problem for slide joints)
+        initializer.sample_on_top(
+            "hole",
+            surface_name="table",
+            x_range=(0., 0.),
+            y_range=(-0.15, -0.15),
+            z_rotation=(-np.pi / 6., -np.pi / 6.),
+            z_offset=0.001, 
+            ensure_object_boundary_in_range=False,
+        )
+        initializer.sample_on_top(
+            "block",
+            surface_name="table",
+            x_range=[-0.2, -0.2],
+            y_range=[0.2, 0.2],
+            z_rotation=(-np.pi / 2.),
+            ensure_object_boundary_in_range=False,
+        )
+        return initializer
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = {}
+
+        # (low, high, number of grid points for this dimension)
+        hole_x_bounds = (0., 0., 1)
+        hole_y_bounds = (-0.15, -0.15, 1)
+        hole_z_rot_bounds = (-np.pi / 6., -np.pi / 6., 1)
+        hole_z_offset = 0.001
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
+
+        block_x_bounds = (-0.2, -0.2, 1)
+        block_y_bounds = (0.2, 0.2, 1)
+        block_z_rot_bounds = (-np.pi / 2., -np.pi / 2., 1)
+        block_z_offset = 0.
+        ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds, block_z_offset]
+
+        return ret
+
+    def _load_model(self):
+        """
+        Loads an xml model, puts it in self.model
+        """
+        SawyerEnv._load_model(self)
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = LegoArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+
+        # make a skinny threading object with a large handle
+        thread_size = [0.005, 0.06, 0.005]
+        handle_size = [0.02, 0.02, 0.02]
+        geom_sizes = [
+            thread_size,
+            handle_size,
+        ]
+        geom_locations = [
+            # thread geom needs to be offset from boundary in (x, z)
+            [(handle_size[0] - thread_size[0]), 0., (handle_size[2] - thread_size[2])],
+            # handle geom needs to be offset in y
+            [0., 2. * thread_size[1], 0.],
+        ]
+        geom_names = ["thread", "handle"]
+        geom_rgbas = [
+            [1, 0, 0, 1],
+            [0, 0, 1, 1],
+        ]
+        # make the thread low friction to ensure easy insertion
+        geom_frictions = [
+            [0.3, 5e-3, 1e-4],
+            None,
+        ]
+
+        piece = CompositeBoxObject(
+            total_size=[0.02, 0.08, 0.02],
+            geom_locations=geom_locations,
+            geom_sizes=geom_sizes,
+            geom_names=geom_names,
+            geom_rgbas=geom_rgbas,
+            geom_frictions=geom_frictions,
+            rgba=None,
+            # density=0.1,
+        )
+
+        # big square with small hole
+        unit_size = [0.008, 0.005, 0.008]
+        pattern = np.ones((9, 9, 1))
+        pattern[4][4] = 0
+        solref = [0.02, 1.]
+        solimp = [0.9, 0.95, 0.001]
+        friction = [0.3, 5e-3, 1e-4] # low friction for easy insertion
+
+        # 2D slide and hinge joints for hole
+        slide_joint1 = dict(
+            pos="0 0 0",
+            axis="1 0 0",
+            type="slide",
+            limited="false",
+            damping="0.5",
+        )
+        slide_joint2 = dict(
+            pos="0 0 0",
+            axis="0 1 0",
+            type="slide",
+            limited="false",
+            damping="0.5",
+        )
+        hinge_joint = dict(
+            pos="0 0 0",
+            axis="0 0 1",
+            type="hinge",
+            limited="false",
+            damping="0.001",
+        )
+        joints = [slide_joint1, slide_joint2, hinge_joint]
+
+        self.hole = BoxPatternObject(
+            unit_size=unit_size,
+            pattern=pattern,
+            joint=joints,
+            rgba=[1, 0, 1, 1],
+            solref=solref,
+            solimp=solimp,
+            friction=friction,
+        )
+        self.hole_size = np.array(self.hole.total_size)
+
+        self.mujoco_objects = OrderedDict([
+            ("block", piece), 
+            ("hole", self.hole),
+        ])
+
+        # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
+        self.init_qpos = np.array([0.00, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
+        self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopMergedTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+
+    def _check_success(self):
+        """
+        Returns True if task has been completed.
+        """
+
+        # just check if the center of the block and the hole are close enough
+        block_pos = np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("block_thread")])
+        hole_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["hole"]])
+        radius = self.hole_size[1]
+        return (np.linalg.norm(block_pos - hole_pos) < radius)
+
+class SawyerThreadingRing(SawyerThreadingPrecise):
+    """Threading task."""
+
+    def _get_default_initializer(self):
+        initializer = SequentialCompositeSampler()
+
+        # NOTE: this z-offset accounts for small errors with placement (problem for slide joints)
+        initializer.sample_on_top(
+            "hole",
+            surface_name="table",
+            x_range=(0., 0.),
+            y_range=(-0.15, -0.15),
+            z_rotation=(np.pi / 3., np.pi / 3.),
+            z_offset=0.001, 
+            ensure_object_boundary_in_range=False,
+        )
+        initializer.sample_on_top(
+            "block",
+            surface_name="table",
+            x_range=[-0.2, -0.2],
+            y_range=[0.2, 0.2],
+            z_rotation=(-np.pi / 2.),
+            ensure_object_boundary_in_range=False,
+        )
+        return initializer
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = {}
+
+        # (low, high, number of grid points for this dimension)
+        hole_x_bounds = (0., 0., 1)
+        hole_y_bounds = (-0.15, -0.15, 1)
+        hole_z_rot_bounds = (np.pi / 3., np.pi / 3., 1)
+        hole_z_offset = 0.001
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
+
+        block_x_bounds = (-0.2, -0.2, 1)
+        block_y_bounds = (0.2, 0.2, 1)
+        block_z_rot_bounds = (-np.pi / 2., -np.pi / 2., 1)
+        block_z_offset = 0.
+        ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds, block_z_offset]
+
+        return ret
+
+    def _load_model(self):
+        """
+        Loads an xml model, puts it in self.model
+        """
+        SawyerEnv._load_model(self)
+        self.mujoco_robot.set_base_xpos([0, 0, 0])
+
+        # load model for table top workspace
+        self.mujoco_arena = LegoArena(
+            table_full_size=self.table_full_size, table_friction=self.table_friction
+        )
+        if self.use_indicator_object:
+            self.mujoco_arena.add_pos_indicator(self.indicator_num)
+
+        # The sawyer robot has a pedestal, we want to align it with the table
+        self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
+
+        # make a skinny threading object with a large handle
+        thread_size = [0.005, 0.06, 0.005]
+        handle_size = [0.02, 0.02, 0.02]
+        geom_sizes = [
+            thread_size,
+            handle_size,
+        ]
+        geom_locations = [
+            # thread geom needs to be offset from boundary in (x, z)
+            [(handle_size[0] - thread_size[0]), 0., (handle_size[2] - thread_size[2])],
+            # handle geom needs to be offset in y
+            [0., 2. * thread_size[1], 0.],
+        ]
+        geom_names = ["thread", "handle"]
+        geom_rgbas = [
+            [1, 0, 0, 1],
+            [0, 0, 1, 1],
+        ]
+        # make the thread low friction to ensure easy insertion
+        geom_frictions = [
+            [0.3, 5e-3, 1e-4],
+            None,
+        ]
+
+        piece = CompositeBoxObject(
+            total_size=[0.02, 0.08, 0.02],
+            geom_locations=geom_locations,
+            geom_sizes=geom_sizes,
+            geom_names=geom_names,
+            geom_rgbas=geom_rgbas,
+            geom_frictions=geom_frictions,
+            rgba=None,
+            density=100,
+            # density=0.1,
+        )
+
+        ### small thin ring with tripod ###
+        total_size = [0.05, 0.05, 0.1]
+
+        # first get the geoms necessary to make the thin ring at the top
+        ring_color = [0, 1, 0, 1]
+        unit_size = [0.005, 0.002, 0.002]
+        pattern = np.ones((6, 1, 6))
+        for i in range(1, 5):
+            pattern[i][0][1:5] = np.zeros(4)
+            
+        # make ring low friction for easy insertion
+        ring_friction = [0.3, 5e-3, 1e-4] 
+        ring_geom_args = BoxPatternObject._geoms_from_init(None, unit_size, pattern, friction=ring_friction)
+        self.num_ring_geoms = len(ring_geom_args["geom_locations"])
+        ring_geom_args["geom_rgbas"] = [ring_color for _ in range(self.num_ring_geoms)]
+        ring_geom_args["geom_types"] = ["box" for _ in range(self.num_ring_geoms)]
+        ring_geom_args["geom_names"] = ["ring_{}".format(i) for i in range(self.num_ring_geoms)]
+        self.ring_size = [
+            unit_size[0] * pattern.shape[1], unit_size[1] * pattern.shape[2], unit_size[2] * pattern.shape[0],
+        ]
+
+        # add in an offset for where the ring is located relative to the (0, 0, 0) corner
+        ring_offset = [
+            total_size[0] - self.ring_size[0], 
+            total_size[1] - self.ring_size[1], 
+            2. * (total_size[2] - self.ring_size[2]),
+        ]
+        for i in range(self.num_ring_geoms):
+            ring_geom_args["geom_locations"][i][0] += ring_offset[0]
+            ring_geom_args["geom_locations"][i][1] += ring_offset[1]
+            ring_geom_args["geom_locations"][i][2] += ring_offset[2]
+
+        # make the capsule tripod
+        num_tripod_geoms = 3
+        tripod_color = [1, 0, 1, 1]
+        capsule_r = 0.01
+        capsule_h = 0.03
+        tripod_geom_args = {
+            "geom_types" : ["capsule" for _ in range(num_tripod_geoms)],
+            "geom_rgbas" : [tripod_color for _ in range(num_tripod_geoms)],
+            "geom_sizes" : [[capsule_r, capsule_h] for _ in range(num_tripod_geoms)],
+            "geom_names" : ["tripod_{}".format(i) for i in range(num_tripod_geoms)],
+        }
+        tripod_geom_args["geom_locations"] = [
+            [0., 0., 0.],
+            [0., 2. * total_size[1] - 2. * capsule_r, 0.],
+            [2. * total_size[0] - 2. * capsule_r, total_size[1] - capsule_r, 0.],
+        ]
+        tripod_geom_args["geom_frictions"] = [None for _ in range(num_tripod_geoms)]
+
+        # make a mounted base and a post
+        num_additional_geoms = 2
+        additional_color = [1, 0, 1, 1]
+        base_thickness = 0.005
+        post_size = 0.005
+        additional_geom_args = {
+            "geom_types" : ["box" for _ in range(num_additional_geoms)],
+            "geom_rgbas" : [additional_color for _ in range(num_additional_geoms)],
+            "geom_names" : ["additional_{}".format(i) for i in range(num_additional_geoms)],
+        }
+        additional_geom_args["geom_sizes"] = [
+            [total_size[0], total_size[1], base_thickness],
+            [post_size, post_size, total_size[2] - self.ring_size[2] - base_thickness - capsule_r - capsule_h],
+        ]
+        additional_geom_args["geom_locations"] = [
+            [0., 0., 2. * (capsule_r + capsule_h)],
+            [total_size[0] - post_size, total_size[1] - post_size, 2. * (capsule_r + capsule_h + base_thickness)]
+        ]
+        additional_geom_args["geom_frictions"] = [None for _ in range(num_tripod_geoms)]
+
+        geom_args = { k : ring_geom_args[k] + tripod_geom_args[k] + additional_geom_args[k] for k in ring_geom_args }
+
+        # # NOTE: this lower value of solref allows the thin hole wall to avoid penetration through it
+        solref = [0.001, 1]
+        solimp = [0.9, 0.95, 0.001]
+        joints = None
+
+        # small thin ring with tripod
+        self.hole = CompositeObject(
+            total_size=total_size,
+            joint=joints,
+            rgba=None,
+            density=100.,
+            solref=solref,
+            solimp=solimp,
+            **geom_args,
+        )
+        self.hole_size = np.array(self.hole.total_size)
+
+        self.mujoco_objects = OrderedDict([
+            ("block", piece), 
+            ("hole", self.hole),
+        ])
+
+        # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
+        self.init_qpos = np.array([0.00, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
+        self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
+
+        # task includes arena, robot, and objects of interest
+        self.model = TableTopMergedTask(
+            self.mujoco_arena,
+            self.mujoco_robot,
+            self.mujoco_objects,
+            initializer=self.placement_initializer,
+        )
+        self.model.place_objects()
+
+    def _check_success(self):
+        """
+        Returns True if task has been completed.
+        """
+        block_pos = np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("block_thread")])
+
+        # ring position is average of all the surrounding ring geom positions
+        ring_pos = np.zeros(3)
+        for i in range(self.num_ring_geoms):
+            ring_pos += np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("hole_ring_{}".format(i))])
+        ring_pos /= self.num_ring_geoms
+
+        # radius should be the ring size, since we want to check that the bar is within the ring
+        radius = self.ring_size[1]
+
+        # check if the center of the block and the hole are close enough
+        return (np.linalg.norm(block_pos - ring_pos) < radius)
+

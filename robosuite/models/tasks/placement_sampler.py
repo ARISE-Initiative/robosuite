@@ -523,7 +523,7 @@ class RoundRobinSampler(UniformRandomSampler):
         x_perturb=None,
         y_perturb=None,
         z_rotation_perturb=None,
-        z_offset=None,
+        z_offset=0.,
     ):
         # x_range, y_range, and z_rotation should all be lists of values to rotate between
         assert(len(x_range) == len(y_range))

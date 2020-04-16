@@ -169,7 +169,7 @@ class SawyerAssembly(SawyerEnv):
     def _get_default_initializer(self):
         initializer = SequentialCompositeSampler()
         initializer.sample_on_top(
-            "base",
+            "block_base",
             surface_name="table",
             x_range=[0.25, 0.25],
             y_range=[0.25, 0.25],
@@ -203,7 +203,7 @@ class SawyerAssembly(SawyerEnv):
 
         assert(self.eval_mode)
 
-        ordered_object_names = ["base", "block1", "block2"]
+        ordered_object_names = ["block_base", "block1", "block2"]
         bounds = self._grid_bounds_for_eval_mode()
         initializer = SequentialCompositeSampler(round_robin_all_pairs=True)
 
@@ -241,7 +241,7 @@ class SawyerAssembly(SawyerEnv):
         base_x_bounds = (0.25, 0.25, 1)
         base_y_bounds = (0.25, 0.25, 1)
         base_z_rot_bounds = (0., 0., 1)
-        ret["base"] = [base_x_bounds, base_y_bounds, base_z_rot_bounds]
+        ret["block_base"] = [base_x_bounds, base_y_bounds, base_z_rot_bounds]
 
         block1_x_bounds = (-0.3, 0.2, 3)
         block1_y_bounds = (-0.3, 0.2, 3)
@@ -291,7 +291,7 @@ class SawyerAssembly(SawyerEnv):
         for z in range(len(hole)):
             for y in range(len(hole[0])):
                 for x in range(len(hole[0][0])):
-                    base[z][offset_y + y][offset_x + x] = base[z][y][x]
+                    base[z][offset_y + y][offset_x + x] = hole[z][y][x]
         base = np.rot90(base,random.randint(0,3),(1,2))
 
 
@@ -300,7 +300,7 @@ class SawyerAssembly(SawyerEnv):
                 [[1,1,1],[1,1,1],[1,1,1]],
                 [[0,0,0],[0,1,0],[0,0,0]]
                     ]
-        return block1, block2, grid
+        return block1, block2, base
 
     def _load_model(self):
         """
@@ -338,7 +338,7 @@ class SawyerAssembly(SawyerEnv):
         self.mujoco_objects = OrderedDict([
             ("block1", h1), 
             ("block2", h2), 
-            ("base", self.base),
+            ("block_base", self.base),
         ])
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
@@ -362,7 +362,7 @@ class SawyerAssembly(SawyerEnv):
         """
         super()._get_reference()
         self.object_body_ids = {}
-        self.object_body_ids["base"]  = self.sim.model.body_name2id("base")
+        self.object_body_ids["block_base"]  = self.sim.model.body_name2id("block_base")
         self.object_body_ids["block1"] = self.sim.model.body_name2id("block1")
         self.object_body_ids["block2"]  = self.sim.model.body_name2id("block2")
 

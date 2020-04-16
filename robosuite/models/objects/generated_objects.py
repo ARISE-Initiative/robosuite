@@ -1,9 +1,10 @@
 import random
 import numpy as np
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 
 from robosuite.models.objects import MujocoGeneratedObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, array_to_string
 from robosuite.utils.mjcf_utils import RED, GREEN, BLUE
 
 
@@ -326,35 +327,39 @@ def _get_randomized_range(val,
                              .format(str(val), str(provided_range)))
         return [val]
 
-class CompositeBoxObject(MujocoGeneratedObject):
+
+class CompositeObject(MujocoGeneratedObject):
     """
-    An object constructed out of box geoms to make more intricate shapes.
+    An object constructed out of basic geoms to make more intricate shapes.
     """
 
     def __init__(
         self,
         total_size,
-        unit_size,
+        geom_types,
         geom_locations,
         geom_sizes,
         geom_names=None,
         geom_rgbas=None,
+        geom_frictions=None,
         joint=None,
         rgba=None,
+        density=100.,
+        solref=[0.02, 1.],
+        solimp=[0.9, 0.95, 0.001],
     ):
         """
         Args:
-            total_size (list): half-size in each dimension for the complete box
+            total_size (list): half-size in each dimension for the bounding box for
+                this Composite object
 
-            unit_size (list): half-size in each dimension for the geom grid. The
-                @geom_locations are specified in these units.
+            geom_types (list): list of geom types in the composite. Must correspond
+                to MuJoCo geom primitives, such as "box" or "capsule".
 
             geom_locations (list): list of geom locations in the composite. Each 
                 location should be a list or tuple of 3 elements and all 
-                locations are specified in terms of 2 * @unit_size and are relative
-                to the lower left corner of the total box (e.g. (0, 0, 0)
-                corresponds to this corner). Note the factor of 2! The x, y, and z
-                directions are aligned with the MuJoCo world frame.
+                locations are relative to the lower left corner of the total box 
+                (e.g. (0, 0, 0) corresponds to this corner).
 
             geom_sizes (list): list of geom sizes ordered the same as @geom_locations
 
@@ -368,21 +373,42 @@ class CompositeBoxObject(MujocoGeneratedObject):
         super().__init__(joint=joint, rgba=rgba)
 
         self.total_size = np.array(total_size)
-        self.unit_size = np.array(unit_size)
+        self.geom_types = np.array(geom_types)
         self.geom_locations = np.array(geom_locations)
-        self.geom_sizes = np.array(geom_sizes)
+        self.geom_sizes = deepcopy(geom_sizes)
         self.geom_names = list(geom_names) if geom_names is not None else None
         self.geom_rgbas = list(geom_rgbas) if geom_rgbas is not None else None
+        self.geom_frictions = list(geom_frictions) if geom_frictions is not None else None
         self.rgba = rgba
+        self.density = density
+        self.solref = list(solref)
+        self.solimp = list(solimp)
 
     def get_bottom_offset(self):
         return np.array([0., 0., -self.total_size[2]])
 
     def get_top_offset(self):
-        return np.array(0., 0., self.total_size[2])
+        return np.array([0., 0., self.total_size[2]])
 
     def get_horizontal_radius(self):
         return np.linalg.norm(self.total_size[:2], 2)
+
+    def _size_to_cartesian_half_lengths(self, geom_type, geom_size):
+        """
+        converts from geom size specification to x, y, and z half-length bounding box
+        """
+        if geom_type in ['box', 'ellipsoid']:
+            return geom_size
+        if geom_type == 'sphere':
+            # size is radius
+            return [geom_size[0], geom_size[0], geom_size[0]]
+        if geom_type == 'capsule':
+            # size is radius, half-length of cylinder part
+            return [geom_size[0], geom_size[0], geom_size[0] + geom_size[1]]
+        if geom_type == 'cylinder':
+            # size is radius, half-length
+            return [geom_size[0], geom_size[0], geom_size[1]]
+        raise Exception("unsupported geom type!")
 
     def _make_geoms(self, name=None, site=None, **geom_properties):
         main_body = new_body()
@@ -391,20 +417,20 @@ class CompositeBoxObject(MujocoGeneratedObject):
 
         for i in range(self.geom_locations.shape[0]):
 
-            # scale each dimension's size by the unit size in that dimension
-            size = [
-                self.geom_sizes[i][0] * self.unit_size[0],
-                self.geom_sizes[i][1] * self.unit_size[1],
-                self.geom_sizes[i][2] * self.unit_size[2],
-            ]
+            # geom type
+            geom_type = self.geom_types[i]
+
+            # get cartesian size from size spec
+            size = self.geom_sizes[i]
+            cartesian_size = self._size_to_cartesian_half_lengths(geom_type, size)
 
             # use geom location to convert to position coordinate (the origin is the
             # center of the composite object)
             loc = self.geom_locations[i]
             pos = [
-                (-self.total_size[0] + size[0]) + loc[0] * (2. * self.unit_size[0]),
-                (-self.total_size[1] + size[1]) + loc[1] * (2. * self.unit_size[1]),
-                (-self.total_size[2] + size[2]) + loc[2] * (2. * self.unit_size[2]),
+                (-self.total_size[0] + cartesian_size[0]) + loc[0],
+                (-self.total_size[1] + cartesian_size[1]) + loc[1],
+                (-self.total_size[2] + cartesian_size[2]) + loc[2],
             ]
 
             # geom name
@@ -419,6 +445,13 @@ class CompositeBoxObject(MujocoGeneratedObject):
             else:
                 geom_rgba = self.rgba
 
+            # geom friction
+            if self.geom_frictions is not None and self.geom_frictions[i] is not None:
+                geom_friction = self.geom_frictions[i]
+            else:
+                geom_friction = np.array([1., 0.005, 0.0001]) # mujoco default
+            geom_friction = array_to_string(geom_friction)
+
             # add geom
             main_body.append(
                 new_geom(
@@ -426,6 +459,8 @@ class CompositeBoxObject(MujocoGeneratedObject):
                     pos=pos, 
                     name=geom_name,
                     rgba=geom_rgba,
+                    geom_type=geom_type,
+                    friction=geom_friction,
                     **geom_properties,
                 )
             )
@@ -434,37 +469,39 @@ class CompositeBoxObject(MujocoGeneratedObject):
 
     def get_collision(self, name=None, site=None):
         geom_properties = {
-            'geom_type': 'box',
             'group': 1,
-            'density': '100',
+            'density': str(self.density),
+            'solref': array_to_string(self.solref),
+            'solimp': array_to_string(self.solimp),
         }
-        if self.rgba is None:
+        if self.rgba is None and self.geom_rgbas is None:
             # if no color, default to lego material
             geom_properties['material'] = 'lego'
         return self._make_geoms(name=name, site=site, **geom_properties)
 
     def get_visual(self, name=None, site=None):
         geom_properties = {
-            'geom_type': 'box',
             'group': 1,
             'conaffinity': '0', 
             'contype': '0',
-            'density': '100',
+            'density': str(self.density),
+            'solref': array_to_string(self.solref),
+            'solimp': array_to_string(self.solimp),
         }
-        if self.rgba is None:
+        if self.rgba is None and self.geom_rgbas is None:
             # if no color, default to lego material
             geom_properties['material'] = 'lego'
         return self._make_geoms(name=name, site=site, **geom_properties)
 
     def in_box(self, position, object_position):
         """
-        Checks whether the object is contained within this CompositeBoxObject.
-        Useful for when the CompositeBoxObject has holes and the object should
+        Checks whether the object is contained within this CompositeObject.
+        Useful for when the CompositeObject has holes and the object should
         be within one of the holes. Makes an approximation by treating the
         object as a point, and the CompositeBoxObject as an axis-aligned grid.
 
         Args:
-            position: 3D body position of CompositeBoxObject
+            position: 3D body position of CompositeObject
             object_position: 3D position of object to test for insertion
         """
         ub = position + self.total_size
@@ -474,6 +511,41 @@ class CompositeBoxObject(MujocoGeneratedObject):
         lb[2] -= 0.01
 
         return np.all(object_position > lb) and np.all(object_position < ub)
+
+
+class CompositeBoxObject(CompositeObject):
+    """
+    An object constructed out of box geoms to make more intricate shapes.
+    """
+
+    def __init__(
+        self,
+        total_size,
+        geom_locations,
+        geom_sizes,
+        geom_names=None,
+        geom_rgbas=None,
+        geom_frictions=None,
+        joint=None,
+        rgba=None,
+        density=100.,
+        solref=[0.02, 1.],
+        solimp=[0.9, 0.95, 0.001],
+    ):
+        super().__init__(
+            total_size=total_size,
+            geom_types=["box"] * len(geom_locations),
+            geom_locations=geom_locations,
+            geom_sizes=geom_sizes,
+            geom_names=geom_names,
+            geom_rgbas=geom_rgbas,
+            geom_frictions=geom_frictions,
+            joint=joint,
+            rgba=rgba,
+            density=density,
+            solref=solref,
+            solimp=solimp,
+        )
 
 
 class BoundingObject(CompositeBoxObject):
@@ -489,6 +561,10 @@ class BoundingObject(CompositeBoxObject):
         hole_rgba=None,
         joint=None,
         rgba=None,
+        density=100.,
+        solref=[0.02, 1.],
+        solimp=[0.9, 0.95, 0.001],
+        friction=None,
     ):
         """
         NOTE: @hole_location should be relative to the center of the object, and be 2D, since
@@ -511,23 +587,25 @@ class BoundingObject(CompositeBoxObject):
         #     self.hole_location = np.array([x_hole, y_hole])
 
         # specify all geoms in unnormalized position coordinates
-        unit_size = [1., 1., 1.]
         geom_args = self._geoms_from_init(
             size=size, 
             hole_size=self.hole_size, 
             hole_location=self.hole_location, 
             hole_rgba=self.hole_rgba,
+            friction=friction,
         )
 
         super().__init__(
-            total_size=size, 
-            unit_size=unit_size, 
+            total_size=size,
             joint=joint, 
             rgba=rgba,
+            density=density,
+            solref=solref,
+            solimp=solimp,
             **geom_args,
         )
 
-    def _geoms_from_init(self, size, hole_size, hole_location, hole_rgba):
+    def _geoms_from_init(self, size, hole_size, hole_location, hole_rgba, friction):
         """
         Helper function to retrieve geoms to pass to super class, from the size,
         hole size, and hole location.
@@ -557,19 +635,23 @@ class BoundingObject(CompositeBoxObject):
         # geom locations
         #
         # top and left are at (0, 0), and bottom and right are just translated by 
-        # size of hole, and top and left respectively
+        # full size of hole, and top and left respectively
         top_loc = [0, 0, 0]
-        bottom_loc = [top_size[0] + hole_size[0], 0, 0]
+        bottom_loc = [2. * (top_size[0] + hole_size[0]), 0, 0]
         left_loc = [0, 0, 0]
-        right_loc = [0, left_size[1] + hole_size[1], 0]
-        hole_base_loc = [top_size[0], left_size[1], 0]
+        right_loc = [0, 2. * (left_size[1] + hole_size[1]), 0]
+        hole_base_loc = [2. * top_size[0], 2. * left_size[1], 0]
         geom_locations = [top_loc, bottom_loc, left_loc, right_loc, hole_base_loc]
+
+        # geom frictions
+        geom_frictions = [friction for _ in geom_locations]
 
         return {
             "geom_locations" : geom_locations,
             "geom_sizes" : geom_sizes,
             "geom_names" : geom_names,
             "geom_rgbas" : geom_rgbas,
+            "geom_frictions" : geom_frictions,
         }
 
 #     def in_grid(self, position, object_position, object_size):
@@ -608,6 +690,10 @@ class BoxPatternObject(CompositeBoxObject):
         pattern,
         joint=None,
         rgba=None,
+        density=100.,
+        solref=[0.02, 1.],
+        solimp=[0.9, 0.95, 0.001],
+        friction=None,
     ):
         """
         Args:
@@ -622,18 +708,21 @@ class BoxPatternObject(CompositeBoxObject):
         # number of blocks in z, x, and y
         self.pattern = np.array(pattern)
         self.nz, self.nx, self.ny = self.pattern.shape
+        self.unit_size = unit_size
 
         total_size = [self.nx * unit_size[0], self.ny * unit_size[1], self.nz * unit_size[2]]
-        geom_args = self._geoms_from_init(self.pattern)
+        geom_args = self._geoms_from_init(self.unit_size, self.pattern, friction)
         super().__init__(
             total_size=total_size, 
-            unit_size=unit_size, 
             joint=joint, 
             rgba=rgba,
+            density=density,
+            solref=solref,
+            solimp=solimp,
             **geom_args,
         )
 
-    def _geoms_from_init(self, pattern):
+    def _geoms_from_init(self, unit_size, pattern, friction):
         """
         Helper function to retrieve geoms to pass to super class.
         """
@@ -645,13 +734,24 @@ class BoxPatternObject(CompositeBoxObject):
             for i in range(nx):
                 for j in range(ny):
                     if pattern[k, i, j] > 0:
-                        geom_sizes.append([1, 1, 1])
-                        geom_locations.append([i, j, k])
+                        geom_sizes.append([
+                            unit_size[0], 
+                            unit_size[1], 
+                            unit_size[2],
+                        ])
+                        geom_locations.append([
+                            i * 2. * unit_size[0], 
+                            j * 2. * unit_size[1], 
+                            k * 2. * unit_size[2],
+                        ])
                         geom_names.append("{}_{}_{}".format(k, i, j))
+
+        geom_frictions = [friction for _ in geom_locations]
         return {
             "geom_locations" : geom_locations,
             "geom_sizes" : geom_sizes,
             "geom_names" : geom_names,
+            "geom_frictions" : geom_frictions,
         }
 
 
@@ -672,6 +772,10 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
         hole_rgba=None,
         joint=None,
         rgba=None,
+        density=100.,
+        solref=[0.02, 1.],
+        solimp=[0.9, 0.95, 0.001],
+        friction=None,
     ):
         """
         NOTE: @hole_location should be relative to the center of the object, and be 2D, since
@@ -684,33 +788,34 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
         # number of blocks in z, x, and y for the pattern
         self.pattern = np.array(pattern)
         self.nz, self.nx, self.ny = self.pattern.shape
+        self.unit_size = np.array(unit_size)
 
         self.hole_size = np.array(hole_size)
         self.hole_rgba = np.array(hole_rgba) if hole_rgba is not None else None
         self.hole_location = np.array(hole_location)
 
         geom_args = self._geoms_from_init(
-            unit_size=unit_size,
+            unit_size=self.unit_size,
             pattern=self.pattern,
             size=size, 
             hole_size=self.hole_size, 
             hole_location=self.hole_location, 
             hole_rgba=self.hole_rgba,
+            friction=friction,
         )
-
-        # specify all geoms in unnormalized position coordinates
-        unit_size = [1., 1., 1.]
 
         CompositeBoxObject.__init__(
             self,
             total_size=size, 
-            unit_size=unit_size, 
             joint=joint, 
             rgba=rgba,
+            density=density,
+            solref=solref,
+            solimp=solimp,
             **geom_args,
         )
 
-    def _geoms_from_init(self, unit_size, pattern, size, hole_size, hole_location, hole_rgba):
+    def _geoms_from_init(self, unit_size, pattern, size, hole_size, hole_location, hole_rgba, friction):
         """
         Helper function to retrieve geoms to pass to super class, from the size,
         hole size, and hole location.
@@ -721,10 +826,13 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
             hole_size=hole_size, 
             hole_location=hole_location, 
             hole_rgba=hole_rgba,
+            friction=friction,
         )
         pattern_geom_args = BoxPatternObject._geoms_from_init(
             self, 
-            pattern,
+            unit_size=unit_size,
+            pattern=pattern,
+            friction=friction,
         )
 
         # use the bottom geom of hole to determine offset for pattern
@@ -732,19 +840,10 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
         hole_base_loc = bounding_geom_args["geom_locations"][-1]
 
         for i in range(len(pattern_geom_args["geom_sizes"])):
-            # convert to unnormalized coordinates, since this class
-            # does not use normalized coordinates for specifying geoms
-            pattern_geom_args["geom_sizes"][i][0] *= unit_size
-            pattern_geom_args["geom_sizes"][i][1] *= unit_size
-            pattern_geom_args["geom_sizes"][i][2] *= unit_size
-            pattern_geom_args["geom_locations"][i][0] *= unit_size
-            pattern_geom_args["geom_locations"][i][1] *= unit_size
-            pattern_geom_args["geom_locations"][i][2] *= unit_size
-
             # move locations to account for the bounding box object
-            pattern_geom_args["geom_locations"][i][0] += hole_base_loc[0]
-            pattern_geom_args["geom_locations"][i][1] += hole_base_loc[1]
-            pattern_geom_args["geom_locations"][i][2] += hole_base_loc[2] + hole_base_size[2]
+            pattern_geom_args["geom_locations"][i][0] += 2. * hole_base_loc[0]
+            pattern_geom_args["geom_locations"][i][1] += 2. * hole_base_loc[1]
+            pattern_geom_args["geom_locations"][i][2] += 2. * (hole_base_loc[2] + hole_base_size[2])
 
         # add in dummy geom rgbas to merge with bounding geoms
         pattern_geom_args["geom_rgbas"] = [None for _ in range(len(pattern_geom_args["geom_sizes"]))]
@@ -755,6 +854,7 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
             "geom_sizes" : bounding_geom_args["geom_sizes"] + pattern_geom_args["geom_sizes"],
             "geom_names" : bounding_geom_args["geom_names"] + pattern_geom_args["geom_names"],
             "geom_rgbas" : bounding_geom_args["geom_rgbas"] + pattern_geom_args["geom_rgbas"],
+            "geom_frictions" : bounding_geom_args["geom_frictions"] + pattern_geom_args["geom_frictions"],
         }
 
 

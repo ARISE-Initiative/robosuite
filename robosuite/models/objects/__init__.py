@@ -20,6 +20,8 @@ from .xml_objects import (
 )
 
 from .generated_objects import (
+    CompositeObject,
+    CompositeBoxObject,
     BoundingObject,
     BoxPatternObject,
     BoundingPatternObject,
