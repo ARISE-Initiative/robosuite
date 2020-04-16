@@ -22,7 +22,8 @@
               <!-- <site name="goal"        pos="0.45 0.0 0.0" size="0.1" rgba="0 1 0 0.3"/> -->
               <body name="door" pos="0.3 0 0">
                   <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="2.43455" diaginertia="0.0913751 0.0521615 0.043714" />
-                  <joint name="door_hinge" pos="0.3 0 0" axis="0 0 1" range="0.0 1.57" damping="1" frictionloss="1" limited="true"/>
+                  <!-- <joint name="door_hinge" pos="0.3 0 0" axis="0 0 1" range="0.0 1.57" damping="1" frictionloss="1" limited="true"/> -->
+                  <joint name="door_hinge" pos="0.3 0 0" axis="0 0 1" range="0.0 0.35" damping="1" frictionloss="1" limited="true"/>
                   <geom size="0.2 0.05 .25" type="box" friction="1 1 1" group="1" name="door_box"/>
                   <geom size="0.05 0.25" pos="0.2 0 0" type="cylinder"  group="1" name="door_r_cyl"/>
                   <geom size="0.05 0.25" pos="-0.2 0 0" type="cylinder"  group="1" name="door_l_cyl" />
@@ -44,6 +45,6 @@
         <site name="bottom_site" pos="0 0 -0.3" rgba="0 0 0 0" size="0.005"/>
         <site name="top_site" pos="0 0 0.3" rgba="0 0 0 0" size="0.005"/>
         <site name="horizontal_radius_site" pos="0.3 0 0" rgba="0 0 0 0" size="0.1"/>
-        </body>
+      </body>
     </worldbody>
 </mujoco>

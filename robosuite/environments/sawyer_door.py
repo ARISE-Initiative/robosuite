@@ -7,7 +7,7 @@ from robosuite.utils.transform_utils import convert_quat
 import robosuite.utils.env_utils as EU
 from robosuite.environments.sawyer import SawyerEnv
 
-from robosuite.models.arenas import TableArena
+from robosuite.models.arenas import DoorArena
 from robosuite.models.objects import DoorObject
 from robosuite.models.robots import Sawyer
 from robosuite.models.tasks import TableTopMergedTask, DoorTask, UniformRandomSampler, RoundRobinSampler
@@ -147,13 +147,6 @@ class SawyerDoor(SawyerEnv):
                 z_rotation=(-np.pi / 2.),
                 z_offset=0.02,
             )
-            # self.placement_initializer = UniformRandomSampler(
-            #     x_range=[-0.4, -0.4],
-            #     y_range=[-0.35, -0.35],
-            #     ensure_object_boundary_in_range=False,
-            #     # z_rotation=None,
-            #     z_rotation=(np.pi / 2.),
-            # )
 
         super().__init__(
             controller_config=controller_config,
@@ -227,7 +220,7 @@ class SawyerDoor(SawyerEnv):
         self.mujoco_robot.set_base_xpos([0, 0, 0])
 
         # load model for table top workspace
-        self.mujoco_arena = TableArena(
+        self.mujoco_arena = DoorArena(
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
         if self.use_indicator_object:
@@ -235,8 +228,6 @@ class SawyerDoor(SawyerEnv):
 
         # The sawyer robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
-
-        ### TODO: test different frictions and damping for hinge. Current are 10 and 10 ###
 
         # initialize objects of interest
         door = DoorObject(
@@ -253,9 +244,6 @@ class SawyerDoor(SawyerEnv):
         self.init_qpos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
         self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
 
-        # if self.gripper_on_handle:
-        #     self.init_qpos = np.array([-0.26730423, -1.85458729, 0.63220668, 2.40196438, 0.9033082, -0.80319783, -0.42571791])
-
         # task includes arena, robot, and objects of interest
         self.model = TableTopMergedTask(
             self.mujoco_arena,
@@ -263,13 +251,6 @@ class SawyerDoor(SawyerEnv):
             self.mujoco_objects,
             initializer=self.placement_initializer,
         )
-        # self.model = DoorTask(
-        #     self.mujoco_arena,
-        #     self.mujoco_robot,
-        #     self.mujoco_objects,
-        #     initializer=self.placement_initializer,
-        # )
-
         self.model.place_objects()
 
     def _get_reference(self):
@@ -279,6 +260,14 @@ class SawyerDoor(SawyerEnv):
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
         super()._get_reference()
+        self.object_body_ids = {}
+        self.object_body_ids["door"]  = self.sim.model.body_name2id("door")
+        self.object_body_ids["frame"] = self.sim.model.body_name2id("frame")
+        self.object_body_ids["latch"]  = self.sim.model.body_name2id("latch")
+        self.door_handle_site_id = self.sim.model.site_name2id("door_handle")
+        self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr("door_hinge")
+        self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr("latch_joint")
+
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
         ]
@@ -311,35 +300,8 @@ class SawyerDoor(SawyerEnv):
             reward (float): the reward
         """
         reward = 0.
-        return reward
-
-        # sparse completion reward
         if self._check_success():
-            reward = 1.0
-
-        # use a shaping reward
-        if self.reward_shaping:
-
-            eef_position = self.sim.data.site_xpos[self.eef_site_id]
-
-            self.hinge_diff = np.abs(self.hinge_goal - self.hinge_qpos)
-
-            # add reward for touching handle or being close to it
-            if self.handle_reward:
-                dist = np.linalg.norm(eef_position[0:2] - self.handle_position[0:2])
-
-                if dist < self.dist_threshold and abs(eef_position[2] - self.handle_position[2]) < 0.02:
-                    self.touched_handle = 1
-                    reward += self.handle_reward
-                else:
-                    # if robot starts 0.3 away and dist_threshold is 0.05: [0.005, 0.55] without scaling
-                    reward += (self.handle_shaped_reward * (1 - np.tanh(3 * dist))).squeeze()
-                    self.touched_handle = 0
-
-            # award bonus either for opening door or for making process toward it
-            reward += (self.door_shaped_reward * (np.abs(self.hinge_goal) - self.hinge_diff)).squeeze()
-            reward -= (self.hinge_qvel * self.velocity_penalty).squeeze()
-
+            reward = 1.
         return reward
 
     def _get_observation(self):
@@ -356,24 +318,32 @@ class SawyerDoor(SawyerEnv):
                 contains a rendered depth map from the simulation
         """
         di = super()._get_observation()
-        di['object-state'] = np.zeros(3)
+        if self.use_object_obs:
+            eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
+            door_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["door"]])
+            # frame_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["frame"]])
+            # latch_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["latch"]])
+            handle_pos = np.array(self.sim.data.site_xpos[self.door_handle_site_id])
+            hinge_qpos = np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
+            handle_qpos = np.array([self.sim.data.qpos[self.handle_qpos_addr]])
 
-        # # low-level object information
-        # if self.use_object_obs:
-        #     # position and rotation of object
-        #     cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-        #     cube_quat = convert_quat(
-        #         np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw"
-        #     )
-        #     di["cube_pos"] = cube_pos
-        #     di["cube_quat"] = cube_quat
+            di["door_pos"] = door_pos
+            di["handle_pos"] = handle_pos
+            di["door_to_eef_pos"] = door_pos - eef_pos
+            di["handle_to_eef_pos"] = handle_pos - eef_pos
+            di["hinge_qpos"] = hinge_qpos
+            di["handle_qpos"] = handle_qpos
+        
+            di['object-state'] = np.concatenate([
+                di["door_pos"],
+                di["handle_pos"],
+                di["door_to_eef_pos"],
+                di["handle_to_eef_pos"],
+                di["hinge_qpos"],
+                di["handle_qpos"],
+            ])
 
-        #     gripper_site_pos = np.array(self.sim.data.site_xpos[self.eef_site_id])
-        #     di["gripper_to_cube"] = gripper_site_pos - cube_pos
-
-        #     di["object-state"] = np.concatenate(
-        #         [cube_pos, cube_quat, di["gripper_to_cube"]]
-        #     )
+            # print(np.linalg.norm(eef_pos - handle_pos))
 
         return di
 
@@ -395,14 +365,33 @@ class SawyerDoor(SawyerEnv):
 
     def _check_success(self):
         """
-        Returns True if task has been completed.
+        Returns True if door has been opened.
         """
-        return False
-        return (self.hinge_diff < self.max_hinge_diff and abs(self.hinge_qvel) < self.max_hinge_vel)
+        hinge_qpos = self.sim.data.qpos[self.hinge_qpos_addr]
+        return (hinge_qpos > 0.3)
 
     def _gripper_visualization(self):
         """
         Do any needed visualization here. Overrides superclass implementations.
         """
-        pass
+
+        # color the gripper site appropriately based on distance to door handle
+        if self.gripper_visualization:
+            # get distance to door handle
+            dist = np.sum(
+                np.square(
+                    self.sim.data.site_xpos[self.door_handle_site_id]
+                    - self.sim.data.get_site_xpos("grip_site")
+                )
+            )
+
+            # set RGBA for the EEF site here
+            max_dist = 0.1
+            scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
+            rgba = np.zeros(4)
+            rgba[0] = 1 - scaled
+            rgba[1] = scaled
+            rgba[3] = 0.5
+
+            self.sim.model.site_rgba[self.eef_site_id] = rgba
 

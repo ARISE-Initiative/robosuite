@@ -1,0 +1,27 @@
+<mujoco model="table_arena">
+  <asset>
+    <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
+    <texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" type="2d" width="512"/>
+    <material name="floorplane" reflectance="0.5" texrepeat="1 1" texture="texplane" texuniform="true"/>
+  </asset>
+  <worldbody>
+    <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
+    <body name="table" pos="0 0 0.4">
+      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" name="table_collision" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual"/>
+      <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
+    </body>
+
+    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <!-- front view -->
+    <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
+    <!-- bird view -->
+    <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
+    <!-- agent view -->
+    <!-- <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/> -->
+    <camera mode="fixed" name="agentview" pos="1.0650988846885405 5.314770628922418e-08 1.692180081501248" quat="0.5961103066711788 0.3803321533271432 0.38033235779221175 0.5961101014428031" />
+    <!-- side view -->
+    <camera mode="fixed" name="sideview" pos="-0.05651774593317116 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364" />
+  </worldbody>
+</mujoco>
