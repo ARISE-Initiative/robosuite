@@ -881,6 +881,13 @@ class SawyerThreadingPrecise(SawyerThreading):
 
 class SawyerThreadingRing(SawyerThreadingPrecise):
     """Threading task."""
+    def __init__(
+        self,
+        use_post=True,
+        **kwargs
+    ):
+        self.use_post = use_post
+        super().__init__(**kwargs)
 
     def _get_default_initializer(self):
         initializer = SequentialCompositeSampler()
@@ -1049,7 +1056,11 @@ class SawyerThreadingRing(SawyerThreadingPrecise):
             [0., 0., 2. * (capsule_r + capsule_h)],
             [total_size[0] - post_size, total_size[1] - post_size, 2. * (capsule_r + capsule_h + base_thickness)]
         ]
-        additional_geom_args["geom_frictions"] = [None for _ in range(num_tripod_geoms)]
+        additional_geom_args["geom_frictions"] = [None for _ in range(num_additional_geoms)]
+
+        if not self.use_post:
+            # remove the post
+            additional_geom_args = { k : additional_geom_args[k][:1] for k in additional_geom_args }
 
         geom_args = { k : ring_geom_args[k] + tripod_geom_args[k] + additional_geom_args[k] for k in ring_geom_args }
 
@@ -1105,4 +1116,49 @@ class SawyerThreadingRing(SawyerThreadingPrecise):
 
         # check if the center of the block and the hole are close enough
         return (np.linalg.norm(block_pos - ring_pos) < radius)
+
+
+class SawyerCircus(SawyerThreadingRing):
+    """Threading task."""
+    def __init__(
+        self,
+        **kwargs
+    ):
+        # assert("use_post" not in kwargs)
+        # kwargs["use_post"] = False
+        super().__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = super()._grid_bounds_for_eval_mode()
+
+        # (low, high, number of grid points for this dimension)
+        hole_x_bounds = (0.0, 0.15, 9)
+        hole_y_bounds = (-0.15, -0.15, 1)
+        hole_z_rot_bounds = (np.pi / 3., np.pi / 3., 1)
+        hole_z_offset = 0.001
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
+
+        return ret
+
+
+class SawyerCircusTest(SawyerCircus):
+    """Threading task."""
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = super()._grid_bounds_for_eval_mode()
+
+        # augment old spacing by half grid width to ensure no overlap in grid points
+        old_spacing = (ret["hole"][0][1] - ret["hole"][0][0]) / ret["hole"][0][2]
+        offset = old_spacing / 2.
+        ret["hole"][0] = (ret["hole"][0][0] + offset, ret["hole"][0][1] + offset, ret["hole"][0][2])
+        return ret
 
