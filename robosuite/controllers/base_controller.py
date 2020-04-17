@@ -128,7 +128,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
         mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
         mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
-        self.mass_matrix = mass_matrix[self.joint_index, :][:, self.joint_index]
+        self.mass_matrix = mass_matrix[self.qvel_index, :][:, self.qvel_index]
 
     @property
     def input_min(self):
