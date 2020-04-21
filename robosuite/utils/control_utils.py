@@ -1,8 +1,8 @@
 import numpy as np
-from scipy import linalg
+import numba
 import robosuite.utils.transform_utils as trans
 
-
+@numba.jit(nopython=True)
 def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, joint_vel, joint_kp=10):
     """
     For a robot with redundant DOF(s), a nullspace exists which is orthogonal to the remainder of the controllable
@@ -27,9 +27,9 @@ def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, j
     nullspace_torques = np.dot(nullspace_matrix.transpose(), pose_torques)
     return nullspace_torques
 
-
+@numba.jit(nopython=True)
 def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
-    mass_matrix_inv = linalg.inv(mass_matrix)
+    mass_matrix_inv = np.linalg.inv(mass_matrix)
 
     # J M^-1 J^T
     lambda_full_inv = np.dot(
@@ -37,7 +37,7 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_full.transpose())
 
     # (J M^-1 J^T)^-1
-    lambda_full = linalg.inv(lambda_full_inv)
+    lambda_full = np.linalg.inv(lambda_full_inv)
 
     # Jx M^-1 Jx^T
     lambda_pos_inv = np.dot(
@@ -50,13 +50,13 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_ori.transpose())
 
     # take the inverse, but zero out elements in cases of a singularity
-    svd_u, svd_s, svd_v = linalg.svd(lambda_pos_inv)
+    svd_u, svd_s, svd_v = np.linalg.svd(lambda_pos_inv)
     singularity_threshold = 0.00025
-    svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
+    svd_s_inv = np.array([0. if x < singularity_threshold else 1. / x for x in svd_s])
     lambda_pos = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
 
-    svd_u, svd_s, svd_v = linalg.svd(lambda_ori_inv)
-    svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
+    svd_u, svd_s, svd_v = np.linalg.svd(lambda_ori_inv)
+    svd_s_inv = np.array([0. if x < singularity_threshold else 1. / x for x in svd_s])
     lambda_ori = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
 
     # nullspace
@@ -65,21 +65,20 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
 
     return lambda_full, lambda_pos, lambda_ori, nullspace_matrix
 
-
+@numba.jit(nopython=True)
 def orientation_error(desired, current):
     """
-    This function calculates a 3-dimensional orientation error vector for use in the
-    impedance controller. It does this by computing the delta rotation between the 
-    inputs and converting that rotation to exponential coordinates (axis-angle
-    representation, where the 3d vector is axis * angle). 
-    See https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation for more information.
+    Optimized function to determine orientation error from matrices
     """
-    delta_rotation_mat = desired.dot(current.T)
-    delta_rotation_quat = trans.mat2quat(delta_rotation_mat)
-    delta_rotation_axis, delta_rotation_angle = trans.quat2axisangle(delta_rotation_quat)
-    error = trans.axisangle2vec(axis=delta_rotation_axis, angle=delta_rotation_angle)
-    return error
+    rc1 = current[0:3, 0]
+    rc2 = current[0:3, 1]
+    rc3 = current[0:3, 2]
+    rd1 = desired[0:3, 0]
+    rd2 = desired[0:3, 1]
+    rd3 = desired[0:3, 2]
 
+    error = 0.5 * (np.cross(rc1, rd1) + np.cross(rc2, rd2) + np.cross(rc3, rd3))
+    return error
 
 def set_goal_position(delta,
                       current_position,
