@@ -17,7 +17,6 @@ setup(
     ],
     install_requires=[
         "numpy>=1.13.3",
-        "scipy>=1.1.0"
     ],
     eager_resources=['*'],
     include_package_data=True,

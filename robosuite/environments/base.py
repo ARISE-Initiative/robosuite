@@ -1,6 +1,6 @@
 from collections import OrderedDict
+import time
 import numpy as np
-from scipy import linalg
 
 from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
@@ -410,7 +410,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if camera_name is None:
             camera_name = self.camera_name
         P = self.get_camera_transform_matrix(camera_name=camera_name)
-        return linalg.inv(P)
+        return T.matrix_inverse(P)
 
     def from_pixel_to_world(self, u, v, w, camera_name=None):
         """

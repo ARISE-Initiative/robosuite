@@ -1,8 +1,9 @@
+import time
+import math
 from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
-from scipy import linalg
 from collections.abc import Iterable
 
 FORCE_POSITION_FACTOR = 25.
@@ -151,7 +152,6 @@ class EndEffectorImpedanceController(Controller):
         self.ori_ref = None
 
     def set_goal(self, delta, set_pos=None, set_ori=None):
-        self.update()
 
         if self.force_control:
             if self.use_ori:
@@ -182,7 +182,10 @@ class EndEffectorImpedanceController(Controller):
             scaled_delta = []
 
         # We only want to update goal orientation if there is a valid delta ori value
-        if not np.isclose(scaled_delta[3:], 0).all():
+
+        # use math.isclose instead of numpy because numpy is slow
+        bools = [0. if math.isclose(elem, 0.) else 1. for elem in scaled_delta[3:]]
+        if sum(bools) > 0.:
             self.goal_ori = set_goal_orientation(scaled_delta[3:],
                                                  self.ee_ori_mat,
                                                  orientation_limit=self.orientation_limits,
@@ -207,8 +210,6 @@ class EndEffectorImpedanceController(Controller):
         A detailed overview of derivation of OSC equations can be seen at:
         http://khatib.stanford.edu/publications/pdfs/Khatib_1987_RA.pdf
         """
-        # Update state
-        self.update()
 
         desired_pos = None
         # Only linear interpolator is currently supported
@@ -308,7 +309,7 @@ class EndEffectorImpedanceController(Controller):
             # axis-angle - (exponential coordinates)
             force[3:6] *= FORCE_ROTATION_FACTOR
             kp = np.array(self.kp[3:6])
-            mr_inv = linalg.inv(lambda_ori)
+            mr_inv = T.matrix_inverse(lambda_ori)
             rot_perturb = mr_inv.dot(force[3:6]) / kp
             action[3:6] += rot_perturb
         else:
@@ -318,7 +319,7 @@ class EndEffectorImpedanceController(Controller):
 
         # delta x' = delta x + 1/kp * M^-1 * F
         kp = np.array(self.kp[0:3])
-        mx_inv = linalg.inv(lambda_pos)
+        mx_inv = T.matrix_inverse(lambda_pos)
         pos_perturb = mx_inv.dot(force[:3]) / kp
         action[:3] += pos_perturb
         
