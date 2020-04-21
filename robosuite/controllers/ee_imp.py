@@ -145,8 +145,8 @@ class EndEffectorImpedanceController(Controller):
         self.uncoupling = uncouple_pos_ori
 
         # initialize
-        self.goal_ori = np.array([[-1,0,0],[0,1,0],[0,0,-1]])
-        self.goal_pos = np.array([0,0,0])
+        self.goal_ori = np.array([[-1,0,0],[0,1,0],[0,0,-1]], dtype=np.float64)
+        self.goal_pos = np.array([0,0,0], dtype=np.float64)
 
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
