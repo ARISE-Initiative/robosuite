@@ -59,14 +59,14 @@ if __name__ == "__main__":
     env = suite.make(
         envs[k],
         controller_config=config,
-        has_renderer=False,
+        has_renderer=True,
         has_offscreen_renderer=False,
         ignore_done=True,
         use_camera_obs=False,
         control_freq=20,
     )
     env.reset()
-    # env.viewer.set_camera(camera_id=0)
+    env.viewer.set_camera(camera_id=0)
 
     # Get action limits
     low, high = env.action_spec
@@ -75,4 +75,4 @@ if __name__ == "__main__":
     for i in range(1000):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
-        # env.render()
+        env.render()
