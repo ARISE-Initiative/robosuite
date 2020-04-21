@@ -483,13 +483,35 @@ class SawyerFitPushLongBar(SawyerFit):
         initializer.sample_on_top(
             "block",
             surface_name="hole",
-            x_range=[-0.3, -0.1],
-            y_range=[-0.3, -0.1],
-            z_rotation=None,
-            # z_offset=0.2,
+            x_range=[-0.1, -0.1],
+            y_range=[-0.1, -0.1],
+            z_rotation=0.,
             ensure_object_boundary_in_range=False,
         )
         return initializer
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = {}
+
+        # (low, high, number of grid points for this dimension)
+        hole_x_bounds = (0., 0., 1)
+        hole_y_bounds = (0., 0., 1)
+        hole_z_rot_bounds = (0., 0., 1)
+        hole_z_offset = 0.
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
+
+        block_x_bounds = (-0.1, -0.1, 1)
+        block_y_bounds = (-0.1, -0.1, 1)
+        block_z_rot_bounds = (0., 0. * np.pi, 1)
+        block_z_offset = 0.
+        ret["block"] = [block_x_bounds, block_y_bounds, block_z_rot_bounds, block_z_offset]
+
+        return ret
 
     def _load_model(self):
         """
@@ -509,7 +531,7 @@ class SawyerFitPushLongBar(SawyerFit):
         self.mujoco_arena.set_origin([0.16 + self.table_full_size[0] / 2, 0, 0])
 
         TOLERANCE = 1.03
-        self.obj_size = np.array([0.05, 0.015, 0.01])
+        self.obj_size = np.array([0.05, 0.015, 0.015])
         self.hole_size = TOLERANCE * self.obj_size
 
         piece = BoxObject(
@@ -517,26 +539,31 @@ class SawyerFitPushLongBar(SawyerFit):
             rgba=[1, 0, 0, 1],
         )
 
-        self.hole = BoundingObject(
-            size=[0.4, 0.4, 0.02],
-            hole_size=self.hole_size, 
-            joint=[],
-            rgba=[0, 0, 1, 1],
-            hole_rgba=[0, 1, 0, 1],
-        )
-
-        # self.hole_size = np.array([0.05, 0.05, 0.01])
-        # pattern = [np.eye(5)]
-        # unit_size = 0.01
-        # self.hole = BoundingPatternObject(
-        #     unit_size,
-        #     pattern,
-        #     size=[0.2, 0.2, 0.02],
+        # self.hole = BoundingObject(
+        #     size=[0.4, 0.4, 0.02],
         #     hole_size=self.hole_size, 
         #     joint=[],
         #     rgba=[0, 0, 1, 1],
         #     hole_rgba=[0, 1, 0, 1],
         # )
+
+        # hole pattern to prop bar upright
+        pattern = np.ones((3, 6, 6))
+        pattern[0][1:-1, 1:-1] = 0.
+        pattern[1][1:-1, 1:-1] = 0.
+        pattern[2] = np.zeros((6, 6))
+        unit_size = [0.004, 0.004, 0.015]
+        self.hole = BoundingPatternObject(
+            unit_size=unit_size,
+            pattern=pattern,
+            size=[0.4, 0.4, 0.05],
+            hole_location=[0.3, 0],
+            joint=[],
+            # rgba=[0, 0, 1, 1],
+            rgba=[0.627, 0.627, 0.627, 1],
+            hole_rgba=[0, 1, 0, 1],
+            pattern_rgba=[0, 1, 1, 1],
+        )
 
         self.mujoco_objects = OrderedDict([
             ("block", piece), 
@@ -555,6 +582,20 @@ class SawyerFitPushLongBar(SawyerFit):
             initializer=self.placement_initializer,
         )
         self.model.place_objects()
+
+    def _pre_action(self, action, policy_step=None):
+        """
+        Last gripper dimensions of action are ignored.
+        """
+        # close gripper
+        # action[-self.gripper.dof:] = 1.
+        super()._pre_action(action, policy_step=policy_step)
+
+    def _check_success(self):
+        """
+        Returns True if task has been completed.
+        """
+        return False
 
 
 class SawyerThreading(SawyerFit):
@@ -1000,7 +1041,7 @@ class SawyerThreadingRing(SawyerThreadingPrecise):
             
         # make ring low friction for easy insertion
         ring_friction = [0.3, 5e-3, 1e-4] 
-        ring_geom_args = BoxPatternObject._geoms_from_init(None, unit_size, pattern, friction=ring_friction)
+        ring_geom_args = BoxPatternObject._geoms_from_init(None, unit_size, pattern, rgba=None, friction=ring_friction)
         self.num_ring_geoms = len(ring_geom_args["geom_locations"])
         ring_geom_args["geom_rgbas"] = [ring_color for _ in range(self.num_ring_geoms)]
         ring_geom_args["geom_types"] = ["box" for _ in range(self.num_ring_geoms)]

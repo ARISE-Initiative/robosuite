@@ -577,15 +577,6 @@ class BoundingObject(CompositeBoxObject):
         self.hole_rgba = np.array(hole_rgba) if hole_rgba is not None else None
         self.hole_location = np.array(hole_location)
 
-        # if hole_location is None:
-        #     # find amount the hole can move within the bounding object, and sample a location
-        #     # that's relative to the center of the object
-        #     x_hole_lim = size[0] - self.hole_size[0] # these are half-sizes
-        #     y_hole_lim = size[1] - self.hole_size[1]
-        #     x_hole = np.random.uniform(-0.6 * x_hole_lim, 0.6 * x_hole_lim)
-        #     y_hole = np.random.uniform(-0.6 * y_hole_lim, 0.6 * y_hole_lim)
-        #     self.hole_location = np.array([x_hole, y_hole])
-
         # specify all geoms in unnormalized position coordinates
         geom_args = self._geoms_from_init(
             size=size, 
@@ -711,7 +702,7 @@ class BoxPatternObject(CompositeBoxObject):
         self.unit_size = unit_size
 
         total_size = [self.nx * unit_size[0], self.ny * unit_size[1], self.nz * unit_size[2]]
-        geom_args = self._geoms_from_init(self.unit_size, self.pattern, friction)
+        geom_args = self._geoms_from_init(self.unit_size, self.pattern, rgba, friction)
         super().__init__(
             total_size=total_size, 
             joint=joint, 
@@ -722,7 +713,7 @@ class BoxPatternObject(CompositeBoxObject):
             **geom_args,
         )
 
-    def _geoms_from_init(self, unit_size, pattern, friction):
+    def _geoms_from_init(self, unit_size, pattern, rgba, friction):
         """
         Helper function to retrieve geoms to pass to super class.
         """
@@ -746,11 +737,13 @@ class BoxPatternObject(CompositeBoxObject):
                         ])
                         geom_names.append("{}_{}_{}".format(k, i, j))
 
+        geom_rgbas = [rgba for _ in geom_locations]
         geom_frictions = [friction for _ in geom_locations]
         return {
             "geom_locations" : geom_locations,
             "geom_sizes" : geom_sizes,
             "geom_names" : geom_names,
+            "geom_rgbas" : geom_rgbas,
             "geom_frictions" : geom_frictions,
         }
 
@@ -767,9 +760,9 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
         unit_size,
         pattern,
         size=[0.1, 0.1, 0.1],
-        hole_size=[0.05, 0.05, 0.05],
         hole_location=[0., 0.],
         hole_rgba=None,
+        pattern_rgba=None,
         joint=None,
         rgba=None,
         density=100.,
@@ -782,21 +775,23 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
               the z-location is inferred to be at the top of the box.
         """
 
-        # make sure hole fits within box
-        assert np.all(hole_size < size)
-
         # number of blocks in z, x, and y for the pattern
         self.pattern = np.array(pattern)
+        self.pattern_rgba = np.array(pattern_rgba) if pattern_rgba is not None else None
         self.nz, self.nx, self.ny = self.pattern.shape
         self.unit_size = np.array(unit_size)
 
-        self.hole_size = np.array(hole_size)
+        self.hole_size = np.array([self.unit_size[0] * self.nx, self.unit_size[1] * self.ny, self.unit_size[2] * self.nz])
         self.hole_rgba = np.array(hole_rgba) if hole_rgba is not None else None
         self.hole_location = np.array(hole_location)
+
+        # make sure hole fits within box
+        assert np.all(self.hole_size < size)
 
         geom_args = self._geoms_from_init(
             unit_size=self.unit_size,
             pattern=self.pattern,
+            pattern_rgba=self.pattern_rgba,
             size=size, 
             hole_size=self.hole_size, 
             hole_location=self.hole_location, 
@@ -815,7 +810,7 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
             **geom_args,
         )
 
-    def _geoms_from_init(self, unit_size, pattern, size, hole_size, hole_location, hole_rgba, friction):
+    def _geoms_from_init(self, unit_size, pattern, pattern_rgba, size, hole_size, hole_location, hole_rgba, friction):
         """
         Helper function to retrieve geoms to pass to super class, from the size,
         hole size, and hole location.
@@ -832,6 +827,7 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
             self, 
             unit_size=unit_size,
             pattern=pattern,
+            rgba=pattern_rgba,
             friction=friction,
         )
 
@@ -841,12 +837,9 @@ class BoundingPatternObject(BoundingObject, BoxPatternObject):
 
         for i in range(len(pattern_geom_args["geom_sizes"])):
             # move locations to account for the bounding box object
-            pattern_geom_args["geom_locations"][i][0] += 2. * hole_base_loc[0]
-            pattern_geom_args["geom_locations"][i][1] += 2. * hole_base_loc[1]
-            pattern_geom_args["geom_locations"][i][2] += 2. * (hole_base_loc[2] + hole_base_size[2])
-
-        # add in dummy geom rgbas to merge with bounding geoms
-        pattern_geom_args["geom_rgbas"] = [None for _ in range(len(pattern_geom_args["geom_sizes"]))]
+            pattern_geom_args["geom_locations"][i][0] += hole_base_loc[0]
+            pattern_geom_args["geom_locations"][i][1] += hole_base_loc[1]
+            pattern_geom_args["geom_locations"][i][2] += (hole_base_loc[2] + 2. * hole_base_size[2])
 
         # merge geom lists together
         return {
