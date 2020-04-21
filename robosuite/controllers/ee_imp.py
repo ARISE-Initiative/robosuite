@@ -145,8 +145,8 @@ class EndEffectorImpedanceController(Controller):
         self.uncoupling = uncouple_pos_ori
 
         # initialize
-        self.goal_ori = np.array([[-1,0,0],[0,1,0],[0,0,-1]], dtype=np.float64)
-        self.goal_pos = np.array([0,0,0], dtype=np.float64)
+        self.goal_ori = np.array([[-1.,0.,0.],[0.,1.,0.],[0.,0.,-1.]])
+        self.goal_pos = np.array([0.,0.,0.])
 
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
@@ -170,7 +170,7 @@ class EndEffectorImpedanceController(Controller):
                 scaled_delta = self.scale_action(delta)
                 if not self.use_ori:
                     # Set default control for ori since user isn't actively controlling ori
-                    set_ori = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
+                    set_ori = np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
             else:
                 scaled_delta = []
         # Else, interpret actions as absolute values
@@ -178,7 +178,7 @@ class EndEffectorImpedanceController(Controller):
             set_pos = self.initial_ee_pos + delta[:3]
             # Set default control for ori if we're only using position control
             set_ori = self.initial_ee_ori_mat.T.dot(T.euler2mat(delta[3:])) if self.use_ori \
-                else np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
+                else np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
             scaled_delta = []
 
         # We only want to update goal orientation if there is a valid delta ori value
