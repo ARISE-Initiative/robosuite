@@ -70,13 +70,6 @@ def orientation_error(desired, current):
     """
     Optimized function to determine orientation error from matrices
     """
-
-    def cross_product(vec1, vec2):
-        mat = np.array(([0, -vec1[2], vec1[1]],
-                        [vec1[2], 0, -vec1[0]],
-                        [-vec1[1], vec1[0], 0]))
-        return np.dot(mat, vec2)
-
     rc1 = current[0:3, 0]
     rc2 = current[0:3, 1]
     rc3 = current[0:3, 2]
@@ -84,8 +77,7 @@ def orientation_error(desired, current):
     rd2 = desired[0:3, 1]
     rd3 = desired[0:3, 2]
 
-    error = 0.5 * (cross_product(rc1, rd1) + cross_product(rc2, rd2) + cross_product(rc3, rd3))
-
+    error = 0.5 * (np.cross(rc1, rd1) + np.cross(rc2, rd2) + np.cross(rc3, rd3))
     return error
 
 def set_goal_position(delta,
