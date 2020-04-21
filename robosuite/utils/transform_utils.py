@@ -821,5 +821,5 @@ def matrix_inverse(matrix):
     """
     Helper function to have an efficient matrix inversion function.
     """
-    return np.linalg.inverse(matrix)
+    return np.linalg.inv(matrix)
 
