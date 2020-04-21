@@ -44,6 +44,22 @@ class EnvMeta(type):
             register_env(cls)
         return cls
 
+class CustomMjSim(MjSim):
+    """
+    Custom mjsim to overwrite the render function in order to
+    workaround the mujoco-py bug of multiple env rendering issue
+    """
+    def __new__(cls, *args, **kw):
+        return super().__new__(cls, *args, **kw)
+
+    def __init__(self, mjpy_model):
+        # super().__init__()
+        pass
+
+    def render(self, **kwargs):
+        # render twice to work around the bug!
+        super().render(**kwargs)
+        return super().render(**kwargs)
 
 class MujocoEnv(metaclass=EnvMeta):
     """Initializes a Mujoco Environment."""
@@ -166,7 +182,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # instantiate simulation from MJCF model
         self._load_model()
         self.mjpy_model = self.model.get_model(mode="mujoco_py")
-        self.sim = MjSim(self.mjpy_model)
+        self.sim = CustomMjSim(self.mjpy_model)
 
         self._reset_internal()
         self.sim.forward()
@@ -314,7 +330,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # load model from xml
         self.mjpy_model = load_model_from_xml(xml_string)
-        self.sim = MjSim(self.mjpy_model)
+        self.sim = CustomMjSim(self.mjpy_model)
 
         self._reset_internal()
         self.sim.forward()

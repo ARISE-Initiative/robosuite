@@ -456,8 +456,10 @@ class SawyerLiftWidePositionInit(SawyerLift):
             x_range=[-0.1, 0.1],
             y_range=[-0.1, 0.1],
             ensure_object_boundary_in_range=False,
-            z_rotation=True
+            z_rotation=0.
         )
+        if kwargs["controller_config"]["type"] == "EE_POS_ORI":
+            kwargs["controller_config"]["type"] = "EE_POS"
         super(SawyerLiftWidePositionInit, self).__init__(**kwargs)
 
     def _grid_bounds_for_eval_mode(self):
@@ -468,9 +470,12 @@ class SawyerLiftWidePositionInit(SawyerLift):
         """
 
         # (low, high, number of grid points for this dimension)
-        x_bounds = (-0.1, 0.1, 3)
-        y_bounds = (-0.1, 0.1, 3)
-        z_rot_bounds = (1., 1., 1)
+        x_bounds = (-0.1, 0.1, 5)
+        y_bounds = (-0.1, 0.1, 5)
+        # extrapolate:
+        # x_bounds = (0.1, 0.2, 4)
+        # y_bounds = (0.1, 0.2, 4)
+        z_rot_bounds = (0., 0., 1)
         return x_bounds, y_bounds, z_rot_bounds
 
 
