@@ -1260,6 +1260,31 @@ class SawyerCircusEasy(SawyerCircus):
         del self.object_body_ids["block"]
         self.object_body_ids["r_gripper_rod"] = self.sim.model.body_name2id("r_gripper_rod")
 
+    # def _get_observation(self):
+    #     """
+    #     Returns an OrderedDict containing observations [(name_string, np.array), ...].
+
+    #     Important keys:
+    #         robot-state: contains robot-centric information.
+    #         object-state: requires @self.use_object_obs to be True.
+    #             contains object-centric information.
+    #         image: requires @self.use_camera_obs to be True.
+    #             contains a rendered frame from the simulation.
+    #         depth: requires @self.use_camera_obs and @self.camera_depth to be True.
+    #             contains a rendered depth map from the simulation
+    #     """
+    #     di = super()._get_observation()
+
+    #     # low-level object information
+    #     if self.use_object_obs:
+    #         di["object-state"] = np.concatenate([
+    #             di["hole_to_eef_pos"],
+    #             di["hole_to_eef_quat"],
+    #             di["hole_pos"],
+    #             di["hole_quat"],
+    #         ])
+    #     return di
+
     def _check_success(self):
         """
         Returns True if task has been completed.
