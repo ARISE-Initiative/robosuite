@@ -95,6 +95,7 @@ class JointTorqueController(Controller):
         self.torques = None                               # Torques returned every time run_controller is called
 
     def set_goal(self, torques):
+        # Update state
         self.update()
 
         # Check to make sure torques is size self.joint_dim
@@ -128,6 +129,9 @@ class JointTorqueController(Controller):
 
         # Add gravity compensation
         self.torques = self.current_torque + self.torque_compensation
+
+        # Always run superclass call for any cleanups at the end
+        super().run_controller()
 
         # Return final torques
         return self.torques

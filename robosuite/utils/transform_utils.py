@@ -415,8 +415,8 @@ def quat2axisangle(quat):
     # Clip w so that it's not greater than 1
     quat[3] = min(quat[3], 1.0)
 
-    den = np.sqrt(1. - quat[3] * quat[3])
-    if np.isclose(den, 0.):
+    den = np.sqrt(1 - quat[3] * quat[3])
+    if np.isclose(den, 0., atol=1e-3):
         # This is (close to) a zero degree rotation, immediately return
         return np.zeros(3), 0.
     x = quat[0] / den
@@ -438,7 +438,7 @@ def axisangle2quat(axis, angle):
         return np.array([0., 0., 0., 1.])
 
     # make sure that axis is a unit vector
-    assert np.isclose(np.linalg.norm(axis), 1., 1e-3)
+    assert np.isclose(np.linalg.norm(axis), 1., atol=1e-3)
 
     q = np.zeros(4)
     q[3] = np.cos(angle / 2.)
@@ -660,16 +660,24 @@ def clip_rotation(quat, limit):
         # This is a zero degree rotation, immediately return
         return quat, clipped
     else:
-        # This is all other cases; convert quat to axis-angle
-        axis, angle = quat2axisangle(quat)
+        # This is all other cases
+        x = quat[0] / den
+        y = quat[1] / den
+        z = quat[2] / den
+        a = 2 * math.acos(quat[3])
 
-    # Clip rotation if necessary
-    if abs(angle) > limit:
-        angle = limit * np.sign(angle)
+    # Clip rotation if necessary and return clipped quat
+    if abs(a) > limit:
+        a = limit * np.sign(a) / 2
+        sa = math.sin(a)
+        ca = math.cos(a)
+        quat = np.array([
+            x * sa,
+            y * sa,
+            z * sa,
+            ca
+        ])
         clipped = True
-
-    # Convert back to quat and return quat
-    quat = axisangle2quat(axis, angle)
 
     return quat, clipped
 

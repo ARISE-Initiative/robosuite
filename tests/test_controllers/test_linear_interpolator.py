@@ -36,6 +36,7 @@ orientation, and proceeds as follows:
 Note: For the test, we set an arbitrary threshold ratio of 1.10 of interpolated time / non-interpolated time that we
         assume as the minimum
 """
+# TODO: Fix!!
 
 import numpy as np
 
@@ -90,7 +91,7 @@ def test_linear_interpolator():
                 # Define controller path to load
                 controller_path = os.path.join(os.path.dirname(__file__),
                                                '../../robosuite',
-                                               'controllers/config/{}.json'.format(controller_name.lower))
+                                               'controllers/config/{}.json'.format(controller_name.lower()))
                 with open(controller_path) as f:
                     controller_config = json.load(f)
                     controller_config["interpolation"] = interpolator
@@ -110,6 +111,11 @@ def test_linear_interpolator():
 
                 # Reset the environment
                 env.reset()
+
+                # Hardcode the starting position for sawyer
+                init_qpos = [-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628]
+                env.robots[0].set_robot_joint_positions(init_qpos)
+                env.robots[0].controller.update_initial_joints(init_qpos)
 
                 # Notify user a new trajectory is beginning
                 print("\nTesting controller {} with trajectory {} and interpolator={}...".format(

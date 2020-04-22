@@ -104,6 +104,7 @@ class JointPositionController(Controller):
         self.goal_qpos = None
 
     def set_goal(self, delta, set_qpos=None):
+        # Update state
         self.update()
 
         # Check to make sure delta is size self.joint_dim
@@ -151,6 +152,9 @@ class JointPositionController(Controller):
 
         # Return desired torques plus gravity compensations
         self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
+
+        # Always run superclass call for any cleanups at the end
+        super().run_controller()
 
         return self.torques
 

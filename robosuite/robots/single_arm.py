@@ -208,9 +208,6 @@ class SingleArm(Robot):
             gripper_action = action[self.controller.control_dim:]  # all indexes past controller dimension indexes
             action = action[:self.controller.control_dim]
 
-        # Update model in controller
-        self.controller.update()
-
         # Update the controller goal if this is a new policy step
         if policy_step:
             self.controller.set_goal(action)

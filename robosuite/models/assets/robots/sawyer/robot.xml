@@ -1,6 +1,4 @@
 <mujoco model="sawyer">
-    <!-- <compiler angle="radian"/>
-    <size nconmax="100" njmax="500"/> -->
     <actuator>
         <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="right_j0" name="torq_right_j0"/>
         <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="right_j1" name="torq_right_j1"/>

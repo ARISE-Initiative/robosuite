@@ -144,6 +144,7 @@ class EndEffectorOperationalSpaceController(Controller):
         self.ori_ref = None
 
     def set_goal(self, delta, set_pos=None, set_ori=None):
+        # Update state
         self.update()
 
         # If we're using deltas, interpret actions as such
@@ -251,6 +252,9 @@ class EndEffectorOperationalSpaceController(Controller):
         #                     to the initial joint positions
         self.torques += nullspace_torques(self.mass_matrix, nullspace_matrix,
                                           self.initial_joint, self.joint_pos, self.joint_vel)
+
+        # Always run superclass call for any cleanups at the end
+        super().run_controller()
 
         return self.torques
 

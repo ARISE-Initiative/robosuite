@@ -244,9 +244,6 @@ class Bimanual(Robot):
                 gripper_action = sub_action[self.controller[arm].control_dim:]
                 sub_action = sub_action[:self.controller[arm].control_dim]
 
-            # Update model in controller
-            self.controller[arm].update()
-
             # Update the controller goal if this is a new policy step
             if policy_step:
                 self.controller[arm].set_goal(sub_action)

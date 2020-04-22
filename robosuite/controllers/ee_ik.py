@@ -19,6 +19,8 @@ import robosuite.utils.transform_utils as T
 import numpy as np
 
 
+# TODO: Add support for Jaco / Kinova3 robots IK
+
 class PybulletServer(object):
     """
     Helper class to encapsulate an alias for a single pybullet server
@@ -278,6 +280,9 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         robot being controlled.
         """
 
+        # update model (force update)
+        self.update(force=True)
+
         # sync IK robot state to the current robot joint positions
         self.sync_ik_robot()
 
@@ -301,7 +306,6 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
             sync_last (bool): If False, don't sync the last joint angle. This
                 is useful for directly controlling the roll at the end effector.
         """
-        self.update()
         if not joint_positions:
             joint_positions = self.joint_pos
         num_joints = self.joint_dim
@@ -490,6 +494,8 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         return T.mat2pose(pose_in_world)
 
     def set_goal(self, delta, set_ik=None):
+        # Update state
+        self.update()
 
         # Get requested delta inputs if we're using interpolators
         (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])

@@ -67,6 +67,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Torques being outputted by the controller
         self.torques = None
 
+        # Update flag to prevent redundant update calls
+        self.new_update = True
+
         # Move forward one timestep to propagate updates before taking first update
         self.sim.forward()
 
@@ -81,8 +84,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         """
         Abstract method that should be implemented in all subclass controllers
         Converts a given action into torques (pre gravity compensation) to be executed on the robot
+        Additionally, resets the self.new_update flag so that the next self.update call will occur
         """
-        raise NotImplementedError
+        self.new_update = True
 
     def scale_action(self, action):
         """
@@ -98,27 +102,40 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         return transformed_action
 
-    def update(self):
+    def update(self, force=False):
         """
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,
-        jacobian, and mass matrix
+        jacobian, and mass matrix. By default, since this is a non-negligible computation, multiple redundant calls
+        will be ignored via the self.new_update attribute flag. However, if the @force flag is set, the update will occur
+        regardless of that state of self.new_update. This base class method of @run_controller resets the
+        self.new_update flag
+
+        Args:
+            @force (bool): Whether to force an update to occur or not
         """
-        self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.eef_name)])
-        self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.eef_name)].reshape([3, 3]))
-        self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.eef_name)])
-        self.ee_ori_vel = np.array(self.sim.data.body_xvelr[self.sim.model.body_name2id(self.eef_name)])
 
-        self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
-        self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
+        # Only run update if self.new_update or force flag is set
+        if self.new_update or force:
 
-        self.J_pos = np.array(self.sim.data.get_body_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index])
-        self.J_ori = np.array(self.sim.data.get_body_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
-        self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
+            self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.eef_name)])
+            self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.eef_name)].reshape([3, 3]))
+            self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.eef_name)])
+            self.ee_ori_vel = np.array(self.sim.data.body_xvelr[self.sim.model.body_name2id(self.eef_name)])
 
-        mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
-        mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
-        mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
-        self.mass_matrix = mass_matrix[self.joint_index, :][:, self.joint_index]
+            self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
+            self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
+
+            self.J_pos = np.array(self.sim.data.get_body_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index])
+            self.J_ori = np.array(self.sim.data.get_body_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
+            self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
+
+            mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
+            mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
+            mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
+            self.mass_matrix = mass_matrix[self.qvel_index, :][:, self.qvel_index]
+
+            # Clear self.new_update
+            self.new_update = False
 
     def update_base_pose(self, base_pos, base_ori):
         """
@@ -140,9 +157,12 @@ class Controller(object, metaclass=abc.ABCMeta):
         This function can also be extended by subclassed controllers for additional controller-specific updates
 
         Args:
-            initial_joints (array): Array of joint position values to update the initial joints
+            initial_joints (Iterable): Array of joint position values to update the initial joints
         """
         self.initial_joint = np.array(initial_joints)
+        self.update(force=True)
+        self.initial_ee_pos = self.ee_pos
+        self.initial_ee_ori_mat = self.ee_ori_mat
 
     @property
     def input_min(self):
