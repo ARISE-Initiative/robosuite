@@ -69,6 +69,14 @@ class TwoFingerGripper(TwoFingerGripperBase):
         return 1
 
 
+class TwoFingerGripperWithRod(TwoFingerGripper):
+    """
+    Modifies two finger base to only take one action.
+    """
+    def __init__(self):
+        Gripper.__init__(self, xml_path_completion("grippers/two_finger_gripper_with_rod.xml"))
+
+
 class LeftTwoFingerGripperBase(Gripper):
     """
     A copy of two finger gripper with non-overlapping names

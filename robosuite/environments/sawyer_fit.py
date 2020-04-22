@@ -925,9 +925,11 @@ class SawyerThreadingRing(SawyerThreadingPrecise):
     def __init__(
         self,
         use_post=True,
+        hide_rod=False,
         **kwargs
     ):
         self.use_post = use_post
+        self.hide_rod = hide_rod
         super().__init__(**kwargs)
 
     def _get_default_initializer(self):
@@ -1007,10 +1009,13 @@ class SawyerThreadingRing(SawyerThreadingPrecise):
             [0., 2. * thread_size[1], 0.],
         ]
         geom_names = ["thread", "handle"]
-        geom_rgbas = [
-            [1, 0, 0, 1],
-            [0, 0, 1, 1],
-        ]
+        if self.hide_rod:
+            geom_rgbas = [[0, 0, 0, 0], [0, 0, 0, 0]]
+        else:
+            geom_rgbas = [
+                [1, 0, 0, 1],
+                [0, 0, 1, 1],
+            ]
         # make the thread low friction to ensure easy insertion
         geom_frictions = [
             [0.3, 5e-3, 1e-4],
@@ -1188,6 +1193,93 @@ class SawyerCircus(SawyerThreadingRing):
 
 
 class SawyerCircusTest(SawyerCircus):
+    """Threading task."""
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = super()._grid_bounds_for_eval_mode()
+
+        # augment old spacing by half grid width to ensure no overlap in grid points
+        old_spacing = (ret["hole"][0][1] - ret["hole"][0][0]) / ret["hole"][0][2]
+        offset = old_spacing / 2.
+        ret["hole"][0] = (ret["hole"][0][0] + offset, ret["hole"][0][1] + offset, ret["hole"][0][2])
+        return ret
+
+
+class SawyerCircusEasy(SawyerCircus):
+    """Threading task."""
+    def __init__(
+        self,
+        **kwargs
+    ):
+        # assert("use_post" not in kwargs)
+        # kwargs["use_post"] = False
+        assert "gripper_type" not in kwargs
+        kwargs["gripper_type"] = "TwoFingerGripperWithRod"
+        assert "hide_rod" not in kwargs
+        kwargs["hide_rod"] = True
+        super().__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        ret = super()._grid_bounds_for_eval_mode()
+
+        # (low, high, number of grid points for this dimension)
+        hole_x_bounds = (0.0, 0.15, 9)
+        hole_y_bounds = (-0.15, -0.15, 1)
+        hole_z_rot_bounds = (np.pi / 3., np.pi / 3., 1)
+        hole_z_offset = 0.001
+        ret["hole"] = [hole_x_bounds, hole_y_bounds, hole_z_rot_bounds, hole_z_offset]
+
+        return ret
+
+    def _pre_action(self, action, policy_step=None):
+        """
+        Last gripper dimensions of action are ignored.
+        """
+
+        # close gripper
+        action[-self.gripper.dof:] = 1.
+
+        super()._pre_action(action, policy_step=policy_step)
+
+    def _get_reference(self):
+        """
+        Sets up references to important components. A reference is typically an
+        index or a list of indices that point to the corresponding elements
+        in a flatten array, which is how MuJoCo stores physical simulation data.
+        """
+        super()._get_reference()
+        del self.object_body_ids["block"]
+        self.object_body_ids["r_gripper_rod"] = self.sim.model.body_name2id("r_gripper_rod")
+
+    def _check_success(self):
+        """
+        Returns True if task has been completed.
+        """
+        block_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["r_gripper_rod"]])
+
+        # ring position is average of all the surrounding ring geom positions
+        ring_pos = np.zeros(3)
+        for i in range(self.num_ring_geoms):
+            ring_pos += np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("hole_ring_{}".format(i))])
+        ring_pos /= self.num_ring_geoms
+
+        # radius should be the ring size, since we want to check that the bar is within the ring
+        radius = self.ring_size[1]
+
+        # check if the center of the block and the hole are close enough
+        return (np.linalg.norm(block_pos - ring_pos) < radius)
+
+
+class SawyerCircusEasyTest(SawyerCircusEasy):
     """Threading task."""
     def _grid_bounds_for_eval_mode(self):
         """

@@ -1,7 +1,7 @@
 """
 Defines a string based method of initializing grippers
 """
-from .two_finger_gripper import TwoFingerGripper, LeftTwoFingerGripper
+from .two_finger_gripper import TwoFingerGripper, LeftTwoFingerGripper, TwoFingerGripperWithRod
 from .pr2_gripper import PR2Gripper
 from .robotiq_gripper import RobotiqGripper
 from .pushing_gripper import PushingGripper
@@ -26,6 +26,8 @@ def gripper_factory(name):
     """
     if name == "TwoFingerGripper":
         return TwoFingerGripper()
+    if name == "TwoFingerGripperWithRod":
+        return TwoFingerGripperWithRod()
     if name == "LeftTwoFingerGripper":
         return LeftTwoFingerGripper()
     if name == "PR2Gripper":
