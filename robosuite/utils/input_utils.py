@@ -2,12 +2,12 @@
 Utility functions for grabbing user inputs
 """
 
+import numpy as np
+
 import robosuite as suite
 from robosuite.models.robots import *
 from robosuite.robots import *
 import robosuite.utils.transform_utils as T
-
-import numpy as np
 
 
 def choose_environment():
@@ -43,7 +43,7 @@ def choose_controller():
     Prints out controller options, and returns the requested controller name
     """
     # get the list of all controllers
-    controllers_info = suite.ALL_CONTROLLERS_INFO
+    controllers_info = suite.controllers.CONTROLLER_INFO
     controllers = list(suite.ALL_CONTROLLERS)
 
     # Select controller to use

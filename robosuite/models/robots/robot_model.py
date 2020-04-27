@@ -40,7 +40,7 @@ class RobotModelMeta(type):
         cls = super().__new__(meta, name, bases, class_dict)
 
         # List all environments that should not be registered here.
-        _unregistered_envs = ["Robot"]
+        _unregistered_envs = ["RobotModel"]
 
         if cls.__name__ not in _unregistered_envs:
             register_robot(cls)

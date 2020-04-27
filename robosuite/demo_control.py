@@ -46,6 +46,7 @@ sequential qualitative behavior during the test is described below for each cont
 """
 
 import robosuite as suite
+from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 
 

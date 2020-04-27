@@ -8,9 +8,10 @@ from robosuite.environments.pick_place import PickPlace
 from robosuite.environments.two_arm_peg_in_hole import TwoArmPegInHole
 
 from robosuite.environments import ALL_ENVIRONMENTS
-from robosuite.controllers import load_controller_config, ALL_CONTROLLERS, ALL_CONTROLLERS_INFO
+from robosuite.controllers import ALL_CONTROLLERS, load_controller_config
+from robosuite.robots import ALL_ROBOTS
 
-__version__ = "0.3.0"
+__version__ = "1.0.0"
 __logo__ = """
       ;     /        ,--.
      ["]   ["]  ,<  |__**|
