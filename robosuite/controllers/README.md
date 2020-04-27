@@ -2,9 +2,9 @@
   Controllers are used to determine the type of high-level control over a given robot arm. While all arms are directly controlled via their joint torques, the inputted action space for a given environment can vary depending on the type of desired control. Below, a list of supported controllers and their respective action dimensions are listed.
 | Controller Name |   Controller Type			| 			Action Dimension<br>(Gripper Not Included)    |  Format |  
 | :-------------: | :-------------------: | :-------------------------------------------------: | :-----: |
-| EE_OSC_POSE     |   End-Effector Operational Space Control (Position + Orientation)   | 6 | (x, y, z, i, j, k)    |  
-| EE_OSC_POSITION |   End-Effector Operational Space Control (Position Only)            | 3 | (x, y, z)             |  
-| EE_IK_POSE      |   End-Effector Inverse Kinematics Control (Position + Orientation)  | 7 | (x, y, z, i, j, k, w) |
+| EE_OSC_POSE     |   Operational Space Control (Position + Orientation)   | 6 | (x, y, z, i, j, k)    |  
+| EE_OSC_POSITION |   Operational Space Control (Position Only)            | 3 | (x, y, z)             |  
+| EE_IK_POSE      |   Inverse Kinematics Control (Position + Orientation)  | 7 | (x, y, z, i, j, k, w) |
 | JOINT_POSITION  |   Joint Position                                                    | n | n robot joints        |  
 | JOINT_VELOCITY  |   Joint Velocity                                                    | n | n robot joints        |  
 | JOINT_TORQUE    |   Joint Torque                                                      | n | n robot joints        |  
