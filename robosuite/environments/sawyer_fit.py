@@ -1191,6 +1191,69 @@ class SawyerCircus(SawyerThreadingRing):
 
         return ret
 
+    # def _get_observation(self):
+    #     """
+    #     Returns an OrderedDict containing observations [(name_string, np.array), ...].
+
+    #     Important keys:
+    #         robot-state: contains robot-centric information.
+    #         object-state: requires @self.use_object_obs to be True.
+    #             contains object-centric information.
+    #         image: requires @self.use_camera_obs to be True.
+    #             contains a rendered frame from the simulation.
+    #         depth: requires @self.use_camera_obs and @self.camera_depth to be True.
+    #             contains a rendered depth map from the simulation
+    #     """
+    #     di = super()._get_observation()
+
+    #     # low-level object information
+    #     if self.use_object_obs:
+
+    #         # locations
+    #         rod_pos = np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("block_thread")])
+    #         rod_quat = T.mat2quat(
+    #             np.array(self.sim.data.geom_xmat[self.sim.model.geom_name2id("block_thread")]).reshape(3, 3)
+    #         )
+    #         handle_pos = np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("block_handle")])
+    #         handle_quat = T.mat2quat(
+    #             np.array(self.sim.data.geom_xmat[self.sim.model.geom_name2id("block_handle")]).reshape(3, 3)
+    #         )
+
+    #         # ring position is average of all the surrounding ring geom positions
+    #         ring_pos = np.zeros(3)
+    #         for i in range(self.num_ring_geoms):
+    #             ring_pos += np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("hole_ring_{}".format(i))])
+    #         ring_pos /= self.num_ring_geoms
+    #         ring_quat = T.mat2quat(
+    #             np.array(self.sim.data.geom_xmat[self.sim.model.geom_name2id("hole_ring_0")]).reshape(3, 3)
+    #         )
+
+    #         # include relative pose of handle to eef and ring to rod
+    #         gripper_pose = T.pose2mat((di["eef_pos"], di["eef_quat"]))
+    #         world_pose_in_gripper = T.pose_inv(gripper_pose)
+    #         handle_pose = T.pose2mat((handle_pos, handle_quat))
+    #         rel_pose = T.pose_in_A_to_pose_in_B(handle_pose, world_pose_in_gripper)
+    #         rel_pos, rel_quat = T.mat2pose(rel_pose)
+    #         di["handle_to_eef_pos"] = rel_pos
+    #         di["handle_to_eef_quat"] = rel_quat
+
+    #         rod_pose = T.pose2mat((rod_pos, rod_quat))
+    #         world_pose_in_rod = T.pose_inv(rod_pose)
+    #         ring_pose = T.pose2mat((ring_pos, ring_quat))
+    #         rel_pose = T.pose_in_A_to_pose_in_B(ring_pose, world_pose_in_rod)
+    #         rel_pos, rel_quat = T.mat2pose(rel_pose)
+    #         di["ring_to_rod_pos"] = rel_pos
+    #         di["ring_to_rod_quat"] = rel_quat
+
+    #         di["object-state"] = np.concatenate([
+    #             di["handle_to_eef_pos"],
+    #             di["handle_to_eef_quat"],
+    #             di["ring_to_rod_pos"],
+    #             di["ring_to_rod_quat"]
+    #         ])
+
+    #     return di
+
 
 class SawyerCircusTest(SawyerCircus):
     """Threading task."""
