@@ -1340,12 +1340,37 @@ class SawyerCircusEasy(SawyerCircus):
 
     #     # low-level object information
     #     if self.use_object_obs:
+
+    #         # locations
+    #         self.object_body_ids["r_gripper_rod"]
+    #         rod_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["r_gripper_rod"]])
+    #         rod_quat = T.convert_quat(
+    #             np.array(self.sim.data.body_xquat[self.object_body_ids["r_gripper_rod"]]), to="xyzw"
+    #         )
+
+    #         # ring position is average of all the surrounding ring geom positions
+    #         ring_pos = np.zeros(3)
+    #         for i in range(self.num_ring_geoms):
+    #             ring_pos += np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("hole_ring_{}".format(i))])
+    #         ring_pos /= self.num_ring_geoms
+    #         ring_quat = T.mat2quat(
+    #             np.array(self.sim.data.geom_xmat[self.sim.model.geom_name2id("hole_ring_0")]).reshape(3, 3)
+    #         )
+
+    #         # include relative pose of ring to rod
+    #         rod_pose = T.pose2mat((rod_pos, rod_quat))
+    #         world_pose_in_rod = T.pose_inv(rod_pose)
+    #         ring_pose = T.pose2mat((ring_pos, ring_quat))
+    #         rel_pose = T.pose_in_A_to_pose_in_B(ring_pose, world_pose_in_rod)
+    #         rel_pos, rel_quat = T.mat2pose(rel_pose)
+    #         di["ring_to_rod_pos"] = rel_pos
+    #         di["ring_to_rod_quat"] = rel_quat
+
     #         di["object-state"] = np.concatenate([
-    #             di["hole_to_eef_pos"],
-    #             di["hole_to_eef_quat"],
-    #             di["hole_pos"],
-    #             di["hole_quat"],
+    #             di["ring_to_rod_pos"],
+    #             di["ring_to_rod_quat"]
     #         ])
+
     #     return di
 
     def _check_success(self):
