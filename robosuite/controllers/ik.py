@@ -226,8 +226,10 @@ class InverseKinematicsController(JointVelocityController):
         # get paths to urdfs
         self.robot_urdf = pjoin(
             os.path.join(robosuite.models.assets_root, "bullet_data"),
-            "{}_description/urdf/{}_arm.urdf".format(self.robot_name, self.robot_name)
+            "{}_description/urdf/{}_arm.urdf".format(self.robot_name.lower(), self.robot_name.lower())
         )
+
+        print(self.robot_name.lower())
 
         # import reference to the global pybullet server and load the urdfs
         from robosuite.controllers import get_pybullet_server
