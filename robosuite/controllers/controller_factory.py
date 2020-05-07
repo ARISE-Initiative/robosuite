@@ -1,7 +1,7 @@
 """
 Defines a string based method of initializing controllers
 """
-from .ee_osc import EndEffectorOperationalSpaceController
+from .osc import OperationalSpaceController
 from .joint_vel import JointVelocityController
 from .joint_pos import JointPositionController
 from .joint_tor import JointTorqueController
@@ -44,7 +44,7 @@ def load_controller_config(custom_fpath=None, default_controller=None):
         @custom_fpath (str): Absolute filepath to the custom controller configuration .json file to be loaded
         @default_controller (str): If specified, overrides @custom_fpath and loads a default configuration file for the
             specified controller.
-            Choices are: {"JOINT_POSITION", "JOINT_TORQUE", "JOINT_VELOCITY", "EE_OSC_POSITION", "EE_OSC_POSE", "EE_IK_POSE"}
+            Choices are: {"JOINT_POSITION", "JOINT_TORQUE", "JOINT_VELOCITY", "OSC_POSITION", "OSC_POSE", "IK_POSE"}
     """
     # First check if default controller is not None; if it is not, load the appropriate controller
     if default_controller is not None:
@@ -81,7 +81,7 @@ def controller_factory(name, params):
 
     Args:
         name: the name of the controller. Must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
-            EE_OSC_POSITION, EE_OSC_POSE, EE_IK_POSE}
+            OSC_POSITION, OSC_POSE, IK_POSE}
         params: dict containing the relevant params to pass to the controller
         sim: Mujoco sim reference to pass to the controller
 
@@ -100,23 +100,23 @@ def controller_factory(name, params):
                                           policy_freq=params["policy_freq"],
                                           ramp_ratio=params["ramp_ratio"])
 
-    if name == "EE_OSC_POSE":
+    if name == "OSC_POSE":
         ori_interpolator = None
         if interpolator is not None:
             interpolator.dim = 3                # EE control uses dim 3 for pos and ori each
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.ori_interpolate = True
         params["control_ori"] = True
-        return EndEffectorOperationalSpaceController(interpolator_pos=interpolator,
-                                                     interpolator_ori=ori_interpolator, **params)
+        return OperationalSpaceController(interpolator_pos=interpolator,
+                                          interpolator_ori=ori_interpolator, **params)
 
-    if name == "EE_OSC_POSITION":
+    if name == "OSC_POSITION":
         if interpolator is not None:
             interpolator.dim = 3                # EE control uses dim 3 for pos
         params["control_ori"] = False
-        return EndEffectorOperationalSpaceController(interpolator_pos=interpolator, **params)
+        return OperationalSpaceController(interpolator_pos=interpolator, **params)
 
-    if name == "EE_IK_POSE":
+    if name == "IK_POSE":
         ori_interpolator = None
         if interpolator is not None:
             interpolator.dim = 3                # EE IK control uses dim 3 for pos and dim 4 for ori
@@ -126,14 +126,14 @@ def controller_factory(name, params):
 
         # Import pybullet server if necessary
         global pybullet_server
-        from .ee_ik import EndEffectorInverseKinematicsController
+        from .ik import InverseKinematicsController
         if not pybullet_server:
-            from robosuite.controllers.ee_ik import PybulletServer
+            from robosuite.controllers.ik import PybulletServer
             pybullet_server = PybulletServer()
-        return EndEffectorInverseKinematicsController(interpolator_pos=interpolator,
-                                                      interpolator_ori=ori_interpolator,
-                                                      bullet_server_id=pybullet_server.server_id,
-                                                      **params)
+        return InverseKinematicsController(interpolator_pos=interpolator,
+                                           interpolator_ori=ori_interpolator,
+                                           bullet_server_id=pybullet_server.server_id,
+                                           **params)
 
     if name == "JOINT_VELOCITY":
         return JointVelocityController(interpolator=interpolator, **params)

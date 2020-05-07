@@ -33,11 +33,11 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.action_output_transform = None
 
         # Private property attributes
-        self._control_dim = None
-        self._output_min = None
-        self._output_max = None
-        self._input_min = None
-        self._input_max = None
+        self.control_dim = None
+        self.output_min = None
+        self.output_max = None
+        self.input_min = None
+        self.input_max = None
 
         # mujoco simulator state
         self.sim = sim
@@ -157,71 +157,46 @@ class Controller(object, metaclass=abc.ABCMeta):
         This function can also be extended by subclassed controllers for additional controller-specific updates
 
         Args:
-            initial_joints (Iterable): Array of joint position values to update the initial joints
+            @initial_joints (Iterable): Array of joint position values to update the initial joints
         """
         self.initial_joint = np.array(initial_joints)
         self.update(force=True)
         self.initial_ee_pos = self.ee_pos
         self.initial_ee_ori_mat = self.ee_ori_mat
 
-    @property
-    def input_min(self):
-        """Returns input minimum below which an inputted action will be clipped"""
-        return self._input_min
+    def reset_goal(self):
+        """
+        Resets the goal -- usually by setting to the goal to all zeros, but in some cases may be different (e.g.: OSC)
+        """
+        raise NotImplementedError
 
-    @input_min.setter
-    def input_min(self, input_min):
-        """Sets the minimum input"""
-        self._input_min = np.array(input_min) if isinstance(input_min, Iterable) \
-            else np.array([input_min]*self.control_dim)
+    @staticmethod
+    def nums2array(nums, dim):
+        """
+        Convert input @nums into numpy array of length @dim. If @nums is a single number, broadcasts it to the
+        corresponding dimension size @dim before converting into a numpy array
 
-    @property
-    def input_max(self):
-        """Returns input maximum above which an inputted action will be clipped"""
-        return self._input_max
+        Args:
+            @nums (numeric or Iterable): Either single value or array of numbers
+            @dim (int): Size of array to broadcast input to
+        """
+        # First run sanity check to make sure no strings are being inputted
+        if isinstance(nums, str):
+            raise TypeError("Error: Only numeric inputs are supported for this function, nums2array!")
 
-    @input_max.setter
-    def input_max(self, input_max):
-        """Sets the maximum input"""
-        self._input_max = np.array(input_max) if isinstance(input_max, Iterable) \
-            else np.array([input_max]*self.control_dim)
-
-    @property
-    def output_min(self):
-        """Returns output minimum which defines lower end of scaling range when scaling an input action"""
-        return self._output_min
-
-    @output_min.setter
-    def output_min(self, output_min):
-        """Set the minimum output"""
-        self._output_min = np.array(output_min) if isinstance(output_min, Iterable) \
-            else np.array([output_min]*self.control_dim)
-
-    @property
-    def output_max(self):
-        """Returns output maximum which defines upper end of scaling range when scaling an input action"""
-        return self._output_max
-
-    @output_max.setter
-    def output_max(self, output_max):
-        """Set the maximum output"""
-        self._output_max = np.array(output_max) if isinstance(output_max, Iterable) \
-                else np.array([output_max]*self.control_dim)
-
-    @property
-    def control_dim(self):
-        """Returns the control dimension for this controller (specifies size of action space)"""
-        return self._control_dim
-
-    @control_dim.setter
-    def control_dim(self, control_dim):
-        """Sets the control dimension for this controller"""
-        self._control_dim = control_dim
+        # Check if input is an Iterable, if so, we simply convert the input to np.array and return
+        # Else, input is a single value, so we map to a numpy array of correct size and return
+        return np.array(nums) if isinstance(nums, Iterable) else np.ones(dim) * nums
 
     @property
     def torque_compensation(self):
         """Returns gravity compensation torques for the robot arm"""
         return self.sim.data.qfrc_bias[self.qvel_index]
+
+    @property
+    def control_limits(self):
+        """Returns the limits over this controller's action space, which defaults to input min/max"""
+        return self.input_min, self.input_max
 
     @property
     def name(self):

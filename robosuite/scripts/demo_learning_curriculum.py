@@ -33,7 +33,7 @@ import robosuite
 from robosuite import make
 from robosuite.wrappers import DemoSamplerWrapper
 
-# TODO: Demonstrations path is now depreceated. Need to update and/or get new demonstrations!!
+# TODO: Demonstrations path is now depreciated. Need to update and/or get new demonstrations!!
 
 if __name__ == "__main__":
 

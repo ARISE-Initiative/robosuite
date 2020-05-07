@@ -3,6 +3,10 @@ from robosuite.utils.control_utils import *
 import numpy as np
 
 
+# Supported impedance modes
+IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
+
+
 class JointPositionController(Controller):
     """
     Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
@@ -20,32 +24,48 @@ class JointPositionController(Controller):
             "qpos" : list of indexes to relevant robot joint positions
             "qvel" : list of indexes to relevant robot joint velocities
 
-        input_max (float or list of float): Maximum above which an inputted action will be clipped. Can be either be
+        input_max (float or Iterable of float): Maximum above which an inputted action will be clipped. Can be either be
             a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
             latter, dimension should be the same as the control dimension for this controller
 
-        input_min (float or list of float): Minimum below which an inputted action will be clipped. Can be either be
+        input_min (float or Iterable of float): Minimum below which an inputted action will be clipped. Can be either be
             a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
             latter, dimension should be the same as the control dimension for this controller
 
-        output_max (float or list of float): Maximum which defines upper end of scaling range when scaling an input
+        output_max (float or Iterable of float): Maximum which defines upper end of scaling range when scaling an input
             action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
             each dimension). If the latter, dimension should be the same as the control dimension for this controller
 
-        output_min (float or list of float): Minimum which defines upper end of scaling range when scaling an input
+        output_min (float or Iterable of float): Minimum which defines upper end of scaling range when scaling an input
             action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
             each dimension). If the latter, dimension should be the same as the control dimension for this controller
 
-        kp (float or list of float): positional gain for determining desired torques based upon the joint pos errors.
+        kp (float or Iterable of float): positional gain for determining desired torques based upon the joint pos errors.
             Can be either be a scalar (same value for all action dims), or a list (specific values for each dim)
 
-        damping (float or list of float): used in conjunction with kp to determine the velocity gain for determining
+        damping (float or Iterable of float): used in conjunction with kp to determine the velocity gain for determining
             desired torques based upon the joint pos errors. Can be either be a scalar (same value for all action dims),
             or a list (specific values for each dim)
 
+        impedance_mode (str): Impedance mode with which to run this controller. Options are {"fixed", "variable",
+            "variable_kp"}. If "fixed", the controller will have fixed kp and damping values as specified by the @kp
+            and @damping arguments. If "variable", both kp and damping will now be part of the controller action space,
+            resulting in a total action space of num_joints * 3. If "variable_kp", only kp will become variable, with
+            damping fixed at 1 (critically damped). The resulting action space will then be num_joints * 2.
+
+        kp_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is set to either
+            "variable" or "variable_kp". This sets the corresponding min / max ranges of the controller action space
+            for the varying kp values. Can be either be a 2-list (same min / max for all kp action dims), or a 2-list
+             of list (specific min / max for each kp dim)
+
+        damping_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is set to
+            "variable". This sets the corresponding min / max ranges of the controller action space for the varying
+            damping values. Can be either be a 2-list (same min / max for all damping action dims), or a 2-list of
+            list (specific min / max for each damping dim)
+
         policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
 
-        qpos_limits (2-list of float or 2-list of list of floats): Limits (rad) below and above which the magnitude
+        qpos_limits (2-list of float or 2-list of Iterable of floats): Limits (rad) below and above which the magnitude
             of a calculated goal joint position will be clipped. Can be either be a 2-list (same min/max value for all
             joint dims), or a 2-list of list (specific min/max values for each dim)
 
@@ -66,6 +86,9 @@ class JointPositionController(Controller):
                  output_min=-0.05,
                  kp=50,
                  damping=1,
+                 impedance_mode="fixed",
+                 kp_limits=(0, 300),
+                 damping_limits=(0, 100),
                  policy_freq=20,
                  qpos_limits=None,
                  interpolator=None,
@@ -81,18 +104,38 @@ class JointPositionController(Controller):
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
 
-        # input and output max and min
-        self.input_max = input_max
-        self.input_min = input_min
-        self.output_max = output_max
-        self.output_min = output_min
+        # input and output max and min (allow for either explicit lists or single numbers)
+        self.input_max = self.nums2array(input_max, self.control_dim)
+        self.input_min = self.nums2array(input_min, self.control_dim)
+        self.output_max = self.nums2array(output_max, self.control_dim)
+        self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits
         self.position_limits = qpos_limits
 
         # kp kv
-        self.kp = np.ones(self.joint_dim) * kp
-        self.kv = np.ones(self.joint_dim) * 2 * np.sqrt(self.kp) * damping
+        self.kp = self.nums2array(kp, self.control_dim)
+        self.kv = 2 * np.sqrt(self.kp) * damping
+
+        # kp and kv limits
+        self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
+        self.kp_max = self.nums2array(kp_limits[1], self.control_dim)
+        self.damping_min = self.nums2array(damping_limits[0], self.control_dim)
+        self.damping_max = self.nums2array(damping_limits[1], self.control_dim)
+
+        # Verify the proposed impedance mode is supported
+        assert impedance_mode in IMPEDANCE_MODES, "Error: Tried to instantiate OSC controller for unsupported " \
+                                                  "impedance mode! Inputted impedance mode: {}, Supported modes: {}". \
+            format(impedance_mode, IMPEDANCE_MODES)
+
+        # Impedance mode
+        self.impedance_mode = impedance_mode
+
+        # Add to control dim based on impedance_mode
+        if self.impedance_mode == "variable":
+            self.control_dim *= 3
+        elif self.impedance_mode == "variable_kp":
+            self.control_dim *= 2
 
         # control frequency
         self.control_freq = policy_freq
@@ -103,12 +146,35 @@ class JointPositionController(Controller):
         # initialize
         self.goal_qpos = None
 
-    def set_goal(self, delta, set_qpos=None):
+    def set_goal(self, action, set_qpos=None):
+        """
+        Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
+        delta values to update the goal position / pose and the kp and/or damping values to be immediately updated
+        internally before executing the proceeding control loop.
+
+        @action expected to be in the following format, based on impedance mode!
+            Mode "fixed": [joint pos command]
+            Mode "variable": [damping values, kp values, joint pos command]
+            Mode "variable_kp": [kp values, joint pos command]
+        """
         # Update state
         self.update()
 
+        # Parse action based on the impedance mode, and update kp / kv as necessary
+        jnt_dim = len(self.qpos_index)
+        if self.impedance_mode == "variable":
+            damping, kp, delta = action[:jnt_dim], action[jnt_dim:2*jnt_dim], action[2*jnt_dim:]
+            self.kp = np.clip(kp, self.kp_min, self.kp_max)
+            self.kv = 2 * np.sqrt(self.kp) * np.clip(damping, self.damping_min, self.damping_max)
+        elif self.impedance_mode == "variable_kp":
+            kp, delta = action[:jnt_dim], action[jnt_dim:]
+            self.kp = np.clip(kp, self.kp_min, self.kp_max)
+            self.kv = 2 * np.sqrt(self.kp)  # critically damped
+        else:  # This is case "fixed"
+            delta = action
+
         # Check to make sure delta is size self.joint_dim
-        assert len(delta) == self.control_dim, "Delta qpos must be equal to the robot's joint dimension space!"
+        assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
 
         if delta is not None:
             scaled_delta = self.scale_action(delta)
@@ -157,6 +223,36 @@ class JointPositionController(Controller):
         super().run_controller()
 
         return self.torques
+
+    def reset_goal(self):
+        """
+        Resets joint position goal to be current position
+        """
+        self.goal_qpos = self.joint_pos
+
+        # Reset interpolator if required
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_qpos)
+
+
+    @property
+    def control_limits(self):
+        """
+        Returns the limits over this controller's action space, overrides the superclass property
+        Returns the following (generalized for both high and low limits), based on the impedance mode:
+            Mode "fixed": [position/pose limits]
+            Mode "variable": [damping limits, kp limits, position/pose limits]
+            Mode "variable_kp": [kp limits, position/pose limits]
+        """
+        if self.impedance_mode == "variable":
+            low = np.concatenate([self.damping_min, self.kp_min, self.input_min])
+            high = np.concatenate([self.damping_max, self.kp_max, self.input_max])
+        elif self.impedance_mode == "variable_kp":
+            low = np.concatenate([self.kp_min, self.input_min])
+            high = np.concatenate([self.kp_max, self.input_max])
+        else:  # This is case "fixed"
+            low, high = self.input_min, self.input_max
+        return low, high
 
     @property
     def name(self):

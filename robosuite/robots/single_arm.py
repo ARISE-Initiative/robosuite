@@ -92,7 +92,7 @@ class SingleArm(Robot):
 
         # Assert that the controller config is a dict file:
         #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
-        #                                           EE_OSC_POSITION, EE_OSC_POSE, EE_IK_POSE}
+        #                                           OSC_POSITION, OSC_POSE, IK_POSE}
         assert type(self.controller_config) == dict, \
             "Inputted controller config must be a dict! Instead, got type: {}".format(type(self.controller_config))
 
@@ -290,8 +290,9 @@ class SingleArm(Robot):
         """
         # Action limits based on controller limits
         low, high = ([-1] * self.gripper.dof, [1] * self.gripper.dof) if self.has_gripper else ([], [])
-        low = np.concatenate([self.controller.input_min, low])
-        high = np.concatenate([self.controller.input_max, high])
+        low_c, high_c = self.controller.control_limits
+        low = np.concatenate([low_c, low])
+        high = np.concatenate([high_c, high])
 
         return low, high
 

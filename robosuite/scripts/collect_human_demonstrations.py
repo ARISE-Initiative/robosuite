@@ -32,8 +32,8 @@ parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Whic
 parser.add_argument("--config", type=str, default="single-arm-opposed",
                     help="Specified environment configuration if necessary")
 parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
-parser.add_argument("--controller", type=str, default="EE_OSC_POSE",
-                    help="Choice of controller. Can be 'EE_IK_POSE' or 'EE_OSC_POSE'")
+parser.add_argument("--controller", type=str, default="OSC_POSE",
+                    help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'")
 parser.add_argument("--device", type=str, default="keyboard")
 parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
 parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")

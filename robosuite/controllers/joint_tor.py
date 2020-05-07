@@ -74,11 +74,11 @@ class JointTorqueController(Controller):
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
 
-        # input and output max and min
-        self.input_max = input_max
-        self.input_min = input_min
-        self.output_max = output_max
-        self.output_min = output_min
+        # input and output max and min (allow for either explicit lists or single numbers)
+        self.input_max = self.nums2array(input_max, self.control_dim)
+        self.input_min = self.nums2array(input_min, self.control_dim)
+        self.output_max = self.nums2array(output_max, self.control_dim)
+        self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits
         self.torque_limits = torque_limits
@@ -135,6 +135,16 @@ class JointTorqueController(Controller):
 
         # Return final torques
         return self.torques
+
+    def reset_goal(self):
+        """
+        Resets joint torque goal to be all zeros (pre-compensation)
+        """
+        self.goal_torque = np.zeros(self.control_dim)
+
+        # Reset interpolator if required
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_torque)
 
     @property
     def name(self):

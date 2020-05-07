@@ -120,9 +120,9 @@ if __name__ == "__main__":
 
     # Import controller config for EE IK or OSC (pos/ori)
     if args.controller == 'ik':
-        controller_name = 'EE_IK_POSE'
+        controller_name = 'IK_POSE'
     elif args.controller == 'osc':
-        controller_name = 'EE_OSC_POSE'
+        controller_name = 'OSC_POSE'
     else:
         print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
         raise ValueError
