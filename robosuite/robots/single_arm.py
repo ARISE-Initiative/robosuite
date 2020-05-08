@@ -91,7 +91,8 @@ class SingleArm(Robot):
             self.controller_config = load_controller_config(custom_fpath=controller_path)
 
         # Assert that the controller config is a dict file:
-        #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
+        #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+        #                                           OSC_POSITION, OSC_POSE, IK_POSE}
         assert type(self.controller_config) == dict, \
             "Inputted controller config must be a dict! Instead, got type: {}".format(type(self.controller_config))
 
@@ -207,9 +208,6 @@ class SingleArm(Robot):
             gripper_action = action[self.controller.control_dim:]  # all indexes past controller dimension indexes
             action = action[:self.controller.control_dim]
 
-        # Update model in controller
-        self.controller.update()
-
         # Update the controller goal if this is a new policy step
         if policy_step:
             self.controller.set_goal(action)
@@ -292,8 +290,9 @@ class SingleArm(Robot):
         """
         # Action limits based on controller limits
         low, high = ([-1] * self.gripper.dof, [1] * self.gripper.dof) if self.has_gripper else ([], [])
-        low = np.concatenate([self.controller.input_min, low])
-        high = np.concatenate([self.controller.input_max, high])
+        low_c, high_c = self.controller.control_limits
+        low = np.concatenate([low_c, low])
+        high = np.concatenate([high_c, high])
 
         return low, high
 

@@ -1,7 +1,19 @@
 """
+***********************************************************************************
+
 NOTE: requires pybullet module.
 
 Run `pip install pybullet==2.6.9`.
+
+
+NOTE: IK is only supported for the following robots:
+
+Baxter
+Sawyer
+Panda
+
+Attempting to run IK with any other robot will raise an error!
+***********************************************************************************
 """
 try:
     import pybullet as p
@@ -17,6 +29,10 @@ from robosuite.controllers.joint_vel import JointVelocityController
 from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
+
+
+# Dict of supported ik robots
+SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda"}
 
 
 class PybulletServer(object):
@@ -58,7 +74,7 @@ class PybulletServer(object):
             self.is_active = False
 
 
-class EndEffectorInverseKinematicsController(JointVelocityController):
+class InverseKinematicsController(JointVelocityController):
     """
     Controller for controlling robot arm via inverse kinematics. Allows position and orientation control of the
     robot's end effector.
@@ -132,8 +148,13 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
             **kwargs
         )
 
+        # Verify robot is supported by IK
+        assert robot_name in SUPPORTED_IK_ROBOTS, "Error: Tried to instantiate IK controller for unsupported robot! " \
+                                                  "Inputted robot: {}, Supported robots: {}".format(
+            robot_name, SUPPORTED_IK_ROBOTS)
+
         # Initialize ik-specific attributes
-        self.robot_name = robot_name        # Name of robot (e.g.: "panda", "sawyer", etc.)
+        self.robot_name = robot_name        # Name of robot (e.g.: "Panda", "Sawyer", etc.)
 
         # Rotation offsets (for mujoco eef -> pybullet eef) and rest poses
         self.rotation_offset = None
@@ -169,10 +190,10 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         self.ik_pos_limit = ik_pos_limit
         self.ik_ori_limit = ik_ori_limit
         max_quat_mag = T.mat2quat(T.euler2mat([ik_ori_limit, 0, 0]))[0]
-        self.input_min = [-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1]
-        self.input_max = [ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1]
-        self.output_min = [-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1]
-        self.output_max = [ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1]
+        self.input_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
+        self.input_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
+        self.output_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
+        self.output_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
 
         # Target pos and ori
         self.ik_robot_target_pos = None
@@ -205,7 +226,7 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         # get paths to urdfs
         self.robot_urdf = pjoin(
             os.path.join(robosuite.models.assets_root, "bullet_data"),
-            "{}_description/urdf/{}_arm.urdf".format(self.robot_name, self.robot_name)
+            "{}_description/urdf/{}_arm.urdf".format(self.robot_name.lower(), self.robot_name.lower())
         )
 
         # import reference to the global pybullet server and load the urdfs
@@ -278,6 +299,9 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         robot being controlled.
         """
 
+        # update model (force update)
+        self.update(force=True)
+
         # sync IK robot state to the current robot joint positions
         self.sync_ik_robot()
 
@@ -301,7 +325,6 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
             sync_last (bool): If False, don't sync the last joint angle. This
                 is useful for directly controlling the roll at the end effector.
         """
-        self.update()
         if not joint_positions:
             joint_positions = self.joint_pos
         num_joints = self.joint_dim
@@ -490,6 +513,8 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         return T.mat2pose(pose_in_world)
 
     def set_goal(self, delta, set_ik=None):
+        # Update state
+        self.update()
 
         # Get requested delta inputs if we're using interpolators
         (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
@@ -576,6 +601,16 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
         # Then, update the rest pose from the initial joints
         self.rest_poses = list(self.initial_joint)
 
+    def reset_goal(self):
+        """
+        Resets the goal to the current state of the robot
+        """
+        self.reference_target_pos = self.ee_pos
+        self.reference_target_orn = T.mat2quat(self.ee_ori_mat)
+
+        # Sync pybullet state as well
+        self.sync_state()
+
     def _clip_ik_input(self, dpos, rotation):
         """
         Helper function that clips desired ik input deltas into a valid range.
@@ -636,4 +671,4 @@ class EndEffectorInverseKinematicsController(JointVelocityController):
 
     @property
     def name(self):
-        return 'EE_IK'
+        return 'IK_POSE'

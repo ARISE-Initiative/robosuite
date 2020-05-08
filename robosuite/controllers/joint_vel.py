@@ -1,6 +1,5 @@
 from robosuite.controllers.base_controller import Controller
 import numpy as np
-from collections.abc import Iterable
 
 
 class JointVelocityController(Controller):
@@ -77,13 +76,13 @@ class JointVelocityController(Controller):
         self.control_dim = len(joint_indexes["joints"])
 
         # input and output max and min (allow for either explicit lists or single numbers)
-        self.input_max = input_max
-        self.input_min = input_min
-        self.output_max = output_max
-        self.output_min = output_min
+        self.input_max = self.nums2array(input_max, self.control_dim)
+        self.input_min = self.nums2array(input_min, self.control_dim)
+        self.output_max = self.nums2array(output_max, self.control_dim)
+        self.output_min = self.nums2array(output_min, self.control_dim)
 
         # kv
-        self.kv = np.array(kv) if isinstance(kv, Iterable) else np.array([kv] * self.control_dim)
+        self.kv = self.nums2array(kv, self.control_dim)
 
         # limits
         self.velocity_limits = velocity_limits
@@ -100,6 +99,7 @@ class JointVelocityController(Controller):
         self.torques = None                             # Torques returned every time run_controller is called
 
     def set_goal(self, velocities):
+        # Update state
         self.update()
 
         # Otherwise, check to make sure velocities is size self.joint_dim
@@ -137,9 +137,22 @@ class JointVelocityController(Controller):
         # Compute torques plus gravity compensation
         self.torques = np.multiply(self.kv, (self.current_vel - self.joint_vel)) + self.torque_compensation
 
+        # Always run superclass call for any cleanups at the end
+        super().run_controller()
+
         # Return final torques
         return self.torques
 
+    def reset_goal(self):
+        """
+        Resets joint velocity goal to be all zeros
+        """
+        self.goal_vel = np.zeros(self.control_dim)
+
+        # Reset interpolator if required
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_vel)
+
     @property
     def name(self):
-        return 'JOINT_VEL'
+        return 'JOINT_VELOCITY'

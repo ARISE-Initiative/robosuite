@@ -44,7 +44,7 @@ Main difference is that user inputs with ik's rotations are always taken relativ
     user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
 
     Notes:
-        OSC also tends to be more efficient since IK relies on backend pybullet sim
+        OSC also tends to be more computationally efficient since IK relies on backend pybullet sim
         IK maintains initial orientation of robot env while OSC automatically initializes with gripper facing downwards
 
 
@@ -96,8 +96,6 @@ Examples:
 
 import argparse
 import numpy as np
-import os
-import json
 
 import robosuite as suite
 from robosuite import load_controller_config
@@ -122,9 +120,9 @@ if __name__ == "__main__":
 
     # Import controller config for EE IK or OSC (pos/ori)
     if args.controller == 'ik':
-        controller_name = 'EE_IK'
+        controller_name = 'IK_POSE'
     elif args.controller == 'osc':
-        controller_name = 'EE_POS_ORI'
+        controller_name = 'OSC_POSE'
     else:
         print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
         raise ValueError
@@ -142,6 +140,8 @@ if __name__ == "__main__":
     # Check if we're using a multi-armed environment and use env_configuration argument if so
     if "TwoArm" in args.environment:
         config["env_configuration"] = args.config
+    else:
+        args.config = None
 
     # Create environment
     env = suite.make(

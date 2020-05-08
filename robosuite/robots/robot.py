@@ -216,7 +216,7 @@ class Robot(object):
     def _joint_positions(self):
         """
         Returns a numpy array of joint positions.
-        Panda robots have 7 joints and positions are in rotation angles.
+        positions are in rotation angles.
         """
         return self.sim.data.qpos[self._ref_joint_pos_indexes]
 
@@ -224,7 +224,7 @@ class Robot(object):
     def _joint_velocities(self):
         """
         Returns a numpy array of joint velocities.
-        Panda robots have 7 joints and velocities are angular velocities.
+        velocities are angular velocities.
         """
         return self.sim.data.qvel[self._ref_joint_vel_indexes]
 

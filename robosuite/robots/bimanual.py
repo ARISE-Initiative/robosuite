@@ -102,7 +102,8 @@ class Bimanual(Robot):
                 self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
-            #             NOTE: "type" must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
+            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
             assert type(self.controller_config[arm]) == dict, \
                 "Inputted controller config must be a dict! Instead, got type: {}".format(
                     type(self.controller_config[arm]))
@@ -243,9 +244,6 @@ class Bimanual(Robot):
                 gripper_action = sub_action[self.controller[arm].control_dim:]
                 sub_action = sub_action[:self.controller[arm].control_dim]
 
-            # Update model in controller
-            self.controller[arm].update()
-
             # Update the controller goal if this is a new policy step
             if policy_step:
                 self.controller[arm].set_goal(sub_action)
@@ -355,8 +353,9 @@ class Bimanual(Robot):
         for arm in self.arms:
             low_g, high_g = ([-1] * self.gripper[arm].dof, [1] * self.gripper[arm].dof) \
                 if self.has_gripper[arm] else ([], [])
-            low, high = np.concatenate([low, self.controller[arm].input_min, low_g]), \
-                np.concatenate([high, self.controller[arm].input_max, high_g])
+            low_c, high_c = self.controller[arm].control_limits
+            low, high = np.concatenate([low, low_c, low_g]), \
+                np.concatenate([high, high_c, high_g])
         return low, high
 
     @property
@@ -407,8 +406,6 @@ class Bimanual(Robot):
         """
         return T.mat2quat(self._hand_orn(arm))
 
-    #@property
-    # Todo: maybe don't use properties for bimanual? or figure out another clean way to encapsulate all these values for r/l
     def _hand_total_velocity(self, arm="right"):
         """
         Returns the total eef velocity (linear + angular) in the base frame

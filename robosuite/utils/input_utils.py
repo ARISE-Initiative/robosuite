@@ -2,13 +2,12 @@
 Utility functions for grabbing user inputs
 """
 
+import numpy as np
+
 import robosuite as suite
 from robosuite.models.robots import *
-from robosuite.controllers import *
 from robosuite.robots import *
 import robosuite.utils.transform_utils as T
-
-import numpy as np
 
 
 def choose_environment():
@@ -44,7 +43,7 @@ def choose_controller():
     Prints out controller options, and returns the requested controller name
     """
     # get the list of all controllers
-    controllers_info = suite.ALL_CONTROLLERS_INFO
+    controllers_info = suite.controllers.CONTROLLER_INFO
     controllers = list(suite.ALL_CONTROLLERS)
 
     # Select controller to use
@@ -152,8 +151,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         active_arm (str): Only applicable for multi-armed setups (e.g.: multi-arm environments or bimanual robots).
             Allows inputs to be converted correctly if the control type (e.g.: IK) is dependent on arm choice.
             Choices are {right, left}
-        env_configuration (str): Only applicable for multi-armed environments. Allows inputs to be converted correctly
-            if the control type (e.g.: IK) is dependent on the environment setup. Options are:
+        env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
+            correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
             {bimanual, single-arm-parallel, single-arm-opposed}
 
     """
@@ -178,7 +177,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
-    if isinstance(controller, EndEffectorInverseKinematicsController):
+    if controller.name == 'IK_POSE':
         # If this is panda, want to flip y
         if isinstance(robot.robot_model, Panda):
             drotation[1] = -drotation[1]
@@ -205,7 +204,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
                 # y pos needs to be flipped
                 dpos[1] = -dpos[1]
 
-    elif isinstance(controller, EndEffectorImpedanceController):
+    elif controller.name == 'OSC_POSE':
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC)

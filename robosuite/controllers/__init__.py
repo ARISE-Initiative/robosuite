@@ -1,17 +1,17 @@
 from .controller_factory import controller_factory, load_controller_config, reset_controllers, get_pybullet_server
-from .ee_imp import EndEffectorImpedanceController
-from .ee_ik import EndEffectorInverseKinematicsController
-from .joint_imp import JointImpedanceController
+from .osc import OperationalSpaceController
+from .joint_pos import JointPositionController
 from .joint_vel import JointVelocityController
 from .joint_tor import JointTorqueController
 
-ALL_CONTROLLERS_INFO = {
-    "JOINT_VEL":  "Joint Velocity",
-    "JOINT_TOR":  "Joint Torque",
-    "JOINT_IMP":  "Joint Impedance",
-    "EE_POS":     "End Effector Position",
-    "EE_POS_ORI": "End Effector Position Orientation",
-    "EE_IK":      "End Effector Inverse Kinematics (note: must have PyBullet installed)",
+
+CONTROLLER_INFO = {
+    "JOINT_VELOCITY":  "Joint Velocity",
+    "JOINT_TORQUE":    "Joint Torque",
+    "JOINT_POSITION":  "Joint Position",
+    "OSC_POSITION": "Operational Space Control (Position Only)",
+    "OSC_POSE":     "Operational Space Control (Position + Orientation)",
+    "IK_POSE":      "Inverse Kinematics Control (Position + Orientation) (Note: must have PyBullet installed)",
 }
 
-ALL_CONTROLLERS = ALL_CONTROLLERS_INFO.keys()
+ALL_CONTROLLERS = CONTROLLER_INFO.keys()

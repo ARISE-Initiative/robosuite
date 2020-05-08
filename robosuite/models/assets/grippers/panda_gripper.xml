@@ -1,5 +1,4 @@
 <mujoco model="panda_hand">
-    <size njmax="500" nconmax="100" />
     <asset>
         <mesh name="hand" file="meshes/panda_gripper/hand.stl" />
         <mesh name="hand_vis" file="meshes/panda_gripper/hand_vis.stl" />
