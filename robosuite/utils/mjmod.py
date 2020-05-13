@@ -13,7 +13,7 @@ class PhysicalParameterModder:
     To modify a parameteter, use the parameter to be changed as a keyword argument to
     self.mod and the new value as the value for that argument. Supports arbitray many
     modifications in a single step.
-    NOTE: It is necesary to perform sim.forward after performing the modification. 
+    NOTE: It is necesary to perform sim.forward after performing the modification.
     NOTE: Some parameters might not be able to be changed. users are to verify that
           after the call to forward that the parameter is indeed changed.
     """
@@ -33,12 +33,12 @@ class PhysicalParameterModder:
             opt_attr = getattr(self.opt, name)
         except AttributeError:
             opt_attr = None
-            
+
         try:
             model_attr = getattr(self.model, name)
         except AttributeError:
             model_attr = None
-                    
+
         ret = opt_attr if opt_attr is not None else model_attr
         if callable(ret):
             def r(*args):
@@ -67,7 +67,7 @@ class PhysicalParameterModder:
                 param = 'dof_damping'
                 joint = self.joint_name2id(joint)
                 ind = np.zeros(self.nv)
-                
+
                 for i in range(self.model.nv):
                     if self.dof_jntid[i] == joint:
                         ind[i] = 1
@@ -85,18 +85,18 @@ class CameraModder(modder.CameraModder):
           site in the location where the camera gaze is to be located.
     """
     def __init__(
-        self, 
-        random_state=None, 
+        self,
+        random_state=None,
         sim=None,
         pos_ranges=[(-0.01, 0.01), (-0.01, 0.01), (-0.01, 0.01)],
-        axis=[0, 0, 1], 
+        axis=[0, 0, 1],
         angle_range=(-0.25, 0.25),
-        camera_name=None, 
+        camera_name=None,
     ):
         assert camera_name is not None
 
         super().__init__(sim, random_state=random_state)
-        
+
         self.base_pos = copy.copy(self.get_pos(camera_name))
         self.pos_ranges = pos_ranges
         self.camera_name = camera_name
@@ -159,7 +159,7 @@ class LightingModder(modder.LightModder):
         self.set_ambient(light, self.rand3())
         self.set_diffuse(light, self.rand3())
         self.set_castshadow(light, self.randbool())
-        
+
     def whiten_materials(self, *args, **kargs):
         pass
 
@@ -193,7 +193,10 @@ class TextureModder(modder.TextureModder):
     def randomize(self):
         self.whiten_materials()
         for name in self.sim.model.geom_names:
-            self.rand_all(name)
+            try:
+                self.rand_all(name)
+            except:
+                self.model.geom_rgba[self.model.geom_name2id(name), :3] = np.random.uniform(0, 1, size=3)
         self.rand_all("skybox")
 
     def set_existing_texture(self, name):
