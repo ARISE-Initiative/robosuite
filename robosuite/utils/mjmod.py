@@ -123,7 +123,7 @@ class MaterialModder(modder.MaterialModder):
         super().__init__(sim, random_state=random_state)
 
     def randomize(self):
-        # randomize all the materials ie properties like reflectance
+        # randomize all the material properties like reflectance
         for geom in self.model.geom_names:
             self.rand_all(geom)
 

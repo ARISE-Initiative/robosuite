@@ -2,6 +2,7 @@
 This file implements a wrapper for facilitating domain randomization over
 robosuite environments.
 
+TODO: decide if we want robot to support per-geom randomization or randomize as a whole group
 TODO: support action noise
 TODO: support camera rotations + multiple cameras
 TODO: support image translation
@@ -37,7 +38,8 @@ class DomainRandomizationWrapper(Wrapper):
 
     def step(self, action):
         #action += np.random.normal(scale=self.action_noise, size=action.shape)
-        self.randomize_all()
+        # self.randomize_all()
+        self.randomize_texture()
         return super().step(action)
 
     def randomize_all(self):
