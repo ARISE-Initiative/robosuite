@@ -143,7 +143,7 @@ class Robot(object):
         """
         raise NotImplementedError
 
-    def gripper_visualization(self):
+    def visualize_gripper(self):
         """
         Do any needed visualization here.
         """
