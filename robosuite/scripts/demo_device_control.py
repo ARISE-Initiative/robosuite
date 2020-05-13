@@ -101,6 +101,8 @@ import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 
+import time
+
 
 if __name__ == "__main__":
 
@@ -151,6 +153,8 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         gripper_visualizations=True,
+        #render_collision_mesh=True,
+        #render_visual_mesh=False,
         reward_shaping=True,
         control_freq=20,
     )

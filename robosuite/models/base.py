@@ -157,7 +157,7 @@ class MujocoXML(object):
             names += self.get_element_names(child, element_type)
         return names
 
-    def add_prefix(self, prefix, tags=("body", "joint", "site", "geom", "camera", "actuator")):
+    def add_prefix(self, prefix, tags=("body", "joint", "site", "geom", "camera", "actuator", "asset", "texture", "material")):
         """
         Utility to add prefix to all body names to prevent name clashes
         Args:
@@ -165,13 +165,25 @@ class MujocoXML(object):
             tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
                 prepended to it
         """
+        # Define tags as a set
         tags = set(tags)
+
+        # Handle actuator elements
         if "actuator" in tags:
             tags.discard("actuator")
             for actuator in self.actuator:
                 actuator.attrib["name"] = prefix + actuator.attrib["name"]
                 if "joint" in tags:
                     actuator.attrib["joint"] = prefix + actuator.attrib["joint"]
+
+        # Handle asset elements
+        if "asset" in tags:
+            tags.discard("asset")
+            for asset in self.asset:
+                if asset.tag in tags:
+                    self._add_prefix_recursively(asset, tags, prefix)
+
+        # Handle contacts and equality names for body elements
         if "body" in tags:
             for contact in self.contact:
                 contact.set("body1", prefix + contact.attrib["body1"])
@@ -179,16 +191,27 @@ class MujocoXML(object):
             for equality in self.equality:
                 equality.set("body1", prefix + equality.attrib["body1"])
                 equality.set("body2", prefix + equality.attrib["body2"])
+
+        # Handle all remaining bodies in the element tree
         for body in self.worldbody:
-            self._add_prefix_recursively(body, tags, prefix)
+            if body.tag in tags:
+                self._add_prefix_recursively(body, tags, prefix)
 
     def _add_prefix_recursively(self, root, tags, prefix):
         """
         Iteratively searches through all children nodes in "root" element to append "prefix" to any named subelements
         with a tag in "tags"
         """
+        # First re-name this element
         if "name" in root.attrib:
             root.set("name", prefix + root.attrib["name"])
+
+        # Then loop through all tags and rename any appropriately
+        for tag in tags:
+            if tag in root.attrib:
+                root.set(tag, prefix + root.attrib[tag])
+
+        # Recursively go through child elements
         for child in root:
             if child.tag in tags:
                 self._add_prefix_recursively(child, tags, prefix)

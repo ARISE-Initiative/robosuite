@@ -268,7 +268,7 @@ class Bimanual(Robot):
         # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
 
-    def gripper_visualization(self):
+    def visualize_gripper(self):
         """
         Do any needed visualization here.
         """
