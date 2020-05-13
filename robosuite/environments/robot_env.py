@@ -395,9 +395,9 @@ class RobotEnv(MujocoEnv):
         """
         Do any needed visualization here
         """
-        # Loop over robot grippers to visualize them indepedently
+        # Loop over robot grippers to visualize them independently
         for robot in self.robots:
-            robot.gripper_visualization
+            robot.visualize_gripper()
 
     def _load_robots(self):
         """
