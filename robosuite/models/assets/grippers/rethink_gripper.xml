@@ -45,7 +45,7 @@
                 <geom size="0.005 0.025 0.0085" pos="-0.005 -0.003 0.0083" quat="0 0 0 -1" type="box" conaffinity="1" contype="0" name="l_finger_g1" friction="0 0 0"/>
                 <body name="l_finger_tip" pos="0 0.01725 0.075">
                     <inertial pos="0 0 0" quat="0 0 0 1" mass="0.01" diaginertia="0.01 0.01 0.01" />
-                    <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" material="tip_mat"/>
+                    <geom name="l_fingertip_g0_vis" quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" material="tip_mat"/>
                     <geom size="0.004 0.004 0.0185" pos="0 -0.0045 -0.015" quat="0 0 0 -1" type="box"  conaffinity="1" contype="0" name="l_fingertip_g0" friction="0 0 0"/>
                 </body>
             </body>
@@ -57,7 +57,7 @@
                 <geom size="0.005 0.025 0.0085" pos="0.005 0.003 0.0083" type="box" conaffinity="1" contype="0" name="r_finger_g1" friction="0 0 0"/>
                 <body name="r_finger_tip" pos="0 -0.01725 0.075">
                     <inertial pos="0 0 0" mass="0.01" diaginertia="0.01 0.01 0.01" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" material="tip_mat"/>
+                    <geom name="r_fingertip_g0_vis" type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" material="tip_mat"/>
                     <geom size="0.004 0.004 0.0185" pos="0 0.0045 -0.015" type="box"  conaffinity="1" contype="0" name="r_fingertip_g0" friction="0 0 0"/>
                 </body>
             </body>
