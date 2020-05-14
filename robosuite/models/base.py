@@ -157,7 +157,9 @@ class MujocoXML(object):
             names += self.get_element_names(child, element_type)
         return names
 
-    def add_prefix(self, prefix, tags=("body", "joint", "site", "geom", "camera", "actuator", "asset", "texture", "material")):
+    def add_prefix(self,
+                   prefix,
+                   tags=("body", "joint", "site", "geom", "camera", "actuator", "asset", "texture", "material")):
         """
         Utility to add prefix to all body names to prevent name clashes
         Args:
