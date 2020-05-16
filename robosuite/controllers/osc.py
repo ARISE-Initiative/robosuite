@@ -2,6 +2,7 @@ from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
 import robosuite.utils.transform_utils as T
 import numpy as np
+import math
 
 
 # Supported impedance modes
@@ -218,7 +219,7 @@ class OperationalSpaceController(Controller):
                 scaled_delta = self.scale_action(delta)
                 if not self.use_ori:
                     # Set default control for ori since user isn't actively controlling ori
-                    set_ori = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
+                    set_ori = np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
             else:
                 scaled_delta = []
         # Else, interpret actions as absolute values
@@ -226,11 +227,13 @@ class OperationalSpaceController(Controller):
             set_pos = self.initial_ee_pos + delta[:3]
             # Set default control for ori if we're only using position control
             set_ori = self.initial_ee_ori_mat.T.dot(T.euler2mat(delta[3:])) if self.use_ori \
-                else np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
+                else np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
             scaled_delta = []
 
         # We only want to update goal orientation if there is a valid delta ori value
-        if not np.isclose(scaled_delta[3:], 0).all():
+        # use math.isclose instead of numpy because numpy is slow
+        bools = [0. if math.isclose(elem, 0.) else 1. for elem in scaled_delta[3:]]
+        if sum(bools) > 0.:
             self.goal_ori = set_goal_orientation(scaled_delta[3:],
                                                  self.ee_ori_mat,
                                                  orientation_limit=self.orientation_limits,

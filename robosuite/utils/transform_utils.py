@@ -6,7 +6,7 @@ NOTE: convention for quaternions is (x, y, z, w)
 
 import math
 import numpy as np
-from scipy import linalg
+import numba
 
 
 PI = np.pi
@@ -223,6 +223,7 @@ def mat2pose(hmat):
     return pos, orn
 
 
+@numba.jit(nopython=True)
 def mat2quat(rmat, precise=False):
     """
     Converts given rotation matrix to quaternion.
@@ -235,28 +236,30 @@ def mat2quat(rmat, precise=False):
     Returns:
         vec4 float quaternion angles
     """
-    M = np.array(rmat, dtype=np.float32, copy=False)[:3, :3]
+    M = np.asarray(rmat).astype(np.float32)[:3, :3]
     if precise:
-        q = np.empty((4,))
-        t = np.trace(M)
-        if t > M[3, 3]:
-            q[0] = t
-            q[3] = M[1, 0] - M[0, 1]
-            q[2] = M[0, 2] - M[2, 0]
-            q[1] = M[2, 1] - M[1, 2]
+        # This code uses a modification of the algorithm described in:
+        # https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+        # which is itself based on the method described here:
+        # http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+        # Altered to work with the column vector convention instead of row vectors
+        m = M.conj().transpose()  # This method assumes row-vector and postmultiplication of that vector
+        if m[2, 2] < 0:
+            if m[0, 0] > m[1, 1]:
+                t = 1 + m[0, 0] - m[1, 1] - m[2, 2]
+                q = [m[1, 2] - m[2, 1], t, m[0, 1] + m[1, 0], m[2, 0] + m[0, 2]]
+            else:
+                t = 1 - m[0, 0] + m[1, 1] - m[2, 2]
+                q = [m[2, 0] - m[0, 2], m[0, 1] + m[1, 0], t, m[1, 2] + m[2, 1]]
         else:
-            i, j, k = 0, 1, 2
-            if M[1, 1] > M[0, 0]:
-                i, j, k = 1, 2, 0
-            if M[2, 2] > M[i, i]:
-                i, j, k = 2, 0, 1
-            t = M[i, i] - (M[j, j] + M[k, k]) + M[3, 3]
-            q[i] = t
-            q[j] = M[i, j] + M[j, i]
-            q[k] = M[k, i] + M[i, k]
-            q[3] = M[k, j] - M[j, k]
-            q = q[[3, 0, 1, 2]]
-        q *= 0.5 / math.sqrt(t * M[3, 3])
+            if m[0, 0] < -m[1, 1]:
+                t = 1 - m[0, 0] - m[1, 1] + m[2, 2]
+                q = [m[0, 1] - m[1, 0], m[2, 0] + m[0, 2], m[1, 2] + m[2, 1], t]
+            else:
+                t = 1 + m[0, 0] + m[1, 1] + m[2, 2]
+                q = [t, m[1, 2] - m[2, 1], m[2, 0] - m[0, 2], m[0, 1] - m[1, 0]]
+        q = np.array(q)
+        q *= 0.5 / np.sqrt(t)
     else:
         m00 = M[0, 0]
         m01 = M[0, 1]
@@ -270,19 +273,21 @@ def mat2quat(rmat, precise=False):
         # symmetric matrix K
         K = np.array(
             [
-                [m00 - m11 - m22, 0.0, 0.0, 0.0],
-                [m01 + m10, m11 - m00 - m22, 0.0, 0.0],
-                [m02 + m20, m12 + m21, m22 - m00 - m11, 0.0],
+                [m00 - m11 - m22, np.float32(0.0), np.float32(0.0), np.float32(0.0)],
+                [m01 + m10, m11 - m00 - m22, np.float32(0.0), np.float32(0.0)],
+                [m02 + m20, m12 + m21, m22 - m00 - m11, np.float32(0.0)],
                 [m21 - m12, m02 - m20, m10 - m01, m00 + m11 + m22],
             ]
         )
         K /= 3.0
         # quaternion is Eigen vector of K that corresponds to largest eigenvalue
-        w, V = linalg.eigh(K)
-        q = V[[3, 0, 1, 2], np.argmax(w)]
-    if q[0] < 0.0:
-        np.negative(q, q)
-    return q[[1, 2, 3, 0]]
+        w, V = np.linalg.eigh(K)
+        inds = np.array([3, 0, 1, 2])
+        q1 = V[inds, np.argmax(w)]
+    if q1[0] < 0.0:
+        np.negative(q1, q1)
+    inds = np.array([1, 2, 3, 0])
+    return q1[inds]
 
 
 def euler2mat(euler: object) -> object: #assume xyz
@@ -376,6 +381,7 @@ def pose2mat(pose):
     return homo_pose_mat
 
 
+@numba.jit(nopython=True)
 def quat2mat(quaternion):
     """
     Converts given quaternion (x, y, z, w) to matrix.
@@ -386,7 +392,10 @@ def quat2mat(quaternion):
     Returns:
         3x3 rotation matrix
     """
-    q = np.array(quaternion, dtype=np.float32, copy=True)[[3, 0, 1, 2]]
+    # awkward semantics for use with numba
+    inds = np.array([3, 0, 1, 2])
+    q = np.asarray(quaternion).copy().astype(np.float32)[inds]
+
     n = np.dot(q, q)
     if n < EPS:
         return np.identity(3)
@@ -412,20 +421,21 @@ def quat2axisangle(quat):
     # normalize qx, qy, qz by sqrt(qx^2 + qy^2 + qz^2) = sqrt(1 - qw^2)
     # to extract the unit vector
 
-    # Clip w so that it's not greater than 1
-    quat[3] = min(quat[3], 1.0)
+    # clipping for scalar with if-else is orders of magnitude faster than numpy
+    if quat[3] > 1.:
+        quat[3] = 1.
+    elif quat[3] < -1.:
+        quat[3] = -1.
 
-    den = np.sqrt(1 - quat[3] * quat[3])
-    if np.isclose(den, 0., atol=1e-3):
+    den = np.sqrt(1. - quat[3] * quat[3])
+    if math.isclose(den, 0.):
         # This is (close to) a zero degree rotation, immediately return
         return np.zeros(3), 0.
-    x = quat[0] / den
-    y = quat[1] / den
-    z = quat[2] / den
 
     # convert qw to theta
     theta = 2. * math.acos(quat[3])
-    return np.array([x, y, z]), theta
+
+    return quat[:3] / den, 2. * math.acos(quat[3])
 
 
 def axisangle2quat(axis, angle):
@@ -434,11 +444,11 @@ def axisangle2quat(axis, angle):
     """
 
     # handle zero-rotation case
-    if np.isclose(angle, 0.):
+    if math.isclose(angle, 0.):
         return np.array([0., 0., 0., 1.])
 
     # make sure that axis is a unit vector
-    assert np.isclose(np.linalg.norm(axis), 1., atol=1e-3)
+    assert math.isclose(np.linalg.norm(axis), 1., rel_tol=1e-3)
 
     q = np.zeros(4)
     q[3] = np.cos(angle / 2.)
@@ -451,7 +461,7 @@ def vec2axisangle(vec):
     Converts Euler vector (exponential coordinates) to axis-angle.
     """
     angle = np.linalg.norm(vec)
-    if np.isclose(angle, 0.):
+    if math.isclose(angle, 0.):
         # treat as a zero rotation
         return np.array([1., 0., 0.]), 0.
     axis = vec / angle
@@ -626,6 +636,7 @@ def rotation_matrix(angle, direction, point=None):
     return M
 
 
+@numba.jit(nopython=True)
 def clip_translation(dpos, limit):
     """
     Limits a translation (delta position) to a specified limit
@@ -636,10 +647,11 @@ def clip_translation(dpos, limit):
     :param limit: Value to limit translation by -- magnitude (scalar, in same units as input)
     :return: Clipped translation (same dimension as inputs) and whether the value was clipped or not
     """
-    input_norm = linalg.norm(dpos)
+    input_norm = np.linalg.norm(dpos)
     return (dpos * limit / input_norm, True) if input_norm > limit else (dpos, False)
 
 
+@numba.jit(nopython=True)
 def clip_rotation(quat, limit):
     """
     Limits a (delta) rotation to a specified limit
@@ -653,7 +665,7 @@ def clip_rotation(quat, limit):
     clipped = False
 
     # First, normalize the quaternion
-    quat = quat / linalg.norm(quat)
+    quat = quat / np.linalg.norm(quat)
 
     den = np.sqrt(max(1 - quat[3] * quat[3], 0))
     if den == 0:
@@ -805,3 +817,11 @@ def get_pose_error(target_pose, current_pose):
     error[:3] = pos_err
     error[3:] = rot_err
     return error
+
+
+@numba.jit(nopython=True)
+def matrix_inverse(matrix):
+    """
+    Helper function to have an efficient matrix inversion function.
+    """
+    return np.linalg.inv(matrix)
