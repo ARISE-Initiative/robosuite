@@ -28,6 +28,7 @@ class RobotEnv(MujocoEnv):
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
+        render_with_igibson=False,
         control_freq=10,
         horizon=1000,
         ignore_done=False,
@@ -165,6 +166,7 @@ class RobotEnv(MujocoEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
+            render_with_igibson=render_with_igibson,
         )
 
     @property

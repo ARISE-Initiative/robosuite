@@ -46,6 +46,7 @@ class MujocoEnv(metaclass=EnvMeta):
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
+        render_with_igibson=False,
         control_freq=10,
         horizon=1000,
         ignore_done=False,
@@ -66,6 +67,8 @@ class MujocoEnv(metaclass=EnvMeta):
             render_visual_mesh (bool): True if rendering visual meshes 
                 in camera. False otherwise.
 
+            render_with_igibson (bool): True if rendering with iGibson. False otherwise.
+
             control_freq (float): how many control signals to receive 
                 in every simulated second. This sets the amount of simulation time 
                 that passes between every action input.
@@ -80,6 +83,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
+        self.render_with_igibson = render_with_igibson
         self.viewer = None
 
         # Simulation-specific attributes
@@ -153,28 +157,45 @@ class MujocoEnv(metaclass=EnvMeta):
     def _reset_internal(self):
         """Resets simulation internal configurations."""
 
-        # create visualization screen or renderer
-        if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+        if not self.render_with_igibson:
 
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
+            # create visualization screen or renderer
+            if self.has_renderer and self.viewer is None:
+                self.viewer = MujocoPyRenderer(self.sim)
+                self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
+                self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
 
-            # make sure mujoco-py doesn't block rendering frames
-            # (see https://github.com/StanfordVL/robosuite/issues/39)
-            self.viewer.viewer._render_every_frame = True
+                # hiding the overlay speeds up rendering significantly
+                self.viewer.viewer._hide_overlay = True
 
-            # Set the camera angle for viewing
-            self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
+                # make sure mujoco-py doesn't block rendering frames
+                # (see https://github.com/StanfordVL/robosuite/issues/39)
+                self.viewer.viewer._render_every_frame = True
 
-        elif self.has_offscreen_renderer:
-            if self.sim._render_context_offscreen is None:
-                render_context = MjRenderContextOffscreen(self.sim)
-                self.sim.add_render_context(render_context)
-            self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+                # Set the camera angle for viewing
+                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
+
+            elif self.has_offscreen_renderer:
+                if self.sim._render_context_offscreen is None:
+                    render_context = MjRenderContextOffscreen(self.sim)
+                    self.sim.add_render_context(render_context)
+                self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
+                self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+
+        else:
+
+            from gibson2.core.mujoco_bridge import iGibsonMujocoBridge
+
+            # create visualization screen or renderer
+            if self.has_renderer and self.viewer is None:
+                self.viewer = iGibsonMujocoBridge(self, mode='gui', camera_name=self.render_camera)
+                
+            elif self.has_offscreen_renderer and self.viewer is None:
+                self.viewer = iGibsonMujocoBridge(self, mode='headless', camera_name=self.render_camera)
+
+            self.viewer.render_collision_mesh = (1 if self.render_collision_mesh else 0)
+            self.viewer.render_visual_mesh = (1 if self.render_visual_mesh else 0)
+            self.viewer.load()
 
         # additional housekeeping
         self.sim_state_initial = self.sim.get_state()
@@ -320,3 +341,6 @@ class MujocoEnv(metaclass=EnvMeta):
     def close(self):
         """Do any cleanup necessary here."""
         self._destroy_viewer()
+
+    def get_mjpy_model(self):
+        return self.mjpy_model
