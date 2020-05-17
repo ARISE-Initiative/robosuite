@@ -2,13 +2,8 @@
 This file implements a wrapper for facilitating domain randomization over
 robosuite environments.
 
-TODO: decide if we want robot to support per-geom randomization or randomize as a whole group
-TODO: put textures into grippers as well
-TODO: put textures on generated objects
-TODO: option to turn texture randomization on vs. off (or default to geom color rand)
 TODO: make list of arguments for DRWrapper to support
 TODO: ability to restore to unmodified model / defaults
-TODO: modify wrapper settings on demand (to make it easy for an external curriculum)
 TODO: support action noise
 TODO: support camera rotations + multiple cameras
 TODO: support image translation
