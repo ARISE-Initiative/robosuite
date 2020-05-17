@@ -22,7 +22,7 @@ class Stack(RobotEnv):
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
-        initialization_noise=0.02,
+        initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.8),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
@@ -65,10 +65,18 @@ class Stack(RobotEnv):
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
-            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
-                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
-                in no noise being applied. Should either be single float if same noise value is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+                The expected keys and corresponding value types are specified below:
+                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
+                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
+                Should either be single dict if same noise value is to be used for all robots or else it should be a
+                list of the same length as "robots" param
+                Note: Specifying "default" will automatically use the default noise settings for this task
+                    (see __init__() call below)
+                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
             table_full_size (3-tuple): x, y, and z dimensions of the table.
 

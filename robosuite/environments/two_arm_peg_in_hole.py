@@ -22,7 +22,7 @@ class TwoArmPegInHole(RobotEnv):
         controller_configs=None,
         gripper_types=None,
         gripper_visualizations=False,
-        initialization_noise=0.02,
+        initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=5.0,
@@ -72,10 +72,18 @@ class TwoArmPegInHole(RobotEnv):
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
-            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
-                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
-                in no noise being applied. Should either be single float if same noise value is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+                The expected keys and corresponding value types are specified below:
+                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
+                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
+                Should either be single dict if same noise value is to be used for all robots or else it should be a
+                list of the same length as "robots" param
+                Note: Specifying "default" will automatically use the default noise settings for this task
+                    (see __init__() call below)
+                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
             use_camera_obs (bool or list of bool): if True, every observation for a specific robot includes a rendered
             image. Should either be single bool if camera obs value is to be used for all
@@ -148,6 +156,10 @@ class TwoArmPegInHole(RobotEnv):
         # Save cylinder specs
         self.cylinder_radius = cylinder_radius
         self.cylinder_length = cylinder_length
+
+        # Setup default initialization noise if not customized
+        if initialization_noise == "default":
+            initialization_noise = {"magnitude": 0.02, "type": "gaussian"}
 
         super().__init__(
             robots=robots,

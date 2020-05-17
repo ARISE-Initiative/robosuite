@@ -27,9 +27,15 @@ class Robot(object):
             initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
                 instantiated for the task
 
-            initialization_noise (float): The scale factor of uni-variate Gaussian random noise
-                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
-                in no noise being applied
+            initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
+                corresponding value types are specified below:
+                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
+                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
+                Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
+
         """
 
         self.sim = None                                     # MjSim this robot is tied to
@@ -38,7 +44,11 @@ class Robot(object):
         self.robot_model = None                             # object holding robot model-specific info
 
         # Scaling of Gaussian initial noise applied to robot joints
-        self.initialization_noise = initialization_noise if initialization_noise else 0.0
+        self.initialization_noise = initialization_noise
+        if self.initialization_noise is None:
+            self.initialization_noise = {"magnitude": 0.0, "type": "gaussian"}  # no noise conditions
+        self.initialization_noise["magnitude"] = \
+            self.initialization_noise["magnitude"] if self.initialization_noise["magnitude"] else 0.0
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
 
         self.robot_joints = None                            # xml joint names for robot
@@ -82,9 +92,17 @@ class Robot(object):
 
         """
         if not deterministic:
+            # Determine noise
+            if self.initialization_noise["type"] == "gaussian":
+                noise = np.random.randn(len(self.init_qpos)) * self.initialization_noise["magnitude"]
+            elif self.initialization_noise["type"] == "uniform":
+                noise = np.random.uniform(-1.0, 1.0, len(self.init_qpos)) * self.initialization_noise["magnitude"]
+            else:
+                raise ValueError("Error: Invalid noise type specified. Options are 'gaussian' or 'uniform'.")
+
             # Set initial position in sim
             self.sim.data.qpos[self._ref_joint_pos_indexes] = \
-                self.init_qpos + np.random.randn(len(self.init_qpos)) * self.initialization_noise
+                self.init_qpos + noise
 
         # Load controllers
         self._load_controller()
