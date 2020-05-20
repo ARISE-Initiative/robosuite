@@ -15,25 +15,21 @@ Categories of DR:
         RGB Image
 
             Texture Randomization
-                Color
-                    Local / Global
+                Color (Relative / Absolute)
                 Pattern
 
             Camera Randomization
-                Position
-                    Local / Global
-                Rotation
-                    Local / Global
+                Position (Relative)
+                Rotation (Relative)
 
             Lighting Randomization
-                Position
-                    Local / Global
-                Direction
-                    Local / Global
-                Color
+                Position (Relative)
+                Direction (Relative)
+                Color (Relative)
                     Specular
                     Ambient
                     Diffuse
+                Active
                 CastShadow
                     TODO: do we really want this? excluding for now...
 
@@ -42,6 +38,9 @@ Categories of DR:
             Pose Noise
             Joint Noise
             Velocity Noise
+
+            TODO (requires observation categorization, too much of a pain for now...)
+                -Perhaps only noise up the proprioception??? (and assume fixed set of keys)
         
     Action Noise
 
@@ -78,12 +77,12 @@ class DomainRandomizationWrapper(Wrapper):
         self.light_modder = LightingModder(
             sim=self.env.sim,
             light_names=None, # all lights are randomized
-            randomize_position=False,
-            randomize_direction=False,
-            randomize_specular=False,
-            randomize_ambient=False,
+            randomize_position=True,
+            randomize_direction=True,
+            randomize_specular=True,
+            randomize_ambient=True,
             randomize_diffuse=True,
-            randomize_active=False,
+            randomize_active=True,
             position_perturbation_size=0.1,
             direction_perturbation_size=0.35,
             specular_perturbation_size=0.1,
