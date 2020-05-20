@@ -26,22 +26,179 @@ class BaseModder():
 
 class LightingModder(BaseModder):
 
-    def rand3(self):
-        return np.random.randn(3)
+    def __init__(
+        self,
+        sim,
+        light_names=None,
+        randomize_position=True,
+        randomize_direction=True,
+        randomize_specular=True,
+        randomize_ambient=True,
+        randomize_diffuse=True,
+        randomize_active=True,
+        position_perturbation_size=0.1,
+        direction_perturbation_size=0.35, # 20 degrees
+        specular_perturbation_size=0.1,
+        ambient_perturbation_size=0.1,
+        diffuse_perturbation_size=0.1,
+    ):
+        """
+        Args:
+            sim (MjSim): MjSim object
+            light_names ([string]): list of lights to use for randomization. If not provided, all
+                lights in the model are randomized.
+        """
+        super().__init__(sim)
 
-    def randbool(self):
-        rand = np.random.choice([0,1], 1)
-        rand = rand[0]
-        return rand
+        if light_names is None:
+            light_names = self.sim.model.light_names
+        self.light_names = light_names
 
-    def rand_all(self, light):
-        self.set_pos(light, self.rand3())
-        self.set_dir(light, self.rand3())
-        self.set_active(light, self.randbool())
-        self.set_specular(light, self.rand3())
-        self.set_ambient(light, self.rand3())
-        self.set_diffuse(light, self.rand3())
-        self.set_castshadow(light, self.randbool())
+        self.randomize_position = randomize_position
+        self.randomize_direction = randomize_direction
+        self.randomize_specular = randomize_specular
+        self.randomize_ambient = randomize_ambient
+        self.randomize_diffuse = randomize_diffuse
+        self.randomize_active = randomize_active
+
+        self.position_perturbation_size = position_perturbation_size
+        self.direction_perturbation_size = direction_perturbation_size
+        self.specular_perturbation_size = specular_perturbation_size
+        self.ambient_perturbation_size = ambient_perturbation_size
+        self.diffuse_perturbation_size = diffuse_perturbation_size
+
+        self.set_defaults()
+
+    def set_defaults(self):
+        """
+        Uses the current MjSim state and model to save default parameter values. 
+        """
+        self._defaults = { k : {} for k in self.light_names }
+        for name in self.light_names:
+            self._defaults[name]['pos'] = np.array(self.get_pos(name))
+            self._defaults[name]['dir'] = np.array(self.get_dir(name))
+            self._defaults[name]['specular'] = np.array(self.get_specular(name))
+            self._defaults[name]['ambient'] = np.array(self.get_ambient(name))
+            self._defaults[name]['diffuse'] = np.array(self.get_diffuse(name))
+            self._defaults[name]['active'] = self.get_active(name)
+
+    def restore_defaults(self):
+        """
+        Reloads the saved parameter values.
+        """
+        for name in self.light_names:
+            self.set_pos(name, self._defaults[name]['pos'])
+            self.set_dir(name, self._defaults[name]['dir'])
+            self.set_specular(name, self._defaults[name]['specular'])
+            self.set_ambient(name, self._defaults[name]['ambient'])
+            self.set_diffuse(name, self._defaults[name]['diffuse'])
+            self.set_active(name, self._defaults[name]['active'])
+
+    def randomize(self):
+        for name in self.light_names:
+            if self.randomize_position:
+                self._randomize_position(name)
+
+            if self.randomize_direction:
+                self._randomize_direction(name)
+
+            if self.randomize_specular:
+                self._randomize_specular(name)
+
+            if self.randomize_ambient:
+                self._randomize_ambient(name)
+
+            if self.randomize_diffuse:
+                self._randomize_diffuse(name)
+
+            if self.randomize_active:
+                self._randomize_active(name)
+
+    def _randomize_position(self, name):
+        delta_pos = np.random.uniform(
+            low=-self.position_perturbation_size, 
+            high=self.position_perturbation_size, 
+            size=3,
+        )
+        self.set_pos(
+            name, 
+            self._defaults[name]['pos'] + delta_pos,
+        )
+
+    def _randomize_direction(self, name):
+        # sample a small, random axis-angle delta rotation
+        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.direction_perturbation_size)
+        random_delta_rot = trans.quat2mat(trans.axisangle2quat(axis=random_axis, angle=random_angle))
+        
+        # rotate direction by this delta rotation and set the new direction
+        new_dir = random_delta_rot.dot(self._defaults[name]['dir'])
+        self.set_dir(
+            name,
+            new_dir,
+        )
+
+    def _randomize_specular(self, name):
+        delta = np.random.uniform(
+            low=-self.specular_perturbation_size, 
+            high=self.specular_perturbation_size, 
+            size=3,
+        )
+        self.set_specular(
+            name, 
+            self._defaults[name]['specular'] + delta,
+        )
+
+    def _randomize_ambient(self, name):
+        delta = np.random.uniform(
+            low=-self.ambient_perturbation_size, 
+            high=self.ambient_perturbation_size, 
+            size=3,
+        )
+        self.set_ambient(
+            name, 
+            self._defaults[name]['ambient'] + delta,
+        )
+
+    def _randomize_diffuse(self, name):
+        delta = np.random.uniform(
+            low=-self.diffuse_perturbation_size, 
+            high=self.diffuse_perturbation_size, 
+            size=3,
+        )
+        self.set_diffuse(
+            name, 
+            self._defaults[name]['diffuse'] + delta,
+        )
+
+    def _randomize_active(self, name):
+        active = int(np.random.uniform() > 0.5)
+        self.set_active(
+            name,
+            active
+        )
+
+    # def rand3(self):
+    #     return np.random.randn(3)
+
+    # def randbool(self):
+    #     rand = np.random.choice([0,1], 1)
+    #     rand = rand[0]
+    #     return rand
+
+    # def rand_all(self, light):
+    #     self.set_pos(light, self.rand3())
+    #     self.set_dir(light, self.rand3())
+    #     self.set_active(light, self.randbool())
+    #     self.set_specular(light, self.rand3())
+    #     self.set_ambient(light, self.rand3())
+    #     self.set_diffuse(light, self.rand3())
+    #     # self.set_castshadow(light, self.randbool())
+
+    def get_pos(self, name):
+        lightid = self.get_lightid(name)
+        assert lightid > -1, "Unkwnown light %s" % name
+
+        return self.model.light_pos[lightid]
 
     def set_pos(self, name, value):
         lightid = self.get_lightid(name)
@@ -52,6 +209,12 @@ class LightingModder(BaseModder):
 
         self.model.light_pos[lightid] = value
 
+    def get_dir(self, name):
+        lightid = self.get_lightid(name)
+        assert lightid > -1, "Unkwnown light %s" % name
+
+        return self.model.light_dir[lightid] 
+
     def set_dir(self, name, value):
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
@@ -61,11 +224,23 @@ class LightingModder(BaseModder):
 
         self.model.light_dir[lightid] = value
 
+    def get_active(self, name):
+        lightid = self.get_lightid(name)
+        assert lightid > -1, "Unkwnown light %s" % name
+
+        return self.model.light_active[lightid]
+
     def set_active(self, name, value):
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         self.model.light_active[lightid] = value
+
+    def get_specular(self, name):
+        lightid = self.get_lightid(name)
+        assert lightid > -1, "Unkwnown light %s" % name
+
+        return self.model.light_specular[lightid]
 
     def set_specular(self, name, value):
         lightid = self.get_lightid(name)
@@ -76,6 +251,12 @@ class LightingModder(BaseModder):
 
         self.model.light_specular[lightid] = value
 
+    def get_ambient(self, name):
+        lightid = self.get_lightid(name)
+        assert lightid > -1, "Unkwnown light %s" % name
+
+        return self.model.light_ambient[lightid]
+
     def set_ambient(self, name, value):
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
@@ -84,6 +265,12 @@ class LightingModder(BaseModder):
         assert len(value) == 3, "Expected 3-dim value, got %s" % value
 
         self.model.light_ambient[lightid] = value
+
+    def get_diffuse(self, name):
+        lightid = self.get_lightid(name)
+        assert lightid > -1, "Unkwnown light %s" % name
+
+        return self.model.light_diffuse[lightid]
 
     def set_diffuse(self, name, value):
         lightid = self.get_lightid(name)
@@ -94,28 +281,22 @@ class LightingModder(BaseModder):
 
         self.model.light_diffuse[lightid] = value
 
-    def set_castshadow(self, name, value):
-        lightid = self.get_lightid(name)
-        assert lightid > -1, "Unkwnown light %s" % name
-        self.model.light_castshadow[lightid] = value
+    # def set_castshadow(self, name, value):
+    #     lightid = self.get_lightid(name)
+    #     assert lightid > -1, "Unkwnown light %s" % name
+    #     self.model.light_castshadow[lightid] = value
 
     def get_lightid(self, name):
         return self.model.light_name2id(name)
-
-    def randomize(self):
-        # randomize all the lights
-        for light in self.model.light_names:
-            self.rand_all(light)
-
 
 class CameraModder(BaseModder):
     def __init__(
         self,
         sim,
-        camera_names,
-        perturb_position=True,
-        perturb_rotation=True,
-        perturb_fovy=True,
+        camera_names=None,
+        randomize_position=True,
+        randomize_rotation=True,
+        randomize_fovy=True,
         position_perturbation_size=0.01,
         rotation_perturbation_size=0.087,
         fovy_perturbation_size=5.,
@@ -123,7 +304,8 @@ class CameraModder(BaseModder):
         """
         Args:
             sim (MjSim): MjSim object
-            camera_names ([string]): list of camera names to use for randomization
+            camera_names ([string]): list of camera names to use for randomization. If not provided,
+                all cameras are used for randomization.
             perturb_position (bool): if True, randomize camera position
             perturb_rotation (bool): if True, randomize camera rotation
             perturb_fovy (bool): if True, randomize camera fovy
@@ -134,80 +316,86 @@ class CameraModder(BaseModder):
         """
         super().__init__(sim)
 
-        assert perturb_position or perturb_rotation or perturb_fovy
+        assert randomize_position or randomize_rotation or randomize_fovy
 
+        if camera_names is None:
+            camera_names = self.sim.model.camera_names
         self.camera_names = camera_names
-        self.perturb_position = perturb_position
-        self.perturb_rotation = perturb_rotation
-        self.perturb_fovy = perturb_fovy
+
+        self.randomize_position = randomize_position
+        self.randomize_rotation = randomize_rotation
+        self.randomize_fovy = randomize_fovy
+
         self.position_perturbation_size = position_perturbation_size
         self.rotation_perturbation_size = rotation_perturbation_size
         self.fovy_perturbation_size = fovy_perturbation_size
+
         self.set_defaults()
 
     def set_defaults(self):
         """
         Uses the current MjSim state and model to save default parameter values. 
         """
-        self.base_pos = {}
-        self.base_quat = {}
-        self.base_fovy = {}
+        self._defaults = { k : {} for k in self.camera_names }
         for camera_name in self.camera_names:
-            self.base_pos[camera_name] = np.array(self.get_pos(camera_name))
-            self.base_quat[camera_name] = np.array(self.get_quat(camera_name))
-            self.base_fovy[camera_name] = self.get_fovy(camera_name)
+            self._defaults[camera_name]['pos'] = np.array(self.get_pos(camera_name))
+            self._defaults[camera_name]['quat'] = np.array(self.get_quat(camera_name))
+            self._defaults[camera_name]['fovy'] = self.get_fovy(camera_name)
 
     def restore_defaults(self):
         """
         Reloads the saved parameter values.
         """
         for camera_name in self.camera_names:
-            self.set_pos(camera_name, self.base_pos[camera_name])
-            self.set_quat(camera_name, self.base_quat[camera_name])
-            self.set_fovy(camera_name, self.base_fovy[camera_name])
+            self.set_pos(camera_name, self._defaults[camera_name]['pos'])
+            self.set_quat(camera_name, self._defaults[camera_name]['quat'])
+            self.set_fovy(camera_name, self._defaults[camera_name]['fovy'])
 
     def randomize(self):
         for camera_name in self.camera_names:
+            if self.randomize_position:
+                self._randomize_position(camera_name)
 
-            if self.perturb_position:
-                delta_pos = np.random.uniform(
-                    low=-self.position_perturbation_size, 
-                    high=self.position_perturbation_size, 
-                    size=3,
-                )
-                self.set_pos(
-                    camera_name, 
-                    self.base_pos[camera_name] + delta_pos,
-                )
+            if self.randomize_rotation:
+                self._randomize_rotation(camera_name)
 
-            if self.perturb_rotation:
-                # sample random axis using a normalized sample from spherical Gaussian.
-                # see (http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/)
-                # for why it works.
-                random_axis = np.random.randn(3)
-                random_axis /= np.linalg.norm(random_axis)
-                random_angle = np.random.uniform(low=0., high=self.rotation_perturbation_size)
-                random_delta_rot = trans.quat2mat(trans.axisangle2quat(axis=random_axis, angle=random_angle))
-                
-                # compute new rotation and set it
-                base_rot = trans.quat2mat(trans.convert_quat(self.base_quat[camera_name], to='xyzw'))
-                new_rot = random_delta_rot.T.dot(base_rot)
-                new_quat = trans.convert_quat(trans.mat2quat(new_rot), to='wxyz')
-                self.set_quat(
-                    camera_name,
-                    new_quat,
-                    # self.base_quat[camera_name]
-                )
+            if self.randomize_fovy:
+                self._randomize_fovy(camera_name)
 
-            if self.perturb_fovy:
-                delta_fovy = np.random.uniform(
-                    low=-self.fovy_perturbation_size,
-                    high=self.fovy_perturbation_size,
-                )
-                self.set_fovy(
-                    camera_name,
-                    self.base_fovy[camera_name] + delta_fovy,
-                )
+    def _randomize_position(self, name):
+        delta_pos = np.random.uniform(
+            low=-self.position_perturbation_size, 
+            high=self.position_perturbation_size, 
+            size=3,
+        )
+        self.set_pos(
+            name, 
+            self._defaults[name]['pos'] + delta_pos,
+        )
+
+    def _randomize_rotation(self, name):
+        # sample a small, random axis-angle delta rotation
+        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.rotation_perturbation_size)
+        random_delta_rot = trans.quat2mat(trans.axisangle2quat(axis=random_axis, angle=random_angle))
+        
+        # compute new rotation and set it
+        base_rot = trans.quat2mat(trans.convert_quat(self._defaults[name]['quat'], to='xyzw'))
+        new_rot = random_delta_rot.T.dot(base_rot)
+        new_quat = trans.convert_quat(trans.mat2quat(new_rot), to='wxyz')
+        self.set_quat(
+            name,
+            new_quat,
+        )
+
+    def _randomize_fovy(self, name):
+        delta_fovy = np.random.uniform(
+            low=-self.fovy_perturbation_size,
+            high=self.fovy_perturbation_size,
+        )
+        self.set_fovy(
+            name,
+            self._defaults[name]['fovy'] + delta_fovy,
+        )
 
     def get_fovy(self, name):
         camid = self.get_camid(name)

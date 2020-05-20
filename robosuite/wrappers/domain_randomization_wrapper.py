@@ -31,6 +31,11 @@ Categories of DR:
                 Direction
                     Local / Global
                 Color
+                    Specular
+                    Ambient
+                    Diffuse
+                CastShadow
+                    TODO: do we really want this? excluding for now...
 
         Low-Dimension
 
@@ -52,6 +57,7 @@ Other options:
 
 
 TODO: ability to restore to unmodified model / defaults
+TODO: why can we still see things with all the lights off?
 TODO: ability to apply randomization from an mjstate / mjmodel pair?
     (so that these randomizations can also occur in a replay buffer)
 TODO: each composite object should specify texture groups that get randomized together
@@ -64,16 +70,33 @@ from robosuite.utils.mjmod import TextureModder, LightingModder, CameraModder
 
 
 class DomainRandomizationWrapper(Wrapper):
-    def __init__(self, env, path=None):
+    def __init__(self, env, texture_path=None):
         super().__init__(env)
-        self.tex_modder = TextureModder(self.env.sim, path=path)
-        self.light_modder = LightingModder(self.env.sim)
+
+        self.tex_modder = TextureModder(self.env.sim, path=texture_path)
+
+        self.light_modder = LightingModder(
+            sim=self.env.sim,
+            light_names=None, # all lights are randomized
+            randomize_position=False,
+            randomize_direction=False,
+            randomize_specular=False,
+            randomize_ambient=False,
+            randomize_diffuse=True,
+            randomize_active=False,
+            position_perturbation_size=0.1,
+            direction_perturbation_size=0.35,
+            specular_perturbation_size=0.1,
+            ambient_perturbation_size=0.1,
+            diffuse_perturbation_size=0.1,
+        )
+
         self.camera_modder =  CameraModder(
-            sim=self.env.sim, 
-            camera_names=self.env.camera_names,
-            perturb_position=True,
-            perturb_rotation=True,
-            perturb_fovy=True,
+            sim=self.env.sim,
+            camera_names=None, # all cameras are randomized
+            randomize_position=True,
+            randomize_rotation=True,
+            randomize_fovy=True,
             position_perturbation_size=0.01,
             rotation_perturbation_size=0.087,
             fovy_perturbation_size=5.,
@@ -96,8 +119,9 @@ class DomainRandomizationWrapper(Wrapper):
         return super().step(action)
 
     def randomize_domain(self):
-        self.randomize_texture()
-        self.randomize_camera()
+        self.tex_modder.randomize()
+        self.camera_modder.randomize()
+        self.light_modder.randomize()
 
     def save_default_domain(self):
         pass
@@ -105,20 +129,3 @@ class DomainRandomizationWrapper(Wrapper):
     def restore_default_domain(self):
         pass
 
-    def randomize_all(self):
-        self.randomize_camera()
-        self.randomize_texture()
-        self.randomize_light()
-        # self.randomize_material()
-
-    def randomize_texture(self):
-        self.tex_modder.randomize()
-
-    def randomize_light(self):
-        self.light_modder.randomize()
-
-    # def randomize_material(self):
-    #     self.mat_modder.randomize()
-
-    def randomize_camera(self):
-        self.camera_modder.randomize()
