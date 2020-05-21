@@ -452,18 +452,107 @@ class TextureModder(BaseModder):
     `whiten_materials` helper method to set all material colors to white.
     """
 
-    def __init__(self, sim, path=None):
+    def __init__(
+        self, 
+        sim,
+        geom_names=None,
+        randomize_local=False,
+        local_rgb_interpolation=0.1,
+        texture_variations=['rgb', 'checker', 'noise', 'gradient'],
+        randomize_skybox=True,
+        # texture_path=None,
+    ):
+        """
+        Args:
+            sim (MjSim): MjSim object
+
+            geom_names ([string]): list of geom names to use for randomization. If not provided,
+                all geoms are used for randomization.
+
+            randomize_local (bool): if True, constrain RGB color variations to be close to the
+                original RGB colors per geom and texture. Otherwise, RGB color values will
+                be sampled uniformly at random.
+
+            local_rgb_interpolation (float): determines the size of color variations from
+                the base geom colors when @randomize_local is True.
+
+            texture_variations ([string]): a list of texture variation strings. Each string
+                must be either 'rgb', 'checker', 'noise', or 'gradient' and corresponds to
+                a specific kind of texture randomization. For each geom that has a material
+                and texture, a random variation from this list is sampled and applied.
+
+            randomize_skybox (bool): if True, apply texture variations to the skybox as well.
+
+            texture_path (string): optional path to texture images files to use for random texture
+                generation
+        """
         super().__init__(sim)
 
-        self.path = path
+        if geom_names is None:
+            geom_names = self.sim.model.geom_names
+        self.geom_names = geom_names
 
+        self.randomize_local = randomize_local
+        self.local_rgb_interpolation = local_rgb_interpolation
+        self.texture_variations = list(texture_variations)
+        self.randomize_skybox = randomize_skybox
+
+        self._all_texture_variation_callbacks = {
+            'rgb' : self.rand_rgb,
+            'checker' : self.rand_checker,
+            'noise' : self.rand_noise,
+            'gradient' : self.rand_gradient,
+        }
+        self._texture_variation_callbacks = { 
+            k : self._all_texture_variation_callbacks[k] 
+            for k in self.texture_variations 
+        }
+
+        self.set_defaults()
+
+    def set_defaults(self):
+        """
+        Uses the current MjSim state and model to save default parameter values. 
+        """
         self.textures = [Texture(self.model, i)
                          for i in range(self.model.ntex)]
-        self._build_tex_geom_map()
+        # self._build_tex_geom_map()
+
+        # save copy of original texture bitmaps
+        self._default_texture_bitmaps = [np.array(text.bitmap) for text in self.textures]
 
         # These matrices will be used to rapidly synthesize
         # checker pattern bitmaps
         self._cache_checker_matrices()
+
+        self._defaults = { k : {} for k in self.geom_names }
+        if self.randomize_skybox:
+            self._defaults['skybox'] = {}
+        for name in self.geom_names:
+            if self._check_geom_for_texture(name):
+                # store the texture bitmap for this geom
+                tex_id = self._name_to_tex_id(name)
+                self._defaults[name]['texture'] = self._default_texture_bitmaps[tex_id]
+            else:
+                # store geom color
+                self._defaults[name]['rgb'] = np.array(self.get_geom_rgb(name))
+
+        if self.randomize_skybox:
+            tex_id = self._name_to_tex_id('skybox')
+            self._defaults['skybox']['texture'] = self._default_texture_bitmaps[tex_id]
+
+    def restore_defaults(self):
+        """
+        Reloads the saved parameter values.
+        """
+        for name in self.geom_names:
+            if self._check_geom_for_texture(name):
+                self.set_texture(name, self._defaults[name]['texture'], perturb=False)
+            else:
+                self.set_geom_rgb(name, self._defaults[name]['rgb'])
+
+        if self.randomize_skybox:
+            self.set_texture('skybox', self._defaults['skybox']['texture'], perturb=False)
 
     def randomize(self):
         """
@@ -471,59 +560,80 @@ class TextureModder(BaseModder):
         for geoms that have no material.
         """
         self.whiten_materials()
-        for name in self.sim.model.geom_names:
-            try:
-                self.rand_all(name)
-            except:
-                self.model.geom_rgba[self.model.geom_name2id(name), :3] = np.random.uniform(0, 1, size=3)
-        self.rand_all("skybox")
+        for name in self.geom_names:
 
-    def rand_all(self, name):
-        choices = [
-            self.rand_checker,
-            self.rand_gradient,
-            self.rand_rgb,
-            self.rand_noise,
-        ]
-        choice = np.random.randint(len(choices))
-        return choices[choice](name)
+            if self._check_geom_for_texture(name):
+                # geom has valid texture that can be randomized
+                self._randomize_texture(name)
+            else:
+                # randomize geom color
+                self._randomize_geom_color(name)
+
+        if self.randomize_skybox:
+            self._randomize_texture("skybox")
+
+    def _randomize_geom_color(self, name):
+        if self.randomize_local:
+            random_color = np.random.uniform(0, 1, size=3)
+            rgb = (1. - self.local_rgb_interpolation) * self._defaults[name]['rgb'] + self.local_rgb_interpolation * random_color
+        else:
+            rgb = np.random.uniform(0, 1, size=3)
+        self.set_geom_rgb(name, rgb)
+
+    def _randomize_texture(self, name):
+        keys = list(self._texture_variation_callbacks.keys())
+        choice = keys[np.random.randint(len(keys))]
+        self._texture_variation_callbacks[choice](name)
 
     def rand_checker(self, name):
         rgb1, rgb2 = self.get_rand_rgb(2)
-        return self.set_checker(name, rgb1, rgb2)
+        self.set_checker(name, rgb1, rgb2, perturb=self.randomize_local)
 
     def rand_gradient(self, name):
         rgb1, rgb2 = self.get_rand_rgb(2)
         vertical = bool(np.random.uniform() > 0.5)
-        return self.set_gradient(name, rgb1, rgb2, vertical=vertical)
+        self.set_gradient(name, rgb1, rgb2, vertical=vertical, perturb=self.randomize_local)
 
     def rand_rgb(self, name):
         rgb = self.get_rand_rgb()
-        return self.set_rgb(name, rgb)
+        self.set_rgb(name, rgb, perturb=self.randomize_local)
 
     def rand_noise(self, name):
         fraction = 0.1 + np.random.uniform() * 0.8
         rgb1, rgb2 = self.get_rand_rgb(2)
-        return self.set_noise(name, rgb1, rgb2, fraction)
+        self.set_noise(name, rgb1, rgb2, fraction, perturb=self.randomize_local)
 
-    def whiten_materials(self, geom_names=None):
+    def whiten_materials(self):
         """
-        Extends modder.TextureModder to also whiten geom_rgba.
+        Extends modder.TextureModder to also whiten geom_rgba
 
         Helper method for setting all material colors to white, otherwise
         the texture modifications won't take full effect.
+
         Args:
         - geom_names (list): list of geom names whose materials should be
             set to white. If omitted, all materials will be changed.
         """
-        geom_names = geom_names or []
-        if geom_names:
-            for name in geom_names:
-                geom_id = self.model.geom_name2id(name)
+        for name in self.geom_names:
+            # whiten geom
+            geom_id = self.model.geom_name2id(name)
+            self.model.geom_rgba[geom_id, :] = 1.0
+
+            if self._check_geom_for_texture(name):
+                # whiten material
                 mat_id = self.model.geom_matid[geom_id]
                 self.model.mat_rgba[mat_id, :] = 1.0
-        else:
-            self.model.mat_rgba[:] = 1.0
+
+        # self.model.mat_rgba[:] = 1.0
+        # self.model.geom_rgba[:] = 1.0
+
+    def get_geom_rgb(self, name):
+        geom_id = self.model.geom_name2id(name)
+        return self.model.geom_rgba[geom_id, :3]
+
+    def set_geom_rgb(self, name, rgb):
+        geom_id = self.model.geom_name2id(name)
+        self.model.geom_rgba[geom_id, :3] = rgb
 
     def get_rand_rgb(self, n=1):
         def _rand_rgb():
@@ -535,66 +645,65 @@ class TextureModder(BaseModder):
         else:
             return tuple(_rand_rgb() for _ in range(n))
 
-    def set_existing_texture(self, name):
-        bitmap = self.get_texture(name).bitmap
-        img = Image.new("RGB", (bitmap.shape[1], bitmap.shape[0]))
+    # def set_existing_texture(self, name):
+    #     bitmap = self.get_texture(name).bitmap
+    #     img = Image.new("RGB", (bitmap.shape[1], bitmap.shape[0]))
 
-        img_path = self.path + '/' + np.random.choice(os.listdir(self.path))
-        img = Image.open(img_path).convert('RGB')
-        img = img.convert('RGB')
-        if name == 'skybox':
-            img = img.resize((256, 256))
-        elif name =='table_visual':
-            img = img.resize((512, 512))
-        else:
-            img = img.resize((32, 32))
-        img = np.array(img)
-        img = img.astype(np.uint8)
-        img = np.concatenate([img] * int(bitmap.shape[0] / img.shape[0]), 0)
-        img.resize(bitmap.shape)
-        bitmap[..., :] = img
+    #     img_path = self.texture_path + '/' + np.random.choice(os.listdir(self.texture_path))
+    #     img = Image.open(img_path).convert('RGB')
+    #     img = img.convert('RGB')
+    #     if name == 'skybox':
+    #         img = img.resize((256, 256))
+    #     elif name =='table_visual':
+    #         img = img.resize((512, 512))
+    #     else:
+    #         img = img.resize((32, 32))
+    #     img = np.array(img)
+    #     img = img.astype(np.uint8)
+    #     img = np.concatenate([img] * int(bitmap.shape[0] / img.shape[0]), 0)
+    #     img.resize(bitmap.shape)
+    #     bitmap[..., :] = img
 
-        self.upload_texture(name)
+    #     self.upload_texture(name)
 
     def get_texture(self, name):
-        if name == 'skybox':
-            tex_id = -1
-            for i in range(self.model.ntex):
-                # TODO: Don't hardcode this
-                skybox_textype = 2
-                if self.model.tex_type[i] == skybox_textype:
-                    tex_id = i
-            assert tex_id >= 0, "Model has no skybox"
-        else:
-            geom_id = self.model.geom_name2id(name)
-            mat_id = self.model.geom_matid[geom_id]
-            assert mat_id >= 0, "Geom has no assigned material"
-            tex_id = self.model.mat_texid[mat_id]
-            assert tex_id >= 0, "Material has no assigned texture"
-
+        tex_id = self._name_to_tex_id(name)
         texture = self.textures[tex_id]
-
         return texture
 
+    def set_texture(self, name, bitmap, perturb=False):
+        """
+        Sets the bitmap for the texture that corresponds
+        to geom @name.
+
+        If @perturb is True, then use the computed bitmap
+        to perturb the default bitmap slightly, instead
+        of replacing it.
+        """
+        bitmap_to_set = self.get_texture(name).bitmap
+        if perturb:
+            bitmap = (1. - self.local_rgb_interpolation) * self._defaults[name]['texture'] + self.local_rgb_interpolation * bitmap
+        bitmap_to_set[:] = bitmap
+        self.upload_texture(name)
+
     def get_checker_matrices(self, name):
-        if name == 'skybox':
-            return self._skybox_checker_mat
-        else:
-            geom_id = self.model.geom_name2id(name)
-            return self._geom_checker_mats[geom_id]
+        tex_id = self._name_to_tex_id(name)
+        return self._texture_checker_mats[tex_id]
 
-    def set_checker(self, name, rgb1, rgb2):
-        bitmap = self.get_texture(name).bitmap
+    def set_checker(self, name, rgb1, rgb2, perturb=False):
+        """
+        Use the two checker matrices to create a checker
+        pattern from the two colors, and set it as 
+        the texture for geom @name.
+        """
         cbd1, cbd2 = self.get_checker_matrices(name)
-
         rgb1 = np.asarray(rgb1).reshape([1, 1, -1])
         rgb2 = np.asarray(rgb2).reshape([1, 1, -1])
-        bitmap[:] = rgb1 * cbd1 + rgb2 * cbd2
+        bitmap = rgb1 * cbd1 + rgb2 * cbd2
 
-        self.upload_texture(name)
-        return bitmap
+        self.set_texture(name, bitmap, perturb=perturb)
 
-    def set_gradient(self, name, rgb1, rgb2, vertical=True):
+    def set_gradient(self, name, rgb1, rgb2, vertical=True, perturb=False):
         """
         Creates a linear gradient from rgb1 to rgb2.
         Args:
@@ -613,20 +722,24 @@ class TextureModder(BaseModder):
         else:
             p = np.tile(np.linspace(0, 1, w), (h, 1))
 
+        new_bitmap = np.zeros_like(bitmap)
         for i in range(3):
-            bitmap[..., i] = rgb2[i] * p + rgb1[i] * (1.0 - p)
+            new_bitmap[..., i] = rgb2[i] * p + rgb1[i] * (1.0 - p)
 
-        self.upload_texture(name)
-        return bitmap
+        self.set_texture(name, new_bitmap, perturb=perturb)
 
-    def set_rgb(self, name, rgb):
+    def set_rgb(self, name, rgb, perturb=False):
+        """
+        Just set the texture bitmap for geom @name
+        to a constant rgb value.
+        """
         bitmap = self.get_texture(name).bitmap
-        bitmap[..., :] = np.asarray(rgb)
+        new_bitmap = np.zeros_like(bitmap)
+        new_bitmap[..., :] = np.asarray(rgb)
 
-        self.upload_texture(name)
-        return bitmap
+        self.set_texture(name, new_bitmap, perturb=perturb)
 
-    def set_noise(self, name, rgb1, rgb2, fraction=0.9):
+    def set_noise(self, name, rgb1, rgb2, fraction=0.9, perturb=False):
         """
         Args:
         - name (str): name of geom
@@ -638,11 +751,11 @@ class TextureModder(BaseModder):
         h, w = bitmap.shape[:2]
         mask = np.random.uniform(size=(h, w)) < fraction
 
-        bitmap[..., :] = np.asarray(rgb1)
-        bitmap[mask, :] = np.asarray(rgb2)
+        new_bitmap = np.zeros_like(bitmap)
+        new_bitmap[..., :] = np.asarray(rgb1)
+        new_bitmap[mask, :] = np.asarray(rgb2)
 
-        self.upload_texture(name)
-        return bitmap
+        self.set_texture(name, new_bitmap, perturb=perturb)
 
     def upload_texture(self, name):
         """
@@ -654,16 +767,52 @@ class TextureModder(BaseModder):
         for render_context in self.sim.render_contexts:
             render_context.upload_texture(texture.id)
 
-    def _build_tex_geom_map(self):
-        # Build a map from tex_id to geom_ids, so we can check
-        # for collisions.
-        self._geom_ids_by_tex_id = defaultdict(list)
-        for geom_id in range(self.model.ngeom):
-            mat_id = self.model.geom_matid[geom_id]
-            if mat_id >= 0:
-                tex_id = self.model.mat_texid[mat_id]
-                if tex_id >= 0:
-                    self._geom_ids_by_tex_id[tex_id].append(geom_id)
+    def _check_geom_for_texture(self, name):
+        """
+        Helper function to determined if the geom @name has
+        an assigned material and that the material has
+        an assigned texture.
+        """
+        geom_id = self.model.geom_name2id(name)
+        mat_id = self.model.geom_matid[geom_id]
+        if mat_id < 0:
+            return False
+        tex_id = self.model.mat_texid[mat_id]
+        if tex_id < 0:
+            return False
+        return True
+
+    def _name_to_tex_id(self, name):
+        """
+        Helper function to get texture id from geom name.
+        """
+
+        # handle skybox separately
+        if name == 'skybox':
+            skybox_tex_id = -1
+            for tex_id in range(self.model.ntex):
+                skybox_textype = 2
+                if self.model.tex_type[tex_id] == skybox_textype:
+                    skybox_tex_id = tex_id
+            assert skybox_tex_id >= 0
+            return skybox_tex_id
+
+        assert self._check_geom_for_texture(name)
+        geom_id = self.model.geom_name2id(name)
+        mat_id = self.model.geom_matid[geom_id]
+        tex_id = self.model.mat_texid[mat_id]
+        return tex_id
+
+    # def _build_tex_geom_map(self):
+    #     # Build a map from tex_id to geom_ids, so we can check
+    #     # for collisions.
+    #     self._geom_ids_by_tex_id = defaultdict(list)
+    #     for geom_id in range(self.model.ngeom):
+    #         mat_id = self.model.geom_matid[geom_id]
+    #         if mat_id >= 0:
+    #             tex_id = self.model.mat_texid[mat_id]
+    #             if tex_id >= 0:
+    #                 self._geom_ids_by_tex_id[tex_id].append(geom_id)
 
     def _cache_checker_matrices(self):
         """
@@ -675,26 +824,11 @@ class TextureModder(BaseModder):
                                         ...]
         for each texture. To use for fast creation of checkerboard patterns
         """
-        self._geom_checker_mats = []
-        for geom_id in range(self.model.ngeom):
-            mat_id = self.model.geom_matid[geom_id]
-            tex_id = self.model.mat_texid[mat_id]
+        self._texture_checker_mats = []
+        for tex_id in range(self.model.ntex):
             texture = self.textures[tex_id]
             h, w = texture.bitmap.shape[:2]
-            self._geom_checker_mats.append(self._make_checker_matrices(h, w))
-
-        # add skybox
-        skybox_tex_id = -1
-        for tex_id in range(self.model.ntex):
-            skybox_textype = 2
-            if self.model.tex_type[tex_id] == skybox_textype:
-                skybox_tex_id = tex_id
-        if skybox_tex_id >= 0:
-            texture = self.textures[skybox_tex_id]
-            h, w = texture.bitmap.shape[:2]
-            self._skybox_checker_mat = self._make_checker_matrices(h, w)
-        else:
-            self._skybox_checker_mat = None
+            self._texture_checker_mats.append(self._make_checker_matrices(h, w))
 
     def _make_checker_matrices(self, h, w):
         re = np.r_[((w + 1) // 2) * [0, 1]]

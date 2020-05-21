@@ -61,6 +61,8 @@ TODO: ability to apply randomization from an mjstate / mjmodel pair?
     (so that these randomizations can also occur in a replay buffer)
 TODO: each composite object should specify texture groups that get randomized together
     (geom groups per texture)
+TODO: do all materials need to be whitened? or only those in geom list
+TODO: color perturbations could probably be improved by using a space other than RGB
 """
 import numpy as np
 
@@ -69,10 +71,17 @@ from robosuite.utils.mjmod import TextureModder, LightingModder, CameraModder
 
 
 class DomainRandomizationWrapper(Wrapper):
-    def __init__(self, env, texture_path=None):
+    def __init__(self, env):
         super().__init__(env)
 
-        self.tex_modder = TextureModder(self.env.sim, path=texture_path)
+        self.tex_modder = TextureModder(
+            sim=self.env.sim,
+            geom_names=None, # all geoms are randomized
+            randomize_local=True,
+            local_rgb_interpolation=0.2,
+            texture_variations=['rgb', 'checker', 'noise', 'gradient'],
+            randomize_skybox=False,
+        )
 
         self.light_modder = LightingModder(
             sim=self.env.sim,
@@ -119,8 +128,8 @@ class DomainRandomizationWrapper(Wrapper):
 
     def randomize_domain(self):
         self.tex_modder.randomize()
-        self.camera_modder.randomize()
-        self.light_modder.randomize()
+        # self.camera_modder.randomize()
+        # self.light_modder.randomize()
 
     def save_default_domain(self):
         pass
