@@ -302,12 +302,18 @@ class Stack(RobotEnv):
 
         # initialize objects of interest
         cubeA = BoxObject(
-            size_min=[0.02, 0.02, 0.02], size_max=[0.02, 0.02, 0.02], rgba=[1, 0, 0, 1]
+            name="cubeA",
+            size_min=[0.02, 0.02, 0.02], 
+            size_max=[0.02, 0.02, 0.02], 
+            rgba=[1, 0, 0, 1],
+            add_material=True,
         )
         cubeB = BoxObject(
+            name="cubeB",
             size_min=[0.025, 0.025, 0.025],
             size_max=[0.025, 0.025, 0.025],
             rgba=[0, 1, 0, 1],
+            add_material=True,
         )
         self.mujoco_objects = OrderedDict([("cubeA", cubeA), ("cubeB", cubeB)])
 

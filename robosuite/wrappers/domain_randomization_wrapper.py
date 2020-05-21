@@ -66,7 +66,7 @@ DEFAULT_COLOR_ARGS = {
     'randomize_local' : True, # sample nearby colors
     'local_rgb_interpolation' : 0.2,
     'texture_variations' : ['rgb', 'checker', 'noise', 'gradient'], # all texture variation types
-    'randomize_skybox' : False,
+    'randomize_skybox' : True, # by default, randomize skybox too
 }
 
 DEFAULT_CAMERA_ARGS = {

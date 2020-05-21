@@ -317,7 +317,7 @@ class TwoArmLift(RobotEnv):
         self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
-        self.pot = PotWithHandlesObject()
+        self.pot = PotWithHandlesObject(name="pot")
         self.mujoco_objects = OrderedDict([("pot", self.pot)])
 
         # task includes arena, robot, and objects of interest
