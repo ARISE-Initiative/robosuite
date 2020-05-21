@@ -67,9 +67,9 @@ class LightingModder(BaseModder):
         self.ambient_perturbation_size = ambient_perturbation_size
         self.diffuse_perturbation_size = diffuse_perturbation_size
 
-        self.set_defaults()
+        self.save_defaults()
 
-    def set_defaults(self):
+    def save_defaults(self):
         """
         Uses the current MjSim state and model to save default parameter values. 
         """
@@ -330,9 +330,9 @@ class CameraModder(BaseModder):
         self.rotation_perturbation_size = rotation_perturbation_size
         self.fovy_perturbation_size = fovy_perturbation_size
 
-        self.set_defaults()
+        self.save_defaults()
 
-    def set_defaults(self):
+    def save_defaults(self):
         """
         Uses the current MjSim state and model to save default parameter values. 
         """
@@ -508,9 +508,9 @@ class TextureModder(BaseModder):
             for k in self.texture_variations 
         }
 
-        self.set_defaults()
+        self.save_defaults()
 
-    def set_defaults(self):
+    def save_defaults(self):
         """
         Uses the current MjSim state and model to save default parameter values. 
         """
