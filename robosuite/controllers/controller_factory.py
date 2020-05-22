@@ -51,8 +51,8 @@ def load_controller_config(custom_fpath=None, default_controller=None):
 
         # Assert that requested default controller is in the available default controllers
         from robosuite.controllers import ALL_CONTROLLERS
-        assert default_controller in ALL_CONTROLLERS, "Error: Unknown default controller specified. Requested {}," \
-                                                  "available controllers: {}".format(default_controller, ALL_CONTROLLERS)
+        assert default_controller in ALL_CONTROLLERS, "Error: Unknown default controller specified. Requested {}, " \
+            "available controllers: {}".format(default_controller, list(ALL_CONTROLLERS))
 
         # Store the default controller config fpath associated with the requested controller
         custom_fpath = os.path.join(os.path.dirname(__file__), '..',

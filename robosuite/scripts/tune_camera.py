@@ -163,6 +163,8 @@ def print_command(char, info):
     char += " " * (10 - len(char))
     print("{}\t{}".format(char, info))
 
+
+# TODO: Fix -- this breaks under new API (e.g.: Call "Lift" instead of "SawyerLift")
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(

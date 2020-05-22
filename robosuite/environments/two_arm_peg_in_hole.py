@@ -109,7 +109,9 @@ class TwoArmPegInHole(RobotEnv):
 
             has_offscreen_renderer (bool): True if using off-screen rendering
 
-            render_camera (str): Name of camera to render if `has_renderer` is True.
+            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+                will result in the default angle being applied, which is useful as it can be dragged / panned by
+                the user using the mouse
 
             render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
 

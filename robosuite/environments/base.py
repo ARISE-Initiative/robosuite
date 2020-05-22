@@ -58,7 +58,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
             has_offscreen_renderer (bool): True if using off-screen rendering.
 
-            render_camera (str): Name of camera to render if `has_renderer` is True.
+            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+                will result in the default angle being applied, which is useful as it can be dragged / panned by
+                the user using the mouse
 
             render_collision_mesh (bool): True if rendering collision meshes 
                 in camera. False otherwise.
@@ -167,7 +169,8 @@ class MujocoEnv(metaclass=EnvMeta):
             self.viewer.viewer._render_every_frame = True
 
             # Set the camera angle for viewing
-            self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
+            if self.render_camera is not None:
+                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
 
         elif self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
