@@ -29,6 +29,7 @@ class MujocoXML(object):
         self.worldbody = self.create_default_element("worldbody")
         self.actuator = self.create_default_element("actuator")
         self.asset = self.create_default_element("asset")
+        self.tendon = self.create_default_element("tendon")
         self.equality = self.create_default_element("equality")
         self.contact = self.create_default_element("contact")
         self.default = self.create_default_element("default")
@@ -78,6 +79,8 @@ class MujocoXML(object):
             self.merge_asset(other)
             for one_actuator in other.actuator:
                 self.actuator.append(one_actuator)
+            for one_tendon in other.tendon:
+                self.tendon.append(one_tendon)
             for one_equality in other.equality:
                 self.equality.append(one_equality)
             for one_contact in other.contact:
@@ -159,7 +162,7 @@ class MujocoXML(object):
 
     def add_prefix(self,
                    prefix,
-                   tags=("body", "joint", "site", "geom", "camera", "actuator", "asset", "texture", "material")):
+                   tags=("body", "joint", "site", "geom", "camera", "actuator", "tendon", "asset", "texture", "material")):
         """
         Utility to add prefix to all body names to prevent name clashes
         Args:
@@ -170,13 +173,26 @@ class MujocoXML(object):
         # Define tags as a set
         tags = set(tags)
 
+        # Define equalities set to pass at the end
+        equalities = set(tags)
+
+        # Add joints to equalities if necessary
+        if "joint" in tags:
+            equalities = equalities.union(["joint1", "joint2"])
+
         # Handle actuator elements
         if "actuator" in tags:
             tags.discard("actuator")
             for actuator in self.actuator:
-                actuator.attrib["name"] = prefix + actuator.attrib["name"]
-                if "joint" in tags:
-                    actuator.attrib["joint"] = prefix + actuator.attrib["joint"]
+                self._add_prefix_recursively(actuator, tags, prefix)
+
+        # Handle tendon elements
+        if "tendon" in tags:
+            tags.discard("tendon")
+            for tendon in self.tendon:
+                self._add_prefix_recursively(tendon, tags.union(["fixed"]), prefix)
+            # Also take care of any tendons in equality constraints
+            equalities = equalities.union(["tendon1", "tendon2"])
 
         # Handle asset elements
         if "asset" in tags:
@@ -188,11 +204,16 @@ class MujocoXML(object):
         # Handle contacts and equality names for body elements
         if "body" in tags:
             for contact in self.contact:
-                contact.set("body1", prefix + contact.attrib["body1"])
-                contact.set("body2", prefix + contact.attrib["body2"])
-            for equality in self.equality:
-                equality.set("body1", prefix + equality.attrib["body1"])
-                equality.set("body2", prefix + equality.attrib["body2"])
+                if "body1" in contact.attrib:
+                    contact.set("body1", prefix + contact.attrib["body1"])
+                if "body2" in contact.attrib:
+                    contact.set("body2", prefix + contact.attrib["body2"])
+            # Also take care of any bodies in equality constraints
+            equalities = equalities.union(["body1", "body2"])
+
+        # Handle all equality elements
+        for equality in self.equality:
+            self._add_prefix_recursively(equality, equalities, prefix)
 
         # Handle all remaining bodies in the element tree
         for body in self.worldbody:

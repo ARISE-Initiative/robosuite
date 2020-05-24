@@ -1,0 +1,124 @@
+<mujoco model="jaco_three_finger_hand">
+    <asset>
+        <mesh name="hand_3finger" file="meshes/jaco_three_finger_gripper/hand_3finger.stl" />
+        <mesh name="finger_proximal" file="meshes/jaco_three_finger_gripper/finger_proximal.stl" />
+        <mesh name="finger_distal" file="meshes/jaco_three_finger_gripper/finger_distal.stl" />
+        <mesh name="ring_small" file="meshes/jaco_three_finger_gripper/ring_small.stl" />
+    </asset>
+
+
+    <tendon>
+		<!--Middlefinger tendons-->
+		<fixed name="middle12_cpl" range="0 1" stiffness="0.2">
+			<joint joint="j2s7s300_joint_finger_1"  coef="1.5"/>
+			<joint joint="j2s7s300_joint_finger_tip_1"  coef="-6.5"/>
+		</fixed>
+
+		<!--finger2 tendons-->
+        <fixed name="finger2_12_cpl" range="0 1" stiffness="0.2">
+			<joint joint="j2s7s300_joint_finger_2"  coef="1.5"/>
+			<joint joint="j2s7s300_joint_finger_tip_2"  coef="-6.5"/>
+		</fixed>
+
+		<!--Finger1 tendons-->
+        <fixed name="finger1_12_cpl" range="0 1" stiffness="0.2">
+			<joint joint="j2s7s300_joint_finger_3"  coef="1.5"/>
+			<joint joint="j2s7s300_joint_finger_tip_3"  coef="-6.5"/>
+		</fixed>
+	</tendon>
+
+    <equality>
+		<!-- GRIPPER Couplings -->
+		<tendon name="middle12_cpl" 	tendon1="middle12_cpl"/>
+
+        <tendon name="finger2_12_cpl" 	tendon1="finger2_12_cpl"/>
+
+        <tendon name="finger1_12_cpl" 	tendon1="finger1_12_cpl"/>
+	</equality>
+
+    <!--
+    <actuator>
+        <position name='finger_1' ctrllimited="true" kp="2" tendon="middle12_cpl" ctrlrange='0 6'/>
+        <position name='finger_2' ctrllimited="true" kp="2" tendon="finger2_12_cpl" ctrlrange='0 6'/>
+        <position name='middle_finger'  ctrllimited="true" kp="2" tendon="finger1_12_cpl" ctrlrange='0 6'/>
+    </actuator>
+    -->
+
+    <actuator>
+        <position name='finger_1' ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_1' ctrlrange='0 1.4'/>
+        <position name='finger_2' ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_2' ctrlrange='0 1.4'/>
+        <position name='middle_finger'  ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_3' ctrlrange='0 1.4'/>
+    </actuator>
+
+    <!--
+    <actuator>
+        <position ctrllimited="true" ctrlrange="0.0 1.51" joint="j2s7s300_joint_finger_1" kp="5" name="gripper_finger_joint1" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0.0 1.51" joint="j2s7s300_joint_finger_2" kp="5" name="gripper_finger_joint2" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0.0 1.51" joint="j2s7s300_joint_finger_3" kp="5" name="gripper_finger_joint3" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0.0 2.0" joint="j2s7s300_joint_finger_tip_1" kp="5" name="gripper_fingertip_joint1" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0.0 2.0" joint="j2s7s300_joint_finger_tip_2" kp="5" name="gripper_fingertip_joint2" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="0.0 2.0" joint="j2s7s300_joint_finger_tip_3" kp="5" name="gripper_fingertip_joint3" forcelimited="true" forcerange="-20 20"/>
+    </actuator>
+    -->
+
+    <worldbody>
+        <body name="right_gripper" pos="0 0 0" quat="0 -1 0 0">
+            <inertial pos="0 0 -0.06" quat="0.5 0.5 -0.5 0.5" mass="0.99" diaginertia="0.0005816 0.000345324 0.000345324" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" mesh="hand_3finger" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="ring_small" />
+            <geom type="mesh" rgba="0 0 0 1" mesh="hand_3finger" name="hand_collision"/>
+
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
+
+            <!-- This site was added for visualization. -->
+            <site name="grip_site" pos="0 0 -0.1775" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <!-- This site was added for visualization. -->
+            <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            <!-- This camera points out of the gripper. -->
+            <camera mode="fixed" name="eye_in_hand" pos="0 0 0.080" quat="0 1 0 0" fovy="75"/>
+
+
+            <body name="j2s7s300_link_finger_1" pos="0.00279 0.03126 -0.11467" quat="0.379408 -0.662973 -0.245899 0.596699">
+                <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
+                <joint name="j2s7s300_joint_finger_1" damping="0.1" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_proximal" />
+                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger1_collision"/>
+                <body name="j2s7s300_link_finger_tip_1" pos="0.044 -0.003 0">
+                    <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
+                    <joint name="j2s7s300_joint_finger_tip_1" damping="0.03" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_distal" />
+                    <geom type="mesh" rgba="1 1 1 1" mesh="finger_distal" name="fingertip1_collision" solref="0.01 0.5" friction = "2 0.05 0.0001" />
+                </body>
+            </body>
+            <body name="j2s7s300_link_finger_2" pos="0.02226 -0.02707 -0.11482" quat="0.659653 -0.37146 0.601679 -0.254671">
+                <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
+                <joint name="j2s7s300_joint_finger_2" damping="0.1" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_proximal" />
+                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger2_collision"/>
+                <body name="j2s7s300_link_finger_tip_2" pos="0.044 -0.003 0">
+                    <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
+                    <joint name="j2s7s300_joint_finger_tip_2" damping="0.03" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_distal" />
+                    <geom type="mesh" rgba="1 1 1 1" mesh="finger_distal" name="fingertip2_collision" solref="0.01 0.5" friction = "2 0.05 0.0001" />
+                </body>
+            </body>
+            <body name="j2s7s300_link_finger_3" pos="-0.02226 -0.02707 -0.11482" quat="0.601679 -0.254671 0.659653 -0.37146">
+                <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
+                <joint name="j2s7s300_joint_finger_3" damping="0.1" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_proximal" />
+                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger3_collision"/>
+                <body name="j2s7s300_link_finger_tip_3" pos="0.044 -0.003 0">
+                    <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
+                    <joint name="j2s7s300_joint_finger_tip_3" damping="0.03" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_distal" />
+                    <geom type="mesh" rgba="1 1 1 1" mesh="finger_distal" name="fingertip3_collision" solref="0.01 0.5" friction = "2 0.05 0.0001" />
+                </body>
+            </body>
+        </body>
+    </worldbody>
+
+        <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
+</mujoco>

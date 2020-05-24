@@ -11,6 +11,43 @@
         <mesh name="robotiq_85_gripper_joint_2_R" file="meshes/robotiq_gripper/robotiq_85_gripper_joint_2_R.stl" />
         <mesh name="robotiq_85_gripper_joint_3_R" file="meshes/robotiq_gripper/robotiq_85_gripper_joint_3_R.stl" />
     </asset>
+
+    <tendon>
+		<!--finger2 tendons-->
+        <fixed name="finger2_12_cpl" range="0 1">
+			<joint joint="robotiq_85_left_knuckle_joint"  coef="1"/>
+			<joint joint="robotiq_85_left_inner_knuckle_joint"  coef="-1.5"/>
+		</fixed>
+		<fixed name="finger2_23_cpl" range="0 1">
+			<joint joint="robotiq_85_left_inner_knuckle_joint"  coef="1"/>
+			<joint joint="robotiq_85_left_finger_tip_joint"  coef="3.5"/>
+		</fixed>
+
+		<!--Finger1 tendons-->
+        <fixed name="finger1_12_cpl" range="0 1">
+			<joint joint="robotiq_85_right_knuckle_joint"  coef="1"/>
+			<joint joint="robotiq_85_right_inner_knuckle_joint"  coef="-1.5"/>
+		</fixed>
+		<fixed name="finger1_23_cpl" range="0 1">
+			<joint joint="robotiq_85_right_inner_knuckle_joint"  coef="1"/>
+			<joint joint="robotiq_85_right_finger_tip_joint"  coef="3.5"/>
+		</fixed>
+	</tendon>
+
+    <equality>
+		<!-- GRIPPER Couplings -->
+        <tendon name="finger2_12_cpl" 	tendon1="finger2_12_cpl"/>
+		<tendon name="finger2_23_cpl" 	tendon1="finger2_23_cpl"/>
+
+        <tendon name="finger1_12_cpl" 	tendon1="finger1_12_cpl"/>
+		<tendon name="finger1_23_cpl" 	tendon1="finger1_23_cpl"/>
+	</equality>
+    <actuator>
+        <position name='finger_1' ctrllimited="true" kp="20" joint='robotiq_85_left_knuckle_joint' ctrlrange='0 0.8575'/>
+        <position name='finger_2' ctrllimited="true" kp="20" joint='robotiq_85_right_knuckle_joint' ctrlrange='0 0.8575'/>
+    </actuator>
+
+    <!--
     <actuator>
         <position ctrllimited="true" ctrlrange="0 0.8575" joint="robotiq_85_left_knuckle_joint" kp="10" name="gripper_robotiq_85_left_knuckle_joint" forcelimited="true" forcerange="-20 20"/>
         <position ctrllimited="true" ctrlrange="0 1.5707" joint="robotiq_85_left_inner_knuckle_joint" kp="10" name="gripper_robotiq_85_left_inner_knuckle_joint" forcelimited="true" forcerange="-20 20"/>
@@ -19,15 +56,16 @@
         <position ctrllimited="true" ctrlrange="0 1.5707" joint="robotiq_85_right_inner_knuckle_joint" kp="10" name="gripper_robotiq_85_right_inner_knuckle_joint" forcelimited="true" forcerange="-20 20"/>
         <position ctrllimited="true" ctrlrange="0 1.5707" joint="robotiq_85_right_finger_tip_joint" kp="10" name="gripper_robotiq_85_right_finger_tip_joint" forcelimited="true" forcerange="-20 20"/>
     </actuator>
+    -->
     <worldbody>
         <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" />
-        <body name="robotiq_85_adapter_link" pos="0.02 0 0" quat="0 0.709 0 0.706">
+        <body name="robotiq_85_adapter_link" pos="0.0 0 0" quat="0 0.709 0 0.706">
             <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
             <geom quat="0.500048 0.5 0.499952 0.5" type="mesh" group="0" mesh="robotiq_85_gripper_adapter_plate" />
             <geom quat="0.500048 0.5 0.499952 0.5" type="mesh" contype="0" conaffinity="0" group="1" mesh="robotiq_85_gripper_adapter_plate" />
             <body name="robotiq_85_base_link" pos="0.0085 0 -0.0041">
-                <site name="grip_site" pos="0.1 0 0" size="0.01" rgba="1 0 0 1" type="sphere" group="1"/>
-                <site name="grip_site_cylinder" pos="-0.02 0 0" quat="0.707 0 0.707 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"></site>
+                <site name="grip_site" pos="0.13 0 -0.008" size="0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+                <site name="grip_site_cylinder" pos="0.13 0 -0.008" quat="0.707 0 0.707 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
                 <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
                 <geom quat="3.27596e-05 0.707141 0.707073 3.27564e-05" type="mesh" group="0" mesh="robotiq_85_gripper_base" />
                 <geom quat="3.27596e-05 0.707141 0.707073 3.27564e-05" type="mesh" contype="0" conaffinity="0" group="1" mesh="robotiq_85_gripper_base" />
@@ -64,7 +102,7 @@
                         <!-- <geom pos="0 -0.0065 -0.0185" size="0.005" type="sphere" rgba="0 1 0 1"/> -->
                         <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
                         <joint name="robotiq_85_left_finger_tip_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 1.5707" />
-                        <geom pos="0 -0.090381 0.051505" quat="0.707141 0 0.707073 0" type="mesh" group="0" mesh="robotiq_85_gripper_joint_3_L" name="robotiq_85_gripper_joint_3_L"/>
+                        <geom pos="0 -0.090381 0.051505" quat="0.707141 0 0.707073 0" type="mesh" group="0" mesh="robotiq_85_gripper_joint_3_L" name="robotiq_85_gripper_joint_3_L" solref="0.01 0.25"/>
                         <geom pos="0 -0.090381 0.051505" quat="0.707141 0 0.707073 0" type="mesh" contype="0" conaffinity="0" group="1" mesh="robotiq_85_gripper_joint_3_L" />
                     </body>
                 </body>
@@ -77,7 +115,7 @@
                         <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
                         <!-- <geom pos="0 -0.0065 -0.0185" size="0.005" type="sphere" rgba="0 1 0 1"/> -->
                         <joint name="robotiq_85_right_finger_tip_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 1.5707" />
-                        <geom pos="0 -0.090381 0.051505" quat="0.707141 0 -0.707073 0" type="mesh" group="0"  mesh="robotiq_85_gripper_joint_3_R" name="robotiq_85_gripper_joint_3_R"/>
+                        <geom pos="0 -0.090381 0.051505" quat="0.707141 0 -0.707073 0" type="mesh" group="0"  mesh="robotiq_85_gripper_joint_3_R" name="robotiq_85_gripper_joint_3_R"  solref="0.01 0.25"/>
                         <geom pos="0 -0.090381 0.051505" quat="0.707141 0 -0.707073 0" type="mesh" contype="0" conaffinity="0" group="1" mesh="robotiq_85_gripper_joint_3_R" />
                     </body>
                 </body>

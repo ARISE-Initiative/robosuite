@@ -45,7 +45,6 @@ Main difference is that user inputs with ik's rotations are always taken relativ
 
     Notes:
         OSC also tends to be more computationally efficient since IK relies on backend pybullet sim
-        IK maintains initial orientation of robot env while OSC automatically initializes with gripper facing downwards
 
 
 ***Choose environment specifics with the following arguments***

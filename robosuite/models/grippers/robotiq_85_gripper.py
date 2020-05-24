@@ -6,7 +6,7 @@ from robosuite.utils.mjcf_utils import xml_path_completion
 from robosuite.models.grippers.gripper_model import GripperModel
 
 
-class RobotiqGripperBase(GripperModel):
+class Robotiq85GripperBase(GripperModel):
     """
     6-DoF Robotiq gripper.
     """
@@ -16,14 +16,14 @@ class RobotiqGripperBase(GripperModel):
         Args:
             idn (int or str): Number or some other unique identification string for this gripper instance
         """
-        super().__init__(xml_path_completion("grippers/robotiq_gripper.xml"), idn=idn)
+        super().__init__(xml_path_completion("grippers/robotiq_gripper_85.xml"), idn=idn)
 
     def format_action(self, action):
         return action
 
     @property
     def dof(self):
-        return 6
+        return 2
 
     @property
     def init_qpos(self):
@@ -43,12 +43,8 @@ class RobotiqGripperBase(GripperModel):
     @property
     def _actuators(self):
         return [
-            "gripper_robotiq_85_left_knuckle_joint",
-            "gripper_robotiq_85_left_inner_knuckle_joint",
-            "gripper_robotiq_85_left_finger_tip_joint",
-            "gripper_robotiq_85_right_knuckle_joint",
-            "gripper_robotiq_85_right_inner_knuckle_joint",
-            "gripper_robotiq_85_right_finger_tip_joint"
+            "finger_1",
+            "finger_2",
         ]
 
     @property
@@ -83,7 +79,7 @@ class RobotiqGripperBase(GripperModel):
         ]
 
 
-class RobotiqGripper(RobotiqGripperBase):
+class Robotiq85Gripper(Robotiq85GripperBase):
     """
     1-DoF variant of RobotiqGripperBase.
     """
@@ -94,7 +90,16 @@ class RobotiqGripper(RobotiqGripperBase):
             action: -1 => open, 1 => closed
         """
         assert len(action) == 1
-        return np.ones(6) * action
+
+        self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
+        return self.current_action
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.01
 
     @property
     def dof(self):

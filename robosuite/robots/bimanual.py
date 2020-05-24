@@ -118,7 +118,7 @@ class Bimanual(Robot):
             #   policy (control) freq, and ndim (# joints)
             self.controller_config[arm]["robot_name"] = self.name
             self.controller_config[arm]["sim"] = self.sim
-            self.controller_config[arm]["eef_name"] = self.robot_model.eef_name[arm]
+            self.controller_config[arm]["eef_name"] = self.gripper[arm].visualization_sites["grip_site"]
             self.controller_config[arm]["ndim"] = self._joint_split_idx
             self.controller_config[arm]["policy_freq"] = self.control_freq
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
@@ -159,10 +159,15 @@ class Bimanual(Robot):
                                                         idn="_".join((str(self.idn), arm)))
                 else:
                     # Load user-specified gripper
-                    self.gripper[arm] = gripper_factory(self.gripper_type[arm])
-                if not self.gripper_visualization[arm]:
-                    self.gripper[arm].hide_visualization()
-                self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
+                    self.gripper[arm] = gripper_factory(self.gripper_type[arm],
+                                                        idn="_".join((str(self.idn), arm)))
+            else:
+                # Load null gripper
+                self.gripper[arm] = gripper_factory(None, idn="_".join((str(self.idn), arm)))
+            # Use gripper visualization if necessary
+            if not self.gripper_visualization[arm]:
+                self.gripper[arm].hide_visualization()
+            self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
 
     def reset(self, deterministic=False):
         """
@@ -174,7 +179,7 @@ class Bimanual(Robot):
         super().reset(deterministic)
 
         if not deterministic:
-            # Now, reset the griipper if necessary
+            # Now, reset the gripper if necessary
             for arm in self.arms:
                 if self.has_gripper[arm]:
                     self.sim.data.qpos[
@@ -208,11 +213,11 @@ class Bimanual(Robot):
                     for actuator in self.gripper[arm].actuators
                 ]
 
-                # IDs of sites for gripper visualization
-                self.eef_site_id[arm] = self.sim.model.site_name2id(
-                    self.gripper[arm].visualization_sites["grip_site"])
-                self.eef_cylinder_id[arm] = self.sim.model.site_name2id(
-                    self.gripper[arm].visualization_sites["grip_cylinder"])
+            # IDs of sites for eef visualization
+            self.eef_site_id[arm] = self.sim.model.site_name2id(
+                self.gripper[arm].visualization_sites["grip_site"])
+            self.eef_cylinder_id[arm] = self.sim.model.site_name2id(
+                self.gripper[arm].visualization_sites["grip_cylinder"])
 
     def control(self, action, policy_step=False):
         """
@@ -307,6 +312,15 @@ class Bimanual(Robot):
         ]
 
         for arm in self.arms:
+            # Add in eef info
+            di[pf + "_{}_".format(arm) + "eef_pos"] = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+            di[pf + "_{}_".format(arm) + "eef_quat"] = T.convert_quat(
+                self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw"
+            )
+            robot_states.extend([di[pf + "_{}_".format(arm) + "eef_pos"],
+                                 di[pf + "_{}_".format(arm) + "eef_quat"]])
+
+            # add in gripper information
             if self.has_gripper[arm]:
                 di[pf + "_{}_".format(arm) + "gripper_qpos"] = np.array(
                     [self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]]
@@ -314,16 +328,8 @@ class Bimanual(Robot):
                 di[pf + "_{}_".format(arm) + "gripper_qvel"] = np.array(
                     [self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]]
                 )
-
-                di[pf + "_{}_".format(arm) + "eef_pos"] = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-                di[pf + "_{}_".format(arm) + "eef_quat"] = T.convert_quat(
-                    self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw"
-                )
-
-                # add in gripper information
                 robot_states.extend([di[pf + "_{}_".format(arm) + "gripper_qpos"],
-                                     di[pf + "_{}_".format(arm) + "eef_pos"],
-                                     di[pf + "_{}_".format(arm) + "eef_quat"]])
+                                     di[pf + "_{}_".format(arm) + "gripper_qvel"]])
 
         di[pf + "robot-state"] = np.concatenate(robot_states)
         return di

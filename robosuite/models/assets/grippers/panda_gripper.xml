@@ -11,13 +11,13 @@
         <position ctrllimited="true" ctrlrange="-0.04 0.0" joint="finger_joint2" kp="1000000" name="gripper_finger_joint2" forcelimited="true" forcerange="-20 20"/>
     </actuator>
     <worldbody>
-        <body name="right_gripper" pos="0 0 -0.018" quat="0.707107 0 0 -0.707107">
+        <body name="right_gripper" pos="0 0 0" quat="0.707107 0 0 -0.707107">
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"></site>
             <inertial pos="0 0 0.17" quat="0.707107 0.707107 0 0" mass="0.3" diaginertia="0.09 0.07 0.05" />
             <geom pos="0 0 0." quat="0.707107 0 0 0.707107" type="mesh" contype="0" conaffinity="0" group="1" mesh="hand_vis" name="hand_visual" rgba="1 1 1 1"/>
             <geom pos="0 0 0." quat="0.707107 0 0 0.707107" type="mesh" mesh="hand"  group="0" name="hand_collision"/>
             <!-- This site was added for visualization. -->
-            <site name="grip_site" pos="0 0 0.1050" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <site name="grip_site" pos="0 0 0.097" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <!-- This site was added for visualization. -->
             <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
             <body name="leftfinger" pos="0 0 0.0524" quat="0.707107 0 0 0.707107">

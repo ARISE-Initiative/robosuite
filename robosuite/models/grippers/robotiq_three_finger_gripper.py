@@ -23,7 +23,7 @@ class RobotiqThreeFingerGripperBase(GripperModel):
 
     @property
     def dof(self):
-        return 11
+        return 4
 
     @property
     def init_qpos(self):
@@ -42,23 +42,16 @@ class RobotiqThreeFingerGripperBase(GripperModel):
             "finger_2_joint_3",
             "finger_middle_joint_1",
             "finger_middle_joint_2",
-            "finger_middle_joint_3",
+            "finger_middle_joint_3"
         ]
 
     @property
     def _actuators(self):
         return [
-            "gripper_palm_finger_1_joint",
-            "gripper_finger_1_joint_1",
-            "gripper_finger_1_joint_2",
-            "gripper_finger_1_joint_3",
-            "gripper_palm_finger_2_joint",
-            "gripper_finger_2_joint_1",
-            "gripper_finger_2_joint_2",
-            "gripper_finger_2_joint_3",
-            "gripper_finger_middle_joint_1",
-            "gripper_finger_middle_joint_2",
-            "gripper_finger_middle_joint_3"
+            "finger_1",
+            "finger_2",
+            "middle_finger",
+            "finger_scissor"
         ]
 
     @property
@@ -89,8 +82,15 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
         Args:
             action: -1 => open, 1 => closed
         """
-        movement = np.array([0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1])
-        return movement * action
+        self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
+        return self.current_action
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.01
 
     @property
     def dof(self):

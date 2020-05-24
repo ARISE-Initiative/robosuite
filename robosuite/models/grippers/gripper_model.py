@@ -2,6 +2,7 @@
 Defines the base class of all grippers
 """
 from robosuite.models.base import MujocoXML
+import numpy as np
 
 
 class GripperModel(MujocoXML):
@@ -17,6 +18,9 @@ class GripperModel(MujocoXML):
 
         # Set id number and add prefixes to all body names to prevent naming clashes
         self.idn = idn
+
+        # Set variable to hold current action being outputted
+        self.current_action = np.zeros(self.dof)
 
         # Update all xml element prefixes
         self.add_prefix(self.naming_prefix)

@@ -1,4 +1,4 @@
-from robosuite.models.grippers import GripperTester, RobotiqGripper
+from robosuite.models.grippers import GripperTester, JacoThreeFingerGripper
 
 
 def test_robotiq():
@@ -8,13 +8,13 @@ def test_robotiq():
 def robotiq_tester(render,
                    total_iters=1,
                    test_y=True):
-    gripper = RobotiqGripper()
+    gripper = JacoThreeFingerGripper()
     tester = GripperTester(
         gripper=gripper,
         pos="0 0 0.3",
         quat="0 0 1 0",
-        gripper_low_pos=-0.07,
-        gripper_high_pos=0.02,
+        gripper_low_pos=0.01,
+        gripper_high_pos=0.1,
         box_size=[0.025] * 3,
         render=render,
     )
