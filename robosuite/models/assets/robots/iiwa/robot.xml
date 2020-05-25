@@ -88,7 +88,7 @@
                                         <joint name="joint_7" pos="0 0 0" axis="0 0 1" limited="true" range="-3.05433 3.05433" damping="0.5" />
                                         <geom pos="0 0 -0.0005" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.4 0.4 0.4 1" mesh="link_7_vis" />
                                         <geom pos="0 0 -0.0005" type="mesh" rgba="0.4 0.4 0.4 1" mesh="link_7" name="link_7_collision" />
-                                        <body name="right_hand" pos="0 0 -0.018" >
+                                        <body name="right_hand" pos="0 0 0.044" >
                                             <!-- This sites were added for visualization. -->
                                             <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
                                             <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>

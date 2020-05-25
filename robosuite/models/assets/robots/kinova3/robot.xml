@@ -43,44 +43,44 @@
                 <geom conaffinity="0" contype="0" group="1" mesh="pedestal" pos="0.26 0.345 -0.91488" quat="0.5 0.5 -0.5 -0.5" rgba="0.2 0.2 0.2 1" type="mesh" name="pedestal_col1"/>
                 <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col2"/>
             </body>
-            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="base_link" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="base_link" />
             <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="base_link" />
             <body name="Shoulder_Link" pos="0 0 0.15643" quat="-3.67321e-06 1 0 0">
                 <inertial pos="-2.3e-05 -0.010364 -0.07336" quat="0.707051 0.0451246 -0.0453544 0.704263" mass="1.3773" diaginertia="0.00488868 0.00457 0.00135132" />
                 <joint name="Actuator1" pos="0 0 0" axis="0 0 1" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="Shoulder_Link" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="Shoulder_Link" />
                 <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="Shoulder_Link" name="s_collision"/>
                 <body name="HalfArm1_Link" pos="0 0.005375 -0.12838" quat="0.707105 0.707108 0 0">
                     <inertial pos="-4.4e-05 -0.09958 -0.013278" quat="0.482348 0.516286 -0.516862 0.483366" mass="1.1636" diaginertia="0.0113017 0.011088 0.00102532" />
                     <joint name="Actuator2" pos="0 0 0" axis="0 0 1" limited="true" range="-2.41 2.41" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="Half_Arm_1_Link" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="Half_Arm_1_Link" />
                     <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="Half_Arm_1_Link" name="ha1_collision"/>
                     <body name="HalfArm2_Link" pos="0 -0.21038 -0.006375" quat="0.707105 -0.707108 0 0">
                         <inertial pos="-4.4e-05 -0.006641 -0.117892" quat="0.706144 0.0213722 -0.0209128 0.707437" mass="1.1636" diaginertia="0.0111633 0.010932 0.00100671" />
                         <joint name="Actuator3" pos="0 0 0" axis="0 0 1" />
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="Half_Arm_2_Link" />
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="Half_Arm_2_Link" />
                         <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="Half_Arm_2_Link" name="ha2_collision"/>
                         <body name="ForeArm_Link" pos="0 0.006375 -0.21038" quat="0.707105 0.707108 0 0">
                             <inertial pos="-1.8e-05 -0.075478 -0.015006" quat="0.483678 0.515961 -0.515859 0.483455" mass="0.9302" diaginertia="0.00834839 0.008147 0.000598606" />
                             <joint name="Actuator4" pos="0 0 0" axis="0 0 1" limited="true" range="-2.66 2.66" />
-                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="ForeArm_Link" />
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="ForeArm_Link" />
                             <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="ForeArm_Link" name="f_collision"/>
                             <body name="SphericalWrist1_Link" pos="0 -0.20843 -0.006375" quat="0.707105 -0.707108 0 0">
                                 <inertial pos="1e-06 -0.009432 -0.063883" quat="0.703558 0.0707492 -0.0707492 0.703558" mass="0.6781" diaginertia="0.00165901 0.001596 0.000346988" />
                                 <joint name="Actuator5" pos="0 0 0" axis="0 0 1" />
-                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="Spherical_Wrist_1_Link" />
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="Spherical_Wrist_1_Link" />
                                 <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="Spherical_Wrist_1_Link" name="w1_collision"/>
                                 <body name="SphericalWrist2_Link" pos="0 0.00017505 -0.10593" quat="0.707105 0.707108 0 0">
                                     <inertial pos="1e-06 -0.045483 -0.00965" quat="0.44426 0.550121 -0.550121 0.44426" mass="0.6781" diaginertia="0.00170087 0.001641 0.00035013" />
                                     <joint name="Actuator6" pos="0 0 0" axis="0 0 1" limited="true" range="-2.23 2.23" />
-                                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="Spherical_Wrist_2_Link" />
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="Spherical_Wrist_2_Link" />
                                     <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="Spherical_Wrist_2_Link" name="w2_collision"/>
                                     <body name="Bracelet_Link" pos="0 -0.10593 -0.00017505" quat="0.707105 -0.707108 0 0">
                                         <inertial pos="-0.000281 -0.011402 -0.029798" quat="0.601961 0.40663 -0.381169 0.571843" mass="0.5006" diaginertia="0.000657515 0.000586793 0.000320693" />
                                         <joint name="Actuator7" pos="0 0 0" axis="0 0 1" />
-                                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="Bracelet_with_vision_Link" />
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="Bracelet_with_vision_Link" />
                                         <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="Bracelet_with_vision_Link" name="b_collision"/>
-                                        <body name="right_hand" pos="0 0 0" quat="0 1 0 0">
+                                        <body name="right_hand" pos="0 0 -0.065" quat="0 1 0 0">
                                             <!-- This sites were added for visualization. -->
                                             <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
                                             <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
