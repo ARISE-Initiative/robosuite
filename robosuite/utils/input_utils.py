@@ -107,7 +107,11 @@ def choose_robots(exclude_bimanual=False):
     # Get the list of robots
     robots = {
         "Sawyer",
-        "Panda"
+        "Panda",
+        "Jaco",
+        "Kinova3",
+        "IIWA",
+        "UR5e",
     }
 
     # Add Baxter if bimanual robots are not excluded
