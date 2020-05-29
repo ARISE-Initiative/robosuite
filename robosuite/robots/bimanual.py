@@ -263,13 +263,7 @@ class Bimanual(Robot):
 
             # Get gripper action, if applicable
             if self.has_gripper[arm]:
-                gripper_action_actual = self.gripper[arm].format_action(gripper_action)
-                # rescale normalized gripper action to control ranges
-                ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm]]
-                bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-                weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-                applied_gripper_action = bias + weight * gripper_action_actual
-                self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
+                self.grip_action(gripper_action, arm)
 
         # Clip the torques
         low, high = self.torque_limits
@@ -278,14 +272,30 @@ class Bimanual(Robot):
         # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
 
+    def grip_action(self, gripper_action, arm):
+        """
+        Executes gripper @action for specified @arm
+
+        Args:
+            gripper_action (float): Value between [-1,1]
+            arm (str): "left" or "right"; arm to execute action
+        """
+        gripper_action_actual = self.gripper[arm].format_action(gripper_action)
+        # rescale normalized gripper action to control ranges
+        ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm]]
+        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+        applied_gripper_action = bias + weight * gripper_action_actual
+        self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
+
     def visualize_gripper(self):
         """
         Do any needed visualization here.
         """
         for arm in self.arms:
             if self.gripper_visualization[arm]:
-                # By default, don't do any coloring.
-                self.sim.model.site_rgba[self.eef_site_id[arm]] = [0., 0., 0., 0.]
+                # By default, color the ball red
+                self.sim.model.site_rgba[self.eef_site_id[arm]] = [1., 0., 0., 1.]
 
     def get_observations(self, di: OrderedDict):
         """

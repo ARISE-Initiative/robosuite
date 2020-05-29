@@ -230,24 +230,34 @@ class SingleArm(Robot):
 
         # Get gripper action, if applicable
         if self.has_gripper:
-            gripper_action_actual = self.gripper.format_action(gripper_action)
-            # rescale normalized gripper action to control ranges
-            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes]
-            bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-            weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-            applied_gripper_action = bias + weight * gripper_action_actual
-            self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
+            self.grip_action(gripper_action)
 
         # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
+
+    def grip_action(self, gripper_action):
+        """
+        Executes gripper @action for specified @arm
+
+        Args:
+            gripper_action (array of length 1): Value between [-1,1]
+            arm (str): "left" or "right"; arm to execute action
+        """
+        gripper_action_actual = self.gripper.format_action(gripper_action)
+        # rescale normalized gripper action to control ranges
+        ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes]
+        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+        applied_gripper_action = bias + weight * gripper_action_actual
+        self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
 
     def visualize_gripper(self):
         """
         Do any needed visualization here.
         """
         if self.gripper_visualization:
-            # By default, don't do any coloring.
-            self.sim.model.site_rgba[self.eef_site_id] = [0., 0., 0., 0.]
+            # By default, color the ball red
+            self.sim.model.site_rgba[self.eef_site_id] = [1., 0., 0., 1.]
 
     def get_observations(self, di: OrderedDict):
         """
