@@ -86,17 +86,16 @@
                                     <body name="j2s7s300_link_7" pos="0 0.10375 0" quat="0 0 -0.707107 0.707107">
                                         <inertial pos="0 0 -0.06" quat="0.5 0.5 -0.5 0.5" mass="0.99" diaginertia="0.0005816 0.000345324 0.000345324" />
                                         <joint name="j2s7s300_joint_7" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.01"/>
-                                        <!--<geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="hand_3finger" />
-                                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="ring_small" />
-                                        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="hand_3finger" />-->
                                         <body name="right_hand" pos="0 0 0" quat="0 1 0 0">
-                                                <!-- This sites were added for visualization. -->
-                                                <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
-                                                <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
-                                                <site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
-                                                <site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
-                                                  <!-- To add gripper -->
-                                              </body>
+                                            <!-- This sites were added for visualization. They are all standardized between models-->
+                                            <!-- Position mimics the gripper attachment point (right_hand) -->
+                                            <!--  Y-axis should be perpendicular to grasping motion, and Z-axis should point out of the robot eef -->
+                                            <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
+                                            <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                                            <site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
+                                            <site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
+                                            <!-- To add gripper -->
+                                        </body>
                                         <!--
                                         <body name="j2s7s300_link_finger_1" pos="0.00279 0.03126 -0.11467" quat="0.379408 -0.662973 -0.245899 0.596699">
                                             <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />

@@ -59,7 +59,7 @@
     -->
 
     <worldbody>
-        <body name="right_gripper" pos="0 0 -0.0625" quat="0 -1 0 0">
+        <body name="right_gripper" pos="0 0 -0.0625" quat="0 -0.707105 0.707108 0 ">
             <geom pos="0 0 -0.061525" quat="0 0.707388 -0.706825 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link_vis" />
             <geom pos="0 0 -0.061525" quat="0 0.707388 -0.706825 0" type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link" name="hand_collision"/>
 

@@ -28,6 +28,7 @@ class MujocoXML(object):
         self.name = self.root.get("model")
         self.worldbody = self.create_default_element("worldbody")
         self.actuator = self.create_default_element("actuator")
+        self.sensor = self.create_default_element("sensor")
         self.asset = self.create_default_element("asset")
         self.tendon = self.create_default_element("tendon")
         self.equality = self.create_default_element("equality")
@@ -79,6 +80,8 @@ class MujocoXML(object):
             self.merge_asset(other)
             for one_actuator in other.actuator:
                 self.actuator.append(one_actuator)
+            for one_sensor in other.sensor:
+                self.sensor.append(one_sensor)
             for one_tendon in other.tendon:
                 self.tendon.append(one_tendon)
             for one_equality in other.equality:
@@ -162,7 +165,7 @@ class MujocoXML(object):
 
     def add_prefix(self,
                    prefix,
-                   tags=("body", "joint", "site", "geom", "camera", "actuator", "tendon", "asset", "texture", "material")):
+                   tags=("body", "joint", "sensor", "site", "geom", "camera", "actuator", "tendon", "asset", "texture", "material")):
         """
         Utility to add prefix to all body names to prevent name clashes
         Args:
@@ -185,6 +188,12 @@ class MujocoXML(object):
             tags.discard("actuator")
             for actuator in self.actuator:
                 self._add_prefix_recursively(actuator, tags, prefix)
+
+        # Handle sensor elements
+        if "sensor" in tags:
+            tags.discard("sensor")
+            for sensor in self.sensor:
+                self._add_prefix_recursively(sensor, tags, prefix)
 
         # Handle tendon elements
         if "tendon" in tags:

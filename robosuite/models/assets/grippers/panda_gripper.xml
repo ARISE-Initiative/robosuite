@@ -12,7 +12,7 @@
     </actuator>
     <worldbody>
         <body name="right_gripper" pos="0 0 0" quat="0.707107 0 0 -0.707107">
-            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"></site>
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0 0 0.17" quat="0.707107 0.707107 0 0" mass="0.3" diaginertia="0.09 0.07 0.05" />
             <geom pos="0 0 0." quat="0.707107 0 0 0.707107" type="mesh" contype="0" conaffinity="0" group="1" mesh="hand_vis" name="hand_visual" rgba="1 1 1 1"/>
             <geom pos="0 0 0." quat="0.707107 0 0 0.707107" type="mesh" mesh="hand"  group="0" name="hand_collision"/>

@@ -82,7 +82,7 @@
     -->
     <worldbody>
         <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" />
-        <body name="palm" pos="0 0 0" quat="0 0 0.709 0.706" >
+        <body name="palm" pos="0 0 0" quat="0.49921826 0.50133955 0.50133955 0.49921826" >
             <inertial pos="-0.00134236 0.00263073 -1.01672e-08" quat="0.489887 0.489849 0.509908 0.509954" mass="1.20044" diaginertia="0.00263541 0.00218876 0.00210987" />
             <body name="palm_base">
                 <inertial pos="0 0 0" mass="0"/>

@@ -91,15 +91,17 @@
                                         <joint name="joint7" pos="0 0 0" axis="0 0 1" limited="true" range="-2.8973 2.8973" damping="0.01"/>
                                         <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link7_vis" name="link7_visual" rgba="1 1 1 1"/>
                                         <geom type="mesh" group="0" mesh="link7" name="link7_collision"/>
-                                        <!-- to add gripper -->
                                         <!-- rotate 135deg to align physically to the tool-->
                                         <body name="right_hand" pos="0 0 0.1065" quat="0.924 0 0 -0.383">
                                             <inertial pos="0 0 0" mass="0.5" diaginertia="0.05 0.05 0.05" />
-                                            <!-- This sites were added for visualization. -->
+                                            <!-- This sites were added for visualization. They are all standardized between models-->
+                                            <!-- Position mimics the gripper attachment point (right_hand) -->
+                                            <!--  Y-axis should be perpendicular to grasping motion, and Z-axis should point out of the robot eef -->
                                             <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
-                                            <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
-                                            <site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
-                                            <site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
+                                            <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 1" type="cylinder" group="1"/>
+                                            <site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 1" type="cylinder" group="1"/>
+                                            <site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 1" type="cylinder" group="1"/>
+                                            <!-- to add gripper -->
                                         </body>
                                     </body>
                                 </body>

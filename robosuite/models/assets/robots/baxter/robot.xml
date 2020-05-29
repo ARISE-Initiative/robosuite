@@ -112,7 +112,14 @@
                         <geom margin="0.001" class="viz" rgba="0.1 0.1 0.1 1" mesh="W2" />
                         <geom margin="0.001" type="cylinder" size="0.06 0.0825" rgba="0.1 0.1 0.1 1" pos="0 0 0" name="right_w2_collision" />
                         <body name="right_hand" pos="0 0 0.11355">
-				<!-- right gripper gets added here -->
+                          <!-- This sites were added for visualization. They are all standardized between models-->
+                          <!-- Position mimics the gripper attachment point (right_hand) -->
+                          <!--  Y-axis should be perpendicular to grasping motion, and Z-axis should point out of the robot eef -->
+                          <site name="right_ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
+                          <site name="right_ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                          <site name="right_ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
+                          <site name="right_ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
+				          <!-- right gripper gets added here -->
                         </body>
                       </body>
                     </body>
@@ -162,7 +169,14 @@
                         <geom margin="0.001" class="viz" rgba="0.1 0.1 0.1 1" mesh="W2" />
                         <geom margin="0.001" type="cylinder" size="0.06 0.0825" rgba="0.1 0.1 0.1 1" pos="0 0 0" name="left_w2_collision" />
                         <body name="left_hand" pos="0 0 0.11355">
-       				<!-- left gripper gets added here --> 
+                          <!-- This sites were added for visualization. They are all standardized between models-->
+                          <!-- Position mimics the gripper attachment point (right_hand) -->
+                          <!--  Y-axis should be perpendicular to grasping motion, and Z-axis should point out of the robot eef -->
+                          <site name="left_ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
+                          <site name="left_ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                          <site name="left_ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
+                          <site name="left_ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
+       				      <!-- left gripper gets added here -->
                         </body>
                       </body>
                     </body>
