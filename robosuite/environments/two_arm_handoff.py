@@ -326,7 +326,6 @@ class TwoArmHandoff(RobotEnv):
                 reward = 2.0
                 self._success = True
 
-        print("reward: {}".format(reward))
         return reward * self.reward_scale / 2.0
 
     def _load_model(self):
@@ -462,7 +461,6 @@ class TwoArmHandoff(RobotEnv):
             depth: requires @self.use_camera_obs and @self.camera_depth to be True.
                 contains a rendered depth map from the simulation
         """
-        print("eef0 rot: {}".format(T.mat2euler(self._eef0_xmat)))
         di = super()._get_observation()
 
         # low-level object information
