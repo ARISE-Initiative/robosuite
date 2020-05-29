@@ -40,6 +40,7 @@ class TwoArmLift(RobotEnv):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
+        hard_reset=True,
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
@@ -128,6 +129,9 @@ class TwoArmLift(RobotEnv):
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
 
+            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+                only calls sim.reset and resets all robosuite-internal variables
+
             camera_names (str or list of str): name of camera to be rendered. Should either be single str if
                 same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
                 Note: At least one camera must be specified if @use_camera_obs is True.
@@ -194,6 +198,7 @@ class TwoArmLift(RobotEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
+            hard_reset=hard_reset,
             camera_names=camera_names,
             camera_heights=camera_heights,
             camera_widths=camera_widths,
@@ -507,15 +512,9 @@ class TwoArmLift(RobotEnv):
     @property
     def _gripper_0_to_handle(self):
         """Returns vector from the left gripper to the handle."""
-        if self.env_configuration == "bimanual":
-            return self._handle_0_xpos - self.robots[0].eef_site_id["left"]
-        else:
-            return self._handle_0_xpos - self.robots[0].eef_site_id
+        return self._handle_0_xpos - self._eef0_xpos
 
     @property
     def _gripper_1_to_handle(self):
         """Returns vector from the right gripper to the handle."""
-        if self.env_configuration == "bimanual":
-            return self._handle_0_xpos - self.robots[0].eef_site_id["right"]
-        else:
-            return self._handle_1_xpos - self.robots[1].eef_site_id
+        return self._handle_1_xpos - self._eef1_xpos

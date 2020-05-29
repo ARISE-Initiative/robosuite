@@ -31,6 +31,7 @@ class RobotEnv(MujocoEnv):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
+        hard_reset=True,
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
@@ -91,6 +92,9 @@ class RobotEnv(MujocoEnv):
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+                only calls sim.reset and resets all robosuite-internal variables
 
             camera_names (str or list of str): name of camera to be rendered. Should either be single str if
                 same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
@@ -173,6 +177,7 @@ class RobotEnv(MujocoEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
+            hard_reset=hard_reset,
         )
 
     @property

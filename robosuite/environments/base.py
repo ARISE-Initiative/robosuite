@@ -49,6 +49,7 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
+        hard_reset=True
     ):
         """
         Args:
@@ -75,6 +76,9 @@ class MujocoEnv(metaclass=EnvMeta):
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+                only calls sim.reset and resets all robosuite-internal variables
         """
         # Rendering-specific attributes
         self.has_renderer = has_renderer
@@ -88,6 +92,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.control_freq = control_freq
         self.horizon = horizon
         self.ignore_done = ignore_done
+        self.hard_reset = hard_reset
         self.model = None
         self.cur_time = None
         self.model_timestep = None
@@ -148,6 +153,16 @@ class MujocoEnv(metaclass=EnvMeta):
     def reset(self):
         """Resets simulation."""
         # TODO(yukez): investigate black screen of death
+        # Use hard reset if requested
+        if self.hard_reset:
+            self.sim.reset()    # TODO: Fix this once black screen of death is fixed
+            #self._destroy_viewer()
+            #self._load_model()
+            #self._initialize_sim()
+        # Else, we only reset the sim internally
+        else:
+            self.sim.reset()
+        # Reset necessary robosuite-centric variables
         self._reset_internal()
         self.sim.forward()
         return self._get_observation()
