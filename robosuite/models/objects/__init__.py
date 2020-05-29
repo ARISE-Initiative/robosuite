@@ -17,6 +17,7 @@ from .xml_objects import (
 )
 
 from .generated_objects import (
+    HammerObject,
     PotWithHandlesObject,
     BoxObject,
     CylinderObject,

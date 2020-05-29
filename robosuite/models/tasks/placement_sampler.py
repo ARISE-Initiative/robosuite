@@ -2,6 +2,7 @@ import collections
 import numpy as np
 
 from robosuite.utils import RandomizationError
+from robosuite.utils.transform_utils import quat_multiply
 
 
 class ObjectPositionSampler:
@@ -131,6 +132,10 @@ class UniformRandomSampler(ObjectPositionSampler):
                     # random z-rotation
 
                     quat = self.sample_quat()
+
+                    # Multiply this quat by the object's initial rotation if it has the attribute specified
+                    if hasattr(obj_mjcf, "init_quat"):
+                        quat = quat_multiply(quat, obj_mjcf.init_quat)
 
                     quat_arr.append(quat)
                     pos_arr.append(pos)

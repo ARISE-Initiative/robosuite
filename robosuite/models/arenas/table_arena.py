@@ -8,18 +8,20 @@ class TableArena(Arena):
     """Workspace that contains an empty table."""
 
     def __init__(
-        self, table_full_size=(0.8, 0.8, 0.8), table_friction=(1, 0.005, 0.0001)
+        self, table_full_size=(0.8, 0.8, 0.8), table_friction=(1, 0.005, 0.0001), table_offset=(0, 0, 0)
     ):
         """
         Args:
             table_full_size: full dimensions of the table
-            friction: friction parameters of the table
+            table_friction: friction parameters of the table
+            table_offset: offset from center of arena when placing table
         """
         super().__init__(xml_path_completion("arenas/table_arena.xml"))
 
         self.table_full_size = np.array(table_full_size)
         self.table_half_size = self.table_full_size / 2
         self.table_friction = table_friction
+        self.table_offset = table_offset
 
         self.floor = self.worldbody.find("./geom[@name='floor']")
         self.table_body = self.worldbody.find("./body[@name='table']")
@@ -33,7 +35,7 @@ class TableArena(Arena):
         self.bottom_pos = np.array([0, 0, 0])
         self.floor.set("pos", array_to_string(self.bottom_pos))
 
-        self.center_pos = self.bottom_pos + np.array([0, 0, self.table_half_size[2]])
+        self.center_pos = self.bottom_pos + np.array([0, 0, self.table_half_size[2]]) + self.table_offset
         self.table_body.set("pos", array_to_string(self.center_pos))
         self.table_collision.set("size", array_to_string(self.table_half_size))
         self.table_collision.set("friction", array_to_string(self.table_friction))

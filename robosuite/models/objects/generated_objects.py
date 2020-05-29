@@ -1,8 +1,210 @@
 import numpy as np
 
 from robosuite.models.objects import MujocoGeneratedObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, array_to_string
 from robosuite.utils.mjcf_utils import RED, GREEN, BLUE
+
+from collections import Iterable
+
+# Define custom colors
+CYAN = [0, 1, 1, 1]
+
+
+class HammerObject(MujocoGeneratedObject):
+    """
+    Generates a Hammer object with a cylindrical or box-shaped handle, cubic head, cylindrical face and triangular claw
+    (used in Handoff task)
+    """
+
+    def __init__(
+        self,
+        handle_shape="box",
+        handle_radius=(0.015, 0.02),
+        handle_length=(0.1, 0.25),
+        handle_density=(100, 250),
+        handle_friction=(3.0, 5.0),
+        head_density_ratio=2.0,
+        rgba_handle=None,
+        rgba_head=None,
+        rgba_face=None,
+        rgba_claw=None,
+    ):
+        """
+        handle_shape (str): Either "box", for a box-shaped handle, or "cylinder", for a cylindrically-shaped handle
+        handle_radius (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle radius
+        handle_length (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle length
+        handle_density (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle density (in SI units). Note that this value is scaled x4 for the hammer head
+        handle_friction (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle friction. Note that Mujoco default values are used for the head
+        head_density_ratio (float): Ratio of density of handle to head (including face and claw)
+        rgba_handle (3-array or None): If specified, sets handle rgba values
+        rgba_head (3-array or None): If specified, sets handle rgba values
+        rgba_face (3-array or None): If specified, sets handle rgba values
+        rgba_claw (3-array or None): If specified, sets handle rgba values
+        """
+
+        # Run super() init
+        super().__init__()
+
+        # Set handle type and density ratio
+        self.handle_shape = handle_shape
+        self.head_density_ratio = head_density_ratio
+
+        # Set radius and length ranges
+        self.handle_radius_range = handle_radius if isinstance(handle_radius, Iterable) else [handle_radius] * 2
+        self.handle_length_range = handle_length if isinstance(handle_length, Iterable) else [handle_length] * 2
+        self.handle_density_range = handle_density if isinstance(handle_density, Iterable) else [handle_density] * 2
+        self.handle_friction_range = handle_friction if isinstance(handle_friction, Iterable) else [handle_friction] * 2
+
+        # Sample actual radius and length, as well as head half-size
+        self.handle_radius = np.random.uniform(self.handle_radius_range[0], self.handle_radius_range[1])
+        self.handle_length = np.random.uniform(self.handle_length_range[0], self.handle_length_range[1])
+        self.handle_density = np.random.uniform(self.handle_density_range[0], self.handle_density_range[1])
+        self.handle_friction = np.random.uniform(self.handle_friction_range[0], self.handle_friction_range[1])
+        self.head_halfsize = np.random.uniform(self.handle_radius, self.handle_radius * 1.2)
+
+        # Initialize RGBA values
+        self.rgba_handle = rgba_handle if rgba_handle is not None else RED
+        self.rgba_head = rgba_head if rgba_head is not None else CYAN
+        self.rgba_face = rgba_face if rgba_face is not None else BLUE
+        self.rgba_claw = rgba_claw if rgba_claw is not None else GREEN
+
+    def get_bottom_offset(self):
+        return np.array([0, 0, -0.5 * self.handle_length])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.handle_radius])
+
+    def get_horizontal_radius(self):
+        return self.head_halfsize + 0.5 * self.handle_length
+
+    @property
+    def handle_distance(self):
+        # TODO
+        return 2.0 * self.handle_radius
+        return self.body_half_size[1] * 2 + self.handle_length * 2
+
+    def get_collision(self, name=None, site=None):
+        # Create new body
+        main_body = new_body()
+
+        # Define name for this object if specified
+        if name is not None:
+            main_body.set("name", name)
+
+        # Define handle and append to the main body
+        if self.handle_shape == "cylinder":
+            main_body.append(
+                new_geom(
+                    geom_type="cylinder",
+                    name="hammer_handle",
+                    size=[self.handle_radius, self.handle_length / 2.0],
+                    pos=(0, 0, 0),
+                    rgba=self.rgba_handle,
+                    group=1,
+                    density=str(self.handle_density),
+                    friction=array_to_string((self.handle_friction, 0.005, 0.0001)),
+                )
+            )
+        elif self.handle_shape == "box":
+            main_body.append(
+                new_geom(
+                    geom_type="box",
+                    name="hammer_handle",
+                    size=[self.handle_radius, self.handle_radius, self.handle_length / 2.0],
+                    pos=(0, 0, 0),
+                    rgba=self.rgba_handle,
+                    group=1,
+                    density=str(self.handle_density),
+                    friction=array_to_string((self.handle_friction, 0.005, 0.0001)),
+                )
+            )
+        else:
+            # Raise error
+            raise ValueError("Error loading hammer: Handle type must either be 'box' or 'cylinder', got {}.".format(
+                self.handle_shape
+            ))
+
+        # Define head and append to the main body
+        main_body.append(
+            new_geom(
+                geom_type="box",
+                name="hammer_head",
+                size=[self.head_halfsize * 2, self.head_halfsize, self.head_halfsize],
+                pos=(0, 0, self.handle_length / 2.0 + self.head_halfsize),
+                rgba=self.rgba_head,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+            )
+        )
+
+        # Define face (and neck) and append to the main body
+        main_body.append(
+            new_geom(
+                geom_type="cylinder",
+                name="hammer_neck",
+                size=[self.head_halfsize * 0.8, self.head_halfsize * 0.2],
+                pos=(self.head_halfsize * 2.2, 0, self.handle_length / 2.0 + self.head_halfsize),
+                quat=array_to_string([0.707106, 0, 0.707106, 0]),
+                rgba=self.rgba_face,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+            )
+        )
+        main_body.append(
+            new_geom(
+                geom_type="cylinder",
+                name="hammer_face",
+                size=[self.head_halfsize, self.head_halfsize * 0.4],
+                pos=(self.head_halfsize * 2.8, 0, self.handle_length / 2.0 + self.head_halfsize),
+                quat=array_to_string([0.707106, 0, 0.707106, 0]),
+                rgba=self.rgba_face,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+            )
+        )
+
+        # Define claw and append to the main body
+        main_body.append(
+            new_geom(
+                geom_type="box",
+                name="hammer_claw",
+                size=[self.head_halfsize * 0.7072, self.head_halfsize * 0.95, self.head_halfsize * 0.7072],
+                pos=(-self.head_halfsize * 2, 0, self.handle_length / 2.0 + self.head_halfsize),
+                quat=array_to_string([0.9238795, 0, 0.3826834, 0]),
+                rgba=self.rgba_claw,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+            )
+        )
+
+        return main_body
+
+    @property
+    def init_quat(self):
+        return np.array([0.707106, 0, 0.707106, 0])
+
+    @property
+    def handle_geoms(self):
+        return ["hammer_handle"]
+
+    @property
+    def head_geoms(self):
+        return ["hammer_head"]
+
+    @property
+    def face_geoms(self):
+        return ["hammer_neck", "hammer_face"]
+
+    @property
+    def claw_geoms(self):
+        return ["hammer_claw"]
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
 
 
 class PotWithHandlesObject(MujocoGeneratedObject):
