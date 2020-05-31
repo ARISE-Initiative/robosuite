@@ -22,8 +22,6 @@
                 <site name="grip_site" pos="0 0 0.014" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
                 <!-- This site was added for visualization. -->
                 <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
-                <!-- This camera points out of the gripper. -->
-                <camera mode="fixed" name="eye_in_hand" pos="0 0 0" quat="0 -1 1 0" fovy="75"/>
             </body>
             <body name="l_finger" pos="0 0.01 0.0444">
                 <inertial pos="0 0 0" quat="0 0 0 -1" mass="0.02" diaginertia="0.01 0.01 0.01" />

@@ -69,8 +69,6 @@
             <site name="grip_site" pos="0 0 -0.27" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <!-- This site was added for visualization. -->
             <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
-            <!-- This camera points out of the gripper. -->
-            <camera mode="fixed" name="eye_in_hand" pos="0 0 0.080" quat="0 1 0 0" fovy="75"/>
 
             <body name="left_outer_knuckle" pos="0.030601 2.43684e-05 -0.11643" quat="-0.64507 0.290316 -0.290085 0.644556">
                 <inertial pos="0.000163875 0.0458404 0.0117804" quat="0.881368 0.472423 -0.0024451 -0.000996122" mass="0.0311462" diaginertia="2.96023e-05 2.79814e-05 4.39017e-06" />

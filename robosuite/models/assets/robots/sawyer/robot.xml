@@ -22,6 +22,8 @@
     </asset>
     <worldbody>
     	<body name="base" pos="0 0 0">
+			<!-- robot view -->
+			<camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
     		<inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
     		<body name="controller_box" pos="0 0 0">
     			<inertial diaginertia="1.71363 1.27988 0.809981" mass="46.64" pos="-0.325 0 -0.38"/>
@@ -114,6 +116,8 @@
 												<site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
 												<site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
 												<site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
+												<!-- This camera points out from the eef. -->
+                								<camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
     											<!-- To add gripper -->
     										</body>
     									</body>
