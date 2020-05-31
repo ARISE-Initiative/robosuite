@@ -108,7 +108,7 @@ class JointVelocityController(Controller):
                 self.joint_dim, len(velocities)
             )
 
-        self.goal_vel = velocities
+        self.goal_vel = self.scale_action(velocities)
         if self.velocity_limits is not None:
             self.goal_vel = np.clip(velocities, self.velocity_limits[0], self.velocity_limits[1])
 
@@ -117,7 +117,7 @@ class JointVelocityController(Controller):
 
     def run_controller(self):
         # Make sure goal has been set
-        if not self.goal_vel.any():
+        if self.goal_vel is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state

@@ -154,6 +154,10 @@ class Stack(RobotEnv):
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
 
+        # Setup default initialization noise if not customized
+        if initialization_noise == "default":
+            initialization_noise = {"magnitude": 0.02, "type": "gaussian"}
+
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
 

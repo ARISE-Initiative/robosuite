@@ -101,7 +101,7 @@ class JointTorqueController(Controller):
         # Check to make sure torques is size self.joint_dim
         assert len(torques) == self.control_dim, "Delta torque must be equal to the robot's joint dimension space!"
 
-        self.goal_torque = torques
+        self.goal_torque = self.scale_action(torques)
         if self.torque_limits is not None:
             self.goal_torque = np.clip(self.goal_torque, self.torque_limits[0], self.torque_limits[1])
 
@@ -110,7 +110,7 @@ class JointTorqueController(Controller):
 
     def run_controller(self):
         # Make sure goal has been set
-        if not self.goal_torque.any():
+        if self.goal_torque is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state

@@ -191,7 +191,7 @@ class JointPositionController(Controller):
 
     def run_controller(self):
         # Make sure goal has been set
-        if not self.goal_qpos.any():
+        if self.goal_qpos is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state

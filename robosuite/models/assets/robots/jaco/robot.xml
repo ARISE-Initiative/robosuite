@@ -1,13 +1,14 @@
 <mujoco model="jaco_v2">
     <actuator>
-        <!-- Physical limits of the actuator.  This is hacky and not part of original urdf -->
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="j2s7s300_joint_1" name="torq_j1"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="j2s7s300_joint_2" name="torq_j2"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="j2s7s300_joint_3" name="torq_j3"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="j2s7s300_joint_4" name="torq_j4"/>
-        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="j2s7s300_joint_5" name="torq_j5"/>
-        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="j2s7s300_joint_6" name="torq_j6"/>
-        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="j2s7s300_joint_7" name="torq_j7"/>
+        <!-- Physical limits of the actuator. Pulled from raw actuator spec sheet, see:
+         https://www.kinovarobotics.com/sites/default/files/AS-ACT-KA58-KA75-SP-INT-EN%20201804-1.2%20%28KINOVA%E2%84%A2%20Actuator%20series%20KA75%2B%20KA-58%20Specifications%29.pdf -->
+        <motor ctrllimited="true" ctrlrange="-30.5 30.5" joint="j2s7s300_joint_1" name="torq_j1"/>
+        <motor ctrllimited="true" ctrlrange="-30.5 30.5" joint="j2s7s300_joint_2" name="torq_j2"/>
+        <motor ctrllimited="true" ctrlrange="-30.5 30.5" joint="j2s7s300_joint_3" name="torq_j3"/>
+        <motor ctrllimited="true" ctrlrange="-30.5 30.5" joint="j2s7s300_joint_4" name="torq_j4"/>
+        <motor ctrllimited="true" ctrlrange="-30.5 30.5" joint="j2s7s300_joint_5" name="torq_j5"/>
+        <motor ctrllimited="true" ctrlrange="-6.8 6.8" joint="j2s7s300_joint_6" name="torq_j6"/>
+        <motor ctrllimited="true" ctrlrange="-6.8 6.8" joint="j2s7s300_joint_7" name="torq_j7"/>
     </actuator>
     <asset>
         <mesh file="meshes/pedestal.stl" name="pedestal"/>

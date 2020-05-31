@@ -109,7 +109,7 @@ class OperationalSpaceController(Controller):
                  damping=1,
                  impedance_mode="fixed",
                  kp_limits=(0, 300),
-                 damping_limits=(0,100),
+                 damping_limits=(0, 100),
                  policy_freq=20,
                  position_limits=None,
                  orientation_limits=None,
