@@ -33,7 +33,10 @@ class GymWrapper(Wrapper):
 
         if keys is None:
             assert self.env.use_object_obs, "Object observations need to be enabled."
-            keys = ["robot-state", "object-state"]
+            keys = ["object-state"]
+            # Iterate over all robots to add to state
+            for idx in range(len(self.env.robots)):
+                keys += ["robot{}_robot-state".format(idx)]
         self.keys = keys
 
         # TODO: What is this?
