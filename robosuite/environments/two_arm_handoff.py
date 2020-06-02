@@ -305,7 +305,7 @@ class TwoArmHandoff(RobotEnv):
                     reward = 1.0
                     # Add in up to 0.25 based on distance between handle and arm1
                     dist = np.linalg.norm(self._gripper_1_to_handle)
-                    reaching_reward = 0.25*(1 - np.tanh(10.0 * dist))
+                    reaching_reward = 0.25*(1 - np.tanh(1.0 * dist))
                     reward += reaching_reward
             # Else, the hammer is still on the ground ):
             else:
@@ -316,7 +316,7 @@ class TwoArmHandoff(RobotEnv):
                 else:
                     # This is step 1, we want to encourage arm0 to reach for the handle
                     dist = np.linalg.norm(self._gripper_0_to_handle)
-                    reaching_reward = 0.25 * (1 - np.tanh(10.0 * dist))
+                    reaching_reward = 0.25 * (1 - np.tanh(1.0 * dist))
                     reward = reaching_reward
 
         # Else this is the sparse reward setting
