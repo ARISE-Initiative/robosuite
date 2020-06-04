@@ -47,8 +47,11 @@ class Robot(object):
         self.initialization_noise = initialization_noise
         if self.initialization_noise is None:
             self.initialization_noise = {"magnitude": 0.0, "type": "gaussian"}  # no noise conditions
+        elif self.initialization_noise == "default":
+            self.initialization_noise = {"magnitude": 0.02, "type": "gaussian"}
         self.initialization_noise["magnitude"] = \
             self.initialization_noise["magnitude"] if self.initialization_noise["magnitude"] else 0.0
+
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
 
         self.robot_joints = None                            # xml joint names for robot

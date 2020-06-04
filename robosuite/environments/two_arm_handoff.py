@@ -85,8 +85,7 @@ class TwoArmHandoff(RobotEnv):
                 "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
                 Should either be single dict if same noise value is to be used for all robots or else it should be a
                 list of the same length as "robots" param
-                Note: Specifying "default" will automatically use the default noise settings for this task
-                    (see __init__() call below)
+                Note: Specifying "default" will automatically use the default noise settings
                     Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
             prehensile (bool): If true, handoff object starts on the table. Else, the object starts in Arm0's gripper
@@ -173,10 +172,6 @@ class TwoArmHandoff(RobotEnv):
         self._success = False
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
-
-        # Setup default initialization noise if not customized
-        if initialization_noise == "default":
-            initialization_noise = {"magnitude": 0.02, "type": "gaussian"}
 
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs

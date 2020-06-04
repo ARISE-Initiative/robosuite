@@ -82,8 +82,7 @@ class TwoArmPegInHole(RobotEnv):
                 "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
                 Should either be single dict if same noise value is to be used for all robots or else it should be a
                 list of the same length as "robots" param
-                Note: Specifying "default" will automatically use the default noise settings for this task
-                    (see __init__() call below)
+                Note: Specifying "default" will automatically use the default noise settings
                     Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
             use_camera_obs (bool or list of bool): if True, every observation for a specific robot includes a rendered
@@ -162,10 +161,6 @@ class TwoArmPegInHole(RobotEnv):
         # Save cylinder specs
         self.cylinder_radius = cylinder_radius
         self.cylinder_length = cylinder_length
-
-        # Setup default initialization noise if not customized
-        if initialization_noise == "default":
-            initialization_noise = {"magnitude": 0.02, "type": "gaussian"}
 
         super().__init__(
             robots=robots,
