@@ -41,6 +41,7 @@ class GymWrapper(Wrapper):
 
         # TODO: What is this?
         self.env.spec = None
+        self.metadata = None
 
         # set up observation and action spaces
         flat_ob = self._flatten_obs(self.env.reset(), verbose=True)

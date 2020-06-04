@@ -42,7 +42,8 @@ class UniformRandomSampler(ObjectPositionSampler):
         x_range=None,
         y_range=None,
         ensure_object_boundary_in_range=True,
-        z_rotation=None,
+        rotation=None,
+        rotation_axis='z',
     ):
         """
         Args:
@@ -56,15 +57,17 @@ class UniformRandomSampler(ObjectPositionSampler):
                      [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
                 False: 
                     [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
-            z_rotation:
-                None: Add uniform random random z-rotation
+            rotation:
+                None: Add uniform random random rotation
                 iterable (a,b): Uniformly randomize rotation angle between a and b (in radians)
-                value: Add fixed angle z-rotation
+                value: Add fixed angle rotation
+            rotation_axis (str): Can be 'x', 'y', or 'z'. Axis about which to apply the requested rotation
         """
         self.x_range = x_range
         self.y_range = y_range
         self.ensure_object_boundary_in_range = ensure_object_boundary_in_range
-        self.z_rotation = z_rotation
+        self.rotation = rotation
+        self.rotation_axis = rotation_axis
 
     def sample_x(self, object_horizontal_radius):
         x_range = self.x_range
@@ -89,16 +92,25 @@ class UniformRandomSampler(ObjectPositionSampler):
         return np.random.uniform(high=maximum, low=minimum)
 
     def sample_quat(self):
-        if self.z_rotation is None:
+        if self.rotation is None:
             rot_angle = np.random.uniform(high=2 * np.pi, low=0)
-        elif isinstance(self.z_rotation, collections.Iterable):
+        elif isinstance(self.rotation, collections.Iterable):
             rot_angle = np.random.uniform(
-                high=max(self.z_rotation), low=min(self.z_rotation)
+                high=max(self.rotation), low=min(self.rotation)
             )
         else:
-            rot_angle = self.z_rotation
+            rot_angle = self.rotation
 
-        return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
+        # Return angle based on axis requested
+        if self.rotation_axis == 'x':
+            return [np.cos(rot_angle / 2), np.sin(rot_angle / 2), 0, 0]
+        elif self.rotation_axis == 'y':
+            return [np.cos(rot_angle / 2), 0, np.sin(rot_angle / 2), 0]
+        elif self.rotation_axis == 'z':
+            return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
+        else:
+            # Invalid axis specified, raise error
+            raise ValueError("Invalid rotation axis specified. Must be 'x', 'y', or 'z'. Got: {}".format(self.rotation_axis))
 
     def sample(self):
         pos_arr = []

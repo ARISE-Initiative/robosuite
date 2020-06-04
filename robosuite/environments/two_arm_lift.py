@@ -179,7 +179,7 @@ class TwoArmLift(RobotEnv):
                 x_range=[-0.03, 0.03],
                 y_range=[-0.03, 0.03],
                 ensure_object_boundary_in_range=False,
-                z_rotation=None,
+                rotation=None,
             )
 
         super().__init__(

@@ -185,11 +185,14 @@ class TwoArmHandoff(RobotEnv):
         if placement_initializer:
             self.placement_initializer = placement_initializer
         else:
+            # Set rotation about y-axis if hammer starts on table else rotate about z if it starts in gripper
+            rotation_axis = 'y' if self.prehensile else 'z'
             self.placement_initializer = UniformRandomSampler(
                 x_range=[-0.1, 0.1],
                 y_range=[-0.5, -0.4],
                 ensure_object_boundary_in_range=False,
-                z_rotation=None,
+                rotation=None,
+                rotation_axis=rotation_axis,
             )
 
         super().__init__(
@@ -554,12 +557,12 @@ class TwoArmHandoff(RobotEnv):
 
     @property
     def _hammer_pos(self):
-        """Returns the orientation of the pot."""
+        """Returns the orientation of the hammer."""
         return np.array(self.sim.data.body_xpos[self.hammer_body_id])
 
     @property
     def _hammer_quat(self):
-        """Returns the orientation of the pot."""
+        """Returns the orientation of the hammer."""
         return T.convert_quat(self.sim.data.body_xquat[self.hammer_body_id], to="xyzw")
 
     @property

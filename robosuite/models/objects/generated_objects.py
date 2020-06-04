@@ -185,7 +185,8 @@ class HammerObject(MujocoGeneratedObject):
 
     @property
     def init_quat(self):
-        return np.array([0.707106, 0, 0.707106, 0])
+        # Randomly sample between +/- flip (such that the hammer head faces one way or the other)
+        return np.array([0.5, -0.5, 0.5, -0.5]) if np.random.rand() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
 
     @property
     def handle_geoms(self):
