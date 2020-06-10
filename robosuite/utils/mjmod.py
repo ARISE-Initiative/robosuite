@@ -16,8 +16,22 @@ import robosuite
 import robosuite.utils.transform_utils as trans
 
 class BaseModder():
-    def __init__(self, sim):
+    def __init__(self, sim, random_state=None):
+        """
+        Using @random_state ensures that sampling here won't be affected
+        by sampling that happens outside of the modders.
+
+        Args:
+            sim (MjSim): MjSim object
+
+            random_state (RandomState): instance of np.random.RandomState
+        """
         self.sim = sim
+        if random_state is None:
+            # default to global RandomState instance
+            self.random_state = np.random.mtrand._rand
+        else:
+            self.random_state = random_state
 
     @property
     def model(self):
@@ -29,6 +43,7 @@ class LightingModder(BaseModder):
     def __init__(
         self,
         sim,
+        random_state=None,
         light_names=None,
         randomize_position=True,
         randomize_direction=True,
@@ -45,10 +60,13 @@ class LightingModder(BaseModder):
         """
         Args:
             sim (MjSim): MjSim object
+
+            random_state (RandomState): instance of np.random.RandomState
+
             light_names ([string]): list of lights to use for randomization. If not provided, all
                 lights in the model are randomized.
         """
-        super().__init__(sim)
+        super().__init__(sim, random_state=random_state)
 
         if light_names is None:
             light_names = self.sim.model.light_names
@@ -115,7 +133,7 @@ class LightingModder(BaseModder):
                 self._randomize_active(name)
 
     def _randomize_position(self, name):
-        delta_pos = np.random.uniform(
+        delta_pos = self.random_state.uniform(
             low=-self.position_perturbation_size, 
             high=self.position_perturbation_size, 
             size=3,
@@ -127,7 +145,7 @@ class LightingModder(BaseModder):
 
     def _randomize_direction(self, name):
         # sample a small, random axis-angle delta rotation
-        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.direction_perturbation_size)
+        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.direction_perturbation_size, random_state=self.random_state)
         random_delta_rot = trans.quat2mat(trans.axisangle2quat(axis=random_axis, angle=random_angle))
         
         # rotate direction by this delta rotation and set the new direction
@@ -138,7 +156,7 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_specular(self, name):
-        delta = np.random.uniform(
+        delta = self.random_state.uniform(
             low=-self.specular_perturbation_size, 
             high=self.specular_perturbation_size, 
             size=3,
@@ -149,7 +167,7 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_ambient(self, name):
-        delta = np.random.uniform(
+        delta = self.random_state.uniform(
             low=-self.ambient_perturbation_size, 
             high=self.ambient_perturbation_size, 
             size=3,
@@ -160,7 +178,7 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_diffuse(self, name):
-        delta = np.random.uniform(
+        delta = self.random_state.uniform(
             low=-self.diffuse_perturbation_size, 
             high=self.diffuse_perturbation_size, 
             size=3,
@@ -171,28 +189,11 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_active(self, name):
-        active = int(np.random.uniform() > 0.5)
+        active = int(self.random_state.uniform() > 0.5)
         self.set_active(
             name,
             active
         )
-
-    # def rand3(self):
-    #     return np.random.randn(3)
-
-    # def randbool(self):
-    #     rand = np.random.choice([0,1], 1)
-    #     rand = rand[0]
-    #     return rand
-
-    # def rand_all(self, light):
-    #     self.set_pos(light, self.rand3())
-    #     self.set_dir(light, self.rand3())
-    #     self.set_active(light, self.randbool())
-    #     self.set_specular(light, self.rand3())
-    #     self.set_ambient(light, self.rand3())
-    #     self.set_diffuse(light, self.rand3())
-    #     # self.set_castshadow(light, self.randbool())
 
     def get_pos(self, name):
         lightid = self.get_lightid(name)
@@ -293,6 +294,7 @@ class CameraModder(BaseModder):
     def __init__(
         self,
         sim,
+        random_state=None,
         camera_names=None,
         randomize_position=True,
         randomize_rotation=True,
@@ -304,6 +306,7 @@ class CameraModder(BaseModder):
         """
         Args:
             sim (MjSim): MjSim object
+            random_state (RandomState): instance of np.random.RandomState
             camera_names ([string]): list of camera names to use for randomization. If not provided,
                 all cameras are used for randomization.
             perturb_position (bool): if True, randomize camera position
@@ -314,7 +317,7 @@ class CameraModder(BaseModder):
                 Default corresponds to around 5 degrees.
             fovy_perturbation_size (float): magnitude of camera fovy perturbations (corresponds to focusing)
         """
-        super().__init__(sim)
+        super().__init__(sim, random_state=random_state)
 
         assert randomize_position or randomize_rotation or randomize_fovy
 
@@ -363,7 +366,7 @@ class CameraModder(BaseModder):
                 self._randomize_fovy(camera_name)
 
     def _randomize_position(self, name):
-        delta_pos = np.random.uniform(
+        delta_pos = self.random_state.uniform(
             low=-self.position_perturbation_size, 
             high=self.position_perturbation_size, 
             size=3,
@@ -375,7 +378,7 @@ class CameraModder(BaseModder):
 
     def _randomize_rotation(self, name):
         # sample a small, random axis-angle delta rotation
-        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.rotation_perturbation_size)
+        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.rotation_perturbation_size, random_state=self.random_state)
         random_delta_rot = trans.quat2mat(trans.axisangle2quat(axis=random_axis, angle=random_angle))
         
         # compute new rotation and set it
@@ -388,7 +391,7 @@ class CameraModder(BaseModder):
         )
 
     def _randomize_fovy(self, name):
-        delta_fovy = np.random.uniform(
+        delta_fovy = self.random_state.uniform(
             low=-self.fovy_perturbation_size,
             high=self.fovy_perturbation_size,
         )
@@ -455,6 +458,7 @@ class TextureModder(BaseModder):
     def __init__(
         self, 
         sim,
+        random_state=None,
         geom_names=None,
         randomize_local=False,
         local_rgb_interpolation=0.1,
@@ -465,6 +469,8 @@ class TextureModder(BaseModder):
         """
         Args:
             sim (MjSim): MjSim object
+
+            random_state (RandomState): instance of np.random.RandomState
 
             geom_names ([string]): list of geom names to use for randomization. If not provided,
                 all geoms are used for randomization.
@@ -486,7 +492,7 @@ class TextureModder(BaseModder):
             texture_path (string): optional path to texture images files to use for random texture
                 generation
         """
-        super().__init__(sim)
+        super().__init__(sim, random_state=random_state)
 
         if geom_names is None:
             geom_names = self.sim.model.geom_names
@@ -574,15 +580,15 @@ class TextureModder(BaseModder):
 
     def _randomize_geom_color(self, name):
         if self.randomize_local:
-            random_color = np.random.uniform(0, 1, size=3)
+            random_color = self.random_state.uniform(0, 1, size=3)
             rgb = (1. - self.local_rgb_interpolation) * self._defaults[name]['rgb'] + self.local_rgb_interpolation * random_color
         else:
-            rgb = np.random.uniform(0, 1, size=3)
+            rgb = self.random_state.uniform(0, 1, size=3)
         self.set_geom_rgb(name, rgb)
 
     def _randomize_texture(self, name):
         keys = list(self._texture_variation_callbacks.keys())
-        choice = keys[np.random.randint(len(keys))]
+        choice = keys[self.random_state.randint(len(keys))]
         self._texture_variation_callbacks[choice](name)
 
     def rand_checker(self, name):
@@ -591,7 +597,7 @@ class TextureModder(BaseModder):
 
     def rand_gradient(self, name):
         rgb1, rgb2 = self.get_rand_rgb(2)
-        vertical = bool(np.random.uniform() > 0.5)
+        vertical = bool(self.random_state.uniform() > 0.5)
         self.set_gradient(name, rgb1, rgb2, vertical=vertical, perturb=self.randomize_local)
 
     def rand_rgb(self, name):
@@ -599,7 +605,7 @@ class TextureModder(BaseModder):
         self.set_rgb(name, rgb, perturb=self.randomize_local)
 
     def rand_noise(self, name):
-        fraction = 0.1 + np.random.uniform() * 0.8
+        fraction = 0.1 + self.random_state.uniform() * 0.8
         rgb1, rgb2 = self.get_rand_rgb(2)
         self.set_noise(name, rgb1, rgb2, fraction, perturb=self.randomize_local)
 
@@ -637,7 +643,7 @@ class TextureModder(BaseModder):
 
     def get_rand_rgb(self, n=1):
         def _rand_rgb():
-            return np.array(np.random.uniform(size=3) * 255,
+            return np.array(self.random_state.uniform(size=3) * 255,
                             dtype=np.uint8)
 
         if n == 1:
@@ -649,7 +655,7 @@ class TextureModder(BaseModder):
     #     bitmap = self.get_texture(name).bitmap
     #     img = Image.new("RGB", (bitmap.shape[1], bitmap.shape[0]))
 
-    #     img_path = self.texture_path + '/' + np.random.choice(os.listdir(self.texture_path))
+    #     img_path = self.texture_path + '/' + self.random_state.choice(os.listdir(self.texture_path))
     #     img = Image.open(img_path).convert('RGB')
     #     img = img.convert('RGB')
     #     if name == 'skybox':
@@ -749,7 +755,7 @@ class TextureModder(BaseModder):
         """
         bitmap = self.get_texture(name).bitmap
         h, w = bitmap.shape[:2]
-        mask = np.random.uniform(size=(h, w)) < fraction
+        mask = self.random_state.uniform(size=(h, w)) < fraction
 
         new_bitmap = np.zeros_like(bitmap)
         new_bitmap[..., :] = np.asarray(rgb1)

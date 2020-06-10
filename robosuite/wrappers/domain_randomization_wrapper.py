@@ -98,6 +98,7 @@ class DomainRandomizationWrapper(Wrapper):
     def __init__(
         self, 
         env,
+        seed=None,
         randomize_color=True,
         randomize_camera=True,
         randomize_lighting=True,
@@ -110,6 +111,11 @@ class DomainRandomizationWrapper(Wrapper):
         """
         Args:
             env (MujocoEnv instance): The environment to wrap.
+
+            seed (int): Integer used to seed all randomizations from this wrapper. It is
+                used to create a np.random.RandomState instance to make sure samples here
+                are isolated from sampling occurring elsewhere in the code. If not provided,
+                will default to using global random state.
 
             randomize_color (bool): if True, randomize geom colors and texture colors
             
@@ -127,6 +133,11 @@ class DomainRandomizationWrapper(Wrapper):
         """
         super().__init__(env)
 
+        self.seed = seed
+        if seed is not None:
+            self.random_state = np.random.RandomState(seed)
+        else:
+            self.random_state = None
         self.randomize_color = randomize_color
         self.randomize_camera = randomize_camera
         self.randomize_lighting = randomize_lighting
@@ -141,6 +152,7 @@ class DomainRandomizationWrapper(Wrapper):
         if self.randomize_color:
             self.tex_modder = TextureModder(
                 sim=self.env.sim,
+                random_state=self.random_state,
                 **self.color_randomization_args
             )
             self.modders.append(self.tex_modder)
@@ -148,6 +160,7 @@ class DomainRandomizationWrapper(Wrapper):
         if self.randomize_camera:
             self.camera_modder =  CameraModder(
                 sim=self.env.sim,
+                random_state=self.random_state,
                 **self.camera_randomization_args,
             )
             self.modders.append(self.camera_modder)
@@ -155,6 +168,7 @@ class DomainRandomizationWrapper(Wrapper):
         if self.randomize_lighting:
             self.light_modder = LightingModder(
                 sim=self.env.sim,
+                random_state=self.random_state,
                 **self.lighting_randomization_args,
             )
             self.modders.append(self.light_modder)

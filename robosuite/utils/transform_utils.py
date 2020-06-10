@@ -180,21 +180,30 @@ def random_quat(rand=None):
         dtype=np.float32,
     )
 
-def random_axis_angle(angle_limit=None):
+def random_axis_angle(angle_limit=None, random_state=None):
     """
     Samples an axis-angle rotation by first sampling a random axis
     and then sampling an angle. If @angle_limit is provided, the size
-    of the rotation angle is constrained.
+    of the rotation angle is constrained. 
+
+    If @random_state is provided (instance of np.random.RandomState), it
+    will be used to generate random numbers.
     """
     if angle_limit is None:
         angle_limit = 2. * np.pi
 
+    if random_state is not None:
+        assert isinstance(random_state, np.random.RandomState)
+        npr = random_state
+    else:
+        npr = np.random
+
     # sample random axis using a normalized sample from spherical Gaussian.
     # see (http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/)
     # for why it works.
-    random_axis = np.random.randn(3)
+    random_axis = npr.randn(3)
     random_axis /= np.linalg.norm(random_axis)
-    random_angle = np.random.uniform(low=0., high=angle_limit)
+    random_angle = npr.uniform(low=0., high=angle_limit)
     return random_axis, random_angle
 
 
