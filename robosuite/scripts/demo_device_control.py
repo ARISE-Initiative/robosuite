@@ -101,6 +101,7 @@ from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()

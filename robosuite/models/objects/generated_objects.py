@@ -215,6 +215,7 @@ class PotWithHandlesObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         body_half_size=None,
         handle_radius=0.01,
         handle_length=0.09,
@@ -225,7 +226,7 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         solid_handle=False,
         thickness=0.025,  # For body
     ):
-        super().__init__()
+        super().__init__(name=name)
         if body_half_size:
             self.body_half_size = body_half_size
         else:
@@ -261,10 +262,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
     def handle_distance(self):
         return self.body_half_size[1] * 2 + self.handle_length * 2
 
-    def get_collision(self, name=None, site=None):
+    def get_collision(self, site=None):
         main_body = new_body()
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
 
         for geom in five_sided_box(
             self.body_half_size, self.rgba_body, 1, self.thickness
@@ -431,8 +431,8 @@ class PotWithHandlesObject(MujocoGeneratedObject):
             return ["handle_2"]
         return ["handle_2_c", "handle_2_+", "handle_2_-"]
 
-    def get_visual(self, name=None, site=None):
-        return self.get_collision(name, site)
+    def get_visual(self, site=None):
+        return self.get_collision(site)
 
 
 def five_sided_box(size, rgba, group, thickness):
@@ -535,6 +535,7 @@ class BoxObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
@@ -543,6 +544,7 @@ class BoxObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        add_material=False,
     ):
         size = _get_size(size,
                          size_max,
@@ -556,10 +558,12 @@ class BoxObject(MujocoGeneratedObject):
                                                friction_range,
                                                DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            add_material=add_material,
         )
 
     def sanity_check(self):
@@ -575,12 +579,12 @@ class BoxObject(MujocoGeneratedObject):
         return np.linalg.norm(self.size[0:2], 2)
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="box")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="box")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="box")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="box")
 
 
 class CylinderObject(MujocoGeneratedObject):
@@ -590,6 +594,7 @@ class CylinderObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
@@ -598,6 +603,7 @@ class CylinderObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        add_material=False,
     ):
         size = _get_size(size,
                          size_max,
@@ -611,10 +617,12 @@ class CylinderObject(MujocoGeneratedObject):
                                                friction_range,
                                                DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            add_material=add_material,
         )
 
     def sanity_check(self):
@@ -630,12 +638,12 @@ class CylinderObject(MujocoGeneratedObject):
         return self.size[0]
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="cylinder")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="cylinder")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="cylinder")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="cylinder")
 
 
 class BallObject(MujocoGeneratedObject):
@@ -645,6 +653,7 @@ class BallObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
@@ -653,6 +662,7 @@ class BallObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        add_material=False,
     ):
         size = _get_size(size,
                          size_max,
@@ -666,10 +676,12 @@ class BallObject(MujocoGeneratedObject):
                                                friction_range,
                                                DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            add_material=add_material,
         )
 
     def sanity_check(self):
@@ -685,12 +697,12 @@ class BallObject(MujocoGeneratedObject):
         return self.size[0]
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="sphere")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="sphere")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="sphere")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="sphere")
 
 
 class CapsuleObject(MujocoGeneratedObject):
@@ -700,6 +712,7 @@ class CapsuleObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
@@ -708,6 +721,7 @@ class CapsuleObject(MujocoGeneratedObject):
         friction=None,
         friction_range=None,
         rgba="random",
+        add_material=False,
     ):
         size = _get_size(size,
                          size_max,
@@ -721,10 +735,12 @@ class CapsuleObject(MujocoGeneratedObject):
                                                friction_range,
                                                DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
             density_range=density_range,
             friction_range=friction_range,
+            add_material=add_material,
         )
 
     def sanity_check(self):
@@ -740,9 +756,9 @@ class CapsuleObject(MujocoGeneratedObject):
         return self.size[0]
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="capsule")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="capsule")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="capsule")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="capsule")

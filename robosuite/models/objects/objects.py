@@ -196,12 +196,14 @@ class MujocoGeneratedObject(MujocoObject):
 
     def __init__(
         self,
+        name,
         size=None,
         rgba=None,
         density=None,
         friction=None,
         density_range=None,
         friction_range=None,
+        add_material=False,
     ):
         """
         Provides default initialization of physical attributes:
@@ -217,12 +219,17 @@ class MujocoGeneratedObject(MujocoObject):
             size ([float], optional): of size 1 - 3
             rgba (([float, float, float, float]), optional): Color
             density (float, optional): Density
-            friction (float, optional): tangentia friction
+            friction (float, optional): tangential friction
                 see http://www.mujoco.org/book/modeling.html#geom for details
             density_range ([float,float], optional): range for random choice
             friction_range ([float,float], optional): range for random choice
+            add_material (bool, optional): if True, add a material and texture for this 
+                object that is used to color the geom(s).
         """
         super().__init__()
+
+        self.name = name
+
         if size is None:
             self.size = [0.05, 0.05, 0.05]
         else:
@@ -254,6 +261,12 @@ class MujocoGeneratedObject(MujocoObject):
             self.friction = friction
         else:
             self.friction = [friction, 0.005, 0.0001]
+
+        # add in texture and material for this object (for domain randomization)
+        self.add_material = add_material
+        if add_material:
+            self.asset = self._get_asset()
+
         self.sanity_check()
 
     def sanity_check(self):
@@ -270,15 +283,36 @@ class MujocoGeneratedObject(MujocoObject):
     def get_visual_attrib_template(self):
         return {"conaffinity": "0", "contype": "0", "group": "1"}
 
-    def _get_collision(self, name=None, site=False, ob_type="box"):
+    def get_texture_attrib_template(self):
+        return {
+            "name": "{}_tex".format(self.name), 
+            "type": "cube", 
+            "builtin": "flat", 
+            "rgb1": array_to_string(self.rgba[:3]), 
+            "rgb2": array_to_string(self.rgba[:3]), 
+            "width": "100", 
+            "height": "100",
+        }
+
+    def get_material_attrib_template(self):
+        return {
+            "name": "{}_mat".format(self.name), 
+            "texture": "{}_tex".format(self.name), 
+            # "specular": "0.75", 
+            # "shininess": "0.03",
+        }
+
+    def _get_collision(self, site=False, ob_type="box"):
         main_body = ET.Element("body")
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
         template = self.get_collision_attrib_template()
-        if name is not None:
-            template["name"] = name
+        template["name"] = self.name
         template["type"] = ob_type
-        template["rgba"] = array_to_string(self.rgba)
+        if self.add_material:
+            template["rgba"] = "0.5 0.5 0.5 1" # mujoco default
+            template["material"] = "{}_mat".format(self.name)
+        else:
+            template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
         template["density"] = str(self.density)
         template["friction"] = array_to_string(self.friction)
@@ -286,24 +320,34 @@ class MujocoGeneratedObject(MujocoObject):
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
-            if name is not None:
-                template["name"] = name
+            template["name"] = self.name
             main_body.append(ET.Element("site", attrib=template))
         return main_body
 
-    def _get_visual(self, name=None, site=False, ob_type="box"):
+    def _get_visual(self, site=False, ob_type="box"):
         main_body = ET.Element("body")
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
         template = self.get_visual_attrib_template()
         template["type"] = ob_type
-        template["rgba"] = array_to_string(self.rgba)
+        if self.add_material:
+            template["material"] = "{}_mat".format(self.name)
+        else:
+            template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
-            if name is not None:
-                template["name"] = name
+            template["name"] = self.name
             main_body.append(ET.Element("site", attrib=template))
         return main_body
+
+    def _get_asset(self):
+        # Add texture and material elements
+        assert(self.add_material)
+        asset = ET.Element("asset")
+        tex_template = self.get_texture_attrib_template()
+        mat_template = self.get_material_attrib_template()
+        asset.append(ET.Element("texture", attrib=tex_template))
+        asset.append(ET.Element("material", attrib=mat_template))
+        return asset

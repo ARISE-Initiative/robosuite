@@ -53,7 +53,7 @@ class TableTopTask(Task):
         for obj_name, obj_mjcf in mujoco_objects.items():
             self.merge_asset(obj_mjcf)
             # Load object
-            obj = obj_mjcf.get_collision(name=obj_name, site=True)
+            obj = obj_mjcf.get_collision(site=True)
             obj.append(new_joint(name=obj_name, type="free"))
             self.objects.append(obj)
             self.worldbody.append(obj)
