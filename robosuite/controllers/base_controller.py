@@ -20,12 +20,19 @@ class Controller(object, metaclass=abc.ABCMeta):
             "joints" : list of indexes to relevant robot joints
             "qpos" : list of indexes to relevant robot joint positions
             "qvel" : list of indexes to relevant robot joint velocities
+
+        actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
     """
     def __init__(self,
                  sim,
                  eef_name,
                  joint_indexes,
+                 actuator_range,
     ):
+
+        # Actuator range
+        self.actuator_min = actuator_range[0]
+        self.actuator_max = actuator_range[1]
 
         # Attributes for scaling / clipping inputs to outputs
         self.action_scale = None
@@ -164,6 +171,12 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.initial_ee_pos = self.ee_pos
         self.initial_ee_ori_mat = self.ee_ori_mat
 
+    def clip_torques(self, torques):
+        """
+        Clips the torques to be within the actuator limits
+        """
+        return np.clip(torques, self.actuator_min, self.actuator_max)
+
     def reset_goal(self):
         """
         Resets the goal -- usually by setting to the goal to all zeros, but in some cases may be different (e.g.: OSC)
@@ -178,7 +191,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         Args:
             @nums (numeric or Iterable): Either single value or array of numbers
-            @dim (int): Size of array to broadcast input to
+            @dim (int): Size of array to broadcast input to env.sim.data.actuator_force
         """
         # First run sanity check to make sure no strings are being inputted
         if isinstance(nums, str):
@@ -192,6 +205,11 @@ class Controller(object, metaclass=abc.ABCMeta):
     def torque_compensation(self):
         """Returns gravity compensation torques for the robot arm"""
         return self.sim.data.qfrc_bias[self.qvel_index]
+
+    @property
+    def actuator_limits(self):
+        """Returns torque limits for this controller"""
+        return self.actuator_min, self.actuator_max
 
     @property
     def control_limits(self):

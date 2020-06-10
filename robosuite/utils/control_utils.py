@@ -199,3 +199,50 @@ def set_goal_orientation(delta,
         if limited:
             goal_orientation = trans.euler2mat(np.array([euler[1], euler[0], euler[2]]))
     return goal_orientation
+
+
+class RingBuffer(object):
+    """
+    Simple RingBuffer object to hold values to average (useful for, e.g.: filtering D component in PID control)
+    """
+
+    def __init__(self, dim, length):
+        """
+        Constructs RingBuffer object. Note that the buffer object is a 2D numpy array, where each row corresponds to
+        individual entries into the buffer
+
+        Args:
+            dim (int): Size of entries being added. This is, e.g.: the size of a state vector that is to be stored
+            length (int): Size of the ring buffer
+        """
+        # Store input args
+        self.dim = dim
+        self.length = length
+
+        # Save pointer to current place in the buffer
+        self.ptr = 0
+
+        # Construct ring buffer
+        self.buf = np.zeros((length, dim))
+
+    def push(self, value):
+        """
+        Pushes a new value into the buffer
+        """
+        # Add value, then increment pointer
+        self.buf[self.ptr] = np.array(value)
+        self.ptr = (self.ptr + 1) % self.length
+
+    def clear(self):
+        """
+        Clears buffer and reset pointer
+        """
+        self.buf = np.zeros((self.length, self.dim))
+        self.ptr = 0
+
+    @property
+    def average(self):
+        """
+        Gets the average of components in buffer
+        """
+        return np.mean(self.buf, axis=0)

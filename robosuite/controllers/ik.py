@@ -138,6 +138,7 @@ class InverseKinematicsController(JointVelocityController):
             sim=sim,
             eef_name=eef_name,
             joint_indexes=joint_indexes,
+            actuator_range=actuator_range,
             input_max=5,
             input_min=-5,
             output_max=5,

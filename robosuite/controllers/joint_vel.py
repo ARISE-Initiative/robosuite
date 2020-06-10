@@ -1,4 +1,5 @@
 from robosuite.controllers.base_controller import Controller
+from robosuite.utils.control_utils import RingBuffer
 import numpy as np
 
 
@@ -19,6 +20,8 @@ class JointVelocityController(Controller):
             "joints" : list of indexes to relevant robot joints
             "qpos" : list of indexes to relevant robot joint positions
             "qvel" : list of indexes to relevant robot joint velocities
+
+        actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
         input_max (float or list of float): Maximum above which an inputted action will be clipped. Can be either be
             a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
@@ -56,6 +59,7 @@ class JointVelocityController(Controller):
                  sim,
                  eef_name,
                  joint_indexes,
+                 actuator_range,
                  input_max=1,
                  input_min=-1,
                  output_max=1,
@@ -71,6 +75,7 @@ class JointVelocityController(Controller):
             sim,
             eef_name,
             joint_indexes,
+            actuator_range,
         )
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
@@ -81,8 +86,23 @@ class JointVelocityController(Controller):
         self.output_max = self.nums2array(output_max, self.control_dim)
         self.output_min = self.nums2array(output_min, self.control_dim)
 
-        # kv
-        self.kv = self.nums2array(kv, self.control_dim)
+        # gains and corresopnding vars
+        self.kvp = self.nums2array(kv, self.control_dim)
+        # if kv is a single value, map wrist gains accordingly (scale down x10 for final two joints)
+
+        if type(kv) is float or type(kv) is int:
+            low, high = self.actuator_limits
+            self.kvp = kv * (high - low)
+        #    print(self.kvp)
+        #    self.kvp[-2:] *= 0.2
+        #    print(self.kvp)
+        self.kvi = self.kvp * 0.005
+        self.kvd = self.kvp * 0.001
+        self.last_err = np.zeros(self.joint_dim)
+        self.derr_buf = RingBuffer(dim=self.joint_dim, length=5)
+        self.summed_err = np.zeros(self.joint_dim)
+        self.saturated = False
+        self.last_joint_vel = np.zeros(self.joint_dim)
 
         # limits
         self.velocity_limits = velocity_limits
@@ -110,7 +130,7 @@ class JointVelocityController(Controller):
 
         self.goal_vel = self.scale_action(velocities)
         if self.velocity_limits is not None:
-            self.goal_vel = np.clip(velocities, self.velocity_limits[0], self.velocity_limits[1])
+            self.goal_vel = np.clip(self.goal_vel, self.velocity_limits[0], self.velocity_limits[1])
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_vel)
@@ -134,8 +154,30 @@ class JointVelocityController(Controller):
         else:
             self.current_vel = np.array(self.goal_vel)
 
-        # Compute torques plus gravity compensation
-        self.torques = np.multiply(self.kv, (self.current_vel - self.joint_vel)) + self.torque_compensation
+        # We clip the current joint velocity to be within a reasonable range for stability
+        joint_vel = np.clip(self.joint_vel, self.output_min, self.output_max)
+
+        # Compute necessary error terms for PID velocity controller
+        err = self.current_vel - joint_vel
+        derr = err - self.last_err
+        self.last_err = err
+        self.derr_buf.push(derr)
+
+        # Only add to I component if we're not saturated (anti-windup)
+        if not self.saturated:
+            self.summed_err += err
+
+        # Compute command torques via PID velocity controller plus gravity compensation torques
+        torques = self.kvp * err + \
+            self.kvi * self.summed_err + \
+            self.kvd * self.derr_buf.average + \
+            self.torque_compensation
+
+        # Clip torques
+        self.torques = self.clip_torques(torques)
+
+        # Check if we're saturated
+        self.saturated = False if np.sum(np.abs(self.torques - torques)) == 0 else True
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()

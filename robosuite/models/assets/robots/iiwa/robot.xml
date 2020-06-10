@@ -52,12 +52,12 @@
                 <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col2"/>
             </body>
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.4 0.4 0.4 1" mesh="link_0_vis" />
-            <geom type="mesh" rgba="0.4 0.4 0.4 1" mesh="link_0" name="link_0_collision" />
+            <geom type="mesh" rgba="0.4 0.4 0.4 1" contype="0" mesh="link_0" name="link_0_collision" />
             <body name="link_1" pos="0 0 0.15">
                 <inertial pos="0 -0.03 0.12" quat="0.428904 0.562175 -0.562175 0.428904" mass="3.4525" diaginertia="0.0218946 0.02183 0.00663837" />
                 <joint name="joint_1" pos="0 0 0" axis="0 0 1" limited="true" range="-2.96706 2.96706" damping="0.1" />
                 <geom pos="0 0 0.0075" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.4 0.4 0.4 1" mesh="link_1_vis" />
-                <geom pos="0 0 0.0075" type="mesh" rgba="0.4 0.4 0.4 1" mesh="link_1" name="link_1_collision" />
+                <geom pos="0 0 0.0075" type="mesh" contype="0" rgba="0.4 0.4 0.4 1" mesh="link_1" name="link_1_collision" />
                 <body name="link_2" pos="0 0 0.19" quat="0 0 0.707107 0.707107">
                     <inertial pos="0.0003 0.059 0.042" quat="0.701371 0.0898824 0.0898824 0.701371" mass="3.4821" diaginertia="0.02179 0.0217049 0.00684512" />
                     <joint name="joint_2" pos="0 0 0" axis="0 0 1" limited="true" range="-2.0944 2.0944" damping="0.1" />

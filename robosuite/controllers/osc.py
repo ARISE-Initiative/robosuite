@@ -34,6 +34,8 @@ class OperationalSpaceController(Controller):
             "qpos" : list of indexes to relevant robot joint positions
             "qvel" : list of indexes to relevant robot joint velocities
 
+        actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
+
         input_max (float or Iterable of float): Maximum above which an inputted action will be clipped. Can be either be
             a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
             latter, dimension should be the same as the control dimension for this controller
@@ -101,6 +103,7 @@ class OperationalSpaceController(Controller):
                  sim,
                  eef_name,
                  joint_indexes,
+                 actuator_range,
                  input_max=1,
                  input_min=-1,
                  output_max=(0.05, 0.05, 0.05, 0.5, 0.5, 0.5),
@@ -125,6 +128,7 @@ class OperationalSpaceController(Controller):
             sim,
             eef_name,
             joint_indexes,
+            actuator_range,
         )
         # Determine whether this is pos ori or just pos
         self.use_ori = control_ori
