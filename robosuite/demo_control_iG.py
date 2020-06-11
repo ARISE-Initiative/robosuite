@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     # Define the number of timesteps to use per controller action as well as timesteps in between actions
     steps_per_action = 50
-    steps_per_rest = 250
+    steps_per_rest = 25
 
     # Help message to user
     print()
@@ -122,11 +122,11 @@ if __name__ == "__main__":
         has_renderer=True,
         ignore_done=True,
         use_camera_obs=False,
+        render_with_igibson=True,
         horizon=(steps_per_action + steps_per_rest) * num_test_steps,
         control_freq=20,
     )
     env.reset()
-    env.viewer.set_camera(camera_id=0)
 
     # To accommodate for multi-arm settings (e.g.: Baxter), we need to make sure to fill any extra action space
     # Get total number of arms being controlled
