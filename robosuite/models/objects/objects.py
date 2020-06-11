@@ -130,12 +130,18 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
     MujocoObjects that are loaded from xml files
     """
 
-    def __init__(self, fname):
+    def __init__(self, fname, joints=None):
         """
         Args:
             fname (TYPE): XML File path
         """
         MujocoXML.__init__(self, fname)
+
+        # joints for this object
+        if joints is None:
+            self.joints = [{'type': 'free'}]  # default free joint
+        else:
+            self.joints = joints
 
     def get_bottom_offset(self):
         bottom_site = self.worldbody.find("./body/site[@name='bottom_site']")
@@ -204,6 +210,7 @@ class MujocoGeneratedObject(MujocoObject):
         density_range=None,
         friction_range=None,
         add_material=False,
+        joints=None,
     ):
         """
         Provides default initialization of physical attributes:
@@ -225,6 +232,9 @@ class MujocoGeneratedObject(MujocoObject):
             friction_range ([float,float], optional): range for random choice
             add_material (bool, optional): if True, add a material and texture for this 
                 object that is used to color the geom(s).
+            joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
+                object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
+                xml specification.
         """
         super().__init__()
 
@@ -266,6 +276,12 @@ class MujocoGeneratedObject(MujocoObject):
         self.add_material = add_material
         if add_material:
             self.asset = self._get_asset()
+
+        # joints for this object
+        if joints is None:
+            self.joints = [{'type': 'free'}]  # default free joint
+        else:
+            self.joints = joints
 
         self.sanity_check()
 

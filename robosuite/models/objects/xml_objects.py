@@ -8,8 +8,8 @@ class BottleObject(MujocoXMLObject):
     Bottle object
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/bottle.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/bottle.xml"), joints=joints)
 
 
 class CanObject(MujocoXMLObject):
@@ -17,8 +17,8 @@ class CanObject(MujocoXMLObject):
     Coke can object (used in PickPlace)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/can.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/can.xml"), joints=joints)
 
 
 class LemonObject(MujocoXMLObject):
@@ -26,8 +26,8 @@ class LemonObject(MujocoXMLObject):
     Lemon object
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/lemon.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/lemon.xml"), joints=joints)
 
 
 class MilkObject(MujocoXMLObject):
@@ -35,8 +35,8 @@ class MilkObject(MujocoXMLObject):
     Milk carton object (used in PickPlace)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/milk.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/milk.xml"), joints=joints)
 
 
 class BreadObject(MujocoXMLObject):
@@ -44,8 +44,8 @@ class BreadObject(MujocoXMLObject):
     Bread loaf object (used in PickPlace)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/bread.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/bread.xml"), joints=joints)
 
 
 class CerealObject(MujocoXMLObject):
@@ -53,8 +53,8 @@ class CerealObject(MujocoXMLObject):
     Cereal box object (used in PickPlace)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/cereal.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/cereal.xml"), joints=joints)
 
 
 class SquareNutObject(MujocoXMLObject):
@@ -62,8 +62,8 @@ class SquareNutObject(MujocoXMLObject):
     Square nut object (used in NutAssembly)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/square-nut.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/square-nut.xml"), joints=joints)
 
 
 class RoundNutObject(MujocoXMLObject):
@@ -71,8 +71,8 @@ class RoundNutObject(MujocoXMLObject):
     Round nut (used in NutAssembly)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/round-nut.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/round-nut.xml"), joints=joints)
 
 
 class MilkVisualObject(MujocoXMLObject):
@@ -83,8 +83,8 @@ class MilkVisualObject(MujocoXMLObject):
     They provide a point of reference to indicate a position.
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/milk-visual.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/milk-visual.xml"), joints=joints)
 
 
 class BreadVisualObject(MujocoXMLObject):
@@ -92,8 +92,8 @@ class BreadVisualObject(MujocoXMLObject):
     Visual fiducial of bread loaf (used in PickPlace)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/bread-visual.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/bread-visual.xml"), joints=joints)
 
 
 class CerealVisualObject(MujocoXMLObject):
@@ -101,8 +101,8 @@ class CerealVisualObject(MujocoXMLObject):
     Visual fiducial of cereal box (used in PickPlace)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/cereal-visual.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/cereal-visual.xml"), joints=joints)
 
 
 class CanVisualObject(MujocoXMLObject):
@@ -110,8 +110,8 @@ class CanVisualObject(MujocoXMLObject):
     Visual fiducial of coke can (used in PickPlace)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/can-visual.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/can-visual.xml"), joints=joints)
 
 
 class PlateWithHoleObject(MujocoXMLObject):
@@ -119,19 +119,19 @@ class PlateWithHoleObject(MujocoXMLObject):
     Square plate with a hole in the center (used in PegInHole)
     """
 
-    def __init__(self):
-        super().__init__(xml_path_completion("objects/plate-with-hole.xml"))
+    def __init__(self, joints=None):
+        super().__init__(xml_path_completion("objects/plate-with-hole.xml"), joints=joints)
 
 
 class DoorObject(MujocoXMLObject):
     """
     Door with handle (used in Door)
     """
-    def __init__(self, friction=None, damping=None, lock=False):
+    def __init__(self, joints=None, friction=None, damping=None, lock=False):
         xml_path = "objects/door_small.xml"
         if lock:
             xml_path = "objects/door_lock.xml"
-        super().__init__(xml_path_completion(xml_path))
+        super().__init__(xml_path_completion(xml_path), joints=joints)
         self.lock = lock
         self.friction = friction
         self.damping = damping

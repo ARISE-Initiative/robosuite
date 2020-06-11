@@ -28,6 +28,7 @@ class HammerObject(MujocoGeneratedObject):
         rgba_head=None,
         rgba_face=None,
         rgba_claw=None,
+        joints=None,
     ):
         """
         handle_shape (str): Either "box", for a box-shaped handle, or "cylinder", for a cylindrically-shaped handle
@@ -44,10 +45,13 @@ class HammerObject(MujocoGeneratedObject):
         rgba_head (3-array or None): If specified, sets handle rgba values
         rgba_face (3-array or None): If specified, sets handle rgba values
         rgba_claw (3-array or None): If specified, sets handle rgba values
+        joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
+            object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
+            xml specification.
         """
 
         # Run super() init
-        super().__init__()
+        super().__init__(joints=joints)
 
         # Set handle type and density ratio
         self.handle_shape = handle_shape
@@ -225,8 +229,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         rgba_handle_2=None,
         solid_handle=False,
         thickness=0.025,  # For body
+        joints=None,
     ):
-        super().__init__(name=name)
+        super().__init__(name=name, joints=joints)
         if body_half_size:
             self.body_half_size = body_half_size
         else:
@@ -545,6 +550,7 @@ class BoxObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -564,6 +570,7 @@ class BoxObject(MujocoGeneratedObject):
             density_range=density_range,
             friction_range=friction_range,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -604,6 +611,7 @@ class CylinderObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -623,6 +631,7 @@ class CylinderObject(MujocoGeneratedObject):
             density_range=density_range,
             friction_range=friction_range,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -663,6 +672,7 @@ class BallObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -682,6 +692,7 @@ class BallObject(MujocoGeneratedObject):
             density_range=density_range,
             friction_range=friction_range,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -722,6 +733,7 @@ class CapsuleObject(MujocoGeneratedObject):
         friction_range=None,
         rgba="random",
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
@@ -741,6 +753,7 @@ class CapsuleObject(MujocoGeneratedObject):
             density_range=density_range,
             friction_range=friction_range,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):
