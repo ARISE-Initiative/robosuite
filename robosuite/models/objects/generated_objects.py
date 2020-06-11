@@ -522,6 +522,8 @@ class BoxObject(MujocoGeneratedObject):
         density=None,
         friction=None,
         rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
         joints=None,
     ):
@@ -536,6 +538,8 @@ class BoxObject(MujocoGeneratedObject):
             rgba=rgba,
             density=density,
             friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
             joints=joints,
         )
@@ -575,6 +579,8 @@ class CylinderObject(MujocoGeneratedObject):
         density=None,
         friction=None,
         rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
         joints=None,
     ):
@@ -589,6 +595,8 @@ class CylinderObject(MujocoGeneratedObject):
             rgba=rgba,
             density=density,
             friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
             joints=joints,
         )
@@ -628,6 +636,8 @@ class BallObject(MujocoGeneratedObject):
         density=None,
         friction=None,
         rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
         joints=None,
     ):
@@ -642,6 +652,8 @@ class BallObject(MujocoGeneratedObject):
             rgba=rgba,
             density=density,
             friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
             joints=joints,
         )
@@ -681,6 +693,8 @@ class CapsuleObject(MujocoGeneratedObject):
         density=None,
         friction=None,
         rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
         joints=None,
     ):
@@ -695,6 +709,8 @@ class CapsuleObject(MujocoGeneratedObject):
             rgba=rgba,
             density=density,
             friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
             joints=joints,
         )

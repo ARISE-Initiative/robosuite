@@ -209,6 +209,8 @@ class MujocoGeneratedObject(MujocoObject):
         rgba=None,
         density=None,
         friction=None,
+        solref=None,
+        solimp=None,
         add_material=False,
         joints=None,
     ):
@@ -225,6 +227,12 @@ class MujocoGeneratedObject(MujocoObject):
                 specified, in order to set the sliding friction (the other values) will
                 be set to the MuJoCo default. See http://www.mujoco.org/book/modeling.html#geom 
                 for details.
+
+            solref ([float], optional): of size 2. MuJoCo solver parameters that handle contact.
+                See http://www.mujoco.org/book/XMLreference.html for more details.
+
+            solimp ([float], optional): of size 3. MuJoCo solver parameters that handle contact.
+                See http://www.mujoco.org/book/XMLreference.html for more details.
 
             add_material (bool, optional): if True, add a material and texture for this 
                 object that is used to color the geom(s).
@@ -256,6 +264,16 @@ class MujocoGeneratedObject(MujocoObject):
             friction = [friction, 0.005, 0.0001]
         assert len(friction) == 3, "friction must be a length 3 array or a float"
         self.friction = list(friction)
+
+        if solref is None:
+            self.solref = [0.02, 1.] # MuJoCo default
+        else:
+            self.solref = solref
+
+        if solimp is None:
+            self.solimp = [0.9, 0.95, 0.001] # MuJoCo default
+        else:
+            self.solimp = solimp
 
         # add in texture and material for this object (for domain randomization)
         self.add_material = add_material
@@ -317,6 +335,8 @@ class MujocoGeneratedObject(MujocoObject):
         template["size"] = array_to_string(self.size)
         template["density"] = str(self.density)
         template["friction"] = array_to_string(self.friction)
+        template["solref"] = array_to_string(self.solref)
+        template["solimp"] = array_to_string(self.solimp)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well
