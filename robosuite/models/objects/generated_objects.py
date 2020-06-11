@@ -18,6 +18,7 @@ class HammerObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         handle_shape="box",
         handle_radius=(0.015, 0.02),
         handle_length=(0.1, 0.25),
@@ -51,7 +52,7 @@ class HammerObject(MujocoGeneratedObject):
         """
 
         # Run super() init
-        super().__init__(joints=joints)
+        super().__init__(name=name, joints=joints)
 
         # Set handle type and density ratio
         self.handle_shape = handle_shape
@@ -91,13 +92,10 @@ class HammerObject(MujocoGeneratedObject):
         return 2.0 * self.handle_radius
         return self.body_half_size[1] * 2 + self.handle_length * 2
 
-    def get_collision(self, name=None, site=None):
+    def get_collision(self, site=None):
         # Create new body
         main_body = new_body()
-
-        # Define name for this object if specified
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
 
         # Define handle and append to the main body
         if self.handle_shape == "cylinder":
@@ -483,10 +481,6 @@ def five_sided_box(size, rgba, group, thickness):
     return geoms
 
 
-DEFAULT_DENSITY_RANGE = [200, 500, 1000, 3000, 5000]
-DEFAULT_FRICTION_RANGE = [0.25, 0.5, 1, 1.5, 2]
-
-
 def _get_size(size,
               size_max,
               size_min,
@@ -514,28 +508,9 @@ def _get_size(size,
     return size
 
 
-def _get_randomized_range(val,
-                          provided_range,
-                          default_range):
-    """
-        Helper to initialize by either value or a range
-        Returns a range to randomize from
-    """
-    if val is None:
-        if provided_range is None:
-            return default_range
-        else:
-            return provided_range
-    else:
-        if provided_range is not None:
-            raise ValueError('Value {} overrides range {}'
-                             .format(str(val), str(provided_range)))
-        return [val]
-
-
 class BoxObject(MujocoGeneratedObject):
     """
-    An object that is a box
+    A box object.
     """
 
     def __init__(
@@ -545,10 +520,8 @@ class BoxObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
         add_material=False,
         joints=None,
     ):
@@ -557,18 +530,12 @@ class BoxObject(MujocoGeneratedObject):
                          size_min,
                          [0.07, 0.07, 0.07],
                          [0.03, 0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
             add_material=add_material,
             joints=joints,
         )
@@ -596,7 +563,7 @@ class BoxObject(MujocoGeneratedObject):
 
 class CylinderObject(MujocoGeneratedObject):
     """
-    A randomized cylinder object.
+    A cylinder object.
     """
 
     def __init__(
@@ -606,10 +573,8 @@ class CylinderObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
         add_material=False,
         joints=None,
     ):
@@ -618,18 +583,12 @@ class CylinderObject(MujocoGeneratedObject):
                          size_min,
                          [0.07, 0.07],
                          [0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
             add_material=add_material,
             joints=joints,
         )
@@ -657,7 +616,7 @@ class CylinderObject(MujocoGeneratedObject):
 
 class BallObject(MujocoGeneratedObject):
     """
-    A randomized ball (sphere) object.
+    A ball (sphere) object.
     """
 
     def __init__(
@@ -667,10 +626,8 @@ class BallObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
         add_material=False,
         joints=None,
     ):
@@ -679,18 +636,12 @@ class BallObject(MujocoGeneratedObject):
                          size_min,
                          [0.07],
                          [0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
             add_material=add_material,
             joints=joints,
         )
@@ -718,7 +669,7 @@ class BallObject(MujocoGeneratedObject):
 
 class CapsuleObject(MujocoGeneratedObject):
     """
-    A randomized capsule object.
+    A capsule object.
     """
 
     def __init__(
@@ -728,10 +679,8 @@ class CapsuleObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
         add_material=False,
         joints=None,
     ):
@@ -740,18 +689,12 @@ class CapsuleObject(MujocoGeneratedObject):
                          size_min,
                          [0.07, 0.07],
                          [0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
             add_material=add_material,
             joints=joints,
         )
