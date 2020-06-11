@@ -20,7 +20,7 @@ from robosuite.models.objects import (
     CerealVisualObject,
     CanVisualObject,
 )
-from robosuite.models.tasks import PickPlaceTask
+from robosuite.models.tasks import TableTopTask, SequentialCompositeSampler
 
 
 class PickPlace(RobotEnv):
@@ -361,6 +361,64 @@ class PickPlace(RobotEnv):
                 self.sim.set_state(sim_state)
                 self.sim.forward()
 
+    def _get_placement_initializer(self):
+        """
+        Helper function for defining placement initializer and object sampling bounds.
+        """
+        self.placement_initializer = SequentialCompositeSampler()
+
+        # each object should just be sampled in the bounds of the bin (with some tolerance)
+        for obj_name in self.mujoco_objects:
+
+            # can sample anywhere in bin
+            bin_x_half = self.mujoco_arena.table_full_size[0] / 2 - 0.05
+            bin_y_half = self.mujoco_arena.table_full_size[1] / 2 - 0.05
+
+            self.placement_initializer.sample_on_top(
+                obj_name,
+                surface_name="table",
+                x_range=[-bin_x_half, bin_x_half],
+                y_range=[-bin_y_half, bin_y_half],
+                rotation=None,
+                rotation_axis='z',
+                z_offset=0.,
+                ensure_object_boundary_in_range=True,
+            )
+
+        # each visual object should just be at the center of each target bin
+        index = 0
+        for obj_name in self.visual_objects:
+
+            # get center of target bin
+            bin_x_low = self.bin_pos[0]
+            bin_y_low = self.bin_pos[1]
+            if index == 0 or index == 2:
+                bin_x_low -= self.bin_size[0] / 2
+            if index < 2:
+                bin_y_low -= self.bin_size[1] / 2
+            bin_x_high = bin_x_low + self.bin_size[0] / 2
+            bin_y_high = bin_y_low + self.bin_size[1] / 2
+            bin_center = np.array([
+                (bin_x_low + bin_x_high) / 2., 
+                (bin_y_low + bin_y_high) / 2., 
+            ])
+
+            # placement is relative to object bin, so compute difference and send to placement initializer
+            rel_center = bin_center - self.bin_offset[:2]
+
+            self.placement_initializer.sample_on_top(
+                obj_name,
+                surface_name="table",
+                x_range=[rel_center[0], rel_center[0]],
+                y_range=[rel_center[1], rel_center[1]],
+                rotation=0.,
+                rotation_axis='z',
+                z_offset=0.,
+                ensure_object_boundary_in_range=True,
+            )
+
+            index += 1
+
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
@@ -385,6 +443,11 @@ class PickPlace(RobotEnv):
         # Arena always gets set to zero origin
         self.mujoco_arena.set_origin([0, 0, 0])
 
+        # store some arena attributes
+        self.bin_pos = string_to_array(self.mujoco_arena.bin2_body.get("pos"))
+        self.bin_size = self.mujoco_arena.table_full_size
+        self.bin_offset = self.mujoco_arena.table_top_abs[:2]
+
         # define mujoco objects
         self.ob_inits = [MilkObject, BreadObject, CerealObject, CanObject]
         self.vis_inits = [
@@ -399,31 +462,37 @@ class PickPlace(RobotEnv):
 
         lst = []
         for j in range(len(self.vis_inits)):
-            lst.append((str(self.vis_inits[j]), self.vis_inits[j]()))
-        self.visual_objects = lst
+            visual_ob = self.vis_inits[j](
+                name=("Visual" + self.item_names[j] + "0"),
+                joints=[], # no free joint for visual objects
+            )
+            lst.append((str(self.vis_inits[j]), visual_ob))
+        self.visual_objects = OrderedDict(lst)
 
         lst = []
         for i in range(len(self.ob_inits)):
-            ob = self.ob_inits[i]()
-            lst.append((str(self.item_names[i]) + "0", ob))
+            ob = self.ob_inits[i](
+                name=(self.item_names[i] + "0"),
+            )
+            lst.append((self.item_names[i] + "0", ob))
 
         self.mujoco_objects = OrderedDict(lst)
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
-        self.model = PickPlaceTask(
-            self.mujoco_arena,
-            [robot.robot_model for robot in self.robots],
-            self.mujoco_objects,
-            self.visual_objects,
+        self._get_placement_initializer()
+        self.model = TableTopTask(
+            mujoco_arena=self.mujoco_arena, 
+            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_objects=self.mujoco_objects, 
+            visual_objects=self.visual_objects, 
+            initializer=self.placement_initializer,
         )
 
         # set positions of objects
         self.model.place_objects()
 
-        self.model.place_visual()
-        self.bin_pos = string_to_array(self.model.bin2_body.get("pos"))
-        self.bin_size = self.model.bin_size
+        # self.model.place_visual()
 
     def _get_reference(self):
         """
@@ -482,12 +551,11 @@ class PickPlace(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_placements = self.model.place_objects()
+            obj_pos, obj_quat = self.placement_initializer.sample()
 
             # Loop through all objects and reset their positions
-            for (obj_name, _), placement in zip(self.mujoco_objects.items(), obj_placements):
-                self.sim.data.set_joint_qpos(obj_name + "_0",
-                                             np.concatenate([np.array(placement[0]), np.array(placement[1])]))
+            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
+                self.sim.data.set_joint_qpos(obj_name + "_0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
         # information of objects
         self.object_names = list(self.mujoco_objects.keys())

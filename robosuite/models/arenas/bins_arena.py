@@ -32,6 +32,6 @@ class BinsArena(Arena):
         self.floor.set("pos", array_to_string(self.bottom_pos))
 
     @property
-    def bin_abs(self):
-        """Returns the absolute position of table top"""
+    def table_top_abs(self):
+        """Returns the absolute position of the object bin."""
         return string_to_array(self.bin1_body.get("pos"))
