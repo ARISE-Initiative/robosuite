@@ -473,6 +473,7 @@ class PickPlace(RobotEnv):
         for i in range(len(self.ob_inits)):
             ob = self.ob_inits[i](
                 name=(self.item_names[i] + "0"),
+                joints=[dict(type="free", damping="0.0005")], # damp the free joint for each object
             )
             lst.append((self.item_names[i] + "0", ob))
 
