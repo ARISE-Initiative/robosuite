@@ -408,12 +408,6 @@ class NutAssembly(RobotEnv):
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
-        # self.model = NutAssemblyTask(
-        #     self.mujoco_arena,
-        #     [robot.robot_model for robot in self.robots],
-        #     self.mujoco_objects,
-        #     initializer=self.placement_initializer,
-        # )
         self.model = TableTopTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
