@@ -130,12 +130,14 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
     MujocoObjects that are loaded from xml files
     """
 
-    def __init__(self, fname, joints=None):
+    def __init__(self, fname, name=None, joints=None):
         """
         Args:
             fname (TYPE): XML File path
         """
         MujocoXML.__init__(self, fname)
+
+        self.name = name
 
         # joints for this object
         if joints is None:
@@ -157,39 +159,39 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
-    def get_collision(self, name=None, site=False):
+    def get_collision(self, site=False):
 
         collision = copy.deepcopy(self.worldbody.find("./body/body[@name='collision']"))
         collision.attrib.pop("name")
-        if name is not None:
-            collision.attrib["name"] = name
+        if self.name is not None:
+            collision.attrib["name"] = self.name
             geoms = collision.findall("geom")
             if len(geoms) == 1:
-                geoms[0].set("name", name)
+                geoms[0].set("name", self.name)
             else:
                 for i in range(len(geoms)):
-                    geoms[i].set("name", "{}-{}".format(name, i))
+                    geoms[i].set("name", "{}-{}".format(self.name, i))
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
             template["rgba"] = "1 0 0 0"
-            if name is not None:
-                template["name"] = name
+            if self.name is not None:
+                template["name"] = self.name
             collision.append(ET.Element("site", attrib=template))
         return collision
 
-    def get_visual(self, name=None, site=False):
+    def get_visual(self, site=False):
 
         visual = copy.deepcopy(self.worldbody.find("./body/body[@name='visual']"))
         visual.attrib.pop("name")
-        if name is not None:
-            visual.attrib["name"] = name
+        if self.name is not None:
+            visual.attrib["name"] = self.name
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
             template["rgba"] = "1 0 0 0"
-            if name is not None:
-                template["name"] = name
+            if self.name is not None:
+                template["name"] = self.name
             visual.append(ET.Element("site", attrib=template))
         return visual
 

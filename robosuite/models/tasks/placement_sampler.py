@@ -1,6 +1,8 @@
 import collections
 import numpy as np
 
+from copy import deepcopy
+
 from robosuite.utils import RandomizationError
 from robosuite.utils.transform_utils import quat_multiply
 
