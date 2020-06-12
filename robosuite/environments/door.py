@@ -6,14 +6,14 @@ from robosuite.utils.transform_utils import convert_quat
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
 
-from robosuite.models.arenas import TableArena
-from robosuite.models.objects import BoxObject
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.arenas import DoorArena
+from robosuite.models.objects import DoorObject
+from robosuite.models.tasks import DoorTask, UniformRandomSampler
 
 
-class Lift(RobotEnv):
+class Door(RobotEnv):
     """
-    This class corresponds to the lifting task for a single robot arm.
+    This class corresponds to the door opening task for a single robot arm.
     """
 
     def __init__(
@@ -161,10 +161,11 @@ class Lift(RobotEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.03, 0.03],
-                y_range=[-0.03, 0.03],
+                x_range=[0.1, 0.1],
+                y_range=[-0.35, -0.35],
                 ensure_object_boundary_in_range=False,
-                rotation=None,
+                rotation=(-np.pi / 2.),
+                # z_offset=0.02,
             )
 
         super().__init__(
@@ -217,31 +218,7 @@ class Lift(RobotEnv):
         if self._check_success():
             reward = 1.0
 
-        # use a shaping reward
-        if self.reward_shaping:
-
-            # reaching reward
-            cube_pos = self.sim.data.body_xpos[self.cube_body_id]
-            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-            dist = np.linalg.norm(gripper_site_pos - cube_pos)
-            reaching_reward = 1 - np.tanh(10.0 * dist)
-            reward += reaching_reward
-
-            # grasping reward
-            touch_left_finger = False
-            touch_right_finger = False
-            for i in range(self.sim.data.ncon):
-                c = self.sim.data.contact[i]
-                if c.geom1 in self.l_finger_geom_ids and c.geom2 == self.cube_geom_id:
-                    touch_left_finger = True
-                if c.geom1 == self.cube_geom_id and c.geom2 in self.l_finger_geom_ids:
-                    touch_left_finger = True
-                if c.geom1 in self.r_finger_geom_ids and c.geom2 == self.cube_geom_id:
-                    touch_right_finger = True
-                if c.geom1 == self.cube_geom_id and c.geom2 in self.r_finger_geom_ids:
-                    touch_right_finger = True
-            if touch_left_finger and touch_right_finger:
-                reward += 0.25
+        # TODO: fill this in
 
         return reward * self.reward_scale / 2.25
 
@@ -260,7 +237,7 @@ class Lift(RobotEnv):
         self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
-        self.mujoco_arena = TableArena(
+        self.mujoco_arena = DoorArena(
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
         if self.use_indicator_object:
@@ -270,18 +247,16 @@ class Lift(RobotEnv):
         self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
-        cube = BoxObject(
-            name="cube",
-            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
-            size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
-            rgba=[1, 0, 0, 1],
-            add_material=True,
+        door = DoorObject(
+            friction=0.0,
+            damping=0.1,
+            lock=True,
         )
-        self.mujoco_objects = OrderedDict([("cube", cube)])
+        self.mujoco_objects = OrderedDict([("Door", door)])
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopTask(
+        self.model = DoorTask(
             self.mujoco_arena,
             [robot.robot_model for robot in self.robots],
             self.mujoco_objects,
@@ -298,14 +273,20 @@ class Lift(RobotEnv):
         super()._get_reference()
 
         # Additional object references from this env
-        self.cube_body_id = self.sim.model.body_name2id("cube")
+        self.object_body_ids = {}
+        self.object_body_ids["door"]  = self.sim.model.body_name2id("door")
+        self.object_body_ids["frame"] = self.sim.model.body_name2id("frame")
+        self.object_body_ids["latch"]  = self.sim.model.body_name2id("latch")
+        self.door_handle_site_id = self.sim.model.site_name2id("door_handle")
+        self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr("door_hinge")
+        self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr("latch_joint")
+
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.left_finger_geoms
         ]
         self.r_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.right_finger_geoms
         ]
-        self.cube_geom_id = self.sim.model.geom_name2id("cube")
 
     def _reset_internal(self):
         """
@@ -319,9 +300,11 @@ class Lift(RobotEnv):
             # Sample from the placement initializer for all objects
             obj_pos, obj_quat = self.placement_initializer.sample()
 
-            # Loop through all objects and reset their positions
-            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name, np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+            # TODO: figure out what to do here for door task reset
+
+            # # Loop through all objects and reset their positions
+            # for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
+            #     self.sim.data.set_joint_qpos(obj_name, np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
     def _get_observation(self):
         """
@@ -343,32 +326,38 @@ class Lift(RobotEnv):
             # Get robot prefix
             pr = self.robots[0].robot_model.naming_prefix
 
-            # position and rotation of object
-            cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
-            cube_quat = convert_quat(
-                np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw"
-            )
-            di["cube_pos"] = cube_pos
-            di["cube_quat"] = cube_quat
+            eef_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
+            door_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["door"]])
+            # frame_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["frame"]])
+            # latch_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["latch"]])
+            handle_pos = np.array(self.sim.data.site_xpos[self.door_handle_site_id])
+            hinge_qpos = np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
+            handle_qpos = np.array([self.sim.data.qpos[self.handle_qpos_addr]])
 
-            gripper_site_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
-            di[pr + "gripper_to_cube"] = gripper_site_pos - cube_pos
-
-            di["object-state"] = np.concatenate(
-                [cube_pos, cube_quat, di[pr + "gripper_to_cube"]]
-            )
+            di["door_pos"] = door_pos
+            di["handle_pos"] = handle_pos
+            di[pr + "door_to_eef_pos"] = door_pos - eef_pos
+            di[pr + "handle_to_eef_pos"] = handle_pos - eef_pos
+            di["hinge_qpos"] = hinge_qpos
+            di["handle_qpos"] = handle_qpos
+        
+            di['object-state'] = np.concatenate([
+                di["door_pos"],
+                di["handle_pos"],
+                di[pr + "door_to_eef_pos"],
+                di[pr + "handle_to_eef_pos"],
+                di["hinge_qpos"],
+                di["handle_qpos"],
+            ])
 
         return di
 
     def _check_success(self):
         """
-        Returns True if task has been completed.
+        Returns True if door has been opened.
         """
-        cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.table_full_size[2]
-
-        # cube is higher than the table top above a margin
-        return cube_height > table_height + 0.04
+        hinge_qpos = self.sim.data.qpos[self.hinge_qpos_addr]
+        return (hinge_qpos > 0.3)
 
     def _visualization(self):
         """
@@ -377,11 +366,10 @@ class Lift(RobotEnv):
 
         # color the gripper site appropriately based on distance to cube
         if self.robots[0].gripper_visualization:
-            # get distance to cube
-            cube_site_id = self.sim.model.site_name2id("cube")
+            # get distance to door handle
             dist = np.sum(
                 np.square(
-                    self.sim.data.site_xpos[cube_site_id]
+                    self.sim.data.site_xpos[self.door_handle_site_id]
                     - self.sim.data.get_site_xpos(self.robots[0].gripper.visualization_sites["grip_site"])
                 )
             )

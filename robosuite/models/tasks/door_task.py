@@ -2,7 +2,7 @@ from robosuite.models.tasks import Task, UniformRandomSampler
 from robosuite.utils.mjcf_utils import new_joint, array_to_string
 
 
-class TableTopTask(Task):
+class DoorTask(Task):
     """
     Creates MJCF model of a tabletop task.
 
@@ -54,7 +54,7 @@ class TableTopTask(Task):
             self.merge_asset(obj_mjcf)
             # Load object
             obj = obj_mjcf.get_collision(site=True)
-            obj.append(new_joint(name=obj_name, type="free"))
+            # obj.append(new_joint(name=obj_name, type="free"))
             self.objects.append(obj)
             self.worldbody.append(obj)
 
@@ -64,7 +64,11 @@ class TableTopTask(Task):
 
     def place_objects(self):
         """Places objects randomly until no collisions or max iterations hit."""
+
+        # TODO: put this hacky z-offset in a better place (preferably, the sampler)
         pos_arr, quat_arr = self.initializer.sample()
+        # small z-offset for door
+        pos_arr[0][2] += 0.02
         for i in range(len(self.objects)):
             self.objects[i].set("pos", array_to_string(pos_arr[i]))
             self.objects[i].set("quat", array_to_string(quat_arr[i]))
