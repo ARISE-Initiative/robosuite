@@ -8,6 +8,7 @@ from robosuite.models.grippers import gripper_factory
 from robosuite.controllers import controller_factory, load_controller_config
 
 from robosuite.robots.robot import Robot
+from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
 
 import os
 
@@ -80,7 +81,18 @@ class Bimanual(Robot):
         self._ref_joint_gripper_actuator_indexes = self._input2dict(None)       # xml gripper (pos) actuator indexes for robot in mjsim
         self.eef_site_id = self._input2dict(None)                               # xml element id for eef in mjsim
         self.eef_cylinder_id = self._input2dict(None)                           # xml element id for eef cylinder in mjsim
+        self.eef_force_sensor_id = self._input2dict(None)                       # xml element id for eef force sensor in mjsim
+        self.eef_torque_sensor_id = self._input2dict(None)                      # xml element id for eef torque sensor in mjsim
         self.torques = None                                                     # Current torques being applied
+
+        self.recent_qpos = None                                 # Current and last robot arm qpos
+        self.recent_actions = None                              # Current and last action applied
+        self.recent_torques = None                              # Current and last torques applied
+        self.recent_ee_forcetorques = self._input2dict(None)    # Current and last forces / torques sensed at eef
+        self.recent_ee_pose = self._input2dict(None)            # Current and last eef pose (pos + ori (quat))
+        self.recent_ee_vel = self._input2dict(None)             # Current and last eef velocity
+        self.recent_ee_vel_buffer = self._input2dict(None)      # RingBuffer holding prior 10 values of velocity values
+        self.recent_ee_acc = self._input2dict(None)             # Current and last eef acceleration
 
         super().__init__(
             robot_type=robot_type,
@@ -186,13 +198,27 @@ class Bimanual(Robot):
                         self._ref_gripper_joint_pos_indexes[arm]
                     ] = self.gripper[arm].init_qpos
 
+        # Setup buffers to hold recent values
+        self.recent_qpos = DeltaBuffer(dim=len(self.joint_indexes))
+        self.recent_actions = DeltaBuffer(dim=self.action_dim)
+        self.recent_torques = DeltaBuffer(dim=len(self.joint_indexes))
+
+        # Setup arm-specific values
         for arm in self.arms:
             # Update base pos / ori references in controller (technically only needs to be called once)
             self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
+            # Setup buffers for eef values
+            self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
+            self.recent_ee_pose[arm] = DeltaBuffer(dim=7)
+            self.recent_ee_vel[arm] = DeltaBuffer(dim=6)
+            self.recent_ee_vel_buffer[arm] = RingBuffer(dim=6, length=10)
+            self.recent_ee_acc[arm] = DeltaBuffer(dim=6)
 
     def setup_references(self):
         """
         Sets up necessary reference for robots, grippers, and objects.
+
+        Note that this should get called during every reset from the environment
         """
         # First, run the superclass method to setup references for joint-related values / indexes
         super().setup_references()
@@ -218,6 +244,10 @@ class Bimanual(Robot):
                 self.gripper[arm].visualization_sites["grip_site"])
             self.eef_cylinder_id[arm] = self.sim.model.site_name2id(
                 self.gripper[arm].visualization_sites["grip_cylinder"])
+
+            # IDs of eef sensors
+            self.eef_force_sensor_id[arm] = self.sim.model.sensor_name2id(self.gripper[arm].sensors["force_ee"])
+            self.eef_torque_sensor_id[arm] = self.sim.model.sensor_name2id(self.gripper[arm].sensors["torque_ee"])
 
     def control(self, action, policy_step=False):
         """
@@ -271,6 +301,36 @@ class Bimanual(Robot):
 
         # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
+
+        # If this is a policy step, also update buffers holding recent values of interest
+        if policy_step:
+            self.recent_qpos.push(self._joint_positions)
+            self.recent_actions.push(action)
+            self.recent_torques.push(self.torques)
+
+            for arm in self.arms:
+                self.recent_ee_forcetorques[arm].push(
+                    np.concatenate(
+                        (
+                            self.sim.data.sensordata[self.eef_force_sensor_id[arm] * 3:
+                                                     self.eef_force_sensor_id[arm] * 3 + 3],
+                            self.sim.data.sensordata[self.eef_torque_sensor_id[arm] * 3:
+                                                     self.eef_torque_sensor_id[arm] * 3 + 3]
+                        )
+                    )
+                )
+                self.recent_ee_pose[arm].push(np.concatenate((self.controller[arm].ee_pos,
+                                                              T.mat2quat(self.controller[arm].ee_ori_mat))))
+                self.recent_ee_vel[arm].push(np.concatenate((self.controller[arm].ee_pos_vel,
+                                                             self.controller[arm].ee_ori_vel)))
+
+                # Estimation of eef acceleration (averaged derivative of recent velocities)
+                self.recent_ee_vel_buffer[arm].push(np.concatenate((self.controller[arm].ee_pos_vel,
+                                                                    self.controller[arm].ee_ori_vel)))
+                diffs = np.vstack([self.recent_ee_acc[arm].current,
+                                   self.control_freq * np.diff(self.recent_ee_vel_buffer[arm].buf, axis=0)])
+                ee_acc = np.array([np.convolve(col, np.ones(10) / 10., mode='valid')[0] for col in diffs.transpose()])
+                self.recent_ee_acc[arm].push(ee_acc)
 
     def grip_action(self, gripper_action, arm):
         """
@@ -414,67 +474,113 @@ class Bimanual(Robot):
         return dof
 
     @property
-    def _hand_pose(self, arm="right"):
+    def js_energy(self):
+        """
+        Returns the energy consumed by each joint between previous and current steps
+        """
+        # We assume in the motors torque is proportional to current (and voltage is constant)
+        # In that case the amount of power scales proportional to the torque and the energy is the
+        # time integral of that
+        # Note that we use mean torque
+        return np.abs((1.0 / self.control_freq) * self.recent_torques.average)
+
+    @property
+    def ee_ft_integral(self):
+        """
+        Returns the integral over time of the applied ee force-torque
+        """
+        vals = {}
+        for arm in self.arms:
+            vals[arm] = np.abs((1.0 / self.control_freq) * self.recent_ee_forcetorques[arm].average)
+        return vals
+
+    @property
+    def _hand_pose(self):
         """
         Returns eef pose in base frame of robot.
         """
-        return self.pose_in_base_from_name(self.robot_model.eef_name[arm])
+        vals = {}
+        for arm in self.arms:
+            vals[arm] = self.pose_in_base_from_name(self.robot_model.eef_name[arm])
+        return vals
 
     @property
-    def _right_hand_quat(self, arm="right"):
+    def _hand_quat(self):
         """
         Returns eef quaternion in base frame of robot.
         """
-        return T.mat2quat(self._hand_orn(arm))
+        vals = {}
+        orns = self._hand_orn
+        for arm in self.arms:
+            vals[arm] = T.mat2quat(orns[arm])
+        return vals
 
-    def _hand_total_velocity(self, arm="right"):
+    @property
+    def _hand_total_velocity(self):
         """
         Returns the total eef velocity (linear + angular) in the base frame
         as a numpy array of shape (6,)
         """
-        # Determine correct start, end points based on arm
-        (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+        vals = {}
+        for arm in self.arms:
+            # Determine correct start, end points based on arm
+            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
 
-        # Use jacobian to translate joint velocities to end effector velocities.
-        Jp = self.sim.data.get_body_jacp(self.robot_model.eef_name[arm]).reshape((3, -1))
-        Jp_joint = Jp[:, self._ref_joint_vel_indexes[start:end]]
+            # Use jacobian to translate joint velocities to end effector velocities.
+            Jp = self.sim.data.get_body_jacp(self.robot_model.eef_name[arm]).reshape((3, -1))
+            Jp_joint = Jp[:, self._ref_joint_vel_indexes[start:end]]
 
-        Jr = self.sim.data.get_body_jacr(self.robot_model.eef_name[arm]).reshape((3, -1))
-        Jr_joint = Jr[:, self._ref_joint_vel_indexes[start:end]]
+            Jr = self.sim.data.get_body_jacr(self.robot_model.eef_name[arm]).reshape((3, -1))
+            Jr_joint = Jr[:, self._ref_joint_vel_indexes[start:end]]
 
-        eef_lin_vel = Jp_joint.dot(self._joint_velocities)
-        eef_rot_vel = Jr_joint.dot(self._joint_velocities)
-        return np.concatenate([eef_lin_vel, eef_rot_vel])
+            eef_lin_vel = Jp_joint.dot(self._joint_velocities)
+            eef_rot_vel = Jr_joint.dot(self._joint_velocities)
+            vals[arm] = np.concatenate([eef_lin_vel, eef_rot_vel])
+        return vals
 
     @property
-    def _hand_pos(self, arm="right"):
+    def _hand_pos(self):
         """
         Returns position of eef in base frame of robot.
         """
-        eef_pose_in_base = self._hand_pose(arm)
-        return eef_pose_in_base[:3, 3]
+        vals = {}
+        poses = self._hand_pose
+        for arm in self.arms:
+            eef_pose_in_base = poses[arm]
+            vals[arm] = eef_pose_in_base[:3, 3]
+        return vals
 
     @property
-    def _hand_orn(self, arm="right"):
+    def _hand_orn(self):
         """
         Returns orientation of eef in base frame of robot as a rotation matrix.
         """
-        eef_pose_in_base = self._hand_pose(arm)
-        return eef_pose_in_base[:3, :3]
+        vals = {}
+        poses = self._hand_pose
+        for arm in self.arms:
+            eef_pose_in_base = poses[arm]
+            vals[arm] = eef_pose_in_base[:3, :3]
+        return vals
 
     @property
-    def _hand_vel(self, arm="right"):
+    def _hand_vel(self):
         """
         Returns velocity of eef in base frame of robot.
         """
-        return self._hand_total_velocity(arm)[:3]
+        vels = self._hand_total_velocity
+        for arm in self.arms:
+            vels[arm] = vels[arm][:3]
+        return vels
 
     @property
-    def _hand_ang_vel(self, arm="right"):
+    def _hand_ang_vel(self):
         """
         Returns angular velocity of eef in base frame of robot.
         """
-        return self._hand_total_velocity(arm)[3:]
+        vels = self._hand_total_velocity
+        for arm in self.arms:
+            vels[arm] = vels[arm][3:]
+        return vels
 
     @property
     def _action_split_idx(self):

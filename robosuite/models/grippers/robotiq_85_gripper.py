@@ -61,22 +61,21 @@ class Robotiq85GripperBase(GripperModel):
         ]
 
     @property
-    def _left_finger_geoms(self):
-        return [
-            "robotiq_85_gripper_joint_0_L",
-            "robotiq_85_gripper_joint_1_L",
-            "robotiq_85_gripper_joint_2_L",
-            "robotiq_85_gripper_joint_3_L",
-        ]
-
-    @property
-    def _right_finger_geoms(self):
-        return [
-            "robotiq_85_gripper_joint_0_R",
-            "robotiq_85_gripper_joint_1_R",
-            "robotiq_85_gripper_joint_2_R",
-            "robotiq_85_gripper_joint_3_R",
-        ]
+    def _important_geoms(self):
+        return {
+            "left_finger": [
+                "robotiq_85_gripper_joint_0_L",
+                "robotiq_85_gripper_joint_1_L",
+                "robotiq_85_gripper_joint_2_L",
+                "robotiq_85_gripper_joint_3_L",
+            ],
+            "right_finger": [
+                "robotiq_85_gripper_joint_0_R",
+                "robotiq_85_gripper_joint_1_R",
+                "robotiq_85_gripper_joint_2_R",
+                "robotiq_85_gripper_joint_3_R",
+            ],
+        }
 
 
 class Robotiq85Gripper(Robotiq85GripperBase):

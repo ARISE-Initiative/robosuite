@@ -60,6 +60,7 @@
     <worldbody>
         <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" />
         <body name="robotiq_85_adapter_link" pos="0.0 0 0" quat="0 0.709 0 0.706">
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
             <geom quat="0.500048 0.5 0.499952 0.5" type="mesh" group="0" mesh="robotiq_85_gripper_adapter_plate" />
             <geom quat="0.500048 0.5 0.499952 0.5" type="mesh" contype="0" conaffinity="0" group="1" mesh="robotiq_85_gripper_adapter_plate" />
@@ -136,5 +137,9 @@
         <exclude body1="robotiq_85_right_finger_link" body2="robotiq_85_right_finger_tip_link"/>
         <exclude body1="robotiq_85_left_finger_link" body2="robotiq_85_left_finger_tip_link"/>
     </contact>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
 
 </mujoco>

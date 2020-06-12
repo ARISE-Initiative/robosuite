@@ -24,6 +24,7 @@
     
     <worldbody>
         <body name="gripper_base" pos="0 0 0">
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0 0 0" quat="-0.5 0.5 0.5 0.5" mass="0.3" diaginertia="3e-08 2e-08 2e-08" />
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="connector_plate" name="connector_plate" pos="0 0 0.0018" material="connector_plate_mat"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="electric_gripper_base" name="electric_gripper_base" pos="0 0 0.0194" material="electric_gripper_base_mat"/>
@@ -61,4 +62,8 @@
             </body>
         </body>
     </worldbody>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
 </mujoco>

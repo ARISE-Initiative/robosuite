@@ -201,7 +201,19 @@ def set_goal_orientation(delta,
     return goal_orientation
 
 
-class RingBuffer(object):
+class Buffer(object):
+    """
+    Abstract class for different kinds of data buffers. Minimum API should have a "push" and "clear" method
+    """
+
+    def push(self, value):
+        raise NotImplementedError
+
+    def clear(self):
+        raise NotImplementedError
+
+
+class RingBuffer(Buffer):
     """
     Simple RingBuffer object to hold values to average (useful for, e.g.: filtering D component in PID control)
     """
@@ -246,3 +258,50 @@ class RingBuffer(object):
         Gets the average of components in buffer
         """
         return np.mean(self.buf, axis=0)
+
+
+class DeltaBuffer(Buffer):
+    """
+    Simple 2-length buffer object to streamline grabbing delta values between "current" and "last" values
+    """
+    def __init__(self, dim, init_value=None):
+        """
+        Constructs delta object.
+
+        Args:
+            dim (int): Size of numerical arrays being inputted
+            init_value (None or Iterable): Initial value to fill "last" value with initially.
+                If None (default), last array will be filled with zeros
+        """
+        # Setup delta object
+        self.dim = dim
+        self.last = np.zeros(self.dim) if init_value is None else np.array(init_value)
+        self.current = np.zeros(self.dim)
+
+    def push(self, value):
+        """
+        Pushes a new value into the buffer; current becomes last and @value becomes current
+        """
+        self.last = self.current
+        self.current = np.array(value)
+
+    def clear(self):
+        """
+        Clears last and current value
+        """
+        self.last, self.current = np.zeros(self.dim), np.zeros(self.dim)
+
+    @property
+    def delta(self, abs_value=False):
+        """
+        Returns the delta between last value and current value. If abs_value is set to True, then returns
+        the absolute value between the values
+        """
+        return self.current - self.last if not abs_value else np.abs(self.current - self.last)
+
+    @property
+    def average(self):
+        """
+        Returns the average between the current and last value
+        """
+        return (self.current + self.last) / 2.0

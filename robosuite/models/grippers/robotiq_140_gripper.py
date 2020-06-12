@@ -60,16 +60,19 @@ class Robotiq140GripperBase(GripperModel):
         ]
 
     @property
-    def _left_finger_geoms(self):
-        return ["left_outer_finger_collision",
+    def _important_geoms(self):
+        return {
+            "left_finger": [
+                "left_outer_finger_collision",
                 "left_inner_finger_collision",
-                "left_fingertip_collision"]
-
-    @property
-    def _right_finger_geoms(self):
-        return ["right_outer_finger_collision",
+                "left_fingertip_collision"
+            ],
+            "right_finger": [
+                "right_outer_finger_collision",
                 "right_inner_finger_collision",
-                "right_fingertip_collision"]
+                "right_fingertip_collision"
+            ],
+        }
 
 
 class Robotiq140Gripper(Robotiq140GripperBase):

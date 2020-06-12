@@ -255,9 +255,3 @@ class Robot(object):
         Returns mujoco internal indexes for the robot joints
         """
         return self._ref_joint_indexes
-
-    def _check_contact(self):
-        """
-        Returns True if the gripper is in contact with another object.
-        """
-        return False

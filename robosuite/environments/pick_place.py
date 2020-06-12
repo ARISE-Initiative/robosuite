@@ -101,7 +101,8 @@ class PickPlace(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
-            reward_scale (float): Scales the normalized reward function by the amount specified
+            reward_scale (None or float): Scales the normalized reward function by the amount specified.
+                If None, environment reward remains unnormalized
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -227,7 +228,9 @@ class PickPlace(RobotEnv):
         if self.reward_shaping:
             staged_rewards = self.staged_rewards()
             reward += max(staged_rewards)
-        return reward * self.reward_scale / 4.0
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 4.0
+        return reward
 
     def staged_rewards(self):
         """
@@ -439,10 +442,10 @@ class PickPlace(RobotEnv):
 
         # id of grippers for contact checking
         self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.left_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
         ]
         self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.right_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
         ]
 
         # object-specific ids

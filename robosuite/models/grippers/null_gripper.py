@@ -39,11 +39,3 @@ class NullGripper(GripperModel):
     @property
     def _contact_geoms(self):
         return []
-
-    @property
-    def _left_finger_geoms(self):
-        return []
-
-    @property
-    def _right_finger_geoms(self):
-        return []

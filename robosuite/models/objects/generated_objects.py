@@ -18,6 +18,7 @@ class HammerObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         handle_shape="box",
         handle_radius=(0.015, 0.02),
         handle_length=(0.1, 0.25),
@@ -30,6 +31,7 @@ class HammerObject(MujocoGeneratedObject):
         rgba_claw=None,
     ):
         """
+        name (str): Name of this Hammer object
         handle_shape (str): Either "box", for a box-shaped handle, or "cylinder", for a cylindrically-shaped handle
         handle_radius (float or 2-list of float): Either specific or range of values to draw randomly from
             uniformly for the handle radius
@@ -47,7 +49,7 @@ class HammerObject(MujocoGeneratedObject):
         """
 
         # Run super() init
-        super().__init__()
+        super().__init__(name=name)
 
         # Set handle type and density ratio
         self.handle_shape = handle_shape
@@ -83,17 +85,12 @@ class HammerObject(MujocoGeneratedObject):
 
     @property
     def handle_distance(self):
-        # TODO
         return 2.0 * self.handle_radius
-        return self.body_half_size[1] * 2 + self.handle_length * 2
 
-    def get_collision(self, name=None, site=None):
+    def get_collision(self, site=None):
         # Create new body
         main_body = new_body()
-
-        # Define name for this object if specified
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
 
         # Define handle and append to the main body
         if self.handle_shape == "cylinder":

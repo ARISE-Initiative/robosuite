@@ -88,7 +88,8 @@ class Lift(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
-            reward_scale (float): Scales the normalized reward function by the amount specified
+            reward_scale (None or float): Scales the normalized reward function by the amount specified.
+                If None, environment reward remains unnormalized
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -243,7 +244,10 @@ class Lift(RobotEnv):
             if touch_left_finger and touch_right_finger:
                 reward += 0.25
 
-        return reward * self.reward_scale / 2.25
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 2.25
+
+        return reward
 
     def _load_model(self):
         """
@@ -300,10 +304,10 @@ class Lift(RobotEnv):
         # Additional object references from this env
         self.cube_body_id = self.sim.model.body_name2id("cube")
         self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.left_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
         ]
         self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.right_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
         ]
         self.cube_geom_id = self.sim.model.geom_name2id("cube")
 
@@ -402,4 +406,3 @@ class Lift(RobotEnv):
         """
         if type(robots) is list:
             assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
-

@@ -57,13 +57,12 @@ class JacoThreeFingerGripperBase(GripperModel):
         ]
 
     @property
-    def _left_finger_geoms(self):
-        return ["finger1_collision", "fingertip1_collision",
-                "finger3_collision", "fingertip3_collision"]
-
-    @property
-    def _right_finger_geoms(self):
-        return ["finger2_collision", "fingertip2_collision"]
+    def _important_geoms(self):
+        return {
+            "left_finger": ["finger1_collision", "fingertip1_collision",
+                            "finger3_collision", "fingertip3_collision"],
+            "right_finger": ["finger2_collision", "fingertip2_collision"]
+        }
 
 
 class JacoThreeFingerGripper(JacoThreeFingerGripperBase):

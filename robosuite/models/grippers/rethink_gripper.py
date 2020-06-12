@@ -49,12 +49,11 @@ class RethinkGripperBase(GripperModel):
         ]
 
     @property
-    def _left_finger_geoms(self):
-        return ["l_finger_g0", "l_finger_g1", "l_fingertip_g0"]
-
-    @property
-    def _right_finger_geoms(self):
-        return ["r_finger_g0", "r_finger_g1", "r_fingertip_g0"]
+    def _important_geoms(self):
+        return {
+            "left_finger": ["l_finger_g0", "l_finger_g1", "l_fingertip_g0"],
+            "right_finger": ["r_finger_g0", "r_finger_g1", "r_fingertip_g0"],
+        }
 
 
 class RethinkGripper(RethinkGripperBase):

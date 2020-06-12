@@ -48,12 +48,11 @@ class PandaGripperBase(GripperModel):
         ]
 
     @property
-    def _left_finger_geoms(self):
-        return ["finger1_tip_collision"]
-
-    @property
-    def _right_finger_geoms(self):
-        return ["finger2_tip_collision"]
+    def _important_geoms(self):
+        return {
+            "left_finger": ["finger1_tip_collision"],
+            "right_finger": ["finger2_tip_collision"],
+        }
 
 
 class PandaGripper(PandaGripperBase):
