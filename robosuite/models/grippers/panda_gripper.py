@@ -66,7 +66,6 @@ class PandaGripper(PandaGripperBase):
             -1 => open, 1 => closed
         """
         assert len(action) == 1
-
         self.current_action = np.clip(self.current_action + np.array([-1.0, 1.0]) * self.speed * action, -1.0, 1.0)
         return self.current_action
 

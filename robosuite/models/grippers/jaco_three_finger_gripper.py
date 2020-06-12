@@ -75,7 +75,7 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
         Args:
             -1 => open, 1 => closed
         """
-        assert len(action) == 1
+        assert len(action) == self.dof
         self.current_action = np.clip(self.current_action + self.speed * np.array(action), -1.0, 1.0)
         return self.current_action
 
@@ -89,3 +89,28 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
     @property
     def dof(self):
         return 1
+
+
+class JacoThreeFingerDexterousGripper(JacoThreeFingerGripperBase):
+    """
+    Dexterous variation of the Jaco gripper in which all finger are actuated independently
+    """
+    def format_action(self, action):
+        """
+        Args:
+            all -1 => open, all 1 => closed
+        """
+        assert len(action) == self.dof
+        self.current_action = np.clip(self.current_action + self.speed * np.array(action), -1.0, 1.0)
+        return self.current_action
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.005
+
+    @property
+    def dof(self):
+        return 3
