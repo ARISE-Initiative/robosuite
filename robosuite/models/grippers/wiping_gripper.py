@@ -35,7 +35,7 @@ class WipingGripper(GripperModel):
     @property
     def _important_geoms(self):
         return {
-            "left_finger": ["finger1_tip_collision"],
-            "right_finger": ["finger2_tip_collision"],
+            "left_finger": [],
+            "right_finger": [],
             "corners": ["wiping_corner1", "wiping_corner2", "wiping_corner3", "wiping_corner4"]
         }
