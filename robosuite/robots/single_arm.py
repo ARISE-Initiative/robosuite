@@ -75,8 +75,8 @@ class SingleArm(Robot):
         self._ref_joint_gripper_actuator_indexes = None     # xml gripper (pos) actuator indexes for robot in mjsim
         self.eef_site_id = None                             # xml element id for eef in mjsim
         self.eef_cylinder_id = None                         # xml element id for eef cylinder in mjsim
-        self.eef_force_sensor_id = None                     # xml element id for eef force sensor in mjsim
-        self.eef_torque_sensor_id = None                    # xml element id for eef torque sensor in mjsim
+        self.eef_force_sensor_idx = None                    # start idx for eef force sensor in sensordata array
+        self.eef_torque_sensor_idx = None                   # start idx for eef torque sensor in sensordata array
         self.torques = None                                 # Current torques being applied
 
         self.recent_qpos = None                             # Current and last robot arm qpos
@@ -217,9 +217,13 @@ class SingleArm(Robot):
         self.eef_site_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_site"])
         self.eef_cylinder_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_cylinder"])
 
-        # IDs of eef sensors
-        self.eef_force_sensor_id = self.sim.model.sensor_name2id(self.gripper.sensors["force_ee"])
-        self.eef_torque_sensor_id = self.sim.model.sensor_name2id(self.gripper.sensors["torque_ee"])
+        # Indexes of eef sensors -- Note that this is the index of where the sensor data for this sensor starts in the
+        # sim.data.sensordata struct, NOT the ID assigned by mujoco!
+        sensordims = self.sim.model.sensor_dim
+        self.eef_force_sensor_idx = np.sum(
+            sensordims[:self.sim.model.sensor_name2id(self.gripper.sensors["force_ee"])])
+        self.eef_torque_sensor_idx = np.sum(
+            sensordims[:self.sim.model.sensor_name2id(self.gripper.sensors["torque_ee"])])
 
     def control(self, action, policy_step=False):
         """
@@ -270,14 +274,7 @@ class SingleArm(Robot):
             self.recent_qpos.push(self._joint_positions)
             self.recent_actions.push(action)
             self.recent_torques.push(self.torques)
-            self.recent_ee_forcetorques.push(
-                np.concatenate(
-                    (
-                        self.sim.data.sensordata[self.eef_force_sensor_id * 3 : self.eef_force_sensor_id * 3 + 3],
-                        self.sim.data.sensordata[self.eef_torque_sensor_id * 3: self.eef_torque_sensor_id * 3 + 3]
-                    )
-                )
-            )
+            self.recent_ee_forcetorques.push(np.concatenate((self.ee_force, self.ee_torque)))
             self.recent_ee_pose.push(np.concatenate((self.controller.ee_pos, T.mat2quat(self.controller.ee_ori_mat))))
             self.recent_ee_vel.push(np.concatenate((self.controller.ee_pos_vel, self.controller.ee_ori_vel)))
 
@@ -415,6 +412,20 @@ class SingleArm(Robot):
         Returns the integral over time of the applied ee force-torque
         """
         return np.abs((1.0 / self.control_freq) * self.recent_ee_forcetorques.average)
+
+    @property
+    def ee_force(self):
+        """
+        Returns force applied at the force sensor at the robot arm's eef
+        """
+        return self.sim.data.sensordata[self.eef_force_sensor_idx: self.eef_force_sensor_idx + 3]
+
+    @property
+    def ee_torque(self):
+        """
+        Returns torque applied at the torque sensor at the robot arm's eef
+        """
+        return self.sim.data.sensordata[self.eef_torque_sensor_idx: self.eef_torque_sensor_idx + 3]
 
     @property
     def _right_hand_pose(self):
