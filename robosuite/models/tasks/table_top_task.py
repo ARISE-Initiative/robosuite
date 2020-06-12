@@ -1,18 +1,19 @@
 import collections
 from copy import deepcopy
 
-from robosuite.models.tasks import Task, UniformRandomSampler
+from robosuite.models.world import MujocoWorldBase
+from robosuite.models.tasks import UniformRandomSampler
 from robosuite.models.objects import MujocoGeneratedObject, MujocoXMLObject
 from robosuite.utils.mjcf_utils import new_joint, array_to_string
 
 
-class TableTopTask(Task):
+class TableTopTask(MujocoWorldBase):
     """
-    Creates MJCF model of a tabletop task.
+    Creates MJCF model for a task performed on a table top (or similar surface).
 
-    A tabletop task consists of one robot interacting with a variable number of
-    objects placed on the tabletop. This class combines the robot, the table
-    arena, and the objetcts into a single MJCF model.
+    A manipulation task consists of one or more robots interacting with a variable number of
+    objects placed on a table. This class combines the robot(s), the arena, and the objects 
+    into a single MJCF model.
     """
 
     def __init__(
@@ -86,7 +87,7 @@ class TableTopTask(Task):
                 obj = obj_mjcf.get_collision(site=True)
 
             for i, joint in enumerate(obj_mjcf.joints):
-                obj.append(new_joint(name="{}_{}".format(obj_name, i), **joint))
+                obj.append(new_joint(name="{}_jnt{}".format(obj_name, i), **joint))
             self.objects.append(obj)
             self.worldbody.append(obj)
 

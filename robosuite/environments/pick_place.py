@@ -357,7 +357,7 @@ class PickPlace(RobotEnv):
             else:
                 sim_state = self.sim.get_state()
                 # print(self.sim.model.get_joint_qpos_addr(obj_name))
-                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name + "_0")[0]] = 10
+                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name + "_jnt0")[0]] = 10
                 self.sim.set_state(sim_state)
                 self.sim.forward()
 
@@ -556,7 +556,7 @@ class PickPlace(RobotEnv):
 
             # Loop through all objects and reset their positions
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name + "_0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
         # information of objects
         self.object_names = list(self.mujoco_objects.keys())
