@@ -282,7 +282,7 @@ class InverseKinematicsController(JointVelocityController):
         if self.robot_name == "Sawyer":
             self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)
         elif self.robot_name == "Panda":
-            self.rotation_offset = T.rotation_matrix(angle=np.pi/4, direction=[0., 0., 1.], point=None)
+            self.rotation_offset = T.rotation_matrix(angle=-np.pi/4, direction=[0., 0., 1.], point=None)
         elif self.robot_name == "Baxter":
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
         else:
