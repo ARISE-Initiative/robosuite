@@ -130,12 +130,20 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
     MujocoObjects that are loaded from xml files
     """
 
-    def __init__(self, fname):
+    def __init__(self, fname, name=None, joints=None):
         """
         Args:
             fname (TYPE): XML File path
         """
         MujocoXML.__init__(self, fname)
+
+        self.name = name
+
+        # joints for this object
+        if joints is None:
+            self.joints = [{'type': 'free'}]  # default free joint
+        else:
+            self.joints = joints
 
     def get_bottom_offset(self):
         bottom_site = self.worldbody.find("./body/site[@name='bottom_site']")
@@ -151,39 +159,39 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
-    def get_collision(self, name=None, site=False):
+    def get_collision(self, site=False):
 
         collision = copy.deepcopy(self.worldbody.find("./body/body[@name='collision']"))
         collision.attrib.pop("name")
-        if name is not None:
-            collision.attrib["name"] = name
+        if self.name is not None:
+            collision.attrib["name"] = self.name
             geoms = collision.findall("geom")
             if len(geoms) == 1:
-                geoms[0].set("name", name)
+                geoms[0].set("name", self.name)
             else:
                 for i in range(len(geoms)):
-                    geoms[i].set("name", "{}-{}".format(name, i))
+                    geoms[i].set("name", "{}-{}".format(self.name, i))
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
             template["rgba"] = "1 0 0 0"
-            if name is not None:
-                template["name"] = name
+            if self.name is not None:
+                template["name"] = self.name
             collision.append(ET.Element("site", attrib=template))
         return collision
 
-    def get_visual(self, name=None, site=False):
+    def get_visual(self, site=False):
 
         visual = copy.deepcopy(self.worldbody.find("./body/body[@name='visual']"))
         visual.attrib.pop("name")
-        if name is not None:
-            visual.attrib["name"] = name
+        if self.name is not None:
+            visual.attrib["name"] = self.name
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
             template["rgba"] = "1 0 0 0"
-            if name is not None:
-                template["name"] = name
+            if self.name is not None:
+                template["name"] = self.name
             visual.append(ET.Element("site", attrib=template))
         return visual
 
@@ -201,71 +209,82 @@ class MujocoGeneratedObject(MujocoObject):
         rgba=None,
         density=None,
         friction=None,
-        density_range=None,
-        friction_range=None,
+        solref=None,
+        solimp=None,
         add_material=False,
+        joints=None,
     ):
         """
-        Provides default initialization of physical attributes:
-            also supports randomization of (rgba, density, friction).
-            - rgb is randomly generated if rgba='random' (alpha will be 1 in this case)
-            - If density is None and density_range is not:
-              Density is chosen uniformly at random specified from density range,
-                  i.e. density_range = [50, 100, 1000]
-            - If friction is None and friction_range is not:
-              Tangential Friction is chosen uniformly at random from friction_range
-
         Args:
             size ([float], optional): of size 1 - 3
+
             rgba (([float, float, float, float]), optional): Color
+
             density (float, optional): Density
-            friction (float, optional): tangential friction
-                see http://www.mujoco.org/book/modeling.html#geom for details
-            density_range ([float,float], optional): range for random choice
-            friction_range ([float,float], optional): range for random choice
+
+            friction ([float], optional): of size 3, corresponding to sliding friction,
+                torsional friction, and rolling friction. A single float can also be
+                specified, in order to set the sliding friction (the other values) will
+                be set to the MuJoCo default. See http://www.mujoco.org/book/modeling.html#geom 
+                for details.
+
+            solref ([float], optional): of size 2. MuJoCo solver parameters that handle contact.
+                See http://www.mujoco.org/book/XMLreference.html for more details.
+
+            solimp ([float], optional): of size 3. MuJoCo solver parameters that handle contact.
+                See http://www.mujoco.org/book/XMLreference.html for more details.
+
             add_material (bool, optional): if True, add a material and texture for this 
                 object that is used to color the geom(s).
+
+            joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
+                object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
+                xml specification.
         """
         super().__init__()
 
         self.name = name
 
         if size is None:
-            self.size = [0.05, 0.05, 0.05]
-        else:
-            self.size = size
+            size = [0.05, 0.05, 0.05]
+        self.size = list(size)
 
         if rgba is None:
-            self.rgba = [1, 0, 0, 1]
-        elif rgba == "random":
-            self.rgba = np.array([np.random.uniform(0, 1) for i in range(3)] + [1])
-        else:
-            assert len(rgba) == 4, "rgba must be a length 4 array"
-            self.rgba = rgba
+            rgba = [1, 0, 0, 1]
+        assert len(rgba) == 4, "rgba must be a length 4 array"
+        self.rgba = list(rgba)
 
         if density is None:
-            if density_range is not None:
-                self.density = np.random.choice(density_range)
-            else:
-                self.density = 1000  # water
-        else:
-            self.density = density
+            density = 1000  # water
+        self.density = density
 
         if friction is None:
-            if friction_range is not None:
-                self.friction = [np.random.choice(friction_range), 0.005, 0.0001]
-            else:
-                self.friction = [1, 0.005, 0.0001]  # MuJoCo default
-        elif hasattr(type(friction), "__len__"):
-            assert len(friction) == 3, "friction must be a length 3 array or a float"
-            self.friction = friction
+            friction = [1, 0.005, 0.0001]  # MuJoCo default
+        elif isinstance(friction, float):
+            friction = [friction, 0.005, 0.0001]
+        assert len(friction) == 3, "friction must be a length 3 array or a float"
+        self.friction = list(friction)
+
+        if solref is None:
+            self.solref = [0.02, 1.] # MuJoCo default
         else:
-            self.friction = [friction, 0.005, 0.0001]
+            self.solref = solref
+
+        if solimp is None:
+            self.solimp = [0.9, 0.95, 0.001] # MuJoCo default
+        else:
+            self.solimp = solimp
 
         # add in texture and material for this object (for domain randomization)
         self.add_material = add_material
         if add_material:
             self.asset = self._get_asset()
+
+        # joints for this object
+        if joints is None:
+            self.joints = [{'type': 'free'}]  # default free joint
+        else:
+            self.joints = joints
 
         self.sanity_check()
 
@@ -316,6 +335,8 @@ class MujocoGeneratedObject(MujocoObject):
         template["size"] = array_to_string(self.size)
         template["density"] = str(self.density)
         template["friction"] = array_to_string(self.friction)
+        template["solref"] = array_to_string(self.solref)
+        template["solimp"] = array_to_string(self.solimp)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well

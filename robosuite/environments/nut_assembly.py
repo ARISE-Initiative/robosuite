@@ -9,7 +9,7 @@ from robosuite.robots import SingleArm
 
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
-from robosuite.models.tasks import NutAssemblyTask, UniformRandomPegsSampler
+from robosuite.models.tasks import TableTopTask, SequentialCompositeSampler
 
 
 class NutAssembly(RobotEnv):
@@ -192,12 +192,28 @@ class NutAssembly(RobotEnv):
         if placement_initializer:
             self.placement_initializer = placement_initializer
         else:
-            self.placement_initializer = UniformRandomPegsSampler(
-                x_range=[-0.15, 0.],
-                y_range=[-0.2, 0.2],
-                z_range=[0.02, 0.10],
+            # treat sampling of each type of nut differently since we require different
+            # sampling ranges for each
+            self.placement_initializer = SequentialCompositeSampler()
+            self.placement_initializer.sample_on_top(
+                "SquareNut0",
+                surface_name="table",
+                x_range=[-0.115, -0.11],
+                y_range=[0.11, 0.225],
+                rotation=None,
+                rotation_axis='z',
+                z_offset=0.02,
                 ensure_object_boundary_in_range=False,
-                z_rotation=True,
+            )
+            self.placement_initializer.sample_on_top(
+                "RoundNut0",
+                surface_name="table",
+                x_range=[-0.115, -0.11],
+                y_range=[-0.225, -0.11],
+                rotation=None,
+                rotation_axis='z',
+                z_offset=0.02,
+                ensure_object_boundary_in_range=False,
             )
 
         super().__init__(
@@ -351,7 +367,7 @@ class NutAssembly(RobotEnv):
             else:
                 sim_state = self.sim.get_state()
                 # print(self.sim.model.get_joint_qpos_addr(obj_name))
-                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name)[0]] = 10
+                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name + "_jnt0")[0]] = 10
                 self.sim.set_state(sim_state)
                 self.sim.forward()
 
@@ -388,17 +404,18 @@ class NutAssembly(RobotEnv):
 
         lst = []
         for i in range(len(self.ob_inits)):
-            ob = self.ob_inits[i]()
+            ob = self.ob_inits[i](name=str(self.item_names[i]) + "0")
             lst.append((str(self.item_names[i]) + "0", ob))
 
         self.mujoco_objects = OrderedDict(lst)
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
-        self.model = NutAssemblyTask(
-            self.mujoco_arena,
-            [robot.robot_model for robot in self.robots],
-            self.mujoco_objects,
+        self.model = TableTopTask(
+            mujoco_arena=self.mujoco_arena, 
+            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_objects=self.mujoco_objects, 
+            visual_objects=None, 
             initializer=self.placement_initializer,
         )
 
@@ -406,9 +423,9 @@ class NutAssembly(RobotEnv):
         self.model.place_objects()
 
         # positions of table and pegs
-        self.table_pos = string_to_array(self.model.table_body.get("pos"))
-        self.peg1_pos = string_to_array(self.model.peg1_body.get("pos"))  # square
-        self.peg2_pos = string_to_array(self.model.peg2_body.get("pos"))  # round
+        self.table_pos = string_to_array(self.mujoco_arena.table_body.get("pos"))
+        self.peg1_pos = string_to_array(self.mujoco_arena.peg1_body.get("pos"))  # square
+        self.peg2_pos = string_to_array(self.mujoco_arena.peg2_body.get("pos"))  # round
 
     def _get_reference(self):
         """
@@ -466,7 +483,7 @@ class NutAssembly(RobotEnv):
 
             # Loop through all objects and reset their positions
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name, np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
         # information of objects
         self.object_names = list(self.mujoco_objects.keys())

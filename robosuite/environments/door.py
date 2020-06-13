@@ -8,7 +8,7 @@ from robosuite.robots import SingleArm
 
 from robosuite.models.arenas import DoorArena
 from robosuite.models.objects import DoorObject
-from robosuite.models.tasks import DoorTask, UniformRandomSampler
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
 
 class Door(RobotEnv):
@@ -165,7 +165,8 @@ class Door(RobotEnv):
                 y_range=[-0.35, -0.35],
                 ensure_object_boundary_in_range=False,
                 rotation=(-np.pi / 2.),
-                # z_offset=0.02,
+                rotation_axis='z',
+                z_offset=0.02,
             )
 
         super().__init__(
@@ -248,18 +249,21 @@ class Door(RobotEnv):
 
         # initialize objects of interest
         door = DoorObject(
+            name="Door",
             friction=0.0,
             damping=0.1,
             lock=True,
+            joints=[], # ensures that door object does not have a free joint
         )
         self.mujoco_objects = OrderedDict([("Door", door)])
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
-        self.model = DoorTask(
-            self.mujoco_arena,
-            [robot.robot_model for robot in self.robots],
-            self.mujoco_objects,
+        self.model = TableTopTask(
+            mujoco_arena=self.mujoco_arena, 
+            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_objects=self.mujoco_objects, 
+            visual_objects=None, 
             initializer=self.placement_initializer,
         )
         self.model.place_objects()
@@ -304,7 +308,7 @@ class Door(RobotEnv):
 
             # # Loop through all objects and reset their positions
             # for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-            #     self.sim.data.set_joint_qpos(obj_name, np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+            #     self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
     def _get_observation(self):
         """

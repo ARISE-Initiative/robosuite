@@ -29,6 +29,7 @@ class HammerObject(MujocoGeneratedObject):
         rgba_head=None,
         rgba_face=None,
         rgba_claw=None,
+        joints=None,
     ):
         """
         name (str): Name of this Hammer object
@@ -46,10 +47,13 @@ class HammerObject(MujocoGeneratedObject):
         rgba_head (3-array or None): If specified, sets handle rgba values
         rgba_face (3-array or None): If specified, sets handle rgba values
         rgba_claw (3-array or None): If specified, sets handle rgba values
+        joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
+            object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
+            xml specification.
         """
 
         # Run super() init
-        super().__init__(name=name)
+        super().__init__(name=name, joints=joints)
 
         # Set handle type and density ratio
         self.handle_shape = handle_shape
@@ -222,8 +226,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         rgba_handle_2=None,
         solid_handle=False,
         thickness=0.025,  # For body
+        joints=None,
     ):
-        super().__init__(name=name)
+        super().__init__(name=name, joints=joints)
         if body_half_size:
             self.body_half_size = body_half_size
         else:
@@ -475,10 +480,6 @@ def five_sided_box(size, rgba, group, thickness):
     return geoms
 
 
-DEFAULT_DENSITY_RANGE = [200, 500, 1000, 3000, 5000]
-DEFAULT_FRICTION_RANGE = [0.25, 0.5, 1, 1.5, 2]
-
-
 def _get_size(size,
               size_max,
               size_min,
@@ -506,28 +507,9 @@ def _get_size(size,
     return size
 
 
-def _get_randomized_range(val,
-                          provided_range,
-                          default_range):
-    """
-        Helper to initialize by either value or a range
-        Returns a range to randomize from
-    """
-    if val is None:
-        if provided_range is None:
-            return default_range
-        else:
-            return provided_range
-    else:
-        if provided_range is not None:
-            raise ValueError('Value {} overrides range {}'
-                             .format(str(val), str(provided_range)))
-        return [val]
-
-
 class BoxObject(MujocoGeneratedObject):
     """
-    An object that is a box
+    A box object.
     """
 
     def __init__(
@@ -537,30 +519,28 @@ class BoxObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07, 0.07, 0.07],
                          [0.03, 0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -586,7 +566,7 @@ class BoxObject(MujocoGeneratedObject):
 
 class CylinderObject(MujocoGeneratedObject):
     """
-    A randomized cylinder object.
+    A cylinder object.
     """
 
     def __init__(
@@ -596,30 +576,28 @@ class CylinderObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07, 0.07],
                          [0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -645,7 +623,7 @@ class CylinderObject(MujocoGeneratedObject):
 
 class BallObject(MujocoGeneratedObject):
     """
-    A randomized ball (sphere) object.
+    A ball (sphere) object.
     """
 
     def __init__(
@@ -655,30 +633,28 @@ class BallObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07],
                          [0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -704,7 +680,7 @@ class BallObject(MujocoGeneratedObject):
 
 class CapsuleObject(MujocoGeneratedObject):
     """
-    A randomized capsule object.
+    A capsule object.
     """
 
     def __init__(
@@ -714,30 +690,28 @@ class CapsuleObject(MujocoGeneratedObject):
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
         add_material=False,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07, 0.07],
                          [0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
             name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
             add_material=add_material,
+            joints=joints,
         )
 
     def sanity_check(self):

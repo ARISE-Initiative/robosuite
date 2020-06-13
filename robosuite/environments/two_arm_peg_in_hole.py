@@ -268,8 +268,9 @@ class TwoArmPegInHole(RobotEnv):
             self.model.merge(robot.robot_model)
 
         # initialize objects of interest
-        self.mujoco_objects = OrderedDict()
-        self.hole = PlateWithHoleObject()
+        self.hole = PlateWithHoleObject(
+            name="hole",
+        )
         self.cylinder = CylinderObject(
             name="cylinder",
             size_min=(self.cylinder_radius[0], self.cylinder_length),
@@ -278,7 +279,7 @@ class TwoArmPegInHole(RobotEnv):
         )
 
         # Load hole object
-        self.hole_obj = self.hole.get_collision(name="hole", site=True)
+        self.hole_obj = self.hole.get_collision(site=True)
         self.hole_obj.set("quat", "0 0 0.707 0.707")
         self.hole_obj.set("pos", "0.11 0 0.18")
         self.model.merge_asset(self.hole)

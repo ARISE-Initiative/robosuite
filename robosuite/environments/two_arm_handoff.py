@@ -375,9 +375,10 @@ class TwoArmHandoff(RobotEnv):
 
         # task includes arena, robot, and objects of interest
         self.model = TableTopTask(
-            self.mujoco_arena,
-            [robot.robot_model for robot in self.robots],
-            self.mujoco_objects,
+            mujoco_arena=self.mujoco_arena, 
+            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_objects=self.mujoco_objects, 
+            visual_objects=None, 
             initializer=self.placement_initializer,
         )
         self.model.place_objects()
@@ -416,7 +417,7 @@ class TwoArmHandoff(RobotEnv):
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
                 # If prehensile, set the object normally
                 if self.prehensile:
-                    self.sim.data.set_joint_qpos(obj_name,
+                    self.sim.data.set_joint_qpos(obj_name + "_jnt0",
                                                  np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
                 # Else, set the object in the hand of the robot and loop a few steps to guarantee the robot is grasping
                 #   the object initially
@@ -425,7 +426,7 @@ class TwoArmHandoff(RobotEnv):
                     obj_quat[i] = T.quat_multiply(obj_quat[i], eef_rot_quat)
                     for j in range(100):
                         # Set object in hand
-                        self.sim.data.set_joint_qpos(obj_name,
+                        self.sim.data.set_joint_qpos(obj_name + "_jnt0",
                                                      np.concatenate([self._eef0_xpos, np.array(obj_quat[i])]))
                         # Close gripper (action = 1) and prevent arm from moving
                         if self.env_configuration == 'bimanual':
