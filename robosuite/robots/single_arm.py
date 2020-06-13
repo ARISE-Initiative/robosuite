@@ -8,6 +8,7 @@ from robosuite.models.grippers import gripper_factory
 from robosuite.controllers import controller_factory, load_controller_config
 
 from robosuite.robots.robot import Robot
+from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
 
 import os
 
@@ -67,14 +68,25 @@ class SingleArm(Robot):
         self.gripper_visualization = gripper_visualization
         self.control_freq = control_freq
 
-        self.gripper = None         # Gripper class
-        self.gripper_joints = None              # xml joint names for gripper
-        self._ref_gripper_joint_pos_indexes = None  # xml gripper joint position indexes in mjsim
-        self._ref_gripper_joint_vel_indexes = None  # xml gripper joint velocity indexes in mjsim
+        self.gripper = None                                 # Gripper class
+        self.gripper_joints = None                          # xml joint names for gripper
+        self._ref_gripper_joint_pos_indexes = None          # xml gripper joint position indexes in mjsim
+        self._ref_gripper_joint_vel_indexes = None          # xml gripper joint velocity indexes in mjsim
         self._ref_joint_gripper_actuator_indexes = None     # xml gripper (pos) actuator indexes for robot in mjsim
         self.eef_site_id = None                             # xml element id for eef in mjsim
         self.eef_cylinder_id = None                         # xml element id for eef cylinder in mjsim
+        self.eef_force_sensor_idx = None                    # start idx for eef force sensor in sensordata array
+        self.eef_torque_sensor_idx = None                   # start idx for eef torque sensor in sensordata array
         self.torques = None                                 # Current torques being applied
+
+        self.recent_qpos = None                             # Current and last robot arm qpos
+        self.recent_actions = None                          # Current and last action applied
+        self.recent_torques = None                          # Current and last torques applied
+        self.recent_ee_forcetorques = None                  # Current and last forces / torques sensed at eef
+        self.recent_ee_pose = None                          # Current and last eef pose (pos + ori (quat))
+        self.recent_ee_vel = None                           # Current and last eef velocity
+        self.recent_ee_vel_buffer = None                    # RingBuffer holding prior 10 values of velocity values
+        self.recent_ee_acc = None                           # Current and last eef acceleration
 
         super().__init__(
             robot_type=robot_type,
@@ -167,9 +179,21 @@ class SingleArm(Robot):
         # Update base pos / ori references in controller
         self.controller.update_base_pose(self.base_pos, self.base_ori)
 
+        # Setup buffers to hold recent values
+        self.recent_qpos = DeltaBuffer(dim=len(self.joint_indexes))
+        self.recent_actions = DeltaBuffer(dim=self.action_dim)
+        self.recent_torques = DeltaBuffer(dim=len(self.joint_indexes))
+        self.recent_ee_forcetorques = DeltaBuffer(dim=6)
+        self.recent_ee_pose = DeltaBuffer(dim=7)
+        self.recent_ee_vel = DeltaBuffer(dim=6)
+        self.recent_ee_vel_buffer = RingBuffer(dim=6, length=10)
+        self.recent_ee_acc = DeltaBuffer(dim=6)
+
     def setup_references(self):
         """
         Sets up necessary reference for robots, grippers, and objects.
+
+        Note that this should get called during every reset from the environment
         """
         # First, run the superclass method to setup references for joint-related values / indexes
         super().setup_references()
@@ -193,6 +217,14 @@ class SingleArm(Robot):
         self.eef_site_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_site"])
         self.eef_cylinder_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_cylinder"])
 
+        # Indexes of eef sensors -- Note that this is the index of where the sensor data for this sensor starts in the
+        # sim.data.sensordata struct, NOT the ID assigned by mujoco!
+        sensordims = self.sim.model.sensor_dim
+        self.eef_force_sensor_idx = np.sum(
+            sensordims[:self.sim.model.sensor_name2id(self.gripper.sensors["force_ee"])])
+        self.eef_torque_sensor_idx = np.sum(
+            sensordims[:self.sim.model.sensor_name2id(self.gripper.sensors["torque_ee"])])
+
     def control(self, action, policy_step=False):
         """
         Actuate the robot with the
@@ -215,11 +247,13 @@ class SingleArm(Robot):
         gripper_action = None
         if self.has_gripper:
             gripper_action = action[self.controller.control_dim:]  # all indexes past controller dimension indexes
-            action = action[:self.controller.control_dim]
+            arm_action = action[:self.controller.control_dim]
+        else:
+            arm_action = action
 
         # Update the controller goal if this is a new policy step
         if policy_step:
-            self.controller.set_goal(action)
+            self.controller.set_goal(arm_action)
 
         # Now run the controller for a step
         torques = self.controller.run_controller()
@@ -234,6 +268,22 @@ class SingleArm(Robot):
 
         # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
+
+        # If this is a policy step, also update buffers holding recent values of interest
+        if policy_step:
+            self.recent_qpos.push(self._joint_positions)
+            self.recent_actions.push(action)
+            self.recent_torques.push(self.torques)
+            self.recent_ee_forcetorques.push(np.concatenate((self.ee_force, self.ee_torque)))
+            self.recent_ee_pose.push(np.concatenate((self.controller.ee_pos, T.mat2quat(self.controller.ee_ori_mat))))
+            self.recent_ee_vel.push(np.concatenate((self.controller.ee_pos_vel, self.controller.ee_ori_vel)))
+
+            # Estimation of eef acceleration (averaged derivative of recent velocities)
+            self.recent_ee_vel_buffer.push(np.concatenate((self.controller.ee_pos_vel, self.controller.ee_ori_vel)))
+            diffs = np.vstack([self.recent_ee_acc.current,
+                               self.control_freq * np.diff(self.recent_ee_vel_buffer.buf, axis=0)])
+            ee_acc = np.array([np.convolve(col, np.ones(10) / 10., mode='valid')[0] for col in diffs.transpose()])
+            self.recent_ee_acc.push(ee_acc)
 
     def grip_action(self, gripper_action):
         """
@@ -344,6 +394,38 @@ class SingleArm(Robot):
         if self.has_gripper:
             dof += self.gripper.dof
         return dof
+
+    @property
+    def js_energy(self):
+        """
+        Returns the energy consumed by each joint between previous and current steps
+        """
+        # We assume in the motors torque is proportional to current (and voltage is constant)
+        # In that case the amount of power scales proportional to the torque and the energy is the
+        # time integral of that
+        # Note that we use mean torque
+        return np.abs((1.0 / self.control_freq) * self.recent_torques.average)
+
+    @property
+    def ee_ft_integral(self):
+        """
+        Returns the integral over time of the applied ee force-torque
+        """
+        return np.abs((1.0 / self.control_freq) * self.recent_ee_forcetorques.average)
+
+    @property
+    def ee_force(self):
+        """
+        Returns force applied at the force sensor at the robot arm's eef
+        """
+        return self.sim.data.sensordata[self.eef_force_sensor_idx: self.eef_force_sensor_idx + 3]
+
+    @property
+    def ee_torque(self):
+        """
+        Returns torque applied at the torque sensor at the robot arm's eef
+        """
+        return self.sim.data.sensordata[self.eef_torque_sensor_idx: self.eef_torque_sensor_idx + 3]
 
     @property
     def _right_hand_pose(self):

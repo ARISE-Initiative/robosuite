@@ -97,7 +97,8 @@ class TwoArmLift(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
-            reward_scale (float): Scales the normalized reward function by the amount specified
+            reward_scale (None or float): Scales the normalized reward function by the amount specified.
+                If None, environment reward remains unnormalized
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -292,7 +293,10 @@ class TwoArmLift(RobotEnv):
             else:
                 reward += 0.5 * (1 - np.tanh(_g1h_dist))
 
-        return reward * self.reward_scale / 2.0
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 2.0
+
+        return reward
 
     def _load_model(self):
         """

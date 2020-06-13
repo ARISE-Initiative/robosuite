@@ -318,8 +318,9 @@ class RobotEnv(MujocoEnv):
 
         # Update robot joints based on controller actions
         cutoff = 0
-        for robot in self.robots:
-            robot.control(action[cutoff:cutoff+robot.action_dim], policy_step=policy_step)
+        for idx, robot in enumerate(self.robots):
+            robot_action = action[cutoff:cutoff+robot.action_dim]
+            robot.control(robot_action, policy_step=policy_step)
             cutoff += robot.action_dim
 
         # Also update indicator object if necessary
@@ -385,9 +386,9 @@ class RobotEnv(MujocoEnv):
                 if robot.arm_type == "single":
                     if (
                         self.sim.model.geom_id2name(contact.geom1)
-                        in robot.gripper.contact_geoms()
+                        in robot.gripper.contact_geoms
                         or self.sim.model.geom_id2name(contact.geom2)
-                        in robot.gripper.contact_geoms()
+                        in robot.gripper.contact_geoms
                     ):
                         collisions[idx] = True
                         break
@@ -396,13 +397,49 @@ class RobotEnv(MujocoEnv):
                     for arm in robot.arms:
                         if (
                                 self.sim.model.geom_id2name(contact.geom1)
-                                in robot.gripper[arm].contact_geoms()
+                                in robot.gripper[arm].contact_geoms
                                 or self.sim.model.geom_id2name(contact.geom2)
-                                in robot.gripper[arm].contact_geoms()
+                                in robot.gripper[arm].contact_geoms
                         ):
                             collisions[idx] = True
                             break
         return collisions
+
+    def _check_arm_contact(self):
+        """
+        Returns True if the arm is in contact with another object.
+        """
+        collisions = [False] * self.num_robots
+        for idx, robot in enumerate(self.robots):
+            for contact in self.sim.data.contact[: self.sim.data.ncon]:
+                # Single arm case and Bimanual case are the same
+                if (
+                    self.sim.model.geom_id2name(contact.geom1)
+                    in robot.robot_model.contact_geoms
+                    or self.sim.model.geom_id2name(contact.geom2)
+                    in robot.robot_model.contact_geoms
+                ):
+                    collisions[idx] = True
+                    break
+        return collisions
+
+    def _check_q_limits(self):
+        """
+        Returns True if the arm is in joint limits or very close to.
+        """
+        joint_limits = [False] * self.num_robots
+        tolerance = 0.1
+        for idx, robot in enumerate(self.robots):
+            for (qidx, (q, q_limits)) in enumerate(
+                    zip(
+                        self.sim.data.qpos[robot._ref_joint_pos_indexes],
+                        self.sim.model.jnt_range[robot._ref_joint_indexes]
+                    )
+            ):
+                if not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
+                    print("Joint limit reached in joint " + str(qidx))
+                    joint_limits[idx] = True
+        return joint_limits
 
     def _visualization(self):
         """

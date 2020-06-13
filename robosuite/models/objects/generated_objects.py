@@ -32,6 +32,7 @@ class HammerObject(MujocoGeneratedObject):
         joints=None,
     ):
         """
+        name (str): Name of this Hammer object
         handle_shape (str): Either "box", for a box-shaped handle, or "cylinder", for a cylindrically-shaped handle
         handle_radius (float or 2-list of float): Either specific or range of values to draw randomly from
             uniformly for the handle radius
@@ -88,9 +89,7 @@ class HammerObject(MujocoGeneratedObject):
 
     @property
     def handle_distance(self):
-        # TODO
         return 2.0 * self.handle_radius
-        return self.body_half_size[1] * 2 + self.handle_length * 2
 
     def get_collision(self, site=None):
         # Create new body

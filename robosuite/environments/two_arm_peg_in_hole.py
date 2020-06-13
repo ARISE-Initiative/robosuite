@@ -92,7 +92,8 @@ class TwoArmPegInHole(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
-            reward_scale (float): Scales the normalized reward function by the amount specified
+            reward_scale (None or float): Scales the normalized reward function by the amount specified.
+                If None, environment reward remains unnormalized
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -226,7 +227,10 @@ class TwoArmPegInHole(RobotEnv):
             reward += 1 - np.tanh(np.abs(t))
             reward += cos
 
-        return reward * self.reward_scale / 5.0
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 5.0
+
+        return reward
 
     def _load_model(self):
         """

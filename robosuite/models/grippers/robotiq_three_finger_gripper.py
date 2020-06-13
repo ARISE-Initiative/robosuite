@@ -82,6 +82,7 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
         Args:
             action: -1 => open, 1 => closed
         """
+        assert len(action) == self.dof
         self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
         return self.current_action
 
@@ -95,3 +96,30 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
     @property
     def dof(self):
         return 1
+
+
+class RobotiqThreeFingerDexterousGripper(RobotiqThreeFingerGripperBase):
+    """
+    Dexterous variation of the 3-finger Robotiq gripper in which all finger are actuated independently as well
+    as the scissor joint between fingers 1 and 2
+    """
+
+    def format_action(self, action):
+        """
+        Args:
+            action: all -1 => open, all 1 => closed
+        """
+        assert len(action) == self.dof
+        self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
+        return self.current_action
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.01
+
+    @property
+    def dof(self):
+        return 4

@@ -25,6 +25,17 @@ class GripperModel(MujocoXML):
         # Update all xml element prefixes
         self.add_prefix(self.naming_prefix)
 
+        # Set public attributes with prefixes appended to values
+        self.joints = [self.naming_prefix + joint for joint in self._joints]
+        self.actuators = [self.naming_prefix + actuator for actuator in self._actuators]
+        self.contact_geoms = [self.naming_prefix + geom for geom in self._contact_geoms]
+        self.visualization_geoms = [self.naming_prefix + geom for geom in self._visualization_geoms]
+
+        # Loop through dict of remaining miscellaneous geoms
+        self.important_geoms = {}
+        for k, v in self._important_geoms.items():
+            self.important_geoms[k] = [self.naming_prefix + vv for vv in v]
+
     def hide_visualization(self):
         """
         Hides all visualization geoms and sites.
@@ -46,8 +57,8 @@ class GripperModel(MujocoXML):
         raise NotImplementedError
 
     # -------------------------------------------------------------------------------------- #
-    # Properties: In general, these are the name-adjusted versions from the private   #
-    #             subclass implementations pulled from their respective raw xml files #
+    # Properties: In general, these are the name-adjusted versions from the private          #
+    #             subclass implementations pulled from their respective raw xml files        #
     # -------------------------------------------------------------------------------------- #
     @property
     def naming_prefix(self):
@@ -65,28 +76,12 @@ class GripperModel(MujocoXML):
                 "grip_cylinder": self.naming_prefix + "grip_site_cylinder"}
 
     @property
-    def joints(self):
-        return [self.naming_prefix + joint for joint in self._joints]
-
-    @property
-    def actuators(self):
-        return [self.naming_prefix + actuator for actuator in self._actuators]
-
-    @property
-    def contact_geoms(self):
-        return [self.naming_prefix + geom for geom in self._contact_geoms]
-
-    @property
-    def visualization_geoms(self):
-        return [self.naming_prefix + geom for geom in self._visualization_geoms]
-
-    @property
-    def left_finger_geoms(self):
-        return [self.naming_prefix + geom for geom in self._left_finger_geoms]
-
-    @property
-    def right_finger_geoms(self):
-        return [self.naming_prefix + geom for geom in self._right_finger_geoms]
+    def sensors(self):
+        """
+        Returns a dict of sensor names for each gripper (usually "force_ee" and "torque_ee"
+        """
+        return {"force_ee": self.naming_prefix + "force_ee",
+                "torque_ee": self.naming_prefix + "torque_ee"}
 
     # -------------------------------------------------------------------------------------- #
     # All subclasses must implement the following properties based on their respective xml's #
@@ -139,16 +134,14 @@ class GripperModel(MujocoXML):
         return []
 
     @property
-    def _left_finger_geoms(self):
+    def _important_geoms(self):
         """
-        Geoms corresponding to left finger of a gripper
-        """
-        return []
+        Geoms corresponding to important components of the gripper
 
-    @property
-    def _right_finger_geoms(self):
+        Note that this should be a dict of lists
         """
-        Geoms corresponding to right finger of a gripper
-        """
-        return []
+        return {
+            "left_finger": [],
+            "right_finger": []
+        }
 

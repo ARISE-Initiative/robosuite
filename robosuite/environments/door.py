@@ -286,10 +286,10 @@ class Door(RobotEnv):
         self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr("latch_joint")
 
         self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.left_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
         ]
         self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.right_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
         ]
 
     def _reset_internal(self):

@@ -238,11 +238,12 @@ if __name__ == "__main__":
 
             # Fill out the rest of the action space if necessary
             rem_action_dim = env.action_dim - action.size
-            rem_action = np.zeros(rem_action_dim)
-            # Make sure ik input isn't degenerate
-            if rem_action_dim > 0 and args.controller == 'ik':
-                rem_action[6] = 1
             if rem_action_dim > 0:
+                # Initialize remaining action space
+                rem_action = np.zeros(rem_action_dim)
+                # Make sure ik input isn't degenerate
+                if args.controller == 'ik':
+                    rem_action[6] = 1
                 # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
                 if args.arm == "right":
                     action = np.concatenate([action, rem_action])
@@ -252,6 +253,9 @@ if __name__ == "__main__":
                     # Only right and left arms supported
                     print("Error: Unsupported arm specified -- "
                           "must be either 'right' or 'left'! Got: {}".format(args.arm))
+            elif rem_action_dim < 0:
+                # We're in an environment with no gripper action space, so trim the action space to be the action dim
+                action = action[:env.action_dim]
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)

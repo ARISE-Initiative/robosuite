@@ -115,7 +115,7 @@
         </body>
     </worldbody>
 
-        <sensor>
+    <sensor>
         <force name="force_ee" site="ft_frame"/>
         <torque name="torque_ee" site="ft_frame"/>
     </sensor>
