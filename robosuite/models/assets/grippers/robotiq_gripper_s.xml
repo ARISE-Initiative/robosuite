@@ -84,13 +84,10 @@
         <body name="palm" pos="0 0 0.045" quat="0.49921826 0.50133955 0.50133955 0.49921826" >
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="-0.00134236 0.00263073 -1.01672e-08" quat="0.489887 0.489849 0.509908 0.509954" mass="1.20044" diaginertia="0.00263541 0.00218876 0.00210987" />
-            <body name="palm_base">
-                <inertial pos="0 0 0" mass="0"/>
-                <geom name="palm_visual" type="mesh" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" mesh="palm_vis" />
-                <geom name="palm" type="mesh" rgba="0 0 0 1" group="0" mesh="palm" />
-                <site name="grip_site" pos="0 0.1 0" size="0.01" rgba="1 0 0 1" type="sphere" group="1"/>
-                <site name="grip_site_cylinder" quat="0 0 0.707 0.707" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
-            </body>
+            <geom name="palm_visual" type="mesh" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" mesh="palm_vis" />
+            <geom name="palm" type="mesh" rgba="0 0 0 1" group="0" mesh="palm" />
+            <site name="grip_site" pos="0 0.1 0" size="0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <site name="grip_site_cylinder" quat="0 0 0.707 0.707" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
             <body name="finger_1_link_0" pos="-0.0455 0.0214 0.036" quat="-2.59838e-06 0.706825 0.707388 2.59631e-06">
                 <inertial pos="-0.0381134 0.026928 0.0359997" quat="0.0835458 0.702169 -0.0835699 0.702136" mass="0.0494545" diaginertia="1.39633e-05 1.10443e-05 9.98401e-06" />
                 <joint damping="0.1" name="palm_finger_1_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-0.16 0.25" />
@@ -173,12 +170,12 @@
     </sensor>
     <!--
     <contact>
-        <exclude body1="finger_1_link_1" body2="palm_base"/>
-        <exclude body1="finger_2_link_1" body2="palm_base"/>
-        <exclude body1="finger_middle_link_1" body2="palm_base"/>
-        <exclude body1="finger_1_link_0" body2="palm_base"/>
-        <exclude body1="finger_2_link_0" body2="palm_base"/>
-        <exclude body1="finger_middle_link_0" body2="palm_base"/>
+        <exclude body1="finger_1_link_1" body2="palm"/>
+        <exclude body1="finger_2_link_1" body2="palm"/>
+        <exclude body1="finger_middle_link_1" body2="palm"/>
+        <exclude body1="finger_1_link_0" body2="palm"/>
+        <exclude body1="finger_2_link_0" body2="palm"/>
+        <exclude body1="finger_middle_link_0" body2="palm"/>
         <exclude body1="finger_1_link_0" body2="finger_1_link_1"/>
         <exclude body1="finger_2_link_0" body2="finger_2_link_1"/>
         <exclude body1="finger_middle_link_0" body2="finger_middle_link_1"/>
