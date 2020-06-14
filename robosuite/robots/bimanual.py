@@ -313,7 +313,7 @@ class Bimanual(Robot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
-                self.recent_ee_forcetorques.push[arm](np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
+                self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
                 self.recent_ee_pose[arm].push(np.concatenate((self.controller[arm].ee_pos,
                                                               T.mat2quat(self.controller[arm].ee_ori_mat))))
                 self.recent_ee_vel[arm].push(np.concatenate((self.controller[arm].ee_pos_vel,

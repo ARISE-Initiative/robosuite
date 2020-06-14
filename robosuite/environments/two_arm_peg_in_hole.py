@@ -27,8 +27,8 @@ class TwoArmPegInHole(RobotEnv):
         use_object_obs=True,
         reward_scale=5.0,
         reward_shaping=False,
-        cylinder_radius=(0.015, 0.03),
-        cylinder_length=0.13,
+        peg_radius=(0.015, 0.03),
+        peg_length=0.13,
         use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
@@ -97,10 +97,10 @@ class TwoArmPegInHole(RobotEnv):
 
             reward_shaping (bool): if True, use dense rewards.
 
-            cylinder_radius (2-tuple): low and high limits of the (uniformly sampled)
-                radius of the cylinder
+            peg_radius (2-tuple): low and high limits of the (uniformly sampled)
+                radius of the peg
 
-            cylinder_length (float): length of the cylinder
+            peg_length (float): length of the peg
 
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
@@ -159,9 +159,9 @@ class TwoArmPegInHole(RobotEnv):
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
 
-        # Save cylinder specs
-        self.cylinder_radius = cylinder_radius
-        self.cylinder_length = cylinder_length
+        # Save peg specs
+        self.peg_radius = peg_radius
+        self.peg_length = peg_length
 
         super().__init__(
             robots=robots,
@@ -217,7 +217,7 @@ class TwoArmPegInHole(RobotEnv):
         if self.reward_shaping:
             # reaching reward
             hole_pos = self.sim.data.body_xpos[self.hole_body_id]
-            gripper_site_pos = self.sim.data.body_xpos[self.cyl_body_id]
+            gripper_site_pos = self.sim.data.body_xpos[self.peg_body_id]
             dist = np.linalg.norm(gripper_site_pos - hole_pos)
             reaching_reward = 1 - np.tanh(1.0 * dist)
             reward += reaching_reward
@@ -271,11 +271,12 @@ class TwoArmPegInHole(RobotEnv):
         self.hole = PlateWithHoleObject(
             name="hole",
         )
-        self.cylinder = CylinderObject(
-            name="cylinder",
-            size_min=(self.cylinder_radius[0], self.cylinder_length),
-            size_max=(self.cylinder_radius[1], self.cylinder_length),
+        self.peg = CylinderObject(
+            name="peg",
+            size_min=(self.peg_radius[0], self.peg_length),
+            size_max=(self.peg_radius[1], self.peg_length),
             add_material=True,
+            rgba=[0, 1, 0, 1],
         )
 
         # Load hole object
@@ -284,25 +285,22 @@ class TwoArmPegInHole(RobotEnv):
         self.hole_obj.set("pos", "0.11 0 0.18")
         self.model.merge_asset(self.hole)
 
-        # Load cylinder object
-        self.cyl_obj = self.cylinder.get_collision(site=True)
-        self.cyl_obj.set("pos", "0 0 0.15")
-        self.model.merge_asset(self.cylinder)
+        # Load peg object
+        self.peg_obj = self.peg.get_collision(site=True)
+        self.peg_obj.set("pos", "0 0 0.15")
+        self.model.merge_asset(self.peg)
 
         # Depending on env configuration, append appropriate objects to arms
         if self.env_configuration == "bimanual":
             self.model.worldbody.find(".//body[@name='{}']"
                                       .format(self.robots[0].robot_model.eef_name["left"])).append(self.hole_obj)
             self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[0].robot_model.eef_name["right"])).append(self.cyl_obj)
+                                      .format(self.robots[0].robot_model.eef_name["right"])).append(self.peg_obj)
         else:
             self.model.worldbody.find(".//body[@name='{}']"
                                       .format(self.robots[1].robot_model.eef_name)).append(self.hole_obj)
             self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[0].robot_model.eef_name)).append(self.cyl_obj)
-
-        # Color the cylinder appropriately
-        self.model.worldbody.find(".//geom[@name='cylinder']").set("rgba", "0 1 0 1")
+                                      .format(self.robots[0].robot_model.eef_name)).append(self.peg_obj)
 
     def _get_reference(self):
         """
@@ -314,7 +312,7 @@ class TwoArmPegInHole(RobotEnv):
 
         # Additional object references from this env
         self.hole_body_id = self.sim.model.body_name2id("hole")
-        self.cyl_body_id = self.sim.model.body_name2id("cylinder")
+        self.peg_body_id = self.sim.model.body_name2id("peg")
 
     def _reset_internal(self):
         """
@@ -347,7 +345,7 @@ class TwoArmPegInHole(RobotEnv):
                 pr0 = self.robots[0].robot_model.naming_prefix
                 pr1 = self.robots[1].robot_model.naming_prefix
 
-            # position and rotation of cylinder and hole
+            # position and rotation of peg and hole
             hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
             hole_quat = T.convert_quat(
                 self.sim.data.body_xquat[self.hole_body_id], to="xyzw"
@@ -355,12 +353,12 @@ class TwoArmPegInHole(RobotEnv):
             di["hole_pos"] = hole_pos
             di["hole_quat"] = hole_quat
 
-            cyl_pos = np.array(self.sim.data.body_xpos[self.cyl_body_id])
-            cyl_quat = T.convert_quat(
-                self.sim.data.body_xquat[self.cyl_body_id], to="xyzw"
+            peg_pos = np.array(self.sim.data.body_xpos[self.peg_body_id])
+            peg_quat = T.convert_quat(
+                self.sim.data.body_xquat[self.peg_body_id], to="xyzw"
             )
-            di["cyl_to_hole"] = cyl_pos - hole_pos
-            di["cyl_quat"] = cyl_quat
+            di["peg_to_hole"] = peg_pos - hole_pos
+            di["peg_quat"] = peg_quat
 
             # Relative orientation parameters
             t, d, cos = self._compute_orientation()
@@ -372,8 +370,8 @@ class TwoArmPegInHole(RobotEnv):
                 [
                     di["hole_pos"],
                     di["hole_quat"],
-                    di["cyl_to_hole"],
-                    di["cyl_quat"],
+                    di["peg_to_hole"],
+                    di["peg_quat"],
                     [di["angle"]],
                     [di["t"]],
                     [di["d"]],
@@ -397,20 +395,20 @@ class TwoArmPegInHole(RobotEnv):
         defined by the hole is computed; the parallel distance, perpendicular distance,
         and angle are returned.
         """
-        cyl_mat = self.sim.data.body_xmat[self.cyl_body_id]
-        cyl_mat.shape = (3, 3)
-        cyl_pos = self.sim.data.body_xpos[self.cyl_body_id]
+        peg_mat = self.sim.data.body_xmat[self.peg_body_id]
+        peg_mat.shape = (3, 3)
+        peg_pos = self.sim.data.body_xpos[self.peg_body_id]
 
         hole_pos = self.sim.data.body_xpos[self.hole_body_id]
         hole_mat = self.sim.data.body_xmat[self.hole_body_id]
         hole_mat.shape = (3, 3)
 
-        v = cyl_mat @ np.array([0, 0, 1])
+        v = peg_mat @ np.array([0, 0, 1])
         v = v / np.linalg.norm(v)
         center = hole_pos + hole_mat @ np.array([0.1, 0, 0])
 
-        t = (center - cyl_pos) @ v / (np.linalg.norm(v) ** 2)
-        d = np.linalg.norm(np.cross(v, cyl_pos - center)) / np.linalg.norm(v)
+        t = (center - peg_pos) @ v / (np.linalg.norm(v) ** 2)
+        d = np.linalg.norm(np.cross(v, peg_pos - center)) / np.linalg.norm(v)
 
         hole_normal = hole_mat @ np.array([0, 0, 1])
         return (
@@ -427,8 +425,8 @@ class TwoArmPegInHole(RobotEnv):
         object in the base frame.
         """
         # World frame
-        peg_pos_in_world = self.sim.data.get_body_xpos("cylinder")
-        peg_rot_in_world = self.sim.data.get_body_xmat("cylinder").reshape((3, 3))
+        peg_pos_in_world = self.sim.data.get_body_xpos("peg")
+        peg_rot_in_world = self.sim.data.get_body_xmat("peg").reshape((3, 3))
         peg_pose_in_world = T.make_pose(peg_pos_in_world, peg_rot_in_world)
 
         # World frame
