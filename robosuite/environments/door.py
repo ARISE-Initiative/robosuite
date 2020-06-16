@@ -1,8 +1,6 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.utils.transform_utils import convert_quat
-
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
 
@@ -23,11 +21,10 @@ class Door(RobotEnv):
         gripper_types="default",
         gripper_visualizations=False,
         initialization_noise="default",
-        table_full_size=(0.8, 0.8, 0.8),
-        table_friction=(1., 5e-3, 1e-4),
+        use_latch=False,
         use_camera_obs=True,
         use_object_obs=True,
-        reward_scale=2.25,
+        reward_scale=1.0,
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
@@ -78,12 +75,10 @@ class Door(RobotEnv):
                 Note: Specifying "default" will automatically use the default noise settings
                     Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
-            table_full_size (3-tuple): x, y, and z dimensions of the table.
+            use_latch (bool): if True, uses a spring-loaded handle and latch to "lock" the door closed initially
+                Otherwise, door is instantiated with a fixed handle
 
-            table_friction (3-tuple): the three mujoco friction parameters for
-                the table.
-
-             use_camera_obs (bool): if True, every observation includes rendered image(s)
+            use_camera_obs (bool): if True, every observation includes rendered image(s)
 
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
@@ -145,11 +140,12 @@ class Door(RobotEnv):
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
 
-        # settings for table top
-        self.table_full_size = table_full_size
-        self.table_friction = table_friction
+        # settings for table top (hardcoded since it's not an essential part of the environment)
+        self.table_full_size = (0.8, 0.3, 0.8)
+        self.table_offset = (-0.2, -0.35, 0)
 
         # reward configuration
+        self.use_latch = use_latch
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
 
@@ -161,12 +157,11 @@ class Door(RobotEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[0.1, 0.1],
-                y_range=[-0.35, -0.35],
+                x_range=[0.09, 0.11],
+                y_range=[-0.36, -0.34],
                 ensure_object_boundary_in_range=False,
-                rotation=(-np.pi / 2.),
+                rotation=(-np.pi / 2. - 0.25, -np.pi / 2. + 0.25),
                 rotation_axis='z',
-                z_offset=0.02,
             )
 
         super().__init__(
@@ -196,16 +191,20 @@ class Door(RobotEnv):
         """
         Reward function for the task.
 
-        The dense un-normalized reward has three components.
+        Sparse un-normalized reward:
+          - a discrete reward of 1.0 is provided if the door is opened
 
-            Reaching: in [0, 1], to encourage the arm to reach the cube
-            Grasping: in {0, 0.25}, non-zero if arm is grasping the cube
-            Lifting: in {0, 1}, non-zero if arm has lifted the cube
+        Un-normalized summed components if using reward shaping:
 
-        The sparse reward only consists of the lifting component.
+          - smoothed reaching reward between 0 and 0.25 proportional to the distance between door handle and robot arm
+          - smoothed rotating reward between 0 and 0.25 proportional to angle rotated by door handle
+            - Note that this component is only relevant if the environment is using the locked door version
 
-        Note that the final reward is normalized and scaled by
-        reward_scale / 2.25 as well so that the max score is equal to reward_scale
+        Note that a successfully completed task (door opened) will return 1.0 irregardless of whether the environment
+        is using sparse or shaped rewards
+
+        Note that the final reward is normalized and scaled by reward_scale / 1.0 as
+        well so that the max score is equal to reward_scale
 
         Args:
             action (np array): unused for this task
@@ -219,9 +218,18 @@ class Door(RobotEnv):
         if self._check_success():
             reward = 1.0
 
-        # TODO: fill this in
+        # else, we consider only the case if we're using shaped rewards
+        elif self.reward_shaping:
+            # Add reaching component
+            dist = np.linalg.norm(self._gripper_to_handle)
+            reaching_reward = 0.25 * (1 - np.tanh(10.0 * dist))
+            reward += reaching_reward
+            # Add rotating component if we're using a locked door
+            if self.use_latch:
+                handle_qpos = self.sim.data.qpos[self.handle_qpos_addr]
+                reward += np.clip(0.25 * np.abs(handle_qpos / (0.5 * np.pi)), -0.25, 0.25)
 
-        return reward * self.reward_scale / 2.25
+        return reward * self.reward_scale / 1.0
 
     def _load_model(self):
         """
@@ -239,7 +247,8 @@ class Door(RobotEnv):
 
         # load model for table top workspace
         self.mujoco_arena = DoorArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
+            table_full_size=self.table_full_size,
+            table_offset=self.table_offset,
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
@@ -252,8 +261,8 @@ class Door(RobotEnv):
             name="Door",
             friction=0.0,
             damping=0.1,
-            lock=True,
-            joints=[], # ensures that door object does not have a free joint
+            lock=self.use_latch,
+            joints=[],  # ensures that door object does not have a free joint
         )
         self.mujoco_objects = OrderedDict([("Door", door)])
         self.n_objects = len(self.mujoco_objects)
@@ -277,13 +286,14 @@ class Door(RobotEnv):
         super()._get_reference()
 
         # Additional object references from this env
-        self.object_body_ids = {}
-        self.object_body_ids["door"]  = self.sim.model.body_name2id("door")
+        self.object_body_ids = dict()
+        self.object_body_ids["door"] = self.sim.model.body_name2id("door")
         self.object_body_ids["frame"] = self.sim.model.body_name2id("frame")
-        self.object_body_ids["latch"]  = self.sim.model.body_name2id("latch")
+        self.object_body_ids["latch"] = self.sim.model.body_name2id("latch")
         self.door_handle_site_id = self.sim.model.site_name2id("door_handle")
         self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr("door_hinge")
-        self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr("latch_joint")
+        if self.use_latch:
+            self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr("latch_joint")
 
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
@@ -301,14 +311,11 @@ class Door(RobotEnv):
         # Reset all object positions using initializer sampler if we're not directly loading from an xml
         if not self.deterministic_reset:
 
-            # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.placement_initializer.sample()
-
-            # TODO: figure out what to do here for door task reset
-
-            # # Loop through all objects and reset their positions
-            # for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-            #     self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+            # Sample from the placement initializer for the Door object
+            door_pos, door_quat = self.placement_initializer.sample()
+            door_body_id = self.sim.model.body_name2id("Door")
+            self.sim.model.body_pos[door_body_id] = door_pos[0]
+            self.sim.model.body_quat[door_body_id] = door_quat[0]
 
     def _get_observation(self):
         """
@@ -332,27 +339,28 @@ class Door(RobotEnv):
 
             eef_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
             door_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["door"]])
-            # frame_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["frame"]])
-            # latch_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["latch"]])
             handle_pos = np.array(self.sim.data.site_xpos[self.door_handle_site_id])
             hinge_qpos = np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
-            handle_qpos = np.array([self.sim.data.qpos[self.handle_qpos_addr]])
 
             di["door_pos"] = door_pos
             di["handle_pos"] = handle_pos
             di[pr + "door_to_eef_pos"] = door_pos - eef_pos
             di[pr + "handle_to_eef_pos"] = handle_pos - eef_pos
             di["hinge_qpos"] = hinge_qpos
-            di["handle_qpos"] = handle_qpos
         
             di['object-state'] = np.concatenate([
                 di["door_pos"],
                 di["handle_pos"],
                 di[pr + "door_to_eef_pos"],
                 di[pr + "handle_to_eef_pos"],
-                di["hinge_qpos"],
-                di["handle_qpos"],
+                di["hinge_qpos"]
             ])
+
+            # Also append handle qpos if we're using a locked door version with rotatable handle
+            if self.use_latch:
+                handle_qpos = np.array([self.sim.data.qpos[self.handle_qpos_addr]])
+                di["handle_qpos"] = handle_qpos
+                di['object-state'] = np.concatenate([di["object-state"], di["handle_qpos"]])
 
         return di
 
@@ -361,19 +369,19 @@ class Door(RobotEnv):
         Returns True if door has been opened.
         """
         hinge_qpos = self.sim.data.qpos[self.hinge_qpos_addr]
-        return (hinge_qpos > 0.3)
+        return hinge_qpos > 0.3
 
     def _visualization(self):
         """
         Do any needed visualization here. Overrides superclass implementations.
         """
 
-        # color the gripper site appropriately based on distance to cube
+        # color the gripper site appropriately based on distance to door handle
         if self.robots[0].gripper_visualization:
             # get distance to door handle
             dist = np.sum(
                 np.square(
-                    self.sim.data.site_xpos[self.door_handle_site_id]
+                    self._handle_xpos
                     - self.sim.data.get_site_xpos(self.robots[0].gripper.visualization_sites["grip_site"])
                 )
             )
@@ -395,3 +403,17 @@ class Door(RobotEnv):
         if type(robots) is list:
             assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
 
+    @property
+    def _eef_xpos(self):
+        """End Effector position"""
+        return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
+
+    @property
+    def _handle_xpos(self):
+        """Returns the position of the door handle handle."""
+        return self.sim.data.site_xpos[self.door_handle_site_id]
+
+    @property
+    def _gripper_to_handle(self):
+        """Returns vector from the gripper to the door handle."""
+        return self._handle_xpos - self._eef_xpos
