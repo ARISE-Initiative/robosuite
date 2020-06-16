@@ -58,7 +58,6 @@
     </actuator>
     -->
     <worldbody>
-        <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" />
         <body name="robotiq_85_adapter_link" pos="0.0 0 0" quat="0 0.709 0 0.706">
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />

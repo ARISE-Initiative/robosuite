@@ -12,7 +12,6 @@
         <mesh name="l_finger_tip" file="meshes/pr2_gripper/l_finger_tip.stl" />
     </asset>
     <worldbody>
-        <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" />
         <body quat="0 0.709 0 0.706" pos="0 0 -0.03">
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0.06623 0.00053 -0.00119" quat="-0.0181842 0.706274 0.0160771 0.707523" mass="0.58007" diaginertia="0.000865637 0.000678178 0.000351471" />
