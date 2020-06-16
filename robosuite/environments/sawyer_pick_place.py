@@ -222,6 +222,9 @@ class SawyerPickPlace(SawyerEnv):
         self.mujoco_objects = OrderedDict(lst)
         self.n_objects = len(self.mujoco_objects)
 
+        # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
+        self.init_qpos = np.array([0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161])
+
         # task includes arena, robot, and objects of interest
         self.model = PickPlaceTask(
             self.mujoco_arena,

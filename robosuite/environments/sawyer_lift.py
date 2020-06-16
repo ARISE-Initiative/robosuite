@@ -160,6 +160,10 @@ class SawyerLift(SawyerEnv):
         )
         self.mujoco_objects = OrderedDict([("cube", cube)])
 
+        # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
+        self.init_qpos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
+        self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
+
         # task includes arena, robot, and objects of interest
         self.model = TableTopTask(
             self.mujoco_arena,
@@ -193,11 +197,6 @@ class SawyerLift(SawyerEnv):
 
         # reset positions of objects
         self.model.place_objects()
-
-        # reset joint positions
-        init_pos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
-        init_pos += np.random.randn(init_pos.shape[0]) * 0.02
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = np.array(init_pos)
 
     def reward(self, action=None):
         """

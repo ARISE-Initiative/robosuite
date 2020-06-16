@@ -97,6 +97,7 @@ class SawyerEnv(MujocoEnv):
         """
         super()._load_model()
         self.mujoco_robot = Sawyer()
+        self.init_qpos = self.mujoco_robot.init_qpos
         if self.has_gripper:
             self.gripper = gripper_factory(self.gripper_type)
             if not self.gripper_visualization:
@@ -108,7 +109,7 @@ class SawyerEnv(MujocoEnv):
         Sets initial pose of arm and grippers.
         """
         super()._reset_internal()
-        self.sim.data.qpos[self._ref_joint_pos_indexes] = self.mujoco_robot.init_qpos
+        self.sim.data.qpos[self._ref_joint_pos_indexes] = self.init_qpos
 
         if self.has_gripper:
             self.sim.data.qpos[
@@ -269,6 +270,8 @@ class SawyerEnv(MujocoEnv):
             di["eef_quat"] = T.convert_quat(
                 self.sim.data.get_body_xquat("right_hand"), to="xyzw"
             )
+            di["eef_vlin"] = np.array(self.sim.data.get_body_xvelp("right_hand"))
+            di["eef_vang"] = np.array(self.sim.data.get_body_xvelr("right_hand"))
 
             # add in gripper information
             robot_states.extend([di["gripper_qpos"], di["eef_pos"], di["eef_quat"]])
