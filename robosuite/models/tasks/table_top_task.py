@@ -26,10 +26,9 @@ class TableTopTask(Task):
         self.merge_objects(mujoco_objects)
         if initializer is None:
             initializer = UniformRandomSampler()
-        mjcfs = [x for _, x in self.mujoco_objects.items()]
 
         self.initializer = initializer
-        self.initializer.setup(mjcfs, self.table_top_offset, self.table_size)
+        self.initializer.setup(self.mujoco_objects, self.table_top_offset, self.table_size)
 
     def merge_robot(self, mujoco_robot):
         """Adds robot model to the MJCF model."""

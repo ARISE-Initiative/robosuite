@@ -179,3 +179,46 @@ def postprocess_model_xml(xml_str):
         elem.set("file", new_path)
 
     return ET.tostring(root, encoding="utf8").decode("utf8")
+
+
+def range_to_uniform_grid(a, b, n):
+    """
+    Utility function to return an evenly spaced grid
+    of n points ranging from low point a to high point b
+    such that the spacing is uniform between the points.
+    For example, if a = -0.03, b = 0.03, and n = 3, the
+    function will return [-0.02, 0., 0.02]. This also
+    makes it so that you can sample in the range +/- 0.01
+    about each grid point, and this will cover the entire
+    range while respecting the range constraints.
+    """
+    spacing = (b - a) / n
+    offset = a + spacing / 2.
+    return np.arange(n) * spacing + offset
+
+def bounds_to_grid(bounds):
+    """
+    Utility function to take a list of bounds per dimension and 
+    convert this to a final grid. Each element in @bounds should
+    correspond to (low, high, num_grid_points) per dimension.
+    """
+
+    # set up placement grid by getting bounds per dimension and then
+    # using meshgrid to get all combinations
+    grid_dims = []
+    for b in bounds:
+        dim_grid = range_to_uniform_grid(a=b[0], b=b[1], n=b[2])
+        grid_dims.append(dim_grid)
+    grid = np.meshgrid(*grid_dims)
+    grid_dims = [x.ravel() for x in grid]
+    grid_length = grid_dims[0].shape[0]
+    round_robin_period = grid_length
+
+    # assign grid locations for the full round robin schedule
+    final_grid_dims = [np.zeros(round_robin_period) for x in grid]
+    for t in range(round_robin_period):
+        g_ind = t % grid_length
+        for dim_i in range(len(grid_dims)):
+            final_grid_dims[dim_i][t] = grid_dims[dim_i][g_ind]
+
+    return final_grid_dims

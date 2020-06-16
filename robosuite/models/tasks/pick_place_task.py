@@ -15,7 +15,7 @@ class PickPlaceTask(Task):
     arena, and the objects into a single MJCF model of the task.
     """
 
-    def __init__(self, mujoco_arena, mujoco_robot, mujoco_objects, visual_objects):
+    def __init__(self, mujoco_arena, mujoco_robot, mujoco_objects, visual_objects, initializer):
         """
         Args:
             mujoco_arena: MJCF model of robot workspace
@@ -24,6 +24,7 @@ class PickPlaceTask(Task):
             visual_objects: a list of MJCF models of visual objects. Visual
                 objects are excluded from physical computation, we use them to
                 indicate the target destinations of the objects.
+            initializer: placement sampler to initialize object positions.
         """
         super().__init__()
 
@@ -36,6 +37,9 @@ class PickPlaceTask(Task):
         self.merge_objects(mujoco_objects)
         self.merge_visual(OrderedDict(visual_objects))
         self.visual_objects = visual_objects
+
+        self.initializer = initializer
+        self.initializer.setup(self.mujoco_objects, self.bin_offset, self.bin_size)
 
     def merge_robot(self, mujoco_robot):
         """Adds robot model to the MJCF model."""
@@ -87,45 +91,10 @@ class PickPlaceTask(Task):
 
     def place_objects(self):
         """Places objects randomly until no collisions or max iterations hit."""
-        placed_objects = []
-        index = 0
-
-        # place objects by rejection sampling
-        for _, obj_mjcf in self.mujoco_objects.items():
-            horizontal_radius = obj_mjcf.get_horizontal_radius()
-            bottom_offset = obj_mjcf.get_bottom_offset()
-            success = False
-            for _ in range(5000):  # 5000 retries
-                bin_x_half = self.bin_size[0] / 2 - horizontal_radius - 0.05
-                bin_y_half = self.bin_size[1] / 2 - horizontal_radius - 0.05
-                object_x = np.random.uniform(high=bin_x_half, low=-bin_x_half)
-                object_y = np.random.uniform(high=bin_y_half, low=-bin_y_half)
-
-                # make sure objects do not overlap
-                object_xy = np.array([object_x, object_y, 0])
-                pos = self.bin_offset - bottom_offset + object_xy
-                location_valid = True
-                for pos2, r in placed_objects:
-                    dist = np.linalg.norm(pos[:2] - pos2[:2], np.inf)
-                    if dist <= r + horizontal_radius:
-                        location_valid = False
-                        break
-
-                # place the object
-                if location_valid:
-                    # add object to the position
-                    placed_objects.append((pos, horizontal_radius))
-                    self.objects[index].set("pos", array_to_string(pos))
-                    # random z-rotation
-                    quat = self.sample_quat()
-                    self.objects[index].set("quat", array_to_string(quat))
-                    success = True
-                    break
-
-            # raise error if all objects cannot be placed after maximum retries
-            if not success:
-                raise RandomizationError("Cannot place all objects in the bins")
-            index += 1
+        pos_arr, quat_arr = self.initializer.sample()
+        for i in range(len(self.objects)):
+            self.objects[i].set("pos", array_to_string(pos_arr[i]))
+            self.objects[i].set("quat", array_to_string(quat_arr[i]))
 
     def place_visual(self):
         """Places visual objects randomly until no collisions or max iterations hit."""
@@ -133,7 +102,7 @@ class PickPlaceTask(Task):
         bin_pos = string_to_array(self.bin2_body.get("pos"))
         bin_size = self.bin_size
 
-        for _, obj_mjcf in self.visual_objects:
+        for _, obj_mjcf in self.visual_objects.items():
 
             bin_x_low = bin_pos[0]
             bin_y_low = bin_pos[1]

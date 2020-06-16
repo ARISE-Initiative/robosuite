@@ -28,6 +28,8 @@ class SawyerEnv(MujocoEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        eval_mode=False,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -76,6 +78,10 @@ class SawyerEnv(MujocoEnv):
         self.gripper_type = gripper_type
         self.gripper_visualization = gripper_visualization
         self.use_indicator_object = use_indicator_object
+
+        self.eval_mode = eval_mode
+        self.perturb_evals = perturb_evals
+
         super().__init__(
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
@@ -91,11 +97,21 @@ class SawyerEnv(MujocoEnv):
             camera_depth=camera_depth,
         )
 
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        This method is used by subclasses to implement a 
+        placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+        raise Exception("Must implement this in subclass.")
+
     def _load_model(self):
         """
         Loads robot and optionally add grippers.
         """
         super()._load_model()
+        self._has_interaction = False
         self.mujoco_robot = Sawyer()
         self.init_qpos = self.mujoco_robot.init_qpos
         if self.has_gripper:
@@ -181,6 +197,13 @@ class SawyerEnv(MujocoEnv):
         if self.use_indicator_object:
             index = self._ref_indicator_pos_low
             self.sim.data.qpos[index : index + 3] = pos
+
+    def step(self, action):
+        if not self._has_interaction and self.eval_mode:
+            # this is the first step call of the episode
+            self.placement_initializer.increment_counter()
+        self._has_interaction = True
+        return super().step(action)
 
     def _pre_action(self, action):
         """

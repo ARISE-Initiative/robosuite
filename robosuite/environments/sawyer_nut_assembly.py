@@ -9,7 +9,7 @@ from robosuite.environments.sawyer import SawyerEnv
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import NutAssemblyTask, UniformRandomPegsSampler
+from robosuite.models.tasks import NutAssemblyTask, UniformRandomSampler, SequentialCompositeSampler
 
 
 class SawyerNutAssembly(SawyerEnv):
@@ -25,7 +25,6 @@ class SawyerNutAssembly(SawyerEnv):
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
-        placement_initializer=None,
         single_object_mode=0,
         nut_type=None,
         gripper_visualization=False,
@@ -41,6 +40,8 @@ class SawyerNutAssembly(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        eval_mode=False,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -138,17 +139,8 @@ class SawyerNutAssembly(SawyerEnv):
         # reward configuration
         self.reward_shaping = reward_shaping
 
-        # placement initilizer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            self.placement_initializer = UniformRandomPegsSampler(
-                x_range=[-0.15, 0.],
-                y_range=[-0.2, 0.2],
-                z_range=[0.02, 0.10],
-                ensure_object_boundary_in_range=False,
-                z_rotation=True,
-            )
+        # object placement initializer
+        self.placement_initializer = None
 
         super().__init__(
             gripper_type=gripper_type,
@@ -166,7 +158,73 @@ class SawyerNutAssembly(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            eval_mode=eval_mode,
+            perturb_evals=perturb_evals,
         )
+
+    def _get_default_placement_initializers(self):
+        placement_initializers = {}
+
+        # treat sampling of each type of nut differently since we require different
+        # sampling ranges for each
+        placement_initializers["SquareNut0"] = UniformRandomSampler(
+            x_range=[-0.115, -0.11],
+            y_range=[0.11, 0.225],
+            z_rotation=None,
+            z_offset=0.02,
+            ensure_object_boundary_in_range=False,
+        )
+
+        placement_initializers["RoundNut0"] = UniformRandomSampler(
+            x_range=[-0.115, -0.11],
+            y_range=[-0.225, -0.11],
+            z_rotation=None,
+            z_offset=0.02,
+            ensure_object_boundary_in_range=False,
+        )
+
+        return placement_initializers
+
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        Sets a placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+        assert(self.eval_mode)
+        assert(self.single_object_mode == 2)
+
+        # NOTE: this is only supported for single object environments!
+
+        # We will just replace one of the default object samplers with a RoundRobinSampler
+        placement_initializers = self._get_default_placement_initializers()
+        obj = (self.item_names[self.nut_id] + "{}").format(0)
+
+        bounds = list(self._grid_bounds_for_eval_mode())
+        self.placement_initializer = SequentialCompositeSampler()
+        self.placement_initializer.sample_on_top_square_grid(
+            object_name=obj,
+            surface_name='table',
+            bounds=bounds,
+            perturb=self.perturb_evals,
+            z_offset=0.02,
+        )
+        del placement_initializers[obj]
+
+        # add remaining objects
+        for k in placement_initializers:
+            self.placement_initializer.append_sampler(object_name=k, sampler=placement_initializers[k])
+
+        return self.placement_initializer
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        # This is only implemented in subclasses that use one object.
+        raise Exception("Not implemented.")
 
     def _load_model(self):
         super()._load_model()
@@ -199,6 +257,16 @@ class SawyerNutAssembly(SawyerEnv):
 
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
         self.init_qpos = np.array([0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161])
+
+        if self.placement_initializer is None:
+            if self.eval_mode:
+                # replace placement initializer with one for consistent task evaluations
+                self._get_placement_initializer_for_eval_mode()
+            else:
+                placement_initializers = self._get_default_placement_initializers()
+                self.placement_initializer = SequentialCompositeSampler()
+                for k in placement_initializers:
+                    self.placement_initializer.append_sampler(object_name=k, sampler=placement_initializers[k])
 
         # task includes arena, robot, and objects of interest
         self.model = NutAssemblyTask(
@@ -552,6 +620,19 @@ class SawyerNutAssemblySquare(SawyerNutAssembly):
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="square", **kwargs)
 
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.115, -0.11, 1)
+        y_bounds = (0.11, 0.225, 4)
+        z_rot_bounds = (0., 2. * np.pi, 4)
+        return x_bounds, y_bounds, z_rot_bounds
+
 
 class SawyerNutAssemblyRound(SawyerNutAssembly):
     """
@@ -563,3 +644,16 @@ class SawyerNutAssemblyRound(SawyerNutAssembly):
             "single_object_mode" not in kwargs and "nut_type" not in kwargs
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="round", **kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.115, -0.11, 1)
+        y_bounds = (-0.225, -0.11, 4)
+        z_rot_bounds = (0., 2. * np.pi, 4)
+        return x_bounds, y_bounds, z_rot_bounds

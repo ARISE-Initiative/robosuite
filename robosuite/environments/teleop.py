@@ -18,16 +18,27 @@ DEFAULT_JPOS = np.array([0.00, -1.18, 0.00, 2.18, 0.00, 0.57, 1.5708])
 ### Lift Tasks ###
 
 class SawyerLiftTeleop(SawyerLift):
-    def __init__(self, **kwargs):
+    def _get_default_placement_initializer(self):
         # to maintain backwards compatibility, use a constant z-rotation for the cube
-        assert "placement_initializer" not in kwargs
-        kwargs["placement_initializer"] = UniformRandomSampler(
+        self.placement_initializer = UniformRandomSampler(
             x_range=[-0.03, 0.03],
             y_range=[-0.03, 0.03],
             ensure_object_boundary_in_range=False,
-            z_rotation=1.0,
+            z_rotation=1.,
         )
-        super().__init__(**kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.03, 0.03, 3)
+        y_bounds = (-0.03, 0.03, 3)
+        z_rot_bounds = (1., 1., 1) # constant z-rotation
+        return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):
         super()._load_model()

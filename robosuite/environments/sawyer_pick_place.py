@@ -20,7 +20,7 @@ from robosuite.models.objects import (
     CanVisualObject,
 )
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import PickPlaceTask, UniformRandomSampler
+from robosuite.models.tasks import PickPlaceTask, UniformRandomSampler, SequentialCompositeSampler
 
 
 class SawyerPickPlace(SawyerEnv):
@@ -48,6 +48,8 @@ class SawyerPickPlace(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        eval_mode=False,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -147,6 +149,9 @@ class SawyerPickPlace(SawyerEnv):
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
 
+        # object placement initializer
+        self.placement_initializer = None
+
         super().__init__(
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
@@ -163,6 +168,8 @@ class SawyerPickPlace(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            eval_mode=eval_mode,
+            perturb_evals=perturb_evals,
         )
 
         # reward configuration
@@ -183,6 +190,67 @@ class SawyerPickPlace(SawyerEnv):
             self.sim.model._geom_name2id[k] for k in self.collision_check_geom_names
         ]
 
+    def _get_default_placement_initializers(self):
+        placement_initializers = {}
+
+        # each object should just be sampled in the bounds of the bin (with some tolerance)
+        for obj_name in self.mujoco_objects:
+
+            # can sample anywhere in bin
+            bin_x_half = self.mujoco_arena.table_full_size[0] / 2 - 0.05
+            bin_y_half = self.mujoco_arena.table_full_size[1] / 2 - 0.05
+
+            placement_initializers[obj_name] = UniformRandomSampler(
+                x_range=[-bin_x_half, bin_x_half],
+                y_range=[-bin_y_half, bin_y_half],
+                z_rotation=None,
+                z_offset=0.,
+                ensure_object_boundary_in_range=True
+            )
+
+        return placement_initializers
+
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        Sets a placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+        assert(self.eval_mode)
+        assert(self.single_object_mode == 2)
+
+        # NOTE: this is only supported for single object environments!
+
+        # We will just replace one of the default object samplers with a RoundRobinSampler
+        placement_initializers = self._get_default_placement_initializers()
+        obj = (self.item_names[self.object_id] + "{}").format(0)
+
+        bounds = list(self._grid_bounds_for_eval_mode())
+        self.placement_initializer = SequentialCompositeSampler()
+        self.placement_initializer.sample_on_top_square_grid(
+            object_name=obj,
+            surface_name='table',
+            bounds=bounds,
+            perturb=self.perturb_evals,
+            z_offset=0.,
+        )
+        del placement_initializers[obj]
+
+        # add remaining objects
+        for k in placement_initializers:
+            self.placement_initializer.append_sampler(object_name=k, sampler=placement_initializers[k])
+
+        return self.placement_initializer
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+        # This is only implemented in subclasses that use one object.
+        raise Exception("Not implemented.")
+
     def _load_model(self):
         super()._load_model()
         self.mujoco_robot.set_base_xpos([0, 0, 0])
@@ -194,6 +262,11 @@ class SawyerPickPlace(SawyerEnv):
 
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
+
+        # store some arena attributes
+        self.bin_pos = string_to_array(self.mujoco_arena.bin2_body.get("pos"))
+        self.bin_size = self.mujoco_arena.table_full_size
+        self.bin_offset = self.mujoco_arena.bin_abs[:2]
 
         # The sawyer robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([.5, -0.3, 0])
@@ -211,8 +284,8 @@ class SawyerPickPlace(SawyerEnv):
 
         lst = []
         for j in range(len(self.vis_inits)):
-            lst.append((str(self.vis_inits[j]), self.vis_inits[j]()))
-        self.visual_objects = lst
+            lst.append((("Visual" + self.item_names[j] + "0"), self.vis_inits[j]()))
+        self.visual_objects = OrderedDict(lst)
 
         lst = []
         for i in range(len(self.ob_inits)):
@@ -225,17 +298,27 @@ class SawyerPickPlace(SawyerEnv):
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
         self.init_qpos = np.array([0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161])
 
+        if self.placement_initializer is None:
+            if self.eval_mode:
+                # replace placement initializer with one for consistent task evaluations
+                self._get_placement_initializer_for_eval_mode()
+            else:
+                placement_initializers = self._get_default_placement_initializers()
+                self.placement_initializer = SequentialCompositeSampler()
+                for k in placement_initializers:
+                    self.placement_initializer.append_sampler(object_name=k, sampler=placement_initializers[k])
+
+
         # task includes arena, robot, and objects of interest
         self.model = PickPlaceTask(
             self.mujoco_arena,
             self.mujoco_robot,
             self.mujoco_objects,
             self.visual_objects,
+            initializer=self.placement_initializer,
         )
         self.model.place_objects()
         self.model.place_visual()
-        self.bin_pos = string_to_array(self.model.bin2_body.get("pos"))
-        self.bin_size = self.model.bin_size
 
     def clear_objects(self, obj):
         """
@@ -599,6 +682,19 @@ class SawyerPickPlaceMilk(SawyerPickPlace):
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, object_type="milk", **kwargs)
 
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.12, 0.12, 4)
+        y_bounds = (-0.17, 0.17, 4)
+        z_rot_bounds = (0., 2. * np.pi, 3)
+        return x_bounds, y_bounds, z_rot_bounds
+
 
 class SawyerPickPlaceBread(SawyerPickPlace):
     """
@@ -610,6 +706,19 @@ class SawyerPickPlaceBread(SawyerPickPlace):
             "single_object_mode" not in kwargs and "object_type" not in kwargs
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, object_type="bread", **kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.115, 0.115, 4)
+        y_bounds = (-0.165, 0.165, 4)
+        z_rot_bounds = (0., 2. * np.pi, 3)
+        return x_bounds, y_bounds, z_rot_bounds
 
 
 class SawyerPickPlaceCereal(SawyerPickPlace):
@@ -623,6 +732,19 @@ class SawyerPickPlaceCereal(SawyerPickPlace):
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, object_type="cereal", **kwargs)
 
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.125, 0.125, 4)
+        y_bounds = (-0.175, 0.175, 4)
+        z_rot_bounds = (0., 2. * np.pi, 3)
+        return x_bounds, y_bounds, z_rot_bounds
+
 
 class SawyerPickPlaceCan(SawyerPickPlace):
     """
@@ -634,3 +756,16 @@ class SawyerPickPlaceCan(SawyerPickPlace):
             "single_object_mode" not in kwargs and "object_type" not in kwargs
         ), "invalid set of arguments"
         super().__init__(single_object_mode=2, object_type="can", **kwargs)
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.12, 0.12, 4)
+        y_bounds = (-0.17, 0.17, 4)
+        z_rot_bounds = (0., 2. * np.pi, 3)
+        return x_bounds, y_bounds, z_rot_bounds

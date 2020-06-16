@@ -7,7 +7,7 @@ from robosuite.environments.sawyer import SawyerEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.robots import Sawyer
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.tasks import TableTopTask, UniformRandomSampler, SequentialCompositeSampler
 
 
 class SawyerLift(SawyerEnv):
@@ -23,7 +23,6 @@ class SawyerLift(SawyerEnv):
         use_camera_obs=True,
         use_object_obs=True,
         reward_shaping=False,
-        placement_initializer=None,
         gripper_visualization=False,
         use_indicator_object=False,
         has_renderer=False,
@@ -37,6 +36,8 @@ class SawyerLift(SawyerEnv):
         camera_height=256,
         camera_width=256,
         camera_depth=False,
+        eval_mode=False,
+        perturb_evals=False,
     ):
         """
         Args:
@@ -107,15 +108,7 @@ class SawyerLift(SawyerEnv):
         self.reward_shaping = reward_shaping
 
         # object placement initializer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.03, 0.03],
-                y_range=[-0.03, 0.03],
-                ensure_object_boundary_in_range=False,
-                z_rotation=None,
-            )
+        self.placement_initializer = None
 
         super().__init__(
             gripper_type=gripper_type,
@@ -133,7 +126,50 @@ class SawyerLift(SawyerEnv):
             camera_height=camera_height,
             camera_width=camera_width,
             camera_depth=camera_depth,
+            eval_mode=eval_mode,
+            perturb_evals=perturb_evals,
         )
+
+    def _get_default_placement_initializer(self):
+        self.placement_initializer = UniformRandomSampler(
+            x_range=[-0.03, 0.03],
+            y_range=[-0.03, 0.03],
+            ensure_object_boundary_in_range=False,
+            z_rotation=None,
+        )
+
+    def _get_placement_initializer_for_eval_mode(self):
+        """
+        Sets a placement initializer that is used to initialize the
+        environment into a fixed set of known task instances.
+        This is for reproducibility in policy evaluation.
+        """
+        assert(self.eval_mode)
+
+        bounds = list(self._grid_bounds_for_eval_mode())
+        self.placement_initializer = SequentialCompositeSampler()
+        self.placement_initializer.sample_on_top_square_grid(
+            object_name="cube",
+            surface_name='table',
+            bounds=bounds,
+            perturb=self.perturb_evals,
+            z_offset=0.,
+        )
+        return self.placement_initializer
+
+    def _grid_bounds_for_eval_mode(self):
+        """
+        Helper function to get grid bounds of x positions, y positions, 
+        and z-rotations for reproducible evaluations, and number of points
+        per dimension.
+        """
+
+        # (low, high, number of grid points for this dimension)
+        x_bounds = (-0.03, 0.03, 3)
+        y_bounds = (-0.03, 0.03, 3)
+        # z_rot_bounds = (1., 1., 1)
+        z_rot_bounds = (0., 2. * np.pi, 3)
+        return x_bounds, y_bounds, z_rot_bounds
 
     def _load_model(self):
         """
@@ -163,6 +199,13 @@ class SawyerLift(SawyerEnv):
         # reset initial joint positions (gets reset in sim during super() call in _reset_internal)
         self.init_qpos = np.array([-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628])
         self.init_qpos += np.random.randn(self.init_qpos.shape[0]) * 0.02
+
+        if self.placement_initializer is None:
+            if self.eval_mode:
+                # replace placement initializer with one for consistent task evaluations
+                self._get_placement_initializer_for_eval_mode()
+            else:
+                self._get_default_placement_initializer()
 
         # task includes arena, robot, and objects of interest
         self.model = TableTopTask(
