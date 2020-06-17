@@ -404,8 +404,12 @@ class NutAssembly(RobotEnv):
 
         lst = []
         for i in range(len(self.ob_inits)):
-            ob = self.ob_inits[i](name=str(self.item_names[i]) + "0")
-            lst.append((str(self.item_names[i]) + "0", ob))
+            ob_name = (self.item_names[i] + "0")
+            ob = self.ob_inits[i](
+                name=ob_name,
+                joints=[dict(type="free", damping="0.0005")], # damp the free joint for each object
+            )
+            lst.append((ob_name, ob))
 
         self.mujoco_objects = OrderedDict(lst)
         self.n_objects = len(self.mujoco_objects)
