@@ -69,7 +69,19 @@ class RobotiqThreeFingerGripperBase(GripperModel):
             "f3_l1",
             "f3_l2",
             "f3_l3",
+            "f1_pad_collision",
+            "f2_pad_collision",
+            "finger_middle_pad_collision"
         ]
+
+    @property
+    def _important_geoms(self):
+        return {
+            "left_finger": ["f1_l0", "f1_l1", "f1_l2", "f1_l3",
+                            "f2_l0", "f2_l1", "f2_l2", "f2_l3",
+                            "f1_pad_collision", "f2_pad_collision"],
+            "right_finger": ["f3_l0", "f3_l1", "f3_l2", "f3_l3", "finger_middle_pad_collision"]
+        }
 
 
 class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
@@ -84,7 +96,8 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
         """
         assert len(action) == self.dof
         self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
-        return self.current_action
+        # Automatically set the scissor joint to "closed" position by default
+        return np.concatenate([self.current_action * np.ones(3), [-1]])
 
     @property
     def speed(self):

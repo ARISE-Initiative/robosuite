@@ -10,20 +10,20 @@
     <tendon>
 		<!--Middlefinger tendons-->
 		<fixed name="middle12_cpl" range="0 1" stiffness="0.2">
-			<joint joint="j2s7s300_joint_finger_1"  coef="1.5"/>
-			<joint joint="j2s7s300_joint_finger_tip_1"  coef="-6.5"/>
+			<joint joint="j2s7s300_joint_finger_1"  coef="0.2"/>
+			<joint joint="j2s7s300_joint_finger_tip_1"  coef="1.0"/>
 		</fixed>
 
 		<!--finger2 tendons-->
         <fixed name="finger2_12_cpl" range="0 1" stiffness="0.2">
-			<joint joint="j2s7s300_joint_finger_2"  coef="1.5"/>
-			<joint joint="j2s7s300_joint_finger_tip_2"  coef="-6.5"/>
+			<joint joint="j2s7s300_joint_finger_2"  coef="0.2"/>
+			<joint joint="j2s7s300_joint_finger_tip_2"  coef="1.0"/>
 		</fixed>
 
 		<!--Finger1 tendons-->
         <fixed name="finger1_12_cpl" range="0 1" stiffness="0.2">
-			<joint joint="j2s7s300_joint_finger_3"  coef="1.5"/>
-			<joint joint="j2s7s300_joint_finger_tip_3"  coef="-6.5"/>
+			<joint joint="j2s7s300_joint_finger_3"  coef="0.2"/>
+			<joint joint="j2s7s300_joint_finger_tip_3"  coef="1.0"/>
 		</fixed>
 	</tendon>
 
@@ -45,9 +45,9 @@
     -->
 
     <actuator>
-        <position name='finger_1' ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_1' ctrlrange='0 1.4'/>
-        <position name='finger_2' ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_2' ctrlrange='0 1.4'/>
-        <position name='middle_finger'  ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_3' ctrlrange='0 1.4'/>
+        <position name='finger_1' ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_1' ctrlrange='0 1.4' forcelimited="true" forcerange="-0.2 0.2" />
+        <position name='finger_2' ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_2' ctrlrange='0 1.4' forcelimited="true" forcerange="-0.2 0.2" />
+        <position name='middle_finger'  ctrllimited="true" kp="20" joint='j2s7s300_joint_finger_3' ctrlrange='0 1.4' forcelimited="true" forcerange="-0.2 0.2" />
     </actuator>
 
     <!--
@@ -80,36 +80,39 @@
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                 <joint name="j2s7s300_joint_finger_1" damping="0.1" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_proximal" />
-                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger1_collision"/>
+                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger1_collision" solref="0.01 0.5"/>
                 <body name="j2s7s300_link_finger_tip_1" pos="0.044 -0.003 0">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                     <joint name="j2s7s300_joint_finger_tip_1" damping="0.03" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_distal" />
                     <geom type="mesh" rgba="1 1 1 1" mesh="finger_distal" name="fingertip1_collision" solref="0.01 0.5" friction = "2 0.05 0.0001" />
+                    <geom type="box" pos="0.035 -0.003 0" quat="-0.9914449 0 0 0.1305262" size="0.009 0.002 0.01" name="fingertip1_pad_collision" />
                 </body>
             </body>
             <body name="j2s7s300_link_finger_2" pos="0.02226 -0.02707 -0.11482" quat="0.659653 -0.37146 0.601679 -0.254671">
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                 <joint name="j2s7s300_joint_finger_2" damping="0.1" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_proximal" />
-                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger2_collision"/>
+                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger2_collision" solref="0.01 0.5"/>
                 <body name="j2s7s300_link_finger_tip_2" pos="0.044 -0.003 0">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                     <joint name="j2s7s300_joint_finger_tip_2" damping="0.03" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_distal" />
                     <geom type="mesh" rgba="1 1 1 1" mesh="finger_distal" name="fingertip2_collision" solref="0.01 0.5" friction = "2 0.05 0.0001" />
+                    <geom type="box" pos="0.035 -0.003 0" quat="-0.9914449 0 0 0.1305262" size="0.009 0.002 0.01" name="fingertip2_pad_collision" />
                 </body>
             </body>
             <body name="j2s7s300_link_finger_3" pos="-0.02226 -0.02707 -0.11482" quat="0.601679 -0.254671 0.659653 -0.37146">
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                 <joint name="j2s7s300_joint_finger_3" damping="0.1" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_proximal" />
-                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger3_collision"/>
+                <geom type="mesh" rgba="1 1 1 1" mesh="finger_proximal" name="finger3_collision" solref="0.01 0.5"/>
                 <body name="j2s7s300_link_finger_tip_3" pos="0.044 -0.003 0">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                     <joint name="j2s7s300_joint_finger_tip_3" damping="0.03" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="finger_distal" />
                     <geom type="mesh" rgba="1 1 1 1" mesh="finger_distal" name="fingertip3_collision" solref="0.01 0.5" friction = "2 0.05 0.0001" />
+                    <geom type="box" pos="0.035 -0.003 0" quat="-0.9914449 0 0 0.1305262" size="0.009 0.002 0.01" name="fingertip3_pad_collision" />
                 </body>
             </body>
         </body>

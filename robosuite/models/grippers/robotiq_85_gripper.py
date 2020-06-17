@@ -27,7 +27,7 @@ class Robotiq85GripperBase(GripperModel):
 
     @property
     def init_qpos(self):
-        return [3.3161, 0., 0., 0., 0., 0.]
+        return [0., 0., 0., 0., 0., 0.]
 
     @property
     def _joints(self):
@@ -58,6 +58,8 @@ class Robotiq85GripperBase(GripperModel):
             "robotiq_85_gripper_joint_3_L",
             "robotiq_85_gripper_joint_2_R",
             "robotiq_85_gripper_joint_3_R",
+            "left_finger_pad_collision"
+            "right_finger_pad_collision"
         ]
 
     @property
@@ -68,12 +70,14 @@ class Robotiq85GripperBase(GripperModel):
                 "robotiq_85_gripper_joint_1_L",
                 "robotiq_85_gripper_joint_2_L",
                 "robotiq_85_gripper_joint_3_L",
+                "left_finger_pad_collision",
             ],
             "right_finger": [
                 "robotiq_85_gripper_joint_0_R",
                 "robotiq_85_gripper_joint_1_R",
                 "robotiq_85_gripper_joint_2_R",
                 "robotiq_85_gripper_joint_3_R",
+                "right_finger_pad_collision",
             ],
         }
 

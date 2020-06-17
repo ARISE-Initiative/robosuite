@@ -16,32 +16,32 @@
     <tendon>
 		<!--Middlefinger tendons-->
 		<fixed name="middle12_cpl" range="0 1">
-			<joint joint="finger_middle_joint_1"  coef="1"/>
-			<joint joint="finger_middle_joint_2"  coef="-1.5"/>
+			<joint joint="finger_middle_joint_1"  coef="0.5"/>
+			<joint joint="finger_middle_joint_2"  coef="0.5"/>
 		</fixed>
 		<fixed name="middle23_cpl" range="0 1">
-			<joint joint="finger_middle_joint_2"  coef="1"/>
-			<joint joint="finger_middle_joint_3"  coef="-3.5"/>
+			<joint joint="finger_middle_joint_2"  coef="0.5"/>
+			<joint joint="finger_middle_joint_3"  coef="-1"/>
 		</fixed>
 
 		<!--finger2 tendons-->
         <fixed name="finger2_12_cpl" range="0 1">
-			<joint joint="finger_2_joint_1"  coef="1"/>
-			<joint joint="finger_2_joint_2"  coef="-1.5"/>
+			<joint joint="finger_2_joint_1"  coef="0.5"/>
+			<joint joint="finger_2_joint_2"  coef="0.5"/>
 		</fixed>
 		<fixed name="finger2_23_cpl" range="0 1">
-			<joint joint="finger_2_joint_2"  coef="1"/>
-			<joint joint="finger_2_joint_3"  coef="-3.5"/>
+			<joint joint="finger_2_joint_2"  coef="0.5"/>
+			<joint joint="finger_2_joint_3"  coef="-1"/>
 		</fixed>
 
 		<!--Finger1 tendons-->
         <fixed name="finger1_12_cpl" range="0 1">
-			<joint joint="finger_1_joint_1"  coef="1"/>
-			<joint joint="finger_1_joint_2"  coef="-1.5"/>
+			<joint joint="finger_1_joint_1"  coef="0.5"/>
+			<joint joint="finger_1_joint_2"  coef="0.5"/>
 		</fixed>
 		<fixed name="finger1_23_cpl" range="0 1">
-			<joint joint="finger_1_joint_2"  coef="1"/>
-			<joint joint="finger_1_joint_3"  coef="-3.5"/>
+			<joint joint="finger_1_joint_2"  coef="0.5"/>
+			<joint joint="finger_1_joint_3"  coef="-1"/>
 		</fixed>
 	</tendon>
 
@@ -60,10 +60,10 @@
 		<joint name="finger_12_scissor" joint1="palm_finger_2_joint" joint2="palm_finger_1_joint" polycoef="0 -1 0 0 0"/>
 	</equality>
     <actuator>
-        <position name='finger_1' ctrllimited="true" kp="20" joint='finger_1_joint_1' ctrlrange='0 1.2217'/>
-        <position name='finger_2' ctrllimited="true" kp="20" joint='finger_2_joint_1' ctrlrange='0 1.2217'/>
-        <position name='middle_finger'  ctrllimited="true" kp="20" joint='finger_middle_joint_1' ctrlrange='0 1.2217'/>
-        <position name='finger_scissor' ctrllimited="true" kp="20" joint='palm_finger_1_joint' ctrlrange="-0.2967 0.2967"/>
+        <position name='finger_1' ctrllimited="true" kp="20" joint='finger_1_joint_1' ctrlrange='0 1.2217'  />
+        <position name='finger_2' ctrllimited="true" kp="20" joint='finger_2_joint_1' ctrlrange='0 1.2217'  />
+        <position name='middle_finger'  ctrllimited="true" kp="20" joint='finger_middle_joint_1' ctrlrange='0 1.2217'  />
+        <position name='finger_scissor' ctrllimited="true" kp="20" joint='palm_finger_1_joint' ctrlrange="-0.29 0.29"  />
     </actuator>
     <!--
     <actuator>
@@ -85,14 +85,14 @@
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="-0.00134236 0.00263073 -1.01672e-08" quat="0.489887 0.489849 0.509908 0.509954" mass="1.20044" diaginertia="0.00263541 0.00218876 0.00210987" />
             <geom name="palm_visual" type="mesh" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" mesh="palm_vis" />
-            <geom name="palm" type="mesh" rgba="0 0 0 1" group="0" mesh="palm" />
+            <geom name="palm" contype="0" type="mesh" rgba="0 0 0 1" group="0" mesh="palm" />
             <site name="grip_site" pos="0 0.1 0" size="0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <site name="grip_site_cylinder" quat="0 0 0.707 0.707" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
             <body name="finger_1_link_0" pos="-0.0455 0.0214 0.036" quat="-2.59838e-06 0.706825 0.707388 2.59631e-06">
                 <inertial pos="-0.0381134 0.026928 0.0359997" quat="0.0835458 0.702169 -0.0835699 0.702136" mass="0.0494545" diaginertia="1.39633e-05 1.10443e-05 9.98401e-06" />
-                <joint damping="0.1" name="palm_finger_1_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-0.16 0.25" />
+                <joint damping="0.1" name="palm_finger_1_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-0.29 0.29" ref="0.29" />
                 <geom name="f1_l0_vis" pos="0.02 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" mesh="link_0_vis" />
-                <geom name="f1_l0" pos="0.02 0 0" type="mesh" rgba="0 0 0 1" group="0" mesh="link_0" />
+                <geom name="f1_l0" contype="0" pos="0.02 0 0" type="mesh" rgba="0 0 0 1" group="0" mesh="link_0" />
                 <!-- pos="-0.0455 0.0414 0.036" quat="-2.59838e-06 0.706825 0.707388 2.59631e-06"  -->
                 <body name="finger_1_link_1" pos="0.02 0 0">
                     <inertial pos="0.0184407 -0.0219985 -5.83379e-12" quat="0.170512 0.68624 -0.170512 0.68624" mass="0.0859984" diaginertia="6.46024e-05 5.9524e-05 1.50124e-05" />
@@ -109,15 +109,16 @@
                             <joint damping="0.03" name="finger_1_joint_3" pos="0 0 0" axis="0 0 1" limited="true" range="0 3.1416" />
                             <geom name="f1_l3_vis" quat="0.96639 0 0 0.257081" type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="link_3_vis" />
                             <geom name="f1_l3" quat="0.96639 0 0 0.257081" type="mesh" rgba="1 1 1 1" group="0" mesh="link_3" />
+                            <geom type="box" pos="0.018 0.018 0" quat="0.9659258 0 0 0.258819" size="0.013 0.002 0.013" name="f1_pad_collision" />
                         </body>
                     </body>
                 </body>
             </body>
             <body name="finger_2_link_0" pos="-0.0455 0.0214 -0.036" quat="-2.59838e-06 0.706825 0.707388 2.59631e-06">
                 <inertial pos="-0.0381134 0.026928 0.0359997" quat="0.0835458 0.702169 -0.0835699 0.702136" mass="0.0494545" diaginertia="1.39633e-05 1.10443e-05 9.98401e-06" />
-                <joint damping="0.1" name="palm_finger_2_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-0.25 0.16" />
+                <joint damping="0.1" name="palm_finger_2_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-0.29 0.29" ref="-0.29" />
                 <geom pos="0.02 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" mesh="link_0_vis" />
-                <geom name="f2_l0" pos="0.02 0 0" type="mesh" rgba="0 0 0 1" group="0" mesh="link_0" />
+                <geom name="f2_l0" contype="0" pos="0.02 0 0" type="mesh" rgba="0 0 0 1" group="0" mesh="link_0" />
                 <!-- pos="-0.0455 0.0414 0.036" quat="-2.59838e-06 0.706825 0.707388 2.59631e-06" type="mesh"  -->
                 <body name="finger_2_link_1" pos="0.02 0 0">
                     <inertial pos="0.0184407 -0.0219985 -5.83379e-12" quat="0.170512 0.68624 -0.170512 0.68624" mass="0.0859984" diaginertia="6.46024e-05 5.9524e-05 1.50124e-05" />
@@ -134,6 +135,7 @@
                             <joint damping="0.03" name="finger_2_joint_3" pos="0 0 0" axis="0 0 1" limited="true" range="0 3.1416" />
                             <geom quat="0.96639 0 0 0.257081" type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="link_3_vis" />
                             <geom name="f2_l3" quat="0.96639 0 0 0.257081" type="mesh" rgba="1 1 1 1" group="0" mesh="link_3" />
+                            <geom type="box" pos="0.018 0.018 0" quat="0.9659258 0 0 0.258819" size="0.013 0.002 0.013" name="f2_pad_collision" />
                         </body>
                     </body>
                 </body>
@@ -141,7 +143,7 @@
             <body name="finger_middle_link_0" pos="0.0455 0.0214 0" quat="0.707388 0 0 0.706825">
                 <inertial pos="-0.0381134 0.026928 0.0359997" quat="0.0835458 0.702169 -0.0835699 0.702136" mass="0.0494545" diaginertia="1.39633e-05 1.10443e-05 9.98401e-06" />
                 <geom pos="0.02 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0 0 0 1" mesh="link_0_vis" />
-                <geom name="f3_l0" pos="0.02 0 0" type="mesh" rgba="0 0 0 1" group="0" mesh="link_0" />
+                <geom name="f3_l0" contype="0" pos="0.02 0 0" type="mesh" rgba="0 0 0 1" group="0" mesh="link_0" />
                 <!-- pos="-0.0455 0.0414 0.036" quat="-2.59838e-06 0.706825 0.707388 2.59631e-06"  -->
                 <body name="finger_middle_link_1" pos="0.02 0 0">
                     <inertial pos="0.0184407 -0.0219985 -5.83379e-12" quat="0.170512 0.68624 -0.170512 0.68624" mass="0.0859984" diaginertia="6.46024e-05 5.9524e-05 1.50124e-05" />
@@ -158,6 +160,7 @@
                             <joint damping="0.03" name="finger_middle_joint_3" pos="0 0 0" axis="0 0 1" limited="true" range="0 3.1416" />
                             <geom quat="0.96639 0 0 0.257081" type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="link_3_vis" />
                             <geom  name="f3_l3" quat="0.96639 0 0 0.257081" type="mesh" rgba="1 1 1 1" group="0" mesh="link_3" />
+                            <geom type="box" pos="0.018 0.018 0" quat="0.9659258 0 0 0.258819" size="0.013 0.002 0.013" name="finger_middle_pad_collision" />
                         </body>
                     </body>
                 </body>

@@ -20,7 +20,7 @@ class UR5e(RobotModel):
 
     @property
     def gripper(self):
-        return "RobotiqThreeFingerGripper"
+        return "Robotiq85Gripper"
 
     @property
     def default_controller_config(self):
