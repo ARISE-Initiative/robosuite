@@ -465,20 +465,22 @@ class PickPlace(RobotEnv):
 
         lst = []
         for j in range(len(self.vis_inits)):
+            visual_ob_name = ("Visual" + self.item_names[j] + "0")
             visual_ob = self.vis_inits[j](
-                name=("Visual" + self.item_names[j] + "0"),
+                name=visual_ob_name,
                 joints=[], # no free joint for visual objects
             )
-            lst.append((str(self.vis_inits[j]), visual_ob))
+            lst.append((visual_ob_name, visual_ob))
         self.visual_objects = OrderedDict(lst)
 
         lst = []
         for i in range(len(self.ob_inits)):
+            ob_name = (self.item_names[i] + "0")
             ob = self.ob_inits[i](
-                name=(self.item_names[i] + "0"),
+                name=ob_name,
                 joints=[dict(type="free", damping="0.0005")], # damp the free joint for each object
             )
-            lst.append((self.item_names[i] + "0", ob))
+            lst.append((ob_name, ob))
 
         self.mujoco_objects = OrderedDict(lst)
         self.n_objects = len(self.mujoco_objects)
