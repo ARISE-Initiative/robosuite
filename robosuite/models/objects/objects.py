@@ -1,9 +1,8 @@
 import copy
 import xml.etree.ElementTree as ET
-import numpy as np
 
 from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import string_to_array, array_to_string
+from robosuite.utils.mjcf_utils import string_to_array, array_to_string, xml_path_completion
 
 
 class MujocoObject:
@@ -266,12 +265,12 @@ class MujocoGeneratedObject(MujocoObject):
         self.friction = list(friction)
 
         if solref is None:
-            self.solref = [0.02, 1.] # MuJoCo default
+            self.solref = [0.02, 1.]  # MuJoCo default
         else:
             self.solref = solref
 
         if solimp is None:
-            self.solimp = [0.9, 0.95, 0.001] # MuJoCo default
+            self.solimp = [0.9, 0.95, 0.001]  # MuJoCo default
         else:
             self.solimp = solimp
 
@@ -321,6 +320,31 @@ class MujocoGeneratedObject(MujocoObject):
             # "shininess": "0.03",
         }
 
+    def append_material(self, spec):
+        """
+        Adds a new texture / material combination to the assets subtree of this XML
+        Input is expect to be a nested dict of the following form:
+
+        {
+            "texture": {...texture specifications...}
+            "material": {...material specifications...}
+        }
+
+        See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
+        Mujoco texture / material tags, respectively
+
+        Note that the "file" attribute for the "texture" tag should be specified relative to the textures directory
+            located in robosuite/models/assets/textures/
+        """
+        # First check if asset attribute exists; if not, define the asset attribute
+        if not hasattr(self, "asset"):
+            self.asset = ET.Element("asset")
+        # Set aboslute filepath to texture values
+        spec["texture"]["file"] = xml_path_completion("textures/" + spec["texture"]["file"])
+        # Add texture and material inputs to asset
+        self.asset.append(ET.Element("texture", attrib=spec["texture"]))
+        self.asset.append(ET.Element("material", attrib=spec["material"]))
+
     def _get_collision(self, site=False, ob_type="box"):
         main_body = ET.Element("body")
         main_body.set("name", self.name)
@@ -365,7 +389,7 @@ class MujocoGeneratedObject(MujocoObject):
 
     def _get_asset(self):
         # Add texture and material elements
-        assert(self.add_material)
+        assert self.add_material
         asset = ET.Element("asset")
         tex_template = self.get_texture_attrib_template()
         mat_template = self.get_material_attrib_template()

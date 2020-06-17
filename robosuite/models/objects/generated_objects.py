@@ -25,6 +25,7 @@ class HammerObject(MujocoGeneratedObject):
         handle_density=(100, 250),
         handle_friction=(3.0, 5.0),
         head_density_ratio=2.0,
+        use_texture=True,
         rgba_handle=None,
         rgba_head=None,
         rgba_face=None,
@@ -43,6 +44,7 @@ class HammerObject(MujocoGeneratedObject):
         handle_friction (float or 2-list of float): Either specific or range of values to draw randomly from
             uniformly for the handle friction. Note that Mujoco default values are used for the head
         head_density_ratio (float): Ratio of density of handle to head (including face and claw)
+        use_texture (bool): If true, geoms will be defined by realistic textures and rgba values will be ignored
         rgba_handle (3-array or None): If specified, sets handle rgba values
         rgba_head (3-array or None): If specified, sets handle rgba values
         rgba_face (3-array or None): If specified, sets handle rgba values
@@ -72,11 +74,50 @@ class HammerObject(MujocoGeneratedObject):
         self.handle_friction = np.random.uniform(self.handle_friction_range[0], self.handle_friction_range[1])
         self.head_halfsize = np.random.uniform(self.handle_radius, self.handle_radius * 1.2)
 
-        # Initialize RGBA values
+        # Initialize RGBA values and texture flag
+        self.use_texture = use_texture
         self.rgba_handle = rgba_handle if rgba_handle is not None else RED
         self.rgba_head = rgba_head if rgba_head is not None else CYAN
         self.rgba_face = rgba_face if rgba_face is not None else BLUE
         self.rgba_claw = rgba_claw if rgba_claw is not None else GREEN
+
+        # Define materials we want to use for this object
+        metal = {
+            "texture":
+                {
+                    "file": "../textures/steel_scratched.png",
+                    "type": "cube",
+                    "name": "metal"
+                },
+            "material":
+                {
+                    "name": "metal_mat",
+                    "texture": "metal",
+                    "texrepeat": "3 3",
+                    "specular": "0.4",
+                    "shininess": "0.1"
+                }
+        }
+        wood = {
+            "texture":
+                {
+                    "file": "../textures/light-wood.png",
+                    "type": "cube",
+                    "name": "wood"
+                },
+            "material":
+                {
+                    "name": "wood_mat",
+                    "texture": "wood",
+                    "texrepeat": "3 3",
+                    "specular": "0.4",
+                    "shininess": "0.1"
+                }
+        }
+
+        # Append materials to object
+        self.append_material(metal)
+        self.append_material(wood)
 
     def get_bottom_offset(self):
         return np.array([0, 0, -0.5 * self.handle_length])
@@ -104,10 +145,11 @@ class HammerObject(MujocoGeneratedObject):
                     name="hammer_handle",
                     size=[self.handle_radius, self.handle_length / 2.0],
                     pos=(0, 0, 0),
-                    rgba=self.rgba_handle,
+                    rgba=None if self.use_texture else self.rgba_handle,
                     group=1,
                     density=str(self.handle_density),
                     friction=array_to_string((self.handle_friction, 0.005, 0.0001)),
+                    material="wood_mat" if self.use_texture else None,
                 )
             )
         elif self.handle_shape == "box":
@@ -117,10 +159,11 @@ class HammerObject(MujocoGeneratedObject):
                     name="hammer_handle",
                     size=[self.handle_radius, self.handle_radius, self.handle_length / 2.0],
                     pos=(0, 0, 0),
-                    rgba=self.rgba_handle,
+                    rgba=None if self.use_texture else self.rgba_handle,
                     group=1,
                     density=str(self.handle_density),
                     friction=array_to_string((self.handle_friction, 0.005, 0.0001)),
+                    material="wood_mat" if self.use_texture else None,
                 )
             )
         else:
@@ -136,9 +179,10 @@ class HammerObject(MujocoGeneratedObject):
                 name="hammer_head",
                 size=[self.head_halfsize * 2, self.head_halfsize, self.head_halfsize],
                 pos=(0, 0, self.handle_length / 2.0 + self.head_halfsize),
-                rgba=self.rgba_head,
+                rgba=None if self.use_texture else self.rgba_head,
                 group=1,
                 density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
             )
         )
 
@@ -150,9 +194,10 @@ class HammerObject(MujocoGeneratedObject):
                 size=[self.head_halfsize * 0.8, self.head_halfsize * 0.2],
                 pos=(self.head_halfsize * 2.2, 0, self.handle_length / 2.0 + self.head_halfsize),
                 quat=array_to_string([0.707106, 0, 0.707106, 0]),
-                rgba=self.rgba_face,
+                rgba=None if self.use_texture else self.rgba_face,
                 group=1,
                 density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
             )
         )
         main_body.append(
@@ -162,9 +207,10 @@ class HammerObject(MujocoGeneratedObject):
                 size=[self.head_halfsize, self.head_halfsize * 0.4],
                 pos=(self.head_halfsize * 2.8, 0, self.handle_length / 2.0 + self.head_halfsize),
                 quat=array_to_string([0.707106, 0, 0.707106, 0]),
-                rgba=self.rgba_face,
+                rgba=None if self.use_texture else self.rgba_face,
                 group=1,
                 density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
             )
         )
 
@@ -176,9 +222,10 @@ class HammerObject(MujocoGeneratedObject):
                 size=[self.head_halfsize * 0.7072, self.head_halfsize * 0.95, self.head_halfsize * 0.7072],
                 pos=(-self.head_halfsize * 2, 0, self.handle_length / 2.0 + self.head_halfsize),
                 quat=array_to_string([0.9238795, 0, 0.3826834, 0]),
-                rgba=self.rgba_claw,
+                rgba=None if self.use_texture else self.rgba_claw,
                 group=1,
                 density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
             )
         )
 

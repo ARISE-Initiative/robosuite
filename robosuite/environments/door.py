@@ -21,7 +21,7 @@ class Door(RobotEnv):
         gripper_types="default",
         gripper_visualizations=False,
         initialization_noise="default",
-        use_latch=False,
+        use_latch=True,
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
