@@ -1,5 +1,5 @@
 import numpy as np
-from robosuite.models.arenas import Arena
+from robosuite.models.arenas import TableArena
 from robosuite.utils.mjcf_utils import xml_path_completion
 from robosuite.utils.mjcf_utils import array_to_string, string_to_array
 from collections import OrderedDict
@@ -13,13 +13,14 @@ import itertools
 
 
 # TODO: Re-integrate this with Ajay's interface once new Arena API is merged
-class TactileTableArena(Arena):
+class TactileTableArena(TableArena):
     """Workspace that contains an empty table with tactile sensors on its surface."""
 
     def __init__(
         self, 
-        table_full_size=(0.8, 0.8, 0.8), 
-        table_friction=(0.01, 0.005, 0.0001), 
+        table_full_size=(0.8, 0.8, 0.05),
+        table_friction=(0.01, 0.005, 0.0001),
+        table_offset=(0, 0, 0.8),
         num_squares=(10,10),
         prob_sensor=1.0,
         rotation_x=0,
@@ -34,57 +35,40 @@ class TactileTableArena(Arena):
         Args:
             table_full_size: full dimensions of the table
             friction: friction parameters of the table
+            table_offset: offset from center of arena when placing table
+                Note that the z value sets the upper limit of the table
             num_squares: number of squares in each dimension of the table top
         """
-        super().__init__(xml_path_completion("arenas/tactile_table_arena.xml"))
-
-        self.table_full_size = np.array(table_full_size)
-        self.table_half_size = self.table_full_size / 2
-        self.table_friction = table_friction
+        # Tactile table-specific features
         self.table_friction_std = table_friction_std
         self.line_width = line_width
-
         self.num_squares = np.array(num_squares)
-
         self.sensor_names = []
         self.sensor_site_names = {}
-
-        self.floor = self.worldbody.find("./geom[@name='floor']")
-        self.table_body = self.worldbody.find("./body[@name='table']")
-        self.table_collision = self.table_body.find("./geom[@name='table_collision']")
-        self.table_visual = self.table_body.find("./geom[@name='table_visual']")
-        self.table_top = self.table_body.find("./site[@name='table_top']")
-
         self.coverage_factor = 1.0 #How much of the table surface we cover
-
         self.prob_sensor = prob_sensor
-
         self.rotation_x = rotation_x
         self.rotation_y = rotation_y
-
         self.draw_line = draw_line
         self.num_sensors = num_sensors
         self.two_clusters = two_clusters
 
-        self.configure_location()
+        # run superclass init
+        super().__init__(
+            table_full_size=table_full_size,
+            table_friction=table_friction,
+            table_offset=table_offset,
+        )
 
     def configure_location(self):
-        self.bottom_pos = np.array([0, 0, 0])
-        self.floor.set("pos", array_to_string(self.bottom_pos))
-
-        self.center_pos = self.bottom_pos + np.array([0, 0, self.table_half_size[2]])
-        self.table_body.set("pos", array_to_string(self.center_pos))
+        # Run superclass first
+        super().configure_location()
 
         qx = (T.mat2quat(T.euler2mat((self.rotation_x, 0, 0))))
         qy = (T.mat2quat(T.euler2mat((0, self.rotation_y, 0))))
         qt = T.quat_multiply(qy, qx)
 
-        friction= max(0.001, np.random.normal(self.table_friction[0], self.table_friction_std))
-
-        self.table_body.set("quat", array_to_string(qt[[3, 0, 1, 2]]))
-        self.table_collision.set("size", array_to_string(self.table_half_size))
-        self.table_collision.set("friction", array_to_string(self.table_friction))
-        self.table_visual.set("size", array_to_string(self.table_half_size))
+        friction = max(0.001, np.random.normal(self.table_friction[0], self.table_friction_std))
 
         #Compute size of the squares
         self.square_full_size = np.divide(self.table_full_size[0:2]*self.coverage_factor, self.num_squares)
@@ -110,7 +94,7 @@ class TactileTableArena(Arena):
             square2 = BoxObject(
                 name=square_name2,
                 size=[table_cte_size_x/2, table_cte_size_y/2,  squares_height/2 - 0.001],
-                rgba=[0, 0,1, 1],
+                rgba=[1, 1, 1, 1],
                 density=1,
                 friction=friction
             )
@@ -401,14 +385,3 @@ class TactileTableArena(Arena):
             collision_c.find("site").set("size", array_to_string([low_border_half_size, self.table_half_size[1]+ 2*border_half_size, 0.002]))
             collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
             table_subtree.append(collision_c)
-
-        self.table_top.set(
-            "pos", array_to_string(np.array([0, 0, self.table_half_size[2]]))
-        )
-
-    @property
-    def table_top_abs(self):
-        """Returns the absolute position of table top"""
-        table_height = np.array([0, 0, self.table_full_size[2]])
-        return string_to_array(self.floor.get("pos")) + table_height
-

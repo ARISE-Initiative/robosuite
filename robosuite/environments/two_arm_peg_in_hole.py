@@ -1,8 +1,8 @@
-from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.environments.robot_env import RobotEnv
+from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string
 
 from robosuite.models.objects import CylinderObject, PlateWithHoleObject
 from robosuite.models.arenas import EmptyArena
@@ -271,23 +271,38 @@ class TwoArmPegInHole(RobotEnv):
         self.hole = PlateWithHoleObject(
             name="hole",
         )
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        greenwood = CustomMaterial(
+            texture="WoodGreen",
+            tex_name="greenwood",
+            mat_name="greenwood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
         self.peg = CylinderObject(
             name="peg",
             size_min=(self.peg_radius[0], self.peg_length),
             size_max=(self.peg_radius[1], self.peg_length),
-            add_material=True,
+            material=greenwood,
             rgba=[0, 1, 0, 1],
         )
 
         # Load hole object
         self.hole_obj = self.hole.get_collision(site=True)
         self.hole_obj.set("quat", "0 0 0.707 0.707")
-        self.hole_obj.set("pos", "0.11 0 0.18")
+        self.hole_obj.set("pos", "0.11 0 0.17")
         self.model.merge_asset(self.hole)
 
         # Load peg object
         self.peg_obj = self.peg.get_collision(site=True)
-        self.peg_obj.set("pos", "0 0 0.15")
+        self.peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
         self.model.merge_asset(self.peg)
 
         # Depending on env configuration, append appropriate objects to arms

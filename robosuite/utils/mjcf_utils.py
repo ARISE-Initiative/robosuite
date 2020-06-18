@@ -3,12 +3,36 @@
 import xml.etree.ElementTree as ET
 import os
 import numpy as np
+from collections.abc import Iterable
 
 import robosuite
 
 RED = [1, 0, 0, 1]
 GREEN = [0, 1, 0, 1]
 BLUE = [0, 0, 1, 1]
+
+TEXTURES = {
+    "WoodRed": "red-wood.png",
+    "WoodGreen": "green-wood.png",
+    "WoodBlue": "blue-wood.png",
+    "WoodLight": "light-wood.png",
+    "WoodDark": "dark-wood.png",
+    "WoodTiles": "wood-tiles.png",
+    "Metal": "metal.png",
+    "SteelBrushed": "steel-brushed.png",
+    "SteelScratched": "steel-scratched.png",
+    "Brass": "brass-ambra.png",
+    "Bread": "bread.png",
+    "Can": "can.png",
+    "Ceramic": "ceramic.png",
+    "Cereal": "cereal.png",
+    "Clay": "clay.png",
+    "Glass": "glass.png",
+    "FeltGray": "gray-felt.png",
+    "Lemon": "lemon.png",
+}
+
+ALL_TEXTURES = TEXTURES.keys()
 
 
 def xml_path_completion(xml_path):
@@ -88,11 +112,19 @@ def new_site(name, rgba=RED, pos=(0, 0, 0), size=(0.005,), **kwargs):
         rgba: color and transparency. Defaults to solid red.
         pos: 3d position of the site.
         size ([float]): site size (sites are spherical by default).
+
+    NOTE: With the exception of @name, @pos, and @size, if any arg is set to
+        None, the value will automatically be popped before passing the values
+        to create the appropriate XML
     """
-    kwargs["rgba"] = array_to_string(rgba)
+    kwargs["name"] = name
     kwargs["pos"] = array_to_string(pos)
     kwargs["size"] = array_to_string(size)
-    kwargs["name"] = name
+    kwargs["rgba"] = array_to_string(rgba) if rgba is not None else None
+    # Loop through all remaining attributes and pop any that are None
+    for k, v in kwargs.copy().items():
+        if v is None:
+            kwargs.pop(k)
     element = ET.Element("site", attrib=kwargs)
     return element
 
@@ -109,12 +141,20 @@ def new_geom(geom_type, size, pos=(0, 0, 0), rgba=RED, group=0, **kwargs):
         rgba: color and transparency. Defaults to solid red.
         group: the integrer group that the geom belongs to. useful for
             separating visual and physical elements.
+
+    NOTE: With the exception of @geom_type, @size, and @pos, if any arg is set to
+        None, the value will automatically be popped before passing the values
+        to create the appropriate XML
     """
     kwargs["type"] = str(geom_type)
     kwargs["size"] = array_to_string(size)
-    kwargs["rgba"] = array_to_string(rgba)
-    kwargs["group"] = str(group)
     kwargs["pos"] = array_to_string(pos)
+    kwargs["rgba"] = array_to_string(rgba) if rgba is not None else None
+    kwargs["group"] = str(group) if group is not None else None
+    # Loop through all remaining attributes and pop any that are None
+    for k, v in kwargs.copy().items():
+        if v is None:
+            kwargs.pop(k)
     element = ET.Element("geom", attrib=kwargs)
     return element
 
@@ -179,3 +219,55 @@ def postprocess_model_xml(xml_str):
         elem.set("file", new_path)
 
     return ET.tostring(root, encoding="utf8").decode("utf8")
+
+
+class CustomMaterial(object):
+    """
+    Simple class to instantiate the necessary parameters to define an appropriate texture / material combo
+    """
+
+    def __init__(
+            self,
+            texture,
+            tex_name,
+            mat_name,
+            tex_attrib=None,
+            mat_attrib=None,
+    ):
+        """
+        Instantiates a nested dict holding necessary components for procedurally generating a texture / material combo
+
+        Args:
+            texture (str): Name of texture file to be imported. Should be part of ALL_TEXTURES
+            tex_name (str): Name to reference the imported texture
+            mat_name (str): Name to reference the imported material
+            tex_attrib (dict): Any other optional mujoco texture specifications.
+            mat_attrib (dict): Any other optional mujoco material specifications.
+
+            Please see http://www.mujoco.org/book/XMLreference.html#asset for specific details on
+                attributes expected for Mujoco texture / material tags, respectively
+
+            Note that the values in @tex_attrib and @mat_attrib can be in string or array / numerical form.
+        """
+        # Verify that requested texture is valid
+        assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
+            texture, ALL_TEXTURES)
+
+        # Setup the texture and material attributes
+        self.tex_attrib = {} if tex_attrib is None else tex_attrib.copy()
+        self.mat_attrib = {} if mat_attrib is None else mat_attrib.copy()
+
+        # Loop through all attributes and convert all non-string values into strings
+        for attrib in (self.tex_attrib, self.mat_attrib):
+            for k, v in attrib.items():
+                if type(v) is not str:
+                    if isinstance(v, Iterable):
+                        attrib[k] = array_to_string(v)
+                    else:
+                        attrib[k] = str(v)
+
+        # Lastly, add in the name and file values
+        self.tex_attrib["file"] = xml_path_completion("textures/" + TEXTURES[texture])
+        self.tex_attrib["name"] = tex_name
+        self.mat_attrib["name"] = mat_name
+        self.mat_attrib["texture"] = tex_name

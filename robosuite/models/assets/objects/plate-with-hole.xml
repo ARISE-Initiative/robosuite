@@ -1,11 +1,15 @@
 <mujoco model="hole">
+  <asset>
+    <texture file="../textures/red-wood.png" type="cube" name="red-wood" />
+    <material name="plate_mat" texture="red-wood" texrepeat="3 3" specular="0.4" shininess="0.1" />
+  </asset>
   <worldbody>
     <body>
       <body name="collision">
-        <geom pos="0 0 0" size="0.06 0.17 0.02" type="box" rgba="1 0 0 1" group="1"/>
-        <geom pos="0.22 0 0" size="0.06 0.17 0.02" type="box" rgba="1 0 0 1" group="1"/>
-        <geom pos="0.11 0.11 0" size="0.05 0.06 0.02" type="box" rgba="1 0 0 1" group="1"/>
-        <geom pos="0.11 -0.11 0" size="0.05 0.06 0.02" type="box" rgba="1 0 0 1" group="1"/>
+        <geom pos="0 0 0" size="0.06 0.17 0.01" type="box" group="1" material="plate_mat" />
+        <geom pos="0.22 0 0" size="0.06 0.17 0.01" type="box" group="1" material="plate_mat" />
+        <geom pos="0.11 0.11 0" size="0.05 0.06 0.01" type="box" group="1" material="plate_mat" />
+        <geom pos="0.11 -0.11 0" size="0.05 0.06 0.01" type="box" group="1" material="plate_mat" />
       </body>
       <body name="visual">
         <!--  <geom pos="0 0 0" size="0.1 0.25 0.02" type="box" rgba="1 0 0 1"/>

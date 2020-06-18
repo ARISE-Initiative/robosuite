@@ -2,6 +2,7 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.utils.transform_utils import convert_quat
+from robosuite.utils.mjcf_utils import CustomMaterial
 
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
@@ -23,7 +24,7 @@ class Stack(RobotEnv):
         gripper_types="default",
         gripper_visualizations=False,
         initialization_noise="default",
-        table_full_size=(0.8, 0.8, 0.8),
+        table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
@@ -274,7 +275,7 @@ class Stack(RobotEnv):
         # lifting is successful when the cube is above the table top
         # by a margin
         cubeA_height = cubeA_pos[2]
-        table_height = self.table_full_size[2]
+        table_height = self.mujoco_arena.table_offset[2]
         cubeA_lifted = cubeA_height > table_height + 0.04
         r_lift = 1.0 if cubeA_lifted else 0.0
 
@@ -310,7 +311,9 @@ class Stack(RobotEnv):
 
         # load model for table top workspace
         self.mujoco_arena = TableArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction,
+            table_offset=(0, 0, 0.8),
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
@@ -319,19 +322,41 @@ class Stack(RobotEnv):
         self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        redwood = CustomMaterial(
+            texture="WoodRed",
+            tex_name="redwood",
+            mat_name="redwood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        greenwood = CustomMaterial(
+            texture="WoodGreen",
+            tex_name="greenwood",
+            mat_name="greenwood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
         cubeA = BoxObject(
             name="cubeA",
             size_min=[0.02, 0.02, 0.02], 
             size_max=[0.02, 0.02, 0.02], 
             rgba=[1, 0, 0, 1],
-            add_material=True,
+            material=redwood,
         )
         cubeB = BoxObject(
             name="cubeB",
             size_min=[0.025, 0.025, 0.025],
             size_max=[0.025, 0.025, 0.025],
             rgba=[0, 1, 0, 1],
-            add_material=True,
+            material=greenwood,
         )
         self.mujoco_objects = OrderedDict([("cubeA", cubeA), ("cubeB", cubeB)])
 

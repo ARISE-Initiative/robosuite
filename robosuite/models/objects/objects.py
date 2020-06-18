@@ -210,7 +210,7 @@ class MujocoGeneratedObject(MujocoObject):
         friction=None,
         solref=None,
         solimp=None,
-        add_material=False,
+        material=None,
         joints=None,
     ):
         """
@@ -233,8 +233,14 @@ class MujocoGeneratedObject(MujocoObject):
             solimp ([float], optional): of size 3. MuJoCo solver parameters that handle contact.
                 See http://www.mujoco.org/book/XMLreference.html for more details.
 
-            add_material (bool, optional): if True, add a material and texture for this 
+            material (CustomMaterial, optional): if "default", add a template material and texture for this
                 object that is used to color the geom(s).
+                Otherwise, input is expected to be a CustomMaterial object
+
+                See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
+                Mujoco texture / material tags, respectively
+
+                Note that specifying a custom texture in this way automatically overrides any rgba values set
 
             joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
                 object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
@@ -274,10 +280,13 @@ class MujocoGeneratedObject(MujocoObject):
         else:
             self.solimp = solimp
 
-        # add in texture and material for this object (for domain randomization)
-        self.add_material = add_material
-        if add_material:
+        self.material = material
+        if material == "default":
+            # add in default texture and material for this object (for domain randomization)
             self.asset = self._get_asset()
+        elif material is not None:
+            # add in custom texture and material
+            self.append_material(material)
 
         # joints for this object
         if joints is None:
@@ -295,10 +304,12 @@ class MujocoGeneratedObject(MujocoObject):
         """
         pass
 
-    def get_collision_attrib_template(self):
+    @staticmethod
+    def get_collision_attrib_template():
         return {"pos": "0 0 0", "group": "1"}
 
-    def get_visual_attrib_template(self):
+    @staticmethod
+    def get_visual_attrib_template():
         return {"conaffinity": "0", "contype": "0", "group": "1"}
 
     def get_texture_attrib_template(self):
@@ -320,15 +331,10 @@ class MujocoGeneratedObject(MujocoObject):
             # "shininess": "0.03",
         }
 
-    def append_material(self, spec):
+    def append_material(self, material):
         """
         Adds a new texture / material combination to the assets subtree of this XML
-        Input is expect to be a nested dict of the following form:
-
-        {
-            "texture": {...texture specifications...}
-            "material": {...material specifications...}
-        }
+        Input is expected to be a CustomMaterial object
 
         See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
         Mujoco texture / material tags, respectively
@@ -339,11 +345,9 @@ class MujocoGeneratedObject(MujocoObject):
         # First check if asset attribute exists; if not, define the asset attribute
         if not hasattr(self, "asset"):
             self.asset = ET.Element("asset")
-        # Set aboslute filepath to texture values
-        spec["texture"]["file"] = xml_path_completion("textures/" + spec["texture"]["file"])
         # Add texture and material inputs to asset
-        self.asset.append(ET.Element("texture", attrib=spec["texture"]))
-        self.asset.append(ET.Element("material", attrib=spec["material"]))
+        self.asset.append(ET.Element("texture", attrib=material.tex_attrib))
+        self.asset.append(ET.Element("material", attrib=material.mat_attrib))
 
     def _get_collision(self, site=False, ob_type="box"):
         main_body = ET.Element("body")
@@ -351,9 +355,11 @@ class MujocoGeneratedObject(MujocoObject):
         template = self.get_collision_attrib_template()
         template["name"] = self.name
         template["type"] = ob_type
-        if self.add_material:
+        if self.material == "default":
             template["rgba"] = "0.5 0.5 0.5 1" # mujoco default
             template["material"] = "{}_mat".format(self.name)
+        elif self.material is not None:
+            template["material"] = self.material.mat_attrib["name"]
         else:
             template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
@@ -374,8 +380,10 @@ class MujocoGeneratedObject(MujocoObject):
         main_body.set("name", self.name)
         template = self.get_visual_attrib_template()
         template["type"] = ob_type
-        if self.add_material:
+        if self.material == "default":
             template["material"] = "{}_mat".format(self.name)
+        elif self.material is not None:
+            template["material"] = self.material["material"]["name"]
         else:
             template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
@@ -389,7 +397,7 @@ class MujocoGeneratedObject(MujocoObject):
 
     def _get_asset(self):
         # Add texture and material elements
-        assert self.add_material
+        assert self.material == "default"
         asset = ET.Element("asset")
         tex_template = self.get_texture_attrib_template()
         mat_template = self.get_material_attrib_template()

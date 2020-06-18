@@ -2,6 +2,7 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.utils.transform_utils import convert_quat
+from robosuite.utils.mjcf_utils import CustomMaterial
 
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
@@ -23,7 +24,7 @@ class Lift(RobotEnv):
         gripper_types="default",
         gripper_visualizations=False,
         initialization_noise="default",
-        table_full_size=(0.8, 0.8, 0.8),
+        table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
@@ -265,7 +266,9 @@ class Lift(RobotEnv):
 
         # load model for table top workspace
         self.mujoco_arena = TableArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction,
+            table_offset=(0, 0, 0.8),
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
@@ -274,12 +277,27 @@ class Lift(RobotEnv):
         self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        redwood = CustomMaterial(
+            texture="WoodRed",
+            tex_name="redwood",
+            mat_name="redwood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
         cube = BoxObject(
             name="cube",
             size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
             size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
             rgba=[1, 0, 0, 1],
-            add_material=True,
+            material=redwood,
         )
         self.mujoco_objects = OrderedDict([("cube", cube)])
         self.n_objects = len(self.mujoco_objects)
@@ -370,7 +388,7 @@ class Lift(RobotEnv):
         Returns True if task has been completed.
         """
         cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.table_full_size[2]
+        table_height = self.mujoco_arena.table_offset[2]
 
         # cube is higher than the table top above a margin
         return cube_height > table_height + 0.04

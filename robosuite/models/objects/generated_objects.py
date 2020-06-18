@@ -2,7 +2,7 @@ import numpy as np
 
 from robosuite.models.objects import MujocoGeneratedObject
 from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, array_to_string
-from robosuite.utils.mjcf_utils import RED, GREEN, BLUE
+from robosuite.utils.mjcf_utils import RED, GREEN, BLUE, CustomMaterial
 
 from collections import Iterable
 
@@ -82,38 +82,28 @@ class HammerObject(MujocoGeneratedObject):
         self.rgba_claw = rgba_claw if rgba_claw is not None else GREEN
 
         # Define materials we want to use for this object
-        metal = {
-            "texture":
-                {
-                    "file": "../textures/steel_scratched.png",
-                    "type": "cube",
-                    "name": "metal"
-                },
-            "material":
-                {
-                    "name": "metal_mat",
-                    "texture": "metal",
-                    "texrepeat": "3 3",
-                    "specular": "0.4",
-                    "shininess": "0.1"
-                }
+        tex_attrib = {
+            "type": "cube",
         }
-        wood = {
-            "texture":
-                {
-                    "file": "../textures/light-wood.png",
-                    "type": "cube",
-                    "name": "wood"
-                },
-            "material":
-                {
-                    "name": "wood_mat",
-                    "texture": "wood",
-                    "texrepeat": "3 3",
-                    "specular": "0.4",
-                    "shininess": "0.1"
-                }
+        mat_attrib = {
+            "texrepeat": "3 3",
+            "specular": "0.4",
+            "shininess": "0.1",
         }
+        metal = CustomMaterial(
+            texture="SteelScratched",
+            tex_name="metal",
+            mat_name="metal_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        wood = CustomMaterial(
+            texture="WoodLight",
+            tex_name="wood",
+            mat_name="wood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
 
         # Append materials to object
         self.append_material(metal)
@@ -268,11 +258,12 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         handle_radius=0.01,
         handle_length=0.09,
         handle_width=0.09,
+        use_texture=True,
         rgba_body=None,
         rgba_handle_1=None,
         rgba_handle_2=None,
         solid_handle=False,
-        thickness=0.025,  # For body
+        thickness=0.01,  # For body
         joints=None,
     ):
         super().__init__(name=name, joints=joints)
@@ -284,19 +275,45 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         self.handle_radius = handle_radius
         self.handle_length = handle_length
         self.handle_width = handle_width
-        if rgba_body:
-            self.rgba_body = np.array(rgba_body)
-        else:
-            self.rgba_body = RED
-        if rgba_handle_1:
-            self.rgba_handle_1 = np.array(rgba_handle_1)
-        else:
-            self.rgba_handle_1 = GREEN
-        if rgba_handle_2:
-            self.rgba_handle_2 = np.array(rgba_handle_2)
-        else:
-            self.rgba_handle_2 = BLUE
+        self.use_texture = use_texture
+        self.rgba_body = np.array(rgba_body) if rgba_body else RED
+        self.rgba_handle_1 = np.array(rgba_handle_1) if rgba_handle_1 else GREEN
+        self.rgba_handle_2 = np.array(rgba_handle_2) if rgba_handle_2 else BLUE
         self.solid_handle = solid_handle
+
+        # Define materials we want to use for this object
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        redwood = CustomMaterial(
+            texture="WoodRed",
+            tex_name="redwood",
+            mat_name="pot_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        greenwood = CustomMaterial(
+            texture="WoodGreen",
+            tex_name="greenwood",
+            mat_name="handle1_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        bluewood = CustomMaterial(
+            texture="WoodBlue",
+            tex_name="bluewood",
+            mat_name="handle2_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        self.append_material(redwood)
+        self.append_material(greenwood)
+        self.append_material(bluewood)
 
     def get_bottom_offset(self):
         return np.array([0, 0, -1 * self.body_half_size[2]])
@@ -316,7 +333,11 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         main_body.set("name", self.name)
 
         for geom in five_sided_box(
-            self.body_half_size, self.rgba_body, 1, self.thickness
+            size=self.body_half_size,
+            rgba=None if self.use_texture else self.rgba_body,
+            group=1,
+            thickness=self.thickness,
+            material="pot_mat" if self.use_texture else None,
         ):
             main_body.append(geom)
         handle_z = self.body_half_size[2] - self.handle_radius
@@ -345,8 +366,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         self.handle_length / 2,
                         self.handle_radius,
                     ],
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
         else:
@@ -356,8 +378,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                     name="handle_1_c",
                     pos=handle_1_center,
                     size=main_bar_size,
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
             handle_1.append(
@@ -370,8 +393,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
             handle_1.append(
@@ -384,8 +408,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
 
@@ -401,8 +426,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         self.handle_length / 2,
                         self.handle_radius,
                     ],
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
         else:
@@ -412,8 +438,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                     name="handle_2_c",
                     pos=handle_2_center,
                     size=main_bar_size,
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
             handle_2.append(
@@ -426,8 +453,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
             handle_2.append(
@@ -440,8 +468,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
 
@@ -463,7 +492,13 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                 size=[0.005],
             )
         )
-        main_body.append(new_site(name="pot_center", pos=[0, 0, 0], rgba=[1, 0, 0, 0]))
+        main_body.append(
+            new_site(
+                name="pot_center",
+                pos=[0, 0, 0],
+                rgba=[1, 0, 0, 0],
+            )
+        )
 
         return main_body
 
@@ -484,13 +519,14 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         return self.get_collision(site)
 
 
-def five_sided_box(size, rgba, group, thickness):
+def five_sided_box(size, rgba, group, thickness, material):
     """
     Args:
         size ([float,flat,float]):
         rgba ([float,float,float,float]): color
         group (int): Mujoco group
         thickness (float): wall thickness
+        material (str): material for this box
 
     Returns:
         []: array of geoms corresponding to the
@@ -501,27 +537,27 @@ def five_sided_box(size, rgba, group, thickness):
     r = thickness / 2
     geoms.append(
         new_geom(
-            geom_type="box", size=[x, y, r], pos=[0, 0, -z + r], rgba=rgba, group=group
+            geom_type="box", size=[x, y, r], pos=[0, 0, -z + r], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[x, r, z], pos=[0, -y + r, 0], rgba=rgba, group=group
+            geom_type="box", size=[x, r, z], pos=[0, -y + r, 0], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[x, r, z], pos=[0, y - r, 0], rgba=rgba, group=group
+            geom_type="box", size=[x, r, z], pos=[0, y - r, 0], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[r, y, z], pos=[x - r, 0, 0], rgba=rgba, group=group
+            geom_type="box", size=[r, y, z], pos=[x - r, 0, 0], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[r, y, z], pos=[-x + r, 0, 0], rgba=rgba, group=group
+            geom_type="box", size=[r, y, z], pos=[-x + r, 0, 0], rgba=rgba, group=group, material=material
         )
     )
     return geoms
@@ -570,7 +606,7 @@ class BoxObject(MujocoGeneratedObject):
         rgba=None,
         solref=None,
         solimp=None,
-        add_material=False,
+        material=None,
         joints=None,
     ):
         size = _get_size(size,
@@ -586,7 +622,7 @@ class BoxObject(MujocoGeneratedObject):
             friction=friction,
             solref=solref,
             solimp=solimp,
-            add_material=add_material,
+            material=material,
             joints=joints,
         )
 
@@ -627,7 +663,7 @@ class CylinderObject(MujocoGeneratedObject):
         rgba=None,
         solref=None,
         solimp=None,
-        add_material=False,
+        material=None,
         joints=None,
     ):
         size = _get_size(size,
@@ -643,7 +679,7 @@ class CylinderObject(MujocoGeneratedObject):
             friction=friction,
             solref=solref,
             solimp=solimp,
-            add_material=add_material,
+            material=material,
             joints=joints,
         )
 
@@ -684,7 +720,7 @@ class BallObject(MujocoGeneratedObject):
         rgba=None,
         solref=None,
         solimp=None,
-        add_material=False,
+        material=None,
         joints=None,
     ):
         size = _get_size(size,
@@ -700,7 +736,7 @@ class BallObject(MujocoGeneratedObject):
             friction=friction,
             solref=solref,
             solimp=solimp,
-            add_material=add_material,
+            material=material,
             joints=joints,
         )
 
@@ -741,7 +777,7 @@ class CapsuleObject(MujocoGeneratedObject):
         rgba=None,
         solref=None,
         solimp=None,
-        add_material=False,
+        material=None,
         joints=None,
     ):
         size = _get_size(size,
@@ -757,7 +793,7 @@ class CapsuleObject(MujocoGeneratedObject):
             friction=friction,
             solref=solref,
             solimp=solimp,
-            add_material=add_material,
+            material=material,
             joints=joints,
         )
 

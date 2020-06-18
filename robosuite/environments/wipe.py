@@ -11,9 +11,6 @@ import multiprocessing
 # TODO: Soft resets currently don't reset / regenerate the wiping lines on the table -- might have to implement a sort of Arena "reset" functionality?
 
 
-
-# TODO (roberto): Colors are currently crazy -- do we want to set a more neutral / realistic tone?
-
 # Default Wipe environment configuration
 DEFAULT_WIPE_CONFIG = {
     # TODO (roberto): Add brief doc strings for these values, or at least the non-obvious ones
@@ -27,7 +24,7 @@ DEFAULT_WIPE_CONFIG = {
     "distance_th_multiplier": 0,
 
     # settings for table top
-    "table_full_size": [0.5, 0.5, 0.8],
+    "table_full_size": [0.5, 0.5, 0.05],
     "table_friction": [0.00001, 0.005, 0.0001],
     "table_friction_std": 0,
     "table_height": 0.0,

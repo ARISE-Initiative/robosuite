@@ -24,7 +24,7 @@ class NutAssembly(RobotEnv):
         gripper_types="default",
         gripper_visualizations=False,
         initialization_noise="default",
-        table_full_size=(0.45, 0.69, 0.82),
+        table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1, 0.005, 0.0001),
         use_camera_obs=True,
         use_object_obs=True,
@@ -350,7 +350,7 @@ class NutAssembly(RobotEnv):
         if (
                 abs(obj_pos[0] - peg_pos[0]) < 0.03
                 and abs(obj_pos[1] - peg_pos[1]) < 0.03
-                and obj_pos[2] < self.model.table_offset[2] + 0.05
+                and obj_pos[2] < self.mujoco_arena.table_offset[2] + 0.05
         ):
             res = True
         return res
@@ -382,12 +382,14 @@ class NutAssembly(RobotEnv):
             "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
 
         # Adjust base pose accordingly
-        xpos = self.robots[0].robot_model.base_xpos_offset["pegs"]
+        xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
         self.mujoco_arena = PegsArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction,
+            table_offset=(0, 0, 0.82)
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()

@@ -25,7 +25,7 @@ class TwoArmHandoff(RobotEnv):
         gripper_visualizations=False,
         initialization_noise="default",
         prehensile=True,
-        table_full_size=(0.8, 1.2, 0.8),
+        table_full_size=(0.8, 1.2, 0.05),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
@@ -167,7 +167,7 @@ class TwoArmHandoff(RobotEnv):
         self.table_true_size = list(table_full_size)
         self.table_true_size[1] *= 0.25     # true size will only be partially wide
         self.table_friction = table_friction
-        self.table_offset = [0, self.table_full_size[1] * (-3/8), 0]
+        self.table_offset = [0, self.table_full_size[1] * (-3/8), 0.8]
 
         # reward configuration
         self._success = False
@@ -219,7 +219,7 @@ class TwoArmHandoff(RobotEnv):
         Reward function for the task.
 
         Sparse un-normalized reward:
-          1. a discrete reward of 2.0 is provided when only Arm 1 is gripping the handle and has the handle
+          - a discrete reward of 2.0 is provided when only Arm 1 is gripping the handle and has the handle
              lifted above a certain threshold
 
         Un-normalized piecewise components if using reward shaping:

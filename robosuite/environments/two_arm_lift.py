@@ -24,7 +24,7 @@ class TwoArmLift(RobotEnv):
         gripper_types="default",
         gripper_visualizations=False,
         initialization_noise="default",
-        table_full_size=(0.8, 0.8, 0.8),
+        table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
@@ -326,7 +326,9 @@ class TwoArmLift(RobotEnv):
 
         # load model for table top workspace
         self.mujoco_arena = TableArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction,
+            table_offset=(0, 0, 0.8),
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
@@ -439,7 +441,7 @@ class TwoArmLift(RobotEnv):
         Returns True if task has been completed.
         """
         cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.table_full_size[2]
+        table_height = self.mujoco_arena.table_offset[2]
 
         # cube is higher than the table top above a margin
         return cube_height > table_height + 0.10

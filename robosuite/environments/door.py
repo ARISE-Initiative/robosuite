@@ -4,7 +4,7 @@ import numpy as np
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
 
-from robosuite.models.arenas import DoorArena
+from robosuite.models.arenas import TableArena
 from robosuite.models.objects import DoorObject
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
@@ -141,8 +141,8 @@ class Door(RobotEnv):
         self._check_robot_configuration(robots)
 
         # settings for table top (hardcoded since it's not an essential part of the environment)
-        self.table_full_size = (0.8, 0.3, 0.8)
-        self.table_offset = (-0.2, -0.35, 0)
+        self.table_full_size = (0.8, 0.3, 0.05)
+        self.table_offset = (-0.2, -0.35, 0.8)
 
         # reward configuration
         self.use_latch = use_latch
@@ -246,7 +246,7 @@ class Door(RobotEnv):
         self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
-        self.mujoco_arena = DoorArena(
+        self.mujoco_arena = TableArena(
             table_full_size=self.table_full_size,
             table_offset=self.table_offset,
         )

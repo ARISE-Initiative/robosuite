@@ -6,7 +6,7 @@
   <asset>
     <texture file="../textures/light-wood.png" type="cube" name="light-wood" />
     <texture file="../textures/dark-wood.png" type="cube" name="dark-wood" />
-    <texture file="../textures/brass_ambra.png" type="cube" name="metal" />
+    <texture file="../textures/brass-ambra.png" type="cube" name="metal" />
     <material name="MatMetal" texture="metal" specular="1" shininess="0.3" rgba="0.9 0.9 0.9 1" />
     <material name="MatDarkWood" texture="dark-wood" texrepeat="3 3" specular="0.4" shininess="0.1" />
     <material name="MatLightWood" texture="light-wood" texrepeat="3 3" specular="0.4" shininess="0.1" />
