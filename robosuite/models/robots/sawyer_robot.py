@@ -20,7 +20,7 @@ class Sawyer(RobotModel):
 
     @property
     def gripper(self):
-        return "SawyerGripper"
+        return "RethinkGripper"
 
     @property
     def default_controller_config(self):
@@ -35,9 +35,8 @@ class Sawyer(RobotModel):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.5, 0.3, 0),
+            "bins": (-0.5, -0.1, 0),
             "empty": (-0.6, 0, 0),
-            "pegs": (-0.5, 0.15, 0),
             "table": lambda table_length: (-0.16 - table_length/2, 0, 0)
         }
 

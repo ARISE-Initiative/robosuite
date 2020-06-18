@@ -26,7 +26,7 @@ We can add a gripper to the robot by creating a gripper instance and calling the
 ```python
 from robosuite.models.grippers import gripper_factory
 
-gripper = gripper_factory('SawyerGripper')
+gripper = gripper_factory('RethinkGripper')
 gripper.hide_visualization()
 mujoco_robot.add_gripper("right_hand", gripper)
 ```

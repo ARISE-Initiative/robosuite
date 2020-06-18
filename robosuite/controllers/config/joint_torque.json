@@ -1,0 +1,10 @@
+{
+  "type": "JOINT_TORQUE",
+  "input_max": 1,
+  "input_min": -1,
+  "output_max": 0.1,
+  "output_min": -0.1,
+  "torque_limits": null,
+  "interpolation": null,
+  "ramp_ratio": 0.2
+}

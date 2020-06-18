@@ -28,7 +28,9 @@ class MujocoXML(object):
         self.name = self.root.get("model")
         self.worldbody = self.create_default_element("worldbody")
         self.actuator = self.create_default_element("actuator")
+        self.sensor = self.create_default_element("sensor")
         self.asset = self.create_default_element("asset")
+        self.tendon = self.create_default_element("tendon")
         self.equality = self.create_default_element("equality")
         self.contact = self.create_default_element("contact")
         self.default = self.create_default_element("default")
@@ -78,6 +80,10 @@ class MujocoXML(object):
             self.merge_asset(other)
             for one_actuator in other.actuator:
                 self.actuator.append(one_actuator)
+            for one_sensor in other.sensor:
+                self.sensor.append(one_sensor)
+            for one_tendon in other.tendon:
+                self.tendon.append(one_tendon)
             for one_equality in other.equality:
                 self.equality.append(one_equality)
             for one_contact in other.contact:
@@ -157,7 +163,9 @@ class MujocoXML(object):
             names += self.get_element_names(child, element_type)
         return names
 
-    def add_prefix(self, prefix, tags=("body", "joint", "site", "geom", "camera", "actuator")):
+    def add_prefix(self,
+                   prefix,
+                   tags=("body", "joint", "sensor", "site", "geom", "camera", "actuator", "tendon", "asset", "texture", "material")):
         """
         Utility to add prefix to all body names to prevent name clashes
         Args:
@@ -165,30 +173,77 @@ class MujocoXML(object):
             tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
                 prepended to it
         """
+        # Define tags as a set
         tags = set(tags)
+
+        # Define equalities set to pass at the end
+        equalities = set(tags)
+
+        # Add joints to equalities if necessary
+        if "joint" in tags:
+            equalities = equalities.union(["joint1", "joint2"])
+
+        # Handle actuator elements
         if "actuator" in tags:
             tags.discard("actuator")
             for actuator in self.actuator:
-                actuator.attrib["name"] = prefix + actuator.attrib["name"]
-                if "joint" in tags:
-                    actuator.attrib["joint"] = prefix + actuator.attrib["joint"]
+                self._add_prefix_recursively(actuator, tags, prefix)
+
+        # Handle sensor elements
+        if "sensor" in tags:
+            tags.discard("sensor")
+            for sensor in self.sensor:
+                self._add_prefix_recursively(sensor, tags, prefix)
+
+        # Handle tendon elements
+        if "tendon" in tags:
+            tags.discard("tendon")
+            for tendon in self.tendon:
+                self._add_prefix_recursively(tendon, tags.union(["fixed"]), prefix)
+            # Also take care of any tendons in equality constraints
+            equalities = equalities.union(["tendon1", "tendon2"])
+
+        # Handle asset elements
+        if "asset" in tags:
+            tags.discard("asset")
+            for asset in self.asset:
+                if asset.tag in tags:
+                    self._add_prefix_recursively(asset, tags, prefix)
+
+        # Handle contacts and equality names for body elements
         if "body" in tags:
             for contact in self.contact:
-                contact.set("body1", prefix + contact.attrib["body1"])
-                contact.set("body2", prefix + contact.attrib["body2"])
-            for equality in self.equality:
-                equality.set("body1", prefix + equality.attrib["body1"])
-                equality.set("body2", prefix + equality.attrib["body2"])
+                if "body1" in contact.attrib:
+                    contact.set("body1", prefix + contact.attrib["body1"])
+                if "body2" in contact.attrib:
+                    contact.set("body2", prefix + contact.attrib["body2"])
+            # Also take care of any bodies in equality constraints
+            equalities = equalities.union(["body1", "body2"])
+
+        # Handle all equality elements
+        for equality in self.equality:
+            self._add_prefix_recursively(equality, equalities, prefix)
+
+        # Handle all remaining bodies in the element tree
         for body in self.worldbody:
-            self._add_prefix_recursively(body, tags, prefix)
+            if body.tag in tags:
+                self._add_prefix_recursively(body, tags, prefix)
 
     def _add_prefix_recursively(self, root, tags, prefix):
         """
         Iteratively searches through all children nodes in "root" element to append "prefix" to any named subelements
         with a tag in "tags"
         """
+        # First re-name this element
         if "name" in root.attrib:
             root.set("name", prefix + root.attrib["name"])
+
+        # Then loop through all tags and rename any appropriately
+        for tag in tags:
+            if tag in root.attrib:
+                root.set(tag, prefix + root.attrib[tag])
+
+        # Recursively go through child elements
         for child in root:
             if child.tag in tags:
                 self._add_prefix_recursively(child, tags, prefix)

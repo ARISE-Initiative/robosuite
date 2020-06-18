@@ -20,12 +20,19 @@ class Controller(object, metaclass=abc.ABCMeta):
             "joints" : list of indexes to relevant robot joints
             "qpos" : list of indexes to relevant robot joint positions
             "qvel" : list of indexes to relevant robot joint velocities
+
+        actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
     """
     def __init__(self,
                  sim,
                  eef_name,
                  joint_indexes,
+                 actuator_range,
     ):
+
+        # Actuator range
+        self.actuator_min = actuator_range[0]
+        self.actuator_max = actuator_range[1]
 
         # Attributes for scaling / clipping inputs to outputs
         self.action_scale = None
@@ -33,11 +40,11 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.action_output_transform = None
 
         # Private property attributes
-        self._control_dim = None
-        self._output_min = None
-        self._output_max = None
-        self._input_min = None
-        self._input_max = None
+        self.control_dim = None
+        self.output_min = None
+        self.output_max = None
+        self.input_min = None
+        self.input_max = None
 
         # mujoco simulator state
         self.sim = sim
@@ -67,6 +74,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Torques being outputted by the controller
         self.torques = None
 
+        # Update flag to prevent redundant update calls
+        self.new_update = True
+
         # Move forward one timestep to propagate updates before taking first update
         self.sim.forward()
 
@@ -81,8 +91,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         """
         Abstract method that should be implemented in all subclass controllers
         Converts a given action into torques (pre gravity compensation) to be executed on the robot
+        Additionally, resets the self.new_update flag so that the next self.update call will occur
         """
-        raise NotImplementedError
+        self.new_update = True
 
     def scale_action(self, action):
         """
@@ -98,27 +109,40 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         return transformed_action
 
-    def update(self):
+    def update(self, force=False):
         """
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,
-        jacobian, and mass matrix
+        jacobian, and mass matrix. By default, since this is a non-negligible computation, multiple redundant calls
+        will be ignored via the self.new_update attribute flag. However, if the @force flag is set, the update will occur
+        regardless of that state of self.new_update. This base class method of @run_controller resets the
+        self.new_update flag
+
+        Args:
+            @force (bool): Whether to force an update to occur or not
         """
-        self.ee_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(self.eef_name)])
-        self.ee_ori_mat = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(self.eef_name)].reshape([3, 3]))
-        self.ee_pos_vel = np.array(self.sim.data.body_xvelp[self.sim.model.body_name2id(self.eef_name)])
-        self.ee_ori_vel = np.array(self.sim.data.body_xvelr[self.sim.model.body_name2id(self.eef_name)])
 
-        self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
-        self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
+        # Only run update if self.new_update or force flag is set
+        if self.new_update or force:
 
-        self.J_pos = np.array(self.sim.data.get_body_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index])
-        self.J_ori = np.array(self.sim.data.get_body_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
-        self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
+            self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
+            self.ee_ori_mat = np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3]))
+            self.ee_pos_vel = np.array(self.sim.data.site_xvelp[self.sim.model.site_name2id(self.eef_name)])
+            self.ee_ori_vel = np.array(self.sim.data.site_xvelr[self.sim.model.site_name2id(self.eef_name)])
 
-        mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
-        mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
-        mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
-        self.mass_matrix = mass_matrix[self.joint_index, :][:, self.joint_index]
+            self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
+            self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
+
+            self.J_pos = np.array(self.sim.data.get_site_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index])
+            self.J_ori = np.array(self.sim.data.get_site_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
+            self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
+
+            mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
+            mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
+            mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
+            self.mass_matrix = mass_matrix[self.qvel_index, :][:, self.qvel_index]
+
+            # Clear self.new_update
+            self.new_update = False
 
     def update_base_pose(self, base_pos, base_ori):
         """
@@ -140,68 +164,57 @@ class Controller(object, metaclass=abc.ABCMeta):
         This function can also be extended by subclassed controllers for additional controller-specific updates
 
         Args:
-            initial_joints (array): Array of joint position values to update the initial joints
+            @initial_joints (Iterable): Array of joint position values to update the initial joints
         """
         self.initial_joint = np.array(initial_joints)
+        self.update(force=True)
+        self.initial_ee_pos = self.ee_pos
+        self.initial_ee_ori_mat = self.ee_ori_mat
 
-    @property
-    def input_min(self):
-        """Returns input minimum below which an inputted action will be clipped"""
-        return self._input_min
+    def clip_torques(self, torques):
+        """
+        Clips the torques to be within the actuator limits
+        """
+        return np.clip(torques, self.actuator_min, self.actuator_max)
 
-    @input_min.setter
-    def input_min(self, input_min):
-        """Sets the minimum input"""
-        self._input_min = np.array(input_min) if isinstance(input_min, Iterable) \
-            else np.array([input_min]*self.control_dim)
+    def reset_goal(self):
+        """
+        Resets the goal -- usually by setting to the goal to all zeros, but in some cases may be different (e.g.: OSC)
+        """
+        raise NotImplementedError
 
-    @property
-    def input_max(self):
-        """Returns input maximum above which an inputted action will be clipped"""
-        return self._input_max
+    @staticmethod
+    def nums2array(nums, dim):
+        """
+        Convert input @nums into numpy array of length @dim. If @nums is a single number, broadcasts it to the
+        corresponding dimension size @dim before converting into a numpy array
 
-    @input_max.setter
-    def input_max(self, input_max):
-        """Sets the maximum input"""
-        self._input_max = np.array(input_max) if isinstance(input_max, Iterable) \
-            else np.array([input_max]*self.control_dim)
+        Args:
+            @nums (numeric or Iterable): Either single value or array of numbers
+            @dim (int): Size of array to broadcast input to env.sim.data.actuator_force
+        """
+        # First run sanity check to make sure no strings are being inputted
+        if isinstance(nums, str):
+            raise TypeError("Error: Only numeric inputs are supported for this function, nums2array!")
 
-    @property
-    def output_min(self):
-        """Returns output minimum which defines lower end of scaling range when scaling an input action"""
-        return self._output_min
-
-    @output_min.setter
-    def output_min(self, output_min):
-        """Set the minimum output"""
-        self._output_min = np.array(output_min) if isinstance(output_min, Iterable) \
-            else np.array([output_min]*self.control_dim)
-
-    @property
-    def output_max(self):
-        """Returns output maximum which defines upper end of scaling range when scaling an input action"""
-        return self._output_max
-
-    @output_max.setter
-    def output_max(self, output_max):
-        """Set the maximum output"""
-        self._output_max = np.array(output_max) if isinstance(output_max, Iterable) \
-                else np.array([output_max]*self.control_dim)
-
-    @property
-    def control_dim(self):
-        """Returns the control dimension for this controller (specifies size of action space)"""
-        return self._control_dim
-
-    @control_dim.setter
-    def control_dim(self, control_dim):
-        """Sets the control dimension for this controller"""
-        self._control_dim = control_dim
+        # Check if input is an Iterable, if so, we simply convert the input to np.array and return
+        # Else, input is a single value, so we map to a numpy array of correct size and return
+        return np.array(nums) if isinstance(nums, Iterable) else np.ones(dim) * nums
 
     @property
     def torque_compensation(self):
         """Returns gravity compensation torques for the robot arm"""
         return self.sim.data.qfrc_bias[self.qvel_index]
+
+    @property
+    def actuator_limits(self):
+        """Returns torque limits for this controller"""
+        return self.actuator_min, self.actuator_max
+
+    @property
+    def control_limits(self):
+        """Returns the limits over this controller's action space, which defaults to input min/max"""
+        return self.input_min, self.input_max
 
     @property
     def name(self):

@@ -6,7 +6,7 @@ For a given controller, runs through each dimension and executes a perturbation 
 neutral (stationary) value for a certain amount of time "steps_per_action", and then returns to all neutral values
 for time "steps_per_rest" before proceeding with the next action dim.
 
-    E.g.: Given that the expected action space of the Pos / Ori (EE_POS_ORI) controller (without a gripper) is
+    E.g.: Given that the expected action space of the Pos / Ori (OSC_POSE) controller (without a gripper) is
     (dx, dy, dz, droll, dpitch, dyaw), the testing sequence of actions over time will be:
 
         ***START OF DEMO***
@@ -24,7 +24,7 @@ for time "steps_per_rest" before proceeding with the next action dim.
         (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
         ***END OF DEMO***
 
-    Thus the EE_POS_ORI controller should be expected to sequentially move linearly in the x direction first,
+    Thus the OSC_POSE controller should be expected to sequentially move linearly in the x direction first,
         then the y direction, then the z direction, and then begin sequentially rotating about its x-axis,
         then y-axis, then z-axis.
 
@@ -32,23 +32,21 @@ Please reference the controller README in the robosuite/controllers directory fo
 Controllers are expected to behave in a generally controlled manner, according to their control space. The expected
 sequential qualitative behavior during the test is described below for each controller:
 
-* EE_POS_ORI: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
+* OSC_POSE: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
             z-axis, relative to the global coordinate frame
-* EE_POS: Gripper moves sequentially and linearly in x, y, z direction, relative to the global coordinate frame
-* EE_IK: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
+* OSC_POSITION: Gripper moves sequentially and linearly in x, y, z direction, relative to the global coordinate frame
+* IK_POSE: Gripper moves sequentially and linearly in x, y, z direction, then sequentially rotates in x-axis, y-axis,
             z-axis, relative to the local robot end effector frame
-* JOINT_IMP: Robot Joints move sequentially in a controlled fashion
-* JOINT_VEL: Robot Joints move sequentially in a controlled fashion
-* JOINT_TOR: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the
+* JOINT_POSITION: Robot Joints move sequentially in a controlled fashion
+* JOINT_VELOCITY: Robot Joints move sequentially in a controlled fashion
+* JOINT_TORQUE: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the
             "controller" is really just a wrapper for direct torque control of the mujoco actuators. Therefore, a
             "neutral" value of 0 torque will not guarantee a stable robot when it has non-zero velocity!
 
 """
 
-
-import numpy as np
+import robosuite as suite
 from robosuite.controllers import load_controller_config
-import robosuite.utils.transform_utils as T
 from robosuite.utils.input_utils import *
 
 
@@ -86,20 +84,23 @@ if __name__ == "__main__":
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
 
+    # Hacky way to grab joint dimension for now
+    joint_dim = 6 if options["robots"] == "UR5e" else 7
+
     # Choose controller
     controller_name = choose_controller()
 
     # Load the desired controller
-    options["controller_configs"] = load_controller_config(default_controller=controller_name)
+    options["controller_configs"] = suite.load_controller_config(default_controller=controller_name)
 
     # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value, neutral control values)
     controller_settings = {
-        "EE_POS_ORI": [7, 6, 0.1, np.array([0, 0, 0, 0, 0, 0, 0], dtype=float)],
-        "EE_POS": [4, 3, 0.1, np.array([0, 0, 0, 0], dtype=float)],
-        "EE_IK": [8, 6, 0.01, np.array([0, 0, 0, 0, 0, 0, 1, 0], dtype=float)],
-        "JOINT_IMP": [8, 7, 0.2, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
-        "JOINT_VEL": [8, 7, -0.05, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
-        "JOINT_TOR": [8, 7, 0.001, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)]
+        "OSC_POSE":         [8, 6, 0.1, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
+        "OSC_POSITION":     [4, 3, 0.1, np.zeros(4)],
+        "IK_POSE":          [8, 6, 0.01, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
+        "JOINT_POSITION":   [joint_dim + 1, joint_dim, 0.2, np.zeros(joint_dim + 1)],
+        "JOINT_VELOCITY":   [joint_dim + 1, joint_dim, -0.1, np.zeros(joint_dim + 1)],
+        "JOINT_TORQUE":     [joint_dim + 1, joint_dim, 0.25, np.zeros(joint_dim + 1)]
     }
 
     # Define variables for each controller test
@@ -109,8 +110,8 @@ if __name__ == "__main__":
     neutral = controller_settings[controller_name][3]
 
     # Define the number of timesteps to use per controller action as well as timesteps in between actions
-    steps_per_action = 50
-    steps_per_rest = 25
+    steps_per_action = 75
+    steps_per_rest = 75
 
     # Help message to user
     print()
@@ -140,11 +141,11 @@ if __name__ == "__main__":
     while count < num_test_steps:
         action = neutral.copy()
         for i in range(steps_per_action):
-            if controller_name == 'EE_IK' and count > 2:
-                # Convert from euler angle to quat here since we're working with quats
-                angle = np.zeros(3)
-                angle[count - 3] = test_value
-                action[3:7] = T.mat2quat(T.euler2mat(angle))
+            if controller_name in {'IK_POSE', 'OSC_POSE'} and count > 2:
+                # Set this value to be the angle and set appropriate axis
+                axis = np.zeros(3)
+                axis[count - 3] = 1
+                action[3:7] = np.concatenate([axis, [test_value]])
             else:
                 action[count] = test_value
             total_action = np.tile(action, n)

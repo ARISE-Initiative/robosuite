@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- from https://github.com/vikashplus/mj_envs/tree/master/mj_envs/hand_manipulation_suite/assets -->
+<!-- Information about door can be found in this paper: https://arxiv.org/pdf/1709.10087.pdf -->
+
+<mujoco model="door_lock">
+  <asset>
+    <texture file="../textures/light-wood.png" type="cube" name="light-wood" />
+    <texture file="../textures/dark-wood.png" type="cube" name="dark-wood" />
+    <texture file="../textures/brass-ambra.png" type="cube" name="metal" />
+    <material name="MatMetal" texture="metal" specular="1" shininess="0.3" rgba="0.9 0.9 0.9 1" />
+    <material name="MatDarkWood" texture="dark-wood" texrepeat="3 3" specular="0.4" shininess="0.1" />
+    <material name="MatLightWood" texture="light-wood" texrepeat="3 3" specular="0.4" shininess="0.1" />
+  </asset>
+    <worldbody>
+      <body name="door_body">
+        <body name="collision">
+          <body name="frame" pos="0 0 0" quat="0.707388 0 0 -0.706825">
+              <inertial pos="0.3 0 0" quat="0.5 0.5 0.5 0.5" mass="7.85398" diaginertia="0.923301 0.764585 0.168533" />
+              <geom size="0.03 0.3" pos="0.555 0 0" type="cylinder" rgba="1 1 1 1" group="1" name="r_frame"/>
+              <geom size="0.03 0.3" pos="0.045 0 0" type="cylinder" rgba="1 1 1 1" group="1" name="l_frame"/>
+              <body name="door" pos="0.3 0 0">
+                  <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="2.43455" diaginertia="0.0913751 0.0521615 0.043714" />
+                  <joint name="door_hinge" pos="0.255 0 0" axis="0 0 1" range="0.0 0.4" damping="1" frictionloss="1" limited="true"/>
+                  <geom size="0.22 0.02 .29" type="box" friction="1 1 1" group="1" name="door_box" material="MatDarkWood"/>
+                  <body name="latch" pos="-0.175 0 -0.025">
+                      <inertial pos="-0.017762 0.0138544 0" quat="0.365653 0.605347 -0.36522 0.605365" mass="0.1" diaginertia="0.0483771 0.0410001 0.0111013" />
+                      <geom fromto="0 0 0 0 -0.125 0" size="0.025" type="cylinder" group="1" name="handle_base" material="MatMetal"/>
+                      <geom size="0.075 0.015 0.02" pos="0.075 -0.10 0" type="box" group="1" name="handle" material="MatMetal"/>
+                      <!-- Don't render the door handle site by default -->
+                      <site name="door_handle" pos="0.125 -0.10 0" size="0.02" rgba="0 0 1 0" />
+                  </body>
+              </body>
+          </body>
+        </body>
+        <site name="bottom_site" pos="0 0 -0.3" rgba="0 0 0 0" size="0.005"/>
+        <site name="top_site" pos="0 0 0.3" rgba="0 0 0 0" size="0.005"/>
+        <site name="horizontal_radius_site" pos="0.3 0 0" rgba="0 0 0 0" size="0.1"/>
+      </body>
+    </worldbody>
+</mujoco>

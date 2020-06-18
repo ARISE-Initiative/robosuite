@@ -1,6 +1,6 @@
 from robosuite.controllers.base_controller import Controller
+from robosuite.utils.control_utils import RingBuffer
 import numpy as np
-from collections.abc import Iterable
 
 
 class JointVelocityController(Controller):
@@ -20,6 +20,8 @@ class JointVelocityController(Controller):
             "joints" : list of indexes to relevant robot joints
             "qpos" : list of indexes to relevant robot joint positions
             "qvel" : list of indexes to relevant robot joint velocities
+
+        actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
         input_max (float or list of float): Maximum above which an inputted action will be clipped. Can be either be
             a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
@@ -57,11 +59,12 @@ class JointVelocityController(Controller):
                  sim,
                  eef_name,
                  joint_indexes,
+                 actuator_range,
                  input_max=1,
                  input_min=-1,
                  output_max=1,
                  output_min=-1,
-                 kv=4.0,
+                 kv=0.25,
                  policy_freq=20,
                  velocity_limits=None,
                  interpolator=None,
@@ -72,18 +75,31 @@ class JointVelocityController(Controller):
             sim,
             eef_name,
             joint_indexes,
+            actuator_range,
         )
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
 
         # input and output max and min (allow for either explicit lists or single numbers)
-        self.input_max = input_max
-        self.input_min = input_min
-        self.output_max = output_max
-        self.output_min = output_min
+        self.input_max = self.nums2array(input_max, self.control_dim)
+        self.input_min = self.nums2array(input_min, self.control_dim)
+        self.output_max = self.nums2array(output_max, self.control_dim)
+        self.output_min = self.nums2array(output_min, self.control_dim)
 
-        # kv
-        self.kv = np.array(kv) if isinstance(kv, Iterable) else np.array([kv] * self.control_dim)
+        # gains and corresopnding vars
+        self.kvp = self.nums2array(kv, self.control_dim)
+        # if kv is a single value, map wrist gains accordingly (scale down x10 for final two joints)
+
+        if type(kv) is float or type(kv) is int:
+            low, high = self.actuator_limits
+            self.kvp = kv * (high - low)
+        self.kvi = self.kvp * 0.005
+        self.kvd = self.kvp * 0.001
+        self.last_err = np.zeros(self.joint_dim)
+        self.derr_buf = RingBuffer(dim=self.joint_dim, length=5)
+        self.summed_err = np.zeros(self.joint_dim)
+        self.saturated = False
+        self.last_joint_vel = np.zeros(self.joint_dim)
 
         # limits
         self.velocity_limits = velocity_limits
@@ -100,6 +116,7 @@ class JointVelocityController(Controller):
         self.torques = None                             # Torques returned every time run_controller is called
 
     def set_goal(self, velocities):
+        # Update state
         self.update()
 
         # Otherwise, check to make sure velocities is size self.joint_dim
@@ -108,16 +125,16 @@ class JointVelocityController(Controller):
                 self.joint_dim, len(velocities)
             )
 
-        self.goal_vel = velocities
+        self.goal_vel = self.scale_action(velocities)
         if self.velocity_limits is not None:
-            self.goal_vel = np.clip(velocities, self.velocity_limits[0], self.velocity_limits[1])
+            self.goal_vel = np.clip(self.goal_vel, self.velocity_limits[0], self.velocity_limits[1])
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_vel)
 
     def run_controller(self):
         # Make sure goal has been set
-        if not self.goal_vel.any():
+        if self.goal_vel is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state
@@ -134,12 +151,47 @@ class JointVelocityController(Controller):
         else:
             self.current_vel = np.array(self.goal_vel)
 
-        # Compute torques plus gravity compensation
-        self.torques = np.multiply(self.kv, (self.current_vel - self.joint_vel)) + self.torque_compensation
+        # We clip the current joint velocity to be within a reasonable range for stability
+        joint_vel = np.clip(self.joint_vel, self.output_min, self.output_max)
+
+        # Compute necessary error terms for PID velocity controller
+        err = self.current_vel - joint_vel
+        derr = err - self.last_err
+        self.last_err = err
+        self.derr_buf.push(derr)
+
+        # Only add to I component if we're not saturated (anti-windup)
+        if not self.saturated:
+            self.summed_err += err
+
+        # Compute command torques via PID velocity controller plus gravity compensation torques
+        torques = self.kvp * err + \
+            self.kvi * self.summed_err + \
+            self.kvd * self.derr_buf.average + \
+            self.torque_compensation
+
+        # Clip torques
+        self.torques = self.clip_torques(torques)
+
+        # Check if we're saturated
+        self.saturated = False if np.sum(np.abs(self.torques - torques)) == 0 else True
+
+        # Always run superclass call for any cleanups at the end
+        super().run_controller()
 
         # Return final torques
         return self.torques
 
+    def reset_goal(self):
+        """
+        Resets joint velocity goal to be all zeros
+        """
+        self.goal_vel = np.zeros(self.control_dim)
+
+        # Reset interpolator if required
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_vel)
+
     @property
     def name(self):
-        return 'JOINT_VEL'
+        return 'JOINT_VELOCITY'

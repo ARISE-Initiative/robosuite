@@ -12,11 +12,11 @@
         <mesh name="l_finger_tip" file="meshes/pr2_gripper/l_finger_tip.stl" />
     </asset>
     <worldbody>
-        <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" />
         <body quat="0 0.709 0 0.706" pos="0 0 -0.03">
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0.06623 0.00053 -0.00119" quat="-0.0181842 0.706274 0.0160771 0.707523" mass="0.58007" diaginertia="0.000865637 0.000678178 0.000351471" />
             <geom type="mesh" rgba="0.8 0 0 1" mesh="gripper_palm" contype="0" conaffinity="0" group="1"/>
-            <geom type="mesh" rgba="0.8 0 0 1" mesh="gripper_palm" group="0"/>
+            <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="gripper_palm" group="0"/>
             <body name="led_frame" pos="0.0513 0 0.0244">
                 <inertial pos="0.0513 0 0.0244" mass="0" diaginertia="0 0 0" />
             </body>
@@ -36,7 +36,7 @@
                     <joint name="motor_screw_joint" pos="0 0 0" axis="0 1 0"  damping="1"/>
                 </body>
                 <site name="grip_site" pos="-0.08 0 0" size="0.01 0.1 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
-                <site name="grip_site_cylinder" pos="-0.08 0 0" quat="0.707 0 0.707 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+                <site name="grip_site_cylinder" pos="-0.08 0 0" quat="0.707 0 0.707 0" size="0.005 10" rgba="0.7 0.7 0.7 1" type="cylinder" group="1"/>
             </body>
             <body name="l_finger_link" pos="0.07691 0.01 0">
                 <inertial pos="0.03598 0.0173 -0.00164" quat="0.57444 0.429111 0.518782 0.465562" mass="0.17126" diaginertia="0.00019774 0.000181336 7.66239e-05" />
@@ -47,7 +47,7 @@
                     <inertial pos="0.00423 0.00284 0" quat="0.249588 0.661594 -0.249588 0.661594" mass="0.04419" diaginertia="1.54177e-05 1.50049e-05 3.23624e-06" />
                     <joint name="l_finger_tip_joint" pos="0 0 0" axis="0 0 -1" limited="true" range="0 0.548" damping="1"/>
                     <geom type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="l_finger_tip" group="0"/>
-                    <geom type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="l_finger_tip_visual" contype="0" conaffinity="0" group="1"/>
+                    <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="l_finger_tip" name="l_finger_tip_visual" contype="0" conaffinity="0" group="1"/>
                 </body>
             </body>
             <body name="r_finger_link" pos="0.07691 -0.01 0">
@@ -59,9 +59,13 @@
                     <inertial pos="0.00423 -0.00284 0" quat="-0.249588 0.661594 0.249588 0.661594" mass="0.04419" diaginertia="1.54177e-05 1.50049e-05 3.23624e-06" />
                     <joint name="r_finger_tip_joint" pos="0 0 0" axis="0 0 1" limited="true" range="0 0.548" damping="1"/>
                     <geom quat="0 1 0 0" type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="r_finger_tip" group="0"/>
-                    <geom quat="0 1 0 0" type="mesh" rgba="0 0.8 0 1" mesh="l_finger_tip" name="r_finger_tip_visual" contype="0" conaffinity="0" group="1"/>
+                    <geom quat="0 1 0 0" type="mesh" rgba="0.7 0.7 0.7 1" mesh="l_finger_tip" name="r_finger_tip_visual" contype="0" conaffinity="0" group="1"/>
                 </body>
             </body>
         </body>
     </worldbody>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
 </mujoco>

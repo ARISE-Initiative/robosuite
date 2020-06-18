@@ -57,12 +57,11 @@ class PR2GripperBase(GripperModel):
         ]
 
     @property
-    def _left_finger_geoms(self):
-        return ["l_finger", "l_finger_tip"]
-
-    @property
-    def right_finger_geoms(self):
-        return ["r_finger", "r_finger_tip"]
+    def _important_geoms(self):
+        return {
+            "left_finger": ["l_finger", "l_finger_tip"],
+            "right_finger": ["r_finger", "r_finger_tip"],
+        }
 
 
 class PR2Gripper(PR2GripperBase):
@@ -76,7 +75,15 @@ class PR2Gripper(PR2GripperBase):
             action: -1 => open, 1 => closed
         """
         assert len(action) == 1
-        return -np.ones(4) * action
+        self.current_action = np.clip(self.current_action + -np.ones(4) * self.speed * action, -1.0, 1.0)
+        return self.current_action
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.01
 
     @property
     def dof(self):

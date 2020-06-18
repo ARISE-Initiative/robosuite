@@ -1,7 +1,0 @@
-{
-  "type" : "EE_IK",
-  "ik_pos_limit": 0.02,
-  "ik_ori_limit": 0.2,
-  "interpolation": null,
-  "ramp_ratio": 0.2
-}

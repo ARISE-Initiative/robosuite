@@ -20,8 +20,8 @@ class Baxter(RobotModel):
 
     @property
     def gripper(self):
-        return {"right": "SawyerGripper",
-                "left": "SawyerGripper"}
+        return {"right": "RethinkGripper",
+                "left": "RethinkGripper"}
 
     @property
     def default_controller_config(self):
@@ -38,9 +38,8 @@ class Baxter(RobotModel):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.5, 0.3, 0),
+            "bins": (-0.5, -0.1, 0),
             "empty": (-0.29, 0, 0),
-            "pegs": (-0.5, 0.15, 0),
             "table": lambda table_length: (-0.26 - table_length / 2, 0, 0)
         }
 

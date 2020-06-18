@@ -22,6 +22,8 @@ class JointTorqueController(Controller):
             "qpos" : list of indexes to relevant robot joint positions
             "qvel" : list of indexes to relevant robot joint velocities
 
+        actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
+
         input_max (float or list of float): Maximum above which an inputted action will be clipped. Can be either be
             a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
             latter, dimension should be the same as the control dimension for this controller
@@ -43,6 +45,7 @@ class JointTorqueController(Controller):
         torque_limits (2-list of float or 2-list of list of floats): Limits (N-m) below and above which the magnitude
             of a calculated goal joint torque will be clipped. Can be either be a 2-list (same min/max value for all
             joint dims), or a 2-list of list (specific min/max values for each dim)
+            If not specified, will automatically set the limits to the actuator limits for this robot arm
 
         interpolator (Interpolator): Interpolator object to be used for interpolating from the current joint torques to
             the goal joint torques during each timestep between inputted actions
@@ -55,6 +58,7 @@ class JointTorqueController(Controller):
                  sim,
                  eef_name,
                  joint_indexes,
+                 actuator_range,
                  input_max=1,
                  input_min=-1,
                  output_max=0.05,
@@ -68,20 +72,21 @@ class JointTorqueController(Controller):
         super().__init__(
             sim,
             eef_name,
-            joint_indexes
+            joint_indexes,
+            actuator_range,
         )
 
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
 
-        # input and output max and min
-        self.input_max = input_max
-        self.input_min = input_min
-        self.output_max = output_max
-        self.output_min = output_min
+        # input and output max and min (allow for either explicit lists or single numbers)
+        self.input_max = self.nums2array(input_max, self.control_dim)
+        self.input_min = self.nums2array(input_min, self.control_dim)
+        self.output_max = self.nums2array(output_max, self.control_dim)
+        self.output_min = self.nums2array(output_min, self.control_dim)
 
-        # limits
-        self.torque_limits = torque_limits
+        # limits (if not specified, set them to actuator limits by default)
+        self.torque_limits = torque_limits if torque_limits is not None else self.actuator_limits
 
         # control frequency
         self.control_freq = policy_freq
@@ -95,21 +100,20 @@ class JointTorqueController(Controller):
         self.torques = None                               # Torques returned every time run_controller is called
 
     def set_goal(self, torques):
+        # Update state
         self.update()
 
         # Check to make sure torques is size self.joint_dim
         assert len(torques) == self.control_dim, "Delta torque must be equal to the robot's joint dimension space!"
 
-        self.goal_torque = torques
-        if self.torque_limits is not None:
-            self.goal_torque = np.clip(self.goal_torque, self.torque_limits[0], self.torque_limits[1])
+        self.goal_torque = np.clip(self.scale_action(torques), self.torque_limits[0], self.torque_limits[1])
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_torque)
 
     def run_controller(self):
         # Make sure goal has been set
-        if not self.goal_torque.any():
+        if self.goal_torque is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state
@@ -129,9 +133,24 @@ class JointTorqueController(Controller):
         # Add gravity compensation
         self.torques = self.current_torque + self.torque_compensation
 
+        # Always run superclass call for any cleanups at the end
+        super().run_controller()
+
         # Return final torques
+        print("current: {}".format(self.current_torque))
+        print("final: {}".format(self.torques))
         return self.torques
+
+    def reset_goal(self):
+        """
+        Resets joint torque goal to be all zeros (pre-compensation)
+        """
+        self.goal_torque = np.zeros(self.control_dim)
+
+        # Reset interpolator if required
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_torque)
 
     @property
     def name(self):
-        return 'JOINT_TOR'
+        return 'JOINT_TORQUE'

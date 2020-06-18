@@ -19,7 +19,10 @@ class LinearInterpolator(Interpolator):
             Note: Num total interpolation steps will be equal to np.floor(ramp_ratio * controller_freq / policy_freq)
                     i.e.: how many controller steps we get per action space update
         use_delta_goal: Whether to interpret inputs as delta goals from a current position or absolute values
-        ori_interpolate: Whether this interpolator is interpolating angles (orientation) or not
+        ori_interpolate: If set, assumes that we are interpolating angles (orientation)
+            Specified string determines assumed type of input:
+                "euler": Euler orientation inputs
+                "quat": Quaternion inputs
     """
     def __init__(self,
                  max_delta,
@@ -28,7 +31,7 @@ class LinearInterpolator(Interpolator):
                  policy_freq,
                  ramp_ratio=0.2,
                  use_delta_goal=False,
-                 ori_interpolate=False,
+                 ori_interpolate=None,
                  ):
 
         self.max_delta = max_delta                                 # Maximum allowed change per interpolator step
@@ -90,11 +93,11 @@ class LinearInterpolator(Interpolator):
             raise ValueError("LinearInterpolator: Goal has not been set yet!")
 
         # Calculate the desired next step based on remaining interpolation steps
-        if self.ori_interpolate:
+        if self.ori_interpolate is not None:
             # This is an orientation interpolation, so we interpolate linearly around a sphere instead
             goal = self.goal
-            if self.dim == 3:
-                # this is assumed to be euler (x,y,z), so we need to first map to quat
+            if self.ori_interpolate == "euler":
+                # this is assumed to be euler angles (x,y,z), so we need to first map to quat
                 x = T.mat2quat(T.euler2mat(x))
                 goal = T.mat2quat(T.euler2mat(self.goal))
 
@@ -107,9 +110,9 @@ class LinearInterpolator(Interpolator):
                 print(
                     "LinearInterpolator: WARNING: Requested interpolation (ori) exceeds max speed;"
                     "clamping to {}.".format(dx))
-            # Map back to euler if necessary
             x_current = dx
-            if self.dim == 3:
+            if self.ori_interpolate == "euler":
+                # Map back to euler
                 x_current = T.mat2euler(T.quat2mat(x_current))
         else:
             # This is a normal interpolation

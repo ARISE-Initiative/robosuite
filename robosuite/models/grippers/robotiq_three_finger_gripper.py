@@ -23,7 +23,7 @@ class RobotiqThreeFingerGripperBase(GripperModel):
 
     @property
     def dof(self):
-        return 11
+        return 4
 
     @property
     def init_qpos(self):
@@ -42,23 +42,16 @@ class RobotiqThreeFingerGripperBase(GripperModel):
             "finger_2_joint_3",
             "finger_middle_joint_1",
             "finger_middle_joint_2",
-            "finger_middle_joint_3",
+            "finger_middle_joint_3"
         ]
 
     @property
     def _actuators(self):
         return [
-            "gripper_palm_finger_1_joint",
-            "gripper_finger_1_joint_1",
-            "gripper_finger_1_joint_2",
-            "gripper_finger_1_joint_3",
-            "gripper_palm_finger_2_joint",
-            "gripper_finger_2_joint_1",
-            "gripper_finger_2_joint_2",
-            "gripper_finger_2_joint_3",
-            "gripper_finger_middle_joint_1",
-            "gripper_finger_middle_joint_2",
-            "gripper_finger_middle_joint_3"
+            "finger_1",
+            "finger_2",
+            "middle_finger",
+            "finger_scissor"
         ]
 
     @property
@@ -76,7 +69,19 @@ class RobotiqThreeFingerGripperBase(GripperModel):
             "f3_l1",
             "f3_l2",
             "f3_l3",
+            "f1_pad_collision",
+            "f2_pad_collision",
+            "finger_middle_pad_collision"
         ]
+
+    @property
+    def _important_geoms(self):
+        return {
+            "left_finger": ["f1_l0", "f1_l1", "f1_l2", "f1_l3",
+                            "f2_l0", "f2_l1", "f2_l2", "f2_l3",
+                            "f1_pad_collision", "f2_pad_collision"],
+            "right_finger": ["f3_l0", "f3_l1", "f3_l2", "f3_l3", "finger_middle_pad_collision"]
+        }
 
 
 class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
@@ -89,9 +94,45 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
         Args:
             action: -1 => open, 1 => closed
         """
-        movement = np.array([0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1])
-        return movement * action
+        assert len(action) == self.dof
+        self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
+        # Automatically set the scissor joint to "closed" position by default
+        return np.concatenate([self.current_action * np.ones(3), [-1]])
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.01
 
     @property
     def dof(self):
         return 1
+
+
+class RobotiqThreeFingerDexterousGripper(RobotiqThreeFingerGripperBase):
+    """
+    Dexterous variation of the 3-finger Robotiq gripper in which all finger are actuated independently as well
+    as the scissor joint between fingers 1 and 2
+    """
+
+    def format_action(self, action):
+        """
+        Args:
+            action: all -1 => open, all 1 => closed
+        """
+        assert len(action) == self.dof
+        self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
+        return self.current_action
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.01
+
+    @property
+    def dof(self):
+        return 4

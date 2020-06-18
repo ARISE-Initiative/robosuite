@@ -36,6 +36,7 @@ orientation, and proceeds as follows:
 Note: For the test, we set an arbitrary threshold ratio of 1.10 of interpolated time / non-interpolated time that we
         assume as the minimum
 """
+# TODO: Interpolators drift slightly in the beginning, proportional to ramp ratio -- is this to be expected?
 
 import numpy as np
 
@@ -57,8 +58,8 @@ pos_action_ik = [0, delta_pos_y, 0]
 # Rotation trajectory
 rot_r_threshold = np.pi / 2
 delta_rot_r = 0.01
-rot_action_osc = [-delta_rot_r * 40, 0, 0]
-rot_action_ik = T.mat2quat(T.euler2mat([delta_rot_r * 5, 0, 0]))
+rot_action_osc = [1, 0, 0, delta_rot_r * 40]
+rot_action_ik = [1, 0, 0, delta_rot_r * 5]
 
 # Concatenated thresholds and corresponding indexes (y = 1 in x,y,z; roll = 0 in r,p,y)
 thresholds = [pos_y_threshold, rot_r_threshold]
@@ -76,7 +77,7 @@ args = parser.parse_args()
 # Running the actual test #
 def test_linear_interpolator():
 
-    for controller_name in ["EE_POS_ORI", "EE_IK"]:
+    for controller_name in ["OSC_POSE", "IK_POSE"]:
 
         for traj in ["pos", "ori"]:
 
@@ -90,7 +91,7 @@ def test_linear_interpolator():
                 # Define controller path to load
                 controller_path = os.path.join(os.path.dirname(__file__),
                                                '../../robosuite',
-                                               'controllers/config/{}.json'.format(controller_name.lower))
+                                               'controllers/config/{}.json'.format(controller_name.lower()))
                 with open(controller_path) as f:
                     controller_config = json.load(f)
                     controller_config["interpolation"] = interpolator
@@ -111,6 +112,12 @@ def test_linear_interpolator():
                 # Reset the environment
                 env.reset()
 
+                # Hardcode the starting position for sawyer
+                init_qpos = [-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628]
+                env.robots[0].set_robot_joint_positions(init_qpos)
+                env.robots[0].controller.update_initial_joints(init_qpos)
+                env.robots[0].controller.reset_goal()
+
                 # Notify user a new trajectory is beginning
                 print("\nTesting controller {} with trajectory {} and interpolator={}...".format(
                     controller_name, traj, interpolator))
@@ -126,11 +133,11 @@ def test_linear_interpolator():
 
                 # Define the uniform trajectory action
                 if traj == "pos":
-                    pos_act = pos_action_ik if controller_name == "ee_ik" else pos_action_osc
-                    rot_act = T.mat2quat(T.euler2mat(np.zeros(3))) if controller_name == "ee_ik" else np.zeros(3)
+                    pos_act = pos_action_ik if controller_name == "IK_POSE" else pos_action_osc
+                    rot_act = np.zeros(4)
                 else:
                     pos_act = np.zeros(3)
-                    rot_act = rot_action_ik if controller_name == "ee_ik" else rot_action_osc
+                    rot_act = rot_action_ik if controller_name == "IK_POSE" else rot_action_osc
 
                 # Compose the action
                 action = np.concatenate([pos_act, rot_act, [0]])

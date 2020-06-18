@@ -1,6 +1,8 @@
 # Surreal Robotics Suite
 
 ## Latest Updates
+[03/08/2020] Added new [helper script](robosuite/scripts/tune_camera.py) to tune camera pose :camera:
+
 [02/08/2020] Added models and environments with the [Panda](https://www.franka.de/technology) arm from Franka Emika :panda_face:
 
 [12/10/2019] Migrated to MuJoCo 2.0 in our v0.3.0 release (install through [pip](https://pypi.org/project/robosuite/)) :tada:
@@ -18,7 +20,7 @@ This release of Surreal Robotics Suite contains a set of benchmarking manipulati
 
 * [**standardized tasks**](robosuite/environments): a set of single-arm and bimanual manipulation tasks of large diversity and varying complexity.
 * [**procedural generation**](robosuite/models): modularized APIs for programmatically creating new scenes and new tasks as a combinations of robot models, arenas, and parameterized 3D objects;
-* [**controller modes**](robosuite/controllers): a selection of [multiple controllers](robosuite/controllers/README.md) to command each robot arm, including [operational space control](robosuite/controllers/ee_imp.py) and [inverse kinematics control](robosuite/controllers/ee_ik.py), and 3D motion devices for teleoperation;
+* [**controller modes**](robosuite/controllers): a selection of [multiple controllers](robosuite/controllers/README.md) to command each robot arm, including [operational space control](robosuite/controllers/osc.py) and [inverse kinematics control](robosuite/controllers/ik.py), and 3D motion devices for teleoperation;
 * **multi-modal sensors**: heterogeneous types of sensory signals, including low-level physical states, RGB cameras, depth maps, and proprioception;
 * [**human demonstrations**](docs/demonstrations.md): utilities for collecting human demonstrations, replaying demonstration datasets, and leveraging demonstration data for learning.
 
@@ -60,7 +62,7 @@ First download MuJoCo 2.0 ([Linux](https://www.roboti.us/download/mujoco200_linu
    ```
    This will also install our library as an editable package, such that local changes will be reflected elsewhere without having to reinstall the package.
 
-3. (Optional) We also provide add-on functionalities, such as [OpenAI Gym](https://github.com/openai/gym) [interfaces](robosuite/wrappers/gym_wrapper.py), an additional [inverse kinematics controller](robosuite/controllers/ee_ik.py) powered by [PyBullet](http://bulletphysics.org), and [teleoperation](robosuite/scripts/demo_device_control.py) with [SpaceMouse](https://www.3dconnexion.com/products/spacemouse.html) devices (Mac OS X only). To enable these additional features, please install the extra dependencies by running
+3. (Optional) We also provide add-on functionalities, such as [OpenAI Gym](https://github.com/openai/gym) [interfaces](robosuite/wrappers/gym_wrapper.py), an additional [inverse kinematics controller](robosuite/controllers/ik.py) powered by [PyBullet](http://bulletphysics.org), and [teleoperation](robosuite/scripts/demo_device_control.py) with [SpaceMouse](https://www.3dconnexion.com/products/spacemouse.html) devices (Mac OS X only). To enable these additional features, please install the extra dependencies by running
    ```sh
    $ pip3 install -r requirements-extra.txt
    ```

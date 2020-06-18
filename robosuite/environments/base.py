@@ -49,6 +49,7 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
+        hard_reset=True
     ):
         """
         Args:
@@ -58,7 +59,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
             has_offscreen_renderer (bool): True if using off-screen rendering.
 
-            render_camera (str): Name of camera to render if `has_renderer` is True.
+            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+                will result in the default angle being applied, which is useful as it can be dragged / panned by
+                the user using the mouse
 
             render_collision_mesh (bool): True if rendering collision meshes 
                 in camera. False otherwise.
@@ -73,6 +76,9 @@ class MujocoEnv(metaclass=EnvMeta):
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+                only calls sim.reset and resets all robosuite-internal variables
         """
         # Rendering-specific attributes
         self.has_renderer = has_renderer
@@ -86,6 +92,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.control_freq = control_freq
         self.horizon = horizon
         self.ignore_done = ignore_done
+        self.hard_reset = hard_reset
         self.model = None
         self.cur_time = None
         self.model_timestep = None
@@ -146,6 +153,16 @@ class MujocoEnv(metaclass=EnvMeta):
     def reset(self):
         """Resets simulation."""
         # TODO(yukez): investigate black screen of death
+        # Use hard reset if requested
+        if self.hard_reset:
+            self.sim.reset()    # TODO: Fix this once black screen of death is fixed
+            #self._destroy_viewer()
+            #self._load_model()
+            #self._initialize_sim()
+        # Else, we only reset the sim internally
+        else:
+            self.sim.reset()
+        # Reset necessary robosuite-centric variables
         self._reset_internal()
         self.sim.forward()
         return self._get_observation()
@@ -167,7 +184,8 @@ class MujocoEnv(metaclass=EnvMeta):
             self.viewer.viewer._render_every_frame = True
 
             # Set the camera angle for viewing
-            self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
+            if self.render_camera is not None:
+                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
 
         elif self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:

@@ -145,10 +145,6 @@ class GripperTester:
             self.sim.model.actuator_name2id(x) for x in self.gripper.actuators
         ]
 
-        self.gripper_open_action = self.gripper.format_action([-1])
-        self.gripper_closed_action = self.gripper.format_action(
-            [1]
-        )
         self.gripper_is_closed = True
 
         self.object_id = self.sim.model.body_name2id("object")
@@ -180,14 +176,26 @@ class GripperTester:
         else:
             self.sim.data.ctrl[self.gripper_z_id] = self.gripper_high_pos
         if self.gripper_is_closed:
-            self.sim.data.ctrl[self.gripper_actuator_ids] = self.gripper_closed_action
+            self._apply_gripper_action(1)
         else:
-            self.sim.data.ctrl[self.gripper_actuator_ids] = self.gripper_open_action
+            self._apply_gripper_action(-1)
         self._apply_gravity_compensation()
         self.sim.step()
         if self.render:
             self.viewer.render()
         self.cur_step += 1
+
+    def _apply_gripper_action(self, action):
+        """
+        Applies gripper action. Should be -1 (open) or 1 (closed)
+        """
+        gripper_action_actual = self.gripper.format_action(np.array([action]))
+        # rescale normalized gripper action to control ranges
+        ctrl_range = self.sim.model.actuator_ctrlrange[self.gripper_actuator_ids]
+        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+        applied_gripper_action = bias + weight * gripper_action_actual
+        self.sim.data.ctrl[self.gripper_actuator_ids] = applied_gripper_action
 
     def _apply_gravity_compensation(self):
         self.sim.data.qfrc_applied[
@@ -195,7 +203,7 @@ class GripperTester:
         ] = self.sim.data.qfrc_bias[self._gravity_corrected_qvels]
 
     def loop(self,
-             T=300,
+             T=400,
              total_iters=1,
              test_y=False,
              y_baseline=0.01):

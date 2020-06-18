@@ -48,12 +48,11 @@ class PandaGripperBase(GripperModel):
         ]
 
     @property
-    def _left_finger_geoms(self):
-        return ["finger1_tip_collision"]
-
-    @property
-    def _right_finger_geoms(self):
-        return ["finger2_tip_collision"]
+    def _important_geoms(self):
+        return {
+            "left_finger": ["finger1_tip_collision"],
+            "right_finger": ["finger2_tip_collision"],
+        }
 
 
 class PandaGripper(PandaGripperBase):
@@ -67,7 +66,15 @@ class PandaGripper(PandaGripperBase):
             -1 => open, 1 => closed
         """
         assert len(action) == 1
-        return np.array([-1 * action[0], 1 * action[0]])
+        self.current_action = np.clip(self.current_action + np.array([-1.0, 1.0]) * self.speed * action, -1.0, 1.0)
+        return self.current_action
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+        """
+        return 0.01
 
     @property
     def dof(self):

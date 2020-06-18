@@ -1,22 +1,35 @@
-from robosuite.models.tasks import Task, UniformRandomSampler
+import collections
+from copy import deepcopy
+
+from robosuite.models.world import MujocoWorldBase
+from robosuite.models.tasks import UniformRandomSampler
+from robosuite.models.objects import MujocoGeneratedObject, MujocoXMLObject
 from robosuite.utils.mjcf_utils import new_joint, array_to_string
 
 
-class TableTopTask(Task):
+class TableTopTask(MujocoWorldBase):
     """
-    Creates MJCF model of a tabletop task.
+    Creates MJCF model for a task performed on a table top (or similar surface).
 
-    A tabletop task consists of one robot interacting with a variable number of
-    objects placed on the tabletop. This class combines the robot, the table
-    arena, and the objetcts into a single MJCF model.
+    A manipulation task consists of one or more robots interacting with a variable number of
+    objects placed on a table. This class combines the robot(s), the arena, and the objects 
+    into a single MJCF model.
     """
 
-    def __init__(self, mujoco_arena, mujoco_robots, mujoco_objects, initializer=None):
+    def __init__(
+        self, 
+        mujoco_arena, 
+        mujoco_robots, 
+        mujoco_objects, 
+        visual_objects=None, 
+        initializer=None,
+    ):
         """
         Args:
             mujoco_arena: MJCF model of robot workspace
             mujoco_robots: MJCF model of robot model(s) (list)
             mujoco_objects: a list of MJCF models of physical objects
+            visual_objects: a list of MJCF models of visual-only objects that do not participate in collisions
             initializer: placement sampler to initialize object positions.
         """
         super().__init__()
@@ -24,13 +37,30 @@ class TableTopTask(Task):
         self.merge_arena(mujoco_arena)
         for mujoco_robot in mujoco_robots:
             self.merge_robot(mujoco_robot)
-        self.merge_objects(mujoco_objects)
+
         if initializer is None:
             initializer = UniformRandomSampler()
-        mjcfs = [x for _, x in self.mujoco_objects.items()]
+
+        if visual_objects is None:
+            visual_objects = collections.OrderedDict()
+
+        assert isinstance(mujoco_objects, collections.OrderedDict)
+        assert isinstance(visual_objects, collections.OrderedDict)
+
+        mujoco_objects = deepcopy(mujoco_objects)
+        visual_objects = deepcopy(visual_objects)
+
+        # xml manifestations of all objects
+        self.objects = []
+        self.merge_objects(mujoco_objects)
+        self.merge_objects(visual_objects, is_visual=True)
+
+        merged_objects = collections.OrderedDict(**mujoco_objects, **visual_objects)
+        self.mujoco_objects = mujoco_objects
+        self.visual_objects = visual_objects
 
         self.initializer = initializer
-        self.initializer.setup(mjcfs, self.table_top_offset, self.table_size)
+        self.initializer.setup(merged_objects, self.table_top_offset, self.table_size)
 
     def merge_robot(self, mujoco_robot):
         """Adds robot model to the MJCF model."""
@@ -43,24 +73,28 @@ class TableTopTask(Task):
         self.table_size = mujoco_arena.table_full_size
         self.merge(mujoco_arena)
 
-    def merge_objects(self, mujoco_objects):
-        """Adds physical objects to the MJCF model."""
-        self.mujoco_objects = mujoco_objects
-        self.objects = []  # xml manifestation
-        self.targets = []  # xml manifestation
-        self.max_horizontal_radius = 0
+    def merge_objects(self, mujoco_objects, is_visual=False):
+        if not is_visual:
+            self.max_horizontal_radius = 0
 
         for obj_name, obj_mjcf in mujoco_objects.items():
+            assert(isinstance(obj_mjcf, MujocoGeneratedObject) or isinstance(obj_mjcf, MujocoXMLObject))
             self.merge_asset(obj_mjcf)
             # Load object
-            obj = obj_mjcf.get_collision(name=obj_name, site=True)
-            obj.append(new_joint(name=obj_name, type="free"))
+            if is_visual:
+                obj = obj_mjcf.get_visual(site=False)
+            else:
+                obj = obj_mjcf.get_collision(site=True)
+
+            for i, joint in enumerate(obj_mjcf.joints):
+                obj.append(new_joint(name="{}_jnt{}".format(obj_name, i), **joint))
             self.objects.append(obj)
             self.worldbody.append(obj)
 
-            self.max_horizontal_radius = max(
-                self.max_horizontal_radius, obj_mjcf.get_horizontal_radius()
-            )
+            if not is_visual:
+                self.max_horizontal_radius = max(
+                    self.max_horizontal_radius, obj_mjcf.get_horizontal_radius()
+                )
 
     def place_objects(self):
         """Places objects randomly until no collisions or max iterations hit."""

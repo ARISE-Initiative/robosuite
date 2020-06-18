@@ -8,18 +8,25 @@ class TableArena(Arena):
     """Workspace that contains an empty table."""
 
     def __init__(
-        self, table_full_size=(0.8, 0.8, 0.8), table_friction=(1, 0.005, 0.0001)
+        self,
+        table_full_size=(0.8, 0.8, 0.8),
+        table_friction=(1, 0.005, 0.0001),
+        table_offset=(0, 0, 0),
+        xml="arenas/table_arena.xml",
     ):
         """
         Args:
             table_full_size: full dimensions of the table
-            friction: friction parameters of the table
+            table_friction: friction parameters of the table
+            table_offset: offset from center of arena when placing table
+                Note that the z value sets the upper limit of the table
         """
-        super().__init__(xml_path_completion("arenas/table_arena.xml"))
+        super().__init__(xml_path_completion(xml))
 
         self.table_full_size = np.array(table_full_size)
         self.table_half_size = self.table_full_size / 2
         self.table_friction = table_friction
+        self.table_offset = table_offset
 
         self.floor = self.worldbody.find("./geom[@name='floor']")
         self.table_body = self.worldbody.find("./body[@name='table']")
@@ -27,13 +34,20 @@ class TableArena(Arena):
         self.table_visual = self.table_body.find("./geom[@name='table_visual']")
         self.table_top = self.table_body.find("./site[@name='table_top']")
 
+        self.table_legs_visual = [
+            self.table_body.find("./geom[@name='table_leg1_visual']"),
+            self.table_body.find("./geom[@name='table_leg2_visual']"),
+            self.table_body.find("./geom[@name='table_leg3_visual']"),
+            self.table_body.find("./geom[@name='table_leg4_visual']"),
+        ]
+
         self.configure_location()
 
     def configure_location(self):
         self.bottom_pos = np.array([0, 0, 0])
         self.floor.set("pos", array_to_string(self.bottom_pos))
 
-        self.center_pos = self.bottom_pos + np.array([0, 0, self.table_half_size[2]])
+        self.center_pos = self.bottom_pos + np.array([0, 0, -self.table_half_size[2]]) + self.table_offset
         self.table_body.set("pos", array_to_string(self.center_pos))
         self.table_collision.set("size", array_to_string(self.table_half_size))
         self.table_collision.set("friction", array_to_string(self.table_friction))
@@ -43,8 +57,28 @@ class TableArena(Arena):
             "pos", array_to_string(np.array([0, 0, self.table_half_size[2]]))
         )
 
+        # Set leg locations
+        delta_x = [0.1, -0.1, -0.1, 0.1]
+        delta_y = [0.1, 0.1, -0.1, -0.1]
+        for leg, dx, dy in zip(self.table_legs_visual, delta_x, delta_y):
+            # If x-length of table is less than a certain length, place leg in the middle between ends
+            # Otherwise we place it near the edge
+            x = 0
+            if self.table_half_size[0] > abs(dx * 2.0):
+                x += np.sign(dx) * self.table_half_size[0] - dx
+            # Repeat the same process for y
+            y = 0
+            if self.table_half_size[1] > abs(dy * 2.0):
+                y += np.sign(dy) * self.table_half_size[1] - dy
+            # Get z value
+            z = (self.table_offset[2] - self.table_half_size[2]) / 2.0
+            # Set leg position
+            leg.set("pos", array_to_string([x, y, -z]))
+            # Set leg size
+            leg.set("size", array_to_string([0.025, z]))
+
     @property
     def table_top_abs(self):
         """Returns the absolute position of table top"""
-        table_height = np.array([0, 0, self.table_full_size[2]])
+        table_height = np.array([0, 0, self.table_offset[2]])
         return string_to_array(self.floor.get("pos")) + table_height

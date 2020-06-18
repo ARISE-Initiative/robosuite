@@ -2,6 +2,7 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.utils.transform_utils import convert_quat
+from robosuite.utils.mjcf_utils import CustomMaterial
 
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
@@ -22,8 +23,8 @@ class Lift(RobotEnv):
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
-        initialization_noise=0.02,
-        table_full_size=(0.8, 0.8, 0.8),
+        initialization_noise="default",
+        table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
@@ -39,6 +40,7 @@ class Lift(RobotEnv):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
+        hard_reset=True,
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
@@ -65,10 +67,17 @@ class Lift(RobotEnv):
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
-            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
-                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
-                in no noise being applied. Should either be single float if same noise value is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+                The expected keys and corresponding value types are specified below:
+                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
+                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
+                Should either be single dict if same noise value is to be used for all robots or else it should be a
+                list of the same length as "robots" param
+                Note: Specifying "default" will automatically use the default noise settings
+                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
             table_full_size (3-tuple): x, y, and z dimensions of the table.
 
@@ -80,7 +89,8 @@ class Lift(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
-            reward_scale (float): Scales the normalized reward function by the amount specified
+            reward_scale (None or float): Scales the normalized reward function by the amount specified.
+                If None, environment reward remains unnormalized
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -96,7 +106,9 @@ class Lift(RobotEnv):
 
             has_offscreen_renderer (bool): True if using off-screen rendering
 
-            render_camera (str): Name of camera to render if `has_renderer` is True.
+            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+                will result in the default angle being applied, which is useful as it can be dragged / panned by
+                the user using the mouse
 
             render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
 
@@ -108,6 +120,9 @@ class Lift(RobotEnv):
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+                only calls sim.reset and resets all robosuite-internal variables
 
             camera_names (str or list of str): name of camera to be rendered. Should either be single str if
                 same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
@@ -151,7 +166,7 @@ class Lift(RobotEnv):
                 x_range=[-0.03, 0.03],
                 y_range=[-0.03, 0.03],
                 ensure_object_boundary_in_range=False,
-                z_rotation=None,
+                rotation=None,
             )
 
         super().__init__(
@@ -170,6 +185,7 @@ class Lift(RobotEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
+            hard_reset=hard_reset,
             camera_names=camera_names,
             camera_heights=camera_heights,
             camera_widths=camera_widths,
@@ -229,7 +245,10 @@ class Lift(RobotEnv):
             if touch_left_finger and touch_right_finger:
                 reward += 0.25
 
-        return reward * self.reward_scale / 2.25
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 2.25
+
+        return reward
 
     def _load_model(self):
         """
@@ -247,7 +266,9 @@ class Lift(RobotEnv):
 
         # load model for table top workspace
         self.mujoco_arena = TableArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction,
+            table_offset=(0, 0, 0.8),
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
@@ -256,19 +277,37 @@ class Lift(RobotEnv):
         self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        redwood = CustomMaterial(
+            texture="WoodRed",
+            tex_name="redwood",
+            mat_name="redwood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
         cube = BoxObject(
+            name="cube",
             size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
             size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
             rgba=[1, 0, 0, 1],
+            material=redwood,
         )
         self.mujoco_objects = OrderedDict([("cube", cube)])
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
         self.model = TableTopTask(
-            self.mujoco_arena,
-            [robot.robot_model for robot in self.robots],
-            self.mujoco_objects,
+            mujoco_arena=self.mujoco_arena, 
+            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_objects=self.mujoco_objects, 
+            visual_objects=None, 
             initializer=self.placement_initializer,
         )
         self.model.place_objects()
@@ -284,10 +323,10 @@ class Lift(RobotEnv):
         # Additional object references from this env
         self.cube_body_id = self.sim.model.body_name2id("cube")
         self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.left_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
         ]
         self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.right_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
         ]
         self.cube_geom_id = self.sim.model.geom_name2id("cube")
 
@@ -305,7 +344,7 @@ class Lift(RobotEnv):
 
             # Loop through all objects and reset their positions
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name, np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
     def _get_observation(self):
         """
@@ -349,7 +388,7 @@ class Lift(RobotEnv):
         Returns True if task has been completed.
         """
         cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.table_full_size[2]
+        table_height = self.mujoco_arena.table_offset[2]
 
         # cube is higher than the table top above a margin
         return cube_height > table_height + 0.04
@@ -386,4 +425,3 @@ class Lift(RobotEnv):
         """
         if type(robots) is list:
             assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
-

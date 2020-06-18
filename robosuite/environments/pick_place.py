@@ -20,7 +20,7 @@ from robosuite.models.objects import (
     CerealVisualObject,
     CanVisualObject,
 )
-from robosuite.models.tasks import PickPlaceTask
+from robosuite.models.tasks import TableTopTask, SequentialCompositeSampler
 
 
 class PickPlace(RobotEnv):
@@ -34,7 +34,7 @@ class PickPlace(RobotEnv):
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
-        initialization_noise=0.02,
+        initialization_noise="default",
         table_full_size=(0.39, 0.49, 0.82),
         table_friction=(1, 0.005, 0.0001),
         use_camera_obs=True,
@@ -52,6 +52,7 @@ class PickPlace(RobotEnv):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
+        hard_reset=True,
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
@@ -78,10 +79,17 @@ class PickPlace(RobotEnv):
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
-            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
-                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
-                in no noise being applied. Should either be single float if same noise value is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+                The expected keys and corresponding value types are specified below:
+                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
+                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
+                Should either be single dict if same noise value is to be used for all robots or else it should be a
+                list of the same length as "robots" param
+                Note: Specifying "default" will automatically use the default noise settings
+                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
             table_full_size (3-tuple): x, y, and z dimensions of the table.
 
@@ -93,7 +101,8 @@ class PickPlace(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
-            reward_scale (float): Scales the normalized reward function by the amount specified
+            reward_scale (None or float): Scales the normalized reward function by the amount specified.
+                If None, environment reward remains unnormalized
 
             reward_shaping (bool): if True, use dense rewards.
 
@@ -121,7 +130,9 @@ class PickPlace(RobotEnv):
 
             has_offscreen_renderer (bool): True if using off-screen rendering
 
-            render_camera (str): Name of camera to render if `has_renderer` is True.
+            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+                will result in the default angle being applied, which is useful as it can be dragged / panned by
+                the user using the mouse
 
             render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
 
@@ -133,6 +144,9 @@ class PickPlace(RobotEnv):
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+                only calls sim.reset and resets all robosuite-internal variables
 
             camera_names (str or list of str): name of camera to be rendered. Should either be single str if
                 same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
@@ -198,6 +212,7 @@ class PickPlace(RobotEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
+            hard_reset=hard_reset,
             camera_names=camera_names,
             camera_heights=camera_heights,
             camera_widths=camera_widths,
@@ -213,7 +228,9 @@ class PickPlace(RobotEnv):
         if self.reward_shaping:
             staged_rewards = self.staged_rewards()
             reward += max(staged_rewards)
-        return reward * self.reward_scale / 4.0
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 4.0
+        return reward
 
     def staged_rewards(self):
         """
@@ -343,9 +360,67 @@ class PickPlace(RobotEnv):
             else:
                 sim_state = self.sim.get_state()
                 # print(self.sim.model.get_joint_qpos_addr(obj_name))
-                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name)[0]] = 10
+                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name + "_jnt0")[0]] = 10
                 self.sim.set_state(sim_state)
                 self.sim.forward()
+
+    def _get_placement_initializer(self):
+        """
+        Helper function for defining placement initializer and object sampling bounds.
+        """
+        self.placement_initializer = SequentialCompositeSampler()
+
+        # each object should just be sampled in the bounds of the bin (with some tolerance)
+        for obj_name in self.mujoco_objects:
+
+            # can sample anywhere in bin
+            bin_x_half = self.mujoco_arena.table_full_size[0] / 2 - 0.05
+            bin_y_half = self.mujoco_arena.table_full_size[1] / 2 - 0.05
+
+            self.placement_initializer.sample_on_top(
+                obj_name,
+                surface_name="table",
+                x_range=[-bin_x_half, bin_x_half],
+                y_range=[-bin_y_half, bin_y_half],
+                rotation=None,
+                rotation_axis='z',
+                z_offset=0.,
+                ensure_object_boundary_in_range=True,
+            )
+
+        # each visual object should just be at the center of each target bin
+        index = 0
+        for obj_name in self.visual_objects:
+
+            # get center of target bin
+            bin_x_low = self.bin_pos[0]
+            bin_y_low = self.bin_pos[1]
+            if index == 0 or index == 2:
+                bin_x_low -= self.bin_size[0] / 2
+            if index < 2:
+                bin_y_low -= self.bin_size[1] / 2
+            bin_x_high = bin_x_low + self.bin_size[0] / 2
+            bin_y_high = bin_y_low + self.bin_size[1] / 2
+            bin_center = np.array([
+                (bin_x_low + bin_x_high) / 2., 
+                (bin_y_low + bin_y_high) / 2., 
+            ])
+
+            # placement is relative to object bin, so compute difference and send to placement initializer
+            rel_center = bin_center - self.bin_offset[:2]
+
+            self.placement_initializer.sample_on_top(
+                obj_name,
+                surface_name="table",
+                x_range=[rel_center[0], rel_center[0]],
+                y_range=[rel_center[1], rel_center[1]],
+                rotation=0.,
+                rotation_axis='z',
+                z_offset=0.,
+                ensure_object_boundary_in_range=True,
+            )
+
+            index += 1
 
     def _load_model(self):
         """
@@ -371,6 +446,11 @@ class PickPlace(RobotEnv):
         # Arena always gets set to zero origin
         self.mujoco_arena.set_origin([0, 0, 0])
 
+        # store some arena attributes
+        self.bin_pos = string_to_array(self.mujoco_arena.bin2_body.get("pos"))
+        self.bin_size = self.mujoco_arena.table_full_size
+        self.bin_offset = self.mujoco_arena.table_top_abs[:2]
+
         # define mujoco objects
         self.ob_inits = [MilkObject, BreadObject, CerealObject, CanObject]
         self.vis_inits = [
@@ -385,31 +465,40 @@ class PickPlace(RobotEnv):
 
         lst = []
         for j in range(len(self.vis_inits)):
-            lst.append((str(self.vis_inits[j]), self.vis_inits[j]()))
-        self.visual_objects = lst
+            visual_ob_name = ("Visual" + self.item_names[j] + "0")
+            visual_ob = self.vis_inits[j](
+                name=visual_ob_name,
+                joints=[], # no free joint for visual objects
+            )
+            lst.append((visual_ob_name, visual_ob))
+        self.visual_objects = OrderedDict(lst)
 
         lst = []
         for i in range(len(self.ob_inits)):
-            ob = self.ob_inits[i]()
-            lst.append((str(self.item_names[i]) + "0", ob))
+            ob_name = (self.item_names[i] + "0")
+            ob = self.ob_inits[i](
+                name=ob_name,
+                joints=[dict(type="free", damping="0.0005")], # damp the free joint for each object
+            )
+            lst.append((ob_name, ob))
 
         self.mujoco_objects = OrderedDict(lst)
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
-        self.model = PickPlaceTask(
-            self.mujoco_arena,
-            [robot.robot_model for robot in self.robots],
-            self.mujoco_objects,
-            self.visual_objects,
+        self._get_placement_initializer()
+        self.model = TableTopTask(
+            mujoco_arena=self.mujoco_arena, 
+            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_objects=self.mujoco_objects, 
+            visual_objects=self.visual_objects, 
+            initializer=self.placement_initializer,
         )
 
         # set positions of objects
         self.model.place_objects()
 
-        self.model.place_visual()
-        self.bin_pos = string_to_array(self.model.bin2_body.get("pos"))
-        self.bin_size = self.model.bin_size
+        # self.model.place_visual()
 
     def _get_reference(self):
         """
@@ -425,10 +514,10 @@ class PickPlace(RobotEnv):
 
         # id of grippers for contact checking
         self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.left_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
         ]
         self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.right_finger_geoms
+            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
         ]
 
         # object-specific ids
@@ -468,12 +557,11 @@ class PickPlace(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_placements = self.model.place_objects()
+            obj_pos, obj_quat = self.placement_initializer.sample()
 
             # Loop through all objects and reset their positions
-            for (obj_name, _), placement in zip(self.mujoco_objects.items(), obj_placements):
-                self.sim.data.set_joint_qpos(obj_name,
-                                             np.concatenate([np.array(placement[0]), np.array(placement[1])]))
+            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
+                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
         # information of objects
         self.object_names = list(self.mujoco_objects.keys())

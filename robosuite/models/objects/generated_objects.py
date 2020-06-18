@@ -1,8 +1,249 @@
 import numpy as np
 
 from robosuite.models.objects import MujocoGeneratedObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site
-from robosuite.utils.mjcf_utils import RED, GREEN, BLUE
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, array_to_string
+from robosuite.utils.mjcf_utils import RED, GREEN, BLUE, CustomMaterial
+
+from collections import Iterable
+
+# Define custom colors
+CYAN = [0, 1, 1, 1]
+
+
+class HammerObject(MujocoGeneratedObject):
+    """
+    Generates a Hammer object with a cylindrical or box-shaped handle, cubic head, cylindrical face and triangular claw
+    (used in Handoff task)
+    """
+
+    def __init__(
+        self,
+        name,
+        handle_shape="box",
+        handle_radius=(0.015, 0.02),
+        handle_length=(0.1, 0.25),
+        handle_density=(100, 250),
+        handle_friction=(3.0, 5.0),
+        head_density_ratio=2.0,
+        use_texture=True,
+        rgba_handle=None,
+        rgba_head=None,
+        rgba_face=None,
+        rgba_claw=None,
+        joints=None,
+    ):
+        """
+        name (str): Name of this Hammer object
+        handle_shape (str): Either "box", for a box-shaped handle, or "cylinder", for a cylindrically-shaped handle
+        handle_radius (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle radius
+        handle_length (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle length
+        handle_density (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle density (in SI units). Note that this value is scaled x4 for the hammer head
+        handle_friction (float or 2-list of float): Either specific or range of values to draw randomly from
+            uniformly for the handle friction. Note that Mujoco default values are used for the head
+        head_density_ratio (float): Ratio of density of handle to head (including face and claw)
+        use_texture (bool): If true, geoms will be defined by realistic textures and rgba values will be ignored
+        rgba_handle (3-array or None): If specified, sets handle rgba values
+        rgba_head (3-array or None): If specified, sets handle rgba values
+        rgba_face (3-array or None): If specified, sets handle rgba values
+        rgba_claw (3-array or None): If specified, sets handle rgba values
+        joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
+            object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
+            xml specification.
+        """
+
+        # Run super() init
+        super().__init__(name=name, joints=joints)
+
+        # Set handle type and density ratio
+        self.handle_shape = handle_shape
+        self.head_density_ratio = head_density_ratio
+
+        # Set radius and length ranges
+        self.handle_radius_range = handle_radius if isinstance(handle_radius, Iterable) else [handle_radius] * 2
+        self.handle_length_range = handle_length if isinstance(handle_length, Iterable) else [handle_length] * 2
+        self.handle_density_range = handle_density if isinstance(handle_density, Iterable) else [handle_density] * 2
+        self.handle_friction_range = handle_friction if isinstance(handle_friction, Iterable) else [handle_friction] * 2
+
+        # Sample actual radius and length, as well as head half-size
+        self.handle_radius = np.random.uniform(self.handle_radius_range[0], self.handle_radius_range[1])
+        self.handle_length = np.random.uniform(self.handle_length_range[0], self.handle_length_range[1])
+        self.handle_density = np.random.uniform(self.handle_density_range[0], self.handle_density_range[1])
+        self.handle_friction = np.random.uniform(self.handle_friction_range[0], self.handle_friction_range[1])
+        self.head_halfsize = np.random.uniform(self.handle_radius, self.handle_radius * 1.2)
+
+        # Initialize RGBA values and texture flag
+        self.use_texture = use_texture
+        self.rgba_handle = rgba_handle if rgba_handle is not None else RED
+        self.rgba_head = rgba_head if rgba_head is not None else CYAN
+        self.rgba_face = rgba_face if rgba_face is not None else BLUE
+        self.rgba_claw = rgba_claw if rgba_claw is not None else GREEN
+
+        # Define materials we want to use for this object
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "3 3",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        metal = CustomMaterial(
+            texture="SteelScratched",
+            tex_name="metal",
+            mat_name="metal_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        wood = CustomMaterial(
+            texture="WoodLight",
+            tex_name="wood",
+            mat_name="wood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+
+        # Append materials to object
+        self.append_material(metal)
+        self.append_material(wood)
+
+    def get_bottom_offset(self):
+        return np.array([0, 0, -0.5 * self.handle_length])
+
+    def get_top_offset(self):
+        return np.array([0, 0, self.handle_radius])
+
+    def get_horizontal_radius(self):
+        return self.head_halfsize + 0.5 * self.handle_length
+
+    @property
+    def handle_distance(self):
+        return 2.0 * self.handle_radius
+
+    def get_collision(self, site=None):
+        # Create new body
+        main_body = new_body()
+        main_body.set("name", self.name)
+
+        # Define handle and append to the main body
+        if self.handle_shape == "cylinder":
+            main_body.append(
+                new_geom(
+                    geom_type="cylinder",
+                    name="hammer_handle",
+                    size=[self.handle_radius, self.handle_length / 2.0],
+                    pos=(0, 0, 0),
+                    rgba=None if self.use_texture else self.rgba_handle,
+                    group=1,
+                    density=str(self.handle_density),
+                    friction=array_to_string((self.handle_friction, 0.005, 0.0001)),
+                    material="wood_mat" if self.use_texture else None,
+                )
+            )
+        elif self.handle_shape == "box":
+            main_body.append(
+                new_geom(
+                    geom_type="box",
+                    name="hammer_handle",
+                    size=[self.handle_radius, self.handle_radius, self.handle_length / 2.0],
+                    pos=(0, 0, 0),
+                    rgba=None if self.use_texture else self.rgba_handle,
+                    group=1,
+                    density=str(self.handle_density),
+                    friction=array_to_string((self.handle_friction, 0.005, 0.0001)),
+                    material="wood_mat" if self.use_texture else None,
+                )
+            )
+        else:
+            # Raise error
+            raise ValueError("Error loading hammer: Handle type must either be 'box' or 'cylinder', got {}.".format(
+                self.handle_shape
+            ))
+
+        # Define head and append to the main body
+        main_body.append(
+            new_geom(
+                geom_type="box",
+                name="hammer_head",
+                size=[self.head_halfsize * 2, self.head_halfsize, self.head_halfsize],
+                pos=(0, 0, self.handle_length / 2.0 + self.head_halfsize),
+                rgba=None if self.use_texture else self.rgba_head,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
+            )
+        )
+
+        # Define face (and neck) and append to the main body
+        main_body.append(
+            new_geom(
+                geom_type="cylinder",
+                name="hammer_neck",
+                size=[self.head_halfsize * 0.8, self.head_halfsize * 0.2],
+                pos=(self.head_halfsize * 2.2, 0, self.handle_length / 2.0 + self.head_halfsize),
+                quat=array_to_string([0.707106, 0, 0.707106, 0]),
+                rgba=None if self.use_texture else self.rgba_face,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
+            )
+        )
+        main_body.append(
+            new_geom(
+                geom_type="cylinder",
+                name="hammer_face",
+                size=[self.head_halfsize, self.head_halfsize * 0.4],
+                pos=(self.head_halfsize * 2.8, 0, self.handle_length / 2.0 + self.head_halfsize),
+                quat=array_to_string([0.707106, 0, 0.707106, 0]),
+                rgba=None if self.use_texture else self.rgba_face,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
+            )
+        )
+
+        # Define claw and append to the main body
+        main_body.append(
+            new_geom(
+                geom_type="box",
+                name="hammer_claw",
+                size=[self.head_halfsize * 0.7072, self.head_halfsize * 0.95, self.head_halfsize * 0.7072],
+                pos=(-self.head_halfsize * 2, 0, self.handle_length / 2.0 + self.head_halfsize),
+                quat=array_to_string([0.9238795, 0, 0.3826834, 0]),
+                rgba=None if self.use_texture else self.rgba_claw,
+                group=1,
+                density=str(self.handle_density * self.head_density_ratio),
+                material="metal_mat" if self.use_texture else None,
+            )
+        )
+
+        return main_body
+
+    @property
+    def init_quat(self):
+        # Randomly sample between +/- flip (such that the hammer head faces one way or the other)
+        return np.array([0.5, -0.5, 0.5, -0.5]) if np.random.rand() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
+
+    @property
+    def handle_geoms(self):
+        return ["hammer_handle"]
+
+    @property
+    def head_geoms(self):
+        return ["hammer_head"]
+
+    @property
+    def face_geoms(self):
+        return ["hammer_neck", "hammer_face"]
+
+    @property
+    def claw_geoms(self):
+        return ["hammer_claw"]
+
+    def get_visual(self, name=None, site=None):
+        return self.get_collision(name, site)
 
 
 class PotWithHandlesObject(MujocoGeneratedObject):
@@ -12,17 +253,20 @@ class PotWithHandlesObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         body_half_size=None,
         handle_radius=0.01,
         handle_length=0.09,
         handle_width=0.09,
+        use_texture=True,
         rgba_body=None,
         rgba_handle_1=None,
         rgba_handle_2=None,
         solid_handle=False,
-        thickness=0.025,  # For body
+        thickness=0.01,  # For body
+        joints=None,
     ):
-        super().__init__()
+        super().__init__(name=name, joints=joints)
         if body_half_size:
             self.body_half_size = body_half_size
         else:
@@ -31,19 +275,45 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         self.handle_radius = handle_radius
         self.handle_length = handle_length
         self.handle_width = handle_width
-        if rgba_body:
-            self.rgba_body = np.array(rgba_body)
-        else:
-            self.rgba_body = RED
-        if rgba_handle_1:
-            self.rgba_handle_1 = np.array(rgba_handle_1)
-        else:
-            self.rgba_handle_1 = GREEN
-        if rgba_handle_2:
-            self.rgba_handle_2 = np.array(rgba_handle_2)
-        else:
-            self.rgba_handle_2 = BLUE
+        self.use_texture = use_texture
+        self.rgba_body = np.array(rgba_body) if rgba_body else RED
+        self.rgba_handle_1 = np.array(rgba_handle_1) if rgba_handle_1 else GREEN
+        self.rgba_handle_2 = np.array(rgba_handle_2) if rgba_handle_2 else BLUE
         self.solid_handle = solid_handle
+
+        # Define materials we want to use for this object
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        redwood = CustomMaterial(
+            texture="WoodRed",
+            tex_name="redwood",
+            mat_name="pot_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        greenwood = CustomMaterial(
+            texture="WoodGreen",
+            tex_name="greenwood",
+            mat_name="handle1_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        bluewood = CustomMaterial(
+            texture="WoodBlue",
+            tex_name="bluewood",
+            mat_name="handle2_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        self.append_material(redwood)
+        self.append_material(greenwood)
+        self.append_material(bluewood)
 
     def get_bottom_offset(self):
         return np.array([0, 0, -1 * self.body_half_size[2]])
@@ -58,13 +328,16 @@ class PotWithHandlesObject(MujocoGeneratedObject):
     def handle_distance(self):
         return self.body_half_size[1] * 2 + self.handle_length * 2
 
-    def get_collision(self, name=None, site=None):
+    def get_collision(self, site=None):
         main_body = new_body()
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
 
         for geom in five_sided_box(
-            self.body_half_size, self.rgba_body, 1, self.thickness
+            size=self.body_half_size,
+            rgba=None if self.use_texture else self.rgba_body,
+            group=1,
+            thickness=self.thickness,
+            material="pot_mat" if self.use_texture else None,
         ):
             main_body.append(geom)
         handle_z = self.body_half_size[2] - self.handle_radius
@@ -93,8 +366,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         self.handle_length / 2,
                         self.handle_radius,
                     ],
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
         else:
@@ -104,8 +378,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                     name="handle_1_c",
                     pos=handle_1_center,
                     size=main_bar_size,
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
             handle_1.append(
@@ -118,8 +393,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
             handle_1.append(
@@ -132,8 +408,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_1,
+                    rgba=None if self.use_texture else self.rgba_handle_1,
                     group=1,
+                    material="handle1_mat" if self.use_texture else None,
                 )
             )
 
@@ -149,8 +426,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         self.handle_length / 2,
                         self.handle_radius,
                     ],
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
         else:
@@ -160,8 +438,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                     name="handle_2_c",
                     pos=handle_2_center,
                     size=main_bar_size,
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
             handle_2.append(
@@ -174,8 +453,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
             handle_2.append(
@@ -188,8 +468,9 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                         handle_z,
                     ],
                     size=side_bar_size,
-                    rgba=self.rgba_handle_2,
+                    rgba=None if self.use_texture else self.rgba_handle_2,
                     group=1,
+                    material="handle2_mat" if self.use_texture else None,
                 )
             )
 
@@ -211,7 +492,13 @@ class PotWithHandlesObject(MujocoGeneratedObject):
                 size=[0.005],
             )
         )
-        main_body.append(new_site(name="pot_center", pos=[0, 0, 0], rgba=[1, 0, 0, 0]))
+        main_body.append(
+            new_site(
+                name="pot_center",
+                pos=[0, 0, 0],
+                rgba=[1, 0, 0, 0],
+            )
+        )
 
         return main_body
 
@@ -228,17 +515,18 @@ class PotWithHandlesObject(MujocoGeneratedObject):
             return ["handle_2"]
         return ["handle_2_c", "handle_2_+", "handle_2_-"]
 
-    def get_visual(self, name=None, site=None):
-        return self.get_collision(name, site)
+    def get_visual(self, site=None):
+        return self.get_collision(site)
 
 
-def five_sided_box(size, rgba, group, thickness):
+def five_sided_box(size, rgba, group, thickness, material):
     """
     Args:
         size ([float,flat,float]):
         rgba ([float,float,float,float]): color
         group (int): Mujoco group
         thickness (float): wall thickness
+        material (str): material for this box
 
     Returns:
         []: array of geoms corresponding to the
@@ -249,34 +537,30 @@ def five_sided_box(size, rgba, group, thickness):
     r = thickness / 2
     geoms.append(
         new_geom(
-            geom_type="box", size=[x, y, r], pos=[0, 0, -z + r], rgba=rgba, group=group
+            geom_type="box", size=[x, y, r], pos=[0, 0, -z + r], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[x, r, z], pos=[0, -y + r, 0], rgba=rgba, group=group
+            geom_type="box", size=[x, r, z], pos=[0, -y + r, 0], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[x, r, z], pos=[0, y - r, 0], rgba=rgba, group=group
+            geom_type="box", size=[x, r, z], pos=[0, y - r, 0], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[r, y, z], pos=[x - r, 0, 0], rgba=rgba, group=group
+            geom_type="box", size=[r, y, z], pos=[x - r, 0, 0], rgba=rgba, group=group, material=material
         )
     )
     geoms.append(
         new_geom(
-            geom_type="box", size=[r, y, z], pos=[-x + r, 0, 0], rgba=rgba, group=group
+            geom_type="box", size=[r, y, z], pos=[-x + r, 0, 0], rgba=rgba, group=group, material=material
         )
     )
     return geoms
-
-
-DEFAULT_DENSITY_RANGE = [200, 500, 1000, 3000, 5000]
-DEFAULT_FRICTION_RANGE = [0.25, 0.5, 1, 1.5, 2]
 
 
 def _get_size(size,
@@ -306,57 +590,40 @@ def _get_size(size,
     return size
 
 
-def _get_randomized_range(val,
-                          provided_range,
-                          default_range):
-    """
-        Helper to initialize by either value or a range
-        Returns a range to randomize from
-    """
-    if val is None:
-        if provided_range is None:
-            return default_range
-        else:
-            return provided_range
-    else:
-        if provided_range is not None:
-            raise ValueError('Value {} overrides range {}'
-                             .format(str(val), str(provided_range)))
-        return [val]
-
-
 class BoxObject(MujocoGeneratedObject):
     """
-    An object that is a box
+    A box object.
     """
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
+        material=None,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07, 0.07, 0.07],
                          [0.03, 0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
+            material=material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -372,46 +639,48 @@ class BoxObject(MujocoGeneratedObject):
         return np.linalg.norm(self.size[0:2], 2)
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="box")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="box")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="box")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="box")
 
 
 class CylinderObject(MujocoGeneratedObject):
     """
-    A randomized cylinder object.
+    A cylinder object.
     """
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
+        material=None,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07, 0.07],
                          [0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
+            material=material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -427,46 +696,48 @@ class CylinderObject(MujocoGeneratedObject):
         return self.size[0]
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="cylinder")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="cylinder")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="cylinder")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="cylinder")
 
 
 class BallObject(MujocoGeneratedObject):
     """
-    A randomized ball (sphere) object.
+    A ball (sphere) object.
     """
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
+        material=None,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07],
                          [0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
+            material=material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -482,46 +753,48 @@ class BallObject(MujocoGeneratedObject):
         return self.size[0]
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="sphere")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="sphere")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="sphere")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="sphere")
 
 
 class CapsuleObject(MujocoGeneratedObject):
     """
-    A randomized capsule object.
+    A capsule object.
     """
 
     def __init__(
         self,
+        name,
         size=None,
         size_max=None,
         size_min=None,
         density=None,
-        density_range=None,
         friction=None,
-        friction_range=None,
-        rgba="random",
+        rgba=None,
+        solref=None,
+        solimp=None,
+        material=None,
+        joints=None,
     ):
         size = _get_size(size,
                          size_max,
                          size_min,
                          [0.07, 0.07],
                          [0.03, 0.03])
-        density_range = _get_randomized_range(density,
-                                              density_range,
-                                              DEFAULT_DENSITY_RANGE)
-        friction_range = _get_randomized_range(friction,
-                                               friction_range,
-                                               DEFAULT_FRICTION_RANGE)
         super().__init__(
+            name=name,
             size=size,
             rgba=rgba,
-            density_range=density_range,
-            friction_range=friction_range,
+            density=density,
+            friction=friction,
+            solref=solref,
+            solimp=solimp,
+            material=material,
+            joints=joints,
         )
 
     def sanity_check(self):
@@ -537,9 +810,9 @@ class CapsuleObject(MujocoGeneratedObject):
         return self.size[0]
 
     # returns a copy, Returns xml body node
-    def get_collision(self, name=None, site=False):
-        return self._get_collision(name=name, site=site, ob_type="capsule")
+    def get_collision(self, site=False):
+        return self._get_collision(site=site, ob_type="capsule")
 
     # returns a copy, Returns xml body node
-    def get_visual(self, name=None, site=False):
-        return self._get_visual(name=name, site=site, ob_type="capsule")
+    def get_visual(self, site=False):
+        return self._get_visual(site=site, ob_type="capsule")

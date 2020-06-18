@@ -44,8 +44,7 @@ Main difference is that user inputs with ik's rotations are always taken relativ
     user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
 
     Notes:
-        OSC also tends to be more efficient since IK relies on backend pybullet sim
-        IK maintains initial orientation of robot env while OSC automatically initializes with gripper facing downwards
+        OSC also tends to be more computationally efficient since IK relies on backend pybullet sim
 
 
 ***Choose environment specifics with the following arguments***
@@ -96,12 +95,11 @@ Examples:
 
 import argparse
 import numpy as np
-import os
-import json
 
 import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
+
 
 
 if __name__ == "__main__":
@@ -122,9 +120,9 @@ if __name__ == "__main__":
 
     # Import controller config for EE IK or OSC (pos/ori)
     if args.controller == 'ik':
-        controller_name = 'EE_IK'
+        controller_name = 'IK_POSE'
     elif args.controller == 'osc':
-        controller_name = 'EE_POS_ORI'
+        controller_name = 'OSC_POSE'
     else:
         print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
         raise ValueError
@@ -142,6 +140,8 @@ if __name__ == "__main__":
     # Check if we're using a multi-armed environment and use env_configuration argument if so
     if "TwoArm" in args.environment:
         config["env_configuration"] = args.config
+    else:
+        args.config = None
 
     # Create environment
     env = suite.make(
@@ -238,11 +238,9 @@ if __name__ == "__main__":
 
             # Fill out the rest of the action space if necessary
             rem_action_dim = env.action_dim - action.size
-            rem_action = np.zeros(rem_action_dim)
-            # Make sure ik input isn't degenerate
-            if rem_action_dim > 0 and args.controller == 'ik':
-                rem_action[6] = 1
             if rem_action_dim > 0:
+                # Initialize remaining action space
+                rem_action = np.zeros(rem_action_dim)
                 # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
                 if args.arm == "right":
                     action = np.concatenate([action, rem_action])
@@ -252,6 +250,9 @@ if __name__ == "__main__":
                     # Only right and left arms supported
                     print("Error: Unsupported arm specified -- "
                           "must be either 'right' or 'left'! Got: {}".format(args.arm))
+            elif rem_action_dim < 0:
+                # We're in an environment with no gripper action space, so trim the action space to be the action dim
+                action = action[:env.action_dim]
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)

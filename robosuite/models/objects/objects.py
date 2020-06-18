@@ -1,9 +1,8 @@
 import copy
 import xml.etree.ElementTree as ET
-import numpy as np
 
 from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import string_to_array, array_to_string
+from robosuite.utils.mjcf_utils import string_to_array, array_to_string, xml_path_completion
 
 
 class MujocoObject:
@@ -130,12 +129,20 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
     MujocoObjects that are loaded from xml files
     """
 
-    def __init__(self, fname):
+    def __init__(self, fname, name=None, joints=None):
         """
         Args:
             fname (TYPE): XML File path
         """
         MujocoXML.__init__(self, fname)
+
+        self.name = name
+
+        # joints for this object
+        if joints is None:
+            self.joints = [{'type': 'free'}]  # default free joint
+        else:
+            self.joints = joints
 
     def get_bottom_offset(self):
         bottom_site = self.worldbody.find("./body/site[@name='bottom_site']")
@@ -151,39 +158,39 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
-    def get_collision(self, name=None, site=False):
+    def get_collision(self, site=False):
 
         collision = copy.deepcopy(self.worldbody.find("./body/body[@name='collision']"))
         collision.attrib.pop("name")
-        if name is not None:
-            collision.attrib["name"] = name
+        if self.name is not None:
+            collision.attrib["name"] = self.name
             geoms = collision.findall("geom")
             if len(geoms) == 1:
-                geoms[0].set("name", name)
+                geoms[0].set("name", self.name)
             else:
                 for i in range(len(geoms)):
-                    geoms[i].set("name", "{}-{}".format(name, i))
+                    geoms[i].set("name", "{}-{}".format(self.name, i))
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
             template["rgba"] = "1 0 0 0"
-            if name is not None:
-                template["name"] = name
+            if self.name is not None:
+                template["name"] = self.name
             collision.append(ET.Element("site", attrib=template))
         return collision
 
-    def get_visual(self, name=None, site=False):
+    def get_visual(self, site=False):
 
         visual = copy.deepcopy(self.worldbody.find("./body/body[@name='visual']"))
         visual.attrib.pop("name")
-        if name is not None:
-            visual.attrib["name"] = name
+        if self.name is not None:
+            visual.attrib["name"] = self.name
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
             template["rgba"] = "1 0 0 0"
-            if name is not None:
-                template["name"] = name
+            if self.name is not None:
+                template["name"] = self.name
             visual.append(ET.Element("site", attrib=template))
         return visual
 
@@ -196,64 +203,97 @@ class MujocoGeneratedObject(MujocoObject):
 
     def __init__(
         self,
+        name,
         size=None,
         rgba=None,
         density=None,
         friction=None,
-        density_range=None,
-        friction_range=None,
+        solref=None,
+        solimp=None,
+        material=None,
+        joints=None,
     ):
         """
-        Provides default initialization of physical attributes:
-            also supports randomization of (rgba, density, friction).
-            - rgb is randomly generated if rgba='random' (alpha will be 1 in this case)
-            - If density is None and density_range is not:
-              Density is chosen uniformly at random specified from density range,
-                  i.e. density_range = [50, 100, 1000]
-            - If friction is None and friction_range is not:
-              Tangential Friction is chosen uniformly at random from friction_range
-
         Args:
             size ([float], optional): of size 1 - 3
+
             rgba (([float, float, float, float]), optional): Color
+
             density (float, optional): Density
-            friction (float, optional): tangentia friction
-                see http://www.mujoco.org/book/modeling.html#geom for details
-            density_range ([float,float], optional): range for random choice
-            friction_range ([float,float], optional): range for random choice
+
+            friction ([float], optional): of size 3, corresponding to sliding friction,
+                torsional friction, and rolling friction. A single float can also be
+                specified, in order to set the sliding friction (the other values) will
+                be set to the MuJoCo default. See http://www.mujoco.org/book/modeling.html#geom 
+                for details.
+
+            solref ([float], optional): of size 2. MuJoCo solver parameters that handle contact.
+                See http://www.mujoco.org/book/XMLreference.html for more details.
+
+            solimp ([float], optional): of size 3. MuJoCo solver parameters that handle contact.
+                See http://www.mujoco.org/book/XMLreference.html for more details.
+
+            material (CustomMaterial, optional): if "default", add a template material and texture for this
+                object that is used to color the geom(s).
+                Otherwise, input is expected to be a CustomMaterial object
+
+                See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
+                Mujoco texture / material tags, respectively
+
+                Note that specifying a custom texture in this way automatically overrides any rgba values set
+
+            joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
+                object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
+                xml specification.
         """
         super().__init__()
+
+        self.name = name
+
         if size is None:
-            self.size = [0.05, 0.05, 0.05]
-        else:
-            self.size = size
+            size = [0.05, 0.05, 0.05]
+        self.size = list(size)
 
         if rgba is None:
-            self.rgba = [1, 0, 0, 1]
-        elif rgba == "random":
-            self.rgba = np.array([np.random.uniform(0, 1) for i in range(3)] + [1])
-        else:
-            assert len(rgba) == 4, "rgba must be a length 4 array"
-            self.rgba = rgba
+            rgba = [1, 0, 0, 1]
+        assert len(rgba) == 4, "rgba must be a length 4 array"
+        self.rgba = list(rgba)
 
         if density is None:
-            if density_range is not None:
-                self.density = np.random.choice(density_range)
-            else:
-                self.density = 1000  # water
-        else:
-            self.density = density
+            density = 1000  # water
+        self.density = density
 
         if friction is None:
-            if friction_range is not None:
-                self.friction = [np.random.choice(friction_range), 0.005, 0.0001]
-            else:
-                self.friction = [1, 0.005, 0.0001]  # MuJoCo default
-        elif hasattr(type(friction), "__len__"):
-            assert len(friction) == 3, "friction must be a length 3 array or a float"
-            self.friction = friction
+            friction = [1, 0.005, 0.0001]  # MuJoCo default
+        elif isinstance(friction, float):
+            friction = [friction, 0.005, 0.0001]
+        assert len(friction) == 3, "friction must be a length 3 array or a float"
+        self.friction = list(friction)
+
+        if solref is None:
+            self.solref = [0.02, 1.]  # MuJoCo default
         else:
-            self.friction = [friction, 0.005, 0.0001]
+            self.solref = solref
+
+        if solimp is None:
+            self.solimp = [0.9, 0.95, 0.001]  # MuJoCo default
+        else:
+            self.solimp = solimp
+
+        self.material = material
+        if material == "default":
+            # add in default texture and material for this object (for domain randomization)
+            self.asset = self._get_asset()
+        elif material is not None:
+            # add in custom texture and material
+            self.append_material(material)
+
+        # joints for this object
+        if joints is None:
+            self.joints = [{'type': 'free'}]  # default free joint
+        else:
+            self.joints = joints
+
         self.sanity_check()
 
     def sanity_check(self):
@@ -264,46 +304,103 @@ class MujocoGeneratedObject(MujocoObject):
         """
         pass
 
-    def get_collision_attrib_template(self):
+    @staticmethod
+    def get_collision_attrib_template():
         return {"pos": "0 0 0", "group": "1"}
 
-    def get_visual_attrib_template(self):
+    @staticmethod
+    def get_visual_attrib_template():
         return {"conaffinity": "0", "contype": "0", "group": "1"}
 
-    def _get_collision(self, name=None, site=False, ob_type="box"):
+    def get_texture_attrib_template(self):
+        return {
+            "name": "{}_tex".format(self.name), 
+            "type": "cube", 
+            "builtin": "flat", 
+            "rgb1": array_to_string(self.rgba[:3]), 
+            "rgb2": array_to_string(self.rgba[:3]), 
+            "width": "100", 
+            "height": "100",
+        }
+
+    def get_material_attrib_template(self):
+        return {
+            "name": "{}_mat".format(self.name), 
+            "texture": "{}_tex".format(self.name), 
+            # "specular": "0.75", 
+            # "shininess": "0.03",
+        }
+
+    def append_material(self, material):
+        """
+        Adds a new texture / material combination to the assets subtree of this XML
+        Input is expected to be a CustomMaterial object
+
+        See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
+        Mujoco texture / material tags, respectively
+
+        Note that the "file" attribute for the "texture" tag should be specified relative to the textures directory
+            located in robosuite/models/assets/textures/
+        """
+        # First check if asset attribute exists; if not, define the asset attribute
+        if not hasattr(self, "asset"):
+            self.asset = ET.Element("asset")
+        # Add texture and material inputs to asset
+        self.asset.append(ET.Element("texture", attrib=material.tex_attrib))
+        self.asset.append(ET.Element("material", attrib=material.mat_attrib))
+
+    def _get_collision(self, site=False, ob_type="box"):
         main_body = ET.Element("body")
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
         template = self.get_collision_attrib_template()
-        if name is not None:
-            template["name"] = name
+        template["name"] = self.name
         template["type"] = ob_type
-        template["rgba"] = array_to_string(self.rgba)
+        if self.material == "default":
+            template["rgba"] = "0.5 0.5 0.5 1" # mujoco default
+            template["material"] = "{}_mat".format(self.name)
+        elif self.material is not None:
+            template["material"] = self.material.mat_attrib["name"]
+        else:
+            template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
         template["density"] = str(self.density)
         template["friction"] = array_to_string(self.friction)
+        template["solref"] = array_to_string(self.solref)
+        template["solimp"] = array_to_string(self.solimp)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
-            if name is not None:
-                template["name"] = name
+            template["name"] = self.name
             main_body.append(ET.Element("site", attrib=template))
         return main_body
 
-    def _get_visual(self, name=None, site=False, ob_type="box"):
+    def _get_visual(self, site=False, ob_type="box"):
         main_body = ET.Element("body")
-        if name is not None:
-            main_body.set("name", name)
+        main_body.set("name", self.name)
         template = self.get_visual_attrib_template()
         template["type"] = ob_type
-        template["rgba"] = array_to_string(self.rgba)
+        if self.material == "default":
+            template["material"] = "{}_mat".format(self.name)
+        elif self.material is not None:
+            template["material"] = self.material["material"]["name"]
+        else:
+            template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
         main_body.append(ET.Element("geom", attrib=template))
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
-            if name is not None:
-                template["name"] = name
+            template["name"] = self.name
             main_body.append(ET.Element("site", attrib=template))
         return main_body
+
+    def _get_asset(self):
+        # Add texture and material elements
+        assert self.material == "default"
+        asset = ET.Element("asset")
+        tex_template = self.get_texture_attrib_template()
+        mat_template = self.get_material_attrib_template()
+        asset.append(ET.Element("texture", attrib=tex_template))
+        asset.append(ET.Element("material", attrib=mat_template))
+        return asset

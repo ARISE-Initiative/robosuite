@@ -1,8 +1,9 @@
 import numpy as np
-from scipy import linalg
+import numba
 import robosuite.utils.transform_utils as trans
 
 
+@numba.jit(nopython=True)
 def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, joint_vel, joint_kp=10):
     """
     For a robot with redundant DOF(s), a nullspace exists which is orthogonal to the remainder of the controllable
@@ -28,8 +29,9 @@ def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, j
     return nullspace_torques
 
 
+@numba.jit(nopython=True)
 def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
-    mass_matrix_inv = linalg.inv(mass_matrix)
+    mass_matrix_inv = np.linalg.inv(mass_matrix)
 
     # J M^-1 J^T
     lambda_full_inv = np.dot(
@@ -37,7 +39,7 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_full.transpose())
 
     # (J M^-1 J^T)^-1
-    lambda_full = linalg.inv(lambda_full_inv)
+    lambda_full = np.linalg.inv(lambda_full_inv)
 
     # Jx M^-1 Jx^T
     lambda_pos_inv = np.dot(
@@ -50,13 +52,13 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         J_ori.transpose())
 
     # take the inverse, but zero out elements in cases of a singularity
-    svd_u, svd_s, svd_v = linalg.svd(lambda_pos_inv)
+    svd_u, svd_s, svd_v = np.linalg.svd(lambda_pos_inv)
     singularity_threshold = 0.00025
-    svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
+    svd_s_inv = np.array([0 if x < singularity_threshold else 1. / x for x in svd_s])
     lambda_pos = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
 
-    svd_u, svd_s, svd_v = linalg.svd(lambda_ori_inv)
-    svd_s_inv = [0 if x < singularity_threshold else 1. / x for x in svd_s]
+    svd_u, svd_s, svd_v = np.linalg.svd(lambda_ori_inv)
+    svd_s_inv = np.array([0 if x < singularity_threshold else 1. / x for x in svd_s])
     lambda_ori = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
 
     # nullspace
@@ -66,17 +68,16 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
     return lambda_full, lambda_pos, lambda_ori, nullspace_matrix
 
 
+@numba.jit(nopython=True)
 def orientation_error(desired, current):
     """
+    This function calculates a 3-dimensional orientation error vector for use in the
+    impedance controller. It does this by computing the delta rotation between the
+    inputs and converting that rotation to exponential coordinates (axis-angle
+    representation, where the 3d vector is axis * angle).
+    See https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation for more information.
     Optimized function to determine orientation error from matrices
     """
-
-    def cross_product(vec1, vec2):
-        mat = np.array(([0, -vec1[2], vec1[1]],
-                        [vec1[2], 0, -vec1[0]],
-                        [-vec1[1], vec1[0], 0]))
-        return np.dot(mat, vec2)
-
     rc1 = current[0:3, 0]
     rc2 = current[0:3, 1]
     rc3 = current[0:3, 2]
@@ -84,7 +85,7 @@ def orientation_error(desired, current):
     rd2 = desired[0:3, 1]
     rd3 = desired[0:3, 2]
 
-    error = 0.5 * (cross_product(rc1, rd1) + cross_product(rc2, rd2) + cross_product(rc3, rd3))
+    error = 0.5 * (np.cross(rc1, rd1) + np.cross(rc2, rd2) + np.cross(rc3, rd3))
 
     return error
 
@@ -118,11 +119,15 @@ def set_goal_position(delta,
 def set_goal_orientation(delta,
                          current_orientation,
                          orientation_limit=None,
-                         set_ori=None):
+                         set_ori=None,
+                         axis_angle=False):
     """
     Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
     @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
-    specified to define a global orientation position
+    an orientation matrix specified to define a global orientation
+
+    If @axis_angle is set to True, then this assumes the input in axis angle form, that is,
+        a 4-array [ax, ay, az, angle]
     """
     # directly set orientation
     if set_ori is not None:
@@ -130,10 +135,17 @@ def set_goal_orientation(delta,
 
     # otherwise use delta to set goal orientation
     else:
-        rotation_mat_error = trans.euler2mat(-delta)
+        if axis_angle:
+            # convert axis-angle value to rotation matrix
+            axis, angle = delta[:3], delta[-1]
+            quat_error = trans.axisangle2quat(axis=axis, angle=angle)
+            rotation_mat_error = trans.quat2mat(quat_error)
+        else:
+            # convert euler value to rotation matrix
+            rotation_mat_error = trans.euler2mat(-delta)
         goal_orientation = np.dot(rotation_mat_error.T, current_orientation)
 
-    #check for orientation limits
+    # check for orientation limits
     if np.array(orientation_limit).any():
         if orientation_limit.shape != (2,3):
             raise ValueError("Orientation limit should be shaped (2,3) "
@@ -191,3 +203,109 @@ def set_goal_orientation(delta,
         if limited:
             goal_orientation = trans.euler2mat(np.array([euler[1], euler[0], euler[2]]))
     return goal_orientation
+
+
+class Buffer(object):
+    """
+    Abstract class for different kinds of data buffers. Minimum API should have a "push" and "clear" method
+    """
+
+    def push(self, value):
+        raise NotImplementedError
+
+    def clear(self):
+        raise NotImplementedError
+
+
+class RingBuffer(Buffer):
+    """
+    Simple RingBuffer object to hold values to average (useful for, e.g.: filtering D component in PID control)
+    """
+
+    def __init__(self, dim, length):
+        """
+        Constructs RingBuffer object. Note that the buffer object is a 2D numpy array, where each row corresponds to
+        individual entries into the buffer
+
+        Args:
+            dim (int): Size of entries being added. This is, e.g.: the size of a state vector that is to be stored
+            length (int): Size of the ring buffer
+        """
+        # Store input args
+        self.dim = dim
+        self.length = length
+
+        # Save pointer to current place in the buffer
+        self.ptr = 0
+
+        # Construct ring buffer
+        self.buf = np.zeros((length, dim))
+
+    def push(self, value):
+        """
+        Pushes a new value into the buffer
+        """
+        # Add value, then increment pointer
+        self.buf[self.ptr] = np.array(value)
+        self.ptr = (self.ptr + 1) % self.length
+
+    def clear(self):
+        """
+        Clears buffer and reset pointer
+        """
+        self.buf = np.zeros((self.length, self.dim))
+        self.ptr = 0
+
+    @property
+    def average(self):
+        """
+        Gets the average of components in buffer
+        """
+        return np.mean(self.buf, axis=0)
+
+
+class DeltaBuffer(Buffer):
+    """
+    Simple 2-length buffer object to streamline grabbing delta values between "current" and "last" values
+    """
+    def __init__(self, dim, init_value=None):
+        """
+        Constructs delta object.
+
+        Args:
+            dim (int): Size of numerical arrays being inputted
+            init_value (None or Iterable): Initial value to fill "last" value with initially.
+                If None (default), last array will be filled with zeros
+        """
+        # Setup delta object
+        self.dim = dim
+        self.last = np.zeros(self.dim) if init_value is None else np.array(init_value)
+        self.current = np.zeros(self.dim)
+
+    def push(self, value):
+        """
+        Pushes a new value into the buffer; current becomes last and @value becomes current
+        """
+        self.last = self.current
+        self.current = np.array(value)
+
+    def clear(self):
+        """
+        Clears last and current value
+        """
+        self.last, self.current = np.zeros(self.dim), np.zeros(self.dim)
+
+    @property
+    def delta(self, abs_value=False):
+        """
+        Returns the delta between last value and current value. If abs_value is set to True, then returns
+        the absolute value between the values
+        """
+        return self.current - self.last if not abs_value else np.abs(self.current - self.last)
+
+    @property
+    def average(self):
+        """
+        Returns the average between the current and last value
+        """
+        return (self.current + self.last) / 2.0

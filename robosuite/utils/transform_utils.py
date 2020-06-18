@@ -6,7 +6,7 @@ NOTE: convention for quaternions is (x, y, z, w)
 
 import math
 import numpy as np
-from scipy import linalg
+import numba
 
 
 PI = np.pi
@@ -180,6 +180,32 @@ def random_quat(rand=None):
         dtype=np.float32,
     )
 
+def random_axis_angle(angle_limit=None, random_state=None):
+    """
+    Samples an axis-angle rotation by first sampling a random axis
+    and then sampling an angle. If @angle_limit is provided, the size
+    of the rotation angle is constrained. 
+
+    If @random_state is provided (instance of np.random.RandomState), it
+    will be used to generate random numbers.
+    """
+    if angle_limit is None:
+        angle_limit = 2. * np.pi
+
+    if random_state is not None:
+        assert isinstance(random_state, np.random.RandomState)
+        npr = random_state
+    else:
+        npr = np.random
+
+    # sample random axis using a normalized sample from spherical Gaussian.
+    # see (http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/)
+    # for why it works.
+    random_axis = npr.randn(3)
+    random_axis /= np.linalg.norm(random_axis)
+    random_angle = npr.uniform(low=0., high=angle_limit)
+    return random_axis, random_angle
+
 
 def vec(values):
     """
@@ -223,66 +249,46 @@ def mat2pose(hmat):
     return pos, orn
 
 
-def mat2quat(rmat, precise=False):
+@numba.jit(nopython=True)
+def mat2quat(rmat):
     """
     Converts given rotation matrix to quaternion.
 
     Args:
         rmat: 3x3 rotation matrix
-        precise: If isprecise is True, the input matrix is assumed to be a precise
-             rotation matrix and a faster algorithm is used.
 
     Returns:
         vec4 float quaternion angles
     """
-    M = np.array(rmat, dtype=np.float32, copy=False)[:3, :3]
-    if precise:
-        q = np.empty((4,))
-        t = np.trace(M)
-        if t > M[3, 3]:
-            q[0] = t
-            q[3] = M[1, 0] - M[0, 1]
-            q[2] = M[0, 2] - M[2, 0]
-            q[1] = M[2, 1] - M[1, 2]
-        else:
-            i, j, k = 0, 1, 2
-            if M[1, 1] > M[0, 0]:
-                i, j, k = 1, 2, 0
-            if M[2, 2] > M[i, i]:
-                i, j, k = 2, 0, 1
-            t = M[i, i] - (M[j, j] + M[k, k]) + M[3, 3]
-            q[i] = t
-            q[j] = M[i, j] + M[j, i]
-            q[k] = M[k, i] + M[i, k]
-            q[3] = M[k, j] - M[j, k]
-            q = q[[3, 0, 1, 2]]
-        q *= 0.5 / math.sqrt(t * M[3, 3])
-    else:
-        m00 = M[0, 0]
-        m01 = M[0, 1]
-        m02 = M[0, 2]
-        m10 = M[1, 0]
-        m11 = M[1, 1]
-        m12 = M[1, 2]
-        m20 = M[2, 0]
-        m21 = M[2, 1]
-        m22 = M[2, 2]
-        # symmetric matrix K
-        K = np.array(
-            [
-                [m00 - m11 - m22, 0.0, 0.0, 0.0],
-                [m01 + m10, m11 - m00 - m22, 0.0, 0.0],
-                [m02 + m20, m12 + m21, m22 - m00 - m11, 0.0],
-                [m21 - m12, m02 - m20, m10 - m01, m00 + m11 + m22],
-            ]
-        )
-        K /= 3.0
-        # quaternion is Eigen vector of K that corresponds to largest eigenvalue
-        w, V = linalg.eigh(K)
-        q = V[[3, 0, 1, 2], np.argmax(w)]
-    if q[0] < 0.0:
-        np.negative(q, q)
-    return q[[1, 2, 3, 0]]
+    M = np.asarray(rmat).astype(np.float32)[:3, :3]
+
+    m00 = M[0, 0]
+    m01 = M[0, 1]
+    m02 = M[0, 2]
+    m10 = M[1, 0]
+    m11 = M[1, 1]
+    m12 = M[1, 2]
+    m20 = M[2, 0]
+    m21 = M[2, 1]
+    m22 = M[2, 2]
+    # symmetric matrix K
+    K = np.array(
+        [
+            [m00 - m11 - m22, np.float32(0.0), np.float32(0.0), np.float32(0.0)],
+            [m01 + m10, m11 - m00 - m22, np.float32(0.0), np.float32(0.0)],
+            [m02 + m20, m12 + m21, m22 - m00 - m11, np.float32(0.0)],
+            [m21 - m12, m02 - m20, m10 - m01, m00 + m11 + m22],
+        ]
+    )
+    K /= 3.0
+    # quaternion is Eigen vector of K that corresponds to largest eigenvalue
+    w, V = np.linalg.eigh(K)
+    inds = np.array([3, 0, 1, 2])
+    q1 = V[inds, np.argmax(w)]
+    if q1[0] < 0.0:
+        np.negative(q1, q1)
+    inds = np.array([1, 2, 3, 0])
+    return q1[inds]
 
 
 def euler2mat(euler: object) -> object: #assume xyz
@@ -376,6 +382,7 @@ def pose2mat(pose):
     return homo_pose_mat
 
 
+@numba.jit(nopython=True)
 def quat2mat(quaternion):
     """
     Converts given quaternion (x, y, z, w) to matrix.
@@ -386,7 +393,10 @@ def quat2mat(quaternion):
     Returns:
         3x3 rotation matrix
     """
-    q = np.array(quaternion, dtype=np.float32, copy=True)[[3, 0, 1, 2]]
+    # awkward semantics for use with numba
+    inds = np.array([3, 0, 1, 2])
+    q = np.asarray(quaternion).copy().astype(np.float32)[inds]
+
     n = np.dot(q, q)
     if n < EPS:
         return np.identity(3)
@@ -399,6 +409,71 @@ def quat2mat(quaternion):
             [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2]],
         ]
     )
+
+
+def quat2axisangle(quat):
+    """
+    Converts (x, y, z, w) quaternion to axis-angle format.
+    Returns a unit vector direction and an angle.
+    """
+    # conversion from axis-angle to quaternion:
+    #   qw = cos(theta / 2); qx, qy, qz = u * sin(theta / 2)
+
+    # normalize qx, qy, qz by sqrt(qx^2 + qy^2 + qz^2) = sqrt(1 - qw^2)
+    # to extract the unit vector
+
+    # clipping for scalar with if-else is orders of magnitude faster than numpy
+    if quat[3] > 1.:
+        quat[3] = 1.
+    elif quat[3] < -1.:
+        quat[3] = -1.
+
+    den = np.sqrt(1. - quat[3] * quat[3])
+    if math.isclose(den, 0.):
+        # This is (close to) a zero degree rotation, immediately return
+        return np.zeros(3), 0.
+
+    # convert qw to theta
+    theta = 2. * math.acos(quat[3])
+
+    return quat[:3] / den, 2. * math.acos(quat[3])
+
+
+def axisangle2quat(axis, angle):
+    """
+    Converts unnormalized axis-angle to (x, y, z, w) quat.
+    """
+
+    # handle zero-rotation case
+    if math.isclose(angle, 0.):
+        return np.array([0., 0., 0., 1.])
+
+    # make sure that axis is a unit vector
+    axis /= np.linalg.norm(axis)
+
+    q = np.zeros(4)
+    q[3] = np.cos(angle / 2.)
+    q[:3] = axis * np.sin(angle / 2.)
+    return q
+
+
+def vec2axisangle(vec):
+    """
+    Converts Euler vector (exponential coordinates) to axis-angle.
+    """
+    angle = np.linalg.norm(vec)
+    if math.isclose(angle, 0.):
+        # treat as a zero rotation
+        return np.array([1., 0., 0.]), 0.
+    axis = vec / angle
+    return axis, angle
+
+
+def axisangle2vec(axis, angle):
+    """
+    Converts unnormalized axis-angle to Euler vector (exponential coordinates).
+    """
+    return np.array([0., 0., 0.]) if math.isclose(angle, 0.) else axis * angle / np.linalg.norm(axis)
 
 
 def pose_in_A_to_pose_in_B(pose_A, pose_A_in_B):
@@ -572,7 +647,7 @@ def clip_translation(dpos, limit):
     :param limit: Value to limit translation by -- magnitude (scalar, in same units as input)
     :return: Clipped translation (same dimension as inputs) and whether the value was clipped or not
     """
-    input_norm = linalg.norm(dpos)
+    input_norm = np.linalg.norm(dpos)
     return (dpos * limit / input_norm, True) if input_norm > limit else (dpos, False)
 
 
@@ -589,7 +664,7 @@ def clip_rotation(quat, limit):
     clipped = False
 
     # First, normalize the quaternion
-    quat = quat / linalg.norm(quat)
+    quat = quat / np.linalg.norm(quat)
 
     den = np.sqrt(max(1 - quat[3] * quat[3], 0))
     if den == 0:
@@ -741,3 +816,11 @@ def get_pose_error(target_pose, current_pose):
     error[:3] = pos_err
     error[3:] = rot_err
     return error
+
+
+@numba.jit(nopython=True)
+def matrix_inverse(matrix):
+    """
+    Helper function to have an efficient matrix inversion function.
+    """
+    return np.linalg.inv(matrix)

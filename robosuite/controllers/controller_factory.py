@@ -1,9 +1,9 @@
 """
 Defines a string based method of initializing controllers
 """
-from .ee_imp import EndEffectorImpedanceController
+from .osc import OperationalSpaceController
 from .joint_vel import JointVelocityController
-from .joint_imp import JointImpedanceController
+from .joint_pos import JointPositionController
 from .joint_tor import JointTorqueController
 from .interpolators.linear_interpolator import LinearInterpolator
 
@@ -22,7 +22,7 @@ def reset_controllers():
     """
     global pybullet_server
     # Disconnect and reconnect to pybullet server if it exists
-    if pybullet_server:
+    if pybullet_server is not None:
         pybullet_server.disconnect()
         pybullet_server.connect()
 
@@ -44,16 +44,15 @@ def load_controller_config(custom_fpath=None, default_controller=None):
         @custom_fpath (str): Absolute filepath to the custom controller configuration .json file to be loaded
         @default_controller (str): If specified, overrides @custom_fpath and loads a default configuration file for the
             specified controller.
-            Choices are: {"JOINT_IMP", "JOINT_TOR", "JOINT_VEL", "EE_POS", "EE_POS_ORI", "EE_IK"}
+            Choices are: {"JOINT_POSITION", "JOINT_TORQUE", "JOINT_VELOCITY", "OSC_POSITION", "OSC_POSE", "IK_POSE"}
     """
     # First check if default controller is not None; if it is not, load the appropriate controller
     if default_controller is not None:
-        # Dict mapping expected inputs to str value for loading the appropriate default
-        controllers = {"JOINT_VEL", "JOINT_TOR", "JOINT_IMP", "EE_POS", "EE_POS_ORI", "EE_IK"}
 
         # Assert that requested default controller is in the available default controllers
-        assert default_controller in controllers, "Error: Unknown default controller specified. Requested {}," \
-                                                  "available controllers: {}".format(default_controller, controllers)
+        from robosuite.controllers import ALL_CONTROLLERS
+        assert default_controller in ALL_CONTROLLERS, "Error: Unknown default controller specified. Requested {}, " \
+            "available controllers: {}".format(default_controller, list(ALL_CONTROLLERS))
 
         # Store the default controller config fpath associated with the requested controller
         custom_fpath = os.path.join(os.path.dirname(__file__), '..',
@@ -81,7 +80,8 @@ def controller_factory(name, params):
     Creates a Controller instance with the provided name and relevant params.
 
     Args:
-        name: the name of the controller. Must be one of: {JOINT_IMP, JOINT_TOR, JOINT_VEL, EE_POS, EE_POS_ORI, EE_IK}
+        name: the name of the controller. Must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+            OSC_POSITION, OSC_POSE, IK_POSE}
         params: dict containing the relevant params to pass to the controller
         sim: Mujoco sim reference to pass to the controller
 
@@ -100,48 +100,48 @@ def controller_factory(name, params):
                                           policy_freq=params["policy_freq"],
                                           ramp_ratio=params["ramp_ratio"])
 
-    if name == "EE_POS_ORI":
+    if name == "OSC_POSE":
         ori_interpolator = None
         if interpolator is not None:
             interpolator.dim = 3                # EE control uses dim 3 for pos and ori each
             ori_interpolator = deepcopy(interpolator)
-            ori_interpolator.ori_interpolate = True
+            ori_interpolator.ori_interpolate = "euler"
         params["control_ori"] = True
-        return EndEffectorImpedanceController(interpolator_pos=interpolator,
-                                              interpolator_ori=ori_interpolator, **params)
+        return OperationalSpaceController(interpolator_pos=interpolator,
+                                          interpolator_ori=ori_interpolator, **params)
 
-    if name == "EE_POS":
+    if name == "OSC_POSITION":
         if interpolator is not None:
             interpolator.dim = 3                # EE control uses dim 3 for pos
         params["control_ori"] = False
-        return EndEffectorImpedanceController(interpolator_pos=interpolator, **params)
+        return OperationalSpaceController(interpolator_pos=interpolator, **params)
 
-    if name == "EE_IK":
+    if name == "IK_POSE":
         ori_interpolator = None
         if interpolator is not None:
             interpolator.dim = 3                # EE IK control uses dim 3 for pos and dim 4 for ori
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.dim = 4
-            ori_interpolator.ori_interpolate = True
+            ori_interpolator.ori_interpolate = "quat"
 
         # Import pybullet server if necessary
         global pybullet_server
-        from .ee_ik import EndEffectorInverseKinematicsController
-        if not pybullet_server:
-            from robosuite.controllers.ee_ik import PybulletServer
+        from .ik import InverseKinematicsController
+        if pybullet_server is None:
+            from robosuite.controllers.ik import PybulletServer
             pybullet_server = PybulletServer()
-        return EndEffectorInverseKinematicsController(interpolator_pos=interpolator,
-                                                      interpolator_ori=ori_interpolator,
-                                                      bullet_server_id=pybullet_server.server_id,
-                                                      **params)
+        return InverseKinematicsController(interpolator_pos=interpolator,
+                                           interpolator_ori=ori_interpolator,
+                                           bullet_server_id=pybullet_server.server_id,
+                                           **params)
 
-    if name == "JOINT_VEL":
+    if name == "JOINT_VELOCITY":
         return JointVelocityController(interpolator=interpolator, **params)
 
-    if name == "JOINT_IMP":
-        return JointImpedanceController(interpolator=interpolator, **params)
+    if name == "JOINT_POSITION":
+        return JointPositionController(interpolator=interpolator, **params)
 
-    if name == "JOINT_TOR":
+    if name == "JOINT_TORQUE":
         return JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))

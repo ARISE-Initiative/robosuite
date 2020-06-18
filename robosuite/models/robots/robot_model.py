@@ -40,7 +40,7 @@ class RobotModelMeta(type):
         cls = super().__new__(meta, name, bases, class_dict)
 
         # List all environments that should not be registered here.
-        _unregistered_envs = ["Robot"]
+        _unregistered_envs = ["RobotModel"]
 
         if cls.__name__ not in _unregistered_envs:
             register_robot(cls)
@@ -238,7 +238,7 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
         """
         Returns dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
         Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
-        arena case; i.e.: "bins", "empty", "pegs", and "table")
+        arena case; i.e.: "bins", "empty", and "table")
         """
         raise NotImplementedError
 

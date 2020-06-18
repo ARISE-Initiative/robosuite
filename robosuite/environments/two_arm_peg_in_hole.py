@@ -1,8 +1,8 @@
-from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.environments.robot_env import RobotEnv
+from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string
 
 from robosuite.models.objects import CylinderObject, PlateWithHoleObject
 from robosuite.models.arenas import EmptyArena
@@ -22,13 +22,13 @@ class TwoArmPegInHole(RobotEnv):
         controller_configs=None,
         gripper_types=None,
         gripper_visualizations=False,
-        initialization_noise=0.02,
+        initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=5.0,
         reward_shaping=False,
-        cylinder_radius=(0.015, 0.03),
-        cylinder_length=0.13,
+        peg_radius=(0.015, 0.03),
+        peg_length=0.13,
         use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
@@ -38,6 +38,7 @@ class TwoArmPegInHole(RobotEnv):
         control_freq=10,
         horizon=1000,
         ignore_done=False,
+        hard_reset=True,
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
@@ -72,10 +73,17 @@ class TwoArmPegInHole(RobotEnv):
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
                 robots or else it should be a list of the same length as "robots" param
 
-            initialization_noise (float or list of floats): The scale factor of uni-variate Gaussian random noise
-                applied to each of a robot's given initial joint positions. Setting this value to "None" or 0.0 results
-                in no noise being applied. Should either be single float if same noise value is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+                The expected keys and corresponding value types are specified below:
+                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
+                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
+                Should either be single dict if same noise value is to be used for all robots or else it should be a
+                list of the same length as "robots" param
+                Note: Specifying "default" will automatically use the default noise settings
+                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
             use_camera_obs (bool or list of bool): if True, every observation for a specific robot includes a rendered
             image. Should either be single bool if camera obs value is to be used for all
@@ -84,14 +92,15 @@ class TwoArmPegInHole(RobotEnv):
             use_object_obs (bool): if True, include object (cube) information in
                 the observation.
 
-            reward_scale (float): Scales the normalized reward function by the amount specified
+            reward_scale (None or float): Scales the normalized reward function by the amount specified.
+                If None, environment reward remains unnormalized
 
             reward_shaping (bool): if True, use dense rewards.
 
-            cylinder_radius (2-tuple): low and high limits of the (uniformly sampled)
-                radius of the cylinder
+            peg_radius (2-tuple): low and high limits of the (uniformly sampled)
+                radius of the peg
 
-            cylinder_length (float): length of the cylinder
+            peg_length (float): length of the peg
 
             use_indicator_object (bool): if True, sets up an indicator object that
                 is useful for debugging.
@@ -101,7 +110,9 @@ class TwoArmPegInHole(RobotEnv):
 
             has_offscreen_renderer (bool): True if using off-screen rendering
 
-            render_camera (str): Name of camera to render if `has_renderer` is True.
+            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+                will result in the default angle being applied, which is useful as it can be dragged / panned by
+                the user using the mouse
 
             render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
 
@@ -113,6 +124,9 @@ class TwoArmPegInHole(RobotEnv):
             horizon (int): Every episode lasts for exactly @horizon timesteps.
 
             ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+                only calls sim.reset and resets all robosuite-internal variables
 
             camera_names (str or list of str): name of camera to be rendered. Should either be single str if
                 same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
@@ -145,9 +159,9 @@ class TwoArmPegInHole(RobotEnv):
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
 
-        # Save cylinder specs
-        self.cylinder_radius = cylinder_radius
-        self.cylinder_length = cylinder_length
+        # Save peg specs
+        self.peg_radius = peg_radius
+        self.peg_length = peg_length
 
         super().__init__(
             robots=robots,
@@ -165,6 +179,7 @@ class TwoArmPegInHole(RobotEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
+            hard_reset=hard_reset,
             camera_names=camera_names,
             camera_heights=camera_heights,
             camera_widths=camera_widths,
@@ -202,7 +217,7 @@ class TwoArmPegInHole(RobotEnv):
         if self.reward_shaping:
             # reaching reward
             hole_pos = self.sim.data.body_xpos[self.hole_body_id]
-            gripper_site_pos = self.sim.data.body_xpos[self.cyl_body_id]
+            gripper_site_pos = self.sim.data.body_xpos[self.peg_body_id]
             dist = np.linalg.norm(gripper_site_pos - hole_pos)
             reaching_reward = 1 - np.tanh(1.0 * dist)
             reward += reaching_reward
@@ -212,7 +227,10 @@ class TwoArmPegInHole(RobotEnv):
             reward += 1 - np.tanh(np.abs(t))
             reward += cos
 
-        return reward * self.reward_scale / 5.0
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 5.0
+
+        return reward
 
     def _load_model(self):
         """
@@ -250,38 +268,54 @@ class TwoArmPegInHole(RobotEnv):
             self.model.merge(robot.robot_model)
 
         # initialize objects of interest
-        self.mujoco_objects = OrderedDict()
-        self.hole = PlateWithHoleObject()
-        self.cylinder = CylinderObject(
-            size_min=(self.cylinder_radius[0], self.cylinder_length),
-            size_max=(self.cylinder_radius[1], self.cylinder_length),
+        self.hole = PlateWithHoleObject(
+            name="hole",
+        )
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.4",
+            "shininess": "0.1",
+        }
+        greenwood = CustomMaterial(
+            texture="WoodGreen",
+            tex_name="greenwood",
+            mat_name="greenwood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        self.peg = CylinderObject(
+            name="peg",
+            size_min=(self.peg_radius[0], self.peg_length),
+            size_max=(self.peg_radius[1], self.peg_length),
+            material=greenwood,
+            rgba=[0, 1, 0, 1],
         )
 
         # Load hole object
-        self.hole_obj = self.hole.get_collision(name="hole", site=True)
+        self.hole_obj = self.hole.get_collision(site=True)
         self.hole_obj.set("quat", "0 0 0.707 0.707")
-        self.hole_obj.set("pos", "0.11 0 0.18")
+        self.hole_obj.set("pos", "0.11 0 0.17")
         self.model.merge_asset(self.hole)
 
-        # Load cylinder object
-        self.cyl_obj = self.cylinder.get_collision(name="cylinder", site=True)
-        self.cyl_obj.set("pos", "0 0 0.15")
-        self.model.merge_asset(self.cylinder)
+        # Load peg object
+        self.peg_obj = self.peg.get_collision(site=True)
+        self.peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
+        self.model.merge_asset(self.peg)
 
         # Depending on env configuration, append appropriate objects to arms
         if self.env_configuration == "bimanual":
             self.model.worldbody.find(".//body[@name='{}']"
                                       .format(self.robots[0].robot_model.eef_name["left"])).append(self.hole_obj)
             self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[0].robot_model.eef_name["right"])).append(self.cyl_obj)
+                                      .format(self.robots[0].robot_model.eef_name["right"])).append(self.peg_obj)
         else:
             self.model.worldbody.find(".//body[@name='{}']"
                                       .format(self.robots[1].robot_model.eef_name)).append(self.hole_obj)
             self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[0].robot_model.eef_name)).append(self.cyl_obj)
-
-        # Color the cylinder appropriately
-        self.model.worldbody.find(".//geom[@name='cylinder']").set("rgba", "0 1 0 1")
+                                      .format(self.robots[0].robot_model.eef_name)).append(self.peg_obj)
 
     def _get_reference(self):
         """
@@ -293,7 +327,7 @@ class TwoArmPegInHole(RobotEnv):
 
         # Additional object references from this env
         self.hole_body_id = self.sim.model.body_name2id("hole")
-        self.cyl_body_id = self.sim.model.body_name2id("cylinder")
+        self.peg_body_id = self.sim.model.body_name2id("peg")
 
     def _reset_internal(self):
         """
@@ -326,7 +360,7 @@ class TwoArmPegInHole(RobotEnv):
                 pr0 = self.robots[0].robot_model.naming_prefix
                 pr1 = self.robots[1].robot_model.naming_prefix
 
-            # position and rotation of cylinder and hole
+            # position and rotation of peg and hole
             hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
             hole_quat = T.convert_quat(
                 self.sim.data.body_xquat[self.hole_body_id], to="xyzw"
@@ -334,12 +368,12 @@ class TwoArmPegInHole(RobotEnv):
             di["hole_pos"] = hole_pos
             di["hole_quat"] = hole_quat
 
-            cyl_pos = np.array(self.sim.data.body_xpos[self.cyl_body_id])
-            cyl_quat = T.convert_quat(
-                self.sim.data.body_xquat[self.cyl_body_id], to="xyzw"
+            peg_pos = np.array(self.sim.data.body_xpos[self.peg_body_id])
+            peg_quat = T.convert_quat(
+                self.sim.data.body_xquat[self.peg_body_id], to="xyzw"
             )
-            di["cyl_to_hole"] = cyl_pos - hole_pos
-            di["cyl_quat"] = cyl_quat
+            di["peg_to_hole"] = peg_pos - hole_pos
+            di["peg_quat"] = peg_quat
 
             # Relative orientation parameters
             t, d, cos = self._compute_orientation()
@@ -351,8 +385,8 @@ class TwoArmPegInHole(RobotEnv):
                 [
                     di["hole_pos"],
                     di["hole_quat"],
-                    di["cyl_to_hole"],
-                    di["cyl_quat"],
+                    di["peg_to_hole"],
+                    di["peg_quat"],
                     [di["angle"]],
                     [di["t"]],
                     [di["d"]],
@@ -376,20 +410,20 @@ class TwoArmPegInHole(RobotEnv):
         defined by the hole is computed; the parallel distance, perpendicular distance,
         and angle are returned.
         """
-        cyl_mat = self.sim.data.body_xmat[self.cyl_body_id]
-        cyl_mat.shape = (3, 3)
-        cyl_pos = self.sim.data.body_xpos[self.cyl_body_id]
+        peg_mat = self.sim.data.body_xmat[self.peg_body_id]
+        peg_mat.shape = (3, 3)
+        peg_pos = self.sim.data.body_xpos[self.peg_body_id]
 
         hole_pos = self.sim.data.body_xpos[self.hole_body_id]
         hole_mat = self.sim.data.body_xmat[self.hole_body_id]
         hole_mat.shape = (3, 3)
 
-        v = cyl_mat @ np.array([0, 0, 1])
+        v = peg_mat @ np.array([0, 0, 1])
         v = v / np.linalg.norm(v)
         center = hole_pos + hole_mat @ np.array([0.1, 0, 0])
 
-        t = (center - cyl_pos) @ v / (np.linalg.norm(v) ** 2)
-        d = np.linalg.norm(np.cross(v, cyl_pos - center)) / np.linalg.norm(v)
+        t = (center - peg_pos) @ v / (np.linalg.norm(v) ** 2)
+        d = np.linalg.norm(np.cross(v, peg_pos - center)) / np.linalg.norm(v)
 
         hole_normal = hole_mat @ np.array([0, 0, 1])
         return (
@@ -406,8 +440,8 @@ class TwoArmPegInHole(RobotEnv):
         object in the base frame.
         """
         # World frame
-        peg_pos_in_world = self.sim.data.get_body_xpos("cylinder")
-        peg_rot_in_world = self.sim.data.get_body_xmat("cylinder").reshape((3, 3))
+        peg_pos_in_world = self.sim.data.get_body_xpos("peg")
+        peg_rot_in_world = self.sim.data.get_body_xmat("peg").reshape((3, 3))
         peg_pose_in_world = T.make_pose(peg_pos_in_world, peg_rot_in_world)
 
         # World frame
