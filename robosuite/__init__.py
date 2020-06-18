@@ -13,6 +13,7 @@ from robosuite.environments.two_arm_handoff import TwoArmHandoff
 from robosuite.environments import ALL_ENVIRONMENTS
 from robosuite.controllers import ALL_CONTROLLERS, load_controller_config
 from robosuite.robots import ALL_ROBOTS
+from robosuite.models.grippers import ALL_GRIPPERS
 
 __version__ = "1.0.0"
 __logo__ = """
