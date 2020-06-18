@@ -64,7 +64,7 @@ class JointVelocityController(Controller):
                  input_min=-1,
                  output_max=1,
                  output_min=-1,
-                 kv=4.0,
+                 kv=0.25,
                  policy_freq=20,
                  velocity_limits=None,
                  interpolator=None,
@@ -93,9 +93,6 @@ class JointVelocityController(Controller):
         if type(kv) is float or type(kv) is int:
             low, high = self.actuator_limits
             self.kvp = kv * (high - low)
-        #    print(self.kvp)
-        #    self.kvp[-2:] *= 0.2
-        #    print(self.kvp)
         self.kvi = self.kvp * 0.005
         self.kvd = self.kvp * 0.001
         self.last_err = np.zeros(self.joint_dim)

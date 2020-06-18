@@ -182,9 +182,9 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
     if controller.name == 'IK_POSE':
-        # If this is panda, want to flip y
+        # If this is panda, want to swap x and y axis
         if isinstance(robot.robot_model, Panda):
-            drotation[1] = -drotation[1]
+            drotation = drotation[[1, 0, 2]]
         else:
             # Flip x
             drotation[0] = -drotation[0]
@@ -192,7 +192,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         drotation *= 10
         dpos *= 5
         # relative rotation of desired from current eef orientation
-        # IK expects quat, so also convert to quat
+        # map to quat
         drotation = T.mat2quat(T.euler2mat(drotation))
 
         # If we're using a non-forward facing configuration, need to adjust relative position / orientation
@@ -208,12 +208,19 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
                 # y pos needs to be flipped
                 dpos[1] = -dpos[1]
 
+        # Lastly, map to axis angle form
+        axis, angle = T.quat2axisangle(drotation)
+        drotation = np.concatenate([axis, [angle]])
+
     elif controller.name == 'OSC_POSE':
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC)
         drotation *= 75
         dpos *= 200
+        # Map euler to axis-angle values
+        axis, angle = T.vec2axisangle(-drotation)
+        drotation = np.concatenate([axis, [angle]])
     else:
         # No other controllers currently supported
         print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")

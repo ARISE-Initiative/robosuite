@@ -139,13 +139,13 @@ class InverseKinematicsController(JointVelocityController):
             eef_name=eef_name,
             joint_indexes=joint_indexes,
             actuator_range=actuator_range,
-            input_max=5,
-            input_min=-5,
-            output_max=5,
-            output_min=-5,
-            kv=list(actuator_range[1] / 2),
+            input_max=1,
+            input_min=-1,
+            output_max=1,
+            output_min=-1,
+            kv=0.25,
             policy_freq=policy_freq,
-            velocity_limits=[-5, 5],
+            velocity_limits=[-1, 1],
             **kwargs
         )
 
@@ -191,10 +191,10 @@ class InverseKinematicsController(JointVelocityController):
         self.ik_pos_limit = ik_pos_limit
         self.ik_ori_limit = ik_ori_limit
         max_quat_mag = T.mat2quat(T.euler2mat([ik_ori_limit, 0, 0]))[0]
-        self.input_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
-        self.input_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
-        self.output_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
-        self.output_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
+        self.ik_input_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
+        self.ik_input_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
+        self.ik_output_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
+        self.ik_output_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
 
         # Target pos and ori
         self.ik_robot_target_pos = None
@@ -282,7 +282,7 @@ class InverseKinematicsController(JointVelocityController):
         if self.robot_name == "Sawyer":
             self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)
         elif self.robot_name == "Panda":
-            self.rotation_offset = T.rotation_matrix(angle=-np.pi/4, direction=[0., 0., 1.], point=None)
+            self.rotation_offset = T.rotation_matrix(angle=3 * np.pi/4, direction=[0., 0., 1.], point=None)
         elif self.robot_name == "Baxter":
             self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
         else:
@@ -619,8 +619,8 @@ class InverseKinematicsController(JointVelocityController):
         Args:
             dpos (numpy array): a 3 dimensional array corresponding to the desired
                 change in x, y, and z end effector position.
-            rotation (numpy array): relative rotation quaternion (x, y, z, w) corresponding
-                to the (relative) desired orientation of the end effector.
+            rotation (numpy array): relative rotation in axis angle form (ax, ay, az, angle)
+                corresponding to the (relative) desired orientation of the end effector.
 
         Returns:
             clipped dpos, rotation (of same type)
@@ -628,6 +628,9 @@ class InverseKinematicsController(JointVelocityController):
         # scale input range to desired magnitude
         if dpos.any():
             dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
+
+        # Map input to quaternion
+        rotation = T.axisangle2quat(rotation[:3], rotation[-1])
 
         # Clip orientation to desired magnitude
         rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
@@ -641,9 +644,12 @@ class InverseKinematicsController(JointVelocityController):
         quaternion indicating the change in rotation with respect to @old_quat.
 
         Additionally clips actions as well
+
+        @action should be 7-array of form: [dx, dy, dz, ax, ay, az, angle] (orientation in
+            axis-angle form)
         """
         # Clip action appropriately
-        dpos, rotation = self._clip_ik_input(action[:3], action[3:7])
+        dpos, rotation = self._clip_ik_input(action[:3], action[3:])
 
         # Update reference targets
         self.reference_target_pos += dpos * self.user_sensitivity
@@ -669,6 +675,12 @@ class InverseKinematicsController(JointVelocityController):
         """
         error = current - set_point
         return error
+
+    @property
+    def control_limits(self):
+        """Returns the limits over this controller's action space, overriding superclass method"""
+        max_limit = np.concatenate([self.ik_pos_limit * np.ones(3), np.ones(3), [self.ik_ori_limit]])
+        return -max_limit, max_limit
 
     @property
     def name(self):

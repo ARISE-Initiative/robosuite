@@ -252,9 +252,6 @@ class RobotEnv(MujocoEnv):
         """
         Resets simulation internal configurations.
         """
-        # Load robots
-        self._load_robots()
-
         # Run superclass reset functionality
         super()._reset_internal()
 

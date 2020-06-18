@@ -110,6 +110,10 @@ class Robot(object):
         # Load controllers
         self._load_controller()
 
+        # Update base pos / ori references
+        self.base_pos = self.sim.data.get_body_xpos(self.robot_model.robot_base)
+        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3)))
+
     def setup_references(self):
         """
         Sets up necessary reference for robots, grippers, and objects.
@@ -146,8 +150,8 @@ class Robot(object):
         ]
 
         # Update base pos / ori references
-        self.base_pos = self.sim.data.get_body_xpos(self.robot_model.robot_base)
-        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3)))
+        #self.base_pos = self.sim.data.get_body_xpos(self.robot_model.robot_base)
+        #self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3)))
 
     def control(self, action, policy_step=False):
         """

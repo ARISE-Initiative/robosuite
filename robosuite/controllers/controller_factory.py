@@ -22,7 +22,7 @@ def reset_controllers():
     """
     global pybullet_server
     # Disconnect and reconnect to pybullet server if it exists
-    if pybullet_server:
+    if pybullet_server is not None:
         pybullet_server.disconnect()
         pybullet_server.connect()
 
@@ -105,7 +105,7 @@ def controller_factory(name, params):
         if interpolator is not None:
             interpolator.dim = 3                # EE control uses dim 3 for pos and ori each
             ori_interpolator = deepcopy(interpolator)
-            ori_interpolator.ori_interpolate = True
+            ori_interpolator.ori_interpolate = "euler"
         params["control_ori"] = True
         return OperationalSpaceController(interpolator_pos=interpolator,
                                           interpolator_ori=ori_interpolator, **params)
@@ -122,12 +122,12 @@ def controller_factory(name, params):
             interpolator.dim = 3                # EE IK control uses dim 3 for pos and dim 4 for ori
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.dim = 4
-            ori_interpolator.ori_interpolate = True
+            ori_interpolator.ori_interpolate = "quat"
 
         # Import pybullet server if necessary
         global pybullet_server
         from .ik import InverseKinematicsController
-        if not pybullet_server:
+        if pybullet_server is None:
             from robosuite.controllers.ik import PybulletServer
             pybullet_server = PybulletServer()
         return InverseKinematicsController(interpolator_pos=interpolator,

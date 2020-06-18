@@ -87,6 +87,7 @@ def test_linear_interpolator():
         np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
         # Get limits on kp and damping values
+        # Define control dim. Note that this is not the action space, but internal dimensionality of gains
         control_dim = 6 if "OSC" in controller_name else 7
         low, high = env.action_spec
         damping_low, kp_low = low[:control_dim], low[control_dim:2*control_dim]
@@ -96,7 +97,7 @@ def test_linear_interpolator():
 
         # Get delta values for trajectory
         if controller_name == "OSC_POSE":
-            delta = np.array([0, d, 0, 0, 0, 0])
+            delta = np.array([0, d, 0, 0, 0, 0, 0])
         elif controller_name == "OSC_POSITION":
             delta = np.array([0, d, 0])
         else:   # JOINT_POSITION

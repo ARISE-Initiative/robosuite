@@ -16,21 +16,21 @@ neutral (stationary) value for a certain amount of time "steps_per_action", and 
 for time "steps_per_rest" before proceeding with the next action dim.
 
     E.g.: Given that the expected action space of the Pos / Ori (OSC_POSE) controller (without a gripper) is
-    (dx, dy, dz, droll, dpitch, dyaw), the testing sequence of actions over time will be:
+    (dx, dy, dz, ax, ay, az, angle), the testing sequence of actions over time will be:
 
         ***START OF TEST***
-        ( dx,  0,  0,  0,  0,  0, grip)     <-- Translation in x-direction      for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0, dy,  0,  0,  0,  0, grip)     <-- Translation in y-direction      for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0, dz,  0,  0,  0, grip)     <-- Translation in z-direction      for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0,  0, dr,  0,  0, grip)     <-- Rotation in roll (x) axis       for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0,  0,  0, dp,  0, grip)     <-- Rotation in pitch (y) axis      for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0,  0,  0,  0, dy, grip)     <-- Rotation in yaw (z) axis        for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        ( dx,  0,  0,  0,  0,  0,     0, grip)     <-- Translation in x-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0, dy,  0,  0,  0,  0,     0, grip)     <-- Translation in y-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0, dz,  0,  0,  0,     0, grip)     <-- Translation in z-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0,  0,  1,  0,  0, angle, grip)     <-- Rotation about x axis           for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0,  0,  0,  1,  0, angle, grip)     <-- Rotation about y axis           for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        (  0,  0,  0,  0,  0,  1, angle, grip)     <-- Rotation about z axis           for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
         ***END OF TEST***
 
     Thus the OSC_POSE controller should be expected to sequentially move linearly in the x direction first,
@@ -81,12 +81,12 @@ args = parser.parse_args()
 
 # Define the controllers to use (action_dim, num_test_steps, test_value, neutral control values)
 controllers = {
-    "OSC_POSE":             [7, 6, 0.1, np.array([0,0,0,0,0,0,0], dtype=float)],
-    "OSC_POSITION":         [4, 3, 0.1, np.array([0,0,0,0], dtype=float)],
-    "IK_POSE":              [8, 6, 0.01, np.array([0,0,0,0,0,0,1,0], dtype=float)],
-    "JOINT_POSITION":       [8, 7, 0.2, np.array([0,0,0,0,0,0,0,0], dtype=float)],
-    "JOINT_VELOCITY":       [8, 7, -0.05, np.array([0,0,0,0,0,0,0,0], dtype=float)],
-    "JOINT_TORQUE":         [8, 7, 0.001, np.array([0,0,0,0,0,0,0,0], dtype=float)]
+    "OSC_POSE":             [8, 6, 0.1,   np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
+    "OSC_POSITION":         [4, 3, 0.1,   np.zeros(4)],
+    "IK_POSE":              [8, 6, 0.01,  np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
+    "JOINT_POSITION":       [8, 7, 0.2,   np.zeros(8)],
+    "JOINT_VELOCITY":       [8, 7, -0.05, np.zeros(8)],
+    "JOINT_TORQUE":         [8, 7, 0.001, np.zeros(8)]
 }
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions
@@ -133,11 +133,11 @@ def test_all_controllers():
         while count < num_test_steps:
             action = neutral.copy()
             for i in range(steps_per_action):
-                if controller_name == 'IK_POSE' and count > 2:
-                    # Convert from euler angle to quat here since we're working with quats
-                    angle = np.zeros(3)
-                    angle[count - 3] = test_value
-                    action[3:7] = T.mat2quat(T.euler2mat(angle))
+                if controller_name in {'IK_POSE', 'OSC_POSE'} and count > 2:
+                    # Set this value to be the angle and set appropriate axis
+                    axis = np.zeros(3)
+                    axis[count - 3] = 1
+                    action[3:7] = np.concatenate([axis, [test_value]])
                 else:
                     action[count] = test_value
                 env.step(action)

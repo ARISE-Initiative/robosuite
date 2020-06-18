@@ -241,9 +241,6 @@ if __name__ == "__main__":
             if rem_action_dim > 0:
                 # Initialize remaining action space
                 rem_action = np.zeros(rem_action_dim)
-                # Make sure ik input isn't degenerate
-                if args.controller == 'ik':
-                    rem_action[6] = 1
                 # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
                 if args.arm == "right":
                     action = np.concatenate([action, rem_action])

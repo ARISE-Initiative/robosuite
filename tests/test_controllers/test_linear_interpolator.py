@@ -58,8 +58,8 @@ pos_action_ik = [0, delta_pos_y, 0]
 # Rotation trajectory
 rot_r_threshold = np.pi / 2
 delta_rot_r = 0.01
-rot_action_osc = [-delta_rot_r * 40, 0, 0]
-rot_action_ik = T.mat2quat(T.euler2mat([delta_rot_r * 5, 0, 0]))
+rot_action_osc = [1, 0, 0, delta_rot_r * 40]
+rot_action_ik = [1, 0, 0, delta_rot_r * 5]
 
 # Concatenated thresholds and corresponding indexes (y = 1 in x,y,z; roll = 0 in r,p,y)
 thresholds = [pos_y_threshold, rot_r_threshold]
@@ -134,7 +134,7 @@ def test_linear_interpolator():
                 # Define the uniform trajectory action
                 if traj == "pos":
                     pos_act = pos_action_ik if controller_name == "IK_POSE" else pos_action_osc
-                    rot_act = T.mat2quat(T.euler2mat(np.zeros(3))) if controller_name == "IK_POSE" else np.zeros(3)
+                    rot_act = np.zeros(4)
                 else:
                     pos_act = np.zeros(3)
                     rot_act = rot_action_ik if controller_name == "IK_POSE" else rot_action_osc

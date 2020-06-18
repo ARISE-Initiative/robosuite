@@ -124,7 +124,10 @@ def set_goal_orientation(delta,
     """
     Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
     @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
-    specified to define a global orientation position
+    an orientation matrix specified to define a global orientation
+
+    If @axis_angle is set to True, then this assumes the input in axis angle form, that is,
+        a 4-array [ax, ay, az, angle]
     """
     # directly set orientation
     if set_ori is not None:
@@ -133,15 +136,16 @@ def set_goal_orientation(delta,
     # otherwise use delta to set goal orientation
     else:
         if axis_angle:
-            # convert from euler vector to axis-angle, and then to rotation matrix
-            axis, angle = trans.vec2axisangle(-delta)
+            # convert axis-angle value to rotation matrix
+            axis, angle = delta[:3], delta[-1]
             quat_error = trans.axisangle2quat(axis=axis, angle=angle)
             rotation_mat_error = trans.quat2mat(quat_error)
         else:
+            # convert euler value to rotation matrix
             rotation_mat_error = trans.euler2mat(-delta)
         goal_orientation = np.dot(rotation_mat_error.T, current_orientation)
 
-    #check for orientation limits
+    # check for orientation limits
     if np.array(orientation_limit).any():
         if orientation_limit.shape != (2,3):
             raise ValueError("Orientation limit should be shaped (2,3) "

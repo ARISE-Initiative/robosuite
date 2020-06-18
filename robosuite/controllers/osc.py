@@ -8,9 +8,6 @@ import math
 # Supported impedance modes
 IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
 
-# Support for new rotation action space (TODO: This should be removed/streamlined once we finalize axis angle integration)
-USE_AXIS_ANGLE_ACTION = True
-
 # TODO: Maybe better naming scheme to differentiate between input / output min / max and pos/ori limits, etc.
 
 
@@ -137,7 +134,7 @@ class OperationalSpaceController(Controller):
         self.use_delta = control_delta
 
         # Control dimension
-        self.control_dim = 6 if self.use_ori else 3
+        self.control_dim = 7 if self.use_ori else 3
         self.name_suffix = "POSE" if self.use_ori else "POSITION"
 
         # input and output max and min (allow for either explicit lists or single numbers)
@@ -230,8 +227,8 @@ class OperationalSpaceController(Controller):
         else:
             set_pos = self.initial_ee_pos + delta[:3]
             # Set default control for ori if we're only using position control
-            set_ori = self.initial_ee_ori_mat.T.dot(T.euler2mat(delta[3:])) if self.use_ori \
-                else np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
+            set_ori = self.initial_ee_ori_mat.T.dot(T.quat2mat(T.axisangle2quat(delta[3:6], delta[-1]))) \
+                if self.use_ori else np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
             scaled_delta = []
 
         # We only want to update goal orientation if there is a valid delta ori value
@@ -242,7 +239,7 @@ class OperationalSpaceController(Controller):
                                                  self.ee_ori_mat,
                                                  orientation_limit=self.orientation_limits,
                                                  set_ori=set_ori,
-                                                 axis_angle=USE_AXIS_ANGLE_ACTION)
+                                                 axis_angle=True)
         self.goal_pos = set_goal_position(scaled_delta[:3],
                                           self.ee_pos,
                                           position_limit=self.position_limits,

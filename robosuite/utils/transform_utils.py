@@ -441,7 +441,7 @@ def quat2axisangle(quat):
 
 def axisangle2quat(axis, angle):
     """
-    Converts axis-angle to (x, y, z, w) quat.
+    Converts unnormalized axis-angle to (x, y, z, w) quat.
     """
 
     # handle zero-rotation case
@@ -449,7 +449,7 @@ def axisangle2quat(axis, angle):
         return np.array([0., 0., 0., 1.])
 
     # make sure that axis is a unit vector
-    assert math.isclose(np.linalg.norm(axis), 1., rel_tol=1e-3)
+    axis /= np.linalg.norm(axis)
 
     q = np.zeros(4)
     q[3] = np.cos(angle / 2.)
@@ -471,9 +471,9 @@ def vec2axisangle(vec):
 
 def axisangle2vec(axis, angle):
     """
-    Converts axis-angle to Euler vector (exponential coordinates).
+    Converts unnormalized axis-angle to Euler vector (exponential coordinates).
     """
-    return axis * angle
+    return np.array([0., 0., 0.]) if math.isclose(angle, 0.) else axis * angle / np.linalg.norm(axis)
 
 
 def pose_in_A_to_pose_in_B(pose_A, pose_A_in_B):
@@ -637,7 +637,6 @@ def rotation_matrix(angle, direction, point=None):
     return M
 
 
-@numba.jit(nopython=True)
 def clip_translation(dpos, limit):
     """
     Limits a translation (delta position) to a specified limit
@@ -652,7 +651,6 @@ def clip_translation(dpos, limit):
     return (dpos * limit / input_norm, True) if input_norm > limit else (dpos, False)
 
 
-@numba.jit(nopython=True)
 def clip_rotation(quat, limit):
     """
     Limits a (delta) rotation to a specified limit
