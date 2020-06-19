@@ -13,7 +13,6 @@ import multiprocessing
 
 # Default Wipe environment configuration
 DEFAULT_WIPE_CONFIG = {
-    # TODO (roberto): Add brief doc strings for these values, or at least the non-obvious ones
     # settings for reward
     "arm_collision_penalty": -50,                   # penalty for each collision of the arm (except the wiping tool) with the table
     "wipe_contact_reward": 0.01,                    # reward for contacting something with the wiping tool
@@ -65,7 +64,7 @@ class Wipe(RobotEnv):
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=None,
-        reward_shaping=False,  # TODO (roberto): no shaping option currently
+        reward_shaping=True,
         placement_initializer=None,
         use_indicator_object=False,
         has_renderer=False,
@@ -274,22 +273,29 @@ class Wipe(RobotEnv):
         )
 
     def reward(self, action):
-        # TODO (roberto): Brief overview of how reward works. Also, is this considered the shaped reward? If so, it'd be good to implement a sparse reward for consistently with the other envs
-
+        # The sparse reward is given after wiping ALL the dirt elements
+        # If the reward is dense, there are additional elements (some are deactivated by default)
+        # - Penalty due to collisions of the arm with the table
+        # - Penalty due to reaching arm's joint limits
+        # - Reward per "unit" wiped
+        # - Reward for getting closer to the centroid of the "units" to wipe
+        # - Reward for keeping the wiping tool in contact
+        # - Penalty for large forces with the end-effector
+        # - Penalty for large end-effector accelerations
+        
         reward = 0
 
         total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
 
         # Neg Reward from collisions of the arm with the table
         if self._check_arm_contact()[0]:
-            reward = self.arm_collision_penalty
+            if self.reward_shaping: reward = self.arm_collision_penalty
             self.collisions += 1
         elif self._check_q_limits()[0]:
-            reward = self.arm_collision_penalty
+            if self.reward_shaping: reward = self.arm_collision_penalty
             self.collisions += 1
         else:
-            # TODO (roberto? this comment was already here before merging): Use the sensed touch to shape reward
-            # Only do computation if there are active sensors and they weren't active before
+            # If the arm is not colliding or in joint limits, we check if we are wiping (we don't want to reward wiping if there are unsafe situations)
             sensors_active_ids = []
 
             # Current 3D location of the corners of the wiping tool in world frame
@@ -351,11 +357,12 @@ class Wipe(RobotEnv):
                 return ((P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1]))
 
             def PointInRectangle(X, Y, Z, W, P):
-
                 return (isLeft(X, Y, P) < 0 and isLeft(Y, Z, P) < 0 and isLeft(Z, W, P) < 0 and isLeft(W, X, P) < 0)
 
+            # Only go into this computation if there are contact points
             if self.sim.data.ncon != 0:
 
+                # Check each sensor that is still active
                 for sensor_name in self.model.arena.sensor_names:
 
                     # Current sensor 3D location in world frame
@@ -388,20 +395,24 @@ class Wipe(RobotEnv):
                                 parts = sensor_name.split('_')
                                 sensors_active_ids += [int(parts[1])]
 
+            # Obtain the list of currently active (wiped) sensors that where not wiped before
+            # These are the sensors we are wiping at this step
             lall = np.where(np.isin(sensors_active_ids, self.wiped_sensors, invert=True))
             new_sensors_active_ids = np.array(sensors_active_ids)[lall]
 
+            # For all the new sensors we are wiping at this step, make them transparent (alpha=0), add them to the list
+            # of wiped sensors, and add reward (if dense reward is ON)
             for new_sensor_active_id in new_sensors_active_ids:
                 new_sensor_active_site_id = self.sim.model.site_name2id(
                     self.model.arena.sensor_site_names['contact_' + str(new_sensor_active_id) + '_sensor'])
                 self.sim.model.site_rgba[new_sensor_active_site_id] = [0, 0, 0, 0]
 
                 self.wiped_sensors += [new_sensor_active_id]
-                reward += self.unit_wiped_reward
+                if self.reward_shaping: reward += self.unit_wiped_reward
 
+            # Additional dense reward: provides dense reward for getting closer to the centroid of the dirt to wipe
             mean_distance_to_things_to_wipe = 0
             num_non_wiped_sensors = 0
-
             for sensor_name in self.model.arena.sensor_names:
                 parts = sensor_name.split('_')
                 sensor_id = int(parts[1])
@@ -412,23 +423,22 @@ class Wipe(RobotEnv):
                     gripper_position = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
                     mean_distance_to_things_to_wipe += np.linalg.norm(gripper_position - sensor_pos)
                     num_non_wiped_sensors += 1
-
             mean_distance_to_things_to_wipe /= max(1, num_non_wiped_sensors)
-
-            reward += self.distance_multiplier * (
+            if self.reward_shaping: reward += self.distance_multiplier * (
                         1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe))
 
             # Reward for keeping contact
             if self.sim.data.ncon != 0:
-                reward += 0.001
+                if self.reward_shaping: reward += 0.001
 
+            # Penalty for excessive force with the end-effector
             if total_force_ee > self.pressure_threshold_max:
-                reward -= self.excess_force_penalty_mul * total_force_ee
+                if self.reward_shaping: reward -= self.excess_force_penalty_mul * total_force_ee
                 self.f_excess += 1
             elif total_force_ee > self.pressure_threshold and self.sim.data.ncon > 1:
-                reward += self.wipe_contact_reward + 0.01 * total_force_ee
+                if self.reward_shaping: reward += self.wipe_contact_reward + 0.01 * total_force_ee
                 if self.sim.data.ncon > 50:
-                    reward += 10 * self.wipe_contact_reward
+                    if self.reward_shaping: reward += 10 * self.wipe_contact_reward
 
             # Final reward if all wiped
             if len(self.wiped_sensors) == len(self.model.arena.sensor_names):
@@ -437,7 +447,7 @@ class Wipe(RobotEnv):
                 # The 0.5 comes from continuous_distance_reward at 0. If something changes, this may change as well
 
         # Penalize large accelerations
-        reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
+        if self.reward_shaping: reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
 
         # Printing results
         if self.print_results:
