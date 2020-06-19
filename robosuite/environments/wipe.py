@@ -15,34 +15,34 @@ import multiprocessing
 DEFAULT_WIPE_CONFIG = {
     # TODO (roberto): Add brief doc strings for these values, or at least the non-obvious ones
     # settings for reward
-    "arm_collision_penalty": -50,
-    "wipe_contact_reward": 0.01,
-    "unit_wiped_reward": 20,
-    "ee_accel_penalty": 0,
-    "excess_force_penalty_mul": 0.01,
-    "distance_multiplier": 0.0,
-    "distance_th_multiplier": 0,
+    "arm_collision_penalty": -50,                   # penalty for each collision of the arm (except the wiping tool) with the table
+    "wipe_contact_reward": 0.01,                    # reward for contacting something with the wiping tool
+    "unit_wiped_reward": 20,                        # reward per peg wiped
+    "ee_accel_penalty": 0,                          # penalty for large end-effector accelerations 
+    "excess_force_penalty_mul": 0.01,               # penalty for each step that the force is over the safety threshold
+    "distance_multiplier": 0.0,                     # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
+    "distance_th_multiplier": 0,                    # multiplier in the tanh function for the aforementioned reward
 
     # settings for table top
-    "table_full_size": [0.5, 0.5, 0.05],
-    "table_friction": [0.00001, 0.005, 0.0001],
-    "table_friction_std": 0,
-    "table_height": 0.0,
-    "table_height_std": 0.0,
-    "table_rot_x": 0.0,
-    "table_rot_y": 0.0,
-    "line_width": 0.02,
-    "two_clusters": False,
+    "table_full_size": [0.5, 0.5, 0.05],            # Size of the cover of the table
+    "table_friction": [0.00001, 0.005, 0.0001],     # Friction parameters for the table
+    "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
+    "table_height": 0.0,                            # Additional height of the table over the default location
+    "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
+    "table_rot_x": 0.0,                             # Rotation of the table surface around the x axis
+    "table_rot_y": 0.0,                             # Rotation of the table surface around the y axis
+    "line_width": 0.02,                             # Width of the line to wipe (diameter of the pegs)
+    "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "num_squares": [4, 4],                          # num of squares to divide each dim of the table surface
 
     # settings for thresholds
-    "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the sensor
-    "pressure_threshold_max": 30,
-    "shear_threshold": 5,
+    "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the sensor (wipe the peg)
+    "pressure_threshold_max": 30,                   # maximum force allowed (N)
+    "shear_threshold": 5,                           # shear force required to overcome the change of color of the sensor (wipe the peg) - NOT USED
 
     # misc settings
     "print_results": False,                         # Whether to print results or not'
-    "use_robot_obs": True,
+    "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
     "real_robot": False,                            # whether we're using the actual robot or a sim
     "prob_sensor": 1.0,
     "draw_line": True,                              # whether you want a line for sensors
@@ -592,13 +592,6 @@ class Wipe(RobotEnv):
         """
         If something to do
         """
-        # TODO (roberto): Looks like this block doesn't do anything without logging (which was removed for consistency with other envs). Can this all be removed? (except for the info part)
-        if np.linalg.norm(self.ee_force_bias) == 0:
-            self.ee_force_bias = self.robots[0].recent_ee_forcetorques.current[:3]
-
-        if np.linalg.norm(self.ee_torque_bias) == 0:
-            self.ee_torque_bias = self.robots[0].recent_ee_forcetorques.current[3:]
-
         reward, done, info = super()._post_action(action)
 
         info['add_vals'] = ['nwipedsensors', 'colls', 'percent_viapoints_', 'f_excess']
