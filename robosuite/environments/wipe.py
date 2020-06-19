@@ -15,7 +15,7 @@ import multiprocessing
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
     "arm_collision_penalty": -50,                   # penalty for each collision of the arm (except the wiping tool) with the table
-    "wipe_contact_reward": 0.01,                    # reward for contacting something with the wiping tool
+    "wipe_contact_reward": 0.001,                    # reward for contacting something with the wiping tool
     "unit_wiped_reward": 20,                        # reward per peg wiped
     "ee_accel_penalty": 0,                          # penalty for large end-effector accelerations 
     "excess_force_penalty_mul": 0.01,               # penalty for each step that the force is over the safety threshold
@@ -429,16 +429,12 @@ class Wipe(RobotEnv):
 
             # Reward for keeping contact
             if self.sim.data.ncon != 0:
-                if self.reward_shaping: reward += 0.001
+                if self.reward_shaping: reward += self.wipe_contact_reward
 
             # Penalty for excessive force with the end-effector
             if total_force_ee > self.pressure_threshold_max:
                 if self.reward_shaping: reward -= self.excess_force_penalty_mul * total_force_ee
                 self.f_excess += 1
-            elif total_force_ee > self.pressure_threshold and self.sim.data.ncon > 1:
-                if self.reward_shaping: reward += self.wipe_contact_reward + 0.01 * total_force_ee
-                if self.sim.data.ncon > 50:
-                    if self.reward_shaping: reward += 10 * self.wipe_contact_reward
 
             # Final reward if all wiped
             if len(self.wiped_sensors) == len(self.model.arena.sensor_names):
@@ -460,9 +456,9 @@ class Wipe(RobotEnv):
                 fe=self.f_excess)
             print(string_to_print)
 
+        # This assumes the maximum reward per step is to wipe ONE unit. Some steps the agent will wipe more than one (normalized reward > 1)
         if self.reward_scale:
-            # TODO (roberto): What should the max reward be per episode step? That should be the denominator of the below scaling value
-            reward *= self.reward_scale / self.unit_wiped_reward
+            reward *= self.reward_scale / (self.unit_wiped_reward + self.wipe_contact_reward)
         return reward
 
     def _load_model(self):
