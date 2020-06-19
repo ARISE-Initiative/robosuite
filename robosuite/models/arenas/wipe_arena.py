@@ -1,9 +1,8 @@
 import numpy as np
 from robosuite.models.arenas import TableArena
-from robosuite.utils.mjcf_utils import xml_path_completion
-from robosuite.utils.mjcf_utils import array_to_string, string_to_array
+from robosuite.utils.mjcf_utils import array_to_string
 from collections import OrderedDict
-from robosuite.models.objects import CylinderObject, PlateWithHoleObject, BoxObject
+from robosuite.models.objects import CylinderObject, BoxObject
 import robosuite.utils.transform_utils as T
 
 import xml.etree.ElementTree as ET
@@ -13,7 +12,7 @@ import itertools
 
 
 # TODO: Re-integrate this with Ajay's interface once new Arena API is merged
-class TactileTableArena(TableArena):
+class WipeArena(TableArena):
     """Workspace that contains an empty table with tactile sensors on its surface."""
 
     def __init__(

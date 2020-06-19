@@ -4,7 +4,7 @@ import numpy as np
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
 
-from robosuite.models.arenas import TactileTableArena
+from robosuite.models.arenas import WipeArena
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 import multiprocessing
 
@@ -477,18 +477,18 @@ class Wipe(RobotEnv):
 
         table_full_size_sampled = (
         self.table_full_size[0], self.table_full_size[1], self.table_full_size[2] + delta_height)
-        self.mujoco_arena = TactileTableArena(table_full_size=table_full_size_sampled,
-                                              table_friction=self.table_friction,
-                                              table_friction_std=self.table_friction_std,
-                                              num_squares=self.num_squares if not self.real_robot else 0,
-                                              prob_sensor=self.prob_sensor,
-                                              rotation_x=np.random.normal(0, self.table_rot_x),
-                                              rotation_y=np.random.normal(0, self.table_rot_y),
-                                              draw_line=self.draw_line,
-                                              num_sensors=self.num_sensors if not self.real_robot else 0,
-                                              line_width=self.line_width,
-                                              two_clusters=self.two_clusters
-                                              )
+        self.mujoco_arena = WipeArena(table_full_size=table_full_size_sampled,
+                                      table_friction=self.table_friction,
+                                      table_friction_std=self.table_friction_std,
+                                      num_squares=self.num_squares if not self.real_robot else 0,
+                                      prob_sensor=self.prob_sensor,
+                                      rotation_x=np.random.normal(0, self.table_rot_x),
+                                      rotation_y=np.random.normal(0, self.table_rot_y),
+                                      draw_line=self.draw_line,
+                                      num_sensors=self.num_sensors if not self.real_robot else 0,
+                                      line_width=self.line_width,
+                                      two_clusters=self.two_clusters
+                                      )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
 
