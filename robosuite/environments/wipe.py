@@ -569,21 +569,19 @@ class Wipe(RobotEnv):
 
         terminated = False
 
-        # TODO (Roberto): Should these print statements be wrapped in an "if self.print_results" block?
-
         # Prematurely terminate if contacting the table with the arm
         if self._check_arm_contact()[0]:
-            print(40 * '-' + " COLLIDED " + 40 * '-')
+            if self.print_results: print(40 * '-' + " COLLIDED " + 40 * '-')
             terminated = True
 
         # Prematurely terminate if finished
         if len(self.wiped_sensors) == len(self.model.arena.sensor_names):
-            print(40 * '+' + " FINISHED WIPING " + 40 * '+')
+            if self.print_results: print(40 * '+' + " FINISHED WIPING " + 40 * '+')
             terminated = True
 
         # Prematurely terminate if contacting the table with the arm
         if self._check_q_limits()[0]:
-            print(40 * '-' + " JOINT LIMIT " + 40 * '-')
+            if self.print_results: print(40 * '-' + " JOINT LIMIT " + 40 * '-')
             terminated = True
 
         return terminated
