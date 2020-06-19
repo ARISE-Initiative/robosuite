@@ -513,12 +513,17 @@ class Wipe(RobotEnv):
         # inherited class should reset positions of objects (only if we're not using a deterministic reset)
         if not self.deterministic_reset:
             self.model.place_objects()
+            self.mujoco_arena.reset_arena(self.sim)
 
         # Reset all internal vars for this wipe task
         self.timestep = 0
         self.wiped_sensors = []
         self.collisions = 0
         self.f_excess = 0
+
+        # ee resets
+        self.ee_force_bias = np.zeros(3)
+        self.ee_torque_bias = np.zeros(3)
 
     def _get_observation(self):
         """

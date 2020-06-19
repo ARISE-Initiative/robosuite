@@ -20,7 +20,7 @@ class WipeArena(TableArena):
         table_full_size=(0.8, 0.8, 0.05),
         table_friction=(0.01, 0.005, 0.0001),
         table_offset=(0, 0, 0.8),
-        num_squares=(10,10),
+        num_squares=(10, 10),
         prob_sensor=1.0,
         rotation_x=0,
         rotation_y=0,
@@ -33,7 +33,7 @@ class WipeArena(TableArena):
         """
         Args:
             table_full_size: full dimensions of the table
-            friction: friction parameters of the table
+            table_friction: friction parameters of the table
             table_offset: offset from center of arena when placing table
                 Note that the z value sets the upper limit of the table
             num_squares: number of squares in each dimension of the table top
@@ -301,19 +301,16 @@ class WipeArena(TableArena):
                     collision_c.find("site").set("pos", array_to_string([0,0,squares_height/2]))
                     collision_c.find("site").set("size", array_to_string([self.square_half_size[0]-squares_separation, self.square_half_size[1]-squares_separation,0.002]))
                     place_this_sensor = (i,j) in picked_indices
+                    sensor_name = square_name2 +"_sensor"
+                    sensor_site_name = square_name2# +"_site"
+                    ET.SubElement(self.sensor, "force", attrib={"name" : sensor_name, "site" : sensor_site_name})
                     if i < self.num_squares[0] - 1 and place_this_sensor: 
                         collision_c.find("site").set("rgba", array_to_string([0,1,0, 1]))
+                        self.sensor_names += [sensor_name]
+                        self.sensor_site_names[sensor_name] = sensor_site_name
                     else:
                         collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
                     table_subtree.append(collision_c)
-                    #Except the closest row to the robot
-                    if i < self.num_squares[0] - 1 and place_this_sensor:
-
-                        sensor_name = square_name2 +"_sensor"
-                        sensor_site_name = square_name2# +"_site"
-                        self.sensor_names += [sensor_name]
-                        self.sensor_site_names[sensor_name] = sensor_site_name
-                        ET.SubElement(self.sensor, "force", attrib={"name" : sensor_name, "site" : sensor_site_name})      
 
             #Add upper border to the table
             table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
@@ -384,3 +381,104 @@ class WipeArena(TableArena):
             collision_c.find("site").set("size", array_to_string([low_border_half_size, self.table_half_size[1]+ 2*border_half_size, 0.002]))
             collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
             table_subtree.append(collision_c)
+
+    def reset_arena(self, sim):
+        """Reset the tactile sensor locations in the environment. Requires @sim (MjSim) reference to be passed in"""
+        if self.draw_line:
+
+            """
+            self.squares = OrderedDict()
+            self.mujoco_objects = OrderedDict()
+    
+            table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
+    
+            # Sites on additional bodies attached to the table
+            # squares_separation = 0.0005
+            squares_separation = 0.0
+            squares_height = 0.1
+            table_cte_size_x = 0.8
+            table_cte_size_y = 1.0
+    
+            square_name2 = 'table_0_0'
+    
+            square2 = BoxObject(
+                name=square_name2,
+                size=[table_cte_size_x / 2, table_cte_size_y / 2, squares_height / 2 - 0.001],
+                rgba=[1, 1, 1, 1],
+                density=1,
+                friction=friction
+            )
+            self.squares[square_name2] = square2
+            collision_c = square2.get_collision(site=True)
+    
+            # Align the constant sized table to the bottom of the table
+            collision_c.set("pos", array_to_string([table_cte_size_x / 2 - self.table_half_size[0] - 0.18,
+                                                    0,
+                                                    self.table_half_size[2] + squares_height / 2]))
+            table_subtree.append(collision_c)
+            """
+            # Hardcoded values from initial generation
+            squares_height = 0.1
+
+            # Sample new initial position and direction for generated sensor paths
+            pos = np.array((np.random.uniform(-self.table_half_size[0], self.table_half_size[0]),
+                            np.random.uniform(-self.table_half_size[1], self.table_half_size[1])))
+            direction = np.random.uniform(-np.pi, np.pi)
+
+            # Loop through all sensor collision body / site pairs
+            for i, (_, site_name) in enumerate(self.sensor_site_names.items()):
+                # If we're using two clusters, we resample the starting position and direction at the halfway point
+                if self.two_clusters and i == int(np.floor(self.num_sensors / 2)):
+                    pos = np.array((np.random.uniform(-self.table_half_size[0], self.table_half_size[0]),
+                                    np.random.uniform(-self.table_half_size[1], self.table_half_size[1])))
+                    direction = np.random.uniform(-np.pi, np.pi)
+                # Get IDs
+                site_id = sim.model.site_name2id(site_name)
+                # Determine new position for this sensor
+                position = np.array([pos[0], pos[1], self.table_half_size[2] + squares_height + 0.005])
+                # Set the current sensor to this new position
+                sim.model.site_pos[site_id] = position
+                # Set the sensor visualization
+                sim.model.site_rgba[site_id] = [0, 1, 0, 1]
+                # Sample next values in local sensor trajectory
+                if np.random.uniform(0, 1) > 0.7:
+                    direction += np.random.normal(0, 0.5)
+                # Update positions for next sensor
+                posnew0 = pos[0] + 0.005 * np.sin(direction)
+                posnew1 = pos[1] + 0.005 * np.cos(direction)
+                while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
+                    direction += np.random.normal(0, 0.5)
+                    posnew0 = pos[0] + 0.005 * np.sin(direction)
+                    posnew1 = pos[1] + 0.005 * np.cos(direction)
+                pos[0] = posnew0
+                pos[1] = posnew1
+
+        else:
+            # Sample indices from the squares
+            indices = [a for a in itertools.product(range(self.num_squares[0]), range(self.num_squares[1]))]
+            picked_indices = random.sample(indices, int(np.ceil(self.prob_sensor * len(indices))))
+
+            # Initialize dicts that we'll replace the current attributes with
+            sensor_names = {}
+            sensor_site_names = {}
+
+            for i in range(self.num_squares[0]):
+                for j in range(self.num_squares[1]):
+                    # Generate sensor name
+                    square_name2 = 'contact_' + str(i) + "_" + str(j)
+                    sensor_name = square_name2 + "_sensor"
+                    # Get reference to this sensor site
+                    site_id = sim.model.site_name2id(sensor_name)
+                    # Determine if we'll place this sensor; if so, save it to new sensor list and set vis appropriately
+                    place_this_sensor = (i, j) in picked_indices
+                    if i < self.num_squares[0] - 1 and place_this_sensor:
+                        sim.model.site_rgba[site_id] = [0, 1, 0, 1]
+                        sensor_site_name = square_name2
+                        sensor_names += [sensor_name]
+                        sensor_site_names[sensor_name] = sensor_site_name
+                    else:
+                        sim.model.site_rgba[site_id] = [0, 0, 1, 1]
+
+            # Lastly, update the sensor / site names
+            self.sensor_names = sensor_names
+            self.sensor_site_names = sensor_site_names
