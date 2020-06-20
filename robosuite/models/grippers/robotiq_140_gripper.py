@@ -27,7 +27,7 @@ class Robotiq140GripperBase(GripperModel):
 
     @property
     def init_qpos(self):
-        return np.array([0.241, 0.445, -0.352, -0.238, 0.462, -0.346])
+        return np.array([0.012, 0.065, 0.065, -0.012, 0.065, 0.065])
 
     @property
     def _joints(self):
