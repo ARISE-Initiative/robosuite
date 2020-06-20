@@ -12,20 +12,20 @@
 
     <tendon>
 		<!--Middlefinger tendons-->
-		<fixed name="thumb_cpl" range="0 1" stiffness="0.2">
-			<joint joint="joint_thumb"  coef="0.2"/>
+		<fixed name="thumb_cpl" range="-5 5" stiffness="0.4">
+			<joint joint="joint_thumb"  coef="-0.2"/>
 			<joint joint="joint_thumb_distal"  coef="1.0"/>
 		</fixed>
 
 		<!--finger2 tendons-->
-        <fixed name="index_12_cpl" range="0 1" stiffness="0.2">
-			<joint joint="joint_index"  coef="0.2"/>
+        <fixed name="index_12_cpl" range="-5 5" stiffness="0.4">
+			<joint joint="joint_index"  coef="-0.2"/>
 			<joint joint="joint_index_distal"  coef="1.0"/>
 		</fixed>
 
 		<!--Finger1 tendons-->
-        <fixed name="pinky_12_cpl" range="0 1" stiffness="0.2">
-			<joint joint="joint_pinky"  coef="0.2"/>
+        <fixed name="pinky_12_cpl" range="-5 5" stiffness="0.4">
+			<joint joint="joint_pinky"  coef="-0.2"/>
 			<joint joint="joint_pinky_distal"  coef="1.0"/>
 		</fixed>
 	</tendon>
@@ -64,46 +64,46 @@
 
             <body name="thumb_proximal" pos="0.002786 -0.03126 0.114668" quat="0.95922726  0.262085 0.02762996 -0.10213274">
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                <joint name="joint_thumb" pos="0 0 0" axis="1 0 0" ref="1.1" limited="true" range="0 1.51" solimplimit="0.95 0.95 0.01" solreflimit="0.01 1" damping="0.1"/>
+                <joint name="joint_thumb" pos="0 0 0" axis="1 0 0" ref="1.1" limited="true" range="0 1.51" damping="0.15"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" euler="0 -1.5707 0" material="grey_plastic_hand" mesh="finger_proximal" />
-                <geom name="thumb_proximal_collision" type="mesh" mesh="finger_proximal" euler="0 -1.5707 0" friction="1 0.5 0.01" solimp="0.95 0.95 0.01 0.5 6" solref="0.01 1" condim="6" margin="0.0"/>
+                <geom name="thumb_proximal_collision" type="mesh" mesh="finger_proximal" euler="0 -1.5707 0" friction="1 0.5 0.01" />
 
                 <body name="thumb_distal" pos="0 -0.003 0.044">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                    <joint name="joint_thumb_distal" pos="0 0 0" axis="-1 0 0" ref="0" limited="true" range="0 2" damping="0.03" solimplimit="0.95 0.95 0.01" solreflimit="0.01 1"/>
+                    <joint name="joint_thumb_distal" pos="0 0 0" axis="-1 0 0" ref="-0.5" limited="true" range="-2 0" damping="0.05" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" euler="0 -1.5707 0" material="grey_plastic_hand" mesh="finger_distal" />
-                    <geom name="thumb_distal_collision" type="mesh" mesh="finger_distal" euler="0 -1.5707 0" friction="1 0.5 0.01" solimp="0.95 0.95 0.01 0.5 6" solref="0.01 1" condim="6" margin="0.0"/>
-                    <geom type="box" pos="0 -0.003 0.035" quat="0.9914449 0.1305262 0 0" size="0.01 0.002 0.008" name="thumb_pad_collision" />
+                    <geom name="thumb_distal_collision" contype="0" conaffinity="0" type="mesh" mesh="finger_distal" euler="0 -1.5707 0" friction="1 0.5 0.01" />
+                    <geom type="box" pos="0 -0.003 0.021" quat="0.9914449 0.1305262 0 0" size="0.01 0.005 0.02" name="thumb_pad_collision" solref="0.01 0.5" friction="2 0.05 0.001" />
                 </body>
             </body>
 
             <body name="index_proximal" pos="0.022256 0.027073 0.114668" quat="0.96181018 -0.25771638 0.0238668 -0.08907205">
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                <joint name="joint_index" pos="0 0 0" axis="-1 0 0" ref="1.1" limited="true" range="0 1.51" solimplimit="0.95 0.95 0.01" solreflimit="0.01 1" damping="0.1"/>
+                <joint name="joint_index" pos="0 0 0" axis="-1 0 0" ref="1.1" limited="true" range="0 1.51" damping="0.15"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_proximal" />
-                <geom name="index_proximal_collision" type="mesh" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" solimp="0.95 0.95 0.01 0.5 6" solref="0.01 1" condim="6" margin="0.0"/>
+                <geom name="index_proximal_collision" type="mesh" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
 
                 <body name="index_distal" pos="0 0.003 0.044">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                    <joint name="joint_index_distal" pos="0 0 0" axis="1 0 0" ref="0" limited="true" range="0 2" damping="0.03" solimplimit="0.95 0.95 0.01" solreflimit="0.01 1"/>
+                    <joint name="joint_index_distal" pos="0 0 0" axis="1 0 0" ref="-0.5" limited="true" range="-2 0" damping="0.05" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_distal" />
-                    <geom name="index_distal_collision" type="mesh" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" solimp="0.95 0.95 0.01 0.5 6" solref="0.01 1" condim="6" margin="0.0"/>
-                    <geom type="box" pos="0 0.003 0.035" quat="0.9914449 -0.1305262 0 0" size="0.01 0.002 0.008" name="index_pad_collision" />
+                    <geom name="index_distal_collision" contype="0" conaffinity="0" type="mesh" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
+                    <geom type="box" pos="0 0.003 0.021" quat="0.9914449 -0.1305262 0 0" size="0.01 0.005 0.02" name="index_pad_collision" solref="0.01 0.5" friction="2 0.05 0.001" />
                 </body>
             </body>
 
             <body name="pinky_proximal" pos="-0.022256 0.027073 0.114816" quat="0.96181018 -0.25771638 -0.0238668 0.08907205">
-                <joint name="joint_pinky" pos="0 0 0" axis="-1 0 0" ref="1.1" limited="true" range="0 1.51" solimplimit="0.95 0.95 0.01" solreflimit="0.01 1" damping="0.1"/>
+                <joint name="joint_pinky" pos="0 0 0" axis="-1 0 0" ref="1.1" limited="true" range="0 1.51" damping="0.15"/>
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_proximal" />
-                <geom name="pinky_proximal_collision" type="mesh" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" solimp="0.95 0.95 0.01 0.5 6" solref="0.01 1" condim="6" margin="0.0"/>
+                <geom name="pinky_proximal_collision" type="mesh" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
 
                 <body name="pinky_distal" pos="0 0.003 0.044">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                    <joint name="joint_pinky_distal" pos="0 0 0" axis="1 0 0" ref="0" limited="true" range="0 2" damping="0.03" solimplimit="0.95 0.95 0.01" solreflimit="0.01 1"/>
+                    <joint name="joint_pinky_distal" pos="0 0 0" axis="1 0 0" ref="-0.5" limited="true" range="-2 0" damping="0.05" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_distal" />
-                    <geom name="pinky_distal_collision" type="mesh" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" solimp="0.95 0.95 0.01 0.5 6" solref="0.01 1" condim="6" margin="0.0"/>
-                    <geom type="box" pos="0 0.003 0.035" quat="0.9914449 -0.1305262 0 0" size="0.01 0.002 0.008" name="pinky_pad_collision" />
+                    <geom name="pinky_distal_collision" contype="0" conaffinity="0" type="mesh" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
+                    <geom type="box" pos="0 0.003 0.021" quat="0.9914449 -0.1305262 0 0" size="0.01 0.005 0.02" name="pinky_pad_collision" solref="0.01 0.5" friction="2 0.05 0.001" />
                 </body>
             </body>
         </body>
