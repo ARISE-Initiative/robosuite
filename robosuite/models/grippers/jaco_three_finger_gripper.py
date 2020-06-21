@@ -27,7 +27,7 @@ class JacoThreeFingerGripperBase(GripperModel):
 
     @property
     def init_qpos(self):
-        return np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        return np.array([0.5, 0, 0.5, 0, 0.5, 0])
 
     @property
     def _joints(self):
