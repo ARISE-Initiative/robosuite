@@ -27,7 +27,7 @@ if __name__ == "__main__":
     output_file = sys.argv[2]
     input_folder = os.path.dirname(input_file)
 
-    tempfile = os.path.join(input_folder, ".surreal_temp_model.xml")
+    tempfile = os.path.join(input_folder, ".robosuite_temp_model.xml")
     copyfile(input_file, tempfile)
 
     model = load_model_from_path(tempfile)

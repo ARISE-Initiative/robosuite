@@ -9,3 +9,6 @@ hidapi
 
 # required for demonstration utils
 h5py
+
+# required for pygame renderer
+pygame

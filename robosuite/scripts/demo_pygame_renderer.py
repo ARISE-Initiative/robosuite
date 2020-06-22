@@ -14,13 +14,12 @@ import numpy as np
 
 import robosuite
 
-# TODO: No pygame module installed or in requirements-extra.txt? Will this also be depreceated once gibson is integrated?
-# TODO: If not deleting, need to update this to new robosuite structure
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="BaxterLift")
+    parser.add_argument("--environment", type=str, default="Lift")
+    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+    parser.add_argument("--camera", type=str, default="agentview", help="Name of camera to render")
     parser.add_argument("--timesteps", type=int, default=10000)
     parser.add_argument("--width", type=int, default=512)
     parser.add_argument("--height", type=int, default=384)
@@ -32,11 +31,13 @@ if __name__ == "__main__":
 
     env = robosuite.make(
         args.environment,
+        robots=args.robots,
         has_renderer=False,
         ignore_done=True,
-        camera_height=height,
-        camera_width=width,
-        show_gripper_visualization=True,
+        camera_names=args.camera,
+        camera_heights=height,
+        camera_widths=width,
+        gripper_visualizations=True,
         use_camera_obs=True,
         use_object_obs=False,
     )
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     for i in range(args.timesteps):
 
         # issue random actions
-        action = 0.5 * np.random.randn(env.dof)
+        action = 0.5 * np.random.randn(env.action_dim)
         obs, reward, done, info = env.step(action)
 
         for event in pygame.event.get():
@@ -52,7 +53,7 @@ if __name__ == "__main__":
                 sys.exit()
 
         # read camera observation
-        im = np.flip(obs["image"].transpose((1, 0, 2)), 1)
+        im = np.flip(obs[args.camera + "_image"].transpose((1, 0, 2)), 1)
         pygame.pixelcopy.array_to_surface(screen, im)
         pygame.display.update()
 

@@ -18,6 +18,7 @@ import robosuite.utils.transform_utils as T
 DELTA_POS_KEY_PRESS = 0.05 # delta camera position per key press
 DELTA_ROT_KEY_PRESS = 1 # delta camera angle per key press
 
+
 def modify_xml_for_camera_movement(xml, camera_name):
     """
     Cameras in mujoco are 'fixed', so they can't be moved by default.
@@ -76,6 +77,7 @@ def move_camera(env, direction, scale, camera_id):
     camera_pos += scale * camera_rot.dot(direction) 
     env.sim.data.set_mocap_pos("cameramover", camera_pos)
     env.sim.forward()
+
 
 def rotate_camera(env, direction, angle, camera_id):
     """
@@ -159,19 +161,16 @@ class KeyboardHandler:
         """
         pass
 
+
 def print_command(char, info):
     char += " " * (10 - len(char))
     print("{}\t{}".format(char, info))
 
 
-# TODO: Fix -- this breaks under new API (e.g.: Call "Lift" instead of "SawyerLift")
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--env",
-        type=str,
-        default="SawyerLift",
-    )
+    parser.add_argument("--env", type=str, default="Lift")
+    parser.add_argument("--robots", nargs="+", type=str, default="Sawyer", help="Which robot(s) to use in the env")
     args = parser.parse_args()
 
     print("\nWelcome to the camera tuning script! You will be able to tune a camera view")
@@ -190,8 +189,8 @@ if __name__ == "__main__":
     inp = input("\nPlease paste a camera xml tag below (e.g. <camera ... />) \nOR leave blank for an example:\n")
 
     if len(inp) == 0:
-        if args.env != "SawyerLift":
-            raise Exception("ERROR: env must be SawyerLift to run default example.")
+        if args.env != "Lift":
+            raise Exception("ERROR: env must be Lift to run default example.")
         print("\nUsing an example tag corresponding to the frontview camera.")
         print("This xml tag was copied from robosuite/models/assets/arenas/table_arena.xml")
         inp = '<camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>'
@@ -209,6 +208,7 @@ if __name__ == "__main__":
     # make the environment
     env = robosuite.make(
         args.env,
+        robots=args.robots,
         has_renderer=True,
         ignore_done=True,
         use_camera_obs=False,
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     # just spin to let user interact with glfw window
     spin_count = 0
     while True:
-        action = np.zeros(env.dof)
+        action = np.zeros(env.action_dim)
         obs, reward, done, _ = env.step(action)
         env.render()
         spin_count += 1
@@ -254,6 +254,7 @@ if __name__ == "__main__":
             camera_quat = T.convert_quat(env.sim.data.get_mocap_quat("cameramover"), to='xyzw')
             world_camera_pose = T.make_pose(camera_pos, T.quat2mat(camera_quat))
             file_camera_pose = world_in_file.dot(world_camera_pose)
+            # TODO: Figure out why numba causes black screen of death (specifically, during mat2pose --> mat2quat call below)
             camera_pos, camera_quat = T.mat2pose(file_camera_pose)
             camera_quat = T.convert_quat(camera_quat, to='wxyz')
 

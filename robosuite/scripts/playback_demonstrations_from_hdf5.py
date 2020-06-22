@@ -12,13 +12,12 @@ Example:
     $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/SawyerPickPlace/
 """
 
-# TODO: Old structure / demos are depreciated, need to update!
-
 import os
 import h5py
 import argparse
 import random
 import numpy as np
+import json
 
 import robosuite
 from robosuite.utils.mjcf_utils import postprocess_model_xml
@@ -29,7 +28,7 @@ if __name__ == "__main__":
         "--folder",
         type=str,
         default=os.path.join(
-            robosuite.models.assets_root, "demonstrations/SawyerNutAssembly"
+            robosuite.models.assets_root, "demonstrations/1592855346_302028"
         ),
     )
     parser.add_argument(
@@ -42,13 +41,14 @@ if __name__ == "__main__":
     hdf5_path = os.path.join(demo_path, "demo.hdf5")
     f = h5py.File(hdf5_path, "r")
     env_name = f["data"].attrs["env"]
+    env_info = json.loads(f["data"].attrs["env_info"])
 
     env = robosuite.make(
-        env_name,
+        **env_info,
         has_renderer=True,
         ignore_done=True,
         use_camera_obs=False,
-        gripper_visualization=True,
+        gripper_visualizations=True,
         reward_shaping=True,
         control_freq=100,
     )
@@ -84,9 +84,8 @@ if __name__ == "__main__":
             env.sim.forward()
 
             # load the actions and play them back open-loop
-            jvels = f["data/{}/joint_velocities".format(ep)].value
-            grip_acts = f["data/{}/gripper_actuations".format(ep)].value
-            actions = np.concatenate([jvels, grip_acts], axis=1)
+            joint_torques = f["data/{}/joint_torques".format(ep)].value
+            actions = np.array(f["data/{}/actions".format(ep)].value)
             num_actions = actions.shape[0]
 
             for j, action in enumerate(actions):

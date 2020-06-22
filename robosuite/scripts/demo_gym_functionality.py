@@ -82,12 +82,12 @@ if __name__ == "__main__":
     env = GymWrapper(
         suite.make(
             "Lift",
-            robots="Sawyer",        # use Sawyer robot
-            use_camera_obs=False,  # do not use pixel observations
-            has_offscreen_renderer=False,  # not needed since not using pixel obs
-            has_renderer=True,  # make sure we can render to the screen
-            reward_shaping=True,  # use dense rewards
-            control_freq=100,  # control should happen fast enough so that simulation looks smooth
+            robots="Sawyer",                # use Sawyer robot
+            use_camera_obs=False,           # do not use pixel observations
+            has_offscreen_renderer=False,   # not needed since not using pixel obs
+            has_renderer=True,              # make sure we can render to the screen
+            reward_shaping=True,            # use dense rewards
+            control_freq=20,                # control should happen fast enough so that simulation looks smooth
         )
     )
 

@@ -13,7 +13,7 @@ from mujoco_py import MjSim, MjViewer
 
 from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas.table_arena import TableArena
-from robosuite.models.grippers import RethinkGripper
+from robosuite.models.grippers import RethinkGripper, PandaGripper
 from robosuite.models.objects import BoxObject
 from robosuite.utils.mjcf_utils import new_joint, new_actuator
 
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     world = MujocoWorldBase()
 
     # add a table
-    arena = TableArena(table_full_size=(0.4, 0.4, 0.1))
+    arena = TableArena(table_full_size=(0.4, 0.4, 0.05), table_offset=(0, 0, 0.1), has_legs=False)
     world.merge(arena)
 
     # add a gripper
@@ -47,7 +47,10 @@ if __name__ == "__main__":
 
     # add an object for grasping
     mujoco_object = BoxObject(
-        size=[0.02, 0.02, 0.02], rgba=[1, 0, 0, 1], friction=1
+        name="box",
+        size=[0.02, 0.02, 0.02],
+        rgba=[1, 0, 0, 1],
+        friction=[1, 0.005, 0.0001]
     ).get_collision()
     mujoco_object.append(new_joint(name="object_free_joint", type="free"))
     mujoco_object.set("pos", "0 0 0.11")
@@ -59,10 +62,11 @@ if __name__ == "__main__":
         geom.set("density", "10000")  # 1000 for water
     world.worldbody.append(mujoco_object)
 
-    x_ref = BoxObject(size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1]).get_visual()
+    # add reference objects for x and y axes
+    x_ref = BoxObject(name="x_ref", size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1]).get_visual()
     x_ref.set("pos", "0.2 0 0.105")
     world.worldbody.append(x_ref)
-    y_ref = BoxObject(size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1]).get_visual()
+    y_ref = BoxObject(name="y_ref", size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1]).get_visual()
     y_ref.set("pos", "0 0.2 0.105")
     world.worldbody.append(y_ref)
 
@@ -84,18 +88,19 @@ if __name__ == "__main__":
     gripper_z_high = -0.02
     gripper_z_is_low = False
 
-    gripper_joint_ids = [
-        sim.model.actuator_name2id("gripper_" + x) for x in gripper.joints
+    gripper_jaw_ids = [
+        sim.model.actuator_name2id(x) for x in gripper.actuators
     ]
-    gripper_open = [0.0115, -0.0115]
-    gripper_closed = [-0.020833, 0.020833]
+    gripper_open = [-0.0115, 0.0115]
+    gripper_closed = [0.020833, -0.020833]
     gripper_is_closed = True
 
+    # hardcode sequence for gripper looping trajectory
     seq = [(False, False), (True, False), (True, True), (False, True)]
 
     sim.set_state(sim_state)
     step = 0
-    T = 1000
+    T = 500
     while True:
 
         if step % 100 == 0:
@@ -128,9 +133,9 @@ if __name__ == "__main__":
         else:
             sim.data.ctrl[gripper_z_id] = gripper_z_high
         if gripper_is_closed:
-            sim.data.ctrl[gripper_joint_ids] = gripper_closed
+            sim.data.ctrl[gripper_jaw_ids] = gripper_closed
         else:
-            sim.data.ctrl[gripper_joint_ids] = gripper_open
+            sim.data.ctrl[gripper_jaw_ids] = gripper_open
 
         sim.step()
         sim.data.qfrc_applied[_ref_joint_vel_indexes] = sim.data.qfrc_bias[

@@ -11,6 +11,7 @@ from robosuite.robots.robot import Robot
 from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
 
 import os
+import copy
 
 
 class SingleArm(Robot):
@@ -62,7 +63,7 @@ class SingleArm(Robot):
         """
 
         self.controller = None
-        self.controller_config = controller_config
+        self.controller_config = copy.deepcopy(controller_config)
         self.gripper_type = gripper_type
         self.has_gripper = self.gripper_type is not None
         self.gripper_visualization = gripper_visualization
@@ -170,7 +171,7 @@ class SingleArm(Robot):
         super().reset(deterministic)
 
         if not deterministic:
-            # Now, reset the griipper if necessary
+            # Now, reset the gripper if necessary
             if self.has_gripper:
                 self.sim.data.qpos[
                     self._ref_gripper_joint_pos_indexes
@@ -271,6 +272,7 @@ class SingleArm(Robot):
 
         # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:
+            # Update proprioceptive values
             self.recent_qpos.push(self._joint_positions)
             self.recent_actions.push(action)
             self.recent_torques.push(self.torques)

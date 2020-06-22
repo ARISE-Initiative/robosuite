@@ -28,7 +28,7 @@
             <inertial pos="0 0 0" quat="-0.5 0.5 0.5 0.5" mass="0.3" diaginertia="3e-08 2e-08 2e-08" />
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="connector_plate" name="connector_plate" pos="0 0 0.0018" material="connector_plate_mat"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="electric_gripper_base" name="electric_gripper_base" pos="0 0 0.0194" material="electric_gripper_base_mat"/>
-            <geom size="0.029 0.05" quat="0 0 0.707107 0.707107" type="cylinder" pos="0.004 0.0 0.0444"/>
+            <geom size="0.029 0.05" quat="0 0 0.707107 0.707107" type="cylinder" pos="0.004 0.0 0.04"/>
             <body name="gripper" pos="0 0 0.095">
                 <inertial pos="0 0 0" mass="0.0001" diaginertia="0 0 0" />
                 <!-- This site was added for visualization. -->

@@ -94,6 +94,7 @@ class Robot(object):
         deterministic reset (e.g.: hard reset from xml file)
 
         """
+        init_qpos = self.init_qpos
         if not deterministic:
             # Determine noise
             if self.initialization_noise["type"] == "gaussian":
@@ -102,10 +103,10 @@ class Robot(object):
                 noise = np.random.uniform(-1.0, 1.0, len(self.init_qpos)) * self.initialization_noise["magnitude"]
             else:
                 raise ValueError("Error: Invalid noise type specified. Options are 'gaussian' or 'uniform'.")
+            init_qpos += noise
 
-            # Set initial position in sim
-            self.sim.data.qpos[self._ref_joint_pos_indexes] = \
-                self.init_qpos + noise
+        # Set initial position in sim
+        self.sim.data.qpos[self._ref_joint_pos_indexes] = init_qpos
 
         # Load controllers
         self._load_controller()
@@ -148,10 +149,6 @@ class Robot(object):
             self.sim.model.actuator_name2id(actuator)
             for actuator in self.robot_model.actuators["torq"]
         ]
-
-        # Update base pos / ori references
-        #self.base_pos = self.sim.data.get_body_xpos(self.robot_model.robot_base)
-        #self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3)))
 
     def control(self, action, policy_step=False):
         """

@@ -11,6 +11,7 @@ from robosuite.robots.robot import Robot
 from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
 
 import os
+import copy
 
 
 class Bimanual(Robot):
@@ -68,7 +69,7 @@ class Bimanual(Robot):
         """
 
         self.controller = self._input2dict(None)
-        self.controller_config = self._input2dict(controller_config)
+        self.controller_config = self._input2dict(copy.deepcopy(controller_config))
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
         self.has_gripper = self._input2dict([gripper_type is not None for _, gripper_type in self.gripper_type.items()])
@@ -308,11 +309,13 @@ class Bimanual(Robot):
 
         # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:
+            # Update proprioceptive values
             self.recent_qpos.push(self._joint_positions)
             self.recent_actions.push(action)
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
+                # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
                 self.recent_ee_pose[arm].push(np.concatenate((self.controller[arm].ee_pos,
                                                               T.mat2quat(self.controller[arm].ee_ori_mat))))

@@ -33,13 +33,13 @@ import robosuite
 from robosuite import make
 from robosuite.wrappers import DemoSamplerWrapper
 
-# TODO: Demonstrations path is now depreciated. Need to update and/or get new demonstrations!!
+# TODO: Demonstrations are now depreciated. Need to get new demonstrations!!
 
 if __name__ == "__main__":
 
     env = make(
-        "PickPlace",
-        robots="Sawyer",
+        "Lift",
+        robots="Panda",
         has_renderer=True,
         has_offscreen_renderer=False,
         ignore_done=True,
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     env = DemoSamplerWrapper(
         env,
         demo_path=os.path.join(
-            robosuite.models.assets_root, "demonstrations/SawyerPickPlace"
+            robosuite.models.assets_root, "demonstrations/1592855346_302028"
         ),
         need_xml=True,
         num_traj=-1,

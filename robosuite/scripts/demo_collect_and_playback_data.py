@@ -22,7 +22,7 @@ def collect_random_trajectory(env, timesteps=1000):
     """
 
     env.reset()
-    dof = env.dof
+    dof = env.action_dim
 
     for t in range(timesteps):
         action = 0.5 * np.random.randn(dof)

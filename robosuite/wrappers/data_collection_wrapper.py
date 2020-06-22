@@ -118,8 +118,13 @@ class DataCollectionWrapper(Wrapper):
             self.states.append(state)
 
             info = {}
-            info["joint_torques"] = np.array(self.env.torques)
-            info["gripper_actuation"] = np.array(action[self.env.mujoco_robot.dof :])
+            # Grab torques from all robots in the environment
+            torques = []
+            for robot in self.env.robots:
+                torques = np.concatenate([torques, robot.torques])
+            # Store torques and action as info
+            info["joint_torques"] = np.array(torques)
+            info["actions"] = np.array(action)
             self.action_infos.append(info)
 
         # flush collected data to disk if necessary

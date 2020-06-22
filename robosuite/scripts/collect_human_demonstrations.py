@@ -14,6 +14,7 @@ import datetime
 import h5py
 from glob import glob
 import numpy as np
+import json
 
 import robosuite as suite
 from robosuite import load_controller_config
@@ -27,7 +28,7 @@ parser.add_argument(
     type=str,
     default=os.path.join(suite.models.assets_root, "demonstrations"),
 )
-parser.add_argument("--environment", type=str, default="SawyerLift")
+parser.add_argument("--environment", type=str, default="Lift")
 parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
 parser.add_argument("--config", type=str, default="single-arm-opposed",
                     help="Specified environment configuration if necessary")
@@ -59,7 +60,7 @@ def collect_human_trajectory(env, device):
 
     is_first = True
 
-    task_completion_hold_count = -1 # counter to collect 10 timesteps after reaching goal
+    task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
 
     # Loop until we get a reset from the input or the task completes
@@ -108,17 +109,17 @@ def collect_human_trajectory(env, device):
         # state machine to check for having a success for 10 consecutive timesteps
         if env._check_success():
             if task_completion_hold_count > 0:
-                task_completion_hold_count -= 1 # latched state, decrement count
+                task_completion_hold_count -= 1  # latched state, decrement count
             else:
-                task_completion_hold_count = 10 # reset count on first success timestep
+                task_completion_hold_count = 10  # reset count on first success timestep
         else:
-            task_completion_hold_count = -1 # null the counter if there's no success
+            task_completion_hold_count = -1  # null the counter if there's no success
 
     # cleanup for end of data collection episodes
     env.close()
 
 
-def gather_demonstrations_as_hdf5(directory, out_dir):
+def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
     """
     Gathers the demonstrations saved in @directory into a
     single hdf5 file, and another directory that contains the 
@@ -135,8 +136,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
         demo1 (group) - every demonstration has a group
             model_file (attribute) - name of corresponding model xml in `models` directory
             states (dataset) - flattened mujoco states
-            joint_velocities (dataset) - joint velocities applied during demonstration
-            gripper_actuations (dataset) - gripper controls applied during demonstration
+            joint_torques (dataset) - joint torques applied during demonstration
+            actions (dataset) - actions applied during demonstration
             right_dpos (dataset) - end effector delta position command for
                 single arm robot or right arm
             right_dquat (dataset) - end effector delta rotation command for
@@ -153,6 +154,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
         directory (str): Path to the directory containing raw demonstrations.
         out_dir (str): Path to where to store the hdf5 file and model xmls. 
             The model xmls will be stored in a subdirectory called `models`.
+        env_info (str): JSON-encoded string containing environment information,
+            including controller and robot info
     """
 
     # store model xmls in this directory
@@ -174,12 +177,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
 
         state_paths = os.path.join(directory, ep_directory, "state_*.npz")
         states = []
-        joint_velocities = []
-        gripper_actuations = []
-        right_dpos = []
-        right_dquat = []
-        left_dpos = []
-        left_dquat = []
+        joint_torques = []
+        actions = []
 
         for state_file in sorted(glob(state_paths)):
             dic = np.load(state_file, allow_pickle=True)
@@ -187,12 +186,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
 
             states.extend(dic["states"])
             for ai in dic["action_infos"]:
-                joint_velocities.append(ai["joint_velocities"])
-                gripper_actuations.append(ai["gripper_actuation"])
-                right_dpos.append(ai.get("right_dpos", []))
-                right_dquat.append(ai.get("right_dquat", []))
-                left_dpos.append(ai.get("left_dpos", []))
-                left_dquat.append(ai.get("left_dquat", []))
+                joint_torques.append(ai["joint_torques"])
+                actions.append(ai["actions"])
                 
         if len(states) == 0:
             continue
@@ -200,12 +195,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
         # Delete the first actions and the last state. This is because when the DataCollector wrapper
         # recorded the states and actions, the states were recorded AFTER playing that action.
         del states[-1]
-        del joint_velocities[0]
-        del gripper_actuations[0]
-        del right_dpos[0]
-        del right_dquat[0]
-        del left_dpos[0]
-        del left_dquat[0]
+        del joint_torques[0]
+        del actions[0]
 
         num_eps += 1
         ep_data_grp = grp.create_group("demo_{}".format(num_eps))
@@ -215,14 +206,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
 
         # write datasets for states and actions
         ep_data_grp.create_dataset("states", data=np.array(states))
-        ep_data_grp.create_dataset("joint_velocities", data=np.array(joint_velocities))
-        ep_data_grp.create_dataset(
-            "gripper_actuations", data=np.array(gripper_actuations)
-        )
-        ep_data_grp.create_dataset("right_dpos", data=np.array(right_dpos))
-        ep_data_grp.create_dataset("right_dquat", data=np.array(right_dquat))
-        ep_data_grp.create_dataset("left_dpos", data=np.array(left_dpos))
-        ep_data_grp.create_dataset("left_dquat", data=np.array(left_dquat))
+        ep_data_grp.create_dataset("joint_torques", data=np.array(joint_torques))
+        ep_data_grp.create_dataset("actions", data=np.array(actions))
 
         # copy over and rename model xml
         xml_path = os.path.join(directory, ep_directory, "model.xml")
@@ -238,6 +223,7 @@ def gather_demonstrations_as_hdf5(directory, out_dir):
     grp.attrs["time"] = "{}:{}:{}".format(now.hour, now.minute, now.second)
     grp.attrs["repository_version"] = suite.__version__
     grp.attrs["env"] = env_name
+    grp.attrs["env_info"] = env_info
 
     f.close()
 
@@ -269,6 +255,9 @@ if __name__ == "__main__":
         control_freq=20,
     )
 
+    # Grab reference to controller config and convert it to json-encoded string
+    env_info = json.dumps(config)
+
     # wrap the environment with data collection wrapper
     tmp_directory = "/tmp/{}".format(str(time.time()).replace(".", "_"))
     env = DataCollectionWrapper(env, tmp_directory)
@@ -298,4 +287,4 @@ if __name__ == "__main__":
     # collect demonstrations
     while True:
         collect_human_trajectory(env, device)
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir)
+        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
