@@ -2,20 +2,20 @@
   <compiler coordinate="local" angle="radian" strippath="false" />
   <size njmax="795" nconmax="250" nstack="631875" />
   <asset>
-    <mesh name="base_link" file="meshes/torso/base_link.STL" />
-    <mesh name="base_link_collision" file="meshes/torso/base_link_collision.STL" />
-    <mesh name="PEDESTAL" file="meshes/base/PEDESTAL.STL" />
-    <mesh name="pedestal_link_collision" file="meshes/base/pedestal_link_collision.STL" />
-    <mesh name="H0" file="meshes/head/H0.STL" />
-    <mesh name="H1" file="meshes/head/H1.STL" />
-    <mesh name="S0" file="meshes/upper_shoulder/S0.STL" />
-    <mesh name="S1" file="meshes/lower_shoulder/S1.STL" />
-    <mesh name="E0" file="meshes/upper_elbow/E0.STL" />
-    <mesh name="E1" file="meshes/lower_elbow/E1.STL" />
-    <mesh name="W0" file="meshes/upper_forearm/W0.STL" />
-    <mesh name="W1" file="meshes/lower_forearm/W1.STL" />
-    <mesh name="W2" file="meshes/wrist/W2.STL" />
-    <mesh name="paddle_tip" file="meshes/electric_gripper/fingers/paddle_tip.STL" />
+    <mesh name="base_link" file="meshes/torso/base_link.stl" />
+    <mesh name="base_link_collision" file="meshes/torso/base_link_collision.stl" />
+    <mesh name="PEDESTAL" file="meshes/base/PEDESTAL.stl" />
+    <mesh name="pedestal_link_collision" file="meshes/base/pedestal_link_collision.stl" />
+    <mesh name="H0" file="meshes/head/H0.stl" />
+    <mesh name="H1" file="meshes/head/H1.stl" />
+    <mesh name="S0" file="meshes/upper_shoulder/S0.stl" />
+    <mesh name="S1" file="meshes/lower_shoulder/S1.stl" />
+    <mesh name="E0" file="meshes/upper_elbow/E0.stl" />
+    <mesh name="E1" file="meshes/lower_elbow/E1.stl" />
+    <mesh name="W0" file="meshes/upper_forearm/W0.stl" />
+    <mesh name="W1" file="meshes/lower_forearm/W1.stl" />
+    <mesh name="W2" file="meshes/wrist/W2.stl" />
+    <mesh name="paddle_tip" file="meshes/electric_gripper/fingers/paddle_tip.stl" />
 
     <!-- Custom textures based on body names for domain randomization -->
 

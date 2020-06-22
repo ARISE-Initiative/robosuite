@@ -1,9 +1,9 @@
 <mujoco model="base">
     <asset>
-        <mesh name="electric_gripper_base" file="meshes/rethink_gripper/electric_gripper_base.STL" />
-        <mesh name="standard_narrow" file="meshes/rethink_gripper/standard_narrow.STL" />
-        <mesh name="half_round_tip" file="meshes/rethink_gripper/half_round_tip.STL" />
-        <mesh name="connector_plate" file="meshes/rethink_gripper/connector_plate.STL" />
+        <mesh name="electric_gripper_base" file="meshes/rethink_gripper/electric_gripper_base.stl" />
+        <mesh name="standard_narrow" file="meshes/rethink_gripper/standard_narrow.stl" />
+        <mesh name="half_round_tip" file="meshes/rethink_gripper/half_round_tip.stl" />
+        <mesh name="connector_plate" file="meshes/rethink_gripper/connector_plate.stl" />
 
         <!-- Custom textures based on body names for domain randomization -->
         <texture type="cube" name="connector_plate_tex" builtin="flat" width="100" height="100" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>

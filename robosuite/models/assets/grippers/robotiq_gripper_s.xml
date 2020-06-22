@@ -2,16 +2,16 @@
 <!-- Set kp to larger -->
 <mujoco model="s-model_articulated">
     <asset>
-        <mesh name="palm" file="meshes/robotiq_s_gripper/palm.STL" />
-        <mesh name="link_0" file="meshes/robotiq_s_gripper/link_0.STL" />
-        <mesh name="link_1" file="meshes/robotiq_s_gripper/link_1.STL" />
-        <mesh name="link_2" file="meshes/robotiq_s_gripper/link_2.STL" />
-        <mesh name="link_3" file="meshes/robotiq_s_gripper/link_3.STL" />
-        <mesh name="palm_vis" file="meshes/robotiq_s_gripper/palm_vis.STL" />
-        <mesh name="link_0_vis" file="meshes/robotiq_s_gripper/link_0_vis.STL" />
-        <mesh name="link_1_vis" file="meshes/robotiq_s_gripper/link_1_vis.STL" />
-        <mesh name="link_2_vis" file="meshes/robotiq_s_gripper/link_2_vis.STL" />
-        <mesh name="link_3_vis" file="meshes/robotiq_s_gripper/link_3_vis.STL" />
+        <mesh name="palm" file="meshes/robotiq_s_gripper/palm.stl" />
+        <mesh name="link_0" file="meshes/robotiq_s_gripper/link_0.stl" />
+        <mesh name="link_1" file="meshes/robotiq_s_gripper/link_1.stl" />
+        <mesh name="link_2" file="meshes/robotiq_s_gripper/link_2.stl" />
+        <mesh name="link_3" file="meshes/robotiq_s_gripper/link_3.stl" />
+        <mesh name="palm_vis" file="meshes/robotiq_s_gripper/palm_vis.stl" />
+        <mesh name="link_0_vis" file="meshes/robotiq_s_gripper/link_0_vis.stl" />
+        <mesh name="link_1_vis" file="meshes/robotiq_s_gripper/link_1_vis.stl" />
+        <mesh name="link_2_vis" file="meshes/robotiq_s_gripper/link_2_vis.stl" />
+        <mesh name="link_3_vis" file="meshes/robotiq_s_gripper/link_3_vis.stl" />
     </asset>
     <tendon>
 		<!--Middlefinger tendons-->

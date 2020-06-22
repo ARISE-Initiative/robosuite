@@ -12,14 +12,14 @@
     </actuator>
     <asset>
         <mesh file="meshes/pedestal.stl" name="pedestal"/>
-        <mesh name="base_link" file="meshes/base_link.STL" />
-        <mesh name="Shoulder_Link" file="meshes/Shoulder_Link.STL" />
-        <mesh name="Half_Arm_1_Link" file="meshes/Half_Arm_1_Link.STL" />
-        <mesh name="Half_Arm_2_Link" file="meshes/Half_Arm_2_Link.STL" />
-        <mesh name="ForeArm_Link" file="meshes/ForeArm_Link.STL" />
-        <mesh name="Spherical_Wrist_1_Link" file="meshes/Spherical_Wrist_1_Link.STL" />
-        <mesh name="Spherical_Wrist_2_Link" file="meshes/Spherical_Wrist_2_Link.STL" />
-        <mesh name="Bracelet_with_vision_Link" file="meshes/Bracelet_with_vision_Link.STL" />
+        <mesh name="base_link" file="meshes/base_link.stl" />
+        <mesh name="Shoulder_Link" file="meshes/Shoulder_Link.stl" />
+        <mesh name="Half_Arm_1_Link" file="meshes/Half_Arm_1_Link.stl" />
+        <mesh name="Half_Arm_2_Link" file="meshes/Half_Arm_2_Link.stl" />
+        <mesh name="ForeArm_Link" file="meshes/ForeArm_Link.stl" />
+        <mesh name="Spherical_Wrist_1_Link" file="meshes/Spherical_Wrist_1_Link.stl" />
+        <mesh name="Spherical_Wrist_2_Link" file="meshes/Spherical_Wrist_2_Link.stl" />
+        <mesh name="Bracelet_with_vision_Link" file="meshes/Bracelet_with_vision_Link.stl" />
     </asset>
     <worldbody>
         <body name="base" pos="0 0 0">
