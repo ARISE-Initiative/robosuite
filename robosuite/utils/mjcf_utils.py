@@ -18,6 +18,8 @@ TEXTURES = {
     "WoodLight": "light-wood.png",
     "WoodDark": "dark-wood.png",
     "WoodTiles": "wood-tiles.png",
+    "WoodPanels": "wood-varnished-panels.png",
+    "WoodgrainGray": "gray-woodgrain.png",
     "Metal": "metal.png",
     "SteelBrushed": "steel-brushed.png",
     "SteelScratched": "steel-scratched.png",
