@@ -2,13 +2,13 @@
   <asset>
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
     <texture file="../textures/wood-tiles.png" type="2d" name="texplane"/>
-    <material name="floorplane" reflectance="0.0" shininess="0.0" specular="0.0" texrepeat="1 1" texture="texplane" texuniform="true"/>
-    <!-- felt walls -->
-    <texture file="../textures/gray-felt.png" type="2d" name="tex-gray-felt"/>
-    <material name="walls_felt" reflectance="0" shininess="0" specular="0" texrepeat="3 3" texture="tex-gray-felt" texuniform="true" />
+    <material name="floorplane" reflectance="0.0" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
     <!-- steel legs -->
     <texture file="../textures/steel-brushed.png" type="cube" name="tex-steel-brushed"/>
-    <material name="table_legs_metal" reflectance="0.7" shininess="0.6" texrepeat="1 1" texture="tex-steel-brushed" />
+    <material name="table_legs_metal" reflectance="0.8" shininess="0.8" texrepeat="1 1" texture="tex-steel-brushed" />
+    <!-- wood walls -->
+    <texture file="../textures/wood-varnished-panels.png" type="2d" name="tex-wood-panels"/>
+    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="1 2" texture="tex-wood-panels" texuniform="true" />
     <!-- bins -->
     <texture file="../textures/light-wood.png" type="2d" name="tex-light-wood"/>
     <texture file="../textures/dark-wood.png" type="2d" name="tex-dark-wood"/>
@@ -19,9 +19,12 @@
     <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
     <geom rgba="0 0 0 0" pos="0.1 0.5 0.7" size="0.5 1 .2" type="plane"/>
     <!-- Walls (visual only) -->
-    <geom pos="0 2 1" quat="0.7071 0.7071 0 0" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_felt"/>
-    <geom pos="0 -2 1" quat="0.7071 -0.7071 0 0" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_felt"/>
-    <geom pos="-2 0 1" quat="0.7071 0 0.7071 0" size="1 2 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_felt"/>
+    <geom pos="0 2 1" quat="0.7071 0.7071 0 0" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_mat"/>
+    <geom pos="0 -2 1" quat="0.7071 -0.7071 0 0" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_mat"/>
+    <geom pos="-2 0 1" quat="0.5 0.5 0.5 0.5" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_mat"/>
+    <geom pos="0 2 0.01" quat="0.7071 0.7071 0 0" size="2 0.02 0.02" type="box" conaffinity="0" contype="0" group="1" name="lining_left_visual" rgba="1 1 1 1"/>
+    <geom pos="0 -2 0.01" quat="0.7071 -0.7071 0 0" size="2 0.02 0.02" type="box" conaffinity="0" contype="0" group="1" name="lining_right_visual" rgba="1 1 1 1"/>
+    <geom pos="-2 0 0.01" quat="0.5 0.5 0.5 0.5" size="2 0.02 0.02" type="box" conaffinity="0" contype="0" group="1" name="lining_rear_visual" rgba="1 1 1 1"/>
     <!-- bins -->
     <body name="bin1" pos="0.1 -0.25 0.8">
       <geom pos="0 0 0" size="0.2 0.25 0.02" type="box" friction="1 0.005 0.0001"/>
