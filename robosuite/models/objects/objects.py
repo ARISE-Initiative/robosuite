@@ -265,9 +265,9 @@ class MujocoGeneratedObject(MujocoObject):
 
         if friction is None:
             friction = [1, 0.005, 0.0001]  # MuJoCo default
-        elif isinstance(friction, float):
+        elif isinstance(friction, float) or isinstance(friction, int):
             friction = [friction, 0.005, 0.0001]
-        assert len(friction) == 3, "friction must be a length 3 array or a float"
+        assert len(friction) == 3, "friction must be a length 3 array or a single number"
         self.friction = list(friction)
 
         if solref is None:

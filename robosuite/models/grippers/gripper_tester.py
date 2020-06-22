@@ -28,6 +28,7 @@ class GripperTester:
         gripper_high_pos,
         box_size=None,
         box_density=10000,
+        step_time=400,
         render=True
     ):
         """
@@ -47,11 +48,12 @@ class GripperTester:
             box_size list(int * 3): the size of the box to grasp,
                                     default [0.02, 0.02, 0.02]
             box_density (int): the density of the box to grasp,
+            step_time (int): the interval between two gripper actions
             render: show rendering
         """
         world = MujocoWorldBase()
         # Add a table
-        arena = TableArena(table_full_size=(0.4, 0.4, 0.1))
+        arena = TableArena(table_full_size=(0.4, 0.4, 0.1), table_offset=(0, 0, 0.1), has_legs=False)
         world.merge(arena)
 
         # Add a gripper
@@ -84,10 +86,12 @@ class GripperTester:
         if box_size is None:
             box_size = [0.02, 0.02, 0.02]
         box_size = np.array(box_size)
-        mujoco_object = BoxObject(size=box_size,
-                                  rgba=[1, 0, 0, 1],
-                                  friction=10,
-                                  density=box_density).get_collision()
+        mujoco_object = BoxObject(
+            name="box",
+            size=box_size,
+            rgba=[1, 0, 0, 1],
+            friction=[1, 0.005, 0.0001],
+            density=box_density).get_collision()
         mujoco_object.append(new_joint(name='object_free_joint', type='free'))
         mujoco_object.set('name', "object")
         object_pos = np.array(TABLE_TOP + box_size * [0, 0, 1])
@@ -99,18 +103,23 @@ class GripperTester:
         world.worldbody.append(mujoco_object)
 
         # Adding reference object for x and y axis
-        x_ref = BoxObject(size=[0.01, 0.01, 0.01],
-                          rgba=[0, 1, 0, 1]).get_visual()
+        x_ref = BoxObject(
+            name="x_ref",
+            size=[0.01, 0.01, 0.01],
+            rgba=[0, 1, 0, 1]).get_visual()
         x_ref.set('pos', '0.2 0 0.105')
         world.worldbody.append(x_ref)
-        y_ref = BoxObject(size=[0.01, 0.01, 0.01],
-                          rgba=[0, 0, 1, 1]).get_visual()
+        y_ref = BoxObject(
+            name="y_ref",
+            size=[0.01, 0.01, 0.01],
+            rgba=[0, 0, 1, 1]).get_visual()
         y_ref.set('pos', '0 0.2 0.105')
         world.worldbody.append(y_ref)
 
         self.world = world
         self.render = render
         self.simulation_ready = False
+        self.step_time = step_time
         self.cur_step = 0
         if gripper_low_pos > gripper_high_pos:
             raise ValueError(
@@ -203,7 +212,6 @@ class GripperTester:
         ] = self.sim.data.qfrc_bias[self._gravity_corrected_qvels]
 
     def loop(self,
-             T=400,
              total_iters=1,
              test_y=False,
              y_baseline=0.01):
@@ -211,18 +219,15 @@ class GripperTester:
         Performs lower, grip, raise and release actions of a gripper,
                 each separated with T timesteps
         Args:
-            T (int): The interval between two gripper actions
             total_iters (int): Iterations to perform before exiting
             test_y (bool): test if object is lifted
             y_baseline (float): threshold for determining that object is lifted
         """
         seq = [(False, False), (True, False), (True, True), (False, True)]
-        step = 0
-        cur_plan = 0
         for cur_iter in range(total_iters):
             for cur_plan in seq:
                 self.gripper_z_is_low, self.gripper_is_closed = cur_plan
-                for step in range(T):
+                for step in range(self.step_time):
                     self.step()
             if test_y:
                 if not self.object_height > y_baseline:

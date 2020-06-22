@@ -93,7 +93,7 @@ class Robotiq85Gripper(Robotiq85GripperBase):
             action: -1 => open, 1 => closed
         """
         assert len(action) == 1
-        self.current_action = np.clip(self.current_action + self.speed * action, -1.0, 1.0)
+        self.current_action = np.clip(self.current_action + self.speed * np.array(action), -1.0, 1.0)
         return self.current_action
 
     @property

@@ -4,7 +4,7 @@ from robosuite.models.objects import MujocoGeneratedObject
 from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, array_to_string
 from robosuite.utils.mjcf_utils import RED, GREEN, BLUE, CustomMaterial
 
-from collections import Iterable
+from collections.abc import Iterable
 
 # Define custom colors
 CYAN = [0, 1, 1, 1]

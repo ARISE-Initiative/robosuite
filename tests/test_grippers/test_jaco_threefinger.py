@@ -16,6 +16,7 @@ def robotiq_tester(render,
         gripper_low_pos=0.01,
         gripper_high_pos=0.1,
         box_size=[0.025] * 3,
+        step_time=1000,
         render=render,
     )
     tester.start_simulation()

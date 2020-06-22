@@ -5,8 +5,11 @@ from robosuite.models.grippers import GRIPPER_MAPPING
 
 
 def test_all_gripper():
-    for _, gripper in GRIPPER_MAPPING.items():
-        _test_gripper(gripper())
+    for name, gripper in GRIPPER_MAPPING.items():
+        # Test all grippers except the null gripper
+        if name not in {None, "WipingGripper"}:
+            print("Testing {}...".format(name))
+            _test_gripper(gripper())
 
 
 def _test_gripper(gripper):
@@ -24,3 +27,8 @@ def _test_gripper(gripper):
     assert gripper.visualization_sites is not None
 
     assert gripper.visualization_geoms is not None
+
+
+if __name__ == "__main__":
+    test_all_gripper()
+    print("Gripper tests completed.")

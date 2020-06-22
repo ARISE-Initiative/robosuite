@@ -48,6 +48,7 @@
     <worldbody>
         <!-- Note: This model is a tendon-driven variation of the model found at https://github.com/abr/abr_control/blob/master/abr_control/arms/jaco2/jaco2.xml -->
         <body name="right_gripper" pos="0 0 0">
+            <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-08 1e-08 1e-08" />
             <body name="palm" pos="0 0 0" quat="0 -1 0 0">
                 <inertial pos="0 0 -0.06" quat="0.5 0.5 -0.5 0.5" mass="0.99" diaginertia="0.0005816 0.000345324 0.000345324" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_hand" mesh="hand_3finger" />

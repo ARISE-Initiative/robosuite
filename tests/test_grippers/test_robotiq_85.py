@@ -11,10 +11,10 @@ def robotiq_tester(render,
     gripper = Robotiq85Gripper()
     tester = GripperTester(
         gripper=gripper,
-        pos="0 0 0.3",
+        pos="-0.02 0 0.3",
         quat="0 0 1 0",
-        gripper_low_pos=-0.07,
-        gripper_high_pos=0.02,
+        gripper_low_pos=-0.065,
+        gripper_high_pos=0.01,
         box_size=[0.025] * 3,
         render=render,
     )
