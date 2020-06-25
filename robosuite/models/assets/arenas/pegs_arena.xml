@@ -10,7 +10,7 @@
   </asset>
   <worldbody>
     <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
-    <body name="table" pos="0.08 0.15 0.8">
+    <body name="bin1" pos="0.08 0.15 0.8">
       <geom pos="0 0 0" size="0.35 0.4 0.02" type="box" friction="1 0.005 0.0001" name="table_collision"/>
       <geom pos="0 0 0" material="light-wood" size="0.35 0.4 0.02" type="box" conaffinity="0" contype="0" group="1"/>
     </body>

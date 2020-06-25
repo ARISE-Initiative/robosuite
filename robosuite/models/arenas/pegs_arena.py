@@ -22,10 +22,10 @@ class PegsArena(Arena):
         self.table_friction = table_friction
 
         self.floor = self.worldbody.find("./geom[@name='floor']")
-        self.table_body = self.worldbody.find("./body[@name='table']")
+        self.table_body = self.worldbody.find("./body[@name='bin1']")
         self.peg1_body = self.worldbody.find("./body[@name='peg1']")
         self.peg2_body = self.worldbody.find("./body[@name='peg2']")
-        self.table_collision = self.table_body.find("./geom[@name='table_collision']")
+        # self.table_collision = self.table_body.find("./geom[@name='table_collision']")
 
         self.configure_location()
 

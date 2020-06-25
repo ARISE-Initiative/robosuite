@@ -298,12 +298,9 @@ class SawyerNutAssembly(SawyerEnv):
         self.obj_body_id = {}
         self.obj_geom_id = {}
 
-        self.table_body_id = self.sim.model.body_name2id("table")
+        self.table_body_id = self.sim.model.body_name2id("bin1")
         self.peg1_body_id = self.sim.model.body_name2id("peg1")
         self.peg2_body_id = self.sim.model.body_name2id("peg2")
-        self.table_pos = np.array(self.sim.data.body_xpos[self.table_body_id])
-        self.peg1_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id]) # square
-        self.peg2_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id]) # round
 
         for i in range(len(self.ob_inits)):
             obj_str = str(self.item_names[i]) + "0"
@@ -417,8 +414,9 @@ class SawyerNutAssembly(SawyerEnv):
 
         ### lifting reward for picking up an object ###
         r_lift = 0.
+        table_pos = np.array(self.sim.data.body_xpos[self.table_body_id])
         if len(objs_to_reach) and r_grasp > 0.:
-            z_target = self.table_pos[2] + 0.2
+            z_target = table_pos[2] + 0.2
             object_z_locs = self.sim.data.body_xpos[objs_to_reach][:, 2]
             z_dists = np.maximum(z_target - object_z_locs, 0.)
             r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (
@@ -431,9 +429,9 @@ class SawyerNutAssembly(SawyerEnv):
             r_hovers = np.zeros(len(objs_to_reach))
             for i in range(len(objs_to_reach)):
                 if names_to_reach[i].startswith(self.item_names[0]):
-                    peg_pos = self.peg1_pos[:2]
+                    peg_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id])[:2]
                 elif names_to_reach[i].startswith(self.item_names[1]):
-                    peg_pos = self.peg2_pos[:2]
+                    peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id])[:2]
                 else:
                     raise Exception(
                         "Got invalid object to reach: {}".format(names_to_reach[i])
@@ -450,9 +448,9 @@ class SawyerNutAssembly(SawyerEnv):
     def on_peg(self, obj_pos, peg_id):
 
         if peg_id == 0:
-            peg_pos = self.peg1_pos
+            peg_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id])
         else:
-            peg_pos = self.peg2_pos
+            peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id])
         res = False
         if (
             abs(obj_pos[0] - peg_pos[0]) < 0.03

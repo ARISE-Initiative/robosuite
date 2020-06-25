@@ -339,7 +339,6 @@ class SawyerPickPlace(SawyerEnv):
         self.obj_body_id = {}
         self.obj_geom_id = {}
         self.bin_body_id = self.sim.model.body_name2id("bin2")
-        self.bin_pos = np.array(self.sim.data.body_xpos[self.bin_body_id])
 
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
@@ -360,20 +359,6 @@ class SawyerPickPlace(SawyerEnv):
         # keep track of which objects are in their corresponding bins
         self.objects_in_bins = np.zeros(len(self.ob_inits))
 
-        # target locations in bin for each object type
-        self.target_bin_placements = np.zeros((len(self.ob_inits), 3))
-        for j in range(len(self.ob_inits)):
-            bin_id = j
-            bin_x_low = self.bin_pos[0]
-            bin_y_low = self.bin_pos[1]
-            if bin_id == 0 or bin_id == 2:
-                bin_x_low -= self.bin_size[0] / 2.
-            if bin_id < 2:
-                bin_y_low -= self.bin_size[1] / 2.
-            bin_x_low += self.bin_size[0] / 4.
-            bin_y_low += self.bin_size[1] / 4.
-            self.target_bin_placements[j, :] = [bin_x_low, bin_y_low, self.bin_pos[2]]
-
     def _reset_internal(self):
         super()._reset_internal()
 
@@ -385,6 +370,23 @@ class SawyerPickPlace(SawyerEnv):
         elif self.single_object_mode == 2:
             self.obj_to_use = (self.item_names[self.object_id] + "{}").format(0)
             self.clear_objects(self.obj_to_use)
+
+    def _get_target_bin_placements(self):
+        # target locations in bin for each object type
+        bin_pos = np.array(self.sim.data.body_xpos[self.bin_body_id])
+        target_bin_placements = np.zeros((len(self.ob_inits), 3))
+        for j in range(len(self.ob_inits)):
+            bin_id = j
+            bin_x_low = bin_pos[0]
+            bin_y_low = bin_pos[1]
+            if bin_id == 0 or bin_id == 2:
+                bin_x_low -= self.bin_size[0] / 2.
+            if bin_id < 2:
+                bin_y_low -= self.bin_size[1] / 2.
+            bin_x_low += self.bin_size[0] / 4.
+            bin_y_low += self.bin_size[1] / 4.
+            target_bin_placements[j, :] = [bin_x_low, bin_y_low, bin_pos[2]]
+        return target_bin_placements
 
     def reward(self, action=None):
         # compute sparse rewards
@@ -411,6 +413,7 @@ class SawyerPickPlace(SawyerEnv):
         # filter out objects that are already in the correct bins
         objs_to_reach = []
         geoms_to_grasp = []
+        all_target_bin_placements = self._get_target_bin_placements()
         target_bin_placements = []
         for i in range(len(self.ob_inits)):
             if self.objects_in_bins[i]:
@@ -418,7 +421,7 @@ class SawyerPickPlace(SawyerEnv):
             obj_str = str(self.item_names[i]) + "0"
             objs_to_reach.append(self.obj_body_id[obj_str])
             geoms_to_grasp.append(self.obj_geom_id[obj_str])
-            target_bin_placements.append(self.target_bin_placements[i])
+            target_bin_placements.append(all_target_bin_placements[i])
         target_bin_placements = np.array(target_bin_placements)
 
         ### reaching reward governed by distance to closest object ###
@@ -454,8 +457,9 @@ class SawyerPickPlace(SawyerEnv):
 
         ### lifting reward for picking up an object ###
         r_lift = 0.
+        bin_pos = np.array(self.sim.data.body_xpos[self.bin_body_id])
         if len(objs_to_reach) and r_grasp > 0.:
-            z_target = self.bin_pos[2] + 0.25
+            z_target = bin_pos[2] + 0.25
             object_z_locs = self.sim.data.body_xpos[objs_to_reach][:, 2]
             z_dists = np.maximum(z_target - object_z_locs, 0.)
             r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (
@@ -493,9 +497,9 @@ class SawyerPickPlace(SawyerEnv):
         return r_reach, r_grasp, r_lift, r_hover
 
     def not_in_bin(self, obj_pos, bin_id):
-
-        bin_x_low = self.bin_pos[0]
-        bin_y_low = self.bin_pos[1]
+        bin_pos = np.array(self.sim.data.body_xpos[self.bin_body_id])
+        bin_x_low = bin_pos[0]
+        bin_y_low = bin_pos[1]
         if bin_id == 0 or bin_id == 2:
             bin_x_low -= self.bin_size[0] / 2
         if bin_id < 2:
@@ -506,12 +510,12 @@ class SawyerPickPlace(SawyerEnv):
 
         res = True
         if (
-            obj_pos[2] > self.bin_pos[2]
+            obj_pos[2] > bin_pos[2]
             and obj_pos[0] < bin_x_high
             and obj_pos[0] > bin_x_low
             and obj_pos[1] < bin_y_high
             and obj_pos[1] > bin_y_low
-            and obj_pos[2] < self.bin_pos[2] + 0.1
+            and obj_pos[2] < bin_pos[2] + 0.1
         ):
             res = False
         return res
