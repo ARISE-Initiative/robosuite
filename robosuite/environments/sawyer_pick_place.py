@@ -264,7 +264,6 @@ class SawyerPickPlace(SawyerEnv):
             self.mujoco_arena.add_pos_indicator()
 
         # store some arena attributes
-        self.bin_pos = string_to_array(self.mujoco_arena.bin2_body.get("pos"))
         self.bin_size = self.mujoco_arena.table_full_size
         self.bin_offset = self.mujoco_arena.bin_abs[:2]
 
@@ -339,6 +338,8 @@ class SawyerPickPlace(SawyerEnv):
         super()._get_reference()
         self.obj_body_id = {}
         self.obj_geom_id = {}
+        self.bin_body_id = self.sim.model.body_name2id("bin2")
+        self.bin_pos = np.array(self.sim.data.body_xpos[self.bin_body_id])
 
         self.l_finger_geom_ids = [
             self.sim.model.geom_name2id(x) for x in self.gripper.left_finger_geoms
