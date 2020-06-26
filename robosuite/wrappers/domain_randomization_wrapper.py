@@ -64,7 +64,9 @@ from robosuite.utils.mjmod import TextureModder, LightingModder, CameraModder
 DEFAULT_COLOR_ARGS = {
     'geom_names' : None, # all geoms are randomized
     'randomize_local' : True, # sample nearby colors
+    'randomize_material' : True, # randomize material reflectance / shininess / specular
     'local_rgb_interpolation' : 0.2,
+    'local_material_interpolation' : 0.3,
     'texture_variations' : ['rgb', 'checker', 'noise', 'gradient'], # all texture variation types
     'randomize_skybox' : True, # by default, randomize skybox too
 }

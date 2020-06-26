@@ -461,7 +461,9 @@ class TextureModder(BaseModder):
         random_state=None,
         geom_names=None,
         randomize_local=False,
+        randomize_material=False,
         local_rgb_interpolation=0.1,
+        local_material_interpolation=0.2,
         texture_variations=['rgb', 'checker', 'noise', 'gradient'],
         randomize_skybox=True,
         # texture_path=None,
@@ -479,8 +481,14 @@ class TextureModder(BaseModder):
                 original RGB colors per geom and texture. Otherwise, RGB color values will
                 be sampled uniformly at random.
 
+            randomize_material (bool): if True, randomizes material properties associated with a
+                given texture (reflectance, shininess, specular)
+
             local_rgb_interpolation (float): determines the size of color variations from
                 the base geom colors when @randomize_local is True.
+
+            local_material_interpolation (float): determines the size of material variations from
+                the base material when @randomize_local and @randomize_material are both True.
 
             texture_variations ([string]): a list of texture variation strings. Each string
                 must be either 'rgb', 'checker', 'noise', or 'gradient' and corresponds to
@@ -499,7 +507,9 @@ class TextureModder(BaseModder):
         self.geom_names = geom_names
 
         self.randomize_local = randomize_local
+        self.randomize_material = randomize_material
         self.local_rgb_interpolation = local_rgb_interpolation
+        self.local_material_interpolation = local_material_interpolation
         self.texture_variations = list(texture_variations)
         self.randomize_skybox = randomize_skybox
 
@@ -539,6 +549,8 @@ class TextureModder(BaseModder):
                 # store the texture bitmap for this geom
                 tex_id = self._name_to_tex_id(name)
                 self._defaults[name]['texture'] = self._default_texture_bitmaps[tex_id]
+                # store material properties as well (in tuple (reflectance, shininess, specular) form)
+                self._defaults[name]['material'] = self.get_material(name)
             else:
                 # store geom color
                 self._defaults[name]['rgb'] = np.array(self.get_geom_rgb(name))
@@ -554,6 +566,7 @@ class TextureModder(BaseModder):
         for name in self.geom_names:
             if self._check_geom_for_texture(name):
                 self.set_texture(name, self._defaults[name]['texture'], perturb=False)
+                self.set_material(name, self._defaults[name]['material'], perturb=False)
             else:
                 self.set_geom_rgb(name, self._defaults[name]['rgb'])
 
@@ -567,10 +580,12 @@ class TextureModder(BaseModder):
         """
         self.whiten_materials()
         for name in self.geom_names:
-
             if self._check_geom_for_texture(name):
                 # geom has valid texture that can be randomized
                 self._randomize_texture(name)
+                # randomize material if requested
+                if self.randomize_material:
+                    self._randomize_material(name)
             else:
                 # randomize geom color
                 self._randomize_geom_color(name)
@@ -590,6 +605,16 @@ class TextureModder(BaseModder):
         keys = list(self._texture_variation_callbacks.keys())
         choice = keys[self.random_state.randint(len(keys))]
         self._texture_variation_callbacks[choice](name)
+
+    def _randomize_material(self, name):
+        # Return immediately if this is the skybox
+        if name == 'skybox':
+            return
+        # Grab material id
+        mat_id = self._name_to_mat_id(name)
+        # Randomize reflectance, shininess, and specular
+        material = self.random_state.uniform(0, 1, size=3)   # (reflectance, shininess, specular)
+        self.set_material(name, material, perturb=self.randomize_local)
 
     def rand_checker(self, name):
         rgb1, rgb2 = self.get_rand_rgb(2)
@@ -615,10 +640,6 @@ class TextureModder(BaseModder):
 
         Helper method for setting all material colors to white, otherwise
         the texture modifications won't take full effect.
-
-        Args:
-        - geom_names (list): list of geom names whose materials should be
-            set to white. If omitted, all materials will be changed.
         """
         for name in self.geom_names:
             # whiten geom
@@ -691,6 +712,30 @@ class TextureModder(BaseModder):
             bitmap = (1. - self.local_rgb_interpolation) * self._defaults[name]['texture'] + self.local_rgb_interpolation * bitmap
         bitmap_to_set[:] = bitmap
         self.upload_texture(name)
+
+    def get_material(self, name):
+        mat_id = self._name_to_mat_id(name)
+        # Material is in tuple form (reflectance, shininess, specular)
+        material = np.array((self.model.mat_reflectance[mat_id],
+                             self.model.mat_shininess[mat_id],
+                             self.model.mat_specular[mat_id]))
+        return material
+
+    def set_material(self, name, material, perturb=False):
+        """
+        Sets the material that corresponds to geom @name.
+
+        If @perturb is True, then use the computed material
+        to perturb the default material slightly, instead
+        of replacing it.
+        """
+        mat_id = self._name_to_mat_id(name)
+        if perturb:
+            material = (1. - self.local_material_interpolation) * self._defaults[name]['material'] + \
+                       self.local_material_interpolation * material
+        self.model.mat_reflectance[mat_id] = material[0]
+        self.model.mat_shininess[mat_id] = material[1]
+        self.model.mat_specular[mat_id] = material[2]
 
     def get_checker_matrices(self, name):
         tex_id = self._name_to_tex_id(name)
@@ -808,6 +853,20 @@ class TextureModder(BaseModder):
         mat_id = self.model.geom_matid[geom_id]
         tex_id = self.model.mat_texid[mat_id]
         return tex_id
+
+    def _name_to_mat_id(self, name):
+        """
+        Helper function to get material id from geom name.
+        """
+
+        # handle skybox separately
+        if name == 'skybox':
+            raise ValueError("Error: skybox has no material!")
+
+        assert self._check_geom_for_texture(name)
+        geom_id = self.model.geom_name2id(name)
+        mat_id = self.model.geom_matid[geom_id]
+        return mat_id
 
     # def _build_tex_geom_map(self):
     #     # Build a map from tex_id to geom_ids, so we can check
