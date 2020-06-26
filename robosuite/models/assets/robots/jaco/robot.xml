@@ -102,44 +102,6 @@
                                             <camera mode="fixed" name="eye_in_hand" pos="0.08 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
                                             <!-- To add gripper -->
                                         </body>
-                                        <!--
-                                        <body name="j2s7s300_link_finger_1" pos="0.00279 0.03126 -0.11467" quat="0.379408 -0.662973 -0.245899 0.596699">
-                                            <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                                            <joint name="j2s7s300_joint_finger_1" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
-                                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="finger_proximal" />
-                                            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="finger_proximal" />
-                                            <body name="j2s7s300_link_finger_tip_1" pos="0.044 -0.003 0">
-                                                <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                                                <joint name="j2s7s300_joint_finger_tip_1" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
-                                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="finger_distal" />
-                                                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="finger_distal" />
-                                            </body>
-                                        </body>
-                                        <body name="j2s7s300_link_finger_2" pos="0.02226 -0.02707 -0.11482" quat="0.659653 -0.37146 0.601679 -0.254671">
-                                            <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                                            <joint name="j2s7s300_joint_finger_2" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
-                                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="finger_proximal" />
-                                            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="finger_proximal" />
-                                            <body name="j2s7s300_link_finger_tip_2" pos="0.044 -0.003 0">
-                                                <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                                                <joint name="j2s7s300_joint_finger_tip_2" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
-                                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="finger_distal" />
-                                                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="finger_distal" />
-                                            </body>
-                                        </body>
-                                        <body name="j2s7s300_link_finger_3" pos="-0.02226 -0.02707 -0.11482" quat="0.601679 -0.254671 0.659653 -0.37146">
-                                            <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                                            <joint name="j2s7s300_joint_finger_3" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.51" />
-                                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="finger_proximal" />
-                                            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="finger_proximal" />
-                                            <body name="j2s7s300_link_finger_tip_3" pos="0.044 -0.003 0">
-                                                <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                                                <joint name="j2s7s300_joint_finger_tip_3" pos="0 0 0" axis="0 0 1" limited="true" range="0 2" />
-                                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="finger_distal" />
-                                                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="finger_distal" />
-                                            </body>
-                                        </body>
-                                        -->
                                     </body>
                                 </body>
                             </body>

@@ -28,7 +28,7 @@ class Kinova3(RobotModel):
 
     @property
     def init_qpos(self):
-        return np.array([0.000, 0.650, 0.000, 1.890, 0.000, 0.600, 0.000])
+        return np.array([0.000, 0.650, 0.000, 1.890, 0.000, 0.600, -np.pi / 2])
 
     @property
     def base_xpos_offset(self):
