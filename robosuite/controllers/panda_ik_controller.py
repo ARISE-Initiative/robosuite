@@ -48,7 +48,7 @@ class PandaIKController(Controller):
 
         self.sync_state()
 
-    def get_control(self, dpos, rotation):
+    def get_control(self, dpos=None, rotation=None):
         """
         Returns joint velocities to control the robot after the target end effector
         position and orientation are updated from arguments @dpos and @rotation.
@@ -67,9 +67,10 @@ class PandaIKController(Controller):
         # Sync joint positions for IK.
         self.sync_ik_robot(self.robot_jpos_getter())
 
-        self.commanded_joint_positions = self.joint_positions_for_eef_command(
-            dpos, rotation
-        )
+        if (dpos is not None) and (rotation is not None):
+            self.commanded_joint_positions = self.joint_positions_for_eef_command(
+                dpos, rotation
+            )
 
         # P controller from joint positions (from IK) to velocities
         velocities = np.zeros(7)
