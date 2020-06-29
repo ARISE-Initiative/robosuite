@@ -20,7 +20,7 @@ class Kinova3(RobotModel):
 
     @property
     def gripper(self):
-        return "Robotiq140Gripper"
+        return "Robotiq85Gripper"
 
     @property
     def default_controller_config(self):

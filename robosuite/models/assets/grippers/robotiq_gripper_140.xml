@@ -47,17 +47,6 @@
         <position name='finger_2' ctrllimited="true" kp="20" joint='right_outer_knuckle_joint' ctrlrange='-0.7 0'/>
     </actuator>
 
-    <!--
-    <actuator>
-        <position ctrllimited="true" ctrlrange="0 0.7" joint="finger_joint" kp="1" name="gripper_robotiq_140_finger_joint" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.8757 0.8757" joint="left_inner_finger_joint" kp="1" name="gripper_robotiq_140_left_inner_finger_joint" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.8757 0.8757" joint="left_inner_knuckle_joint" kp="1" name="gripper_robotiq_140_left_inner_knuckle_joint" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.725 0.725" joint="right_outer_knuckle_joint" kp="1" name="gripper_robotiq_140_right_outer_knuckle_joint" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.8757 0.8757" joint="right_inner_finger_joint" kp="1" name="gripper_robotiq_140_right_inner_finger_joint" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.8757 0.8757" joint="right_inner_knuckle_joint" kp="1" name="gripper_robotiq_140_right_inner_knuckle_joint" forcelimited="true" forcerange="-20 20"/>
-    </actuator>
-    -->
-
     <worldbody>
         <body name="right_gripper" pos="0 0 -0.0625" quat="0 -0.707105 0.707108 0 ">
             <geom pos="0 0 -0.061525" quat="0 0.707388 -0.706825 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link_vis" />

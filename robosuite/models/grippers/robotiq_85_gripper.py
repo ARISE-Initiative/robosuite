@@ -27,18 +27,13 @@ class Robotiq85GripperBase(GripperModel):
 
     @property
     def init_qpos(self):
-        return [0., 0., 0., 0., 0., 0.]
+        return np.array([-0.026, -0.267, -0.200, -0.026, -0.267, -0.200])
 
     @property
     def _joints(self):
-        return [
-            "robotiq_85_left_knuckle_joint",
-            "robotiq_85_left_inner_knuckle_joint",
-            "robotiq_85_left_finger_tip_joint",
-            "robotiq_85_right_knuckle_joint",
-            "robotiq_85_right_inner_knuckle_joint",
-            "robotiq_85_right_finger_tip_joint",
-        ]
+        return ["finger_joint", "left_inner_finger_joint",
+                "left_inner_knuckle_joint", "right_outer_knuckle_joint",
+                "right_inner_finger_joint", "right_inner_knuckle_joint"]
 
     @property
     def _actuators(self):
@@ -50,34 +45,32 @@ class Robotiq85GripperBase(GripperModel):
     @property
     def _contact_geoms(self):
         return [
-            "robotiq_85_gripper_joint_0_L",
-            "robotiq_85_gripper_joint_1_L",
-            "robotiq_85_gripper_joint_0_R",
-            "robotiq_85_gripper_joint_1_R",
-            "robotiq_85_gripper_joint_2_L",
-            "robotiq_85_gripper_joint_3_L",
-            "robotiq_85_gripper_joint_2_R",
-            "robotiq_85_gripper_joint_3_R",
-            "left_finger_pad_collision"
-            "right_finger_pad_collision"
+            "hand_collision",
+            "left_outer_knuckle_collision",
+            "left_outer_finger_collision",
+            "left_inner_finger_collision",
+            "left_fingertip_collision",
+            "left_inner_knuckle_collision",
+            "right_outer_knuckle_collision",
+            "right_outer_finger_collision",
+            "right_inner_finger_collision",
+            "right_fingertip_collision",
+            "right_inner_knuckle_collision",
+
         ]
 
     @property
     def _important_geoms(self):
         return {
             "left_finger": [
-                "robotiq_85_gripper_joint_0_L",
-                "robotiq_85_gripper_joint_1_L",
-                "robotiq_85_gripper_joint_2_L",
-                "robotiq_85_gripper_joint_3_L",
-                "left_finger_pad_collision",
+                "left_outer_finger_collision",
+                "left_inner_finger_collision",
+                "left_fingertip_collision"
             ],
             "right_finger": [
-                "robotiq_85_gripper_joint_0_R",
-                "robotiq_85_gripper_joint_1_R",
-                "robotiq_85_gripper_joint_2_R",
-                "robotiq_85_gripper_joint_3_R",
-                "right_finger_pad_collision",
+                "right_outer_finger_collision",
+                "right_inner_finger_collision",
+                "right_fingertip_collision"
             ],
         }
 
