@@ -2,7 +2,7 @@ import copy
 import xml.etree.ElementTree as ET
 
 from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import string_to_array, array_to_string, xml_path_completion
+from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial
 
 
 class MujocoObject:
@@ -283,7 +283,12 @@ class MujocoGeneratedObject(MujocoObject):
         self.material = material
         if material == "default":
             # add in default texture and material for this object (for domain randomization)
-            self.asset = self._get_asset()
+            default_tex = CustomMaterial(
+                texture=self.rgba,
+                tex_name="{}_tex".format(self.name),
+                mat_name="{}_mat".format(self.name),
+            )
+            self.append_material(default_tex)
         elif material is not None:
             # add in custom texture and material
             self.append_material(material)
@@ -311,25 +316,6 @@ class MujocoGeneratedObject(MujocoObject):
     @staticmethod
     def get_visual_attrib_template():
         return {"conaffinity": "0", "contype": "0", "group": "1"}
-
-    def get_texture_attrib_template(self):
-        return {
-            "name": "{}_tex".format(self.name), 
-            "type": "cube", 
-            "builtin": "flat", 
-            "rgb1": array_to_string(self.rgba[:3]), 
-            "rgb2": array_to_string(self.rgba[:3]), 
-            "width": "100", 
-            "height": "100",
-        }
-
-    def get_material_attrib_template(self):
-        return {
-            "name": "{}_mat".format(self.name), 
-            "texture": "{}_tex".format(self.name), 
-            # "specular": "0.75", 
-            # "shininess": "0.03",
-        }
 
     def append_material(self, material):
         """
@@ -394,13 +380,3 @@ class MujocoGeneratedObject(MujocoObject):
             template["name"] = self.name
             main_body.append(ET.Element("site", attrib=template))
         return main_body
-
-    def _get_asset(self):
-        # Add texture and material elements
-        assert self.material == "default"
-        asset = ET.Element("asset")
-        tex_template = self.get_texture_attrib_template()
-        mat_template = self.get_material_attrib_template()
-        asset.append(ET.Element("texture", attrib=tex_template))
-        asset.append(ET.Element("material", attrib=mat_template))
-        return asset

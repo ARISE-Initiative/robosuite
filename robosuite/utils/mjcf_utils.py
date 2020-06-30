@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import os
 import numpy as np
 from collections.abc import Iterable
+from PIL import Image
 
 import robosuite
 
@@ -240,7 +241,11 @@ class CustomMaterial(object):
         Instantiates a nested dict holding necessary components for procedurally generating a texture / material combo
 
         Args:
-            texture (str): Name of texture file to be imported. Should be part of ALL_TEXTURES
+            texture (str or 4-array): Name of texture file to be imported. If a string, should be part of ALL_TEXTURES
+                If texture is a 4-array, then this argument will be interpreted as an rgba tuple value and a template
+                    png will be procedurally generated during object instantiation, with any additional
+                    texture / material attributes specified.
+                    Note the RGBA values are expected to be floats between 0 and 1
             tex_name (str): Name to reference the imported texture
             mat_name (str): Name to reference the imported material
             tex_attrib (dict): Any other optional mujoco texture specifications.
@@ -251,13 +256,26 @@ class CustomMaterial(object):
 
             Note that the values in @tex_attrib and @mat_attrib can be in string or array / numerical form.
         """
-        # Verify that requested texture is valid
-        assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
-            texture, ALL_TEXTURES)
+        # Check if the desired texture is an rgba value
+        if type(texture) is str:
+            default = False
+            # Verify that requested texture is valid
+            assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
+                texture, ALL_TEXTURES)
+        else:
+            default = True
+            # This is an rgba value and a default texture is desired; make sure length of rgba array is 4
+            assert len(texture) == 4, "Error: Requested default texture. Got array of length {}. Expected rgba array " \
+                                      "of length 4.".format(len(texture))
 
         # Setup the texture and material attributes
         self.tex_attrib = {} if tex_attrib is None else tex_attrib.copy()
         self.mat_attrib = {} if mat_attrib is None else mat_attrib.copy()
+
+        # Add in name values
+        self.tex_attrib["name"] = tex_name
+        self.mat_attrib["name"] = mat_name
+        self.mat_attrib["texture"] = tex_name
 
         # Loop through all attributes and convert all non-string values into strings
         for attrib in (self.tex_attrib, self.mat_attrib):
@@ -268,8 +286,15 @@ class CustomMaterial(object):
                     else:
                         attrib[k] = str(v)
 
-        # Lastly, add in the name and file values
-        self.tex_attrib["file"] = xml_path_completion("textures/" + TEXTURES[texture])
-        self.tex_attrib["name"] = tex_name
-        self.mat_attrib["name"] = mat_name
-        self.mat_attrib["texture"] = tex_name
+        # Handle default and non-default cases separately for linking texture patch file locations
+        if not default:
+            # Add in the filepath to texture patch
+            self.tex_attrib["file"] = xml_path_completion("textures/" + TEXTURES[texture])
+        else:
+            # Create a texture patch
+            tex = Image.new('RGBA', (100, 100), tuple((np.array(texture)*255).astype('int')))
+            # Save this texture patch to the temp directory on disk (MacOS / Linux)
+            fpath = "/tmp/{}.png".format(tex_name)
+            tex.save(fpath, "PNG")
+            # Link this texture file to the default texture dict
+            self.tex_attrib["file"] = fpath
