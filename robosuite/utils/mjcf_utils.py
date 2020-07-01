@@ -294,7 +294,7 @@ class CustomMaterial(object):
             # Create a texture patch
             tex = Image.new('RGBA', (100, 100), tuple((np.array(texture)*255).astype('int')))
             # Save this texture patch to the temp directory on disk (MacOS / Linux)
-            fpath = "/tmp/{}.png".format(tex_name)
+            fpath = "/tmp/robosuite_temp_tex/{}.png".format(tex_name)
             tex.save(fpath, "PNG")
             # Link this texture file to the default texture dict
             self.tex_attrib["file"] = fpath
