@@ -2,16 +2,16 @@
   <asset>
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
     <texture file="../textures/wood-tiles.png" type="2d" name="texplane"/>
-    <material name="floorplane" reflectance="0.0" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
+    <material name="floorplane" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
     <!-- ceramic table texture and material-->
     <texture file="../textures/ceramic.png" type="cube" name="tex-ceramic"/>
-    <material name="table_ceramic" reflectance="0.01" shininess="0.1" specular="0.1" texrepeat="1 1" texture="tex-ceramic" />
+    <material name="table_ceramic" reflectance="0.0" shininess="0.0" specular="0.2" texrepeat="1 1" texture="tex-ceramic" />
     <!-- steel legs -->
     <texture file="../textures/steel-brushed.png" type="cube" name="tex-steel-brushed"/>
     <material name="table_legs_metal" reflectance="0.8" shininess="0.8" texrepeat="1 1" texture="tex-steel-brushed" />
-    <!-- wood walls -->
-    <texture file="../textures/wood-varnished-panels.png" type="2d" name="tex-wood-panels"/>
-    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="1 2" texture="tex-wood-panels" texuniform="true" />
+    <!-- plaster walls -->
+    <texture file="../textures/cream-plaster.png" type="2d" name="tex-cream-plaster"/>
+    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-cream-plaster" texuniform="true" />
     <!-- added table texture and material for domain randomization -->
     <texture  name="textable" builtin="flat" height="512" width="512" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
     <material name="table_mat" texture="textable" />
@@ -21,12 +21,12 @@
     <!-- Floor -->
     <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
     <!-- Walls (visual only) -->
-    <geom pos="0 2 1" quat="0.7071 0.7071 0 0" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_mat"/>
-    <geom pos="0 -2 1" quat="0.7071 -0.7071 0 0" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_mat"/>
-    <geom pos="-2 0 1" quat="0.5 0.5 0.5 0.5" size="2 1 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_mat"/>
-    <geom pos="0 2 0.01" quat="0.7071 0.7071 0 0" size="2 0.02 0.02" type="box" conaffinity="0" contype="0" group="1" name="lining_left_visual" rgba="1 1 1 1"/>
-    <geom pos="0 -2 0.01" quat="0.7071 -0.7071 0 0" size="2 0.02 0.02" type="box" conaffinity="0" contype="0" group="1" name="lining_right_visual" rgba="1 1 1 1"/>
-    <geom pos="-2 0 0.01" quat="0.5 0.5 0.5 0.5" size="2 0.02 0.02" type="box" conaffinity="0" contype="0" group="1" name="lining_rear_visual" rgba="1 1 1 1"/>
+    <geom pos="-1 2.5 1.5" quat="0.6532815 0.6532815 0.2705981 0.2705981" size="1.42 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_leftcorner_visual" material="walls_mat"/>
+    <geom pos="-1 -2.5 1.5" quat="0.6532815 0.6532815 -0.2705981 -0.2705981" size="1.42 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rightcorner_visual" material="walls_mat"/>
+    <geom pos="1 3 1.5" quat="0.7071 0.7071 0 0" size="2 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_mat"/>
+    <geom pos="1 -3 1.5" quat="0.7071 -0.7071 0 0" size="2 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_mat"/>
+    <geom pos="-2 0 1.5" quat="0.5 0.5 0.5 0.5" size="2 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_mat"/>
+    <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
     <!-- Table body -->
     <body name="table" pos="0 0 0.4">
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" name="table_collision" friction="1 0.005 0.0001"/>
