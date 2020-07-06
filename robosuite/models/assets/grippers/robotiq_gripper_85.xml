@@ -70,7 +70,7 @@
             </body>
             <body name="right_outer_knuckle" pos="0 0.0306011 0.054904">
                 <inertial pos="0.000163875 0.0554825 -0.0100755" quat="0.920541 0.390623 -0.00362953 0.00231744" mass="0.0311462" diaginertia="5.11372e-05 4.89464e-05 4.95906e-06" />
-                <joint name="right_outer_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.81" />
+                <joint name="right_outer_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle_vis" />
                 <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle" name="right_outer_knuckle_collision" solref="0.01 0.25" />
                 <geom pos="0 0.0315 -0.0041" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger_vis" />
