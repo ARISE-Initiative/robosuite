@@ -48,6 +48,7 @@ sequential qualitative behavior during the test is described below for each cont
 import robosuite as suite
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
+from robosuite.robots import Bimanual
 
 
 if __name__ == "__main__":
@@ -93,21 +94,20 @@ if __name__ == "__main__":
     # Load the desired controller
     options["controller_configs"] = suite.load_controller_config(default_controller=controller_name)
 
-    # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value, neutral control values)
+    # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value)
     controller_settings = {
-        "OSC_POSE":         [8, 6, 0.1, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
-        "OSC_POSITION":     [4, 3, 0.1, np.zeros(4)],
-        "IK_POSE":          [8, 6, 0.01, np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
-        "JOINT_POSITION":   [joint_dim + 1, joint_dim, 0.2, np.zeros(joint_dim + 1)],
-        "JOINT_VELOCITY":   [joint_dim + 1, joint_dim, -0.1, np.zeros(joint_dim + 1)],
-        "JOINT_TORQUE":     [joint_dim + 1, joint_dim, 0.25, np.zeros(joint_dim + 1)]
+        "OSC_POSE":         [7, 6, 0.1],
+        "OSC_POSITION":     [3, 3, 0.1],
+        "IK_POSE":          [7, 6, 0.01],
+        "JOINT_POSITION":   [joint_dim, joint_dim, 0.2],
+        "JOINT_VELOCITY":   [joint_dim, joint_dim, -0.1],
+        "JOINT_TORQUE":     [joint_dim, joint_dim, 0.25]
     }
 
     # Define variables for each controller test
     action_dim = controller_settings[controller_name][0]
     num_test_steps = controller_settings[controller_name][1]
     test_value = controller_settings[controller_name][2]
-    neutral = controller_settings[controller_name][3]
 
     # Define the number of timesteps to use per controller action as well as timesteps in between actions
     steps_per_action = 75
@@ -132,8 +132,13 @@ if __name__ == "__main__":
     # To accommodate for multi-arm settings (e.g.: Baxter), we need to make sure to fill any extra action space
     # Get total number of arms being controlled
     n = 0
+    gripper_dim = 0
     for robot in env.robots:
-        n += int(robot.action_dim / action_dim)
+        gripper_dim = robot.gripper["right"].dof if isinstance(robot, Bimanual) else robot.gripper.dof
+        n += int(robot.action_dim / (action_dim + gripper_dim))
+
+    # Define neutral value
+    neutral = np.zeros(action_dim + gripper_dim)
 
     # Keep track of done variable to know when to break loop
     count = 0

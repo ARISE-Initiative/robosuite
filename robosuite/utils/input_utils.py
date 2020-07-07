@@ -178,6 +178,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
 
     # Get controller reference
     controller = robot.controller if not isinstance(robot, Bimanual) else robot.controller[active_arm]
+    gripper_dof = robot.gripper.dof if not isinstance(robot, Bimanual) else robot.gripper[active_arm].dof
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
@@ -226,10 +227,10 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")
 
     # map 0 to -1 (open) and map 1 to 1 (closed)
-    grasp = [1] if grasp else [-1]
+    grasp = 1 if grasp else -1
 
     # Create action based on action space of individual robot
-    action = np.concatenate([dpos, drotation, grasp])
+    action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
-    # Return the action
-    return action
+    # Return the action and grasp
+    return action, grasp

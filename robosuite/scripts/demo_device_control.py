@@ -195,7 +195,7 @@ if __name__ == "__main__":
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
             # Get the newest action
-            action = input2action(
+            action, grasp = input2action(
                 device=device,
                 robot=active_robot,
                 active_arm=args.arm,
@@ -205,9 +205,6 @@ if __name__ == "__main__":
             # If action is none, then this a reset so we should break
             if action is None:
                 break
-
-            # Get the grasp action as the last component of the returned action
-            grasp = action[-1]
 
             # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
             # toggle arm control and / or camera viewing angle if requested
