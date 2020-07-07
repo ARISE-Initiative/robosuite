@@ -17,7 +17,6 @@
   </asset>
   <worldbody>
     <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
-    <geom rgba="0 0 0 0" pos="0.1 0.5 0.7" size="0.5 1 .2" type="plane"/>
     <!-- Walls (visual only) -->
     <geom pos="-1 2.5 1.5" quat="0.6532815 0.6532815 0.2705981 0.2705981" size="1.42 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_leftcorner_visual" material="walls_mat"/>
     <geom pos="-1 -2.5 1.5" quat="0.6532815 0.6532815 -0.2705981 -0.2705981" size="1.42 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rightcorner_visual" material="walls_mat"/>
