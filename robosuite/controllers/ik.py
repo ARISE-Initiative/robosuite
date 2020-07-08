@@ -98,6 +98,9 @@ class InverseKinematicsController(JointVelocityController):
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
+        eef_rot_offset (4-array): Quaternion (x,y,z,w) representing rotational offset between the final
+            robot arm link coordinate system and the end effector coordinate system (i.e: the gripper)
+
         policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
 
         ik_pos_limit (float): Limit (meters) above which the magnitude of a given action's
@@ -122,6 +125,7 @@ class InverseKinematicsController(JointVelocityController):
                  joint_indexes,
                  robot_name,
                  actuator_range,
+                 eef_rot_offset,
                  bullet_server_id=0,
                  policy_freq=20,
                  load_urdf=True,
@@ -158,6 +162,7 @@ class InverseKinematicsController(JointVelocityController):
         self.robot_name = robot_name        # Name of robot (e.g.: "Panda", "Sawyer", etc.)
 
         # Rotation offsets (for mujoco eef -> pybullet eef) and rest poses
+        self.eef_rot_offset = eef_rot_offset
         self.rotation_offset = None
         self.rest_poses = None
 
@@ -257,6 +262,8 @@ class InverseKinematicsController(JointVelocityController):
             )
 
         # TODO: Very ugly initialization - any way to automate this? Maybe move the hardcoded magic numbers to the robot model files?
+        # TODO: Rotations for non-default grippers are not all supported -- e.g.: Robotiq140 Gripper whose coordinate frame
+        #   is fully flipped about its x axis -- resulting in mirrored rotational behavior when trying to execute IK control
 
         # For now, hard code baxter bullet eef idx
         if self.robot_name == "Baxter":
@@ -279,12 +286,11 @@ class InverseKinematicsController(JointVelocityController):
 
         # Set rotation offsets (for mujoco eef -> pybullet eef) and rest poses
         self.rest_poses = list(self.initial_joint)
-        if self.robot_name == "Sawyer":
-            self.rotation_offset = T.rotation_matrix(angle=-np.pi / 2, direction=[0., 0., 1.], point=None)
-        elif self.robot_name == "Panda":
-            self.rotation_offset = T.rotation_matrix(angle=3 * np.pi/4, direction=[0., 0., 1.], point=None)
-        elif self.robot_name == "Baxter":
-            self.rotation_offset = T.rotation_matrix(angle=0, direction=[0., 0., 1.], point=None)
+        eef_offset = np.eye(4)
+        eef_offset[:3, :3] = T.quat2mat(T.quat_inverse(self.eef_rot_offset))
+
+        if self.robot_name in {"Sawyer", "Panda", "Baxter"}:
+            self.rotation_offset = eef_offset
         else:
             # No other robots supported, print out to user
             print("ERROR: Unsupported robot requested for ik controller. Only Sawyer, Panda, and Baxter "

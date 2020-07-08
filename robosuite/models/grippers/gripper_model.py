@@ -31,6 +31,10 @@ class GripperModel(MujocoXML):
         self.contact_geoms = [self.naming_prefix + geom for geom in self._contact_geoms]
         self.visualization_geoms = [self.naming_prefix + geom for geom in self._visualization_geoms]
 
+        # Grab gripper offset (string -> np.array -> elements [1, 2, 3, 0] (x, y, z, w))
+        self.rotation_offset = np.fromstring(self.worldbody[0].attrib.get("quat", "1 0 0 0"),
+                                             dtype=np.float64, sep=" ")[[1, 2, 3, 0]]
+
         # Loop through dict of remaining miscellaneous geoms
         self.important_geoms = {}
         for k, v in self._important_geoms.items():

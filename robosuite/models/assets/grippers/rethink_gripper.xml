@@ -29,13 +29,10 @@
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="connector_plate" name="connector_plate" pos="0 0 0.0018" material="connector_plate_mat"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="electric_gripper_base" name="electric_gripper_base" pos="0 0 0.0194" material="electric_gripper_base_mat"/>
             <geom size="0.029 0.05" quat="0 0 0.707107 0.707107" type="cylinder" pos="0.004 0.0 0.04"/>
-            <body name="gripper" pos="0 0 0.095">
-                <inertial pos="0 0 0" mass="0.0001" diaginertia="0 0 0" />
-                <!-- This site was added for visualization. -->
-                <site name="grip_site" pos="0 0 0.014" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
-                <!-- This site was added for visualization. -->
-                <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
-            </body>
+            <!-- This site was added for visualization. -->
+            <site name="grip_site" pos="0 0 0.109" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <!-- This site was added for visualization. -->
+            <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
             <body name="l_finger" pos="0 0.01 0.0444">
                 <inertial pos="0 0 0" quat="0 0 0 -1" mass="0.02" diaginertia="0.01 0.01 0.01" />
                 <joint name="l_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.0115 0.020833" damping="100"/>

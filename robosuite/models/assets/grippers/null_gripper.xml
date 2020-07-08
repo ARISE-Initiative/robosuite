@@ -2,7 +2,7 @@
     <worldbody>
         <body name="null_gripper" pos="0 0 0">
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
-            <inertial pos="0 0 0" mass="1e-8" diaginertia="1e-8 1e-8 1e-8" />
+            <inertial pos="0 0 0" mass="3e-1" diaginertia="1e-2 1e-2 1e-2" />
             <!-- This site was added for visualization. -->
             <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <!-- This site was added for visualization. -->

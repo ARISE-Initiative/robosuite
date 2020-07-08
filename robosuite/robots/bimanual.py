@@ -80,6 +80,7 @@ class Bimanual(Robot):
         self._ref_gripper_joint_pos_indexes = self._input2dict(None)            # xml gripper joint position indexes in mjsim
         self._ref_gripper_joint_vel_indexes = self._input2dict(None)            # xml gripper joint velocity indexes in mjsim
         self._ref_joint_gripper_actuator_indexes = self._input2dict(None)       # xml gripper (pos) actuator indexes for robot in mjsim
+        self.eef_rot_offset = self._input2dict(None)                            # rotation offsets from final arm link to gripper (quat)
         self.eef_site_id = self._input2dict(None)                               # xml element id for eef in mjsim
         self.eef_cylinder_id = self._input2dict(None)                           # xml element id for eef cylinder in mjsim
         self.eef_force_sensor_idx = self._input2dict(None)                      # start idx for eef force sensor in sensordata array
@@ -132,6 +133,7 @@ class Bimanual(Robot):
             self.controller_config[arm]["robot_name"] = self.name
             self.controller_config[arm]["sim"] = self.sim
             self.controller_config[arm]["eef_name"] = self.gripper[arm].visualization_sites["grip_site"]
+            self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
             self.controller_config[arm]["ndim"] = self._joint_split_idx
             self.controller_config[arm]["policy_freq"] = self.control_freq
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
@@ -177,6 +179,9 @@ class Bimanual(Robot):
             else:
                 # Load null gripper
                 self.gripper[arm] = gripper_factory(None, idn="_".join((str(self.idn), arm)))
+            # Grab eef rotation offset
+            self.eef_rot_offset[arm] = T.quat_multiply(self.robot_model.hand_rotation_offset[arm],
+                                                       self.gripper[arm].rotation_offset)
             # Use gripper visualization if necessary
             if not self.gripper_visualization[arm]:
                 self.gripper[arm].hide_visualization()

@@ -74,6 +74,7 @@ class SingleArm(Robot):
         self._ref_gripper_joint_pos_indexes = None          # xml gripper joint position indexes in mjsim
         self._ref_gripper_joint_vel_indexes = None          # xml gripper joint velocity indexes in mjsim
         self._ref_joint_gripper_actuator_indexes = None     # xml gripper (pos) actuator indexes for robot in mjsim
+        self.eef_rot_offset = None                          # rotation offsets from final arm link to gripper (quat)
         self.eef_site_id = None                             # xml element id for eef in mjsim
         self.eef_cylinder_id = None                         # xml element id for eef cylinder in mjsim
         self.eef_force_sensor_idx = None                    # start idx for eef force sensor in sensordata array
@@ -120,6 +121,7 @@ class SingleArm(Robot):
         self.controller_config["robot_name"] = self.name
         self.controller_config["sim"] = self.sim
         self.controller_config["eef_name"] = self.gripper.visualization_sites["grip_site"]
+        self.controller_config["eef_rot_offset"] = self.eef_rot_offset
         self.controller_config["joint_indexes"] = {
             "joints": self.joint_indexes,
             "qpos": self._ref_joint_pos_indexes,
@@ -156,6 +158,8 @@ class SingleArm(Robot):
         else:
             # Load null gripper
             self.gripper = gripper_factory(None, idn=self.idn)
+        # Grab eef rotation offset
+        self.eef_rot_offset = T.quat_multiply(self.robot_model.hand_rotation_offset, self.gripper.rotation_offset)
         # Use gripper visualization if necessary
         if not self.gripper_visualization:
             self.gripper.hide_visualization()
