@@ -134,7 +134,7 @@ class OperationalSpaceController(Controller):
         self.use_delta = control_delta
 
         # Control dimension
-        self.control_dim = 7 if self.use_ori else 3
+        self.control_dim = 6 if self.use_ori else 3
         self.name_suffix = "POSE" if self.use_ori else "POSITION"
 
         # input and output max and min (allow for either explicit lists or single numbers)

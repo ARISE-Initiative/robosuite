@@ -97,7 +97,7 @@ def test_linear_interpolator():
 
         # Get delta values for trajectory
         if controller_name == "OSC_POSE":
-            delta = np.array([0, d, 0, 0, 0, 0, 0])
+            delta = np.array([0, d, 0, 0, 0, 0])
         elif controller_name == "OSC_POSITION":
             delta = np.array([0, d, 0])
         else:   # JOINT_POSITION

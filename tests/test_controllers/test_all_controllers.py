@@ -16,32 +16,26 @@ neutral (stationary) value for a certain amount of time "steps_per_action", and 
 for time "steps_per_rest" before proceeding with the next action dim.
 
     E.g.: Given that the expected action space of the Pos / Ori (OSC_POSE) controller (without a gripper) is
-    (dx, dy, dz, ax, ay, az, angle), the testing sequence of actions over time will be:
+    (dx, dy, dz, ax, ay, az), the testing sequence of actions over time will be:
 
         ***START OF TEST***
-        ( dx,  0,  0,  0,  0,  0,     0, grip)     <-- Translation in x-direction      for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0, dy,  0,  0,  0,  0,     0, grip)     <-- Translation in y-direction      for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0, dz,  0,  0,  0,     0, grip)     <-- Translation in z-direction      for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0,  0,  1,  0,  0, angle, grip)     <-- Rotation about x axis           for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0,  0,  0,  1,  0, angle, grip)     <-- Rotation about y axis           for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
-        (  0,  0,  0,  0,  0,  1, angle, grip)     <-- Rotation about z axis           for 'steps_per_action' steps
-        (  0,  0,  0,  0,  0,  0,     0, grip)     <-- No movement (pause)             for 'steps_per_rest' steps
+        ( dx,  0,  0,  0,  0,  0, grip)     <-- Translation in x-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest'   steps
+        (  0, dy,  0,  0,  0,  0, grip)     <-- Translation in y-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest'   steps
+        (  0,  0, dz,  0,  0,  0, grip)     <-- Translation in z-direction      for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest'   steps
+        (  0,  0,  0,  a,  0,  0, grip)     <-- Rotation about x axis           for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest'   steps
+        (  0,  0,  0,  0,  a,  0, grip)     <-- Rotation about y axis           for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest'   steps
+        (  0,  0,  0,  0,  0,  a, grip)     <-- Rotation about z axis           for 'steps_per_action' steps
+        (  0,  0,  0,  0,  0,  0, grip)     <-- No movement (pause)             for 'steps_per_rest'   steps
         ***END OF TEST***
 
     Thus the OSC_POSE controller should be expected to sequentially move linearly in the x direction first,
         then the y direction, then the z direction, and then begin sequentially rotating about its x-axis,
         then y-axis, then z-axis.
-
-Please reference the controller README in the robosuite/controllers directory for an overview of each controller.
-Controllers are expected to behave in a generally controlled manner, according to their control space. As this is
-strictly a qualitative set of tests, it is up to the developer / user to examine for specific irregularities.
-However, the expected sequential qualitative behavior during the test is described below for each controller:
-
 
 Please reference the controller README in the robosuite/controllers directory for an overview of each controller.
 Controllers are expected to behave in a generally controlled manner, according to their control space.
@@ -79,15 +73,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--render", action='store_true', help="Whether to render this test or not for visual validation")
 args = parser.parse_args()
 
-# Define the controllers to use (action_dim, num_test_steps, test_value, neutral control values)
+# Define the controllers to use (action_dim, num_test_steps, test_value)
 controllers = {
-    "OSC_POSE":             [8, 6, 0.1,   np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
-    "OSC_POSITION":         [4, 3, 0.1,   np.zeros(4)],
-    "IK_POSE":              [8, 6, 0.01,  np.array([0, 0, 0, 0, 0, 0, 0, 0], dtype=float)],
-    "JOINT_POSITION":       [8, 7, 0.2,   np.zeros(8)],
-    "JOINT_VELOCITY":       [8, 7, -0.05, np.zeros(8)],
-    "JOINT_TORQUE":         [8, 7, 0.001, np.zeros(8)]
-}
+        "OSC_POSE":         [7, 6, 0.1],
+        "OSC_POSITION":     [4, 3, 0.1],
+        "IK_POSE":          [7, 6, 0.01],
+        "JOINT_POSITION":   [8, 7, 0.2],
+        "JOINT_VELOCITY":   [8, 7, -0.1],
+        "JOINT_TORQUE":     [8, 7, 0.25]
+    }
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions
 steps_per_action = 50
@@ -100,7 +94,7 @@ def test_all_controllers():
         action_dim = controllers[controller_name][0]
         num_test_steps = controllers[controller_name][1]
         test_value = controllers[controller_name][2]
-        neutral = controllers[controller_name][3]
+        neutral = np.zeros(action_dim)
 
         # Define controller path to load
         controller_config = load_controller_config(default_controller=controller_name)
@@ -135,9 +129,9 @@ def test_all_controllers():
             for i in range(steps_per_action):
                 if controller_name in {'IK_POSE', 'OSC_POSE'} and count > 2:
                     # Set this value to be the angle and set appropriate axis
-                    axis = np.zeros(3)
-                    axis[count - 3] = 1
-                    action[3:7] = np.concatenate([axis, [test_value]])
+                    vec = np.zeros(3)
+                    vec[count - 3] = test_value
+                    action[3:6] = vec
                 else:
                     action[count] = test_value
                 env.step(action)

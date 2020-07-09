@@ -127,7 +127,7 @@ def set_goal_orientation(delta,
     an orientation matrix specified to define a global orientation
 
     If @axis_angle is set to True, then this assumes the input in axis angle form, that is,
-        a 4-array [ax, ay, az, angle]
+        a scaled axis angle 3-array [ax, ay, az]
     """
     # directly set orientation
     if set_ori is not None:
@@ -137,8 +137,7 @@ def set_goal_orientation(delta,
     else:
         if axis_angle:
             # convert axis-angle value to rotation matrix
-            axis, angle = delta[:3], delta[-1]
-            quat_error = trans.axisangle2quat(axis=axis, angle=angle)
+            quat_error = trans.axisangle2quat(delta)
             rotation_mat_error = trans.quat2mat(quat_error)
         else:
             # convert euler value to rotation matrix

@@ -210,8 +210,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
                 dpos[1] = -dpos[1]
 
         # Lastly, map to axis angle form
-        axis, angle = T.quat2axisangle(drotation)
-        drotation = np.concatenate([axis, [angle]])
+        drotation = T.quat2axisangle(drotation)
 
     elif controller.name == 'OSC_POSE':
         # Flip z
@@ -219,9 +218,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Scale rotation for teleoperation (tuned for OSC)
         drotation *= 75
         dpos *= 200
-        # Map euler to axis-angle values
-        axis, angle = T.vec2axisangle(-drotation)
-        drotation = np.concatenate([axis, [angle]])
+        # Interpret euler angles as (mirrored) scaled axis angle values
+        drotation = -drotation
     else:
         # No other controllers currently supported
         print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")

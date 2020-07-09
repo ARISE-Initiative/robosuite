@@ -96,9 +96,9 @@ if __name__ == "__main__":
 
     # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value)
     controller_settings = {
-        "OSC_POSE":         [7, 6, 0.1],
+        "OSC_POSE":         [6, 6, 0.1],
         "OSC_POSITION":     [3, 3, 0.1],
-        "IK_POSE":          [7, 6, 0.01],
+        "IK_POSE":          [6, 6, 0.01],
         "JOINT_POSITION":   [joint_dim, joint_dim, 0.2],
         "JOINT_VELOCITY":   [joint_dim, joint_dim, -0.1],
         "JOINT_TORQUE":     [joint_dim, joint_dim, 0.25]
@@ -147,10 +147,10 @@ if __name__ == "__main__":
         action = neutral.copy()
         for i in range(steps_per_action):
             if controller_name in {'IK_POSE', 'OSC_POSE'} and count > 2:
-                # Set this value to be the angle and set appropriate axis
-                axis = np.zeros(3)
-                axis[count - 3] = 1
-                action[3:7] = np.concatenate([axis, [test_value]])
+                # Set this value to be the scaled axis angle vector
+                vec = np.zeros(3)
+                vec[count - 3] = test_value
+                action[3:6] = vec
             else:
                 action[count] = test_value
             total_action = np.tile(action, n)

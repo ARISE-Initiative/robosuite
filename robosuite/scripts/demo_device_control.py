@@ -217,22 +217,6 @@ if __name__ == "__main__":
             # Update last grasp
             last_grasp = grasp
 
-            # Check to make sure robot actually has a gripper and clear grasp action if it doesn't
-            if hasattr(env, "env_configuration"):
-                # This is a multi-arm robot
-                if env.env_configuration == "bimanual":
-                    # We should check the correct arm to see if it has a gripper
-                    if not active_robot.has_gripper[args.arm]:
-                        action = action[:-1]
-                else:
-                    # We should check the correct robot to see if it has a gripper (assumes 0 = right, 1 = left)
-                    if not active_robot.has_gripper:
-                        action = action[:-1]
-            else:
-                # This is a single-arm robot, simply check to see if it has a gripper
-                if not active_robot.has_gripper:
-                    action = action[:-1]
-
             # Fill out the rest of the action space if necessary
             rem_action_dim = env.action_dim - action.size
             if rem_action_dim > 0:

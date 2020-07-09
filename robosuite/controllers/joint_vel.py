@@ -81,13 +81,13 @@ class JointVelocityController(Controller):
         self.control_dim = len(joint_indexes["joints"])
 
         # input and output max and min (allow for either explicit lists or single numbers)
-        self.input_max = self.nums2array(input_max, self.control_dim)
-        self.input_min = self.nums2array(input_min, self.control_dim)
-        self.output_max = self.nums2array(output_max, self.control_dim)
-        self.output_min = self.nums2array(output_min, self.control_dim)
+        self.input_max = self.nums2array(input_max, self.joint_dim)
+        self.input_min = self.nums2array(input_min, self.joint_dim)
+        self.output_max = self.nums2array(output_max, self.joint_dim)
+        self.output_min = self.nums2array(output_min, self.joint_dim)
 
         # gains and corresopnding vars
-        self.kvp = self.nums2array(kv, self.control_dim)
+        self.kvp = self.nums2array(kv, self.joint_dim)
         # if kv is a single value, map wrist gains accordingly (scale down x10 for final two joints)
 
         if type(kv) is float or type(kv) is int:
@@ -135,7 +135,7 @@ class JointVelocityController(Controller):
     def run_controller(self):
         # Make sure goal has been set
         if self.goal_vel is None:
-            self.set_goal(np.zeros(self.control_dim))
+            self.set_goal(np.zeros(self.joint_dim))
 
         # Update state
         self.update()
@@ -186,7 +186,7 @@ class JointVelocityController(Controller):
         """
         Resets joint velocity goal to be all zeros
         """
-        self.goal_vel = np.zeros(self.control_dim)
+        self.goal_vel = np.zeros(self.joint_dim)
 
         # Reset interpolator if required
         if self.interpolator is not None:

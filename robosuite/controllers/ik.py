@@ -161,6 +161,9 @@ class InverseKinematicsController(JointVelocityController):
         # Initialize ik-specific attributes
         self.robot_name = robot_name        # Name of robot (e.g.: "Panda", "Sawyer", etc.)
 
+        # Override underlying control dim
+        self.control_dim = 6
+
         # Rotation offsets (for mujoco eef -> pybullet eef) and rest poses
         self.eef_rot_offset = eef_rot_offset
         self.rotation_offset = None
@@ -195,11 +198,6 @@ class InverseKinematicsController(JointVelocityController):
         # Set ik limits and override internal min / max
         self.ik_pos_limit = ik_pos_limit
         self.ik_ori_limit = ik_ori_limit
-        max_quat_mag = T.mat2quat(T.euler2mat([ik_ori_limit, 0, 0]))[0]
-        self.ik_input_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
-        self.ik_input_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
-        self.ik_output_min = np.array([-ik_pos_limit] * 3 + [-max_quat_mag] * 3 + [-1])
-        self.ik_output_max = np.array([ik_pos_limit] * 3 + [max_quat_mag] * 3 + [1])
 
         # Target pos and ori
         self.ik_robot_target_pos = None
@@ -625,7 +623,7 @@ class InverseKinematicsController(JointVelocityController):
         Args:
             dpos (numpy array): a 3 dimensional array corresponding to the desired
                 change in x, y, and z end effector position.
-            rotation (numpy array): relative rotation in axis angle form (ax, ay, az, angle)
+            rotation (numpy array): relative rotation in scaled axis angle form (ax, ay, az)
                 corresponding to the (relative) desired orientation of the end effector.
 
         Returns:
@@ -636,7 +634,7 @@ class InverseKinematicsController(JointVelocityController):
             dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
 
         # Map input to quaternion
-        rotation = T.axisangle2quat(rotation[:3], rotation[-1])
+        rotation = T.axisangle2quat(rotation)
 
         # Clip orientation to desired magnitude
         rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
@@ -651,8 +649,8 @@ class InverseKinematicsController(JointVelocityController):
 
         Additionally clips actions as well
 
-        @action should be 7-array of form: [dx, dy, dz, ax, ay, az, angle] (orientation in
-            axis-angle form)
+        @action should be 6-array of form: [dx, dy, dz, ax, ay, az] (orientation in
+            scaled axis-angle form)
         """
         # Clip action appropriately
         dpos, rotation = self._clip_ik_input(action[:3], action[3:])
@@ -685,7 +683,7 @@ class InverseKinematicsController(JointVelocityController):
     @property
     def control_limits(self):
         """Returns the limits over this controller's action space, overriding superclass method"""
-        max_limit = np.concatenate([self.ik_pos_limit * np.ones(3), np.ones(3), [self.ik_ori_limit]])
+        max_limit = np.concatenate([self.ik_pos_limit * np.ones(3), self.ik_ori_limit * np.ones(3)])
         return -max_limit, max_limit
 
     @property
