@@ -6,7 +6,7 @@ NOTE: convention for quaternions is (x, y, z, w)
 
 import math
 import numpy as np
-import numba
+from robosuite.utils.numba import jit_decorator
 
 
 PI = np.pi
@@ -249,7 +249,7 @@ def mat2pose(hmat):
     return pos, orn
 
 
-@numba.jit(nopython=True)
+@jit_decorator
 def mat2quat(rmat):
     """
     Converts given rotation matrix to quaternion.
@@ -382,7 +382,7 @@ def pose2mat(pose):
     return homo_pose_mat
 
 
-@numba.jit(nopython=True)
+@jit_decorator
 def quat2mat(quaternion):
     """
     Converts given quaternion (x, y, z, w) to matrix.
@@ -792,7 +792,7 @@ def get_pose_error(target_pose, current_pose):
     return error
 
 
-@numba.jit(nopython=True)
+@jit_decorator
 def matrix_inverse(matrix):
     """
     Helper function to have an efficient matrix inversion function.
