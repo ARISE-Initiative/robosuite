@@ -61,7 +61,7 @@ class Wipe(RobotEnv):
         initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
-        reward_scale=None,
+        reward_scale=1.0,
         reward_shaping=True,
         placement_initializer=None,
         use_indicator_object=False,

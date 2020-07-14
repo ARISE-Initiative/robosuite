@@ -25,7 +25,7 @@ class TwoArmPegInHole(RobotEnv):
         initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
-        reward_scale=5.0,
+        reward_scale=1.0,
         reward_shaping=False,
         peg_radius=(0.015, 0.03),
         peg_length=0.13,

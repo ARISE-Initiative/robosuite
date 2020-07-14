@@ -39,7 +39,7 @@ class PickPlace(RobotEnv):
         table_friction=(1, 0.005, 0.0001),
         use_camera_obs=True,
         use_object_obs=True,
-        reward_scale=4.0,
+        reward_scale=1.0,
         reward_shaping=False,
         single_object_mode=0,
         object_type=None,
@@ -229,7 +229,9 @@ class PickPlace(RobotEnv):
             staged_rewards = self.staged_rewards()
             reward += max(staged_rewards)
         if self.reward_scale is not None:
-            reward *= self.reward_scale / 4.0
+            reward *= self.reward_scale
+        if self.single_object_mode == 0:
+            reward /= 4.0
         return reward
 
     def staged_rewards(self):
