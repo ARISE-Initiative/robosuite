@@ -37,6 +37,8 @@ class PickPlace(RobotEnv):
         initialization_noise="default",
         table_full_size=(0.39, 0.49, 0.82),
         table_friction=(1, 0.005, 0.0001),
+        bin1_pos=(0.1, -0.25, 0.2),
+        bin2_pos=(0.1, 0.28, 0.9),
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=4.0,
@@ -95,6 +97,10 @@ class PickPlace(RobotEnv):
 
             table_friction (3-tuple): the three mujoco friction parameters for
                 the table.
+
+            bin1_pos (3-tuple): Absolute cartesian coordinates of the bin initially holding the objects
+
+            bin2_pos (3-tuple): Absolute cartesian coordinates of the goal bin
 
             use_camera_obs (bool): if True, every observation includes rendered image(s)
 
@@ -188,6 +194,10 @@ class PickPlace(RobotEnv):
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
+
+        # settings for bin position
+        self.bin1_pos = np.array(bin1_pos)
+        self.bin2_pos = np.array(bin2_pos)
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -290,7 +300,7 @@ class PickPlace(RobotEnv):
         ### lifting reward for picking up an object ###
         r_lift = 0.
         if len(objs_to_reach) and r_grasp > 0.:
-            z_target = self.bin_pos[2] + 0.25
+            z_target = self.bin2_pos[2] + 0.25
             object_z_locs = self.sim.data.body_xpos[objs_to_reach][:, 2]
             z_dists = np.maximum(z_target - object_z_locs, 0.)
             r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (
@@ -329,8 +339,8 @@ class PickPlace(RobotEnv):
 
     def not_in_bin(self, obj_pos, bin_id):
 
-        bin_x_low = self.bin_pos[0]
-        bin_y_low = self.bin_pos[1]
+        bin_x_low = self.bin2_pos[0]
+        bin_y_low = self.bin2_pos[1]
         if bin_id == 0 or bin_id == 2:
             bin_x_low -= self.bin_size[0] / 2
         if bin_id < 2:
@@ -343,7 +353,7 @@ class PickPlace(RobotEnv):
         if (
             bin_x_low < obj_pos[0] < bin_x_high
             and bin_y_low < obj_pos[1] < bin_y_high
-            and self.bin_pos[2] < obj_pos[2] < self.bin_pos[2] + 0.1
+            and self.bin2_pos[2] < obj_pos[2] < self.bin2_pos[2] + 0.1
         ):
             res = False
         return res
@@ -370,12 +380,12 @@ class PickPlace(RobotEnv):
         """
         self.placement_initializer = SequentialCompositeSampler()
 
+        # can sample anywhere in bin
+        bin_x_half = self.mujoco_arena.table_full_size[0] / 2 - 0.05
+        bin_y_half = self.mujoco_arena.table_full_size[1] / 2 - 0.05
+
         # each object should just be sampled in the bounds of the bin (with some tolerance)
         for obj_name in self.mujoco_objects:
-
-            # can sample anywhere in bin
-            bin_x_half = self.mujoco_arena.table_full_size[0] / 2 - 0.05
-            bin_y_half = self.mujoco_arena.table_full_size[1] / 2 - 0.05
 
             self.placement_initializer.sample_on_top(
                 obj_name,
@@ -393,8 +403,8 @@ class PickPlace(RobotEnv):
         for obj_name in self.visual_objects:
 
             # get center of target bin
-            bin_x_low = self.bin_pos[0]
-            bin_y_low = self.bin_pos[1]
+            bin_x_low = self.bin2_pos[0]
+            bin_y_low = self.bin2_pos[1]
             if index == 0 or index == 2:
                 bin_x_low -= self.bin_size[0] / 2
             if index < 2:
@@ -407,7 +417,7 @@ class PickPlace(RobotEnv):
             ])
 
             # placement is relative to object bin, so compute difference and send to placement initializer
-            rel_center = bin_center - self.bin_offset[:2]
+            rel_center = bin_center - self.bin1_pos[:2]
 
             self.placement_initializer.sample_on_top(
                 obj_name,
@@ -416,7 +426,7 @@ class PickPlace(RobotEnv):
                 y_range=[rel_center[1], rel_center[1]],
                 rotation=0.,
                 rotation_axis='z',
-                z_offset=0.,
+                z_offset=self.bin2_pos[2] - self.bin1_pos[2],
                 ensure_object_boundary_in_range=True,
             )
 
@@ -438,7 +448,9 @@ class PickPlace(RobotEnv):
 
         # load model for table top workspace
         self.mujoco_arena = BinsArena(
-            table_full_size=self.table_full_size, table_friction=self.table_friction
+            bin1_pos=self.bin1_pos,
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
@@ -447,9 +459,7 @@ class PickPlace(RobotEnv):
         self.mujoco_arena.set_origin([0, 0, 0])
 
         # store some arena attributes
-        self.bin_pos = string_to_array(self.mujoco_arena.bin2_body.get("pos"))
         self.bin_size = self.mujoco_arena.table_full_size
-        self.bin_offset = self.mujoco_arena.table_top_abs[:2]
 
         # define mujoco objects
         self.ob_inits = [MilkObject, BreadObject, CerealObject, CanObject]
@@ -537,15 +547,15 @@ class PickPlace(RobotEnv):
         self.target_bin_placements = np.zeros((len(self.ob_inits), 3))
         for j in range(len(self.ob_inits)):
             bin_id = j
-            bin_x_low = self.bin_pos[0]
-            bin_y_low = self.bin_pos[1]
+            bin_x_low = self.bin2_pos[0]
+            bin_y_low = self.bin2_pos[1]
             if bin_id == 0 or bin_id == 2:
                 bin_x_low -= self.bin_size[0] / 2.
             if bin_id < 2:
                 bin_y_low -= self.bin_size[1] / 2.
             bin_x_low += self.bin_size[0] / 4.
             bin_y_low += self.bin_size[1] / 4.
-            self.target_bin_placements[j, :] = [bin_x_low, bin_y_low, self.bin_pos[2]]
+            self.target_bin_placements[j, :] = [bin_x_low, bin_y_low, self.bin2_pos[2]]
 
     def _reset_internal(self):
         """
@@ -568,6 +578,10 @@ class PickPlace(RobotEnv):
         self.object_site_ids = [
             self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
         ]
+
+        # Set the bins to the desired position
+        self.sim.model.body_pos[self.sim.model.body_name2id("bin1")] = self.bin1_pos
+        self.sim.model.body_pos[self.sim.model.body_name2id("bin2")] = self.bin2_pos
 
         # Move objects out of the scene depending on the mode
         if self.single_object_mode == 1:

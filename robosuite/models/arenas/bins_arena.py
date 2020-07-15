@@ -8,7 +8,7 @@ class BinsArena(Arena):
     """Workspace that contains two bins placed side by side."""
 
     def __init__(
-        self, table_full_size=(0.39, 0.49, 0.82), table_friction=(1, 0.005, 0.0001)
+        self, bin1_pos=(0.1, -0.5, 0.8), table_full_size=(0.39, 0.49, 0.82), table_friction=(1, 0.005, 0.0001)
     ):
         """
         Args:
@@ -24,14 +24,10 @@ class BinsArena(Arena):
         self.floor = self.worldbody.find("./geom[@name='floor']")
         self.bin1_body = self.worldbody.find("./body[@name='bin1']")
         self.bin2_body = self.worldbody.find("./body[@name='bin2']")
+        self.table_top_abs = np.array(bin1_pos)
 
         self.configure_location()
 
     def configure_location(self):
         self.bottom_pos = np.array([0, 0, 0])
         self.floor.set("pos", array_to_string(self.bottom_pos))
-
-    @property
-    def table_top_abs(self):
-        """Returns the absolute position of the object bin."""
-        return string_to_array(self.bin1_body.get("pos"))
