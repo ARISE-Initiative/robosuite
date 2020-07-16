@@ -312,8 +312,9 @@ class NutAssembly(RobotEnv):
 
         ### lifting reward for picking up an object ###
         r_lift = 0.
+        table_pos = np.array(self.sim.data.body_xpos[self.table_body_id])
         if len(objs_to_reach) and r_grasp > 0.:
-            z_target = self.table_pos[2] + 0.2
+            z_target = table_pos[2] + 0.2
             object_z_locs = self.sim.data.body_xpos[objs_to_reach][:, 2]
             z_dists = np.maximum(z_target - object_z_locs, 0.)
             r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (
@@ -326,9 +327,9 @@ class NutAssembly(RobotEnv):
             r_hovers = np.zeros(len(objs_to_reach))
             for i in range(len(objs_to_reach)):
                 if names_to_reach[i].startswith(self.item_names[0]):
-                    peg_pos = self.peg1_pos[:2]
+                    peg_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id])[:2]
                 elif names_to_reach[i].startswith(self.item_names[1]):
-                    peg_pos = self.peg2_pos[:2]
+                    peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id])[:2]
                 else:
                     raise Exception(
                         "Got invalid object to reach: {}".format(names_to_reach[i])
@@ -345,9 +346,9 @@ class NutAssembly(RobotEnv):
     def on_peg(self, obj_pos, peg_id):
 
         if peg_id == 0:
-            peg_pos = self.peg1_pos
+            peg_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id])
         else:
-            peg_pos = self.peg2_pos
+            peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id])
         res = False
         if (
                 abs(obj_pos[0] - peg_pos[0]) < 0.03
@@ -430,11 +431,6 @@ class NutAssembly(RobotEnv):
         # set positions of objects
         self.model.place_objects()
 
-        # positions of table and pegs
-        self.table_pos = string_to_array(self.mujoco_arena.table_body.get("pos"))
-        self.peg1_pos = string_to_array(self.mujoco_arena.peg1_body.get("pos"))  # square
-        self.peg2_pos = string_to_array(self.mujoco_arena.peg2_body.get("pos"))  # round
-
     def _get_reference(self):
         """
         Sets up references to important components. A reference is typically an
@@ -446,6 +442,10 @@ class NutAssembly(RobotEnv):
         # Additional object references from this env
         self.obj_body_id = {}
         self.obj_geom_id = {}
+
+        self.table_body_id = self.sim.model.body_name2id("table")
+        self.peg1_body_id = self.sim.model.body_name2id("peg1")
+        self.peg2_body_id = self.sim.model.body_name2id("peg2")
 
         for i in range(len(self.ob_inits)):
             obj_str = str(self.item_names[i]) + "0"
