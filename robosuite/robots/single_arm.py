@@ -77,8 +77,6 @@ class SingleArm(Robot):
         self.eef_rot_offset = None                          # rotation offsets from final arm link to gripper (quat)
         self.eef_site_id = None                             # xml element id for eef in mjsim
         self.eef_cylinder_id = None                         # xml element id for eef cylinder in mjsim
-        self.eef_force_sensor_idx = None                    # start idx for eef force sensor in sensordata array
-        self.eef_torque_sensor_idx = None                   # start idx for eef torque sensor in sensordata array
         self.torques = None                                 # Current torques being applied
 
         self.recent_qpos = None                             # Current and last robot arm qpos
@@ -221,14 +219,6 @@ class SingleArm(Robot):
         # IDs of sites for eef visualization
         self.eef_site_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_site"])
         self.eef_cylinder_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_cylinder"])
-
-        # Indexes of eef sensors -- Note that this is the index of where the sensor data for this sensor starts in the
-        # sim.data.sensordata struct, NOT the ID assigned by mujoco!
-        sensordims = self.sim.model.sensor_dim
-        self.eef_force_sensor_idx = np.sum(
-            sensordims[:self.sim.model.sensor_name2id(self.gripper.sensors["force_ee"])])
-        self.eef_torque_sensor_idx = np.sum(
-            sensordims[:self.sim.model.sensor_name2id(self.gripper.sensors["torque_ee"])])
 
     def control(self, action, policy_step=False):
         """
@@ -424,14 +414,14 @@ class SingleArm(Robot):
         """
         Returns force applied at the force sensor at the robot arm's eef
         """
-        return self.sim.data.sensordata[self.eef_force_sensor_idx: self.eef_force_sensor_idx + 3]
+        return self.get_sensor_measurement(self.gripper.sensors["force_ee"])
 
     @property
     def ee_torque(self):
         """
         Returns torque applied at the torque sensor at the robot arm's eef
         """
-        return self.sim.data.sensordata[self.eef_torque_sensor_idx: self.eef_torque_sensor_idx + 3]
+        return self.get_sensor_measurement(self.gripper.sensors["torque_ee"])
 
     @property
     def _right_hand_pose(self):

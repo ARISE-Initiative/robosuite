@@ -256,3 +256,14 @@ class Robot(object):
         Returns mujoco internal indexes for the robot joints
         """
         return self._ref_joint_indexes
+
+    def get_sensor_measurement(self, sensor_name):
+        """
+        Returns array of sensor values
+        Args:
+            sensor_name (string): name of the sensor
+        """
+        sensor_idx = np.sum(
+            self.sim.model.sensor_dim[:self.sim.model.sensor_name2id(sensor_name)])
+        sensor_dim = self.sim.model.sensor_dim[self.sim.model.sensor_name2id(sensor_name)]
+        return self.sim.data.sensordata[sensor_idx: sensor_idx + sensor_dim]
