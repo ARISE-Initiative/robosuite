@@ -494,3 +494,7 @@ class SingleArm(Robot):
         Returns angular velocity of eef in base frame of robot.
         """
         return self._right_hand_total_velocity[3:]
+
+    @property 
+    def arm_type(self):
+        return "single"
