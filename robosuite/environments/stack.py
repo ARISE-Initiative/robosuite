@@ -28,7 +28,7 @@ class Stack(RobotEnv):
         table_friction=(1., 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
-        reward_scale=2.0,
+        reward_scale=1.0,
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,

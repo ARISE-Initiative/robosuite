@@ -25,7 +25,7 @@ class TwoArmPegInHole(RobotEnv):
         initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
-        reward_scale=5.0,
+        reward_scale=1.0,
         reward_shaping=False,
         peg_radius=(0.015, 0.03),
         peg_length=0.13,
@@ -64,10 +64,9 @@ class TwoArmPegInHole(RobotEnv):
                 "robots" param
 
             gripper_types (str or list of str): type of gripper, used to instantiate
-                gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
-                with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
-                overrides the default gripper. Should either be single str if same gripper type is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+                gripper models from gripper factory.
+                For this environment, setting a value other than the default (None) will raise an AssertionError, as
+                    this environment is not meant to be used with any gripper at all.
 
             gripper_visualizations (bool or list of bool): True if using gripper visualization.
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
@@ -151,6 +150,9 @@ class TwoArmPegInHole(RobotEnv):
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
         self._check_robot_configuration(robots)
+
+        # Assert that the gripper type is None
+        assert gripper_types is None, "Tried to specify gripper other than None in TwoArmPegInHole environment!"
 
         # reward configuration
         self.reward_scale = reward_scale

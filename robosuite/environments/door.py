@@ -160,7 +160,7 @@ class Door(RobotEnv):
                 x_range=[0.09, 0.11],
                 y_range=[-0.36, -0.34],
                 ensure_object_boundary_in_range=False,
-                rotation=(-np.pi / 2. - 0.25, -np.pi / 2. + 0.25),
+                rotation=(-np.pi / 2. - 0.25, -np.pi / 2.),
                 rotation_axis='z',
             )
 

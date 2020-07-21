@@ -8,8 +8,6 @@ from robosuite.models.arenas import WipeArena
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 import multiprocessing
 
-# TODO: Soft resets currently don't reset / regenerate the wiping lines on the table -- might have to implement a sort of Arena "reset" functionality?
-
 
 # Default Wipe environment configuration
 DEFAULT_WIPE_CONFIG = {
@@ -63,7 +61,7 @@ class Wipe(RobotEnv):
         initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
-        reward_scale=None,
+        reward_scale=1.0,
         reward_shaping=True,
         placement_initializer=None,
         use_indicator_object=False,
@@ -95,10 +93,9 @@ class Wipe(RobotEnv):
                 "robots" param
 
             gripper_types (str or list of str): type of gripper, used to instantiate
-                gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
-                with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
-                overrides the default gripper. Should either be single str if same gripper type is to be used for all
-                robots or else it should be a list of the same length as "robots" param
+                gripper models from gripper factory.
+                For this environment, setting a value other than the default ("WipingGripper") will raise an
+                    AssertionError, as this environment is not meant to be used with any other alternative gripper.
 
             gripper_visualizations (bool or list of bool): True if using gripper visualization.
                 Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
@@ -182,6 +179,10 @@ class Wipe(RobotEnv):
         """
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
+
+        # Assert that the gripper type is None
+        assert gripper_types == "WipingGripper",\
+            "Tried to specify gripper other than WipingGripper in Wipe environment!"
 
         # Get config
         self.task_config = task_config if task_config is not None else DEFAULT_WIPE_CONFIG
