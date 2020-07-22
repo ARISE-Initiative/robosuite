@@ -83,8 +83,6 @@ class Bimanual(Robot):
         self.eef_rot_offset = self._input2dict(None)                            # rotation offsets from final arm link to gripper (quat)
         self.eef_site_id = self._input2dict(None)                               # xml element id for eef in mjsim
         self.eef_cylinder_id = self._input2dict(None)                           # xml element id for eef cylinder in mjsim
-        self.eef_force_sensor_idx = self._input2dict(None)                      # start idx for eef force sensor in sensordata array
-        self.eef_torque_sensor_idx = self._input2dict(None)                     # start idx for eef torque sensor in sensordata array
         self.torques = None                                                     # Current torques being applied
 
         self.recent_qpos = None                                 # Current and last robot arm qpos
@@ -250,14 +248,6 @@ class Bimanual(Robot):
                 self.gripper[arm].visualization_sites["grip_site"])
             self.eef_cylinder_id[arm] = self.sim.model.site_name2id(
                 self.gripper[arm].visualization_sites["grip_cylinder"])
-
-            # Indexes of eef sensors -- Note that this is the index of where the sensor data for this sensor starts
-            # in the sim.data.sensordata struct, NOT the ID assigned by mujoco!
-            sensordims = self.sim.model.sensor_dim
-            self.eef_force_sensor_idx[arm] = np.sum(
-                sensordims[:self.sim.model.sensor_name2id(self.gripper[arm].sensors["force_ee"])])
-            self.eef_torque_sensor_idx[arm] = np.sum(
-                sensordims[:self.sim.model.sensor_name2id(self.gripper[arm].sensors["torque_ee"])])
 
     def control(self, action, policy_step=False):
         """
@@ -504,7 +494,7 @@ class Bimanual(Robot):
         """
         vals = {}
         for arm in self.arms:
-            vals[arm] = self.sim.data.sensordata[self.eef_force_sensor_idx[arm]: self.eef_force_sensor_idx[arm] + 3]
+            vals[arm] = self.get_sensor_measurement(self.gripper[arm].sensors["force_ee"])
         return vals
 
     @property
@@ -514,7 +504,7 @@ class Bimanual(Robot):
         """
         vals = {}
         for arm in self.arms:
-            vals[arm] = self.sim.data.sensordata[self.eef_torque_sensor_idx[arm]: self.eef_torque_sensor_idx[arm] + 3]
+            vals[arm] = self.get_sensor_measurement(self.gripper[arm].sensors["torque_ee"])
         return vals
 
 
