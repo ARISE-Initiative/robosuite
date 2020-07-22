@@ -66,7 +66,7 @@ def load_controller_config(custom_fpath=None, default_controller=None):
         with open(custom_fpath) as f:
             controller_config = json.load(f)
     except FileNotFoundError:
-        print("Error opening default controller filepath at: {}. "
+        print("Error opening controller filepath at: {}. "
               "Please check filepath and try again.".format(custom_fpath))
 
     # Return the loaded controller
