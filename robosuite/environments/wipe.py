@@ -13,7 +13,7 @@ import multiprocessing
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
     "arm_collision_penalty": -50,                   # penalty for each collision of the arm (except the wiping tool) with the table
-    "wipe_contact_reward": 0.001,                    # reward for contacting something with the wiping tool
+    "wipe_contact_reward": 0.001,                   # reward for contacting something with the wiping tool
     "unit_wiped_reward": 20,                        # reward per peg wiped
     "ee_accel_penalty": 0,                          # penalty for large end-effector accelerations 
     "excess_force_penalty_mul": 0.01,               # penalty for each step that the force is over the safety threshold
@@ -21,7 +21,8 @@ DEFAULT_WIPE_CONFIG = {
     "distance_th_multiplier": 0,                    # multiplier in the tanh function for the aforementioned reward
 
     # settings for table top
-    "table_full_size": [0.5, 0.5, 0.05],            # Size of the cover of the table
+    "table_full_size": [0.6, 0.8, 0.05],            # Size of tabletop
+    "table_offset": [0, 0, 0.8],                    # Offset of table (z dimension defines max height of table)
     "table_friction": [0.00001, 0.005, 0.0001],     # Friction parameters for the table
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
@@ -31,6 +32,7 @@ DEFAULT_WIPE_CONFIG = {
     "line_width": 0.02,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "num_squares": [4, 4],                          # num of squares to divide each dim of the table surface
+    "coverage_factor": 0.8,                         # how much of the table surface we cover
 
     # settings for thresholds
     "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the sensor (wipe the peg)
@@ -42,7 +44,6 @@ DEFAULT_WIPE_CONFIG = {
     "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
     "real_robot": False,                            # whether we're using the actual robot or a sim
     "prob_sensor": 1.0,
-    "draw_line": True,                              # whether you want a line for sensors
     "num_sensors": 10,
 }
 
@@ -202,6 +203,7 @@ class Wipe(RobotEnv):
 
         # settings for table top
         self.table_full_size = self.task_config['table_full_size']
+        self.table_offset = self.task_config['table_offset']
         self.table_friction = self.task_config['table_friction']
         self.table_friction_std = self.task_config['table_friction_std']
         self.table_height = self.task_config['table_height']
@@ -211,6 +213,7 @@ class Wipe(RobotEnv):
         self.line_width = self.task_config['line_width']
         self.two_clusters = self.task_config['two_clusters']
         self.num_squares = self.task_config['num_squares']
+        self.coverage_factor = self.task_config['coverage_factor']
 
         # settings for thresholds
         self.touch_threshold = self.task_config['touch_threshold']
@@ -223,7 +226,6 @@ class Wipe(RobotEnv):
         self.use_robot_obs = self.task_config['use_robot_obs']
         self.real_robot = self.task_config['real_robot']
         self.prob_sensor = self.task_config['prob_sensor']
-        self.draw_line = self.task_config['draw_line']
         self.num_sensors = self.task_config['num_sensors']
 
         # ee resets
@@ -404,9 +406,9 @@ class Wipe(RobotEnv):
             # For all the new sensors we are wiping at this step, make them transparent (alpha=0), add them to the list
             # of wiped sensors, and add reward (if dense reward is ON)
             for new_sensor_active_id in new_sensors_active_ids:
-                new_sensor_active_site_id = self.sim.model.site_name2id(
-                    self.model.arena.sensor_site_names['contact_' + str(new_sensor_active_id) + '_sensor'])
-                self.sim.model.site_rgba[new_sensor_active_site_id] = [0, 0, 0, 0]
+                sensor_name = self.model.arena.sensor_site_names['contact_' + str(new_sensor_active_id) + '_sensor']
+                new_sensor_active_geom_id = self.sim.model.geom_name2id(sensor_name)
+                self.sim.model.geom_rgba[new_sensor_active_geom_id] = [0, 0, 0, 0]
 
                 self.wiped_sensors += [new_sensor_active_id]
                 if self.reward_shaping: reward += self.unit_wiped_reward
@@ -482,16 +484,15 @@ class Wipe(RobotEnv):
         # Delta goes down
         delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))
 
-        table_full_size_sampled = (
-        self.table_full_size[0], self.table_full_size[1], self.table_full_size[2] + delta_height)
-        self.mujoco_arena = WipeArena(table_full_size=table_full_size_sampled,
+        self.mujoco_arena = WipeArena(table_full_size=self.table_full_size,
                                       table_friction=self.table_friction,
+                                      table_offset=np.array(self.table_offset) + np.array((0, 0, delta_height)),
                                       table_friction_std=self.table_friction_std,
+                                      coverage_factor=self.coverage_factor,
                                       num_squares=self.num_squares if not self.real_robot else 0,
                                       prob_sensor=self.prob_sensor,
                                       rotation_x=np.random.normal(0, self.table_rot_x),
                                       rotation_y=np.random.normal(0, self.table_rot_y),
-                                      draw_line=self.draw_line,
                                       num_sensors=self.num_sensors if not self.real_robot else 0,
                                       line_width=self.line_width,
                                       two_clusters=self.two_clusters

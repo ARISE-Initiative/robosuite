@@ -5,6 +5,7 @@ import os
 import numpy as np
 from collections.abc import Iterable
 from PIL import Image
+from pathlib import Path
 
 import robosuite
 
@@ -36,6 +37,7 @@ TEXTURES = {
     "Ceramic": "ceramic.png",
     "Cereal": "cereal.png",
     "Clay": "clay.png",
+    "Dirt": "dirt.png",
     "Glass": "glass.png",
     "FeltGray": "gray-felt.png",
     "Lemon": "lemon.png",
@@ -299,8 +301,11 @@ class CustomMaterial(object):
         else:
             # Create a texture patch
             tex = Image.new('RGBA', (100, 100), tuple((np.array(texture)*255).astype('int')))
+            # Create temp directory if it does not exist
+            save_dir = "/tmp/robosuite_temp_tex"
+            Path(save_dir).mkdir(parents=True, exist_ok=True)
             # Save this texture patch to the temp directory on disk (MacOS / Linux)
-            fpath = "/tmp/robosuite_temp_tex/{}.png".format(tex_name)
+            fpath = save_dir + "/{}.png".format(tex_name)
             tex.save(fpath, "PNG")
             # Link this texture file to the default texture dict
             self.tex_attrib["file"] = fpath

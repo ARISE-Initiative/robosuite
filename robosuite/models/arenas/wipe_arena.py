@@ -1,17 +1,11 @@
 import numpy as np
 from robosuite.models.arenas import TableArena
-from robosuite.utils.mjcf_utils import array_to_string
+from robosuite.utils.mjcf_utils import array_to_string, CustomMaterial
 from collections import OrderedDict
-from robosuite.models.objects import CylinderObject, BoxObject
+from robosuite.models.objects import CylinderObject
 import robosuite.utils.transform_utils as T
 
-import xml.etree.ElementTree as ET
 
-import random
-import itertools
-
-
-# TODO: Re-integrate this with Ajay's interface once new Arena API is merged
 class WipeArena(TableArena):
     """Workspace that contains an empty table with tactile sensors on its surface."""
 
@@ -20,11 +14,11 @@ class WipeArena(TableArena):
         table_full_size=(0.8, 0.8, 0.05),
         table_friction=(0.01, 0.005, 0.0001),
         table_offset=(0, 0, 0.8),
+        coverage_factor=0.9,
         num_squares=(10, 10),
         prob_sensor=1.0,
         rotation_x=0,
         rotation_y=0,
-        draw_line=True,
         num_sensors=10,
         table_friction_std=0,
         line_width=0.02,
@@ -44,13 +38,19 @@ class WipeArena(TableArena):
         self.num_squares = np.array(num_squares)
         self.sensor_names = []
         self.sensor_site_names = {}
-        self.coverage_factor = 1.0 #How much of the table surface we cover
+        self.coverage_factor = coverage_factor
         self.prob_sensor = prob_sensor
         self.rotation_x = rotation_x
         self.rotation_y = rotation_y
-        self.draw_line = draw_line
         self.num_sensors = num_sensors
         self.two_clusters = two_clusters
+
+        # Additional features to be defined during initialization
+        self.square_full_size = None
+        self.square_half_size = None
+        self.peg_size = None
+        self.squares = None
+        self.mujoco_objects = None
 
         # run superclass init
         super().__init__(
@@ -69,416 +69,146 @@ class WipeArena(TableArena):
 
         friction = max(0.001, np.random.normal(self.table_friction[0], self.table_friction_std))
 
-        #Compute size of the squares
+        # Compute size of the squares
         self.square_full_size = np.divide(self.table_full_size[0:2]*self.coverage_factor, self.num_squares)
         self.square_half_size = self.square_full_size/2.0
-
         self.peg_size = 0.01
+        self.squares = OrderedDict()
+        self.mujoco_objects = OrderedDict()
 
-        if self.draw_line: 
-            self.squares = OrderedDict()
-            self.mujoco_objects = OrderedDict()
+        # Grab reference to the table body in the xml
+        table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
 
-            table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
+        # Define start position for drawing the line
+        pos = np.array(
+            (
+                np.random.uniform(
+                    -self.table_half_size[0] * self.coverage_factor,
+                    self.table_half_size[0] * self.coverage_factor),
+                np.random.uniform(
+                    -self.table_half_size[1] * self.coverage_factor,
+                    self.table_half_size[1] * self.coverage_factor)
+            )
+        )
+        direction = np.random.uniform(-np.pi, np.pi)
 
-            # Sites on additional bodies attached to the table
-            #squares_separation = 0.0005
-            squares_separation = 0.0
-            squares_height = 0.1
-            table_cte_size_x = 0.8
-            table_cte_size_y = 1.0
+        # Define dirt material for markers
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.0",
+            "shininess": "0.0",
+        }
+        dirt = CustomMaterial(
+            texture="Dirt",
+            tex_name="dirt",
+            mat_name="dirt_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
 
-            square_name2 = 'table_0_0'
-
-            square2 = BoxObject(
+        # Define line(s) drawn on table
+        for i in range(self.num_sensors):
+            # If we're using two clusters, we resample the starting position and direction at the halfway point
+            if self.two_clusters and i == int(np.floor(self.num_sensors / 2)):
+                pos = np.array(
+                    (
+                        np.random.uniform(
+                            -self.table_half_size[0] * self.coverage_factor,
+                            self.table_half_size[0] * self.coverage_factor),
+                        np.random.uniform(
+                            -self.table_half_size[1] * self.coverage_factor,
+                            self.table_half_size[1] * self.coverage_factor)
+                    )
+                )
+                direction = np.random.uniform(-np.pi, np.pi)
+            square_name2 = 'contact_'+str(i)
+            square2 = CylinderObject(
                 name=square_name2,
-                size=[table_cte_size_x/2, table_cte_size_y/2,  squares_height/2 - 0.001],
+                size=[self.line_width, 0.001],
                 rgba=[1, 1, 1, 1],
                 density=1,
-                friction=friction
+                material=dirt,
+                friction=friction,
             )
+            self.merge_asset(square2)
             self.squares[square_name2] = square2
-            collision_c = square2.get_collision(site=True)
+            visual_c = square2.get_visual(site=True)
+            visual_c.set("pos", array_to_string([pos[0], pos[1], self.table_half_size[2]]))
+            visual_c.find("site").set("pos", [0, 0, 0.005])
+            visual_c.find("site").set("rgba", array_to_string([0, 0, 0, 0]))
+            table_subtree.append(visual_c)
 
-            #Align the constant sized table to the bottom of the table
-            collision_c.set("pos", array_to_string([table_cte_size_x/2 - self.table_half_size[0] - 0.18,
-                0,
-                self.table_half_size[2]+squares_height/2]))
-            table_subtree.append(collision_c)
+            sensor_name = square_name2 + "_sensor"
+            sensor_site_name = square_name2
+            self.sensor_names += [sensor_name]
+            self.sensor_site_names[sensor_name] = sensor_site_name
 
-            pos = np.array((np.random.uniform(-self.table_half_size[0], self.table_half_size[0]),
-                np.random.uniform(-self.table_half_size[1], self.table_half_size[1])))
-            direction =  np.random.uniform(-np.pi, np.pi)
+            if np.random.uniform(0,1) > 0.7:
+                direction += np.random.normal(0, 0.5)
 
-            if not self.two_clusters:
-                for i in range(self.num_sensors):
-                    square_name2 = 'contact_'+str(i)
-                    square2 = CylinderObject(
-                        name=square_name2,
-                        size=[self.line_width, 0.001],
-                        rgba=[0, 1,0, 0],
-                        density=1,
-                        friction=friction
-                    )
-                    self.squares[square_name2] = square2
-                    collision_c = square2.get_collision(site=True)
-                    collision_c.set("pos", array_to_string([pos[0],pos[1],self.table_half_size[2]+squares_height]))
-                    #collision_c.find("site").set("pos", array_to_string([0,0,0]))
-                    collision_c.find("site").set("pos", array_to_string([pos[0],pos[1],self.table_half_size[2]+squares_height+0.005]))
-                    collision_c.find("site").set("size", array_to_string([self.line_width, 0.001]))
-                    collision_c.find("geom").set("contype", "0")
-                    collision_c.find("geom").set("conaffinity", "0")      
-                    collision_c.find("site").set("rgba", array_to_string([0,1,0, 1]))
-                    #table_subtree.append(collision_c)
-                    table_subtree.append(collision_c.find("site"))
+            posnew0 = pos[0] + 0.005*np.sin(direction)
+            posnew1 = pos[1] + 0.005*np.cos(direction)
 
-                    sensor_name = square_name2 +"_sensor"
-                    sensor_site_name = square_name2# +"_site"
-                    self.sensor_names += [sensor_name]
-                    self.sensor_site_names[sensor_name] = sensor_site_name
-                    #ET.SubElement(self.sensor, "touch", attrib={"name" : sensor_name, "site" : sensor_site_name})
+            while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
+                direction += np.random.normal(0, 0.5)
+                posnew0 = pos[0] + 0.005*np.sin(direction)
+                posnew1 = pos[1] + 0.005*np.cos(direction)
 
-                    if np.random.uniform(0,1) > 0.7:
-                        direction += np.random.normal(0, 0.5)
-
-                    posnew0 = pos[0] + 0.005*np.sin(direction)
-                    posnew1 = pos[1] + 0.005*np.cos(direction)
-
-                    while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
-                        direction += np.random.normal(0, 0.5)
-                        posnew0 = pos[0] + 0.005*np.sin(direction)
-                        posnew1 = pos[1] + 0.005*np.cos(direction)
-
-                    pos[0] = posnew0
-                    pos[1] = posnew1
-            else:
-                half_num_sensors = int(np.floor(self.num_sensors/2))
-                last_i = 0
-                for i in range(half_num_sensors):
-                    square_name2 = 'contact_' + str(i)
-                    square2 = CylinderObject(
-                        name=square_name2,
-                        size=[self.line_width, 0.001],
-                        rgba=[0, 1,0, 0],
-                        density=1,
-                        friction=friction
-                    )
-                    self.squares[square_name2] = square2
-                    collision_c = square2.get_collision(site=True)
-                    collision_c.set("pos", array_to_string([pos[0],pos[1],self.table_half_size[2]+squares_height+0.01]))
-                    #collision_c.find("site").set("pos", array_to_string([0,0,0]))
-                    collision_c.find("site").set("pos", array_to_string([pos[0],pos[1],self.table_half_size[2]+squares_height+0.005]))
-                    collision_c.find("site").set("size", array_to_string([self.line_width, 0.001]))
-                    collision_c.find("geom").set("contype", "0")
-                    collision_c.find("geom").set("conaffinity", "0")      
-                    collision_c.find("site").set("rgba", array_to_string([0,1,0, 1]))
-                    #table_subtree.append(collision_c)
-                    table_subtree.append(collision_c.find("site"))
-
-                    sensor_name = square_name2 +"_sensor"
-                    sensor_site_name = square_name2# +"_site"
-                    self.sensor_names += [sensor_name]
-                    self.sensor_site_names[sensor_name] = sensor_site_name
-                    #ET.SubElement(self.sensor, "touch", attrib={"name" : sensor_name, "site" : sensor_site_name})
-
-                    if np.random.uniform(0,1) > 0.7:
-                        direction += np.random.normal(0, 0.5)
-
-                    posnew0 = pos[0] + 0.005*np.sin(direction)
-                    posnew1 = pos[1] + 0.005*np.cos(direction)
-
-                    while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
-                        direction += np.random.normal(0, 0.5)
-                        posnew0 = pos[0] + 0.005*np.sin(direction)
-                        posnew1 = pos[1] + 0.005*np.cos(direction)
-
-                    pos[0] = posnew0
-                    pos[1] = posnew1
-
-                    last_i = i
-
-
-                last_i+=1
-                pos = np.array((np.random.uniform(-self.table_half_size[0], self.table_half_size[0]),
-                    np.random.uniform(-self.table_half_size[1], self.table_half_size[1])))
-                direction =  np.random.uniform(-np.pi, np.pi)
-
-                for i in range(half_num_sensors):
-                    square_name2 = 'contact_'+str(last_i +i)
-                    square2 = CylinderObject(
-                        name=square_name2,
-                        size=[self.line_width, 0.001],
-                        rgba=[0, 1,0, 0],
-                        density=1,
-                        friction=friction
-                    )
-                    self.squares[square_name2] = square2
-                    collision_c = square2.get_collision(site=True)
-                    collision_c.set("pos", array_to_string([pos[0],pos[1],self.table_half_size[2]+squares_height+0.01]))
-                    #collision_c.find("site").set("pos", array_to_string([0,0,0]))
-                    collision_c.find("site").set("pos", array_to_string([pos[0],pos[1],self.table_half_size[2]+squares_height+0.005]))
-                    collision_c.find("site").set("size", array_to_string([self.line_width, 0.001]))
-                    collision_c.find("geom").set("contype", "0")
-                    collision_c.find("geom").set("conaffinity", "0")      
-                    collision_c.find("site").set("rgba", array_to_string([0,1,0, 1]))
-                    #table_subtree.append(collision_c)
-                    table_subtree.append(collision_c.find("site"))
-
-                    sensor_name = square_name2 +"_sensor"
-                    sensor_site_name = square_name2# +"_site"
-                    self.sensor_names += [sensor_name]
-                    self.sensor_site_names[sensor_name] = sensor_site_name
-                    #ET.SubElement(self.sensor, "touch", attrib={"name" : sensor_name, "site" : sensor_site_name})
-
-                    if np.random.uniform(0,1) > 0.7:
-                        direction += np.random.normal(0, 0.5)
-
-                    posnew0 = pos[0] + 0.005*np.sin(direction)
-                    posnew1 = pos[1] + 0.005*np.cos(direction)
-
-                    while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
-                        direction += np.random.normal(0, 0.5)
-                        posnew0 = pos[0] + 0.005*np.sin(direction)
-                        posnew1 = pos[1] + 0.005*np.cos(direction)
-
-                    pos[0] = posnew0
-                    pos[1] = posnew1
-
-        else:
-
-            self.squares = OrderedDict()
-
-            indices = [a for a in itertools.product(range(self.num_squares[0]), range(self.num_squares[1]))]
-            picked_indices = random.sample(indices, int(np.ceil(self.prob_sensor*len(indices))))
-
-            for i in range(self.num_squares[0]):
-                for j in range(self.num_squares[1]):
-
-                    self.mujoco_objects = OrderedDict()
-
-                    table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
-
-                    # Sites directly attached to the table
-                    # square = BoxObject(size=[self.square_half_size[0]-0.0005, self.square_half_size[1]-0.0005, 0.001],
-                    #                    rgba=[0, 0, 1, 1],
-                    #                    density=500,
-                    #                    friction=0.05)
-                    # square_name = 'contact_'+str(i) + "_" + str(j)
-                    # self.squares[square_name] = square
-                    # collision_b = square.get_collision(name=square_name, site=True)
-                    # collision_b.set("pos", array_to_string([
-                    #     self.table_half_size[0]-i*self.square_full_size[0]-0.5*self.square_full_size[0], 
-                    #     self.table_half_size[1]-j*self.square_full_size[1]-0.5*self.square_full_size[1], 
-                    #     self.table_half_size[2]+0.05]))  
-                    # collision_b.find("site").set("pos", array_to_string([0,0,0.002])) 
-                    # collision_b.find("site").set("pos", array_to_string([
-                    #     self.table_half_size[0]-i*self.square_full_size[0]-0.5*self.square_full_size[0], 
-                    #     self.table_half_size[1]-j*self.square_full_size[1]-0.5*self.square_full_size[1], 
-                    #     self.table_half_size[2]+0.005])) 
-                    # table_subtree.append(collision_b.find("site"))
-                    # sensor_name = square_name +"_sensor"
-                    # self.sensor_names += [sensor_name]
-                    # ET.SubElement(self.sensor, "force", attrib={"name" : sensor_name, "site" : square_name + "_site"})
-                    #print(ET.tostring(collision_b.find("site")))
-
-                    # Sites on additional bodies attached to the table
-                    #squares_separation = 0.0005
-                    squares_separation = 0.0
-                    squares_height = 0.1
-                    square_name2 = 'contact_'+str(i) + "_" + str(j)
-                    square2 = BoxObject(
-                        name=square_name2,
-                        size=[self.square_half_size[0]-0.0005, self.square_half_size[1]-squares_separation, squares_height/2 - 0.001],
-                        rgba=[0, 1, 0, 1],
-                        density=1,
-                        friction=0.0001)
-                    self.squares[square_name2] = square2
-                    collision_c = square2.get_collision(site=True)
-                    collision_c.set("pos", array_to_string([
-                        self.table_half_size[0]-i*self.square_full_size[0]-0.5*self.square_full_size[0], 
-                        self.table_half_size[1]-j*self.square_full_size[1]-0.5*self.square_full_size[1], 
-                        self.table_half_size[2]+squares_height/2 - 0.001]))
-                    collision_c.find("site").set("pos", array_to_string([0,0,squares_height/2]))
-                    collision_c.find("site").set("size", array_to_string([self.square_half_size[0]-squares_separation, self.square_half_size[1]-squares_separation,0.002]))
-                    place_this_sensor = (i,j) in picked_indices
-                    sensor_name = square_name2 +"_sensor"
-                    sensor_site_name = square_name2# +"_site"
-                    ET.SubElement(self.sensor, "force", attrib={"name" : sensor_name, "site" : sensor_site_name})
-                    if i < self.num_squares[0] - 1 and place_this_sensor: 
-                        collision_c.find("site").set("rgba", array_to_string([0,1,0, 1]))
-                        self.sensor_names += [sensor_name]
-                        self.sensor_site_names[sensor_name] = sensor_site_name
-                    else:
-                        collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
-                    table_subtree.append(collision_c)
-
-            #Add upper border to the table
-            table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
-            squares_height = 0.1
-            border_half_size = 0.08
-            square_name2 = 'border_upper'
-            square2 = BoxObject(
-                name=square_name2,
-                size=[border_half_size, self.table_half_size[1] + 2*border_half_size, squares_height/2 - 0.001],
-                rgba=[0, 1, 0, 1],
-                density=1,
-                friction=0.05)
-            self.squares[square_name2] = square2
-            collision_c = square2.get_collision(site=True)
-            collision_c.set("pos", array_to_string([self.table_half_size[0]+border_half_size, 0, self.table_half_size[2]+squares_height/2 - 0.001]))
-            collision_c.find("site").set("pos", array_to_string([0,0,squares_height/2]))
-            collision_c.find("site").set("size", array_to_string([border_half_size, self.table_half_size[1]+ 2*border_half_size, 0.002]))
-            collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
-            table_subtree.append(collision_c)
-
-            
-
-            #Add left border to the table
-            square_name2 = 'border_left'
-            square2 = BoxObject(
-                name=square_name2,
-                size=[self.table_half_size[0], border_half_size, squares_height/2 - 0.001],
-                rgba=[0, 1, 0, 1],
-                density=1,
-                friction=0.05)
-            self.squares[square_name2] = square2
-            collision_c = square2.get_collision(site=True)
-            collision_c.set("pos", array_to_string([0, self.table_half_size[1]+border_half_size, self.table_half_size[2]+squares_height/2 - 0.001]))
-            collision_c.find("site").set("pos", array_to_string([0,0,squares_height/2]))
-            collision_c.find("site").set("size", array_to_string([self.table_half_size[0], border_half_size, 0.002]))
-            collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
-            table_subtree.append(collision_c)
-
-            #Add right border to the table
-            square_name2 = 'border_right'
-            square2 = BoxObject(
-                name=square_name2,
-                size=[self.table_half_size[0], border_half_size, squares_height/2 - 0.001],
-                rgba=[0, 1, 0, 1],
-                density=1,
-                friction=0.05)
-            self.squares[square_name2] = square2
-            collision_c = square2.get_collision(site=True)
-            collision_c.set("pos", array_to_string([0, -self.table_half_size[1]-border_half_size, self.table_half_size[2]+squares_height/2 - 0.001]))
-            collision_c.find("site").set("pos", array_to_string([0,0,squares_height/2]))
-            collision_c.find("site").set("size", array_to_string([self.table_half_size[0], border_half_size, 0.002]))
-            collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
-            table_subtree.append(collision_c)
-
-            #Add lower border to the table
-            low_border_half_size = 0.06
-            square_name2 = 'border_lower'
-            square2 = BoxObject(
-                name=square_name2,
-                size=[low_border_half_size, self.table_half_size[1] + 2*border_half_size, squares_height/2 - 0.001],
-                rgba=[0, 1, 0, 1],
-                density=1,
-                friction=0.05)
-            self.squares[square_name2] = square2
-            collision_c = square2.get_collision(site=True)
-            collision_c.set("pos", array_to_string([-self.table_half_size[0]-low_border_half_size, 0, self.table_half_size[2]+squares_height/2 - 0.001]))
-            collision_c.find("site").set("pos", array_to_string([0,0,squares_height/2]))
-            collision_c.find("site").set("size", array_to_string([low_border_half_size, self.table_half_size[1]+ 2*border_half_size, 0.002]))
-            collision_c.find("site").set("rgba", array_to_string([0,0,1, 1]))
-            table_subtree.append(collision_c)
+            pos[0] = posnew0
+            pos[1] = posnew1
 
     def reset_arena(self, sim):
         """Reset the tactile sensor locations in the environment. Requires @sim (MjSim) reference to be passed in"""
-        if self.draw_line:
-
-            """
-            self.squares = OrderedDict()
-            self.mujoco_objects = OrderedDict()
-    
-            table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
-    
-            # Sites on additional bodies attached to the table
-            # squares_separation = 0.0005
-            squares_separation = 0.0
-            squares_height = 0.1
-            table_cte_size_x = 0.8
-            table_cte_size_y = 1.0
-    
-            square_name2 = 'table_0_0'
-    
-            square2 = BoxObject(
-                name=square_name2,
-                size=[table_cte_size_x / 2, table_cte_size_y / 2, squares_height / 2 - 0.001],
-                rgba=[1, 1, 1, 1],
-                density=1,
-                friction=friction
+        # Sample new initial position and direction for generated sensor paths
+        pos = np.array(
+            (
+                np.random.uniform(
+                    -self.table_half_size[0] * self.coverage_factor,
+                    self.table_half_size[0] * self.coverage_factor),
+                np.random.uniform(
+                    -self.table_half_size[1] * self.coverage_factor,
+                    self.table_half_size[1] * self.coverage_factor)
             )
-            self.squares[square_name2] = square2
-            collision_c = square2.get_collision(site=True)
-    
-            # Align the constant sized table to the bottom of the table
-            collision_c.set("pos", array_to_string([table_cte_size_x / 2 - self.table_half_size[0] - 0.18,
-                                                    0,
-                                                    self.table_half_size[2] + squares_height / 2]))
-            table_subtree.append(collision_c)
-            """
-            # Hardcoded values from initial generation
-            squares_height = 0.1
+        )
+        direction = np.random.uniform(-np.pi, np.pi)
 
-            # Sample new initial position and direction for generated sensor paths
-            pos = np.array((np.random.uniform(-self.table_half_size[0], self.table_half_size[0]),
-                            np.random.uniform(-self.table_half_size[1], self.table_half_size[1])))
-            direction = np.random.uniform(-np.pi, np.pi)
-
-            # Loop through all sensor collision body / site pairs
-            for i, (_, site_name) in enumerate(self.sensor_site_names.items()):
-                # If we're using two clusters, we resample the starting position and direction at the halfway point
-                if self.two_clusters and i == int(np.floor(self.num_sensors / 2)):
-                    pos = np.array((np.random.uniform(-self.table_half_size[0], self.table_half_size[0]),
-                                    np.random.uniform(-self.table_half_size[1], self.table_half_size[1])))
-                    direction = np.random.uniform(-np.pi, np.pi)
-                # Get IDs
-                site_id = sim.model.site_name2id(site_name)
-                # Determine new position for this sensor
-                position = np.array([pos[0], pos[1], self.table_half_size[2] + squares_height + 0.005])
-                # Set the current sensor to this new position
-                sim.model.site_pos[site_id] = position
-                # Set the sensor visualization
-                sim.model.site_rgba[site_id] = [0, 1, 0, 1]
-                # Sample next values in local sensor trajectory
-                if np.random.uniform(0, 1) > 0.7:
-                    direction += np.random.normal(0, 0.5)
-                # Update positions for next sensor
+        # Loop through all sensor collision body / site pairs
+        for i, (_, sensor_name) in enumerate(self.sensor_site_names.items()):
+            # If we're using two clusters, we resample the starting position and direction at the halfway point
+            if self.two_clusters and i == int(np.floor(self.num_sensors / 2)):
+                pos = np.array(
+                    (
+                        np.random.uniform(
+                            -self.table_half_size[0] * self.coverage_factor,
+                            self.table_half_size[0] * self.coverage_factor),
+                        np.random.uniform(
+                            -self.table_half_size[1] * self.coverage_factor,
+                            self.table_half_size[1] * self.coverage_factor)
+                    )
+                )
+                direction = np.random.uniform(-np.pi, np.pi)
+            # Get IDs to the body, geom, and site of each sensor
+            site_id = sim.model.site_name2id(sensor_name)
+            body_id = sim.model.body_name2id(sensor_name)
+            geom_id = sim.model.geom_name2id(sensor_name)
+            # Determine new position for this sensor
+            position = np.array([pos[0], pos[1], self.table_half_size[2]])
+            # Set the current sensor (body) to this new position
+            sim.model.body_pos[body_id] = position
+            # Reset the sensor visualization -- setting geom rgba to all 1's
+            sim.model.geom_rgba[geom_id] = [1, 1, 1, 1]
+            # Sample next values in local sensor trajectory
+            if np.random.uniform(0, 1) > 0.7:
+                direction += np.random.normal(0, 0.5)
+            # Update positions for next sensor
+            posnew0 = pos[0] + 0.005 * np.sin(direction)
+            posnew1 = pos[1] + 0.005 * np.cos(direction)
+            while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
+                direction += np.random.normal(0, 0.5)
                 posnew0 = pos[0] + 0.005 * np.sin(direction)
                 posnew1 = pos[1] + 0.005 * np.cos(direction)
-                while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
-                    direction += np.random.normal(0, 0.5)
-                    posnew0 = pos[0] + 0.005 * np.sin(direction)
-                    posnew1 = pos[1] + 0.005 * np.cos(direction)
-                pos[0] = posnew0
-                pos[1] = posnew1
-
-        else:
-            # Sample indices from the squares
-            indices = [a for a in itertools.product(range(self.num_squares[0]), range(self.num_squares[1]))]
-            picked_indices = random.sample(indices, int(np.ceil(self.prob_sensor * len(indices))))
-
-            # Initialize dicts that we'll replace the current attributes with
-            sensor_names = {}
-            sensor_site_names = {}
-
-            for i in range(self.num_squares[0]):
-                for j in range(self.num_squares[1]):
-                    # Generate sensor name
-                    square_name2 = 'contact_' + str(i) + "_" + str(j)
-                    sensor_name = square_name2 + "_sensor"
-                    # Get reference to this sensor site
-                    site_id = sim.model.site_name2id(sensor_name)
-                    # Determine if we'll place this sensor; if so, save it to new sensor list and set vis appropriately
-                    place_this_sensor = (i, j) in picked_indices
-                    if i < self.num_squares[0] - 1 and place_this_sensor:
-                        sim.model.site_rgba[site_id] = [0, 1, 0, 1]
-                        sensor_site_name = square_name2
-                        sensor_names += [sensor_name]
-                        sensor_site_names[sensor_name] = sensor_site_name
-                    else:
-                        sim.model.site_rgba[site_id] = [0, 0, 1, 1]
-
-            # Lastly, update the sensor / site names
-            self.sensor_names = sensor_names
-            self.sensor_site_names = sensor_site_names
+            pos[0] = posnew0
+            pos[1] = posnew1

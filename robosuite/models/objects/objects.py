@@ -311,7 +311,7 @@ class MujocoGeneratedObject(MujocoObject):
 
     @staticmethod
     def get_collision_attrib_template():
-        return {"pos": "0 0 0", "group": "1"}
+        return {"pos": "0 0 0", "group": "0"}
 
     @staticmethod
     def get_visual_attrib_template():
@@ -365,11 +365,13 @@ class MujocoGeneratedObject(MujocoObject):
         main_body = ET.Element("body")
         main_body.set("name", self.name)
         template = self.get_visual_attrib_template()
+        template["name"] = self.name
         template["type"] = ob_type
         if self.material == "default":
+            template["rgba"] = "0.5 0.5 0.5 1"  # mujoco default
             template["material"] = "{}_mat".format(self.name)
         elif self.material is not None:
-            template["material"] = self.material["material"]["name"]
+            template["material"] = self.material.mat_attrib["name"]
         else:
             template["rgba"] = array_to_string(self.rgba)
         template["size"] = array_to_string(self.size)
