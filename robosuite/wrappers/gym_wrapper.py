@@ -10,7 +10,6 @@ from robosuite.wrappers import Wrapper
 
 
 class GymWrapper(Wrapper):
-    env = None
 
     def __init__(self, env, keys=None):
         """
