@@ -80,6 +80,10 @@ class MujocoEnv(metaclass=EnvMeta):
             hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
                 only calls sim.reset and resets all robosuite-internal variables
         """
+        # First, verify that both the on- and off-screen renderers are not being used simultaneously
+        if has_renderer is True and has_offscreen_renderer is True:
+            raise ValueError("the onscreen and offscreen renderers cannot be used simultaneously.")
+
         # Rendering-specific attributes
         self.has_renderer = has_renderer
         self.has_offscreen_renderer = has_offscreen_renderer
