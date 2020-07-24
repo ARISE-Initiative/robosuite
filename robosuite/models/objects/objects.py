@@ -311,7 +311,8 @@ class MujocoGeneratedObject(MujocoObject):
 
     @staticmethod
     def get_collision_attrib_template():
-        return {"pos": "0 0 0", "group": "0"}
+        # TODO: collision group should be 0, but this removes the generated obj like the cube when we only render visual meshes
+        return {"pos": "0 0 0", "group": "1"}
 
     @staticmethod
     def get_visual_attrib_template():
