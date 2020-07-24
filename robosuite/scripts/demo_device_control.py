@@ -147,6 +147,7 @@ if __name__ == "__main__":
     env = suite.make(
         **config,
         has_renderer=True,
+        has_offscreen_renderer=False,
         render_camera="agentview",
         ignore_done=True,
         use_camera_obs=False,
