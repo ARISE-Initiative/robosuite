@@ -429,7 +429,7 @@ class PickPlace(RobotEnv):
                 rotation=0.,
                 rotation_axis='z',
                 z_offset=self.bin2_pos[2] - self.bin1_pos[2],
-                ensure_object_boundary_in_range=True,
+                ensure_object_boundary_in_range=False,
             )
 
             index += 1
