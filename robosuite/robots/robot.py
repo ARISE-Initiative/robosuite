@@ -94,7 +94,7 @@ class Robot(object):
         deterministic reset (e.g.: hard reset from xml file)
 
         """
-        init_qpos = self.init_qpos
+        init_qpos = np.array(self.init_qpos)
         if not deterministic:
             # Determine noise
             if self.initialization_noise["type"] == "gaussian":
