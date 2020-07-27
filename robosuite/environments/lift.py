@@ -167,6 +167,7 @@ class Lift(RobotEnv):
                 y_range=[-0.03, 0.03],
                 ensure_object_boundary_in_range=False,
                 rotation=None,
+                z_offset=0.01,
             )
 
         super().__init__(
