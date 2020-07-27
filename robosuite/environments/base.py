@@ -158,7 +158,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """Resets simulation."""
         # TODO(yukez): investigate black screen of death
         # Use hard reset if requested
-        if self.hard_reset:
+        if self.hard_reset and not self.deterministic_reset:
             self.sim.reset()    # TODO: Fix this once black screen of death is fixed
             #self._destroy_viewer()
             #self._load_model()
