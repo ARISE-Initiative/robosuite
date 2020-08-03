@@ -123,6 +123,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
+            self.sim.forward()
 
             self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
             self.ee_ori_mat = np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3]))

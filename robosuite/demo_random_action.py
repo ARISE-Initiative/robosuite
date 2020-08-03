@@ -50,6 +50,7 @@ if __name__ == "__main__":
     env = suite.make(
         **options,
         has_renderer=True,
+        has_offscreen_renderer=False,
         ignore_done=True,
         use_camera_obs=False,
         control_freq=20,
