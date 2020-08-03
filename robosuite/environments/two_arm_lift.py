@@ -215,7 +215,7 @@ class TwoArmLift(RobotEnv):
              or when the right gripper touches the right handle before the gripper geom
              touches the handle geom, and once it touches we use 0.5
 
-        Note that the final reward is normalized and scaled by reward_scale / 2.0 as
+        Note that the final reward is normalized and scaled by reward_scale / 3.0 as
         well so that the max score is equal to reward_scale
 
         Args:
@@ -294,7 +294,7 @@ class TwoArmLift(RobotEnv):
                 reward += 0.5 * (1 - np.tanh(_g1h_dist))
 
         if self.reward_scale is not None:
-            reward *= self.reward_scale / 2.0
+            reward *= self.reward_scale / 3.0
 
         return reward
 
