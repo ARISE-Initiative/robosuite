@@ -37,6 +37,7 @@ class SawyerPickPlace(SawyerEnv):
         object_type=None,
         gripper_visualization=False,
         use_indicator_object=False,
+        indicator_args=None,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -156,6 +157,7 @@ class SawyerPickPlace(SawyerEnv):
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
+            indicator_args=indicator_args,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_collision_mesh=render_collision_mesh,
@@ -261,7 +263,7 @@ class SawyerPickPlace(SawyerEnv):
         )
 
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            self.mujoco_arena.add_pos_indicator(**self.indicator_args)
 
         # store some arena attributes
         self.bin_size = self.mujoco_arena.table_full_size

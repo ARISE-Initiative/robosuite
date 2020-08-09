@@ -16,18 +16,31 @@ class Arena(MujocoXML):
             new_pos = cur_pos + offset
             node.set("pos", array_to_string(new_pos))
 
-    def add_pos_indicator(self):
+    def add_pos_indicator(self, num=1, geom_types=None, geom_sizes=None, geom_rgbas=None):
         """Adds a new position indicator."""
-        body = new_body(name="pos_indicator")
-        body.append(
-            new_geom(
-                "sphere",
-                [0.03],
-                rgba=[1, 0, 0, 0.5],
-                group=1,
-                contype="0",
-                conaffinity="0",
+        for i in range(num):
+            body = new_body(name="pos_indicator_{}".format(i))
+            if geom_types is not None:
+                geom_type = geom_types[i]
+            else:
+                geom_type = "sphere"
+            if geom_rgbas is not None:
+                rgba = geom_rgbas[i]
+            else:
+                rgba = [1, 0, 0, 0.5]
+            if geom_sizes is not None:
+                geom_size = geom_sizes[i]
+            else:
+                geom_size = [0.03]
+            body.append(
+                new_geom(
+                    geom_type,
+                    geom_size,
+                    rgba=rgba,
+                    group=1,
+                    contype="0",
+                    conaffinity="0",
+                )
             )
-        )
-        body.append(new_joint(type="free", name="pos_indicator"))
-        self.worldbody.append(body)
+            body.append(new_joint(type="free", name="pos_indicator_{}".format(i)))
+            self.worldbody.append(body)

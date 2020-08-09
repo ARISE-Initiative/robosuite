@@ -29,6 +29,7 @@ class SawyerNutAssembly(SawyerEnv):
         nut_type=None,
         gripper_visualization=False,
         use_indicator_object=False,
+        indicator_args=None,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_collision_mesh=False,
@@ -146,6 +147,7 @@ class SawyerNutAssembly(SawyerEnv):
             gripper_type=gripper_type,
             gripper_visualization=gripper_visualization,
             use_indicator_object=use_indicator_object,
+            indicator_args=indicator_args,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_collision_mesh=render_collision_mesh,
@@ -235,7 +237,7 @@ class SawyerNutAssembly(SawyerEnv):
             table_full_size=self.table_full_size, table_friction=self.table_friction
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            self.mujoco_arena.add_pos_indicator(**self.indicator_args)
 
         # The sawyer robot has a pedestal, we want to align it with the table
         self.mujoco_arena.set_origin([.5, -0.15, 0])
