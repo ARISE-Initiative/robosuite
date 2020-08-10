@@ -367,6 +367,14 @@ def quat2mat(quaternion):
     )
 
 
+def quat2col(quat):
+    """
+    quaternion to 2 columns of rotation matrix - useful for state representation
+    """
+    mat = quat2mat(quat)
+    return np.concatenate([mat[:, 0], mat[:, 1]])
+
+
 def pose_in_A_to_pose_in_B(pose_A, pose_A_in_B):
     """
     Converts a homogenous matrix corresponding to a point C in frame A

@@ -305,6 +305,7 @@ class SawyerEnv(MujocoEnv):
             di["eef_quat"] = T.convert_quat(
                 self.sim.data.get_body_xquat("right_hand"), to="xyzw"
             )
+            di["eef_quat_col"] = T.quat2col(di["eef_quat"])
             di["eef_vlin"] = np.array(self.sim.data.get_body_xvelp("right_hand"))
             di["eef_vang"] = np.array(self.sim.data.get_body_xvelr("right_hand"))
 

@@ -553,6 +553,7 @@ class SawyerPickPlace(SawyerEnv):
 
             # remember the keys to collect into object info
             object_state_keys = []
+            object_state_col_keys = []
 
             # for conversion to relative gripper frame
             gripper_pose = T.pose2mat((di["eef_pos"], di["eef_quat"]))
@@ -571,6 +572,7 @@ class SawyerPickPlace(SawyerEnv):
                 )
                 di["{}_pos".format(obj_str)] = obj_pos
                 di["{}_quat".format(obj_str)] = obj_quat
+                di["{}_quat_col".format(obj_str)] = T.quat2col(obj_quat)
 
                 # get relative pose of object in gripper frame
                 object_pose = T.pose2mat((obj_pos, obj_quat))
@@ -578,11 +580,17 @@ class SawyerPickPlace(SawyerEnv):
                 rel_pos, rel_quat = T.mat2pose(rel_pose)
                 di["{}_to_eef_pos".format(obj_str)] = rel_pos
                 di["{}_to_eef_quat".format(obj_str)] = rel_quat
+                di["{}_to_eef_quat_col".format(obj_str)] = T.quat2col(rel_quat)
 
                 object_state_keys.append("{}_pos".format(obj_str))
                 object_state_keys.append("{}_quat".format(obj_str))
                 object_state_keys.append("{}_to_eef_pos".format(obj_str))
                 object_state_keys.append("{}_to_eef_quat".format(obj_str))
+
+                object_state_col_keys.append("{}_pos".format(obj_str))
+                object_state_col_keys.append("{}_quat_col".format(obj_str))
+                object_state_col_keys.append("{}_to_eef_pos".format(obj_str))
+                object_state_col_keys.append("{}_to_eef_quat_col".format(obj_str))
 
             if self.single_object_mode == 1:
                 # Zero out other objects observations
@@ -594,8 +602,11 @@ class SawyerPickPlace(SawyerEnv):
                         di["{}_quat".format(obj_str)] *= 0.0
                         di["{}_to_eef_pos".format(obj_str)] *= 0.0
                         di["{}_to_eef_quat".format(obj_str)] *= 0.0
+                        di["{}_quat_col".format(obj_str)] *= 0.0
+                        di["{}_to_eef_quat_col".format(obj_str)] *= 0.0
 
             di["object-state"] = np.concatenate([di[k] for k in object_state_keys])
+            di["object-state-col"] = np.concatenate([di[k] for k in object_state_col_keys])
 
         return di
 

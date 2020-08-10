@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.utils.transform_utils import convert_quat
+from robosuite.utils.transform_utils import convert_quat, quat2col
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas import TableArena
@@ -337,6 +337,10 @@ class SawyerLift(SawyerEnv):
 
             di["object-state"] = np.concatenate(
                 [cube_pos, cube_quat, di["gripper_to_cube"]]
+            )
+
+            di["object-state-col"] = np.concatenate(
+                [cube_pos, quat2col(cube_quat), di["gripper_to_cube"]]
             )
 
         return di

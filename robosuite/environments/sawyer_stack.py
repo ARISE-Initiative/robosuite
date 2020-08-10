@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.utils.transform_utils import convert_quat
+from robosuite.utils.transform_utils import convert_quat, quat2col
 from robosuite.environments.sawyer import SawyerEnv
 
 from robosuite.models.arenas.table_arena import TableArena
@@ -375,6 +375,18 @@ class SawyerStack(SawyerEnv):
                     cubeA_quat,
                     cubeB_pos,
                     cubeB_quat,
+                    di["gripper_to_cubeA"],
+                    di["gripper_to_cubeB"],
+                    di["cubeA_to_cubeB"],
+                ]
+            )
+
+            di["object-state-col"] = np.concatenate(
+                [
+                    cubeA_pos,
+                    quat2col(cubeA_quat),
+                    cubeB_pos,
+                    quat2col(cubeB_quat),
                     di["gripper_to_cubeA"],
                     di["gripper_to_cubeB"],
                     di["cubeA_to_cubeB"],
