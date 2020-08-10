@@ -63,10 +63,11 @@ class PandaGripper(PandaGripperBase):
     def format_action(self, action):
         """
         Args:
+            Binary action space
             -1 => open, 1 => closed
         """
         assert len(action) == 1
-        self.current_action = np.clip(self.current_action + np.array([-1.0, 1.0]) * self.speed * np.array(action), -1.0, 1.0)
+        self.current_action = np.clip(self.current_action + np.array([-1.0, 1.0]) * self.speed * np.sign(action), -1.0, 1.0)
         return self.current_action
 
     @property

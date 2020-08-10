@@ -71,10 +71,11 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
     def format_action(self, action):
         """
         Args:
+            Binary action space
             -1 => open, 1 => closed
         """
         assert len(action) == self.dof
-        self.current_action = np.clip(self.current_action - self.speed * np.array(action), -1.0, 1.0)
+        self.current_action = np.clip(self.current_action - self.speed * np.sign(action), -1.0, 1.0)
         return self.current_action
 
     @property

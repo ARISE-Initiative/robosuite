@@ -123,7 +123,7 @@ class RobotiqThreeFingerDexterousGripper(RobotiqThreeFingerGripperBase):
             action: all -1 => open, all 1 => closed
         """
         assert len(action) == self.dof
-        self.current_action = np.clip(self.current_action + self.speed * np.array(action), -1.0, 1.0)
+        self.current_action = np.clip(self.current_action + self.speed * np.sign(action), -1.0, 1.0)
         return self.current_action
 
     @property
