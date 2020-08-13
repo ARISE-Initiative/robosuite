@@ -32,7 +32,7 @@ DEFAULT_WIPE_CONFIG = {
     "line_width": 0.02,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "num_squares": [4, 4],                          # num of squares to divide each dim of the table surface
-    "coverage_factor": 0.8,                         # how much of the table surface we cover
+    "coverage_factor": 0.7,                         # how much of the table surface we cover
 
     # settings for thresholds
     "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the sensor (wipe the peg)
@@ -40,7 +40,8 @@ DEFAULT_WIPE_CONFIG = {
     "shear_threshold": 5,                           # shear force required to overcome the change of color of the sensor (wipe the peg) - NOT USED
 
     # misc settings
-    "print_results": False,                         # Whether to print results or not'
+    "print_results": False,                         # Whether to print results or not
+    "get_info": False,                              # Whether to grab info after each env step if not
     "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
     "real_robot": False,                            # whether we're using the actual robot or a sim
     "prob_sensor": 1.0,
@@ -223,6 +224,7 @@ class Wipe(RobotEnv):
 
         # misc settings
         self.print_results = self.task_config['print_results']
+        self.get_info = self.task_config['get_info']
         self.use_robot_obs = self.task_config['use_robot_obs']
         self.real_robot = self.task_config['real_robot']
         self.prob_sensor = self.task_config['prob_sensor']
@@ -600,11 +602,12 @@ class Wipe(RobotEnv):
         """
         reward, done, info = super()._post_action(action)
 
-        info['add_vals'] = ['nwipedsensors', 'colls', 'percent_viapoints_', 'f_excess']
-        info['nwipedsensors'] = len(self.wiped_sensors)
-        info['colls'] = self.collisions
-        info['percent_viapoints_'] = len(self.wiped_sensors) / len(self.model.arena.sensor_names)
-        info['f_excess'] = self.f_excess
+        if self.get_info:
+            info['add_vals'] = ['nwipedsensors', 'colls', 'percent_viapoints_', 'f_excess']
+            info['nwipedsensors'] = len(self.wiped_sensors)
+            info['colls'] = self.collisions
+            info['percent_viapoints_'] = len(self.wiped_sensors) / len(self.model.arena.sensor_names)
+            info['f_excess'] = self.f_excess
 
         # allow episode to finish early
         done = done or self._check_terminated()
