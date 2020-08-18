@@ -1,4 +1,3 @@
-#!/Users/yukez/Research/anaconda2/envs/robosuite/bin/python
 # -*- coding: utf-8 -*-
 #
 # robosuite documentation build configuration file, created by
