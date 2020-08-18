@@ -132,6 +132,8 @@ class DataCollectionWrapper(Wrapper):
                     info["gripper_actuation"] = np.array(action[14:])
                     info["left_dpos"] = np.array(action[7:10])  # add in second arm info
                     info["left_dquat"] = np.array(action[10:14])
+                elif self.env.mujoco_robot.name == "panda":
+                    info["gripper_actuation"] = np.array(action[7:])
             else:
                 info = {}
                 info["joint_velocities"] = np.array(action[: self.env.mujoco_robot.dof])
