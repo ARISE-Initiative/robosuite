@@ -4,4 +4,4 @@ from .placement_sampler import (
     SequentialCompositeSampler,
 )
 
-from .table_top_task import TableTopTask
+from .manipulation_task import ManipulationTask

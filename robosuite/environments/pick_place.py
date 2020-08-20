@@ -20,7 +20,7 @@ from robosuite.models.objects import (
     CerealVisualObject,
     CanVisualObject,
 )
-from robosuite.models.tasks import TableTopTask, SequentialCompositeSampler
+from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler
 
 
 class PickPlace(RobotEnv):
@@ -499,7 +499,7 @@ class PickPlace(RobotEnv):
 
         # task includes arena, robot, and objects of interest
         self._get_placement_initializer()
-        self.model = TableTopTask(
+        self.model = ManipulationTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
             mujoco_objects=self.mujoco_objects, 

@@ -5,7 +5,7 @@ from robosuite.environments.robot_env import RobotEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import PotWithHandlesObject
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
 from robosuite.models.robots import check_bimanual
 
 import robosuite.utils.transform_utils as T
@@ -341,7 +341,7 @@ class TwoArmLift(RobotEnv):
         self.mujoco_objects = OrderedDict([("pot", self.pot)])
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopTask(
+        self.model = ManipulationTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
             mujoco_objects=self.mujoco_objects, 

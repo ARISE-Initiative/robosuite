@@ -7,9 +7,9 @@ from robosuite.models.objects import MujocoGeneratedObject, MujocoXMLObject
 from robosuite.utils.mjcf_utils import new_joint, array_to_string
 
 
-class TableTopTask(MujocoWorldBase):
+class ManipulationTask(MujocoWorldBase):
     """
-    Creates MJCF model for a task performed on a table top (or similar surface).
+    Creates MJCF model for a manipulation task performed, usually on a table top (or similar surface).
 
     A manipulation task consists of one or more robots interacting with a variable number of
     objects placed on a table. This class combines the robot(s), the arena, and the objects 

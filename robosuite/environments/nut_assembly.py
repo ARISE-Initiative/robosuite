@@ -9,7 +9,7 @@ from robosuite.robots import SingleArm
 
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
-from robosuite.models.tasks import TableTopTask, SequentialCompositeSampler
+from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler
 
 
 class NutAssembly(RobotEnv):
@@ -420,7 +420,7 @@ class NutAssembly(RobotEnv):
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopTask(
+        self.model = ManipulationTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
             mujoco_objects=self.mujoco_objects, 

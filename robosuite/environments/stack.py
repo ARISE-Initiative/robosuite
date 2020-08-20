@@ -9,7 +9,7 @@ from robosuite.robots import SingleArm
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
 
 
 class Stack(RobotEnv):
@@ -361,7 +361,7 @@ class Stack(RobotEnv):
         self.mujoco_objects = OrderedDict([("cubeA", cubeA), ("cubeB", cubeB)])
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopTask(
+        self.model = ManipulationTask(
             self.mujoco_arena,
             [robot.robot_model for robot in self.robots],
             self.mujoco_objects,

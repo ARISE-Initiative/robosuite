@@ -4,7 +4,7 @@ Task
 Manipulation Task
 -----------------
 
-.. autoclass:: robosuite.models.tasks.TableTopTask
+.. autoclass:: robosuite.models.tasks.ManipulationTask
 
   .. automethod:: __init__
   .. automethod:: merge_robot

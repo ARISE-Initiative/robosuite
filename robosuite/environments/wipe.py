@@ -5,7 +5,7 @@ from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
 
 from robosuite.models.arenas import WipeArena
-from robosuite.models.tasks import TableTopTask, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
 import multiprocessing
 
 
@@ -508,7 +508,7 @@ class Wipe(RobotEnv):
         self.mujoco_objects = OrderedDict()
 
         # task includes arena, robot, and objects of interest
-        self.model = TableTopTask(self.mujoco_arena,
+        self.model = ManipulationTask(self.mujoco_arena,
                                    [robot.robot_model for robot in self.robots],
                                    self.mujoco_objects,
                                    initializer=self.placement_initializer)
