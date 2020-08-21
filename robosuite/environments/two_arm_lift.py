@@ -175,7 +175,7 @@ class TwoArmLift(RobotEnv):
                 x_range=[-0.03, 0.03],
                 y_range=[-0.03, 0.03],
                 ensure_object_boundary_in_range=False,
-                rotation=None,
+                rotation=(-np.pi / 3, np.pi / 3),
             )
 
         super().__init__(
@@ -226,7 +226,7 @@ class TwoArmLift(RobotEnv):
         """
         reward = 0
 
-        cube_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
+        pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
         table_height = self.sim.data.site_xpos[self.table_top_id][2]
 
         # check if the pot is tilted more than 30 degrees
@@ -237,8 +237,9 @@ class TwoArmLift(RobotEnv):
         cos_30 = np.cos(np.pi / 6)
         direction_coef = 1 if cos_z >= cos_30 else 0
 
-        # cube is higher than the table top above a margin
-        if cube_height > table_height + 0.15:
+        # check for goal completion: cube is higher than the table top above a margin
+        print(self._check_success())
+        if self._check_success():
             reward = 1.0 * direction_coef
 
         # use a shaping reward
@@ -246,7 +247,7 @@ class TwoArmLift(RobotEnv):
             reward = 0
 
             # lifting reward
-            elevation = cube_height - table_height
+            elevation = pot_bottom_height - table_height
             r_lift = min(max(elevation - 0.05, 0), 0.2)
             reward += 10. * direction_coef * r_lift
 
@@ -359,7 +360,7 @@ class TwoArmLift(RobotEnv):
         super()._get_reference()
 
         # Additional object references from this env
-        self.cube_body_id = self.sim.model.body_name2id("pot")
+        self.pot_body_id = self.sim.model.body_name2id("pot")
         self.handle_1_site_id = self.sim.model.site_name2id("pot_handle_1")
         self.handle_0_site_id = self.sim.model.site_name2id("pot_handle_2")
         self.table_top_id = self.sim.model.site_name2id("table_top")
@@ -407,9 +408,9 @@ class TwoArmLift(RobotEnv):
                 pr1 = self.robots[1].robot_model.naming_prefix
 
             # position and rotation of object
-            cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
+            cube_pos = np.array(self.sim.data.body_xpos[self.pot_body_id])
             cube_quat = T.convert_quat(
-                self.sim.data.body_xquat[self.cube_body_id], to="xyzw"
+                self.sim.data.body_xquat[self.pot_body_id], to="xyzw"
             )
             di["cube_pos"] = cube_pos
             di["cube_quat"] = cube_quat
@@ -440,11 +441,11 @@ class TwoArmLift(RobotEnv):
         """
         Returns True if task has been completed.
         """
-        cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.mujoco_arena.table_offset[2]
+        pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
+        table_height = self.sim.data.site_xpos[self.table_top_id][2]
 
         # cube is higher than the table top above a margin
-        return cube_height > table_height + 0.10
+        return pot_bottom_height > table_height + 0.10
 
     def _check_robot_configuration(self, robots):
         """
@@ -488,7 +489,7 @@ class TwoArmLift(RobotEnv):
     @property
     def _pot_quat(self):
         """Returns the orientation of the pot."""
-        return T.convert_quat(self.sim.data.body_xquat[self.cube_body_id], to="xyzw")
+        return T.convert_quat(self.sim.data.body_xquat[self.pot_body_id], to="xyzw")
 
     @property
     def _world_quat(self):
