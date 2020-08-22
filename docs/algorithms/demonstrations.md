@@ -8,11 +8,76 @@ We provide teleoperation utilities that allow users to control the robots with i
 - `environment:` name of the environment you would like to collect the demonstrations for
 - `device:` either "keyboard" or "spacemouse"
 
-Our twin project [RoboTurk](http://roboturk.stanford.edu) has collected pilot datasets of more than a thousand demonstrations for two tasks in our Suite via crowdsourcing. You can find detailed information about the [RoboTurk datasets](docs/demonstrations.md#roboturk-dataset) and [demonstration collection](docs/demonstrations.md#collecting-your-own-demonstrations) here.
+### Keyboard controls
+
+Note that the rendering window must be active for these commands to work.
+
+|   Keys   |              Command               |
+| :------: | :--------------------------------: |
+|    q     |          reset simulation          |
+| spacebar |    toggle gripper (open/close)     |
+| w-a-s-d  | move arm horizontally in x-y plane |
+|   r-f    |        move arm vertically         |
+|   z-x    |      rotate arm about x-axis       |
+|   t-g    |      rotate arm about y-axis       |
+|   c-v    |      rotate arm about z-axis       |
+|   ESC    |                quit                |
+
+### SpaceNavigator 3D Mouse controls
+
+|          Control          |                Command                |
+| :-----------------------: | :-----------------------------------: |
+|       Right button        |           reset simulation            |
+|    Left button (hold)     |             close gripper             |
+|   Move mouse laterally    |  move arm horizontally in x-y plane   |
+|   Move mouse vertically   |          move arm vertically          |
+| Twist mouse about an axis | rotate arm about a corresponding axis |
+|      ESC (keyboard)       |                 quit                  |
+
+
 
 ## Replaying Human Demonstrations
 
-We have included an example script that illustrates how demonstrations can be loaded and played back. Our [playback_demonstrations_from_hdf5](robosuite/scripts/playback_demonstrations_from_hdf5.py) script selects demonstration episodes at random from a demonstration pickle file and replays them. We have included some sample demonstrations for each task at `models/assets/demonstrations`.
+We have included an example script that illustrates how demonstrations can be loaded and played back. Our [playback_demonstrations_from_hdf5](robosuite/scripts/playback_demonstrations_from_hdf5.py) script selects demonstration episodes at random from a demonstration pickle file and replays them.
+
+
+## Existing Datasets
+
+We have included some sample demonstrations for each task at `models/assets/demonstrations`.
+
+Our twin project [RoboTurk](http://roboturk.stanford.edu) has also collected pilot datasets of more than a thousand demonstrations for two tasks in our suite via crowdsourcing. You can find detailed information about the RoboTurk datasets [here](docs/demonstrations.md#roboturk-dataset). 
+
+
+## Structure of collected demonstrations
+
+Every set of demonstrations is collected as a `demo.hdf5` file. The `demo.hdf5` file is structured as follows.
+
+- data (group)
+
+  - date (attribute) - date of collection
+
+  - time (attribute) - time of collection
+
+  - repository_version (attribute) - repository version used during collection
+
+  - env (attribute) - environment name on which demos were collected
+
+  - demo1 (group) - group for the first demonstration (every demonstration has a group)
+
+    - model_file (attribute) - the xml string corresponding to the MJCF mujoco model
+
+    - states (dataset) - flattened mujoco states, ordered by time
+
+    - actions (dataset) - environment actions, ordered by time
+
+  - demo2 (group) - group for the second demonstration
+
+    ... 
+
+    (and so on)
+
+The reason for storing mujoco states instead of raw observations is to make it easy to retrieve different kinds of observations in a postprocessing step. This also saves disk space (image datasets are much larger).
+
 
 ## Using Demonstrations for Learning
 
