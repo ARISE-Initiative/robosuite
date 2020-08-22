@@ -238,7 +238,6 @@ class TwoArmLift(RobotEnv):
         direction_coef = 1 if cos_z >= cos_30 else 0
 
         # check for goal completion: cube is higher than the table top above a margin
-        print(self._check_success())
         if self._check_success():
             reward = 1.0 * direction_coef
 
