@@ -51,6 +51,7 @@ class WipeArena(TableArena):
         self.peg_size = None
         self.squares = None
         self.mujoco_objects = None
+        self.direction = None
 
         # run superclass init
         super().__init__(
@@ -80,17 +81,7 @@ class WipeArena(TableArena):
         table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
 
         # Define start position for drawing the line
-        pos = np.array(
-            (
-                np.random.uniform(
-                    -self.table_half_size[0] * self.coverage_factor,
-                    self.table_half_size[0] * self.coverage_factor),
-                np.random.uniform(
-                    -self.table_half_size[1] * self.coverage_factor,
-                    self.table_half_size[1] * self.coverage_factor)
-            )
-        )
-        direction = np.random.uniform(-np.pi, np.pi)
+        pos = self.sample_start_pos()
 
         # Define dirt material for markers
         tex_attrib = {
@@ -113,21 +104,11 @@ class WipeArena(TableArena):
         for i in range(self.num_sensors):
             # If we're using two clusters, we resample the starting position and direction at the halfway point
             if self.two_clusters and i == int(np.floor(self.num_sensors / 2)):
-                pos = np.array(
-                    (
-                        np.random.uniform(
-                            -self.table_half_size[0] * self.coverage_factor,
-                            self.table_half_size[0] * self.coverage_factor),
-                        np.random.uniform(
-                            -self.table_half_size[1] * self.coverage_factor,
-                            self.table_half_size[1] * self.coverage_factor)
-                    )
-                )
-                direction = np.random.uniform(-np.pi, np.pi)
+                pos = self.sample_start_pos()
             square_name2 = 'contact_'+str(i)
             square2 = CylinderObject(
                 name=square_name2,
-                size=[self.line_width, 0.001],
+                size=[self.line_width / 2, 0.001],
                 rgba=[1, 1, 1, 1],
                 density=1,
                 material=dirt,
@@ -146,50 +127,19 @@ class WipeArena(TableArena):
             self.sensor_names += [sensor_name]
             self.sensor_site_names[sensor_name] = sensor_site_name
 
-            if np.random.uniform(0,1) > 0.7:
-                direction += np.random.normal(0, 0.5)
-
-            posnew0 = pos[0] + 0.005*np.sin(direction)
-            posnew1 = pos[1] + 0.005*np.cos(direction)
-
-            while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
-                direction += np.random.normal(0, 0.5)
-                posnew0 = pos[0] + 0.005*np.sin(direction)
-                posnew1 = pos[1] + 0.005*np.cos(direction)
-
-            pos[0] = posnew0
-            pos[1] = posnew1
+            # Add to the current dirt path
+            pos = self.sample_path_pos(pos)
 
     def reset_arena(self, sim):
         """Reset the tactile sensor locations in the environment. Requires @sim (MjSim) reference to be passed in"""
         # Sample new initial position and direction for generated sensor paths
-        pos = np.array(
-            (
-                np.random.uniform(
-                    -self.table_half_size[0] * self.coverage_factor,
-                    self.table_half_size[0] * self.coverage_factor),
-                np.random.uniform(
-                    -self.table_half_size[1] * self.coverage_factor,
-                    self.table_half_size[1] * self.coverage_factor)
-            )
-        )
-        direction = np.random.uniform(-np.pi, np.pi)
+        pos = self.sample_start_pos()
 
         # Loop through all sensor collision body / site pairs
         for i, (_, sensor_name) in enumerate(self.sensor_site_names.items()):
             # If we're using two clusters, we resample the starting position and direction at the halfway point
             if self.two_clusters and i == int(np.floor(self.num_sensors / 2)):
-                pos = np.array(
-                    (
-                        np.random.uniform(
-                            -self.table_half_size[0] * self.coverage_factor,
-                            self.table_half_size[0] * self.coverage_factor),
-                        np.random.uniform(
-                            -self.table_half_size[1] * self.coverage_factor,
-                            self.table_half_size[1] * self.coverage_factor)
-                    )
-                )
-                direction = np.random.uniform(-np.pi, np.pi)
+                pos = self.sample_start_pos()
             # Get IDs to the body, geom, and site of each sensor
             site_id = sim.model.site_name2id(sensor_name)
             body_id = sim.model.body_name2id(sensor_name)
@@ -201,14 +151,54 @@ class WipeArena(TableArena):
             # Reset the sensor visualization -- setting geom rgba to all 1's
             sim.model.geom_rgba[geom_id] = [1, 1, 1, 1]
             # Sample next values in local sensor trajectory
-            if np.random.uniform(0, 1) > 0.7:
-                direction += np.random.normal(0, 0.5)
-            # Update positions for next sensor
-            posnew0 = pos[0] + 0.005 * np.sin(direction)
-            posnew1 = pos[1] + 0.005 * np.cos(direction)
-            while abs(posnew0) >= self.table_half_size[0] or abs(posnew1) >= self.table_half_size[1]:
-                direction += np.random.normal(0, 0.5)
-                posnew0 = pos[0] + 0.005 * np.sin(direction)
-                posnew1 = pos[1] + 0.005 * np.cos(direction)
-            pos[0] = posnew0
-            pos[1] = posnew1
+            pos = self.sample_path_pos(pos)
+
+    def sample_start_pos(self):
+        """
+        Helper function to return sampled start position of a new dirt (peg) location
+
+        Returns:
+            np.array: the (x,y) value of the newly sampled dirt starting location
+        """
+        # First define the random direction that we will start at
+        self.direction = np.random.uniform(-np.pi, np.pi)
+
+        return np.array(
+            (
+                np.random.uniform(
+                    -self.table_half_size[0] * self.coverage_factor + self.line_width / 2,
+                    self.table_half_size[0] * self.coverage_factor - self.line_width / 2),
+                np.random.uniform(
+                    -self.table_half_size[1] * self.coverage_factor + self.line_width / 2,
+                    self.table_half_size[1] * self.coverage_factor - self.line_width / 2)
+            )
+        )
+
+    def sample_path_pos(self, pos):
+        """
+        Helper function to add a sampled dirt (peg) position to a pre-existing dirt path, whose most
+        recent dirt position is defined by @pos
+
+        Args:
+            pos (np.array): (x,y) value of most recent dirt position
+
+        Returns:
+            np.array: the (x,y) value of the newly sampled dirt position to add to the current dirt path
+        """
+        # Random chance to alter the current dirt direction
+        if np.random.uniform(0, 1) > 0.7:
+            self.direction += np.random.normal(0, 0.5)
+
+        posnew0 = pos[0] + 0.005 * np.sin(self.direction)
+        posnew1 = pos[1] + 0.005 * np.cos(self.direction)
+
+        # We keep resampling until we get a valid new position that's on the table
+        while abs(posnew0) >= self.table_half_size[0] * self.coverage_factor - self.line_width / 2 or \
+                abs(posnew1) >= self.table_half_size[1] * self.coverage_factor - self.line_width / 2:
+            self.direction += np.random.normal(0, 0.5)
+            posnew0 = pos[0] + 0.005 * np.sin(self.direction)
+            posnew1 = pos[1] + 0.005 * np.cos(self.direction)
+
+        # Return this newly sampled position
+        return np.array((posnew0, posnew1))
+
