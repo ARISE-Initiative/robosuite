@@ -179,9 +179,9 @@ class TwoArmHandoff(RobotEnv):
         self.table_offset = [0, self.table_full_size[1] * (-3/8), 0.8]
 
         # reward configuration
-        self._success = False
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
+        self.height_threshold = 0.1         # threshold above the table surface which the hammer is considered lifted
 
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
@@ -254,51 +254,15 @@ class TwoArmHandoff(RobotEnv):
         Returns:
             float: reward value
         """
-        # Initialize reward and set success to false
+        # Initialize reward
         reward = 0
-        self._success = False
-
-        # Get height of hammer and table and define height threshold
-        hammer_angle_offset = (self.hammer.handle_length / 2 + 2*self.hammer.head_halfsize) * np.sin(self._hammer_angle)
-        hammer_height = self.sim.data.geom_xpos[self.hammer_handle_geom_id][2]\
-            - self.hammer.get_top_offset()[2]\
-            - hammer_angle_offset
-        table_height = self.sim.data.site_xpos[self.table_top_id][2]
-        height_threshold = 0.1
-
-        # Check if any Arm's gripper is grasping the hammer handle
-
-        # Single bimanual robot setting
-        if self.env_configuration == "bimanual":
-            _contacts_0 = list(
-                self.find_contacts(
-                    self.robots[0].gripper["left"].contact_geoms, self.hammer.handle_geoms
-                )
-            )
-            _contacts_1 = list(
-                self.find_contacts(
-                    self.robots[0].gripper["right"].contact_geoms, self.hammer.handle_geoms
-                )
-            )
-        # Multi single arm setting
-        else:
-            _contacts_0 = list(
-                self.find_contacts(
-                    self.robots[0].gripper.contact_geoms, self.hammer.handle_geoms
-                )
-            )
-            _contacts_1 = list(
-                self.find_contacts(
-                    self.robots[1].gripper.contact_geoms, self.hammer.handle_geoms
-                )
-            )
-        arm0_grasp = True if len(_contacts_0) > 0 else False
-        arm1_grasp = True if len(_contacts_1) > 0 else False
 
         # use a shaping reward if specified
         if self.reward_shaping:
+            # Grab relevant parameters
+            arm0_grasp, arm1_grasp, hammer_height, table_height = self._get_object_locations()
             # First, we'll consider the cases if the hammer is lifted above the threshold (step 3 - 6)
-            if hammer_height - table_height > height_threshold:
+            if hammer_height - table_height > self.height_threshold:
                 # Split cases depending on whether arm1 is currently grasping the handle or not
                 if arm1_grasp:
                     # Check if arm0 is grasping
@@ -308,7 +272,6 @@ class TwoArmHandoff(RobotEnv):
                     else:
                         # This is step 6 (completed task!)
                         reward = 2.0
-                        self._success = True
                 # This is the case where only arm0 is grasping (step 2-3)
                 else:
                     reward = 1.0
@@ -331,9 +294,8 @@ class TwoArmHandoff(RobotEnv):
         # Else this is the sparse reward setting
         else:
             # Provide reward if only Arm 1 is grasping the hammer and the handle lifted above the pre-defined threshold
-            if arm1_grasp and not arm0_grasp and hammer_height - table_height > height_threshold:
+            if self._check_success():
                 reward = 2.0
-                self._success = True
 
         if self.reward_scale is not None:
             reward *= self.reward_scale / 2.0
@@ -457,6 +419,58 @@ class TwoArmHandoff(RobotEnv):
                         # Take forward step
                         self.sim.step()
 
+    def _get_object_locations(self):
+        """
+        Helper function that grabs the current relevant locations of objects of interest within the environment
+
+        Returns:
+            5-tuple:
+
+                - (bool) True if Arm0 is grasping the hammer
+                - (bool) True if Arm1 is grasping the hammer
+                - (float) Height of the hammer body
+                - (float) Height of the table surface
+                - (float) Height threshold
+        """
+        # Get height of hammer and table and define height threshold
+        hammer_angle_offset = (self.hammer.handle_length / 2 + 2*self.hammer.head_halfsize) * np.sin(self._hammer_angle)
+        hammer_height = self.sim.data.geom_xpos[self.hammer_handle_geom_id][2]\
+            - self.hammer.get_top_offset()[2]\
+            - hammer_angle_offset
+        table_height = self.sim.data.site_xpos[self.table_top_id][2]
+
+        # Check if any Arm's gripper is grasping the hammer handle
+
+        # Single bimanual robot setting
+        if self.env_configuration == "bimanual":
+            _contacts_0 = list(
+                self.find_contacts(
+                    self.robots[0].gripper["left"].contact_geoms, self.hammer.handle_geoms
+                )
+            )
+            _contacts_1 = list(
+                self.find_contacts(
+                    self.robots[0].gripper["right"].contact_geoms, self.hammer.handle_geoms
+                )
+            )
+        # Multi single arm setting
+        else:
+            _contacts_0 = list(
+                self.find_contacts(
+                    self.robots[0].gripper.contact_geoms, self.hammer.handle_geoms
+                )
+            )
+            _contacts_1 = list(
+                self.find_contacts(
+                    self.robots[1].gripper.contact_geoms, self.hammer.handle_geoms
+                )
+            )
+        arm0_grasp = True if len(_contacts_0) > 0 else False
+        arm1_grasp = True if len(_contacts_1) > 0 else False
+
+        # Return all relevant values
+        return arm0_grasp, arm1_grasp, hammer_height, table_height
+
     def _get_observation(self):
         """
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
@@ -516,7 +530,9 @@ class TwoArmHandoff(RobotEnv):
         Returns:
             bool: True if handoff has been completed
         """
-        return self._success
+        # Grab relevant params
+        arm0_grasp, arm1_grasp, hammer_height, table_height = self._get_object_locations()
+        return True if arm1_grasp and not arm0_grasp and hammer_height - table_height > self.height_threshold else False
 
     def _check_robot_configuration(self, robots):
         """
