@@ -37,7 +37,7 @@ Below, a brief overview and description of each subset of controller parameters 
 * `{input,output}_{min,max}`: Scaling ranges for mapping action space inputs into controller inputs. Settings these limits will automatically clip the action space input to be within the `input_{min,max}` before mapping the requested value into the specified `output_{min,max}` range. Can be either a scalar (same limits across entire action space), or a list (specific limits for each action component)
 * `kp, kv`: Where relevant, specifies the positional / velocity gain for the controller. Can be either be a scalar (same value for all robot joints), or a list (specific values for each joint)
 * `damping`: Where relevant, specifies the damping constant for the controller.
-* `impedance_mode`: For impedance-based controllers (`OSC_*`, `JOINT_POSITION`), determines the impedance mode for the controller. Can be `fixed`, `variable`, or `variable_kp`.
+* `impedance_mode`: For impedance-based controllers (`OSC_*`, `JOINT_POSITION`), determines the impedance mode for the controller, i.e. the nature of the impedance parameters. It can be `fixed`, `variable`, or `variable_kp` (kv is adjusted to provide critically damped behavior).
 * `kp_limits, damping_limits`: Only relevant if `impedance_mode` is set to `variable` or `variable_kp`. Sets the limits for the resulting action space for variable impedance gains.
 * `control_delta`: Only relevant for `OSC_POSE` or `OSC_POSITION` controllers. `true` interprets input actions as delta values from the current robot end effector position. Otherwise, assumed to be absolute (global) values
 * `uncouple_pos_ori`: Only relevant for `OSC_POSE`. `true` decouples the desired position and orientation torques when executing the controller
