@@ -9,19 +9,18 @@ from robosuite.utils.transform_utils import rotation_matrix
 
 
 class Keyboard(Device):
-    """A minimalistic driver class for a Keyboard."""
+    """
+    A minimalistic driver class for a Keyboard.
+
+     Args:
+        pos_sensitivity (float): Magnitude of input position command scaling
+        rot_sensitivity (float): Magnitude of scale input rotation commands scaling
+    """
 
     def __init__(self,
                  pos_sensitivity=1.0,
                  rot_sensitivity=1.0
                  ):
-        """
-        Initialize a Keyboard device.
-
-         Args:
-            pos_sensitivity: Magnitude of input position command scaling
-            rot_sensitivity: Magnitude of scale input rotation commands scaling
-        """
 
         self._display_controls()
         self._reset_internal_state()
@@ -33,7 +32,8 @@ class Keyboard(Device):
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
 
-    def _display_controls(self):
+    @staticmethod
+    def _display_controls():
         """
         Method to pretty print controls.
         """
@@ -75,7 +75,12 @@ class Keyboard(Device):
         self._enabled = True
 
     def get_controller_state(self):
-        """Returns the current state of the keyboard, a dictionary of pos, orn, grasp, and reset."""
+        """
+        Grabs the current state of the keyboard.
+
+        Returns:
+            dict: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
+        """
 
         dpos = self.pos - self.last_pos
         self.last_pos = np.array(self.pos)
@@ -92,6 +97,13 @@ class Keyboard(Device):
     def on_press(self, window, key, scancode, action, mods):
         """
         Key handler for key presses.
+
+        Args:
+            window: [NOT USED]
+            key (int): keycode corresponding to the key that was pressed
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
 
         # controls for moving position
@@ -137,6 +149,13 @@ class Keyboard(Device):
     def on_release(self, window, key, scancode, action, mods):
         """
         Key handler for key releases.
+
+        Args:
+            window: [NOT USED]
+            key (int): keycode corresponding to the key that was pressed
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
 
         # controls for grasping
