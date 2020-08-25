@@ -8,17 +8,21 @@ from robosuite.utils.transform_utils import quat_multiply
 
 
 class ObjectPositionSampler:
-    """Base class of object placement sampler."""
+    """
+    Base class of object placement sampler.
+    """
 
     def __init__(self):
         pass
 
     def setup(self, mujoco_objects, table_top_offset, table_size):
         """
+        Required setup for this sampler
+
         Args:
-            mujoco_objects (OrderedDict): dictionary of MujocoObjects to place
-            table_top_offset (float * 3): location of table top center
-            table_size (float * 3): x,y,z-FULLsize of the table
+            mujoco_objects (OrderedDict of MujocoObject): a list of MJCF models of physical objects
+            table_top_offset (3-array of float): (x,y,z) offset values for the table
+            table_size (3-array of float): (x,y,z) fullsize values for the table
         """
         self.mujoco_objects = mujoco_objects
         assert isinstance(self.mujoco_objects, collections.OrderedDict)
@@ -28,17 +32,38 @@ class ObjectPositionSampler:
 
     def sample(self):
         """
-        Args:
-            object_index: index of the current object being sampled
-        Returns:
-            xpos ((float * 3) * n_obj): x,y,z position of the objects in world frame
-            xquat ((float * 4) * n_obj): quaternion of the objects
+        Sampling function to place objects. Should be implemented by subclasses
         """
         raise NotImplementedError
 
 
 class UniformRandomSampler(ObjectPositionSampler):
-    """Places all objects within the table uniformly random."""
+    """
+    Places all objects within the table uniformly random.
+
+    Args:
+        x_range (2-array of float): override the x_range used to uniformly place objects
+            if None, default to x-range of table. Note that this is with respect to (0,0) = center of table.
+
+        y_range (2-array of float): override the y_range used to uniformly place objects
+            if None default to y-range of table. Note that this is with respect to (0,0) = center of table.
+
+        ensure_object_boundary_in_range (bool):
+            :`True`: The center of object is at position:
+                 [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
+            :`False`:
+                [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
+
+        rotation (None or float or Iterable):
+            :`None`: Add uniform random random rotation
+            :`Iterable (a,b)`: Uniformly randomize rotation angle between a and b (in radians)
+            :`value`: Add fixed angle rotation
+
+        rotation_axis (str): Can be 'x', 'y', or 'z'. Axis about which to apply the requested rotation
+
+        z_offset (float): Add a small z-offset to placements. This is useful for fixed objects
+            that do not move (i.e. no free joint) to place them above the table.
+    """
 
     def __init__(
         self,
@@ -49,32 +74,6 @@ class UniformRandomSampler(ObjectPositionSampler):
         rotation_axis='z',
         z_offset=0.,
     ):
-        """
-        Args:
-            x_range (float * 2): override the x_range used to uniformly place objects
-                    if None, default to x-range of table
-
-            y_range (float * 2): override the y_range used to uniformly place objects
-                    if None default to y-range of table
-
-            x_range and y_range are both with respect to (0,0) = center of table.
-
-            ensure_object_boundary_in_range (bool):
-                True: The center of object is at position:
-                     [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
-                False: 
-                    [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
-
-            rotation:
-                None: Add uniform random random rotation
-                iterable (a,b): Uniformly randomize rotation angle between a and b (in radians)
-                value: Add fixed angle rotation
-
-            rotation_axis (str): Can be 'x', 'y', or 'z'. Axis about which to apply the requested rotation
-
-            z_offset (float): Add a small z-offset to placements. This is useful for fixed objects
-                that do not move (i.e. no free joint) to place them above the table.
-        """
         self.x_range = x_range
         self.y_range = y_range
         self.ensure_object_boundary_in_range = ensure_object_boundary_in_range
@@ -83,6 +82,15 @@ class UniformRandomSampler(ObjectPositionSampler):
         self.z_offset = z_offset
 
     def sample_x(self, object_horizontal_radius):
+        """
+        Samples the x location for a given object
+
+        Args:
+            object_horizontal_radius (float): Radius of the object currently being sampled for
+
+        Returns:
+            float: sampled x position
+        """
         x_range = self.x_range
         if x_range is None:
             x_range = [-self.table_size[0] / 2, self.table_size[0] / 2]
@@ -94,6 +102,15 @@ class UniformRandomSampler(ObjectPositionSampler):
         return np.random.uniform(high=maximum, low=minimum)
 
     def sample_y(self, object_horizontal_radius):
+        """
+        Samples the y location for a given object
+
+        Args:
+            object_horizontal_radius (float): Radius of the object currently being sampled for
+
+        Returns:
+            float: sampled y position
+        """
         y_range = self.y_range
         if y_range is None:
             y_range = [-self.table_size[0] / 2, self.table_size[0] / 2]
@@ -105,6 +122,15 @@ class UniformRandomSampler(ObjectPositionSampler):
         return np.random.uniform(high=maximum, low=minimum)
 
     def sample_quat(self):
+        """
+        Samples the orientation for a given object
+
+        Returns:
+            np.array: sampled (r,p,y) euler angle orientation
+
+        Raises:
+            ValueError: [Invalid rotation axis]
+        """
         if self.rotation is None:
             rot_angle = np.random.uniform(high=2 * np.pi, low=0)
         elif isinstance(self.rotation, collections.Iterable):
@@ -116,11 +142,11 @@ class UniformRandomSampler(ObjectPositionSampler):
 
         # Return angle based on axis requested
         if self.rotation_axis == 'x':
-            return [np.cos(rot_angle / 2), np.sin(rot_angle / 2), 0, 0]
+            return np.array([np.cos(rot_angle / 2), np.sin(rot_angle / 2), 0, 0])
         elif self.rotation_axis == 'y':
-            return [np.cos(rot_angle / 2), 0, np.sin(rot_angle / 2), 0]
+            return np.array([np.cos(rot_angle / 2), 0, np.sin(rot_angle / 2), 0])
         elif self.rotation_axis == 'z':
-            return [np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)]
+            return np.array([np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)])
         else:
             # Invalid axis specified, raise error
             raise ValueError("Invalid rotation axis specified. Must be 'x', 'y', or 'z'. Got: {}".format(self.rotation_axis))
@@ -142,12 +168,18 @@ class UniformRandomSampler(ObjectPositionSampler):
             sample_on_top (bool): if True, sample placement on top of the reference object.
 
         Return:
-            pos_arr (list): list of placed object positions
+            2-tuple or 3-tuple:
 
-            quat_arr (list): list of placed object quaternions
+                - (list) list of placed object positions
 
-            placements (dict): if @return_placements is True, returns a dictionary of all
-                object placements, including the ones placed by this sampler.
+                - (list) list of placed object quaternions
+
+                - (dict) if @return_placements is True, returns a dictionary of all
+                    object placements, including the ones placed by this sampler.
+
+        Raises:
+            RandomizationError: [Cannot place all objects]
+            AssertionError: [Reference object name does not exist]
         """
         pos_arr = []
         quat_arr = []
@@ -228,12 +260,26 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         self.n_obj = None
 
     def append_sampler(self, object_name, sampler, **kwargs):
+        """
+        Adds a new placement initializer with corresponding objects and arguments
+
+        Args:
+            object_name (str): Name of object to add
+            sampler (ObjectPositionSampler): sampler to add
+            **kwargs: Additional arguments to pass to the sampler
+
+        Raises:
+            AssertionError: [Object name in samplers]
+        """
         assert object_name not in self.samplers
         self.samplers[object_name] = {'sampler': sampler, 'object_names': [object_name], 'sample_kwargs': kwargs}
 
     def hide(self, object_name):
         """
         Helper method to remove an object from the workspace.
+
+        Args:
+            object_name (str): Name of object to hide
         """
         sampler = UniformRandomSampler(
             x_range=[-10, -20],
@@ -246,6 +292,17 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         self.append_sampler(object_name=object_name, sampler=sampler)
 
     def _sample_on_top(self, object_name, surface_name, sampler):
+        """
+        Samples @object_name's position relative to a given @surface_name using @sampler
+
+        Args:
+            object_name (str): Object whose position is being sampled
+            surface_name (str): Object name upon which the position will be sampled
+            sampler (ObjectPositionSampler): Sampler to use to sample position
+
+        Raises:
+            AssertionError: [surface name not in samplers]
+        """
         if surface_name == 'table':
             self.append_sampler(object_name=object_name, sampler=sampler)
         else:
@@ -270,6 +327,33 @@ class SequentialCompositeSampler(ObjectPositionSampler):
     ):
         """
         Sample placement on top of a surface object.
+
+        Args:
+            object_name (str): Name of object to sample for
+
+            surface_name (str): Name of object upon which the position will be sampled
+
+            x_range (2-array of float): override the x_range used to uniformly place objects
+                if None, default to x-range of table. Note that this is with respect to (0,0) = center of table.
+
+            y_range (2-array of float): override the y_range used to uniformly place objects
+                if None default to y-range of table. Note that this is with respect to (0,0) = center of table.
+
+            rotation (None or float or Iterable):
+                :`None`: Add uniform random random rotation
+                :`Iterable (a,b)`: Uniformly randomize rotation angle between a and b (in radians)
+                :`value`: Add fixed angle rotation
+
+            rotation_axis (str): Can be 'x', 'y', or 'z'. Axis about which to apply the requested rotation
+
+            z_offset (float): Add a small z-offset to placements. This is useful for fixed objects
+                that do not move (i.e. no free joint) to place them above the table.
+
+            ensure_object_boundary_in_range (bool):
+                :`True`: The center of object is at position:
+                     [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
+                :`False`:
+                    [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
         """
         sampler = UniformRandomSampler(
             x_range=x_range,
@@ -285,6 +369,14 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         """
         Overrides super implementation so that we can setup all placement
         initializers we own.
+
+        Args:
+            mujoco_objects (OrderedDict of MujocoObject): a list of MJCF models of physical objects
+            table_top_offset (3-array of float): (x,y,z) offset values for the table
+            table_size (3-array of float): (x,y,z) fullsize values for the table
+
+        Raises:
+            AssertionError: [Mujoco Objects is not OrderedDict]
         """
         self.mujoco_objects = mujoco_objects
         assert(isinstance(mujoco_objects, collections.OrderedDict))
@@ -311,12 +403,17 @@ class SequentialCompositeSampler(ObjectPositionSampler):
                 of object placements.
 
         Return:
-            pos_arr (list): list of placed object positions
+            2-tuple or 3-tuple:
 
-            quat_arr (list): list of placed object quaternions
+                - (list) list of placed object positions
 
-            placements (dict): if @return_placements is True, returns a dictionary of all
-                object placements, including the ones placed by this sampler.
+                - (list) list of placed object quaternions
+
+                - (dict) if @return_placements is True, returns a dictionary of all
+                    object placements, including the ones placed by this sampler.
+
+        Raises:
+            RandomizationError: [Cannot place all objects]
         """
         if fixtures is None:
             placements = {}

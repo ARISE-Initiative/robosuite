@@ -13,7 +13,7 @@ def register_env(target_class):
 
 def make(env_name, *args, **kwargs):
     """
-    Instantiates a robosuite environment..
+    Instantiates a robosuite environment.
 
     This method attempts to mirror the equivalent functionality of gym.make in a somewhat sloppy way.
 

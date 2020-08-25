@@ -14,6 +14,21 @@ class ManipulationTask(MujocoWorldBase):
     A manipulation task consists of one or more robots interacting with a variable number of
     objects placed on a table. This class combines the robot(s), the arena, and the objects 
     into a single MJCF model.
+
+    Args:
+        mujoco_arena (Arena): MJCF model of robot workspace
+
+        mujoco_robots (list of RobotModel): MJCF model of robot model(s) (list)
+
+        mujoco_objects (OrderedDict of MujocoObject): a list of MJCF models of physical objects
+
+        visual_objects (OrderedDict of MujocoObject): a list of MJCF models of visual-only objects that do not
+            participate in collisions
+
+        initializer (ObjectPositionSampler): placement sampler to initialize object positions.
+
+    Raises:
+        AssertionError: [Invalid input object type]
     """
 
     def __init__(
@@ -24,14 +39,6 @@ class ManipulationTask(MujocoWorldBase):
         visual_objects=None, 
         initializer=None,
     ):
-        """
-        Args:
-            mujoco_arena: MJCF model of robot workspace
-            mujoco_robots: MJCF model of robot model(s) (list)
-            mujoco_objects: a list of MJCF models of physical objects
-            visual_objects: a list of MJCF models of visual-only objects that do not participate in collisions
-            initializer: placement sampler to initialize object positions.
-        """
         super().__init__()
 
         self.merge_arena(mujoco_arena)
@@ -63,17 +70,34 @@ class ManipulationTask(MujocoWorldBase):
         self.initializer.setup(merged_objects, self.table_top_offset, self.table_size)
 
     def merge_robot(self, mujoco_robot):
-        """Adds robot model to the MJCF model."""
+        """
+        Adds robot model to the MJCF model.
+
+        Args:
+            mujoco_robot (RobotModel): robot to merge into this MJCF model
+        """
         self.merge(mujoco_robot)
 
     def merge_arena(self, mujoco_arena):
-        """Adds arena model to the MJCF model."""
+        """
+        Adds arena model to the MJCF model.
+
+        Args:
+            mujoco_arena (Arena): arena to merge into this MJCF model
+        """
         self.arena = mujoco_arena
         self.table_top_offset = mujoco_arena.table_top_abs
         self.table_size = mujoco_arena.table_full_size
         self.merge(mujoco_arena)
 
     def merge_objects(self, mujoco_objects, is_visual=False):
+        """
+        Adds object models to the MJCF model.
+
+        Args:
+            mujoco_objects (OrderedDict or MujocoObject): objects to merge into this MJCF model
+            is_visual (bool): Whether the object is a visual object or not
+        """
         if not is_visual:
             self.max_horizontal_radius = 0
 
@@ -97,7 +121,9 @@ class ManipulationTask(MujocoWorldBase):
                 )
 
     def place_objects(self):
-        """Places objects randomly until no collisions or max iterations hit."""
+        """
+        Places objects randomly until no collisions or max iterations hit.
+        """
         pos_arr, quat_arr = self.initializer.sample()
         for i in range(len(self.objects)):
             self.objects[i].set("pos", array_to_string(pos_arr[i]))
