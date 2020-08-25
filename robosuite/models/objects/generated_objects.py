@@ -124,7 +124,7 @@ class HammerObject(MujocoGeneratedObject):
         self.append_material(wood)
 
     def get_bottom_offset(self):
-        return np.array([0, 0, -0.5 * self.handle_length])
+        return np.array([0, 0, -self.handle_radius])
 
     def get_top_offset(self):
         return np.array([0, 0, self.handle_radius])
