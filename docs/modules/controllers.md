@@ -37,13 +37,13 @@ Below, a brief overview and description of each subset of controller parameters 
 * `{input,output}_{min,max}`: Scaling ranges for mapping action space inputs into controller inputs. Settings these limits will automatically clip the action space input to be within the `input_{min,max}` before mapping the requested value into the specified `output_{min,max}` range. Can be either a scalar (same limits across entire action space), or a list (specific limits for each action component)
 * `kp, kv`: Where relevant, specifies the positional / velocity gain for the controller. Can be either be a scalar (same value for all robot joints), or a list (specific values for each joint)
 * `damping`: Where relevant, specifies the damping constant for the controller.
-* `impedance_mode`: For impedance-based controllers (`OSC_*`, `JOINT_POSITION`), determines the impedance mode for the controller. Can be `fixed`, `variable`, or `variable_kp`.
+* `impedance_mode`: For impedance-based controllers (`OSC_*`, `JOINT_POSITION`), determines the impedance mode for the controller, i.e. the nature of the impedance parameters. It can be `fixed`, `variable`, or `variable_kp` (kv is adjusted to provide critically damped behavior).
 * `kp_limits, damping_limits`: Only relevant if `impedance_mode` is set to `variable` or `variable_kp`. Sets the limits for the resulting action space for variable impedance gains.
 * `control_delta`: Only relevant for `OSC_POSE` or `OSC_POSITION` controllers. `true` interprets input actions as delta values from the current robot end effector position. Otherwise, assumed to be absolute (global) values
 * `uncouple_pos_ori`: Only relevant for `OSC_POSE`. `true` decouples the desired position and orientation torques when executing the controller
 
 ## Using a Custom Controller Configuration
-A custom controller other than the environment defaults (which are normally are `JOINT_VELOCITY` configurations specified for each robot) can be used by simply creating a new config (`.json`) file with the relevant parameters as specified above. All robosuite environments have an optional `controller_config` argument that can be used to pass in specific controller settings. Note that this is expected to be a `dict`, so the new configuration must be read in and parsed as a `dict` before passing it during the environment `robosuite.make(...)` call. A brief example script showing how to import a custom controller configuration is shown below.
+A custom controller other than the environment defaults (which are normally `JOINT_VELOCITY` configurations specified for each robot) can be used by simply creating a new config (`.json`) file with the relevant parameters as specified above. All robosuite environments have an optional `controller_config` argument that can be used to pass in specific controller settings. Note that this is expected to be a `dict`, so the new configuration must be read in and parsed as a `dict` before passing it during the environment `robosuite.make(...)` call. A brief example script showing how to import a custom controller configuration is shown below.
 
 ```python
 import robosuite as suite
