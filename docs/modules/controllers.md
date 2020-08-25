@@ -43,7 +43,7 @@ Below, a brief overview and description of each subset of controller parameters 
 * `uncouple_pos_ori`: Only relevant for `OSC_POSE`. `true` decouples the desired position and orientation torques when executing the controller
 
 ## Using a Custom Controller Configuration
-A custom controller other than the environment defaults (which are normally are `JOINT_VELOCITY` configurations specified for each robot) can be used by simply creating a new config (`.json`) file with the relevant parameters as specified above. All robosuite environments have an optional `controller_config` argument that can be used to pass in specific controller settings. Note that this is expected to be a `dict`, so the new configuration must be read in and parsed as a `dict` before passing it during the environment `robosuite.make(...)` call. A brief example script showing how to import a custom controller configuration is shown below.
+A custom controller other than the environment defaults (which are normally `JOINT_VELOCITY` configurations specified for each robot) can be used by simply creating a new config (`.json`) file with the relevant parameters as specified above. All robosuite environments have an optional `controller_config` argument that can be used to pass in specific controller settings. Note that this is expected to be a `dict`, so the new configuration must be read in and parsed as a `dict` before passing it during the environment `robosuite.make(...)` call. A brief example script showing how to import a custom controller configuration is shown below.
 
 ```python
 import robosuite as suite
