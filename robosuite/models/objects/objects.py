@@ -14,9 +14,6 @@ class MujocoObject:
         2) can be swapped between different tasks
 
     Typical methods return copy so the caller can all joints/attributes as wanted
-
-    Attributes:
-        asset (TYPE): Description
     """
 
     def __init__(self):
@@ -24,27 +21,23 @@ class MujocoObject:
 
     def get_bottom_offset(self):
         """
-        Returns vector from object center to object bottom
-        Helps us put objects on a surface
+        Returns vector from object center to object bottom.
+        Helps us put objects on a surface.
+        Must be defined by subclass.
 
         Returns:
-            np.array: eg. np.array([0, 0, -2])
-
-        Raises:
-            NotImplementedError: Description
+            np.array: (dx, dy, dz) vector, eg. np.array([0, 0, -2])
         """
         raise NotImplementedError
 
     def get_top_offset(self):
         """
-        Returns vector from object center to object top
-        Helps us put other objects on this object
+        Returns vector from object center to object top.
+        Helps us put other objects on this object.
+        Must be defined by subclass.
 
         Returns:
-            np.array: eg. np.array([0, 0, 2])
-
-        Raises:
-            NotImplementedError: Description
+            np.array: (dx, dy, dz) vector, eg. np.array([0, 0, 2])
         """
         raise NotImplementedError
 
@@ -55,66 +48,54 @@ class MujocoObject:
         a.get_horizontal_radius() + b.get_horizontal_radius() < d
         should mean that a, b has no contact
 
-        Helps us put objects programmatically without them flying away due to
-        a huge initial contact force
+        Helps us put objects programmatically without them flying away due to a huge initial contact force.
+        Must be defined by subclass.
 
         Returns:
-            Float: radius
-
-        Raises:
-            NotImplementedError: Description
+            float: radius
         """
         raise NotImplementedError
         # return 2
 
-    def get_collision(self, name=None, site=False):
+    def get_collision(self, site=False):
         """
         Returns a ET.Element
         It is a <body/> subtree that defines all collision related fields
         of this object.
-
-        Return is a copy
+        Return should be a copy.
+        Must be defined by subclass.
 
         Args:
-            name (None, optional): Assign name to body
-            site (False, optional): Add a site (with name @name
-                 when applicable) to the returned body
+            site (bool): Add a site (with name @name when applicable) to the returned body
 
         Returns:
             ET.Element: body
-
-        Raises:
-            NotImplementedError: Description
         """
         raise NotImplementedError
 
-    def get_visual(self, name=None, site=False):
+    def get_visual(self, site=False):
         """
         Returns a ET.Element
         It is a <body/> subtree that defines all visualization related fields
         of this object.
-
-        Return is a copy
+        Return should be a copy.
+        Must be defined by subclass.
 
         Args:
-            name (None, optional): Assign name to body
-            site (False, optional): Add a site (with name @name
-                 when applicable) to the returned body
+            site (bool): Add a site (with name @name when applicable) to the returned body
 
         Returns:
             ET.Element: body
-
-        Raises:
-            NotImplementedError: Description
         """
         raise NotImplementedError
 
-    def get_site_attrib_template(self):
+    @staticmethod
+    def get_site_attrib_template():
         """
         Returns attribs of spherical site used to mark body origin
 
         Returns:
-            Dictionary of default site attributes
+            dict: Dictionary of default site attributes
         """
         return {
             "pos": "0 0 0",
@@ -127,13 +108,15 @@ class MujocoObject:
 class MujocoXMLObject(MujocoXML, MujocoObject):
     """
     MujocoObjects that are loaded from xml files
+
+    Args:
+        fname (str): XML File path
+        name (None or str): Name of this MujocoXMLObject
+        joints (list of dict): each dictionary corresponds to a joint that will be created for this object. The
+            dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo xml specification.
     """
 
     def __init__(self, fname, name=None, joints=None):
-        """
-        Args:
-            fname (TYPE): XML File path
-        """
         MujocoXML.__init__(self, fname)
 
         self.name = name
@@ -199,6 +182,37 @@ class MujocoGeneratedObject(MujocoObject):
     """
     Base class for all programmatically generated mujoco object
     i.e., every MujocoObject that does not have an corresponding xml file
+
+    Args:
+        name (str): (unique) name to identify this generated object
+
+        size (n-tuple of float): relevant size parameters for the object, should be of size 1 - 3
+
+        rgba (4-tuple of float): Color
+
+        density (float): Density
+
+        friction (3-tuple of float): (sliding friction, torsional friction, and rolling friction).
+            A single float can also be specified, in order to set the sliding friction (the other values) will
+            be set to the MuJoCo default. See http://www.mujoco.org/book/modeling.html#geom for details.
+
+        solref (2-tuple of float): MuJoCo solver parameters that handle contact.
+            See http://www.mujoco.org/book/XMLreference.html for more details.
+
+        solimp (3-tuple of float): MuJoCo solver parameters that handle contact.
+            See http://www.mujoco.org/book/XMLreference.html for more details.
+
+        material (CustomMaterial or `'default'` or None): if "default", add a template material and texture for this
+            object that is used to color the geom(s).
+            Otherwise, input is expected to be a CustomMaterial object
+
+            See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
+            Mujoco texture / material tags, respectively
+
+            Note that specifying a custom texture in this way automatically overrides any rgba values set
+
+        joints (list of dict): each dictionary corresponds to a joint that will be created for this object. The
+            dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo xml specification.
     """
 
     def __init__(
@@ -213,39 +227,6 @@ class MujocoGeneratedObject(MujocoObject):
         material=None,
         joints=None,
     ):
-        """
-        Args:
-            size ([float], optional): of size 1 - 3
-
-            rgba (([float, float, float, float]), optional): Color
-
-            density (float, optional): Density
-
-            friction ([float], optional): of size 3, corresponding to sliding friction,
-                torsional friction, and rolling friction. A single float can also be
-                specified, in order to set the sliding friction (the other values) will
-                be set to the MuJoCo default. See http://www.mujoco.org/book/modeling.html#geom 
-                for details.
-
-            solref ([float], optional): of size 2. MuJoCo solver parameters that handle contact.
-                See http://www.mujoco.org/book/XMLreference.html for more details.
-
-            solimp ([float], optional): of size 3. MuJoCo solver parameters that handle contact.
-                See http://www.mujoco.org/book/XMLreference.html for more details.
-
-            material (CustomMaterial, optional): if "default", add a template material and texture for this
-                object that is used to color the geom(s).
-                Otherwise, input is expected to be a CustomMaterial object
-
-                See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
-                Mujoco texture / material tags, respectively
-
-                Note that specifying a custom texture in this way automatically overrides any rgba values set
-
-            joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
-                object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
-                xml specification.
-        """
         super().__init__()
 
         self.name = name
@@ -311,11 +292,23 @@ class MujocoGeneratedObject(MujocoObject):
 
     @staticmethod
     def get_collision_attrib_template():
+        """
+        Generates template with collision attributes for a given geom
+
+        Returns:
+            dict: Initial template with `'pos'` and `'group'` already specified
+        """
         # TODO: collision group should be 0, but this removes the generated obj like the cube when we only render visual meshes
         return {"pos": "0 0 0", "group": "1"}
 
     @staticmethod
     def get_visual_attrib_template():
+        """
+        Generates template with visual attributes for a given geom
+
+        Returns:
+            dict: Initial template with `'conaffinity'`, `'contype'`, and `'group'` already specified
+        """
         return {"conaffinity": "0", "contype": "0", "group": "1"}
 
     def append_material(self, material):
@@ -328,6 +321,9 @@ class MujocoGeneratedObject(MujocoObject):
 
         Note that the "file" attribute for the "texture" tag should be specified relative to the textures directory
             located in robosuite/models/assets/textures/
+
+        Args:
+            material (CustomMaterial): Material to add to this object
         """
         # First check if asset attribute exists; if not, define the asset attribute
         if not hasattr(self, "asset"):

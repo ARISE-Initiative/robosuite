@@ -14,6 +14,42 @@ class HammerObject(MujocoGeneratedObject):
     """
     Generates a Hammer object with a cylindrical or box-shaped handle, cubic head, cylindrical face and triangular claw
     (used in Handoff task)
+
+    Args:
+        name (str): Name of this Hammer object
+
+        handle_shape (str): Either "box", for a box-shaped handle, or "cylinder", for a cylindrically-shaped handle
+
+        handle_radius (float or 2-array of float): Either specific or range of values to draw randomly from
+            uniformly for the handle radius
+
+        handle_length (float or 2-array of float): Either specific or range of values to draw randomly from
+            uniformly for the handle length
+
+        handle_density (float or 2-array of float): Either specific or range of values to draw randomly from
+            uniformly for the handle density (in SI units). Note that this value is scaled x4 for the hammer head
+
+        handle_friction (float or 2-array of float): Either specific or range of values to draw randomly from
+            uniformly for the handle friction. Note that Mujoco default values are used for the head
+
+        head_density_ratio (float): Ratio of density of handle to head (including face and claw)
+
+        use_texture (bool): If true, geoms will be defined by realistic textures and rgba values will be ignored
+
+        rgba_handle (4-array or None): If specified, sets handle rgba values
+
+        rgba_head (4-array or None): If specified, sets handle rgba values
+
+        rgba_face (4-array or None): If specified, sets handle rgba values
+
+        rgba_claw (4-array or None): If specified, sets handle rgba values
+
+        joints (list of dict): array of dictionaries, where each dictionary corresponds to a joint that will be created
+            for this object. The dictionary should specify the joint attributes (type, pos, etc.) according to
+            the MuJoCo xml specification.
+
+    Raises:
+        ValueError: [Invalid handle shape]
     """
 
     def __init__(
@@ -32,28 +68,6 @@ class HammerObject(MujocoGeneratedObject):
         rgba_claw=None,
         joints=None,
     ):
-        """
-        name (str): Name of this Hammer object
-        handle_shape (str): Either "box", for a box-shaped handle, or "cylinder", for a cylindrically-shaped handle
-        handle_radius (float or 2-list of float): Either specific or range of values to draw randomly from
-            uniformly for the handle radius
-        handle_length (float or 2-list of float): Either specific or range of values to draw randomly from
-            uniformly for the handle length
-        handle_density (float or 2-list of float): Either specific or range of values to draw randomly from
-            uniformly for the handle density (in SI units). Note that this value is scaled x4 for the hammer head
-        handle_friction (float or 2-list of float): Either specific or range of values to draw randomly from
-            uniformly for the handle friction. Note that Mujoco default values are used for the head
-        head_density_ratio (float): Ratio of density of handle to head (including face and claw)
-        use_texture (bool): If true, geoms will be defined by realistic textures and rgba values will be ignored
-        rgba_handle (3-array or None): If specified, sets handle rgba values
-        rgba_head (3-array or None): If specified, sets handle rgba values
-        rgba_face (3-array or None): If specified, sets handle rgba values
-        rgba_claw (3-array or None): If specified, sets handle rgba values
-        joints ([dict]): list of dictionaries - each dictionary corresponds to a joint that will be created for this
-            object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo
-            xml specification.
-        """
-
         # Run super() init
         super().__init__(name=name, joints=joints)
 
@@ -120,6 +134,12 @@ class HammerObject(MujocoGeneratedObject):
 
     @property
     def handle_distance(self):
+        """
+        Calculates how wide the handle is
+
+        Returns:
+            float: handle diameter
+        """
         return 2.0 * self.handle_radius
 
     def get_collision(self, site=None):
@@ -221,34 +241,84 @@ class HammerObject(MujocoGeneratedObject):
 
         return main_body
 
+    def get_visual(self, site=None):
+        return self.get_collision(site)
+
     @property
     def init_quat(self):
+        """
+        Generates a new random orientation for the hammer
+
+        Returns:
+            np.array: (x, y, z, w) quaternion orientation for the hammer
+        """
         # Randomly sample between +/- flip (such that the hammer head faces one way or the other)
         return np.array([0.5, -0.5, 0.5, -0.5]) if np.random.rand() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
 
     @property
     def handle_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to hammer handle
+        """
         return ["hammer_handle"]
 
     @property
     def head_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to hammer head
+        """
         return ["hammer_head"]
 
     @property
     def face_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to hammer face
+        """
         return ["hammer_neck", "hammer_face"]
 
     @property
     def claw_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to hammer claw
+        """
         return ["hammer_claw"]
-
-    def get_visual(self, name=None, site=None):
-        return self.get_collision(name, site)
 
 
 class PotWithHandlesObject(MujocoGeneratedObject):
     """
-    Generates the Pot object with side handles (used in BaxterLift)
+    Generates the Pot object with side handles (used in TwoArmLift)
+
+    Args:
+        name (str): Name of this Pot object
+
+        body_half_size (None or 3-array of float): If specified, defines the (x,y,z) half-dimensions of the main pot
+            body. Otherwise, defaults to [0.07, 0.07, 0.07]
+
+        handle_radius (float): Determines the pot handle radius
+
+        handle_length (float): Determines the pot handle length
+
+        handle_width (float): Determines the pot handle width
+
+        use_texture (bool): If true, geoms will be defined by realistic textures and rgba values will be ignored
+
+        rgba_body (4-array or None): If specified, sets pot body rgba values
+
+        rgba_handle_1 (4-array or None): If specified, sets handle 1 rgba values
+
+        rgba_handle_2 (4-array or None): If specified, sets handle 2 rgba values
+
+        solid_handle (bool): If true, uses a single geom to represent the handle
+
+        thickness (float): How thick to make the pot body walls
+
+        joints (list of dict): array of dictionaries, where each dictionary corresponds to a joint that will be created
+            for this object. The dictionary should specify the joint attributes (type, pos, etc.) according to
+            the MuJoCo xml specification.
     """
 
     def __init__(
@@ -326,6 +396,13 @@ class PotWithHandlesObject(MujocoGeneratedObject):
 
     @property
     def handle_distance(self):
+
+        """
+        Calculates how far apart the handles are
+
+        Returns:
+            float: handle distance
+        """
         return self.body_half_size[1] * 2 + self.handle_length * 2
 
     def get_collision(self, site=None):
@@ -503,14 +580,26 @@ class PotWithHandlesObject(MujocoGeneratedObject):
         return main_body
 
     def handle_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to both handles
+        """
         return self.handle_1_geoms() + self.handle_2_geoms()
 
     def handle_1_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to handle 1
+        """
         if self.solid_handle:
             return ["handle_1"]
         return ["handle_1_c", "handle_1_+", "handle_1_-"]
 
     def handle_2_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to handle 2
+        """
         if self.solid_handle:
             return ["handle_2"]
         return ["handle_2_c", "handle_2_+", "handle_2_-"]
@@ -521,16 +610,17 @@ class PotWithHandlesObject(MujocoGeneratedObject):
 
 def five_sided_box(size, rgba, group, thickness, material):
     """
+    Procedurally generates a five-sided (open) box
+
     Args:
-        size ([float,flat,float]):
-        rgba ([float,float,float,float]): color
-        group (int): Mujoco group
+        size (3-array of float): the (x,y,z) half-size desired for the box
+        rgba (4-array of float): rgba color for this box
+        group (int): Mujoco group to assign these geoms
         thickness (float): wall thickness
         material (str): material for this box
 
     Returns:
-        []: array of geoms corresponding to the
-            5 sides of the pot used in BaxterLift
+        list: array of geoms corresponding to the 5 sides of the generated box
     """
     geoms = []
     x, y, z = size
@@ -569,8 +659,20 @@ def _get_size(size,
               default_max,
               default_min):
     """
-        Helper method for providing a size,
-        or a range to randomize from
+    Helper method for providing a size, or a range to randomize from
+
+    Args:
+        size (n-array): Array of numbers that explicitly define the size
+        size_max (n-array): Array of numbers that define the custom max size from which to randomly sample
+        size_min (n-array): Array of numbers that define the custom min size from which to randomly sample
+        default_max (n-array): Array of numbers that define the default max size from which to randomly sample
+        default_min (n-array): Array of numbers that define the default min size from which to randomly sample
+
+    Returns:
+        np.array: size generated
+
+    Raises:
+        ValueError: [Inconsistent array sizes]
     """
     if len(default_max) != len(default_min):
         raise ValueError('default_max = {} and default_min = {}'
@@ -587,12 +689,15 @@ def _get_size(size,
             size_min = default_min
         size = np.array([np.random.uniform(size_min[i], size_max[i])
                          for i in range(len(default_max))])
-    return size
+    return np.array(size)
 
 
 class BoxObject(MujocoGeneratedObject):
     """
     A box object.
+
+    Args:
+        size (3-tuple of float): (half-x, half-y, half-z) size parameters for this box object
     """
 
     def __init__(
@@ -627,6 +732,12 @@ class BoxObject(MujocoGeneratedObject):
         )
 
     def sanity_check(self):
+        """
+        Checks to make sure inputted size is of correct length
+
+        Raises:
+            AssertionError: [Invalid size length]
+        """
         assert len(self.size) == 3, "box size should have length 3"
 
     def get_bottom_offset(self):
@@ -650,6 +761,9 @@ class BoxObject(MujocoGeneratedObject):
 class CylinderObject(MujocoGeneratedObject):
     """
     A cylinder object.
+
+    Args:
+        size (2-tuple of float): (radius, half-length) size parameters for this cylinder object
     """
 
     def __init__(
@@ -684,6 +798,12 @@ class CylinderObject(MujocoGeneratedObject):
         )
 
     def sanity_check(self):
+        """
+        Checks to make sure inputted size is of correct length
+
+        Raises:
+            AssertionError: [Invalid size length]
+        """
         assert len(self.size) == 2, "cylinder size should have length 2"
 
     def get_bottom_offset(self):
@@ -707,6 +827,9 @@ class CylinderObject(MujocoGeneratedObject):
 class BallObject(MujocoGeneratedObject):
     """
     A ball (sphere) object.
+
+    Args:
+        size (1-tuple of float): (radius) size parameters for this ball object
     """
 
     def __init__(
@@ -741,6 +864,12 @@ class BallObject(MujocoGeneratedObject):
         )
 
     def sanity_check(self):
+        """
+        Checks to make sure inputted size is of correct length
+
+        Raises:
+            AssertionError: [Invalid size length]
+        """
         assert len(self.size) == 1, "ball size should have length 1"
 
     def get_bottom_offset(self):
@@ -764,6 +893,9 @@ class BallObject(MujocoGeneratedObject):
 class CapsuleObject(MujocoGeneratedObject):
     """
     A capsule object.
+
+    Args:
+        size (2-tuple of float): (radius, half-length) size parameters for this capsule object
     """
 
     def __init__(
@@ -798,6 +930,12 @@ class CapsuleObject(MujocoGeneratedObject):
         )
 
     def sanity_check(self):
+        """
+        Checks to make sure inputted size is of correct length
+
+        Raises:
+            AssertionError: [Invalid size length]
+        """
         assert len(self.size) == 2, "capsule size should have length 2"
 
     def get_bottom_offset(self):

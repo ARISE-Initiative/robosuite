@@ -90,6 +90,9 @@ class MilkVisualObject(MujocoXMLObject):
 class BreadVisualObject(MujocoXMLObject):
     """
     Visual fiducial of bread loaf (used in PickPlace)
+
+    Fiducial objects are not involved in collision physics.
+    They provide a point of reference to indicate a position.
     """
 
     def __init__(self, name=None, joints=None):
@@ -99,6 +102,9 @@ class BreadVisualObject(MujocoXMLObject):
 class CerealVisualObject(MujocoXMLObject):
     """
     Visual fiducial of cereal box (used in PickPlace)
+
+    Fiducial objects are not involved in collision physics.
+    They provide a point of reference to indicate a position.
     """
 
     def __init__(self, name=None, joints=None):
@@ -108,6 +114,9 @@ class CerealVisualObject(MujocoXMLObject):
 class CanVisualObject(MujocoXMLObject):
     """
     Visual fiducial of coke can (used in PickPlace)
+
+    Fiducial objects are not involved in collision physics.
+    They provide a point of reference to indicate a position.
     """
 
     def __init__(self, name=None, joints=None):
@@ -126,6 +135,11 @@ class PlateWithHoleObject(MujocoXMLObject):
 class DoorObject(MujocoXMLObject):
     """
     Door with handle (used in Door)
+
+    Args:
+        friction (3-tuple of float): friction parameters to override the ones specified in the XML
+        damping (float): damping parameter to override the ones specified in the XML
+        lock (bool): Whether to use the locked door variation object or not
     """
     def __init__(self, name=None, joints=None, friction=None, damping=None, lock=False):
         xml_path = "objects/door.xml"
@@ -141,6 +155,12 @@ class DoorObject(MujocoXMLObject):
             self._set_door_damping(self.damping)
 
     def _set_door_friction(self, friction):
+        """
+        Helper function to override the door friction directly in the XML
+
+        Args:
+            friction (3-tuple of float): friction parameters to override the ones specified in the XML
+        """
         collision = self.worldbody.find("./body/body[@name='collision']")
         node = collision.find("./body[@name='frame']")
         node = node.find("./body[@name='door']")
@@ -148,17 +168,14 @@ class DoorObject(MujocoXMLObject):
         hinge.set("frictionloss", array_to_string(np.array([friction])))
 
     def _set_door_damping(self, damping):
-        hinge = self._base_body.find("./joint[@name='door_hinge']")
+        """
+        Helper function to override the door friction directly in the XML
+
+        Args:
+            damping (float): damping parameter to override the ones specified in the XML
+        """
         collision = self.worldbody.find("./body/body[@name='collision']")
         node = collision.find("./body[@name='frame']")
         node = node.find("./body[@name='door']")
         hinge = node.find("./joint[@name='door_hinge']")
         hinge.set("damping", array_to_string(np.array([damping])))
-
-    @property
-    def _base_body(self):
-        node = self.worldbody.find("./body[@name='door_body']")
-        node = node.find("./body[@name='collision']")
-        node = node.find("./body[@name='frame']")
-        node = node.find("./body[@name='door']")
-        return node
