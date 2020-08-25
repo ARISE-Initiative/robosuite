@@ -20,9 +20,10 @@ class JointPositionController(Controller):
         eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
-            "joints" : list of indexes to relevant robot joints
-            "qpos" : list of indexes to relevant robot joint positions
-            "qvel" : list of indexes to relevant robot joint velocities
+
+            :`'joints'`: list of indexes to relevant robot joints
+            :`'qpos'`: list of indexes to relevant robot joint positions
+            :`'qvel'`: list of indexes to relevant robot joint velocities
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
@@ -58,7 +59,7 @@ class JointPositionController(Controller):
         kp_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is set to either
             "variable" or "variable_kp". This sets the corresponding min / max ranges of the controller action space
             for the varying kp values. Can be either be a 2-list (same min / max for all kp action dims), or a 2-list
-             of list (specific min / max for each kp dim)
+            of list (specific min / max for each kp dim)
 
         damping_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is set to
             "variable". This sets the corresponding min / max ranges of the controller action space for the varying
@@ -76,6 +77,9 @@ class JointPositionController(Controller):
 
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
+
+    Raises:
+        AssertionError: [Invalid impedance mode]
     """
 
     def __init__(self,
@@ -156,10 +160,18 @@ class JointPositionController(Controller):
         delta values to update the goal position / pose and the kp and/or damping values to be immediately updated
         internally before executing the proceeding control loop.
 
-        @action expected to be in the following format, based on impedance mode!
-            Mode "fixed": [joint pos command]
-            Mode "variable": [damping values, kp values, joint pos command]
-            Mode "variable_kp": [kp values, joint pos command]
+        Note that @action expected to be in the following format, based on impedance mode!
+
+            :Mode `'fixed'`: [joint pos command]
+            :Mode `'variable'`: [damping values, kp values, joint pos command]
+            :Mode `'variable_kp'`: [kp values, joint pos command]
+
+        Args:
+            action (Iterable): Desired relative joint position goal state
+            set_qpos (Iterable): If set, overrides @action and sets the desired absolute joint position goal state
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
         """
         # Update state
         self.update()
@@ -194,6 +206,12 @@ class JointPositionController(Controller):
             self.interpolator.set_goal(self.goal_qpos)
 
     def run_controller(self):
+        """
+        Calculates the torques required to reach the desired setpoint
+
+        Returns:
+             np.array: Command torques
+        """
         # Make sure goal has been set
         if self.goal_qpos is None:
             self.set_goal(np.zeros(self.control_dim))
@@ -244,9 +262,16 @@ class JointPositionController(Controller):
         """
         Returns the limits over this controller's action space, overrides the superclass property
         Returns the following (generalized for both high and low limits), based on the impedance mode:
-            Mode "fixed": [position/pose limits]
-            Mode "variable": [damping limits, kp limits, position/pose limits]
-            Mode "variable_kp": [kp limits, position/pose limits]
+
+            :Mode `'fixed'`: [joint pos command]
+            :Mode `'variable'`: [damping values, kp values, joint pos command]
+            :Mode `'variable_kp'`: [kp values, joint pos command]
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum action values
+                - (np.array) maximum action values
         """
         if self.impedance_mode == "variable":
             low = np.concatenate([self.damping_min, self.kp_min, self.input_min])

@@ -18,9 +18,10 @@ class JointTorqueController(Controller):
         eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
-            "joints" : list of indexes to relevant robot joints
-            "qpos" : list of indexes to relevant robot joint positions
-            "qvel" : list of indexes to relevant robot joint velocities
+
+            :`'joints'`: list of indexes to relevant robot joints
+            :`'qpos'`: list of indexes to relevant robot joint positions
+            :`'qvel'`: list of indexes to relevant robot joint velocities
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
@@ -100,6 +101,15 @@ class JointTorqueController(Controller):
         self.torques = None                               # Torques returned every time run_controller is called
 
     def set_goal(self, torques):
+        """
+        Sets goal based on input @torques.
+
+        Args:
+            torques (Iterable): Desired joint torques
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
+        """
         # Update state
         self.update()
 
@@ -112,6 +122,12 @@ class JointTorqueController(Controller):
             self.interpolator.set_goal(self.goal_torque)
 
     def run_controller(self):
+        """
+        Calculates the torques required to reach the desired setpoint
+
+        Returns:
+             np.array: Command torques
+        """
         # Make sure goal has been set
         if self.goal_torque is None:
             self.set_goal(np.zeros(self.control_dim))

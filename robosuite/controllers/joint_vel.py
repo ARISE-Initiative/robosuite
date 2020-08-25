@@ -17,9 +17,10 @@ class JointVelocityController(Controller):
         eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
-            "joints" : list of indexes to relevant robot joints
-            "qpos" : list of indexes to relevant robot joint positions
-            "qvel" : list of indexes to relevant robot joint velocities
+
+            :`'joints'`: list of indexes to relevant robot joints
+            :`'qpos'`: list of indexes to relevant robot joint positions
+            :`'qvel'`: list of indexes to relevant robot joint velocities
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
@@ -91,6 +92,7 @@ class JointVelocityController(Controller):
         # if kv is a single value, map wrist gains accordingly (scale down x10 for final two joints)
 
         if type(kv) is float or type(kv) is int:
+            # Scale kvp according to how wide the actuator range is for this robot
             low, high = self.actuator_limits
             self.kvp = kv * (high - low)
         self.kvi = self.kvp * 0.005
@@ -116,6 +118,15 @@ class JointVelocityController(Controller):
         self.torques = None                             # Torques returned every time run_controller is called
 
     def set_goal(self, velocities):
+        """
+        Sets goal based on input @velocities.
+
+        Args:
+            velocities (Iterable): Desired joint velocities
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
+        """
         # Update state
         self.update()
 
@@ -133,6 +144,12 @@ class JointVelocityController(Controller):
             self.interpolator.set_goal(self.goal_vel)
 
     def run_controller(self):
+        """
+        Calculates the torques required to reach the desired setpoint
+
+        Returns:
+             np.array: Command torques
+        """
         # Make sure goal has been set
         if self.goal_vel is None:
             self.set_goal(np.zeros(self.joint_dim))

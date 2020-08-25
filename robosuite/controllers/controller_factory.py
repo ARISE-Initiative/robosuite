@@ -1,5 +1,5 @@
 """
-Defines a string based method of initializing controllers
+Set of functions that streamline controller initialization process
 """
 from .osc import OperationalSpaceController
 from .joint_vel import JointVelocityController
@@ -17,8 +17,9 @@ pybullet_server = None
 
 
 def reset_controllers():
-    """Global function for doing one-time clears and restarting of any global controller-related
-    specifics before re-initializing each individual controller again.
+    """
+    Global function for doing one-time clears and restarting of any global controller-related
+    specifics before re-initializing each individual controller again
     """
     global pybullet_server
     # Disconnect and reconnect to pybullet server if it exists
@@ -28,7 +29,12 @@ def reset_controllers():
 
 
 def get_pybullet_server():
-    """Getter to return reference to pybullet server module variable"""
+    """
+    Getter to return reference to pybullet server module variable
+
+    Returns:
+        PyBulletServer: Server instance running PyBullet
+    """
     global pybullet_server
     return pybullet_server
 
@@ -38,13 +44,20 @@ def load_controller_config(custom_fpath=None, default_controller=None):
     Utility function that loads the desired controller and returns the loaded configuration as a dict
 
     If @default_controller is specified, any value inputted to @custom_fpath is overridden and the default controller
-        configuration is automatically loaded. See specific arg description below for available default controllers.
+    configuration is automatically loaded. See specific arg description below for available default controllers.
 
     Args:
-        @custom_fpath (str): Absolute filepath to the custom controller configuration .json file to be loaded
-        @default_controller (str): If specified, overrides @custom_fpath and loads a default configuration file for the
+        custom_fpath (str): Absolute filepath to the custom controller configuration .json file to be loaded
+        default_controller (str): If specified, overrides @custom_fpath and loads a default configuration file for the
             specified controller.
             Choices are: {"JOINT_POSITION", "JOINT_TORQUE", "JOINT_VELOCITY", "OSC_POSITION", "OSC_POSE", "IK_POSE"}
+
+    Returns:
+        dict: Controller configuration
+
+    Raises:
+        AssertionError: [Unknown default controller name]
+        AssertionError: [No controller specified]
     """
     # First check if default controller is not None; if it is not, load the appropriate controller
     if default_controller is not None:
@@ -77,13 +90,13 @@ def controller_factory(name, params):
     """
     Generator for controllers
 
-    Creates a Controller instance with the provided name and relevant params.
+    Creates a Controller instance with the provided @name and relevant @params.
 
     Args:
-        name: the name of the controller. Must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+        name (str): the name of the controller. Must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             OSC_POSITION, OSC_POSE, IK_POSE}
-        params: dict containing the relevant params to pass to the controller
-        sim: Mujoco sim reference to pass to the controller
+        params (dict): dict containing the relevant params to pass to the controller
+        sim (MjSim): Mujoco sim reference to pass to the controller
 
     Returns:
         Controller: Controller instance
@@ -128,8 +141,8 @@ def controller_factory(name, params):
         global pybullet_server
         from .ik import InverseKinematicsController
         if pybullet_server is None:
-            from robosuite.controllers.ik import PybulletServer
-            pybullet_server = PybulletServer()
+            from robosuite.controllers.ik import PyBulletServer
+            pybullet_server = PyBulletServer()
         return InverseKinematicsController(interpolator_pos=interpolator,
                                            interpolator_ori=ori_interpolator,
                                            bullet_server_id=pybullet_server.server_id,

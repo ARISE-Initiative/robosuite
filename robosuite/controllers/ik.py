@@ -8,11 +8,12 @@ Run `pip install pybullet==2.6.9`.
 
 NOTE: IK is only supported for the following robots:
 
-Baxter
-Sawyer
-Panda
+:Baxter:
+:Sawyer:
+:Panda:
 
 Attempting to run IK with any other robot will raise an error!
+
 ***********************************************************************************
 """
 try:
@@ -35,7 +36,7 @@ import numpy as np
 SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda"}
 
 
-class PybulletServer(object):
+class PyBulletServer(object):
     """
     Helper class to encapsulate an alias for a single pybullet server
     """
@@ -82,7 +83,7 @@ class InverseKinematicsController(JointVelocityController):
     Inverse kinematics solving is handled by pybullet.
 
     NOTE: Control input actions are assumed to be relative to the current position / orientation of the end effector
-    and are taken as the array (x_dpos, y_dpos, z_dpos, x_rot, y_rot, z_rot, w_rot).
+    and are taken as the array (x_dpos, y_dpos, z_dpos, x_rot, y_rot, z_rot).
 
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
@@ -90,9 +91,10 @@ class InverseKinematicsController(JointVelocityController):
         eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
-            "joints" : list of indexes to relevant robot joints
-            "qpos" : list of indexes to relevant robot joint positions
-            "qvel" : list of indexes to relevant robot joint velocities
+
+            :`'joints'`: list of indexes to relevant robot joints
+            :`'qpos'`: list of indexes to relevant robot joint positions
+            :`'qvel'`: list of indexes to relevant robot joint velocities
 
         robot_name (str): Name of robot being controlled. Can be {"Sawyer", "Panda", or "Baxter"}
 
@@ -117,6 +119,9 @@ class InverseKinematicsController(JointVelocityController):
 
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
+
+    Raises:
+        AssertionError: [Unsupported robot]
     """
 
     def __init__(self,
@@ -219,12 +224,16 @@ class InverseKinematicsController(JointVelocityController):
     def setup_inverse_kinematics(self, load_urdf=True):
         """
         This function is responsible for doing any setup for inverse kinematics.
-        Inverse Kinematics maps end effector (EEF) poses to joint angles that
-        are necessary to achieve those poses.
 
-        load_urdf specifies whether the robot urdf should be loaded into the sim. Useful flag that
-            should be cleared in the case of multi-armed robots which might have multiple IK controller instances
-            but should all reference the same (single) robot urdf within the bullet sim
+        Inverse Kinematics maps end effector (EEF) poses to joint angles that are necessary to achieve those poses.
+
+        Args:
+            load_urdf (bool): specifies whether the robot urdf should be loaded into the sim. Useful flag that
+                should be cleared in the case of multi-armed robots which might have multiple IK controller instances
+                but should all reference the same (single) robot urdf within the bullet sim
+
+        Raises:
+            ValueError: [Invalid eef id]
         """
 
         # get paths to urdfs
@@ -275,7 +284,7 @@ class InverseKinematicsController(JointVelocityController):
                 self.ik_command_indexes = np.arange(self.joint_dim + 1, self.joint_dim * 2 + 1)
             else:
                 # Error with inputted id
-                print("Error loading ik controller for Baxter -- arm id's must contain 'right' or 'left'!")
+                raise ValueError("Error loading ik controller for Baxter -- arm id's must contain 'right' or 'left'!")
         else:
             # Default assumes pybullet has same number of joints compared to mujoco sim
             self.bullet_ee_idx = self.num_bullet_joints - 1
@@ -287,12 +296,7 @@ class InverseKinematicsController(JointVelocityController):
         eef_offset = np.eye(4)
         eef_offset[:3, :3] = T.quat2mat(T.quat_inverse(self.eef_rot_offset))
 
-        if self.robot_name in {"Sawyer", "Panda", "Baxter"}:
-            self.rotation_offset = eef_offset
-        else:
-            # No other robots supported, print out to user
-            print("ERROR: Unsupported robot requested for ik controller. Only Sawyer, Panda, and Baxter "
-                  "currently supported.")
+        self.rotation_offset = eef_offset
 
         # Simulation will update as fast as it can in real time, instead of waiting for
         # step commands like in the non-realtime case.
@@ -323,7 +327,7 @@ class InverseKinematicsController(JointVelocityController):
         Force the internal robot model to match the provided joint angles.
 
         Args:
-            joint_positions (list): a list or flat numpy array of joint positions. Default automatically updates to
+            joint_positions (Iterable): Array of joint positions. Default automatically updates to
                 current mujoco joint pos state
             simulate (bool): If True, actually use physics simulation, else
                 write to physics state directly.
@@ -359,8 +363,14 @@ class InverseKinematicsController(JointVelocityController):
 
     def ik_robot_eef_joint_cartesian_pose(self):
         """
-        Returns the current cartesian pose of the last joint of the ik robot with respect to the base frame as
+        Calculates the current cartesian pose of the last joint of the ik robot with respect to the base frame as
         a (pos, orn) tuple where orn is a x-y-z-w quaternion
+
+        Returns:
+            2-tuple:
+
+                - (np.array) position
+                - (np.array) orientation
         """
         eef_pos_in_world = np.array(p.getLinkState(self.ik_robot, self.bullet_ee_idx,
                                                    physicsClientId=self.bullet_server_id)[0])
@@ -395,15 +405,14 @@ class InverseKinematicsController(JointVelocityController):
         on the previously recorded target.
 
         Args:
-            dpos (numpy array): a 3 dimensional array corresponding to the desired
+            dpos (np.array): a 3 dimensional array corresponding to the desired
                 change in x, y, and z end effector position.
-            rotation (numpy array): a rotation matrix of shape (3, 3) corresponding
+            rotation (np.array): a rotation matrix of shape (3, 3) corresponding
                 to the desired rotation from the current orientation of the end effector.
             update_targets (bool): whether to update ik target pos / ori attributes or not
 
         Returns:
-            velocities (numpy array): a flat array of joint velocity commands to apply
-                to try and achieve the desired input control.
+            np.array: a flat array of joint velocity commands to apply to try and achieve the desired input control.
         """
         # Sync joint positions for IK.
         self.sync_ik_robot()
@@ -431,12 +440,11 @@ class InverseKinematicsController(JointVelocityController):
         orientation in the PyBullet world frame.
 
         Args:
-            target_position: A tuple, list, or numpy array of size 3 for position.
-            target_orientation: A tuple, list, or numpy array of size 4 for
-                a orientation quaternion
+            target_position (3-tuple): desired position
+            target_orientation (4-tuple): desired orientation quaternion
 
         Returns:
-            A list of size @num_joints corresponding to the joint angle solution.
+            list: list of size @num_joints corresponding to the joint angle solution.
         """
         ik_solution = list(
             p.calculateInverseKinematics(
@@ -460,10 +468,15 @@ class InverseKinematicsController(JointVelocityController):
         This function runs inverse kinematics to back out target joint positions
         from the provided end effector command.
 
-        Same arguments as @get_control.
+        Args:
+            dpos (np.array): a 3 dimensional array corresponding to the desired
+                change in x, y, and z end effector position.
+            rotation (np.array): a rotation matrix of shape (3, 3) corresponding
+                to the desired rotation from the current orientation of the end effector.
+            update_targets (bool): whether to update ik target pos / ori attributes or not
 
         Returns:
-            A list of size @num_joints corresponding to the target joint angles.
+            list: A list of size @num_joints corresponding to the target joint angles.
         """
 
         # Calculate the rotation
@@ -500,10 +513,10 @@ class InverseKinematicsController(JointVelocityController):
         Convert a pose in the base frame to a pose in the world frame.
 
         Args:
-            pose_in_base: a (pos, orn) tuple.
+            pose_in_base (2-tuple): a (pos, orn) tuple.
 
         Returns:
-            pose_in world: a (pos, orn) tuple.
+            2-tuple: a (pos, orn) tuple reflecting robot pose in world coordinates
         """
         pose_in_base = T.pose2mat(pose_in_base)
 
@@ -518,6 +531,18 @@ class InverseKinematicsController(JointVelocityController):
         return T.mat2pose(pose_in_world)
 
     def set_goal(self, delta, set_ik=None):
+        """
+        Sets the internal goal state of this controller based on @delta
+
+        Note that this controller wraps a VelocityController, and so determines the desired velocities
+        to achieve the inputted pose, and sets its internal setpoint in terms of joint velocities
+
+        TODO: Add feature so that using @set_ik automatically sets the target values to these absolute values
+
+        Args:
+            delta (Iterable): Desired relative position / orientation goal state
+            set_ik (Iterable): If set, overrides @delta and sets the desired global position / orientation goal state
+        """
         # Update state
         self.update()
 
@@ -545,6 +570,12 @@ class InverseKinematicsController(JointVelocityController):
         super().set_goal(velocities)
 
     def run_controller(self):
+        """
+        Calculates the torques required to reach the desired setpoint
+
+        Returns:
+             np.array: Command torques
+        """
         # Update state
         self.update()
 
@@ -608,7 +639,7 @@ class InverseKinematicsController(JointVelocityController):
 
     def reset_goal(self):
         """
-        Resets the goal to the current state of the robot
+        Resets the goal to the current pose of the robot
         """
         self.reference_target_pos = self.ee_pos
         self.reference_target_orn = T.mat2quat(self.ee_ori_mat)
@@ -621,13 +652,16 @@ class InverseKinematicsController(JointVelocityController):
         Helper function that clips desired ik input deltas into a valid range.
 
         Args:
-            dpos (numpy array): a 3 dimensional array corresponding to the desired
+            dpos (np.array): a 3 dimensional array corresponding to the desired
                 change in x, y, and z end effector position.
-            rotation (numpy array): relative rotation in scaled axis angle form (ax, ay, az)
+            rotation (np.array): relative rotation in scaled axis angle form (ax, ay, az)
                 corresponding to the (relative) desired orientation of the end effector.
 
         Returns:
-            clipped dpos, rotation (of same type)
+            2-tuple:
+
+                - (np.array) clipped dpos
+                - (np.array) clipped rotation
         """
         # scale input range to desired magnitude
         if dpos.any():
@@ -645,12 +679,12 @@ class InverseKinematicsController(JointVelocityController):
         """
         Helper function that returns a dictionary with keys dpos, rotation from a raw input
         array. The first three elements are taken to be displacement in position, and a
-        quaternion indicating the change in rotation with respect to @old_quat.
+        quaternion indicating the change in rotation with respect to @old_quat. Additionally clips @action as well
 
-        Additionally clips actions as well
-
-        @action should be 6-array of form: [dx, dy, dz, ax, ay, az] (orientation in
-            scaled axis-angle form)
+        Args:
+            action (np.array) should have form: [dx, dy, dz, ax, ay, az] (orientation in
+                scaled axis-angle form)
+            old_quat (np.array) the old target quaternion that will be updated with the relative change in @action
         """
         # Clip action appropriately
         dpos, rotation = self._clip_ik_input(action[:3], action[3:])
@@ -671,18 +705,27 @@ class InverseKinematicsController(JointVelocityController):
         joint positions. Useful for PID control.
 
         Args:
-            current: the current joint positions.
-            set_point: the joint positions that are desired as a numpy array.
+            current (np.array): the current joint positions
+            set_point (np.array): the joint positions that are desired as a numpy array
 
         Returns:
-            the current error in the joint positions.
+            np.array: the current error in the joint positions
         """
         error = current - set_point
         return error
 
     @property
     def control_limits(self):
-        """Returns the limits over this controller's action space, overriding superclass method"""
+        """
+        The limits over this controller's action space, as specified by self.ik_pos_limit and self.ik_ori_limit
+        and overriding the superclass method
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum control values
+                - (np.array) maximum control values
+        """
         max_limit = np.concatenate([self.ik_pos_limit * np.ones(3), self.ik_ori_limit * np.ones(3)])
         return -max_limit, max_limit
 

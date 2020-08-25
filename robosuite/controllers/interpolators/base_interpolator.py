@@ -1,5 +1,4 @@
 import abc
-import numpy as np
 
 
 class Interpolator(object, metaclass=abc.ABCMeta):
@@ -8,11 +7,17 @@ class Interpolator(object, metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def get_interpolated_goal(self, goal):
+    def get_interpolated_goal(self, x):
         """
-        Go from actions to torques
+        Takes the current state and provides the next step in interpolation given
+            the remaining steps.
+
+        Args:
+            x (np.array): Current state
+        Returns:
+            x_current (np.array): Next interpolated step
         """
-        pass
+        raise NotImplementedError
 
 
 

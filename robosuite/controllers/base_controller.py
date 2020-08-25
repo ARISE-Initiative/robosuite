@@ -17,9 +17,10 @@ class Controller(object, metaclass=abc.ABCMeta):
         eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
-            "joints" : list of indexes to relevant robot joints
-            "qpos" : list of indexes to relevant robot joint positions
-            "qvel" : list of indexes to relevant robot joint velocities
+
+            :`'joints'`: list of indexes to relevant robot joints
+            :`'qpos'`: list of indexes to relevant robot joint positions
+            :`'qvel'`: list of indexes to relevant robot joint velocities
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
     """
@@ -89,15 +90,22 @@ class Controller(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def run_controller(self):
         """
-        Abstract method that should be implemented in all subclass controllers
-        Converts a given action into torques (pre gravity compensation) to be executed on the robot
+        Abstract method that should be implemented in all subclass controllers, and should convert a given action
+        into torques (pre gravity compensation) to be executed on the robot.
         Additionally, resets the self.new_update flag so that the next self.update call will occur
         """
         self.new_update = True
 
     def scale_action(self, action):
         """
-        Scale the action based on max and min of action
+        Clips @action to be within self.input_min and self.input_max, and then re-scale the values to be within
+        the range self.output_min and self.output_max
+
+        Args:
+            action (Iterable): Actions to scale
+
+        Returns:
+            np.array: Re-scaled action
         """
 
         if self.action_scale is None:
@@ -113,12 +121,12 @@ class Controller(object, metaclass=abc.ABCMeta):
         """
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,
         jacobian, and mass matrix. By default, since this is a non-negligible computation, multiple redundant calls
-        will be ignored via the self.new_update attribute flag. However, if the @force flag is set, the update will occur
-        regardless of that state of self.new_update. This base class method of @run_controller resets the
+        will be ignored via the self.new_update attribute flag. However, if the @force flag is set, the update will
+        occur regardless of that state of self.new_update. This base class method of @run_controller resets the
         self.new_update flag
 
         Args:
-            @force (bool): Whether to force an update to occur or not
+            force (bool): Whether to force an update to occur or not
         """
 
         # Only run update if self.new_update or force flag is set
@@ -152,8 +160,8 @@ class Controller(object, metaclass=abc.ABCMeta):
         is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
 
         Args:
-            @base_pos (3-tuple): x,y,z position of robot base in mujoco world coordinates
-            @base_ori (4-tuple): x,y,z,w orientation or robot base in mujoco world coordinates
+            base_pos (3-tuple): x,y,z position of robot base in mujoco world coordinates
+            base_ori (4-tuple): x,y,z,w orientation or robot base in mujoco world coordinates
         """
         pass
 
@@ -165,7 +173,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         This function can also be extended by subclassed controllers for additional controller-specific updates
 
         Args:
-            @initial_joints (Iterable): Array of joint position values to update the initial joints
+            initial_joints (Iterable): Array of joint position values to update the initial joints
         """
         self.initial_joint = np.array(initial_joints)
         self.update(force=True)
@@ -175,6 +183,12 @@ class Controller(object, metaclass=abc.ABCMeta):
     def clip_torques(self, torques):
         """
         Clips the torques to be within the actuator limits
+
+        Args:
+            torques (Iterable): Torques to clip
+
+        Returns:
+            np.array: Clipped torques
         """
         return np.clip(torques, self.actuator_min, self.actuator_max)
 
@@ -191,8 +205,11 @@ class Controller(object, metaclass=abc.ABCMeta):
         corresponding dimension size @dim before converting into a numpy array
 
         Args:
-            @nums (numeric or Iterable): Either single value or array of numbers
-            @dim (int): Size of array to broadcast input to env.sim.data.actuator_force
+            nums (numeric or Iterable): Either single value or array of numbers
+            dim (int): Size of array to broadcast input to env.sim.data.actuator_force
+
+        Returns:
+            np.array: Array filled with values specified in @nums
         """
         # First run sanity check to make sure no strings are being inputted
         if isinstance(nums, str):
@@ -204,22 +221,48 @@ class Controller(object, metaclass=abc.ABCMeta):
 
     @property
     def torque_compensation(self):
-        """Returns gravity compensation torques for the robot arm"""
+        """
+        Gravity compensation for this robot arm
+
+        Returns:
+            np.array: torques
+        """
         return self.sim.data.qfrc_bias[self.qvel_index]
 
     @property
     def actuator_limits(self):
-        """Returns torque limits for this controller"""
+        """
+        Torque limits for this controller
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum actuator torques
+                - (np.array) maximum actuator torques
+        """
         return self.actuator_min, self.actuator_max
 
     @property
     def control_limits(self):
-        """Returns the limits over this controller's action space, which defaults to input min/max"""
+        """
+        Limits over this controller's action space, which defaults to input min/max
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum action values
+                - (np.array) maximum action values
+        """
         return self.input_min, self.input_max
 
     @property
     def name(self):
-        """Returns the name of this controller"""
+        """
+        Name of this controller
+
+        Returns:
+            str: controller name
+        """
         raise NotImplementedError
 
 
