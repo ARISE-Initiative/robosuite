@@ -27,11 +27,8 @@ DEFAULT_WIPE_CONFIG = {
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
     "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
-    "table_rot_x": 0.0,                             # Rotation of the table surface around the x axis
-    "table_rot_y": 0.0,                             # Rotation of the table surface around the y axis
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
-    "num_squares": [4, 4],                          # num of squares to divide each dim of the table surface
     "coverage_factor": 0.6,                         # how much of the table surface we cover
 
     # settings for thresholds
@@ -44,8 +41,7 @@ DEFAULT_WIPE_CONFIG = {
     "get_info": False,                              # Whether to grab info after each env step if not
     "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
     "real_robot": False,                            # whether we're using the actual robot or a sim
-    "prob_sensor": 1.0,
-    "num_sensors": 80,
+    "num_sensors": 100,
 }
 
 
@@ -223,11 +219,8 @@ class Wipe(RobotEnv):
         self.table_friction_std = self.task_config['table_friction_std']
         self.table_height = self.task_config['table_height']
         self.table_height_std = self.task_config['table_height_std']
-        self.table_rot_x = self.task_config['table_rot_x']
-        self.table_rot_y = self.task_config['table_rot_y']
         self.line_width = self.task_config['line_width']
         self.two_clusters = self.task_config['two_clusters']
-        self.num_squares = self.task_config['num_squares']
         self.coverage_factor = self.task_config['coverage_factor']
 
         # settings for thresholds
@@ -241,7 +234,6 @@ class Wipe(RobotEnv):
         self.get_info = self.task_config['get_info']
         self.use_robot_obs = self.task_config['use_robot_obs']
         self.real_robot = self.task_config['real_robot']
-        self.prob_sensor = self.task_config['prob_sensor']
         self.num_sensors = self.task_config['num_sensors']
 
         # Scale reward if desired (see reward method for details)
@@ -520,10 +512,6 @@ class Wipe(RobotEnv):
                                       table_offset=np.array(self.table_offset) + np.array((0, 0, delta_height)),
                                       table_friction_std=self.table_friction_std,
                                       coverage_factor=self.coverage_factor,
-                                      num_squares=self.num_squares if not self.real_robot else 0,
-                                      prob_sensor=self.prob_sensor,
-                                      rotation_x=np.random.normal(0, self.table_rot_x),
-                                      rotation_y=np.random.normal(0, self.table_rot_y),
                                       num_sensors=self.num_sensors if not self.real_robot else 0,
                                       line_width=self.line_width,
                                       two_clusters=self.two_clusters

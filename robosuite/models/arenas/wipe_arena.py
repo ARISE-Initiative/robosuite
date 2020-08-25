@@ -1,13 +1,24 @@
 import numpy as np
 from robosuite.models.arenas import TableArena
 from robosuite.utils.mjcf_utils import array_to_string, CustomMaterial
-from collections import OrderedDict
 from robosuite.models.objects import CylinderObject
-import robosuite.utils.transform_utils as T
 
 
 class WipeArena(TableArena):
-    """Workspace that contains an empty table with tactile sensors on its surface."""
+    """
+    Workspace that contains an empty table with tactile sensors on its surface.
+
+    Args:
+        table_full_size (3-tuple): (L,W,H) full dimensions of the table
+        table_friction (3-tuple): (sliding, torsional, rolling) friction parameters of the table
+        table_offset (3-tuple): (x,y,z) offset from center of arena when placing table.
+            Note that the z value sets the upper limit of the table
+        coverage_factor (float): Fraction of table that will be sampled for dirt placement
+        num_sensors (int): Number of dirt (peg) particles to generate in a path on the table
+        table_friction_std (float): Standard deviation to sample for the peg friction
+        line_width (float): Diameter of dirt path trace
+        two_clusters (bool): If set, will generate two separate dirt paths with half the number of sensors in each
+    """
 
     def __init__(
         self, 
@@ -15,42 +26,21 @@ class WipeArena(TableArena):
         table_friction=(0.01, 0.005, 0.0001),
         table_offset=(0, 0, 0.8),
         coverage_factor=0.9,
-        num_squares=(10, 10),
-        prob_sensor=1.0,
-        rotation_x=0,
-        rotation_y=0,
         num_sensors=10,
         table_friction_std=0,
         line_width=0.02,
         two_clusters=False
     ):
-        """
-        Args:
-            table_full_size: full dimensions of the table
-            table_friction: friction parameters of the table
-            table_offset: offset from center of arena when placing table
-                Note that the z value sets the upper limit of the table
-            num_squares: number of squares in each dimension of the table top
-        """
         # Tactile table-specific features
         self.table_friction_std = table_friction_std
         self.line_width = line_width
-        self.num_squares = np.array(num_squares)
         self.sensor_names = []
         self.sensor_site_names = {}
         self.coverage_factor = coverage_factor
-        self.prob_sensor = prob_sensor
-        self.rotation_x = rotation_x
-        self.rotation_y = rotation_y
         self.num_sensors = num_sensors
         self.two_clusters = two_clusters
 
-        # Additional features to be defined during initialization
-        self.square_full_size = None
-        self.square_half_size = None
-        self.peg_size = None
-        self.squares = None
-        self.mujoco_objects = None
+        # Attribute to hold current direction of sampled dirt path
         self.direction = None
 
         # run superclass init
@@ -61,21 +51,12 @@ class WipeArena(TableArena):
         )
 
     def configure_location(self):
+        """Configures correct locations for this arena"""
         # Run superclass first
         super().configure_location()
 
-        qx = (T.mat2quat(T.euler2mat((self.rotation_x, 0, 0))))
-        qy = (T.mat2quat(T.euler2mat((0, self.rotation_y, 0))))
-        qt = T.quat_multiply(qy, qx)
-
+        # Determine peg friction
         friction = max(0.001, np.random.normal(self.table_friction[0], self.table_friction_std))
-
-        # Compute size of the squares
-        self.square_full_size = np.divide(self.table_full_size[0:2]*self.coverage_factor, self.num_squares)
-        self.square_half_size = self.square_full_size/2.0
-        self.peg_size = 0.01
-        self.squares = OrderedDict()
-        self.mujoco_objects = OrderedDict()
 
         # Grab reference to the table body in the xml
         table_subtree = self.worldbody.find(".//body[@name='{}']".format("table"))
@@ -115,7 +96,6 @@ class WipeArena(TableArena):
                 friction=friction,
             )
             self.merge_asset(square2)
-            self.squares[square_name2] = square2
             visual_c = square2.get_visual(site=True)
             visual_c.set("pos", array_to_string([pos[0], pos[1], self.table_half_size[2]]))
             visual_c.find("site").set("pos", [0, 0, 0.005])
@@ -131,7 +111,13 @@ class WipeArena(TableArena):
             pos = self.sample_path_pos(pos)
 
     def reset_arena(self, sim):
-        """Reset the tactile sensor locations in the environment. Requires @sim (MjSim) reference to be passed in"""
+        """
+        Reset the tactile sensor locations in the environment. Requires @sim (MjSim) reference to be passed in so that
+        the Mujoco sim can be directly modified
+
+        Args:
+            sim (MjSim): Simulation instance containing this arena and tactile sensors
+        """
         # Sample new initial position and direction for generated sensor paths
         pos = self.sample_start_pos()
 
@@ -141,7 +127,6 @@ class WipeArena(TableArena):
             if self.two_clusters and i == int(np.floor(self.num_sensors / 2)):
                 pos = self.sample_start_pos()
             # Get IDs to the body, geom, and site of each sensor
-            site_id = sim.model.site_name2id(sensor_name)
             body_id = sim.model.body_name2id(sensor_name)
             geom_id = sim.model.geom_name2id(sensor_name)
             # Determine new position for this sensor

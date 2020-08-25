@@ -5,7 +5,18 @@ from robosuite.utils.mjcf_utils import array_to_string, string_to_array
 
 
 class TableArena(Arena):
-    """Workspace that contains an empty table."""
+    """
+    Workspace that contains an empty table.
+
+
+    Args:
+        table_full_size (3-tuple): (L,W,H) full dimensions of the table
+        table_friction (3-tuple): (sliding, torsional, rolling) friction parameters of the table
+        table_offset (3-tuple): (x,y,z) offset from center of arena when placing table.
+            Note that the z value sets the upper limit of the table
+        has_legs (bool): whether the table has legs or not
+        xml (str): xml file to load arena
+    """
 
     def __init__(
         self,
@@ -15,15 +26,6 @@ class TableArena(Arena):
         has_legs=True,
         xml="arenas/table_arena.xml",
     ):
-        """
-        Args:
-            table_full_size: full dimensions of the table
-            table_friction: friction parameters of the table
-            table_offset: offset from center of arena when placing table
-                Note that the z value sets the upper limit of the table
-            has_legs: whether the table has legs or not
-            xml: xml file to load arena
-        """
         super().__init__(xml_path_completion(xml))
 
         self.table_full_size = np.array(table_full_size)
@@ -48,6 +50,7 @@ class TableArena(Arena):
         self.configure_location()
 
     def configure_location(self):
+        """Configures correct locations for this arena"""
         self.bottom_pos = np.array([0, 0, 0])
         self.floor.set("pos", array_to_string(self.bottom_pos))
 
@@ -89,6 +92,11 @@ class TableArena(Arena):
 
     @property
     def table_top_abs(self):
-        """Returns the absolute position of table top"""
+        """
+        Grabs the absolute position of table top
+
+        Returns:
+            np.array: (x,y,z) table position
+        """
         table_height = np.array([0, 0, self.table_offset[2]])
         return string_to_array(self.floor.get("pos")) + table_height

@@ -2,7 +2,15 @@ from robosuite.models.arenas import TableArena
 
 
 class PegsArena(TableArena):
-    """Workspace that contains a tabletop with two fixed pegs."""
+    """
+    Workspace that contains a tabletop with two fixed pegs.
+
+    Args:
+        table_full_size (3-tuple): (L,W,H) full dimensions of the table
+        table_friction (3-tuple): (sliding, torsional, rolling) friction parameters of the table
+        table_offset (3-tuple): (x,y,z) offset from center of arena when placing table.
+            Note that the z value sets the upper limit of the table
+    """
 
     def __init__(
         self,
@@ -10,13 +18,6 @@ class PegsArena(TableArena):
         table_friction=(1, 0.005, 0.0001),
         table_offset=(0, 0, 0),
     ):
-        """
-        Args:
-            table_full_size: full dimensions of the table
-            table_friction: friction parameters of the table
-            table_offset: offset from center of arena when placing table
-                Note that the z value sets the upper limit of the table
-        """
         super().__init__(
             table_full_size=table_full_size,
             table_friction=table_friction,
