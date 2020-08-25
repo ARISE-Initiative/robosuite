@@ -12,7 +12,22 @@ def register_env(target_class):
 
 
 def make(env_name, *args, **kwargs):
-    """Try to get the equivalent functionality of gym.make in a sloppy way."""
+    """
+    Instantiates a robosuite environment..
+
+    This method attempts to mirror the equivalent functionality of gym.make in a somewhat sloppy way.
+
+    Args:
+        env_name (str): Name of the robosuite environment to initialize
+        *args: Additional arguments to pass to the specific environment class initializer
+        **kwargs: Additional arguments to pass to the specific environment class initializer
+
+    Returns:
+        MujocoEnv: Desired robosuite environment
+
+    Raises:
+        Exception: [Invalid environment name]
+    """
     if env_name not in REGISTERED_ENVS:
         raise Exception(
             "Environment {} not found. Make sure it is a registered environment among: {}".format(
@@ -37,7 +52,39 @@ class EnvMeta(type):
 
 
 class MujocoEnv(metaclass=EnvMeta):
-    """Initializes a Mujoco Environment."""
+    """
+    Initializes a Mujoco Environment.
+
+    Args:
+        has_renderer (bool): If true, render the simulation state in
+            a viewer instead of headless mode.
+
+        has_offscreen_renderer (bool): True if using off-screen rendering.
+
+        render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+            will result in the default angle being applied, which is useful as it can be dragged / panned by
+            the user using the mouse
+
+        render_collision_mesh (bool): True if rendering collision meshes
+            in camera. False otherwise.
+
+        render_visual_mesh (bool): True if rendering visual meshes
+            in camera. False otherwise.
+
+        control_freq (float): how many control signals to receive
+            in every simulated second. This sets the amount of simulation time
+            that passes between every action input.
+
+        horizon (int): Every episode lasts for exactly @horizon timesteps.
+
+        ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+        hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+            only calls sim.reset and resets all robosuite-internal variables
+
+    Raises:
+        ValueError: [Invalid renderer selection]
+    """
 
     def __init__(
         self,
@@ -51,35 +98,6 @@ class MujocoEnv(metaclass=EnvMeta):
         ignore_done=False,
         hard_reset=True
     ):
-        """
-        Args:
-
-            has_renderer (bool): If true, render the simulation state in 
-                a viewer instead of headless mode.
-
-            has_offscreen_renderer (bool): True if using off-screen rendering.
-
-            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
-                will result in the default angle being applied, which is useful as it can be dragged / panned by
-                the user using the mouse
-
-            render_collision_mesh (bool): True if rendering collision meshes 
-                in camera. False otherwise.
-
-            render_visual_mesh (bool): True if rendering visual meshes 
-                in camera. False otherwise.
-
-            control_freq (float): how many control signals to receive 
-                in every simulated second. This sets the amount of simulation time 
-                that passes between every action input.
-
-            horizon (int): Every episode lasts for exactly @horizon timesteps.
-
-            ignore_done (bool): True if never terminating the environment (ignore @horizon).
-
-            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
-                only calls sim.reset and resets all robosuite-internal variables
-        """
         # First, verify that both the on- and off-screen renderers are not being used simultaneously
         if has_renderer is True and has_offscreen_renderer is True:
             raise ValueError("the onscreen and offscreen renderers cannot be used simultaneously.")
@@ -115,6 +133,9 @@ class MujocoEnv(metaclass=EnvMeta):
     def initialize_time(self, control_freq):
         """
         Initializes the time constants used for simulation.
+
+        Args:
+            control_freq (float): Hz rate to run control loop at within the simulation
         """
         self.cur_time = 0
         self.model_timestep = self.sim.model.opt.timestep
@@ -143,6 +164,9 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         Creates a MjSim object and stores it in self.sim. If @xml_string is specified, the MjSim object will be created
         from the specified xml_string. Else, it will pull from self.model to instantiate the simulation
+
+        Args:
+            xml_string (str): If specified, creates MjSim object from this filepath
         """
         # if we have an xml string, use that to create the sim. Otherwise, use the local model
         self.mjpy_model = load_model_from_xml(xml_string) if xml_string else self.model.get_model(mode="mujoco_py")
@@ -155,7 +179,12 @@ class MujocoEnv(metaclass=EnvMeta):
         self.initialize_time(self.control_freq)
 
     def reset(self):
-        """Resets simulation."""
+        """
+        Resets simulation.
+
+        Returns:
+            OrderedDict: Environment bservation space after reset occurs
+        """
         # TODO(yukez): investigate black screen of death
         # Use hard reset if requested
         if self.hard_reset and not self.deterministic_reset:
@@ -205,11 +234,34 @@ class MujocoEnv(metaclass=EnvMeta):
         self.done = False
 
     def _get_observation(self):
-        """Returns an OrderedDict containing observations [(name_string, np.array), ...]."""
+        """
+        Grabs observations from the environment.
+
+        Returns:
+            OrderedDict: OrderedDict containing observations [(name_string, np.array), ...]
+
+        """
         return OrderedDict()
 
     def step(self, action):
-        """Takes a step in simulation with control command @action."""
+        """
+        Takes a step in simulation with control command @action.
+
+        Args:
+            action (np.array): Action to execute within the environment
+
+        Returns:
+            4-tuple:
+
+                - (OrderedDict) observations from the environment
+                - (float) reward from the environment
+                - (bool) whether the current episode is completed or not
+                - (dict) misc information
+
+        Raises:
+            ValueError: [Steps past episode termination]
+
+        """
         if self.done:
             raise ValueError("executing action in terminated episode")
 
@@ -236,11 +288,30 @@ class MujocoEnv(metaclass=EnvMeta):
         return self._get_observation(), reward, done, info
 
     def _pre_action(self, action, policy_step=False):
-        """Do any preprocessing before taking an action."""
+        """
+        Do any preprocessing before taking an action.
+
+        Args:
+            action (np.array): Action to execute within the environment
+            policy_step (bool): Whether this current loop is an actual policy step or internal sim update step
+        """
         self.sim.data.ctrl[:] = action
 
     def _post_action(self, action):
-        """Do any housekeeping after taking an action."""
+        """
+        Do any housekeeping after taking an action.
+
+        Args:
+            action (np.array): Action to execute within the environment
+
+        Returns:
+            3-tuple:
+
+                - (float) reward from the environment
+                - (bool) whether the current episode is completed or not
+                - (dict) empty dict to be filled with information by subclassed method
+
+        """
         reward = self.reward(action)
 
         # done if number of elapsed timesteps is greater than horizon
@@ -248,7 +319,15 @@ class MujocoEnv(metaclass=EnvMeta):
         return reward, self.done, {}
 
     def reward(self, action):
-        """Reward should be a function of state and action."""
+        """
+        Reward should be a function of state and action
+
+        Args:
+            action (np.array): Action to execute within the environment
+
+        Returns:
+            float: Reward from environment
+        """
         return 0
 
     def render(self):
@@ -265,14 +344,12 @@ class MujocoEnv(metaclass=EnvMeta):
         are the observation names and the values are the shapes of observations.
         We leave this alternative implementation commented out, as we find the
         current design is easier to use in practice.
+
+        Returns:
+            OrderedDict: Observations from the environment
         """
         observation = self._get_observation()
         return observation
-
-        # observation_spec = OrderedDict()
-        # for k, v in observation.items():
-        #     observation_spec[k] = v.shape
-        # return observation_spec
 
     @property
     def action_spec(self):
@@ -285,7 +362,12 @@ class MujocoEnv(metaclass=EnvMeta):
         raise NotImplementedError
 
     def reset_from_xml_string(self, xml_string):
-        """Reloads the environment from an XML description of the environment."""
+        """
+        Reloads the environment from an XML description of the environment.
+
+        Args:
+            xml_string (str): Filepath to the xml file that will be loaded directly into the sim
+        """
 
         # if there is an active viewer window, destroy it
         self.close()
@@ -307,11 +389,11 @@ class MujocoEnv(metaclass=EnvMeta):
         Finds contact between two geom groups.
 
         Args:
-            geoms_1: a list of geom names (string)
-            geoms_2: another list of geom names (string)
+            geoms_1 (list of str): a list of geom names
+            geoms_2 (list of str): another list of geom names
 
         Returns:
-            iterator of all contacts between @geoms_1 and @geoms_2
+            generator: iterator of all contacts between @geoms_1 and @geoms_2
         """
         for contact in self.sim.data.contact[0 : self.sim.data.ncon]:
             # check contact geom in geoms
@@ -323,17 +405,19 @@ class MujocoEnv(metaclass=EnvMeta):
             if (c1_in_g1 and c2_in_g2) or (c1_in_g2 and c2_in_g1):
                 yield contact
 
-    def _check_contact(self):
-        """Returns True if gripper is in contact with an object."""
-        return False
-
     def _check_success(self):
         """
-        Returns True if task has been completed.
+        Checks if the task has been completed.
+
+        Returns:
+            bool: True if the task has been completed
         """
         return False
 
     def _destroy_viewer(self):
+        """
+        Destroys the current mujoco renderer instance if it exists
+        """
         # if there is an active viewer window, destroy it
         if self.viewer is not None:
             self.viewer.close()  # change this to viewer.finish()?

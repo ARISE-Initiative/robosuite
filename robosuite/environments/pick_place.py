@@ -3,7 +3,6 @@ import random
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.utils.mjcf_utils import string_to_array
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.robots import SingleArm
 
@@ -26,6 +25,127 @@ from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler
 class PickPlace(RobotEnv):
     """
     This class corresponds to the pick place task for a single robot arm.
+
+    Args:
+        robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
+            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
+            Note: Must be a single single-arm robot!
+
+        controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
+            custom controller. Else, uses the default controller for this specific task. Should either be single
+            dict if same controller is to be used for all robots or else it should be a list of the same length as
+            "robots" param
+
+        gripper_types (str or list of str): type of gripper, used to instantiate
+            gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
+            with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
+            overrides the default gripper. Should either be single str if same gripper type is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        gripper_visualizations (bool or list of bool): True if using gripper visualization.
+            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+            The expected keys and corresponding value types are specified below:
+
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to `None` or 0.0 results in no noise being applied.
+                If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
+
+            Should either be single dict if same noise value is to be used for all robots or else it should be a
+            list of the same length as "robots" param
+
+            :Note: Specifying "default" will automatically use the default noise settings.
+                Specifying None will automatically create the required dict with "magnitude" set to 0.0.
+
+        table_full_size (3-tuple): x, y, and z dimensions of the table.
+
+        table_friction (3-tuple): the three mujoco friction parameters for
+            the table.
+
+        bin1_pos (3-tuple): Absolute cartesian coordinates of the bin initially holding the objects
+
+        bin2_pos (3-tuple): Absolute cartesian coordinates of the goal bin
+
+        use_camera_obs (bool): if True, every observation includes rendered image(s)
+
+        use_object_obs (bool): if True, include object (cube) information in
+            the observation.
+
+        reward_scale (None or float): Scales the normalized reward function by the amount specified.
+            If None, environment reward remains unnormalized
+
+        reward_shaping (bool): if True, use dense rewards.
+
+        single_object_mode (int): specifies which version of the task to do. Note that
+            the observations change accordingly.
+
+            :`0`: corresponds to the full task with all types of objects.
+
+            :`1`: corresponds to an easier task with only one type of object initialized
+               on the table with every reset. The type is randomized on every reset.
+
+            :`2`: corresponds to an easier task with only one type of object initialized
+               on the table with every reset. The type is kept constant and will not
+               change between resets.
+
+        object_type (string): if provided, should be one of "milk", "bread", "cereal",
+            or "can". Determines which type of object will be spawned on every
+            environment reset. Only used if @single_object_mode is 2.
+
+        use_indicator_object (bool): if True, sets up an indicator object that
+            is useful for debugging.
+
+        has_renderer (bool): If true, render the simulation state in
+            a viewer instead of headless mode.
+
+        has_offscreen_renderer (bool): True if using off-screen rendering
+
+        render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+            will result in the default angle being applied, which is useful as it can be dragged / panned by
+            the user using the mouse
+
+        render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
+
+        render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
+
+        control_freq (float): how many control signals to receive in every second. This sets the amount of
+            simulation time that passes between every action input.
+
+        horizon (int): Every episode lasts for exactly @horizon timesteps.
+
+        ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+        hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+            only calls sim.reset and resets all robosuite-internal variables
+
+        camera_names (str or list of str): name of camera to be rendered. Should either be single str if
+            same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
+
+            :Note: At least one camera must be specified if @use_camera_obs is True.
+
+            :Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
+                convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
+                robot's camera list).
+
+        camera_heights (int or list of int): height of camera frame. Should either be single int if
+            same height is to be used for all cameras' frames or else it should be a list of the same length as
+            "camera names" param.
+
+        camera_widths (int or list of int): width of camera frame. Should either be single int if
+            same width is to be used for all cameras' frames or else it should be a list of the same length as
+            "camera names" param.
+
+        camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
+            bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
+            "camera names" param.
+
+    Raises:
+        AssertionError: [Invalid object type specified]
+        AssertionError: [Invalid number of robots specified]
     """
 
     def __init__(
@@ -60,120 +180,6 @@ class PickPlace(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        """
-        Args:
-            robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
-                (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
-                Note: Must be a single single-arm robot!
-
-            controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
-                custom controller. Else, uses the default controller for this specific task. Should either be single
-                dict if same controller is to be used for all robots or else it should be a list of the same length as
-                "robots" param
-
-            gripper_types (str or list of str): type of gripper, used to instantiate
-                gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
-                with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
-                overrides the default gripper. Should either be single str if same gripper type is to be used for all
-                robots or else it should be a list of the same length as "robots" param
-
-            gripper_visualizations (bool or list of bool): True if using gripper visualization.
-                Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-                robots or else it should be a list of the same length as "robots" param
-
-            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
-                The expected keys and corresponding value types are specified below:
-                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
-                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
-                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
-                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
-                Should either be single dict if same noise value is to be used for all robots or else it should be a
-                list of the same length as "robots" param
-                Note: Specifying "default" will automatically use the default noise settings
-                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
-
-            table_full_size (3-tuple): x, y, and z dimensions of the table.
-
-            table_friction (3-tuple): the three mujoco friction parameters for
-                the table.
-
-            bin1_pos (3-tuple): Absolute cartesian coordinates of the bin initially holding the objects
-
-            bin2_pos (3-tuple): Absolute cartesian coordinates of the goal bin
-
-            use_camera_obs (bool): if True, every observation includes rendered image(s)
-
-            use_object_obs (bool): if True, include object (cube) information in
-                the observation.
-
-            reward_scale (None or float): Scales the normalized reward function by the amount specified.
-                If None, environment reward remains unnormalized
-
-            reward_shaping (bool): if True, use dense rewards.
-
-            single_object_mode (int): specifies which version of the task to do. Note that
-                the observations change accordingly.
-
-                0: corresponds to the full task with both types of nuts.
-
-                1: corresponds to an easier task with only one type of nut initialized
-                   on the table with every reset. The type is randomized on every reset.
-
-                2: corresponds to an easier task with only one type of nut initialized
-                   on the table with every reset. The type is kept constant and will not
-                   change between resets.
-
-            object_type (string): if provided, should be one of "milk", "bread", "cereal",
-                or "can". Determines which type of object will be spawned on every
-                environment reset. Only used if @single_object_mode is 2.
-
-            use_indicator_object (bool): if True, sets up an indicator object that
-                is useful for debugging.
-
-            has_renderer (bool): If true, render the simulation state in
-                a viewer instead of headless mode.
-
-            has_offscreen_renderer (bool): True if using off-screen rendering
-
-            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
-                will result in the default angle being applied, which is useful as it can be dragged / panned by
-                the user using the mouse
-
-            render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
-
-            render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
-
-            control_freq (float): how many control signals to receive in every second. This sets the amount of
-                simulation time that passes between every action input.
-
-            horizon (int): Every episode lasts for exactly @horizon timesteps.
-
-            ignore_done (bool): True if never terminating the environment (ignore @horizon).
-
-            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
-                only calls sim.reset and resets all robosuite-internal variables
-
-            camera_names (str or list of str): name of camera to be rendered. Should either be single str if
-                same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
-                Note: At least one camera must be specified if @use_camera_obs is True.
-                Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
-                    convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
-                    robot's camera list).
-
-            camera_heights (int or list of int): height of camera frame. Should either be single int if
-                same height is to be used for all cameras' frames or else it should be a list of the same length as
-                "camera names" param.
-
-            camera_widths (int or list of int): width of camera frame. Should either be single int if
-                same width is to be used for all cameras' frames or else it should be a list of the same length as
-                "camera names" param.
-
-            camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
-                bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
-                "camera names" param.
-
-        """
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
 
@@ -230,6 +236,32 @@ class PickPlace(RobotEnv):
         )
 
     def reward(self, action=None):
+        """
+        Reward function for the task.
+
+        Sparse un-normalized reward:
+
+          - a discrete reward of 1.0 per object if it is placed in its correct bin
+
+        Un-normalized components if using reward shaping, where the maximum is returned if not solved:
+
+          - Reaching: in [0, 0.1], proportional to the distance between the gripper and the closest object
+          - Grasping: in {0, 0.35}, nonzero if the gripper is grasping an object
+          - Lifting: in {0, [0.35, 0.5]}, nonzero only if object is grasped; proportional to lifting height
+          - Hovering: in {0, [0.5, 0.7]}, nonzero only if object is lifted; proportional to distance from object to bin
+
+        Note that a successfully completed task (object in bin) will return 1.0 per object irregardless of whether the
+        environment is using sparse or shaped rewards
+
+        Note that the final reward is normalized and scaled by reward_scale / 4.0 (or 1.0 if only a single object is
+        being used) as well so that the max score is equal to reward_scale
+
+        Args:
+            action (np.array): [NOT USED]
+
+        Returns:
+            float: reward value
+        """
         # compute sparse rewards
         self._check_success()
         reward = np.sum(self.objects_in_bins)
@@ -240,14 +272,22 @@ class PickPlace(RobotEnv):
             reward += max(staged_rewards)
         if self.reward_scale is not None:
             reward *= self.reward_scale
-        if self.single_object_mode == 0:
-            reward /= 4.0
+            if self.single_object_mode == 0:
+                reward /= 4.0
         return reward
 
     def staged_rewards(self):
         """
         Returns staged rewards based on current physical states.
         Stages consist of reaching, grasping, lifting, and hovering.
+
+        Returns:
+            4-tuple:
+
+                - (float) reaching reward
+                - (float) grasping reward
+                - (float) lifting reward
+                - (float) hovering reward
         """
 
         reach_mult = 0.1
@@ -362,9 +402,12 @@ class PickPlace(RobotEnv):
 
     def clear_objects(self, obj):
         """
-        Clears objects with name @obj out of the task space. This is useful
+        Clears objects without the name @obj out of the task space. This is useful
         for supporting task modes with single types of objects, as in
         @self.single_object_mode without changing the model definition.
+
+        Args:
+            obj (str): Name of object to keep in the task space
         """
         for obj_name, obj_mjcf in self.mujoco_objects.items():
             if obj_name == obj:
@@ -605,6 +648,9 @@ class PickPlace(RobotEnv):
                 contains a rendered frame from the simulation.
             depth: requires @self.use_camera_obs and @self.camera_depth to be True.
                 contains a rendered depth map from the simulation
+
+        Returns:
+            OrderedDict: Observations from the environment
         """
         di = super()._get_observation()
 
@@ -663,7 +709,10 @@ class PickPlace(RobotEnv):
 
     def _check_success(self):
         """
-        Returns True if task has been completed.
+        Check if all objects have been successfully placed in their corresponding bins.
+
+        Returns:
+            bool: True if all objects are placed correctly
         """
         # remember objects that are in the correct bins
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
@@ -716,6 +765,9 @@ class PickPlace(RobotEnv):
     def _check_robot_configuration(self, robots):
         """
         Sanity check to make sure the inputted robots and configuration is acceptable
+
+        Args:
+            robots (str or list of str): Robots to instantiate within this env
         """
         if type(robots) is list:
             assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"

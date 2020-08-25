@@ -12,7 +12,7 @@ import multiprocessing
 # Default Wipe environment configuration
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
-    "arm_collision_penalty": -10.0,                 # penalty for each collision of the arm (except the wiping tool) with the table
+    "arm_limit_collision_penalty": -10.0,           # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
     "wipe_contact_reward": 0.01,                    # reward for contacting something with the wiping tool
     "unit_wiped_reward": 50.0,                      # reward per peg wiped
     "ee_accel_penalty": 0,                          # penalty for large end-effector accelerations 
@@ -52,6 +52,110 @@ DEFAULT_WIPE_CONFIG = {
 class Wipe(RobotEnv):
     """
     This class corresponds to the Wiping task for a single robot arm
+
+    Args:
+        robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
+            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
+            Note: Must be a single single-arm robot!
+
+        controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
+            custom controller. Else, uses the default controller for this specific task. Should either be single
+            dict if same controller is to be used for all robots or else it should be a list of the same length as
+            "robots" param
+
+        gripper_types (str or list of str): type of gripper, used to instantiate
+            gripper models from gripper factory.
+            For this environment, setting a value other than the default ("WipingGripper") will raise an
+            AssertionError, as this environment is not meant to be used with any other alternative gripper.
+
+        gripper_visualizations (bool or list of bool): True if using gripper visualization.
+            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+            The expected keys and corresponding value types are specified below:
+
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to `None` or 0.0 results in no noise being applied.
+                If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
+
+            Should either be single dict if same noise value is to be used for all robots or else it should be a
+            list of the same length as "robots" param
+
+            :Note: Specifying "default" will automatically use the default noise settings.
+                Specifying None will automatically create the required dict with "magnitude" set to 0.0.
+
+        use_camera_obs (bool): if True, every observation includes rendered image(s)
+
+        use_object_obs (bool): if True, include object (cube) information in
+            the observation.
+
+        reward_scale (None or float): Scales the normalized reward function by the amount specified.
+            If None, environment reward remains unnormalized
+
+        reward_shaping (bool): if True, use dense rewards.
+
+        placement_initializer (ObjectPositionSampler instance): if provided, will
+            be used to place objects on every reset, else a UniformRandomSampler
+            is used by default.
+
+        use_indicator_object (bool): if True, sets up an indicator object that
+            is useful for debugging.
+
+        has_renderer (bool): If true, render the simulation state in
+            a viewer instead of headless mode.
+
+        has_offscreen_renderer (bool): True if using off-screen rendering
+
+        render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+            will result in the default angle being applied, which is useful as it can be dragged / panned by
+            the user using the mouse
+
+        render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
+
+        render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
+
+        control_freq (float): how many control signals to receive in every second. This sets the amount of
+            simulation time that passes between every action input.
+
+        horizon (int): Every episode lasts for exactly @horizon timesteps.
+
+        ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+        hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+            only calls sim.reset and resets all robosuite-internal variables
+
+        camera_names (str or list of str): name of camera to be rendered. Should either be single str if
+            same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
+
+            :Note: At least one camera must be specified if @use_camera_obs is True.
+
+            :Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
+                convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
+                robot's camera list).
+
+        camera_heights (int or list of int): height of camera frame. Should either be single int if
+            same height is to be used for all cameras' frames or else it should be a list of the same length as
+            "camera names" param.
+
+        camera_widths (int or list of int): width of camera frame. Should either be single int if
+            same width is to be used for all cameras' frames or else it should be a list of the same length as
+            "camera names" param.
+
+        camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
+            bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
+            "camera names" param.
+
+        task_config (None or dict): Specifies the parameters relevant to this task. For a full list of expected
+            parameters, see the default configuration dict at the top of this file.
+            If None is specified, the default configuration will be used.
+
+        Raises:
+            AssertionError: [Gripper specified]
+            AssertionError: [Bad reward specification]
+            AssertionError: [Invalid number of robots specified]
     """
 
     def __init__(
@@ -82,103 +186,6 @@ class Wipe(RobotEnv):
         camera_depths=False,
         task_config=None,
     ):
-
-        """
-        Args:
-            robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
-                (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
-                Note: Must be a single single-arm robot!
-
-            controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
-                custom controller. Else, uses the default controller for this specific task. Should either be single
-                dict if same controller is to be used for all robots or else it should be a list of the same length as
-                "robots" param
-
-            gripper_types (str or list of str): type of gripper, used to instantiate
-                gripper models from gripper factory.
-                For this environment, setting a value other than the default ("WipingGripper") will raise an
-                    AssertionError, as this environment is not meant to be used with any other alternative gripper.
-
-            gripper_visualizations (bool or list of bool): True if using gripper visualization.
-                Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-                robots or else it should be a list of the same length as "robots" param
-
-            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
-                The expected keys and corresponding value types are specified below:
-                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
-                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
-                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
-                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
-                Should either be single dict if same noise value is to be used for all robots or else it should be a
-                list of the same length as "robots" param
-                Note: Specifying "default" will automatically use the default noise settings
-                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
-
-             use_camera_obs (bool): if True, every observation includes rendered image(s)
-
-            use_object_obs (bool): if True, include object (cube) information in
-                the observation.
-
-            reward_scale (None or float): Scales the normalized reward function by the amount specified.
-                If None, environment reward remains unnormalized
-
-            reward_shaping (bool): if True, use dense rewards.
-
-            placement_initializer (ObjectPositionSampler instance): if provided, will
-                be used to place objects on every reset, else a UniformRandomSampler
-                is used by default.
-
-            use_indicator_object (bool): if True, sets up an indicator object that
-                is useful for debugging.
-
-            has_renderer (bool): If true, render the simulation state in
-                a viewer instead of headless mode.
-
-            has_offscreen_renderer (bool): True if using off-screen rendering
-
-            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
-                will result in the default angle being applied, which is useful as it can be dragged / panned by
-                the user using the mouse
-
-            render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
-
-            render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
-
-            control_freq (float): how many control signals to receive in every second. This sets the amount of
-                simulation time that passes between every action input.
-
-            horizon (int): Every episode lasts for exactly @horizon timesteps.
-
-            ignore_done (bool): True if never terminating the environment (ignore @horizon).
-
-            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
-                only calls sim.reset and resets all robosuite-internal variables
-
-            camera_names (str or list of str): name of camera to be rendered. Should either be single str if
-                same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
-                Note: At least one camera must be specified if @use_camera_obs is True.
-                Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
-                    convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
-                    robot's camera list).
-
-            camera_heights (int or list of int): height of camera frame. Should either be single int if
-                same height is to be used for all cameras' frames or else it should be a list of the same length as
-                "camera names" param.
-
-            camera_widths (int or list of int): width of camera frame. Should either be single int if
-                same width is to be used for all cameras' frames or else it should be a list of the same length as
-                "camera names" param.
-
-            camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
-                bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
-                "camera names" param.
-
-            task_config (None or dict): Specifies the parameters relevant to this task. For a full list of expected
-                parameters, see the default configuration dict at the top of this file.
-                If None is specified, the default configuration will be used.
-
-        """
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
 
@@ -194,7 +201,7 @@ class Wipe(RobotEnv):
         # settings for the reward
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
-        self.arm_collision_penalty = self.task_config['arm_collision_penalty']
+        self.arm_limit_collision_penalty = self.task_config['arm_limit_collision_penalty']
         self.wipe_contact_reward = self.task_config['wipe_contact_reward']
         self.unit_wiped_reward = self.task_config['unit_wiped_reward']
         self.ee_accel_penalty = self.task_config['ee_accel_penalty']
@@ -290,26 +297,53 @@ class Wipe(RobotEnv):
         )
 
     def reward(self, action):
-        # The sparse reward is given after wiping ALL the dirt elements
-        # If the reward is dense, there are additional elements (some are deactivated by default)
-        # - Penalty due to collisions of the arm with the table
-        # - Penalty due to reaching arm's joint limits
-        # - Reward per "unit" wiped
-        # - Reward for getting closer to the centroid of the "units" to wipe
-        # - Reward for keeping the wiping tool in contact
-        # - Penalty for large forces with the end-effector
-        # - Penalty for large end-effector accelerations
-        
+        """
+        Reward function for the task.
+
+        Sparse un-normalized reward:
+
+            - a discrete reward of self.unit_wiped_reward is provided per single dirt (peg) wiped during this step
+            - a discrete reward of self.task_complete_reward is provided if all dirt is wiped
+
+        Note that if the arm is either colliding or near its joint limit, a reward of 0 will be automatically given
+
+        Un-normalized summed components if using reward shaping (individual components can be set to 0:
+
+            - Reaching: in [0, self.distance_multiplier], proportional to distance between wiper and centroid of dirt
+              and zero if the table has been fully wiped clean of all the dirt
+            - Table Contact: in {0, self.wipe_contact_reward}, non-zero if wiper is in contact with table
+            - Wiping: in {0, self.unit_wiped_reward}, non-zero for each dirt (peg) wiped during this step
+            - Cleaned: in {0, self.task_complete_reward}, non-zero if no dirt remains on the table
+            - Collision / Joint Limit Penalty: in {self.arm_limit_collision_penalty, 0}, nonzero if robot arm
+              is colliding with an object
+              - Note that if this value is nonzero, no other reward components can be added
+            - Large Force Penalty: in [-inf, 0], scaled by wiper force and directly proportional to
+              self.excess_force_penalty_mul if the current force exceeds self.pressure_threshold_max
+            - Large Acceleration Penalty: in [-inf, 0], scaled by estimated wiper acceleration and directly
+              proportional to self.ee_accel_penalty
+
+        Note that the final per-step reward is normalized given the theoretical best episode return and then scaled:
+        reward_scale * (horizon /
+        (num_sensors * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
+
+        Args:
+            action (np array): [NOT USED]
+
+        Returns:
+            float: reward value
+        """
         reward = 0
 
         total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
 
         # Neg Reward from collisions of the arm with the table
         if self._check_arm_contact()[0]:
-            if self.reward_shaping: reward = self.arm_collision_penalty
+            if self.reward_shaping:
+                reward = self.arm_limit_collision_penalty
             self.collisions += 1
         elif self._check_q_limits()[0]:
-            if self.reward_shaping: reward = self.arm_collision_penalty
+            if self.reward_shaping:
+                reward = self.arm_limit_collision_penalty
             self.collisions += 1
         else:
             # If the arm is not colliding or in joint limits, we check if we are wiping
@@ -456,7 +490,7 @@ class Wipe(RobotEnv):
         # If we're scaling our reward, we normalize the per-step rewards given the theoretical best episode return
         # This is equivalent to scaling the reward by:
         #   reward_scale * (horizon /
-        #       (num_sensors * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward))))
+        #       (num_sensors * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
         if self.reward_scale:
             reward *= self.reward_scale * self.reward_normalization_factor
         return reward
@@ -509,9 +543,6 @@ class Wipe(RobotEnv):
                                    initializer=self.placement_initializer)
         self.model.place_objects()
 
-    def _get_reference(self):
-        super()._get_reference()
-
     def _reset_internal(self):
         super()._reset_internal()
 
@@ -542,6 +573,9 @@ class Wipe(RobotEnv):
                 contains a rendered frame from the simulation.
             depth: requires @self.use_camera_obs and @self.camera_depth to be True.
                 contains a rendered depth map from the simulation
+
+        Returns:
+            OrderedDict: Observations from the environment
         """
         di = super()._get_observation()
 
@@ -569,31 +603,51 @@ class Wipe(RobotEnv):
 
     def _check_terminated(self):
         """
-        Returns True if task is successfully completed
+        Check if the task has completed one way or another. The following conditions lead to termination:
+
+            - Collision
+            - Task completion (wiping succeeded)
+            - Joint Limit reached
+
+        Returns:
+            bool: True if episode is terminated
         """
 
         terminated = False
 
         # Prematurely terminate if contacting the table with the arm
         if self._check_arm_contact()[0]:
-            if self.print_results: print(40 * '-' + " COLLIDED " + 40 * '-')
+            if self.print_results:
+                print(40 * '-' + " COLLIDED " + 40 * '-')
             terminated = True
 
         # Prematurely terminate if finished
         if len(self.wiped_sensors) == len(self.model.arena.sensor_names):
-            if self.print_results: print(40 * '+' + " FINISHED WIPING " + 40 * '+')
+            if self.print_results:
+                print(40 * '+' + " FINISHED WIPING " + 40 * '+')
             terminated = True
 
         # Prematurely terminate if contacting the table with the arm
         if self._check_q_limits()[0]:
-            if self.print_results: print(40 * '-' + " JOINT LIMIT " + 40 * '-')
+            if self.print_results:
+                print(40 * '-' + " JOINT LIMIT " + 40 * '-')
             terminated = True
 
         return terminated
 
     def _post_action(self, action):
         """
-        If something to do
+        In addition to super method, add additional info if requested
+
+        Args:
+            action (np.array): Action to execute within the environment
+
+        Returns:
+            3-tuple:
+
+                - (float) reward from the environment
+                - (bool) whether the current episode is completed or not
+                - (dict) info about current env step
         """
         reward, done, info = super()._post_action(action)
 
@@ -612,6 +666,9 @@ class Wipe(RobotEnv):
     def _check_robot_configuration(self, robots):
         """
         Sanity check to make sure the inputted robots and configuration is acceptable
+
+        Args:
+            robots (str or list of str): Robots to instantiate within this env
         """
         if type(robots) is list:
             assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"

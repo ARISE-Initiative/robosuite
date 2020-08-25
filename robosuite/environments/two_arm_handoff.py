@@ -14,6 +14,123 @@ import robosuite.utils.transform_utils as T
 class TwoArmHandoff(RobotEnv):
     """
     This class corresponds to the handoff task for two robot arms.
+
+    Args:
+        robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
+            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
+            Note: Must be either 2 single single-arm robots or 1 bimanual robot!
+
+        env_configuration (str): Specifies how to position the robots within the environment. Can be either:
+
+            :`'bimanual'`: Only applicable for bimanual robot setups. Sets up the (single) bimanual robot on the -x
+                side of the table
+            :`'single-arm-parallel'`: Only applicable for multi single arm setups. Sets up the (two) single armed
+                robots next to each other on the -x side of the table
+            :`'single-arm-opposed'`: Only applicable for multi single arm setups. Sets up the (two) single armed
+                robots opposed from each others on the opposite +/-y sides of the table (Default option)
+
+        controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
+            custom controller. Else, uses the default controller for this specific task. Should either be single
+            dict if same controller is to be used for all robots or else it should be a list of the same length as
+            "robots" param
+
+        gripper_types (str or list of str): type of gripper, used to instantiate
+            gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
+            with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
+            overrides the default gripper. Should either be single str if same gripper type is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        gripper_visualizations (bool or list of bool): True if using gripper visualization.
+            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
+            The expected keys and corresponding value types are specified below:
+
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to `None` or 0.0 results in no noise being applied.
+                If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
+
+            Should either be single dict if same noise value is to be used for all robots or else it should be a
+            list of the same length as "robots" param
+
+            :Note: Specifying "default" will automatically use the default noise settings.
+                Specifying None will automatically create the required dict with "magnitude" set to 0.0.
+
+        prehensile (bool): If true, handoff object starts on the table. Else, the object starts in Arm0's gripper
+
+        table_full_size (3-tuple): x, y, and z dimensions of the table.
+
+        table_friction (3-tuple): the three mujoco friction parameters for
+            the table.
+
+        use_camera_obs (bool): if True, every observation includes rendered image(s)
+
+        use_object_obs (bool): if True, include object (cube) information in
+            the observation.
+
+        reward_scale (None or float): Scales the normalized reward function by the amount specified.
+            If None, environment reward remains unnormalized
+
+        reward_shaping (bool): if True, use dense rewards.
+
+        placement_initializer (ObjectPositionSampler instance): if provided, will
+            be used to place objects on every reset, else a UniformRandomSampler
+            is used by default.
+
+        use_indicator_object (bool): if True, sets up an indicator object that
+            is useful for debugging.
+
+        has_renderer (bool): If true, render the simulation state in
+            a viewer instead of headless mode.
+
+        has_offscreen_renderer (bool): True if using off-screen rendering
+
+        render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+            will result in the default angle being applied, which is useful as it can be dragged / panned by
+            the user using the mouse
+
+        render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
+
+        render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
+
+        control_freq (float): how many control signals to receive in every second. This sets the amount of
+            simulation time that passes between every action input.
+
+        horizon (int): Every episode lasts for exactly @horizon timesteps.
+
+        ignore_done (bool): True if never terminating the environment (ignore @horizon).
+
+        hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
+            only calls sim.reset and resets all robosuite-internal variables
+
+        camera_names (str or list of str): name of camera to be rendered. Should either be single str if
+            same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
+
+            :Note: At least one camera must be specified if @use_camera_obs is True.
+
+            :Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
+                convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
+                robot's camera list).
+
+        camera_heights (int or list of int): height of camera frame. Should either be single int if
+            same height is to be used for all cameras' frames or else it should be a list of the same length as
+            "camera names" param.
+
+        camera_widths (int or list of int): width of camera frame. Should either be single int if
+            same width is to be used for all cameras' frames or else it should be a list of the same length as
+            "camera names" param.
+
+        camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
+            bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
+            "camera names" param.
+
+    Raises:
+        ValueError: [Invalid number of robots specified]
+        ValueError: [Invalid env configuration]
+        ValueError: [Invalid robots for specified env configuration]
     """
 
     def __init__(
@@ -47,114 +164,6 @@ class TwoArmHandoff(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        """
-        Args:
-            robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
-                (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
-                Note: Must be either 2 single single-arm robots or 1 bimanual robot!
-
-            env_configuration (str): Specifies how to position the robots within the environment. Can be either:
-                "bimanual": Only applicable for bimanual robot setups. Sets up the (single) bimanual robot on the -x
-                    side of the table
-                "single-arm-parallel": Only applicable for multi single arm setups. Sets up the (two) single armed
-                    robots next to each other on the -x side of the table
-                "single-arm-opposed": Only applicable for multi single arm setups. Sets up the (two) single armed
-                    robots opposed from each others on the opposite +/-y sides of the table (Default option)
-
-            controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
-                custom controller. Else, uses the default controller for this specific task. Should either be single
-                dict if same controller is to be used for all robots or else it should be a list of the same length as
-                "robots" param
-
-            gripper_types (str or list of str): type of gripper, used to instantiate
-                gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
-                with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
-                overrides the default gripper. Should either be single str if same gripper type is to be used for all
-                robots or else it should be a list of the same length as "robots" param
-
-            gripper_visualizations (bool or list of bool): True if using gripper visualization.
-                Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-                robots or else it should be a list of the same length as "robots" param
-
-            initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
-                The expected keys and corresponding value types are specified below:
-                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
-                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
-                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
-                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
-                Should either be single dict if same noise value is to be used for all robots or else it should be a
-                list of the same length as "robots" param
-                Note: Specifying "default" will automatically use the default noise settings
-                    Specifying None will automatically create the required dict with "magnitude" set to 0.0
-
-            prehensile (bool): If true, handoff object starts on the table. Else, the object starts in Arm0's gripper
-
-            table_full_size (3-tuple): x, y, and z dimensions of the table.
-
-            table_friction (3-tuple): the three mujoco friction parameters for
-                the table.
-
-            use_camera_obs (bool): if True, every observation includes rendered image(s)
-
-            use_object_obs (bool): if True, include object (cube) information in
-                the observation.
-
-            reward_scale (None or float): Scales the normalized reward function by the amount specified.
-                If None, environment reward remains unnormalized
-
-            reward_shaping (bool): if True, use dense rewards.
-
-            placement_initializer (ObjectPositionSampler instance): if provided, will
-                be used to place objects on every reset, else a UniformRandomSampler
-                is used by default.
-
-            use_indicator_object (bool): if True, sets up an indicator object that
-                is useful for debugging.
-
-            has_renderer (bool): If true, render the simulation state in
-                a viewer instead of headless mode.
-
-            has_offscreen_renderer (bool): True if using off-screen rendering
-
-            render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
-                will result in the default angle being applied, which is useful as it can be dragged / panned by
-                the user using the mouse
-
-            render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
-
-            render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
-
-            control_freq (float): how many control signals to receive in every second. This sets the amount of
-                simulation time that passes between every action input.
-
-            horizon (int): Every episode lasts for exactly @horizon timesteps.
-
-            ignore_done (bool): True if never terminating the environment (ignore @horizon).
-
-            hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
-                only calls sim.reset and resets all robosuite-internal variables
-
-            camera_names (str or list of str): name of camera to be rendered. Should either be single str if
-                same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
-                Note: At least one camera must be specified if @use_camera_obs is True.
-                Note: To render all robots' cameras of a certain type (e.g.: "robotview" or "eye_in_hand"), use the
-                    convention "all-{name}" (e.g.: "all-robotview") to automatically render all camera images from each
-                    robot's camera list).
-
-            camera_heights (int or list of int): height of camera frame. Should either be single int if
-                same height is to be used for all cameras' frames or else it should be a list of the same length as
-                "camera names" param.
-
-            camera_widths (int or list of int): width of camera frame. Should either be single int if
-                same width is to be used for all cameras' frames or else it should be a list of the same length as
-                "camera names" param.
-
-            camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single
-                bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
-                "camera names" param.
-
-        """
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
         self._check_robot_configuration(robots)
@@ -219,30 +228,31 @@ class TwoArmHandoff(RobotEnv):
         Reward function for the task.
 
         Sparse un-normalized reward:
-          - a discrete reward of 2.0 is provided when only Arm 1 is gripping the handle and has the handle
-             lifted above a certain threshold
 
-        Un-normalized piecewise components if using reward shaping:
+            - a discrete reward of 2.0 is provided when only Arm 1 is gripping the handle and has the handle
+              lifted above a certain threshold
 
-          1. a smoothed reward between 0 and 0.25 is provided relative to the distance between Arm 0 and the handle
-          2. a discrete reward of 0.5 is provided when Arm 0 grips the handle.
-          3. a discrete reward of 1.0 is provided when Arm 0 lifts the handle from the table
-             past a certain threshold
-          4. a smoothed reward between 1.0 and 1.25 is provided relative to the distance between the handle and Arm 1,
-             conditioned on the handle being lifted from the table and being grasped by Arm 0
-          5. a discrete reward of 1.5 is provided when both Arm 0 and Arm 1 are gripping the handle while
-             lifted above the table
-          6. the max reward of 2.0 is provided when only Arm 1 is gripping the handle and has the handle
-             lifted above the table
+        Un-normalized max-wise components if using reward shaping:
+
+            - Arm0 Reaching: (1) in [0, 0.25] proportional to the distance between Arm 0 and the handle
+            - Arm0 Grasping: (2) in {0, 0.5}, nonzero if Arm 0 is gripping the handle.
+            - Arm0 Lifting: (3) in {0, 1.0}, nonzero if Arm 0 lifts the handle from the table past a certain threshold
+            - Arm0 Hovering: (4) in {0, [1.0, 1.25]}, nonzero only if Arm0 is actively lifting the hammer, and is
+              proportional to the distance between the handle and Arm 1
+              conditioned on the handle being lifted from the table and being grasped by Arm 0
+            - Mutual Grasping: (5) in {0, 1.5}, nonzero if both Arm 0 and Arm 1 are gripping the handle while
+              lifted above the table
+            - Handoff: (6) in {0, 2.0}, nonzero when only Arm 1 is gripping the handle and has the handle
+              lifted above the table
 
         Note that the final reward is normalized and scaled by reward_scale / 2.0 as
         well so that the max score is equal to reward_scale
 
         Args:
-            action (np array): unused for this task
+            action (np array): [NOT USED]
 
         Returns:
-            reward (float): the reward
+            float: reward value
         """
         # Initialize reward and set success to false
         reward = 0
@@ -447,10 +457,6 @@ class TwoArmHandoff(RobotEnv):
                         # Take forward step
                         self.sim.step()
 
-                    # Reset internal counters
-                    #self.cur_time = 0
-                    #self.timestep = 0
-
     def _get_observation(self):
         """
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
@@ -463,6 +469,9 @@ class TwoArmHandoff(RobotEnv):
                 contains a rendered frame from the simulation.
             depth: requires @self.use_camera_obs and @self.camera_depth to be True.
                 contains a rendered depth map from the simulation
+
+        Returns:
+            OrderedDict: Observations from the environment
         """
         di = super()._get_observation()
 
@@ -502,13 +511,19 @@ class TwoArmHandoff(RobotEnv):
 
     def _check_success(self):
         """
-        Returns True if task has been completed.
+        Check if hammer is successfully handed off
+
+        Returns:
+            bool: True if handoff has been completed
         """
         return self._success
 
     def _check_robot_configuration(self, robots):
         """
         Sanity check to make sure the inputted robots and configuration is acceptable
+
+        Args:
+            robots (str or list of str): Robots to instantiate within this env
         """
         robots = robots if type(robots) == list or type(robots) == tuple else [robots]
         if self.env_configuration == "single-arm-opposed" or self.env_configuration == "single-arm-parallel":
@@ -537,37 +552,72 @@ class TwoArmHandoff(RobotEnv):
 
     @property
     def _handle_xpos(self):
-        """Returns the position of the hammer handle."""
+        """
+        Grab the position of the hammer handle.
+
+        Returns:
+            np.array: (x,y,z) position of handle
+        """
         return self.sim.data.geom_xpos[self.hammer_handle_geom_id]
 
     @property
     def _head_xpos(self):
-        """Returns the position of the hammer head."""
+        """
+        Grab the position of the hammer head.
+
+        Returns:
+            np.array: (x,y,z) position of head
+        """
         return self.sim.data.geom_xpos[self.hammer_head_geom_id]
 
     @property
     def _face_xpos(self):
-        """Returns the position of the hammer face."""
+        """
+        Grab the position of the hammer face.
+
+        Returns:
+            np.array: (x,y,z) position of face
+        """
         return self.sim.data.geom_xpos[self.hammer_face_geom_id]
 
     @property
     def _claw_xpos(self):
-        """Returns the position of the hammer claw."""
+        """
+        Grab the position of the hammer claw.
+
+        Returns:
+            np.array: (x,y,z) position of claw
+        """
         return self.sim.data.geom_xpos[self.hammer_claw_geom_id]
 
     @property
     def _hammer_pos(self):
-        """Returns the orientation of the hammer."""
+        """
+        Grab the position of the hammer body.
+
+        Returns:
+            np.array: (x,y,z) position of body
+        """
         return np.array(self.sim.data.body_xpos[self.hammer_body_id])
 
     @property
     def _hammer_quat(self):
-        """Returns the orientation of the hammer."""
+        """
+        Grab the orientation of the hammer body.
+
+        Returns:
+            np.array: (x,y,z,w) quaternion of the hammer body
+        """
         return T.convert_quat(self.sim.data.body_xquat[self.hammer_body_id], to="xyzw")
 
     @property
     def _hammer_angle(self):
-        """Returns angle of hammer with the ground, relative to it resting horizontally"""
+        """
+        Calculate the angle of hammer with the ground, relative to it resting horizontally
+
+        Returns:
+            float: angle in radians
+        """
         mat = T.quat2mat(self._hammer_quat)
         z_unit = [0, 0, 1]
         z_rotated = np.matmul(mat, z_unit)
@@ -575,12 +625,22 @@ class TwoArmHandoff(RobotEnv):
 
     @property
     def _world_quat(self):
-        """World quaternion."""
+        """
+        Grab the world orientation
+
+        Returns:
+            np.array: (x,y,z,w) world quaternion
+        """
         return T.convert_quat(np.array([1, 0, 0, 0]), to="xyzw")
 
     @property
     def _eef0_xpos(self):
-        """End Effector 0 position"""
+        """
+        Grab the position of Robot 0's end effector.
+
+        Returns:
+            np.array: (x,y,z) position of EEF0
+        """
         if self.env_configuration == "bimanual":
             return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]])
         else:
@@ -588,7 +648,12 @@ class TwoArmHandoff(RobotEnv):
 
     @property
     def _eef1_xpos(self):
-        """End Effector 1 position"""
+        """
+        Grab the position of Robot 1's end effector.
+
+        Returns:
+            np.array: (x,y,z) position of EEF1
+        """
         if self.env_configuration == "bimanual":
             return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id["left"]])
         else:
@@ -600,6 +665,9 @@ class TwoArmHandoff(RobotEnv):
         End Effector 0 orientation as a rotation matrix
         Note that this draws the orientation from the "ee" site, NOT the gripper site, since the gripper
         orientations are inconsistent!
+
+        Returns:
+            np.array: (3,3) orientation matrix for EEF0
         """
         pf = self.robots[0].robot_model.naming_prefix
         if self.env_configuration == "bimanual":
@@ -613,6 +681,9 @@ class TwoArmHandoff(RobotEnv):
         End Effector 1 orientation as a rotation matrix
         Note that this draws the orientation from the "right_/left_hand" body, NOT the gripper site, since the gripper
         orientations are inconsistent!
+
+        Returns:
+            np.array: (3,3) orientation matrix for EEF1
         """
         if self.env_configuration == "bimanual":
             pf = self.robots[0].robot_model.naming_prefix
@@ -623,10 +694,20 @@ class TwoArmHandoff(RobotEnv):
 
     @property
     def _gripper_0_to_handle(self):
-        """Returns vector from the left gripper to the hammer handle."""
+        """
+        Calculate vector from the left gripper to the hammer handle.
+
+        Returns:
+            np.array: (dx,dy,dz) distance vector between handle and EEF0
+        """
         return self._handle_xpos - self._eef0_xpos
 
     @property
     def _gripper_1_to_handle(self):
-        """Returns vector from the right gripper to the hammer handle."""
+        """
+        Calculate vector from the right gripper to the hammer handle.
+
+        Returns:
+            np.array: (dx,dy,dz) distance vector between handle and EEF1
+        """
         return self._handle_xpos - self._eef1_xpos
