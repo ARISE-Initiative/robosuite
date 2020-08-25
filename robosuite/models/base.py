@@ -12,15 +12,14 @@ class MujocoXML(object):
     Base class of Mujoco xml file
     Wraps around ElementTree and provides additional functionality for merging different models.
     Specially, we keep track of <worldbody/>, <actuator/> and <asset/>
+
+    When initialized, loads a mujoco xml from file.
+
+    Args:
+        fname (str): path to the MJCF xml file.
     """
 
     def __init__(self, fname):
-        """
-        Loads a mujoco xml from file.
-
-        Args:
-            fname (str): path to the MJCF xml file.
-        """
         self.file = fname
         self.folder = os.path.dirname(fname)
         self.tree = ET.parse(fname)
@@ -50,6 +49,12 @@ class MujocoXML(object):
     def create_default_element(self, name):
         """
         Creates a <@name/> tag under root if there is none.
+
+        Args:
+            name (str): Name to generate default element
+
+        Returns:
+            ET.Element: Node that was created
         """
 
         found = self.root.find(name)
@@ -64,10 +69,13 @@ class MujocoXML(object):
         Default merge method.
 
         Args:
-            others: another MujocoXML instance (or list of instances)
+            others (MujocoXML or list of MujocoXML): other xmls to merge into this one
                 raises XML error if @others is not a MujocoXML instance.
                 merges <worldbody/>, <actuator/> and <asset/> of @others into @self
-            merge_body: True if merging child bodies of @others. Defaults to True.
+            merge_body (bool): True if merging child bodies of @others
+
+        Raises:
+            XMLError: [Invalid XML instance]
         """
         if type(others) is not list:
             others = [others]
@@ -90,11 +98,19 @@ class MujocoXML(object):
                 self.contact.append(one_contact)
             for one_default in other.default:
                 self.default.append(one_default)
-            # self.config.append(other.config)
 
     def get_model(self, mode="mujoco_py"):
         """
-        Returns a MjModel instance from the current xml tree.
+        Generates a MjModel instance from the current xml tree.
+
+        Args:
+            mode (str): Mode with which to interpret xml tree
+
+        Returns:
+            MjModel: generated model from xml
+
+        Raises:
+            ValueError: [Invalid mode]
         """
 
         available_modes = ["mujoco_py"]
@@ -113,7 +129,10 @@ class MujocoXML(object):
 
     def get_xml(self):
         """
-        Returns a string of the MJCF XML file.
+        Reads a string of the MJCF XML file.
+
+        Returns:
+            str: XML tree read in from file
         """
         with io.StringIO() as string:
             string.write(ET.tostring(self.root, encoding="unicode"))
@@ -124,8 +143,8 @@ class MujocoXML(object):
         Saves the xml to file.
 
         Args:
-            fname: output file location
-            pretty: attempts!! to pretty print the output
+            fname (str): output file location
+            pretty (bool): If True, (attempts!! to) pretty print the output
         """
         with open(fname, "w") as f:
             xml_str = ET.tostring(self.root, encoding="unicode")
@@ -137,7 +156,10 @@ class MujocoXML(object):
 
     def merge_asset(self, other):
         """
-        Useful for merging other files in a custom logic.
+        Merges other files in a custom logic.
+
+        Args:
+            other (MujocoXML): other xml file whose assets will be merged into this one
         """
         for asset in other.asset:
             asset_name = asset.get("name")
@@ -152,9 +174,12 @@ class MujocoXML(object):
         Searches recursively through the @root and returns a list of names of the specified @element_type
 
         Args:
-            root (XML Mujoco instance): Root of the xml element tree to start recursively searching through
+            root (ET.Element): Root of the xml element tree to start recursively searching through
                 (e.g.: `self.worldbody`)
             element_type (str): Name of element to return names of. (e.g.: "site", "geom", etc.)
+
+        Returns:
+            list: names that correspond to the specified @element_type
         """
         names = []
         for child in root:
@@ -167,7 +192,8 @@ class MujocoXML(object):
                    prefix,
                    tags=("body", "joint", "sensor", "site", "geom", "camera", "actuator", "tendon", "asset", "mesh", "texture", "material")):
         """
-        Utility to add prefix to all body names to prevent name clashes
+        Utility method to add prefix to all body names to prevent name clashes
+
         Args:
             prefix (str): Prefix to be appended to all requested elements in this XML
             tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
@@ -233,6 +259,13 @@ class MujocoXML(object):
         """
         Iteratively searches through all children nodes in "root" element to append "prefix" to any named subelements
         with a tag in "tags"
+
+        Args:
+            root (ET.Element): Root of the xml element tree to start recursively searching through
+                (e.g.: `self.worldbody`)
+            tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
+                prepended to it
+            prefix (str): Prefix to be appended to all requested elements in this XML
         """
         # First re-name this element
         if "name" in root.attrib:
