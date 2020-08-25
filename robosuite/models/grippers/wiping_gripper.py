@@ -6,6 +6,13 @@ from robosuite.models.grippers.gripper_model import GripperModel
 
 
 class WipingGripper(GripperModel):
+    """
+    A Wiping Gripper with no actuation and enabled with sensors to detect contact forces
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this gripper instance
+    """
+
     def __init__(self, idn=0):
         super().__init__(xml_path_completion('grippers/wiping_gripper.xml'), idn=idn)
 

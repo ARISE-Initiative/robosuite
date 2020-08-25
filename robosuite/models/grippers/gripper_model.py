@@ -6,14 +6,15 @@ import numpy as np
 
 
 class GripperModel(MujocoXML):
-    """Base class for grippers"""
+    """
+    Base class for grippers
+
+    Args:
+        fname (str): Path to relevant xml file to create this gripper instance
+        idn (int or str): Number or some other unique identification string for this gripper instance
+    """
 
     def __init__(self, fname, idn=0):
-        """
-        Args:
-            fname (str): Path to relevant xml file to create this gripper instance
-            idn (int or str): Number or some other unique identification string for this gripper instance
-        """
         super().__init__(fname)
 
         # Set id number and add prefixes to all body names to prevent naming clashes
@@ -66,15 +67,26 @@ class GripperModel(MujocoXML):
     # -------------------------------------------------------------------------------------- #
     @property
     def naming_prefix(self):
-        """Returns a prefix to append to all xml names to prevent naming collisions"""
+        """
+        Generates a standardized prefix to append to all xml names to prevent naming collisions
+
+        Returns:
+            str: Prefix unique to this gripper baesd on its ID
+        """
         return "gripper{}_".format(self.idn)
 
     @property
     def visualization_sites(self):
         """
-        Returns a dict of sites corresponding to the geoms
+        Grabs a dict of sites corresponding to the geoms
         used to aid visualization by human. (usually "site" and "cylinder")
         (and should be hidden from robots)
+
+        Returns:
+            dict:
+
+                :`'grip_site' (str)`: Name of grip actuation intersection location site
+                :`'grip_cylinder' (str)`: Name of grip actuation z-axis location site
         """
         return {"grip_site": self.naming_prefix + "grip_site",
                 "grip_cylinder": self.naming_prefix + "grip_site_cylinder"}
@@ -82,10 +94,26 @@ class GripperModel(MujocoXML):
     @property
     def sensors(self):
         """
-        Returns a dict of sensor names for each gripper (usually "force_ee" and "torque_ee"
+        Grabs a dict of sensor names for each gripper (usually "force_ee" and "torque_ee")
+
+        Returns:
+            dict:
+
+                :`'force_ee' (str)`: Name of force eef sensor for this gripper
+                :`'torque_ee' (str)`: Name of torque eef sensor for this gripper
         """
         return {"force_ee": self.naming_prefix + "force_ee",
                 "torque_ee": self.naming_prefix + "torque_ee"}
+
+    @property
+    def speed(self):
+        """
+        How quickly the gripper opens / closes
+
+        Returns:
+            float: Speed of the gripper
+        """
+        return 0.0
 
     # -------------------------------------------------------------------------------------- #
     # All subclasses must implement the following properties based on their respective xml's #
@@ -95,54 +123,81 @@ class GripperModel(MujocoXML):
     @property
     def dof(self):
         """
-        Returns the number of DOF of the gripper
+        Grabs the number of DOF of the gripper
+
+        Returns:
+            int: gripper DOF
         """
         raise NotImplementedError
 
     @property
     def init_qpos(self):
         """
-        Returns rest(open) qpos of the gripper
+        Grabs the rest (open) qpos of the gripper
+
+        Returns:
+            np.array: Default init qpos of this gripper
         """
         raise NotImplementedError
 
     @property
     def _joints(self):
         """
-        Returns a list of joint names of the gripper
+        Grabs the list of joint names of the gripper. Note that these are the raw string names directly pulled from
+        a gripper's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            list: Joint names for this gripper
         """
         raise NotImplementedError
 
     @property
     def _actuators(self):
         """
-        Returns a list of actuator names of the gripper
+        Grabs the list of actuator names of the gripper. Note that these are the raw string names directly pulled from
+        a gripper's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            list: Actuator names for this gripper
         """
         raise NotImplementedError
 
     @property
     def _contact_geoms(self):
         """
-        Returns a list of names corresponding to the geoms
-        used to determine contact with the gripper.
+        Returns a list of names corresponding to the geoms used to determine contact with the gripper. Note that these
+        are the raw string names directly pulled from a gripper's corresponding XML file, NOT the adjusted name with
+        an auto-generated naming prefix
+
+        Returns:
+            list: Relevant contact geoms for this gripper
         """
         return []
 
     @property
     def _visualization_geoms(self):
         """
-        Returns a list of sites corresponding to the geoms
-        used to aid visualization by human.
-        (and should be hidden from robots)
+        Returns a list of sites corresponding to the geoms used to aid visualization by human (and should be
+        hidden from robots). Note that these are the raw string names directly pulled from a gripper's corresponding
+        XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            list: Relevant visualization geoms for this gripper
         """
         return []
 
     @property
     def _important_geoms(self):
         """
-        Geoms corresponding to important components of the gripper
+        Geoms corresponding to important components of the gripper (by default, left_finger and right_finger).
+        Note that these are the raw string names directly pulled from a gripper's corresponding XML file,
+        NOT the adjusted name with an auto-generated naming prefix
 
-        Note that this should be a dict of lists
+        Note that this should be a dict of lists.
+
+        Returns:
+            dict of list: Important geoms, where each set of geoms are grouped as a list and are organized by keyword
+            string entries into a dict
         """
         return {
             "left_finger": [],

@@ -17,6 +17,18 @@ from robosuite.models.objects.generated_objects import BoxObject
 class GripperTester:
     """
     A class that is used to test gripper
+
+    Args:
+        gripper (GripperModel): A gripper instance to be tested
+        pos (str): (x y z) position to place the gripper in string form, e.g. '0 0 0.3'
+        quat (str): rotation to apply to gripper in string form, e.g. '0 0 1 0' to flip z axis
+        gripper_low_pos (float): controls the gipper y position, larger -> higher
+        gripper_high_pos (float): controls the gipper y high position larger -> higher,
+            must be larger than gripper_low_pos
+        box_size (None or 3-tuple of int): the size of the box to grasp, None defaults to [0.02, 0.02, 0.02]
+        box_density (int): the density of the box to grasp
+        step_time (int): the interval between two gripper actions
+        render (bool): if True, show rendering
     """
 
     def __init__(
@@ -31,26 +43,6 @@ class GripperTester:
         step_time=400,
         render=True
     ):
-        """
-        Initializes world and gripper positioning
-
-        Args:
-            gripper: A GripperModel instance
-            pos: position to place the gripper
-                 e.g. '0 0 0.3'
-            quat: rotation to apply to gripper
-                  e.g. '0 0 1 0' to flip z axis
-            gripper_low_pos (float): controls the gipper y position,
-                                     larger -> higher
-            gripper_high_pos (float): controls the gipper y high position
-                                      larger -> higher, must be larger
-                                      than gripper_low_pos
-            box_size list(int * 3): the size of the box to grasp,
-                                    default [0.02, 0.02, 0.02]
-            box_density (int): the density of the box to grasp,
-            step_time (int): the interval between two gripper actions
-            render: show rendering
-        """
         world = MujocoWorldBase()
         # Add a table
         arena = TableArena(table_full_size=(0.4, 0.4, 0.1), table_offset=(0, 0, 0.1), has_legs=False)
@@ -132,7 +124,7 @@ class GripperTester:
 
     def start_simulation(self):
         """
-            Starts simulation of the test world
+        Starts simulation of the test world
         """
         model = self.world.get_model(mode="mujoco_py")
 
@@ -166,7 +158,7 @@ class GripperTester:
 
     def reset(self):
         """
-            Resets the simulation to the initial state
+        Resets the simulation to the initial state
         """
         self.sim.set_state(self.sim_state)
         self.cur_step = 0
@@ -196,7 +188,10 @@ class GripperTester:
 
     def _apply_gripper_action(self, action):
         """
-        Applies gripper action. Should be -1 (open) or 1 (closed)
+        Applies binary gripper action
+
+        Args:
+            action (int): Action to apply. Should be -1 (open) or 1 (closed)
         """
         gripper_action_actual = self.gripper.format_action(np.array([action]))
         # rescale normalized gripper action to control ranges
@@ -207,6 +202,9 @@ class GripperTester:
         self.sim.data.ctrl[self.gripper_actuator_ids] = applied_gripper_action
 
     def _apply_gravity_compensation(self):
+        """
+        Applies gravity compensation to the simulation
+        """
         self.sim.data.qfrc_applied[
             self._gravity_corrected_qvels
         ] = self.sim.data.qfrc_bias[self._gravity_corrected_qvels]
@@ -218,6 +216,7 @@ class GripperTester:
         """
         Performs lower, grip, raise and release actions of a gripper,
                 each separated with T timesteps
+
         Args:
             total_iters (int): Iterations to perform before exiting
             test_y (bool): test if object is lifted
@@ -239,7 +238,10 @@ class GripperTester:
     @property
     def object_height(self):
         """
-            Queries the height (z) of the object compared to on the ground
+        Queries the height (z) of the object compared to on the ground
+
+        Returns:
+            float: Object height relative to default (ground) object position
         """
         return self.sim.data.body_xpos[self.object_id][2]\
             - self.object_default_pos[2]

@@ -9,13 +9,13 @@ from robosuite.models.grippers.gripper_model import GripperModel
 class Robotiq140GripperBase(GripperModel):
     """
     Gripper with 140mm Jaw width from Robotiq (has two fingers).
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this gripper instance
+
     """
 
     def __init__(self, idn=0):
-        """
-        Args:
-            idn (int or str): Number or some other unique identification string for this gripper instance
-        """
         super().__init__(xml_path_completion("grippers/robotiq_gripper_140.xml"), idn=idn)
 
     def format_action(self, action):
@@ -82,9 +82,14 @@ class Robotiq140Gripper(Robotiq140GripperBase):
 
     def format_action(self, action):
         """
+        Maps continuous action into binary output
+        -1 => open, 1 => closed
+
         Args:
-            Binary action space
-            -1 => open, 1 => closed
+            action (np.array): gripper-specific action
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
         """
         assert len(action) == 1
         self.current_action = np.clip(self.current_action + np.array([1.0, -1.0]) * self.speed * np.sign(action), -1.0, 1.0)
@@ -92,9 +97,6 @@ class Robotiq140Gripper(Robotiq140GripperBase):
 
     @property
     def speed(self):
-        """
-        How quickly the gripper opens / closes
-        """
         return 0.01
 
     @property

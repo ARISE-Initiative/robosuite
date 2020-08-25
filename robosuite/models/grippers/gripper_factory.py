@@ -10,14 +10,14 @@ def gripper_factory(name, idn=0):
     Creates a GripperModel instance with the provided name.
 
     Args:
-        name: the name of the gripper class
-        idn: idn (int or str): Number or some other unique identification string for this gripper instance
+        name (str): the name of the gripper class
+        idn (int or str): Number or some other unique identification string for this gripper instance
 
     Returns:
-        gripper: GripperModel instance
+        GripperModel: requested gripper instance
 
     Raises:
-        XMLError: [description]
+        XMLError: [invalid XML]
     """
     # Import GRIPPER_MAPPING at runtime so we avoid circular imports
     from robosuite.models.grippers import GRIPPER_MAPPING

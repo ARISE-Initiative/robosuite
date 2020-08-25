@@ -9,13 +9,12 @@ from robosuite.models.grippers.gripper_model import GripperModel
 class RobotiqThreeFingerGripperBase(GripperModel):
     """
     Gripper with 11 dof controlling three fingers.
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this gripper instance
     """
 
     def __init__(self, idn=0):
-        """
-        Args:
-            idn (int or str): Number or some other unique identification string for this gripper instance
-        """
         super().__init__(xml_path_completion("grippers/robotiq_gripper_s.xml"), idn=idn)
 
     def format_action(self, action):
@@ -91,8 +90,14 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
 
     def format_action(self, action):
         """
+        Maps continuous action into binary output
+        -1 => open, 1 => closed
+
         Args:
-            action: -1 => open, 1 => closed
+            action (np.array): gripper-specific action
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
         """
         assert len(action) == self.dof
         self.current_action = np.clip(self.current_action + self.speed * np.array(action), -1.0, 1.0)
@@ -101,9 +106,6 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
 
     @property
     def speed(self):
-        """
-        How quickly the gripper opens / closes
-        """
         return 0.01
 
     @property
@@ -119,8 +121,14 @@ class RobotiqThreeFingerDexterousGripper(RobotiqThreeFingerGripperBase):
 
     def format_action(self, action):
         """
+        Maps continuous action into binary output
+        all -1 => open, all 1 => closed
+
         Args:
-            action: all -1 => open, all 1 => closed
+            action (np.array): gripper-specific action
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
         """
         assert len(action) == self.dof
         self.current_action = np.clip(self.current_action + self.speed * np.sign(action), -1.0, 1.0)
@@ -128,9 +136,6 @@ class RobotiqThreeFingerDexterousGripper(RobotiqThreeFingerGripperBase):
 
     @property
     def speed(self):
-        """
-        How quickly the gripper opens / closes
-        """
         return 0.01
 
     @property

@@ -9,13 +9,12 @@ from robosuite.models.grippers.gripper_model import GripperModel
 class JacoThreeFingerGripperBase(GripperModel):
     """
     Gripper for Kinova's Jaco robot arm (has three fingers).
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this gripper instance
     """
 
     def __init__(self, idn=0):
-        """
-        Args:
-            idn (int or str): Number or some other unique identification string for this gripper instance
-        """
         super().__init__(xml_path_completion("grippers/jaco_three_finger_gripper.xml"), idn=idn)
 
     def format_action(self, action):
@@ -70,9 +69,14 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
 
     def format_action(self, action):
         """
+        Maps continuous action into binary output
+        -1 => open, 1 => closed
+
         Args:
-            Binary action space
-            -1 => open, 1 => closed
+            action (np.array): gripper-specific action
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
         """
         assert len(action) == self.dof
         self.current_action = np.clip(self.current_action - self.speed * np.sign(action), -1.0, 1.0)
@@ -80,9 +84,6 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
 
     @property
     def speed(self):
-        """
-        How quickly the gripper opens / closes
-        """
         return 0.005
 
     @property
@@ -96,18 +97,21 @@ class JacoThreeFingerDexterousGripper(JacoThreeFingerGripperBase):
     """
     def format_action(self, action):
         """
+        Maps continuous action into binary output
+        all -1 => open, all 1 => closed
+
         Args:
-            all -1 => open, all 1 => closed
+            action (np.array): gripper-specific action
+
+        Raises:
+            AssertionError: [Invalid action dimension size]
         """
         assert len(action) == self.dof
-        self.current_action = np.clip(self.current_action - self.speed * np.array(action), -1.0, 1.0)
+        self.current_action = np.clip(self.current_action - self.speed * np.sign(action), -1.0, 1.0)
         return self.current_action
 
     @property
     def speed(self):
-        """
-        How quickly the gripper opens / closes
-        """
         return 0.005
 
     @property
