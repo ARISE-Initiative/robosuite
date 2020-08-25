@@ -4,14 +4,15 @@ from robosuite.utils.mjcf_utils import xml_path_completion
 
 
 class Jaco(RobotModel):
-    """Jaco is a kind and assistive robot created by Kinova"""
+    """
+    Jaco is a kind and assistive robot created by Kinova
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this robot instance
+        bottom_offset (3-array): (x,y,z) offset desired from initial coordinates
+    """
 
     def __init__(self, idn=0, bottom_offset=(0, 0, -0.913)):
-        """
-        Args:
-            idn (int or str): Number or some other unique identification string for this robot instance
-            bottom_offset (3-list/tuple): x,y,z offset desired from initial coordinates
-        """
         super().__init__(xml_path_completion("robots/jaco/robot.xml"), idn=idn, bottom_offset=bottom_offset)
 
     @property

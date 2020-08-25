@@ -4,14 +4,15 @@ from robosuite.utils.mjcf_utils import xml_path_completion
 
 
 class Sawyer(RobotModel):
-    """Sawyer is a witty single-arm robot designed by Rethink Robotics."""
+    """
+    Sawyer is a witty single-arm robot designed by Rethink Robotics.
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this robot instance
+        bottom_offset (3-array): (x,y,z) offset desired from initial coordinates
+    """
 
     def __init__(self, idn=0, bottom_offset=(0, 0, -0.913)):
-        """
-        Args:
-            idn (int or str): Number or some other unique identification string for this robot instance
-            bottom_offset (3-list/tuple): x,y,z offset desired from initial coordinates
-        """
         super().__init__(xml_path_completion("robots/sawyer/robot.xml"), idn=idn, bottom_offset=bottom_offset)
 
     @property

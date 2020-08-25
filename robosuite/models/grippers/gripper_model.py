@@ -71,7 +71,7 @@ class GripperModel(MujocoXML):
         Generates a standardized prefix to append to all xml names to prevent naming collisions
 
         Returns:
-            str: Prefix unique to this gripper baesd on its ID
+            str: Prefix unique to this gripper based on its ID
         """
         return "gripper{}_".format(self.idn)
 
@@ -123,7 +123,7 @@ class GripperModel(MujocoXML):
     @property
     def dof(self):
         """
-        Grabs the number of DOF of the gripper
+        Defines the number of DOF of the gripper
 
         Returns:
             int: gripper DOF
@@ -133,7 +133,7 @@ class GripperModel(MujocoXML):
     @property
     def init_qpos(self):
         """
-        Grabs the rest (open) qpos of the gripper
+        Defines the default rest (open) qpos of the gripper
 
         Returns:
             np.array: Default init qpos of this gripper
@@ -143,46 +143,46 @@ class GripperModel(MujocoXML):
     @property
     def _joints(self):
         """
-        Grabs the list of joint names of the gripper. Note that these are the raw string names directly pulled from
+        List of joint names of the gripper. Note that these are the raw string names directly pulled from
         a gripper's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
 
         Returns:
-            list: Joint names for this gripper
+            list: Raw XML joint names for this gripper
         """
         raise NotImplementedError
 
     @property
     def _actuators(self):
         """
-        Grabs the list of actuator names of the gripper. Note that these are the raw string names directly pulled from
+        List of actuator names of the gripper. Note that these are the raw string names directly pulled from
         a gripper's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
 
         Returns:
-            list: Actuator names for this gripper
+            list: Raw XML actuator names for this gripper
         """
         raise NotImplementedError
 
     @property
     def _contact_geoms(self):
         """
-        Returns a list of names corresponding to the geoms used to determine contact with the gripper. Note that these
+        List of names corresponding to the geoms used to determine contact with the gripper. Note that these
         are the raw string names directly pulled from a gripper's corresponding XML file, NOT the adjusted name with
         an auto-generated naming prefix
 
         Returns:
-            list: Relevant contact geoms for this gripper
+            list: Raw XML relevant contact geoms for this gripper
         """
         return []
 
     @property
     def _visualization_geoms(self):
         """
-        Returns a list of sites corresponding to the geoms used to aid visualization by human (and should be
+        List of sites corresponding to the geoms used to aid visualization by human (and should be
         hidden from robots). Note that these are the raw string names directly pulled from a gripper's corresponding
         XML file, NOT the adjusted name with an auto-generated naming prefix
 
         Returns:
-            list: Relevant visualization geoms for this gripper
+            list: Raw XML relevant visualization geoms for this gripper
         """
         return []
 
@@ -196,8 +196,8 @@ class GripperModel(MujocoXML):
         Note that this should be a dict of lists.
 
         Returns:
-            dict of list: Important geoms, where each set of geoms are grouped as a list and are organized by keyword
-            string entries into a dict
+            dict of list: Raw XML important geoms, where each set of geoms are grouped as a list and are
+            organized by keyword string entries into a dict
         """
         return {
             "left_finger": [],

@@ -18,7 +18,20 @@ def register_robot(target_class):
 
 
 def create_robot(robot_name, *args, **kwargs):
-    """Try to get the equivalent functionality of gym.make in a sloppy way."""
+    """
+    Instantiates a Robot object.
+
+    Args:
+        robot_name (str): Name of the robot to initialize
+        *args: Additional arguments to pass to the specific Robot class initializer
+        **kwargs: Additional arguments to pass to the specific Robot class initializer
+
+    Returns:
+        Robot: Desired robot
+
+    Raises:
+        Exception: [Invalid robot name]
+    """
     if robot_name not in REGISTERED_ROBOTS:
         raise Exception(
             "Robot {} not found. Make sure it is a registered robot among: {}".format(
@@ -29,7 +42,15 @@ def create_robot(robot_name, *args, **kwargs):
 
 
 def check_bimanual(robot_name):
-    """Utility function that returns whether the inputted robot_name is a bimanual robot or not"""
+    """
+    Utility function that returns whether the inputted robot_name is a bimanual robot or not
+
+    Args:
+        robot_name (str): Name of the robot to check
+
+    Returns:
+        bool: True if the inputted robot is a bimanual robot
+    """
     return robot_name in BIMANUAL_ROBOTS
 
 
@@ -48,17 +69,16 @@ class RobotModelMeta(type):
 
 
 class RobotModel(MujocoXML, metaclass=RobotModelMeta):
-    """Base class for all robot models."""
+    """
+    Base class for all robot models.
+
+    Args:
+        fname (str): Path to relevant xml file from which to create this robot instance
+        idn (int or str): Number or some other unique identification string for this robot instance
+        bottom_offset (3-array of float): x,y,z offset desired from initial coordinates
+    """
 
     def __init__(self, fname, idn=0, bottom_offset=(0, 0, 0)):
-        """
-        Initializes robot xml from file @fname.
-
-        Args:
-            fname (str): Path to relevant xml file to create this robot instance
-            idn (int or str): Number or some other unique identification string for this robot instance
-            bottom_offset (3-list/tuple): x,y,z offset desired from initial coordinates
-        """
         super().__init__(fname)
 
         # Set id and add prefixes to all body names to prevent naming clashes
@@ -98,8 +118,12 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
         Throws error if robot already has a gripper or gripper type is incorrect.
 
         Args:
-            gripper (MujocoGripper instance): gripper MJCF model
-            arm_name (str): (Optional) name of arm mount -- defaults to eef_name if not specified
+            gripper (MujocoGripper): gripper MJCF model
+            arm_name (str): name of arm mount -- defaults to self.eef_name if not specified
+
+        Raises:
+            ValueError: [Multiple grippers]
+            XMLError: [No / invalid actuator]
         """
         if arm_name is None:
             arm_name = self.eef_name
@@ -130,12 +154,22 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
     def set_base_xpos(self, pos):
-        """Places the robot on position @pos."""
+        """
+        Places the robot on position @pos.
+
+        Args:
+            pos (3-array): (x,y,z) position to place robot base
+        """
         node = self.worldbody.find("./body[@name='{}']".format(self._root_))
         node.set("pos", array_to_string(pos - self.bottom_offset))
 
     def set_base_ori(self, rot):
-        """Rotates robot by rotation @rot (r,p,y) from its original orientation."""
+        """
+        Rotates robot by rotation @rot from its original orientation.
+
+        Args:
+            rot (3-array): (r,p,y) euler angles specifying the orientation for the robot base
+        """
         node = self.worldbody.find("./body[@name='{}']".format(self._root_))
         # xml quat assumes w,x,y,z so we need to convert to this format from outputted x,y,z,w format from fcn
         rot = mat2quat(euler2mat(rot))[[3,0,1,2]]
@@ -147,7 +181,10 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
 
         Args:
             attrib (str): Attribute to set for all joints
-            values (ndarray): Values to set for each joint
+            values (n-array): Values to set for each joint
+
+        Raises:
+            AssertionError: [Inconsistent dimension sizes]
         """
         assert values.size == self.dof, "Error setting joint attributes: " + \
             "Values must be same size as joint dimension. Got {}, expected {}!".format(values.size, self.dof)
@@ -161,7 +198,11 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
         """
         Corrects all xml names by adding the naming prefix to it and returns the name-corrected values
 
-        @names (str, list, or dict): Name(s) to be corrected
+        Args:
+            names (str, list, or dict): Name(s) to be corrected
+
+        Raises:
+            TypeError: [Invalid input type]
         """
         if type(names) is str:
             return self.naming_prefix + names
@@ -183,27 +224,52 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
 
     @property
     def naming_prefix(self):
-        """Returns a prefix to append to all xml names to prevent naming collisions"""
+        """
+        Generates a standardized prefix to append to all xml names to prevent naming collisions
+
+        Returns:
+            str: Prefix unique to this robot based on its ID
+        """
         return "robot{}_".format(self.idn)
 
     @property
     def joints(self):
+        """
+        Returns:
+            list: Prefix-adjusted joint names for this robot
+        """
         return self.correct_naming(self._joints)
 
     @property
     def eef_name(self):
+        """
+        Returns:
+            str: Prefix-adjusted eef name for this robot
+        """
         return self.correct_naming(self._eef_name)
 
     @property
     def robot_base(self):
+        """
+        Returns:
+            str: Prefix-adjusted base name for this robot
+        """
         return self.correct_naming(self._robot_base)
 
     @property
     def actuators(self):
+        """
+        Returns:
+            list: Prefix-adjusted actuator names for this robot
+        """
         return self.correct_naming(self._actuators)
 
     @property
     def contact_geoms(self):
+        """
+        Returns:
+            list: Prefix-adjusted contact geom names for this robot
+        """
         return self.correct_naming(self._contact_geoms)
 
     # -------------------------------------------------------------------------------------- #
@@ -212,16 +278,27 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
 
     @property
     def _root_body_(self):
-        """Returns xml element of the root body for this robot"""
+        """
+        Returns:
+            ET.Element: xml element of the root body for this robot
+        """
         node = self.worldbody.find("./body[@name='{}']".format(self._root_))
         return node
 
     @property
     def _root_(self):
+        """
+        Returns:
+            str: Prefix-adjusted root name of this robot
+        """
         return self.correct_naming(self._root)
 
     @property
     def _links_(self):
+        """
+        Returns:
+            list: Prefix-adjusted link names for this robot
+        """
         return self.correct_naming(self._links)
 
     # -------------------------------------------------------------------------------------- #
@@ -230,30 +307,58 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
 
     @property
     def dof(self):
-        """Returns number of degrees of freedom for this robot"""
+        """
+        Defines the number of DOF of the robot
+
+        Returns:
+            int: robot DOF
+        """
         raise NotImplementedError
 
     @property
     def gripper(self):
-        """Returns default gripper type for this robot that gets added to end effector"""
+        """
+        Defines the default gripper type for this robot that gets added to end effector
+
+        Returns:
+            str: Default gripper name to add to this robot
+        """
         raise NotImplementedError
 
     @property
     def default_controller_config(self):
-        """Returns name of default controller config file in the controllers/config directory for this robot."""
+        """
+        Defines the name of default controller config file in the controllers/config directory for this robot.
+
+        Returns:
+            str: filename of default controller config for this robot
+        """
         raise NotImplementedError
 
     @property
     def init_qpos(self):
-        """Returns default qpos of this robot"""
+        """
+        Defines the default rest qpos of this robot
+
+        Returns:
+            np.array: Default init qpos of this robot
+        """
         raise NotImplementedError
 
     @property
     def base_xpos_offset(self):
         """
-        Returns dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+        Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
         Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
         arena case; i.e.: "bins", "empty", and "table")
+
+        Returns:
+            dict:
+
+                :`'bins'`: (x,y,z) robot offset if placed in bins arena
+                :`'empty'`: (x,y,z) robot offset if placed in the empty arena
+                :`'table'`: lambda function that takes in table_length and returns corresponding (x,y,z) offset
+                    if placed in the table arena
         """
         raise NotImplementedError
 
@@ -261,41 +366,92 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
     def arm_type(self):
         """
         Type of robot arm. Should be either "bimanual" or "single" (or something else if it gets added in the future)
+
+        Returns:
+            str: Type of robot
         """
         raise NotImplementedError
 
     @property
     def _joints(self):
-        """Returns a list of joint names of the robot."""
+        """
+        List of joint names of the robot. Note that these are the raw string names directly pulled from
+        a robot's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            list: Raw XML joint names for this robot
+        """
         raise NotImplementedError
 
     @property
     def _eef_name(self):
-        """Returns XML eef name for this robot to which grippers can be attached"""
+        """
+        XML eef name for this robot to which grippers can be attached. Note that these are the raw
+        string names directly pulled from a robot's corresponding XML file, NOT the adjusted name with an
+        auto-generated naming prefix
+
+        Returns:
+            str: Raw XML eef name for this robot
+        """
         raise NotImplementedError
 
     @property
     def _robot_base(self):
-        """Returns the base name of the physical base for this robot"""
+        """
+        Base name of the physical base for this robot. Note that these are the raw string names directly
+        pulled from a robot's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            str: Raw XML base name for this robot
+        """
         raise NotImplementedError
 
     @property
     def _actuators(self):
-        """Returns the xml names for the pos, vel, and torq actuators for this robot. Should be a dict with entries
-        for 'pos', 'vel', and 'torq' """
+        """
+        Dict containing lists of XML names for the pos, vel, and torq actuators for this robot. Should be a dict with
+        entries for 'pos', 'vel', and 'torq'. Note that these are the raw string names directly pulled from a robot's
+        corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            dict:
+
+                :`'pos'`: List of raw XML position actuators for this robot
+                :`'vel'`: List of raw XML velocity actuators for this robot
+                :`'torq'`: List of raw XML torque actuators for this robot
+        """
         raise NotImplementedError
 
     @property
     def _contact_geoms(self):
-        """Returns list of contact geom names for this robot"""
+        """
+        List of names corresponding to the geoms used to determine contact with this robot. Note that these
+        are the raw string names directly pulled from a robot's corresponding XML file, NOT the adjusted name with
+        an auto-generated naming prefix
+
+        Returns:
+            list: Raw XML relevant contact geoms for this robot
+        """
         raise NotImplementedError
 
     @property
     def _root(self):
-        """Returns the root name of the mujoco xml body"""
+        """
+        Root name of the mujoco xml body. Note that these are the raw string names directly pulled from a
+        robot's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            str: Raw XML root name for this robot
+        """
         raise NotImplementedError
 
     @property
     def _links(self):
-        """Returns list of xml link names for this robot"""
+        """
+        List of xml link names for this robot. Note that these are the raw string names directly pulled from a
+        robot's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+
+        Returns:
+            list: Raw XML link names for this robot
+        """
         raise NotImplementedError
