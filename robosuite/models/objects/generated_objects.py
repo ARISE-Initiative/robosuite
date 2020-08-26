@@ -287,6 +287,14 @@ class HammerObject(MujocoGeneratedObject):
         """
         return ["hammer_claw"]
 
+    @property
+    def all_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to all hammer components
+        """
+        return self.handle_geoms + self.head_geoms + self.face_geoms + self.claw_geoms
+
 
 class PotWithHandlesObject(MujocoGeneratedObject):
     """

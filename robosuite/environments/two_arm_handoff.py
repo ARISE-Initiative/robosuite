@@ -445,24 +445,24 @@ class TwoArmHandoff(RobotEnv):
         if self.env_configuration == "bimanual":
             _contacts_0 = list(
                 self.find_contacts(
-                    self.robots[0].gripper["left"].contact_geoms, self.hammer.handle_geoms
+                    self.robots[0].gripper["left"].contact_geoms, self.hammer.all_geoms
                 )
             )
             _contacts_1 = list(
                 self.find_contacts(
-                    self.robots[0].gripper["right"].contact_geoms, self.hammer.handle_geoms
+                    self.robots[0].gripper["right"].contact_geoms, self.hammer.all_geoms
                 )
             )
         # Multi single arm setting
         else:
             _contacts_0 = list(
                 self.find_contacts(
-                    self.robots[0].gripper.contact_geoms, self.hammer.handle_geoms
+                    self.robots[0].gripper.contact_geoms, self.hammer.all_geoms
                 )
             )
             _contacts_1 = list(
                 self.find_contacts(
-                    self.robots[1].gripper.contact_geoms, self.hammer.handle_geoms
+                    self.robots[1].gripper.contact_geoms, self.hammer.all_geoms
                 )
             )
         arm0_grasp = True if len(_contacts_0) > 0 else False
