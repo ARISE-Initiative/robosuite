@@ -9,7 +9,28 @@ from robosuite.models.robots import create_robot
 
 
 class Robot(object):
-    """Initializes a robot, as defined by a single corresponding XML"""
+    """
+    Initializes a robot simulation object, as defined by a single corresponding robot arm XML and associated gripper XML
+
+    Args:
+        robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
+
+        idn (int or str): Unique ID of this robot. Should be different from others
+
+        initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
+            instantiated for the task
+
+        initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
+            corresponding value types are specified below:
+
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
+
+            :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
+    """
 
     def __init__(
         self,
@@ -18,26 +39,7 @@ class Robot(object):
         initial_qpos=None,
         initialization_noise=None,
     ):
-        """
-        Args:
-            robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
-
-            idn (int or str): Unique ID of this robot. Should be different from others
-
-            initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
-                instantiated for the task
-
-            initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
-                corresponding value types are specified below:
-                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
-                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
-                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
-                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
-                Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
-
-        """
-
+        # Set relevant attributes
         self.sim = None                                     # MjSim this robot is tied to
         self.name = robot_type                              # Specific robot to instantiate
         self.idn = idn                                      # Unique ID of this robot
@@ -66,7 +68,7 @@ class Robot(object):
 
     def _load_controller(self):
         """
-        Loads controller to be used for dynamic trajectories
+        Loads controller to be used for dynamic trajectories.
         """
         raise NotImplementedError
 
@@ -84,7 +86,8 @@ class Robot(object):
         """
         Replaces current sim with a new sim
 
-        sim (MjSim): New simulation being instantiated to replace the old one
+        Args:
+            sim (MjSim): New simulation being instantiated to replace the old one
         """
         self.sim = sim
 
@@ -93,6 +96,11 @@ class Robot(object):
         Sets initial pose of arm and grippers. Overrides robot joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
 
+        Args:
+            deterministic (bool): If true, will not randomize initializations within the sim
+
+        Raises:
+            ValueError: [Invalid noise type]
         """
         init_qpos = np.array(self.init_qpos)
         if not deterministic:
@@ -156,11 +164,9 @@ class Robot(object):
         passed joint velocities and gripper control.
 
         Args:
-            action (numpy array): The control to apply to the robot. The first
-                @self.robot_model.dof dimensions should be the desired
-                normalized joint velocities and if the robot has
-                a gripper, the next @self.gripper.dof dimensions should be
-                actuation controls for the gripper.
+            action (np.array): The control to apply to the robot. The first @self.robot_model.dof dimensions should
+                be the desired normalized joint velocities and if the robot has a gripper, the next @self.gripper.dof
+                dimensions should be actuation controls for the gripper.
             policy_step (bool): Whether a new policy step (action) is being taken
         """
         raise NotImplementedError
@@ -204,7 +210,8 @@ class Robot(object):
     @property
     def dof(self):
         """
-        Returns the active DoF of the robot (Number of robot joints + active gripper DoF).
+        Returns:
+            int: the active DoF of the robot (Number of robot joints + active gripper DoF).
         """
         dof = self.robot_model.dof
         return dof
@@ -213,6 +220,12 @@ class Robot(object):
         """
         A helper function that takes in a named data field and returns the pose
         of that object in the base frame.
+
+        Args:
+            name (str): Name of body in sim to grab pose
+
+        Returns:
+            np.array: (4,4) array corresponding to the pose of @name in the base frame
         """
 
         pos_in_world = self.sim.data.get_body_xpos(name)
@@ -230,6 +243,9 @@ class Robot(object):
     def set_robot_joint_positions(self, jpos):
         """
         Helper method to force robot joint positions to the passed values.
+
+        Args:
+            jpos (np.array): Joint positions to manually set the robot to
         """
         self.sim.data.qpos[self._ref_joint_pos_indexes] = jpos
         self.sim.forward()
@@ -237,31 +253,36 @@ class Robot(object):
     @property
     def _joint_positions(self):
         """
-        Returns a numpy array of joint positions.
-        positions are in rotation angles.
+        Returns:
+            np.array: joint positions (in angles / radians)
         """
         return self.sim.data.qpos[self._ref_joint_pos_indexes]
 
     @property
     def _joint_velocities(self):
         """
-        Returns a numpy array of joint velocities.
-        velocities are angular velocities.
+        Returns:
+            np.array: joint velocities (angular velocity)
         """
         return self.sim.data.qvel[self._ref_joint_vel_indexes]
 
     @property
     def joint_indexes(self):
         """
-        Returns mujoco internal indexes for the robot joints
+        Returns:
+            list: mujoco internal indexes for the robot joints
         """
         return self._ref_joint_indexes
 
     def get_sensor_measurement(self, sensor_name):
         """
-        Returns array of sensor values
+        Grabs relevant sensor data from the sim object
+
         Args:
-            sensor_name (string): name of the sensor
+            sensor_name (str): name of the sensor
+
+        Returns:
+            np.array: sensor values
         """
         sensor_idx = np.sum(
             self.sim.model.sensor_dim[:self.sim.model.sensor_name2id(sensor_name)])

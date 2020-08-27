@@ -15,7 +15,43 @@ import copy
 
 
 class SingleArm(Robot):
-    """Initializes a single-armed robot, as defined by a single corresponding XML"""
+    """
+    Initializes a single-armed robot simulation object.
+
+    Args:
+        robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
+
+        idn (int or str): Unique ID of this robot. Should be different from others
+
+        controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
+            Else, uses the default controller for this specific task
+
+        initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
+            instantiated for the task
+
+        initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
+            corresponding value types are specified below:
+
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
+
+            :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
+
+        gripper_type (str): type of gripper, used to instantiate
+            gripper models from gripper factory. Default is "default", which is the default gripper associated
+            within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
+            default gripper
+
+        gripper_visualization (bool): True if using gripper visualization.
+            Useful for teleoperation.
+
+        control_freq (float): how many control signals to receive
+            in every second. This sets the amount of simulation time
+            that passes between every action input.
+    """
 
     def __init__(
         self,
@@ -28,39 +64,6 @@ class SingleArm(Robot):
         gripper_visualization=False,
         control_freq=10
     ):
-        """
-        Args:
-            robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
-
-            idn (int or str): Unique ID of this robot. Should be different from others
-
-            controller_config (dict): If set, contains relevant controller parameters for creating a custom controller.
-                Else, uses the default controller for this specific task
-
-            initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
-                instantiated for the task
-
-            initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
-                corresponding value types are specified below:
-                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
-                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
-                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
-                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
-                Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
-
-            gripper_type (str): type of gripper, used to instantiate
-                gripper models from gripper factory. Default is "default", which is the default gripper associated
-                within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
-                default gripper
-
-            gripper_visualization (bool): True if using gripper visualization.
-                Useful for teleoperation.
-
-            control_freq (float): how many control signals to receive
-                in every second. This sets the amount of simulation time
-                that passes between every action input.
-        """
 
         self.controller = None
         self.controller_config = copy.deepcopy(controller_config)
@@ -168,6 +171,8 @@ class SingleArm(Robot):
         Sets initial pose of arm and grippers. Overrides gripper joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
 
+        Args:
+            deterministic (bool): If true, will not randomize initializations within the sim
         """
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
@@ -226,12 +231,13 @@ class SingleArm(Robot):
         passed joint velocities and gripper control.
 
         Args:
-            action (numpy array): The control to apply to the robot. The first
-                @self.robot_model.dof dimensions should be the desired
-                normalized joint velocities and if the robot has
-                a gripper, the next @self.gripper.dof dimensions should be
-                actuation controls for the gripper.
+            action (np.array): The control to apply to the robot. The first @self.robot_model.dof dimensions should be
+                the desired normalized joint velocities and if the robot has a gripper, the next @self.gripper.dof
+                dimensions should be actuation controls for the gripper.
             policy_step (bool): Whether a new policy step (action) is being taken
+
+        Raises:
+            AssertionError: [Invalid action dimension]
         """
 
         # clip actions into valid range
@@ -286,8 +292,7 @@ class SingleArm(Robot):
         Executes gripper @action for specified @arm
 
         Args:
-            gripper_action (array of length 1): Value between [-1,1]
-            arm (str): "left" or "right"; arm to execute action
+            gripper_action (float): Value between [-1,1] to send to gripper
         """
         gripper_action_actual = self.gripper.format_action(gripper_action)
         # rescale normalized gripper action to control ranges
@@ -299,7 +304,7 @@ class SingleArm(Robot):
 
     def visualize_gripper(self):
         """
-        Do any needed visualization here.
+        Visualizes the gripper site(s) if applicable.
         """
         if self.gripper_visualization:
             # By default, color the ball red
@@ -311,6 +316,12 @@ class SingleArm(Robot):
 
         Important keys:
             robot-state: contains robot-centric information.
+
+        Args:
+            di (OrderedDict): Current set of observations from the environment
+
+        Returns:
+            OrderedDict: Augmented set of observations that include this robot's proprioceptive observations
         """
         # Get prefix from robot model to avoid naming clashes for multiple robots
         pf = self.robot_model.naming_prefix
@@ -353,6 +364,12 @@ class SingleArm(Robot):
     def action_limits(self):
         """
         Action lower/upper limits per dimension.
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum (low) action values
+                - (np.array) maximum (high) action values
         """
         # Action limits based on controller limits
         low, high = ([-1] * self.gripper.dof, [1] * self.gripper.dof) if self.has_gripper else ([], [])
@@ -365,7 +382,13 @@ class SingleArm(Robot):
     @property
     def torque_limits(self):
         """
-        Action lower/upper limits per dimension.
+        Torque lower/upper limits per dimension.
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum (low) torque values
+                - (np.array) maximum (high) torque values
         """
         # Torque limit values pulled from relevant robot.xml file
         low = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 0]
@@ -377,13 +400,17 @@ class SingleArm(Robot):
     def action_dim(self):
         """
         Action space dimension for this robot (controller dimension + gripper dof)
+
+        Returns:
+            int: action dimension
         """
         return self.controller.control_dim + self.gripper.dof if self.has_gripper else self.controller.control_dim
 
     @property
     def dof(self):
         """
-        Returns the DoF of the robot (with grippers).
+        Returns:
+            int: degrees of freedom of the robot (with grippers).
         """
         # Get the dof of the base robot model
         dof = super().dof
@@ -394,7 +421,8 @@ class SingleArm(Robot):
     @property
     def js_energy(self):
         """
-        Returns the energy consumed by each joint between previous and current steps
+        Returns:
+            np.array: the energy consumed by each joint between previous and current steps
         """
         # We assume in the motors torque is proportional to current (and voltage is constant)
         # In that case the amount of power scales proportional to the torque and the energy is the
@@ -405,14 +433,16 @@ class SingleArm(Robot):
     @property
     def ee_ft_integral(self):
         """
-        Returns the integral over time of the applied ee force-torque
+        Returns:
+            np.array: the integral over time of the applied ee force-torque
         """
         return np.abs((1.0 / self.control_freq) * self.recent_ee_forcetorques.average)
 
     @property
     def ee_force(self):
         """
-        Returns force applied at the force sensor at the robot arm's eef
+        Returns:
+            np.array: force applied at the force sensor at the robot arm's eef
         """
         return self.get_sensor_measurement(self.gripper.sensors["force_ee"])
 
@@ -426,22 +456,24 @@ class SingleArm(Robot):
     @property
     def _right_hand_pose(self):
         """
-        Returns eef pose in base frame of robot.
+        Returns:
+            np.array: (4,4) array corresponding to the eef pose in base frame of robot.
         """
         return self.pose_in_base_from_name(self.robot_model.eef_name)
 
     @property
     def _right_hand_quat(self):
         """
-        Returns eef quaternion in base frame of robot.
+        Returns:
+            np.array: (x,y,z,w) eef quaternion in base frame of robot.
         """
         return T.mat2quat(self._right_hand_orn)
 
     @property
     def _right_hand_total_velocity(self):
         """
-        Returns the total eef velocity (linear + angular) in the base frame
-        as a numpy array of shape (6,)
+        Returns:
+            np.array: 6-array representing the total eef velocity (linear + angular) in the base frame
         """
 
         # Use jacobian to translate joint velocities to end effector velocities.
@@ -458,7 +490,8 @@ class SingleArm(Robot):
     @property
     def _right_hand_pos(self):
         """
-        Returns position of eef in base frame of robot.
+        Returns:
+            np.array: 3-array representing the position of eef in base frame of robot.
         """
         eef_pose_in_base = self._right_hand_pose
         return eef_pose_in_base[:3, 3]
@@ -466,7 +499,8 @@ class SingleArm(Robot):
     @property
     def _right_hand_orn(self):
         """
-        Returns orientation of eef in base frame of robot as a rotation matrix.
+        Returns:
+            np.array: (3,3) array representing the orientation of eef in base frame of robot as a rotation matrix.
         """
         eef_pose_in_base = self._right_hand_pose
         return eef_pose_in_base[:3, :3]
@@ -474,17 +508,15 @@ class SingleArm(Robot):
     @property
     def _right_hand_vel(self):
         """
-        Returns velocity of eef in base frame of robot.
+        Returns:
+            np.array: (x,y,z) velocity of eef in base frame of robot.
         """
         return self._right_hand_total_velocity[:3]
 
     @property
     def _right_hand_ang_vel(self):
         """
-        Returns angular velocity of eef in base frame of robot.
+        Returns:
+            np.array: (ax,ay,az) angular velocity of eef in base frame of robot.
         """
         return self._right_hand_total_velocity[3:]
-
-    @property 
-    def arm_type(self):
-        return "single"

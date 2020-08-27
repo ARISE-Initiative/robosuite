@@ -15,7 +15,52 @@ import copy
 
 
 class Bimanual(Robot):
-    """Initializes a bimanual robot, as defined by a single corresponding XML"""
+    """
+    Initializes a bimanual robot simulation object.
+
+    Args:
+        robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
+
+        idn (int or str): Unique ID of this robot. Should be different from others
+
+        controller_config (dict or list of dict --> dict of dict): If set, contains relevant controller parameters
+            for creating custom controllers. Else, uses the default controller for this specific task. Should either
+            be single dict if same controller is to be used for both robot arms or else it should be a list of length 2.
+
+            :NOTE: In the latter case, assumes convention of [right, left]
+
+        initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
+            instantiated for the task
+
+        initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
+            corresponding value types are specified below:
+
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
+
+            :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
+
+        gripper_type (str or list of str --> dict): type of gripper, used to instantiate
+            gripper models from gripper factory. Default is "default", which is the default gripper associated
+            within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
+            default gripper. Should either be single str if same gripper type is to be used for both arms or else
+            it should be a list of length 2
+
+            :NOTE: In the latter case, assumes convention of [right, left]
+
+        gripper_visualization (bool or list of bool --> dict): True if using gripper visualization.
+            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for both
+            arms or else it should be a list of length 2
+
+            :NOTE: In the latter case, assumes convention of [right, left]
+
+        control_freq (float): how many control signals to receive
+            in every second. This sets the amount of simulation time
+            that passes between every action input.
+    """
 
     def __init__(
         self,
@@ -28,45 +73,6 @@ class Bimanual(Robot):
         gripper_visualization=False,
         control_freq=10
     ):
-        """
-        Args:
-            robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
-
-            idn (int or str): Unique ID of this robot. Should be different from others
-
-            controller_config (dict or list of dict): If set, contains relevant controller parameters for creating
-                custom controllers. Else, uses the default controller for this specific task. Should either be single
-                dict if same controller is to be used for both robot arms or else it should be a list of length 2.
-                NOTE: In the latter case, assumes convention of [right, left]
-
-            initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
-                instantiated for the task
-
-            initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
-                corresponding value types are specified below:
-                "magnitude": The scale factor of uni-variate random noise applied to each of a robot's given initial
-                    joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
-                    If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
-                    If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-                "type": Type of noise to apply. Can either specify "gaussian" or "uniform"
-                Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
-
-            gripper_type (str or list of str): type of gripper, used to instantiate
-                gripper models from gripper factory. Default is "default", which is the default gripper associated
-                within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
-                default gripper. Should either be single str if same gripper type is to be used for both arms or else
-                it should be a list of length 2
-                NOTE: In the latter case, assumes convention of [right, left]
-
-            gripper_visualization (bool or list of bool): True if using gripper visualization.
-                Useful for teleoperation. Should either be single bool if gripper visualization is to be used for both
-                arms or else it should be a list of length 2
-                NOTE: In the latter case, assumes convention of [right, left]
-
-            control_freq (float): how many control signals to receive
-                in every second. This sets the amount of simulation time
-                that passes between every action input.
-        """
 
         self.controller = self._input2dict(None)
         self.controller_config = self._input2dict(copy.deepcopy(controller_config))
@@ -190,6 +196,8 @@ class Bimanual(Robot):
         Sets initial pose of arm and grippers. Overrides gripper joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
 
+        Args:
+            deterministic (bool): If true, will not randomize initializations within the sim
         """
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
@@ -255,15 +263,17 @@ class Bimanual(Robot):
         passed joint velocities and gripper control.
 
         Args:
-            action (numpy array): The control to apply to the robot. The first
-                @self.robot_model.dof dimensions should be the desired
-                normalized joint velocities and if the robot has
-                a gripper, the next @self.gripper.dof dimensions should be
-                actuation controls for the gripper.
-                NOTE: Assumes inputted actions are of form:
+            action (np.array): The control to apply to the robot. The first @self.robot_model.dof dimensions should
+                be the desired normalized joint velocities and if the robot has a gripper, the next @self.gripper.dof
+                dimensions should be actuation controls for the gripper.
+
+                :NOTE: Assumes inputted actions are of form:
                     [right_arm_control, right_gripper_control, left_arm_control, left_gripper_control]
 
             policy_step (bool): Whether a new policy step (action) is being taken
+
+        Raises:
+            AssertionError: [Invalid action dimension]
         """
 
         # clip actions into valid range
@@ -330,7 +340,7 @@ class Bimanual(Robot):
         Executes gripper @action for specified @arm
 
         Args:
-            gripper_action (float): Value between [-1,1]
+            gripper_action (float): Value between [-1,1] to send to gripper
             arm (str): "left" or "right"; arm to execute action
         """
         gripper_action_actual = self.gripper[arm].format_action(gripper_action)
@@ -343,7 +353,7 @@ class Bimanual(Robot):
 
     def visualize_gripper(self):
         """
-        Do any needed visualization here.
+        Visualizes the gripper site(s) if applicable.
         """
         for arm in self.arms:
             if self.gripper_visualization[arm]:
@@ -356,6 +366,12 @@ class Bimanual(Robot):
 
         Important keys:
             robot-state: contains robot-centric information.
+
+        Args:
+            di (OrderedDict): Current set of observations from the environment
+
+        Returns:
+            OrderedDict: Augmented set of observations that include this robot's proprioceptive observations
         """
         # Get prefix from robot model to avoid naming clashes for multiple robots
         pf = self.robot_model.naming_prefix
@@ -401,8 +417,14 @@ class Bimanual(Robot):
         """
         Helper function that converts an input that is either a single value or a list into a dict with keys for
         each arm: "right", "left"
-        @inp (str or list): Input value to be converted to dict
-        Note: If inp is a list, then assumes format is [right, left]
+
+        Args:
+            inp (str or list or None): Input value to be converted to dict
+
+            :Note: If inp is a list, then assumes format is [right, left]
+
+        Returns:
+            dict: Inputs mapped for each robot arm
         """
         # First, convert to list if necessary
         if type(inp) is not list:
@@ -414,6 +436,9 @@ class Bimanual(Robot):
     def arms(self):
         """
         Returns name of arms used as naming convention throughout this module
+
+        Returns:
+            2-tuple: ('right', 'left')
         """
         return "right", "left"
 
@@ -421,6 +446,12 @@ class Bimanual(Robot):
     def action_limits(self):
         """
         Action lower/upper limits per dimension.
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum (low) action values
+                - (np.array) maximum (high) action values
         """
         # Action limits based on controller limits
         low, high = [], []
@@ -435,7 +466,13 @@ class Bimanual(Robot):
     @property
     def torque_limits(self):
         """
-        Action lower/upper limits per dimension.
+        Torque lower/upper limits per dimension.
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum (low) torque values
+                - (np.array) maximum (high) torque values
         """
         # Torque limit values pulled from relevant robot.xml file
         low = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 0]
@@ -447,6 +484,9 @@ class Bimanual(Robot):
     def action_dim(self):
         """
         Action space dimension for this robot (controller dimension + gripper dof)
+
+        Returns:
+            int: action dimension
         """
         dim = 0
         for arm in self.arms:
@@ -457,7 +497,8 @@ class Bimanual(Robot):
     @property
     def dof(self):
         """
-        Returns the DoF of the robot (with grippers).
+        Returns:
+            int: degrees of freedom of the robot (with grippers).
         """
         # Get the dof of the base robot model
         dof = super().dof
@@ -469,7 +510,8 @@ class Bimanual(Robot):
     @property
     def js_energy(self):
         """
-        Returns the energy consumed by each joint between previous and current steps
+        Returns:
+            np.array: the energy consumed by each joint between previous and current steps
         """
         # We assume in the motors torque is proportional to current (and voltage is constant)
         # In that case the amount of power scales proportional to the torque and the energy is the
@@ -480,7 +522,8 @@ class Bimanual(Robot):
     @property
     def ee_ft_integral(self):
         """
-        Returns the integral over time of the applied ee force-torque
+        Returns:
+            dict: each arm-specific entry specifies the integral over time of the applied ee force-torque for that arm
         """
         vals = {}
         for arm in self.arms:
@@ -490,7 +533,8 @@ class Bimanual(Robot):
     @property
     def ee_force(self):
         """
-        Returns force applied at the force sensor at the robot arm's eef
+        Returns:
+            dict: each arm-specific entry specifies the force applied at the force sensor at the robot arm's eef
         """
         vals = {}
         for arm in self.arms:
@@ -500,7 +544,8 @@ class Bimanual(Robot):
     @property
     def ee_torque(self):
         """
-        Returns torque applied at the torque sensor at the robot arm's eef
+        Returns:
+            dict: each arm-specific entry specifies the torque applied at the torque sensor at the robot arm's eef
         """
         vals = {}
         for arm in self.arms:
@@ -511,7 +556,8 @@ class Bimanual(Robot):
     @property
     def _hand_pose(self):
         """
-        Returns eef pose in base frame of robot.
+        Returns:
+            dict: each arm-specific entry specifies the eef pose in base frame of robot.
         """
         vals = {}
         for arm in self.arms:
@@ -521,7 +567,8 @@ class Bimanual(Robot):
     @property
     def _hand_quat(self):
         """
-        Returns eef quaternion in base frame of robot.
+        Returns:
+            dict: each arm-specific entry specifies the eef quaternion in base frame of robot.
         """
         vals = {}
         orns = self._hand_orn
@@ -532,8 +579,9 @@ class Bimanual(Robot):
     @property
     def _hand_total_velocity(self):
         """
-        Returns the total eef velocity (linear + angular) in the base frame
-        as a numpy array of shape (6,)
+        Returns:
+            dict: each arm-specific entry specifies the total eef velocity (linear + angular) in the base frame
+            as a numpy array of shape (6,)
         """
         vals = {}
         for arm in self.arms:
@@ -555,7 +603,8 @@ class Bimanual(Robot):
     @property
     def _hand_pos(self):
         """
-        Returns position of eef in base frame of robot.
+        Returns:
+            dict: each arm-specific entry specifies the position of eef in base frame of robot.
         """
         vals = {}
         poses = self._hand_pose
@@ -567,7 +616,8 @@ class Bimanual(Robot):
     @property
     def _hand_orn(self):
         """
-        Returns orientation of eef in base frame of robot as a rotation matrix.
+        Returns:
+            dict: each arm-specific entry specifies the orientation of eef in base frame of robot as a rotation matrix.
         """
         vals = {}
         poses = self._hand_pose
@@ -579,7 +629,8 @@ class Bimanual(Robot):
     @property
     def _hand_vel(self):
         """
-        Returns velocity of eef in base frame of robot.
+        Returns:
+            dict: each arm-specific entry specifies the velocity of eef in base frame of robot.
         """
         vels = self._hand_total_velocity
         for arm in self.arms:
@@ -589,7 +640,8 @@ class Bimanual(Robot):
     @property
     def _hand_ang_vel(self):
         """
-        Returns angular velocity of eef in base frame of robot.
+        Returns:
+            dict: each arm-specific entry specifies the angular velocity of eef in base frame of robot.
         """
         vels = self._hand_total_velocity
         for arm in self.arms:
@@ -599,9 +651,13 @@ class Bimanual(Robot):
     @property
     def _action_split_idx(self):
         """
-        Returns the index that correctly splits the right arm from the left arm actions
-        NOTE: Assumes inputted actions are of form:
+        Grabs the index that correctly splits the right arm from the left arm actions
+
+        :NOTE: Assumes inputted actions are of form:
             [right_arm_control, right_gripper_control, left_arm_control, left_gripper_control]
+
+        Returns:
+            int: Index splitting right from left arm actions
         """
         return self.controller["right"].control_dim + self.gripper["right"].dof if self.has_gripper["right"] \
             else self.controller["right"].control_dim
@@ -609,6 +665,7 @@ class Bimanual(Robot):
     @property
     def _joint_split_idx(self):
         """
-        Returns the index that correctly splits the right arm from the left arm joints
+        Returns:
+            int: the index that correctly splits the right arm from the left arm joints
         """
         return int(len(self.robot_joints) / 2)
