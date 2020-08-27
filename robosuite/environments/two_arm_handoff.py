@@ -235,13 +235,13 @@ class TwoArmHandoff(RobotEnv):
         Un-normalized max-wise components if using reward shaping:
 
             - Arm0 Reaching: (1) in [0, 0.25] proportional to the distance between Arm 0 and the handle
-            - Arm0 Grasping: (2) in {0, 0.5}, nonzero if Arm 0 is gripping the handle.
+            - Arm0 Grasping: (2) in {0, 0.5}, nonzero if Arm 0 is gripping the hammer (any part).
             - Arm0 Lifting: (3) in {0, 1.0}, nonzero if Arm 0 lifts the handle from the table past a certain threshold
             - Arm0 Hovering: (4) in {0, [1.0, 1.25]}, nonzero only if Arm0 is actively lifting the hammer, and is
               proportional to the distance between the handle and Arm 1
               conditioned on the handle being lifted from the table and being grasped by Arm 0
-            - Mutual Grasping: (5) in {0, 1.5}, nonzero if both Arm 0 and Arm 1 are gripping the handle while
-              lifted above the table
+            - Mutual Grasping: (5) in {0, 1.5}, nonzero if both Arm 0 and Arm 1 are gripping the hammer (Arm 1 must be
+              gripping the handle) while lifted above the table
             - Handoff: (6) in {0, 2.0}, nonzero when only Arm 1 is gripping the handle and has the handle
               lifted above the table
 
@@ -260,13 +260,13 @@ class TwoArmHandoff(RobotEnv):
         # use a shaping reward if specified
         if self.reward_shaping:
             # Grab relevant parameters
-            arm0_grasp, arm1_grasp, hammer_height, table_height = self._get_object_locations()
+            arm0_grasp_any, arm1_grasp_handle, hammer_height, table_height = self._get_task_info()
             # First, we'll consider the cases if the hammer is lifted above the threshold (step 3 - 6)
             if hammer_height - table_height > self.height_threshold:
                 # Split cases depending on whether arm1 is currently grasping the handle or not
-                if arm1_grasp:
+                if arm1_grasp_handle:
                     # Check if arm0 is grasping
-                    if arm0_grasp:
+                    if arm0_grasp_any:
                         # This is step 5
                         reward = 1.5
                     else:
@@ -282,7 +282,7 @@ class TwoArmHandoff(RobotEnv):
             # Else, the hammer is still on the ground ):
             else:
                 # Split cases depending on whether arm0 is currently grasping the handle or not
-                if arm0_grasp:
+                if arm0_grasp_any:
                     # This is step 2
                     reward = 0.5
                 else:
@@ -419,18 +419,17 @@ class TwoArmHandoff(RobotEnv):
                         # Take forward step
                         self.sim.step()
 
-    def _get_object_locations(self):
+    def _get_task_info(self):
         """
         Helper function that grabs the current relevant locations of objects of interest within the environment
 
         Returns:
-            5-tuple:
+            4-tuple:
 
-                - (bool) True if Arm0 is grasping the hammer
-                - (bool) True if Arm1 is grasping the hammer
+                - (bool) True if Arm0 is grasping any part of the hammer
+                - (bool) True if Arm1 is grasping the hammer handle
                 - (float) Height of the hammer body
                 - (float) Height of the table surface
-                - (float) Height threshold
         """
         # Get height of hammer and table and define height threshold
         hammer_angle_offset = (self.hammer.handle_length / 2 + 2*self.hammer.head_halfsize) * np.sin(self._hammer_angle)
@@ -443,33 +442,33 @@ class TwoArmHandoff(RobotEnv):
 
         # Single bimanual robot setting
         if self.env_configuration == "bimanual":
-            _contacts_0 = list(
+            _contacts_0_all = list(
                 self.find_contacts(
                     self.robots[0].gripper["left"].contact_geoms, self.hammer.all_geoms
                 )
             )
-            _contacts_1 = list(
+            _contacts_1_handle = list(
                 self.find_contacts(
-                    self.robots[0].gripper["right"].contact_geoms, self.hammer.all_geoms
+                    self.robots[0].gripper["right"].contact_geoms, self.hammer.handle_geoms
                 )
             )
         # Multi single arm setting
         else:
-            _contacts_0 = list(
+            _contacts_0_all = list(
                 self.find_contacts(
                     self.robots[0].gripper.contact_geoms, self.hammer.all_geoms
                 )
             )
-            _contacts_1 = list(
+            _contacts_1_handle = list(
                 self.find_contacts(
-                    self.robots[1].gripper.contact_geoms, self.hammer.all_geoms
+                    self.robots[1].gripper.contact_geoms, self.hammer.handle_geoms
                 )
             )
-        arm0_grasp = True if len(_contacts_0) > 0 else False
-        arm1_grasp = True if len(_contacts_1) > 0 else False
+        arm0_grasp_any = True if len(_contacts_0_all) > 0 else False
+        arm1_grasp_handle = True if len(_contacts_1_handle) > 0 else False
 
         # Return all relevant values
-        return arm0_grasp, arm1_grasp, hammer_height, table_height
+        return arm0_grasp_any, arm1_grasp_handle, hammer_height, table_height
 
     def _get_observation(self):
         """
@@ -531,8 +530,13 @@ class TwoArmHandoff(RobotEnv):
             bool: True if handoff has been completed
         """
         # Grab relevant params
-        arm0_grasp, arm1_grasp, hammer_height, table_height = self._get_object_locations()
-        return True if arm1_grasp and not arm0_grasp and hammer_height - table_height > self.height_threshold else False
+        arm0_grasp_any, arm1_grasp_handle, hammer_height, table_height = self._get_task_info()
+        return \
+            True if \
+            arm1_grasp_handle and \
+            not arm0_grasp_any and \
+            hammer_height - table_height > self.height_threshold \
+            else False
 
     def _check_robot_configuration(self, robots):
         """
