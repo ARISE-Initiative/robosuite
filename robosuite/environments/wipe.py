@@ -30,18 +30,16 @@ DEFAULT_WIPE_CONFIG = {
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
+    "num_sensors": 100,                             # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the sensor (wipe the peg)
     "pressure_threshold_max": 70,                   # maximum force allowed (N)
-    "shear_threshold": 5,                           # shear force required to overcome the change of color of the sensor (wipe the peg) - NOT USED
 
     # misc settings
     "print_results": False,                         # Whether to print results or not
     "get_info": False,                              # Whether to grab info after each env step if not
     "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
-    "real_robot": False,                            # whether we're using the actual robot or a sim
-    "num_sensors": 100,
 }
 
 
@@ -227,13 +225,11 @@ class Wipe(RobotEnv):
         self.touch_threshold = self.task_config['touch_threshold']
         self.pressure_threshold = self.task_config['touch_threshold']
         self.pressure_threshold_max = self.task_config['pressure_threshold_max']
-        self.shear_threshold = self.task_config['shear_threshold']
 
         # misc settings
         self.print_results = self.task_config['print_results']
         self.get_info = self.task_config['get_info']
         self.use_robot_obs = self.task_config['use_robot_obs']
-        self.real_robot = self.task_config['real_robot']
         self.num_sensors = self.task_config['num_sensors']
 
         # Scale reward if desired (see reward method for details)
@@ -512,7 +508,7 @@ class Wipe(RobotEnv):
                                       table_offset=np.array(self.table_offset) + np.array((0, 0, delta_height)),
                                       table_friction_std=self.table_friction_std,
                                       coverage_factor=self.coverage_factor,
-                                      num_sensors=self.num_sensors if not self.real_robot else 0,
+                                      num_sensors=self.num_sensors,
                                       line_width=self.line_width,
                                       two_clusters=self.two_clusters
                                       )
