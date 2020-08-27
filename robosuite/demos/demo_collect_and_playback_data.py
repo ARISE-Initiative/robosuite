@@ -19,6 +19,10 @@ def collect_random_trajectory(env, timesteps=1000):
 
     The rollout trajectory is saved to files in npz format.
     Modify the DataCollectionWrapper wrapper to add new fields or change data formats.
+
+    Args:
+        env (MujocoEnv): environment instance to collect trajectories from
+        timesteps(int): how many environment timesteps to run for a given trajectory
     """
 
     env.reset()
@@ -36,7 +40,8 @@ def playback_trajectory(env, ep_dir):
     """Playback data from an episode.
 
     Args:
-        ep_dir: The path to the directory containing data for an episode.
+        env (MujocoEnv): environment instance to playback trajectory in
+        ep_dir (str): The path to the directory containing data for an episode.
     """
 
     # first reload the model from the xml

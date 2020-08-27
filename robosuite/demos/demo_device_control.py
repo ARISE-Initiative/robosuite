@@ -154,6 +154,7 @@ if __name__ == "__main__":
         gripper_visualizations=True,
         reward_shaping=True,
         control_freq=20,
+        hard_reset=False,
     )
 
     # Setup printing options for numbers
@@ -238,4 +239,5 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
+            print(reward)
             env.render()

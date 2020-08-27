@@ -33,7 +33,7 @@ import robosuite
 from robosuite import make
 from robosuite.wrappers import DemoSamplerWrapper
 
-# TODO: Demonstrations are now depreciated. Need to get new demonstrations!!
+# TODO: Need to get new demonstrations!!
 
 if __name__ == "__main__":
 

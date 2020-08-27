@@ -361,6 +361,15 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         raise NotImplementedError
 
+    @property
+    def action_dim(self):
+        """
+        Size of the action space
+        Returns:
+            int: Action space dimension
+        """
+        raise NotImplementedError
+
     def reset_from_xml_string(self, xml_string):
         """
         Reloads the environment from an XML description of the environment.

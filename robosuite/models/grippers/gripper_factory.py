@@ -10,7 +10,7 @@ def gripper_factory(name, idn=0):
     Creates a GripperModel instance with the provided name.
 
     Args:
-        name (str): the name of the gripper class
+        name (None or str): the name of the gripper class
         idn (int or str): Number or some other unique identification string for this gripper instance
 
     Returns:
