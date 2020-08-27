@@ -27,6 +27,10 @@ class KeyboardHandler:
     def __init__(self, env, delta=0.05):
         """
         Store internal state here.
+
+        Args:
+            env (MujocoEnv): Environment to use
+            delta (float): initial joint tuning increment
         """
         self.env = env
         self.delta = delta
@@ -39,6 +43,13 @@ class KeyboardHandler:
     def on_press(self, window, key, scancode, action, mods):
         """
         Key handler for key presses.
+
+        Args:
+            window: [NOT USED]
+            key (int): keycode corresponding to the key that was pressed
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
         # controls for setting active arm
         if key == glfw.KEY_0:
@@ -123,12 +134,22 @@ class KeyboardHandler:
     def on_release(self, window, key, scancode, action, mods):
         """
         Key handler for key releases.
+
+        Args:
+            window: [NOT USED]
+            key: [NOT USED]
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
         pass
 
     def set_joint_positions(self, qpos):
         """
         Automatically sets the joint positions to be the given value
+
+        Args:
+            qpos (np.array): Joint positions to set
         """
         self.current_joints_pos = qpos
         self._update_joint_position(1, 0)
@@ -137,7 +158,11 @@ class KeyboardHandler:
         """
         Checks to make sure joint number request @i is within valid range
 
-        Returns True if valid, else prints out an error and returns False
+        Args:
+            i (int): Index to validate
+
+        Returns:
+            bool: True if index @i is valid, else prints out an error and returns False
         """
         if i > self.num_joints:
             # Print error
@@ -165,6 +190,10 @@ class KeyboardHandler:
         """
         Updates specified joint position @i by value @delta from its current position
         Note: assumes @i is already within the valid joint range
+
+        Args:
+            i (int): Joint index to update
+            delta (float): Increment to alter specific joint by
         """
         self.current_joints_pos[i-1] += delta
         if isinstance(self.active_robot, SingleArm):
@@ -182,14 +211,16 @@ class KeyboardHandler:
     @property
     def active_robot(self):
         """
-        Returns active robot arm currently being tuned
+        Returns:
+            Robot: active robot arm currently being tuned
         """
         return self.env.robots[self.active_robot_num]
 
     @property
     def num_joints(self):
         """
-        Returns number of joints for the current arm
+        Returns:
+            int: number of joints for the current arm
         """
         if isinstance(self.active_robot, SingleArm):
             return len(self.active_robot.torque_limits[0])
@@ -198,6 +229,13 @@ class KeyboardHandler:
 
 
 def print_command(char, info):
+    """
+    Prints out the command + relevant info entered by user
+
+    Args:
+        char (str): Command entered
+        info (str): Any additional info to print
+    """
     char += " " * (10 - len(char))
     print("{}\t{}".format(char, info))
 

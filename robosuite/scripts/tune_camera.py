@@ -32,6 +32,9 @@ def modify_xml_for_camera_movement(xml, camera_name):
 
     See http://www.mujoco.org/forum/index.php?threads/move-camera.2201/ for
     further details.
+
+    xml (str): Mujoco sim XML file as a string
+    camera_name (str): Name of camera to tune
     """
     tree = ET.fromstring(xml)
     wb = tree.find("worldbody")
@@ -64,9 +67,11 @@ def modify_xml_for_camera_movement(xml, camera_name):
 def move_camera(env, direction, scale, camera_id):
     """
     Move the camera view along a direction (in the camera frame).
-    :param direction: a 3-dim numpy array for where to move camera in camera frame
-    :param scale: a float for how much to move along that direction
-    :param camera_id: which camera to modify
+
+    Args:
+        direction (np.arry): 3-array for where to move camera in camera frame
+        scale (float): how much to move along that direction
+        camera_id (int): which camera to modify
     """
 
     # current camera pose
@@ -82,9 +87,11 @@ def move_camera(env, direction, scale, camera_id):
 def rotate_camera(env, direction, angle, camera_id):
     """
     Rotate the camera view about a direction (in the camera frame).
-    :param direction: a 3-dim numpy array for where to move camera in camera frame
-    :param angle: a float for how much to rotate about that direction
-    :param camera_id: which camera to modify
+
+    Args:
+        direction (np.array): 3-array for where to move camera in camera frame
+        angle (float): how much to rotate about that direction
+        camera_id (int): which camera to modify
     """
 
     # current camera rotation
@@ -104,6 +111,10 @@ class KeyboardHandler:
     def __init__(self, env, camera_id):
         """
         Store internal state here.
+
+        Args:
+            env (MujocoEnv): Environment to use
+            camera_id (int): which camera to modify
         """
         self.env = env
         self.camera_id = camera_id
@@ -111,6 +122,13 @@ class KeyboardHandler:
     def on_press(self, window, key, scancode, action, mods):
         """
         Key handler for key presses.
+
+        Args:
+            window: [NOT USED]
+            key (int): keycode corresponding to the key that was pressed
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
 
         # controls for moving position
@@ -158,11 +176,25 @@ class KeyboardHandler:
     def on_release(self, window, key, scancode, action, mods):
         """
         Key handler for key releases.
+
+        Args:
+            window: [NOT USED]
+            key: [NOT USED]
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
         pass
 
 
 def print_command(char, info):
+    """
+    Prints out the command + relevant info entered by user
+
+    Args:
+        char (str): Command entered
+        info (str): Any additional info to print
+    """
     char += " " * (10 - len(char))
     print("{}\t{}".format(char, info))
 

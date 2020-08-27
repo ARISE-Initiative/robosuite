@@ -48,8 +48,8 @@ def collect_human_trajectory(env, device):
     Modify the DataCollectionWrapper wrapper to add new fields or change data formats.
 
     Args:
-        env: environment to control
-        device (instance of Device class): to receive controls from the device
+        env (MujocoEnv): environment to control
+        device (Device): to receive controls from the device
     """
 
     env.reset()
