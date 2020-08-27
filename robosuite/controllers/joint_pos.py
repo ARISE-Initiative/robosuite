@@ -43,7 +43,7 @@ class JointPositionController(Controller):
             action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
             each dimension). If the latter, dimension should be the same as the control dimension for this controller
 
-        kp (float or Iterable of float): positional gain for determining desired torques based upon the joint pos errors.
+        kp (float or Iterable of float): positional gain for determining desired torques based upon the joint pos error.
             Can be either be a scalar (same value for all action dims), or a list (specific values for each dim)
 
         damping_ratio (float or Iterable of float): used in conjunction with kp to determine the velocity gain for
@@ -62,10 +62,10 @@ class JointPositionController(Controller):
             for the varying kp values. Can be either be a 2-list (same min / max for all kp action dims), or a 2-list
             of list (specific min / max for each kp dim)
 
-        damping_ratio_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is set to
-            "variable". This sets the corresponding min / max ranges of the controller action space for the varying
-            damping_ratio values. Can be either be a 2-list (same min / max for all damping_ratio action dims), or a 2-list of
-            list (specific min / max for each damping_ratio dim)
+        damping_ratio_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is
+            set to "variable". This sets the corresponding min / max ranges of the controller action space for the
+            varying damping_ratio values. Can be either be a 2-list (same min / max for all damping_ratio action dims),
+            or a 2-list of list (specific min / max for each damping_ratio dim)
 
         policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
 

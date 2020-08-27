@@ -50,7 +50,7 @@ class OperationalSpaceController(Controller):
             action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
             each dimension). If the latter, dimension should be the same as the control dimension for this controller
 
-        kp (float or Iterable of float): positional gain for determining desired torques based upon the pos / ori errors.
+        kp (float or Iterable of float): positional gain for determining desired torques based upon the pos / ori error.
             Can be either be a scalar (same value for all action dims), or a list (specific values for each dim)
 
         damping_ratio (float or Iterable of float): used in conjunction with kp to determine the velocity gain for
@@ -58,26 +58,27 @@ class OperationalSpaceController(Controller):
             action dims), or a list (specific values for each dim)
 
         impedance_mode (str): Impedance mode with which to run this controller. Options are {"fixed", "variable",
-            "variable_kp"}. If "fixed", the controller will have fixed kp and damping_ratio values as specified by the @kp
-            and @damping_ratio arguments. If "variable", both kp and damping_ratio will now be part of the controller action space,
-            resulting in a total action space of (6 or 3) + 6 * 2. If "variable_kp", only kp will become variable, with
-            damping_ratio fixed at 1 (critically damped). The resulting action space will then be (6 or 3) + 6.
+            "variable_kp"}. If "fixed", the controller will have fixed kp and damping_ratio values as specified by the
+            @kp and @damping_ratio arguments. If "variable", both kp and damping_ratio will now be part of the
+            controller action space, resulting in a total action space of (6 or 3) + 6 * 2. If "variable_kp", only kp
+            will become variable, with damping_ratio fixed at 1 (critically damped). The resulting action space will
+            then be (6 or 3) + 6.
 
         kp_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is set to either
             "variable" or "variable_kp". This sets the corresponding min / max ranges of the controller action space
             for the varying kp values. Can be either be a 2-list (same min / max for all kp action dims), or a 2-list
             of list (specific min / max for each kp dim)
 
-        damping_ratio_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is set to
-            "variable". This sets the corresponding min / max ranges of the controller action space for the varying
-            damping_ratio values. Can be either be a 2-list (same min / max for all damping_ratio action dims), or a 2-list of
-            list (specific min / max for each damping_ratio dim)
+        damping_ratio_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is
+            set to "variable". This sets the corresponding min / max ranges of the controller action space for the
+            varying damping_ratio values. Can be either be a 2-list (same min / max for all damping_ratio action dims),
+            or a 2-list of list (specific min / max for each damping_ratio dim)
 
         policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
 
-        position_limits (2-list of float or 2-list of Iterable of floats): Limits (m) below and above which the magnitude
-            of a calculated goal eef position will be clipped. Can be either be a 2-list (same min/max value for all
-            cartesian dims), or a 2-list of list (specific min/max values for each dim)
+        position_limits (2-list of float or 2-list of Iterable of floats): Limits (m) below and above which the
+            magnitude of a calculated goal eef position will be clipped. Can be either be a 2-list (same min/max value
+            for all cartesian dims), or a 2-list of list (specific min/max values for each dim)
 
         orientation_limits (2-list of float or 2-list of Iterable of floats): Limits (rad) below and above which the
             magnitude of a calculated goal eef orientation will be clipped. Can be either be a 2-list

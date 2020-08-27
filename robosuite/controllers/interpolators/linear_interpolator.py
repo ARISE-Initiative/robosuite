@@ -10,19 +10,27 @@ class LinearInterpolator(Interpolator):
     Abstracted to interpolate n-dimensions
 
     Args:
-        max_delta: Maximum single change in dx allowed by the system.
+        max_delta (float): Maximum single change in dx allowed by the system.
                 Note that this should be in units magnitude / step
-        ndim: Number of dimensions to interpolate
-        controller_freq: Frequency (Hz) of the controller
-        policy_freq: Frequency (Hz) of the policy model
-        ramp_ratio: Percentage of interpolation timesteps across which we will interpolate to a goal position.
-            Note: Num total interpolation steps will be equal to np.floor(ramp_ratio * controller_freq / policy_freq)
+
+        ndim (int): Number of dimensions to interpolate
+
+        controller_freq (float): Frequency (Hz) of the controller
+
+        policy_freq (float): Frequency (Hz) of the policy model
+
+        ramp_ratio (float): Percentage of interpolation timesteps across which we will interpolate to a goal position.
+
+            :Note: Num total interpolation steps will be equal to np.floor(ramp_ratio * controller_freq / policy_freq)
                     i.e.: how many controller steps we get per action space update
-        use_delta_goal: Whether to interpret inputs as delta goals from a current position or absolute values
-        ori_interpolate: If set, assumes that we are interpolating angles (orientation)
+
+        use_delta_goal (bool): Whether to interpret inputs as delta goals from a current position or absolute values
+
+        ori_interpolate (None or str): If set, assumes that we are interpolating angles (orientation)
             Specified string determines assumed type of input:
-                "euler": Euler orientation inputs
-                "quat": Quaternion inputs
+
+                `'euler'`: Euler orientation inputs
+                `'quat'`: Quaternion inputs
     """
     def __init__(self,
                  max_delta,
@@ -48,13 +56,12 @@ class LinearInterpolator(Interpolator):
 
     def set_goal(self, goal, start=None):
         """
-        set_goal: Takes a requested goal and updates internal parameters for next interpolation step
+        Takes a requested goal and updates internal parameters for next interpolation step
+
         Args:
-            goal: Requested goal (either absolute or delta value). Should be same dimension as self.dim
-            start: Only relevant if "self.use_delta_goal" is set. This is the current state from which
+            goal (np.array): Requested goal (either absolute or delta value). Should be same dimension as self.dim
+            start (np.array): Only relevant if "self.use_delta_goal" is set. This is the current state from which
                 the goal will be taken relative to
-        Returns:
-            None
         """
         # First, check to make sure requested goal shape is the same as self.dim
         if goal.shape[0] != self.dim:
@@ -71,17 +78,18 @@ class LinearInterpolator(Interpolator):
 
     def get_interpolated_goal(self, x):
         """
-        get_interpolated_goal: Takes the current state and provides the next step in interpolation given
-            the remaining steps.
+        Takes the current state and provides the next step in interpolation given the remaining steps.
 
         NOTE: If this interpolator is for orientation, it is assumed to be receiving
 
         Args:
-            x: Current state. Should be same dimension as self.dim
-            NOTE: If this interpolator is for orientation, x is assumed to be the current relative rotation from
-                the initial goal that was set. Otherwise, it is assumed to be an absolute value
+            x (np.array): Current state. Should be same dimension as self.dim
+
+                :NOTE: If this interpolator is for orientation, x is assumed to be the current relative rotation from
+                    the initial goal that was set. Otherwise, it is assumed to be an absolute value
+
         Returns:
-            x_current: Next position in the interpolated trajectory
+            x_current (np.array): Next position in the interpolated trajectory
         """
         # First, check to make sure x in same shape as self.dim
         if x.shape[0] != self.dim:
