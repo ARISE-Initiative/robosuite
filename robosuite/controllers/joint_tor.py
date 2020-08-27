@@ -153,8 +153,6 @@ class JointTorqueController(Controller):
         super().run_controller()
 
         # Return final torques
-        print("current: {}".format(self.current_torque))
-        print("final: {}".format(self.torques))
         return self.torques
 
     def reset_goal(self):

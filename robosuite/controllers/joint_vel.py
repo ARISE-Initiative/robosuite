@@ -40,7 +40,7 @@ class JointVelocityController(Controller):
             action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
             each dimension). If the latter, dimension should be the same as the control dimension for this controller
 
-        kv (float or list of float): velocity gain for determining desired torques based upon the joint vel errors.
+        kp (float or list of float): velocity gain for determining desired torques based upon the joint vel errors.
             Can be either be a scalar (same value for all action dims), or a list (specific values for each dim)
 
         policy_freq (int): Frequency at which actions from the robot policy are fed into this controller
@@ -65,7 +65,7 @@ class JointVelocityController(Controller):
                  input_min=-1,
                  output_max=1,
                  output_min=-1,
-                 kv=0.25,
+                 kp=0.25,
                  policy_freq=20,
                  velocity_limits=None,
                  interpolator=None,
@@ -88,15 +88,15 @@ class JointVelocityController(Controller):
         self.output_min = self.nums2array(output_min, self.joint_dim)
 
         # gains and corresopnding vars
-        self.kvp = self.nums2array(kv, self.joint_dim)
-        # if kv is a single value, map wrist gains accordingly (scale down x10 for final two joints)
+        self.kp = self.nums2array(kp, self.joint_dim)
+        # if kp is a single value, map wrist gains accordingly (scale down x10 for final two joints)
 
-        if type(kv) is float or type(kv) is int:
-            # Scale kvp according to how wide the actuator range is for this robot
+        if type(kp) is float or type(kp) is int:
+            # Scale kpp according to how wide the actuator range is for this robot
             low, high = self.actuator_limits
-            self.kvp = kv * (high - low)
-        self.kvi = self.kvp * 0.005
-        self.kvd = self.kvp * 0.001
+            self.kp = kp * (high - low)
+        self.ki = self.kp * 0.005
+        self.kd = self.kp * 0.001
         self.last_err = np.zeros(self.joint_dim)
         self.derr_buf = RingBuffer(dim=self.joint_dim, length=5)
         self.summed_err = np.zeros(self.joint_dim)
@@ -182,9 +182,9 @@ class JointVelocityController(Controller):
             self.summed_err += err
 
         # Compute command torques via PID velocity controller plus gravity compensation torques
-        torques = self.kvp * err + \
-            self.kvi * self.summed_err + \
-            self.kvd * self.derr_buf.average + \
+        torques = self.kp * err + \
+            self.ki * self.summed_err + \
+            self.kd * self.derr_buf.average + \
             self.torque_compensation
 
         # Clip torques
