@@ -182,7 +182,8 @@ class Robot(object):
         Returns an OrderedDict containing robot observations [(name_string, np.array), ...].
 
         Important keys:
-            robot-state: contains robot-centric information.
+
+            `'robot-state'`: contains robot-centric information.
         """
         raise NotImplementedError
 

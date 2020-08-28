@@ -315,7 +315,8 @@ class SingleArm(Robot):
         Returns an OrderedDict containing robot observations [(name_string, np.array), ...].
 
         Important keys:
-            robot-state: contains robot-centric information.
+
+            `'robot-state'`: contains robot-centric information.
 
         Args:
             di (OrderedDict): Current set of observations from the environment

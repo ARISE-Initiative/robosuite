@@ -12,7 +12,7 @@ class Keyboard(Device):
     """
     A minimalistic driver class for a Keyboard.
 
-     Args:
+    Args:
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """

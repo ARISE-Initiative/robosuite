@@ -232,7 +232,7 @@ class RobotEnv(MujocoEnv):
         Helper function that converts an input that is either a single value or a list into a list
 
         Args:
-            inp (str or list): Input value to be converted to list
+            inp (None or str or list): Input value to be converted to list
             length (int): Length of list to broadcast input to
 
         Returns:
@@ -380,11 +380,13 @@ class RobotEnv(MujocoEnv):
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
 
         Important keys:
-            robot-state: contains robot-centric information.
-            image: requires @self.use_camera_obs to be True.
-                contains a rendered frame from the simulation.
-            depth: requires @self.use_camera_obs and @self.camera_depth to be True.
-                contains a rendered depth map from the simulation
+
+            `'robot-state'`: contains robot-centric information.
+
+            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
+
+            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
+            Contains a rendered depth map from the simulation
 
         Returns:
             OrderedDict: Observations from the environment

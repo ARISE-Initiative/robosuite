@@ -550,13 +550,15 @@ class Wipe(RobotEnv):
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
 
         Important keys:
-            robot-state: contains robot-centric information.
-            object-state: requires @self.use_object_obs to be True.
-                contains object-centric information.
-            image: requires @self.use_camera_obs to be True.
-                contains a rendered frame from the simulation.
-            depth: requires @self.use_camera_obs and @self.camera_depth to be True.
-                contains a rendered depth map from the simulation
+
+            `'robot-state'`: contains robot-centric information.
+
+            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
+
+            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
+
+            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
+            Contains a rendered depth map from the simulation
 
         Returns:
             OrderedDict: Observations from the environment
