@@ -209,6 +209,7 @@ class RobotEnv(MujocoEnv):
     def action_dim(self):
         """
         Size of the action space
+
         Returns:
             int: Action space dimension
         """

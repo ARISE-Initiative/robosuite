@@ -96,7 +96,39 @@ DEFAULT_LIGHTING_ARGS = {
     'diffuse_perturbation_size' : 0.1,
 }
 
+
 class DomainRandomizationWrapper(Wrapper):
+    """
+    Wrapper that allows for domain randomization mid-simulation.
+
+    Args:
+        env (MujocoEnv): The environment to wrap.
+
+        seed (int): Integer used to seed all randomizations from this wrapper. It is
+            used to create a np.random.RandomState instance to make sure samples here
+            are isolated from sampling occurring elsewhere in the code. If not provided,
+            will default to using global random state.
+
+        randomize_color (bool): if True, randomize geom colors and texture colors
+
+        randomize_camera (bool): if True, randomize camera locations and parameters
+
+        randomize_lighting (bool): if True, randomize light locations and properties
+
+        color_randomization_args (dict): Color-specific randomization arguments
+
+        camera_randomization_args (dict): Camera-specific randomization arguments
+
+        lighting_randomization_args (dict): Lighting-specific randomization arguments
+
+        randomize_on_reset (bool): if True, randomize on every call to @reset. This, in
+            conjunction with setting @randomize_every_n_steps to 0, is useful to
+            generate a new domain per episode.
+
+        randomize_every_n_steps (int): determines how often randomization should occur. Set
+            to 0 if randomization should happen manually (by calling @randomize_domain)
+
+    """
     def __init__(
         self, 
         env,
@@ -110,29 +142,6 @@ class DomainRandomizationWrapper(Wrapper):
         randomize_on_reset=True,
         randomize_every_n_steps=1,
     ):
-        """
-        Args:
-            env (MujocoEnv instance): The environment to wrap.
-
-            seed (int): Integer used to seed all randomizations from this wrapper. It is
-                used to create a np.random.RandomState instance to make sure samples here
-                are isolated from sampling occurring elsewhere in the code. If not provided,
-                will default to using global random state.
-
-            randomize_color (bool): if True, randomize geom colors and texture colors
-            
-            randomize_camera (bool): if True, randomize camera locations and parameters
-
-            randomize_lighting (bool): if True, randomize light locations and properties
-
-            randomize_on_reset (bool): if True, randomize on every call to @reset. This, in
-                conjunction with setting @randomize_every_n_steps to 0, is useful to
-                generate a new domain per episode.
-
-            randomize_every_n_steps (int): determines how often randomization should occur. Set
-                to 0 if randomization should happen manually (by calling @randomize_domain)
-
-        """
         super().__init__(env)
 
         self.seed = seed
@@ -178,7 +187,12 @@ class DomainRandomizationWrapper(Wrapper):
         self.save_default_domain()
 
     def reset(self):
+        """
+        Extends superclass method to reset the domain randomizer.
 
+        Returns:
+            OrderedDict: Environment observation space after reset occurs
+        """
         # undo all randomizations
         self.restore_default_domain()
 
@@ -199,6 +213,17 @@ class DomainRandomizationWrapper(Wrapper):
         return ret
 
     def step(self, action):
+        """
+        Extends vanilla step() function call to accommodate domain randomization
+
+        Returns:
+            4-tuple:
+
+                - (OrderedDict) observations from the environment
+                - (float) reward from the environment
+                - (bool) whether the current episode is completed or not
+                - (dict) misc information
+        """
         ### TODO: randomization here? with condition check ###
 
         # functionality for randomizing at a particular frequency
@@ -231,4 +256,3 @@ class DomainRandomizationWrapper(Wrapper):
         """
         for modder in self.modders:
             modder.restore_defaults()
-

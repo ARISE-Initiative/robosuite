@@ -183,7 +183,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Resets simulation.
 
         Returns:
-            OrderedDict: Environment bservation space after reset occurs
+            OrderedDict: Environment observation space after reset occurs
         """
         # TODO(yukez): investigate black screen of death
         # Use hard reset if requested

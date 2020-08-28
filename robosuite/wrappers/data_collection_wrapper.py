@@ -16,10 +16,10 @@ class DataCollectionWrapper(Wrapper):
         Initializes the data collection wrapper.
 
         Args:
-            env: The environment to monitor.
-            directory: Where to store collected data.
-            collect_freq: How often to save simulation state, in terms of environment steps.
-            flush_freq: How frequently to dump data to disk, in terms of environment steps.
+            env (MujocoEnv): The environment to monitor.
+            directory (str): Where to store collected data.
+            collect_freq (int): How often to save simulation state, in terms of environment steps.
+            flush_freq (int): How frequently to dump data to disk, in terms of environment steps.
         """
         super().__init__(env)
 
@@ -65,6 +65,9 @@ class DataCollectionWrapper(Wrapper):
         This function is necessary to make sure that logging only happens after the first
         step call to the simulation, instead of on the reset (people tend to call
         reset more than is necessary in code).
+
+        Raises:
+            AssertionError: [Episode path already exists]
         """
 
         self.has_interaction = True
@@ -100,11 +103,31 @@ class DataCollectionWrapper(Wrapper):
         self.action_infos = []
 
     def reset(self):
+        """
+        Extends vanilla reset() function call to accommodate data collection
+
+        Returns:
+            OrderedDict: Environment observation space after reset occurs
+        """
         ret = super().reset()
         self._start_new_episode()
         return ret
 
     def step(self, action):
+        """
+        Extends vanilla step() function call to accommodate data collection
+
+        Args:
+            action (np.array): Action to take in environment
+
+        Returns:
+            4-tuple:
+
+                - (OrderedDict) observations from the environment
+                - (float) reward from the environment
+                - (bool) whether the current episode is completed or not
+                - (dict) misc information
+        """
         ret = super().step(action)
         self.t += 1
 
