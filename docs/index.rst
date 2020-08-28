@@ -26,7 +26,6 @@ Welcome to robosuite's documentation!
 
    modules/overview
    modules/robots
-   modules/grippers
    modules/objects
    modules/controllers
    modules/environments
@@ -34,8 +33,6 @@ Welcome to robosuite's documentation!
    modules/devices
    modules/renderers
    modules/wrappers
-
-.. (TODO) Josiah
 
 .. toctree::
    :maxdepth: 1
@@ -46,8 +43,6 @@ Welcome to robosuite's documentation!
    simulation/device
    simulation/controller
 
-.. (TODO) Josiah
-
 .. toctree::
    :maxdepth: 1
    :caption: Modeling API
@@ -57,6 +52,12 @@ Welcome to robosuite's documentation!
    modeling/object_model
    modeling/arena
    modeling/task
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Source API
+
+   source/robosuite
 
 .. (TODO) Ajay
 
@@ -81,5 +82,6 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
+
 .. * :ref:`modindex`
 .. * :ref:`search`

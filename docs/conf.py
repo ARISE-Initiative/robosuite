@@ -33,6 +33,7 @@ import robosuite
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.napoleon',
     'sphinx_rtd_theme',
     'sphinx_markdown_tables',
     'sphinx.ext.mathjax',
@@ -40,6 +41,11 @@ extensions = [
     'sphinx.ext.autodoc',
     'recommonmark', # use Sphinx-1.4 or newer
 ]
+
+# Sphinx-apidoc variables
+apidoc_module_dir = "../robosuite"
+apidoc_output_dir = "reference"
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -1,3 +1,0 @@
-# Grippers
-
-Gripper abstraction
