@@ -7,14 +7,25 @@ from robosuite.utils.numba import jit_decorator
 def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, joint_vel, joint_kp=10):
     """
     For a robot with redundant DOF(s), a nullspace exists which is orthogonal to the remainder of the controllable
-     subspace of the robot's joints. Therefore, an additional secondary objective that does not impact the original
-     controller objective may attempt to be maintained using these nullspace torques.
+    subspace of the robot's joints. Therefore, an additional secondary objective that does not impact the original
+    controller objective may attempt to be maintained using these nullspace torques.
 
     This utility function specifically calculates nullspace torques that attempt to maintain a given robot joint
-     positions @initial_joint with zero velocity using proportinal gain @joint_kp
+    positions @initial_joint with zero velocity using proportinal gain @joint_kp
 
-    Note: @mass_matrix, @nullspace_matrix, @joint_pos, and @joint_vel should reflect the robot's state at the current
-     timestep
+    :Note: @mass_matrix, @nullspace_matrix, @joint_pos, and @joint_vel should reflect the robot's state at the current
+    timestep
+
+    Args:
+        mass_matrix (np.array): 2d array representing the mass matrix of the robot
+        nullspace_matrix (np.array): 2d array representing the nullspace matrix of the robot
+        initial_joint (np.array): Joint configuration to be used for calculating nullspace torques
+        joint_pos (np.array): Current joint positions
+        joint_vel (np.array): Current joint velocities
+        joint_kp (float): Proportional control gain when calculating nullspace torques
+
+    Returns:
+          np.array: nullspace torques
     """
 
     # kv calculated below corresponds to critical damping
@@ -31,6 +42,23 @@ def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, j
 
 @jit_decorator
 def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
+    """
+    Calculates the relevant matrices used in the operational space control algorithm
+
+    Args:
+        mass_matrix (np.array): 2d array representing the mass matrix of the robot
+        J_full (np.array): 2d array representing the full Jacobian matrix of the robot
+        J_pos (np.array): 2d array representing the position components of the Jacobian matrix of the robot
+        J_ori (np.array): 2d array representing the orientation components of the Jacobian matrix of the robot
+
+    Returns:
+        4-tuple:
+
+            - (np.array): full lambda matrix (as 2d array)
+            - (np.array): position components of lambda matrix (as 2d array)
+            - (np.array): orientation components of lambda matrix (as 2d array)
+            - (np.array): nullspace matrix (as 2d array)
+    """
     mass_matrix_inv = np.linalg.inv(mass_matrix)
 
     # J M^-1 J^T
@@ -77,6 +105,13 @@ def orientation_error(desired, current):
     representation, where the 3d vector is axis * angle).
     See https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation for more information.
     Optimized function to determine orientation error from matrices
+
+    Args:
+        desired (np.array): 2d array representing target orientation matrix
+        current (np.array): 2d array representing current orientation matrix
+
+    Returns:
+        np.array: 2d array representing orientation error as a matrix
     """
     rc1 = current[0:3, 0]
     rc2 = current[0:3, 1]
@@ -98,6 +133,18 @@ def set_goal_position(delta,
     Calculates and returns the desired goal position, clipping the result accordingly to @position_limits.
     @delta and @current_position must be specified if a relative goal is requested, else @set_pos must be
     specified to define a global goal position
+
+    Args:
+        delta (np.array): Desired relative change in position
+        current_position (np.array): Current position
+        position_limit (None or np.array): 2d array defining the (min, max) limits of permissible position goal commands
+        set_pos (None or np.array): If set, will ignore @delta and set the goal position to this value
+
+    Returns:
+        np.array: calculated goal position in absolute coordinates
+
+    Raises:
+        ValueError: [Invalid position_limit shape]
     """
     n = len(current_position)
     if set_pos is not None:
@@ -128,6 +175,19 @@ def set_goal_orientation(delta,
 
     If @axis_angle is set to True, then this assumes the input in axis angle form, that is,
         a scaled axis angle 3-array [ax, ay, az]
+
+    Args:
+        delta (np.array): Desired relative change in orientation
+        current_orientation (np.array): Current orientation
+        orientation_limit (None or np.array): 2d array defining the (min, max) limits of permissible orientation goal commands
+        set_ori (None or np.array): If set, will ignore @delta and set the goal orientation to this value
+        axis_angle (bool): If True, assumes inputs are in axis-angle form. Otherwise, assumes they are euler angles
+
+    Returns:
+        np.array: calculated goal orientation in absolute coordinates
+
+    Raises:
+        ValueError: [Invalid orientation_limit shape]
     """
     # directly set orientation
     if set_ori is not None:
@@ -210,6 +270,12 @@ class Buffer(object):
     """
 
     def push(self, value):
+        """
+        Pushes a new @value to the buffer
+
+        Args:
+            value: Value to push to the buffer
+        """
         raise NotImplementedError
 
     def clear(self):
@@ -219,17 +285,16 @@ class Buffer(object):
 class RingBuffer(Buffer):
     """
     Simple RingBuffer object to hold values to average (useful for, e.g.: filtering D component in PID control)
+
+    Note that the buffer object is a 2D numpy array, where each row corresponds to
+    individual entries into the buffer
+
+    Args:
+        dim (int): Size of entries being added. This is, e.g.: the size of a state vector that is to be stored
+        length (int): Size of the ring buffer
     """
 
     def __init__(self, dim, length):
-        """
-        Constructs RingBuffer object. Note that the buffer object is a 2D numpy array, where each row corresponds to
-        individual entries into the buffer
-
-        Args:
-            dim (int): Size of entries being added. This is, e.g.: the size of a state vector that is to be stored
-            length (int): Size of the ring buffer
-        """
         # Store input args
         self.dim = dim
         self.length = length
@@ -243,6 +308,9 @@ class RingBuffer(Buffer):
     def push(self, value):
         """
         Pushes a new value into the buffer
+
+        Args:
+            value (int or float or array): Value(s) to push into the array (taken as a single new element)
         """
         # Add value, then increment pointer
         self.buf[self.ptr] = np.array(value)
@@ -259,6 +327,9 @@ class RingBuffer(Buffer):
     def average(self):
         """
         Gets the average of components in buffer
+
+        Returns:
+            float or np.array: Averaged value of all elements in buffer
         """
         return np.mean(self.buf, axis=0)
 
@@ -266,16 +337,15 @@ class RingBuffer(Buffer):
 class DeltaBuffer(Buffer):
     """
     Simple 2-length buffer object to streamline grabbing delta values between "current" and "last" values
+
+    Constructs delta object.
+
+    Args:
+        dim (int): Size of numerical arrays being inputted
+        init_value (None or Iterable): Initial value to fill "last" value with initially.
+            If None (default), last array will be filled with zeros
     """
     def __init__(self, dim, init_value=None):
-        """
-        Constructs delta object.
-
-        Args:
-            dim (int): Size of numerical arrays being inputted
-            init_value (None or Iterable): Initial value to fill "last" value with initially.
-                If None (default), last array will be filled with zeros
-        """
         # Setup delta object
         self.dim = dim
         self.last = np.zeros(self.dim) if init_value is None else np.array(init_value)
@@ -284,6 +354,9 @@ class DeltaBuffer(Buffer):
     def push(self, value):
         """
         Pushes a new value into the buffer; current becomes last and @value becomes current
+
+        Args:
+            value (int or float or array): Value(s) to push into the array (taken as a single new element)
         """
         self.last = self.current
         self.current = np.array(value)
@@ -299,6 +372,12 @@ class DeltaBuffer(Buffer):
         """
         Returns the delta between last value and current value. If abs_value is set to True, then returns
         the absolute value between the values
+
+        Args:
+            abs_value (bool): Whether to return absolute value or not
+
+        Returns:
+            float or np.array: difference between current and last value
         """
         return self.current - self.last if not abs_value else np.abs(self.current - self.last)
 
@@ -306,5 +385,8 @@ class DeltaBuffer(Buffer):
     def average(self):
         """
         Returns the average between the current and last value
+
+        Returns:
+            float or np.array: Averaged value of all elements in buffer
         """
         return (self.current + self.last) / 2.0

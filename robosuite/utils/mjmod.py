@@ -1,5 +1,5 @@
 """
-Modder classes used for domain randomization. Largely bsased off of the mujoco-py
+Modder classes used for domain randomization. Largely based off of the mujoco-py
 implementation below.
 
 https://github.com/openai/mujoco-py/blob/1fe312b09ae7365f0dd9d4d0e453f8da59fae0bf/mujoco_py/modder.py
@@ -15,17 +15,22 @@ from mujoco_py import cymj
 import robosuite
 import robosuite.utils.transform_utils as trans
 
+
 class BaseModder():
+    """
+    Base class meant to modify simulation attributes mid-sim.
+
+    Using @random_state ensures that sampling here won't be affected
+    by sampling that happens outside of the modders.
+
+    Args:
+        sim (MjSim): simulation object
+
+        random_state (RandomState): instance of np.random.RandomState, specific
+            seed used to randomize these modifications without impacting other
+            numpy seeds / randomizations
+    """
     def __init__(self, sim, random_state=None):
-        """
-        Using @random_state ensures that sampling here won't be affected
-        by sampling that happens outside of the modders.
-
-        Args:
-            sim (MjSim): MjSim object
-
-            random_state (RandomState): instance of np.random.RandomState
-        """
         self.sim = sim
         if random_state is None:
             # default to global RandomState instance
@@ -35,11 +40,48 @@ class BaseModder():
 
     @property
     def model(self):
+        """
+        Returns:
+            MjModel: Mujoco sim model
+        """
         # Available for quick convenience access
         return self.sim.model
 
-class LightingModder(BaseModder):
 
+class LightingModder(BaseModder):
+    """
+    Modder to modify lighting within a Mujoco simulation.
+
+    Args:
+        sim (MjSim): MjSim object
+
+        random_state (RandomState): instance of np.random.RandomState
+
+        light_names (None or list of str): list of lights to use for randomization. If not provided, all
+            lights in the model are randomized.
+
+        randomize_position (bool): If True, randomizes position of lighting
+
+        randomize_direction (bool): If True, randomizes direction of lighting
+
+        randomize_specular (bool): If True, randomizes specular attribute of lighting
+
+        randomize_ambient (bool): If True, randomizes ambient attribute of lighting
+
+        randomize_diffuse (bool): If True, randomizes diffuse attribute of lighting
+
+        randomize_active (bool): If True, randomizes active nature of lighting
+
+        position_perturbation_size (float): Magnitude of position randomization
+
+        direction_perturbation_size (float): Magnitude of direction randomization
+
+        specular_perturbation_size (float): Magnitude of specular attribute randomization
+
+        ambient_perturbation_size (float): Magnitude of ambient attribute randomization
+
+        diffuse_perturbation_size (float): Magnitude of diffuse attribute randomization
+    """
     def __init__(
         self,
         sim,
@@ -57,15 +99,6 @@ class LightingModder(BaseModder):
         ambient_perturbation_size=0.1,
         diffuse_perturbation_size=0.1,
     ):
-        """
-        Args:
-            sim (MjSim): MjSim object
-
-            random_state (RandomState): instance of np.random.RandomState
-
-            light_names ([string]): list of lights to use for randomization. If not provided, all
-                lights in the model are randomized.
-        """
         super().__init__(sim, random_state=random_state)
 
         if light_names is None:
@@ -113,6 +146,9 @@ class LightingModder(BaseModder):
             self.set_active(name, self._defaults[name]['active'])
 
     def randomize(self):
+        """
+        Randomizes all requested lighting values within the sim
+        """
         for name in self.light_names:
             if self.randomize_position:
                 self._randomize_position(name)
@@ -133,6 +169,12 @@ class LightingModder(BaseModder):
                 self._randomize_active(name)
 
     def _randomize_position(self, name):
+        """
+        Helper function to randomize position of a specific light source
+
+        Args:
+            name (str): Name of the lighting source to randomize for
+        """
         delta_pos = self.random_state.uniform(
             low=-self.position_perturbation_size, 
             high=self.position_perturbation_size, 
@@ -144,9 +186,15 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_direction(self, name):
+        """
+        Helper function to randomize direction of a specific light source
+
+        Args:
+            name (str): Name of the lighting source to randomize for
+        """
         # sample a small, random axis-angle delta rotation
         random_axis, random_angle = trans.random_axis_angle(angle_limit=self.direction_perturbation_size, random_state=self.random_state)
-        random_delta_rot = trans.quat2mat(trans.axisangle2quat(axis=random_axis, angle=random_angle))
+        random_delta_rot = trans.quat2mat(trans.axisangle2quat(random_axis * random_angle))
         
         # rotate direction by this delta rotation and set the new direction
         new_dir = random_delta_rot.dot(self._defaults[name]['dir'])
@@ -156,6 +204,12 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_specular(self, name):
+        """
+        Helper function to randomize specular attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source to randomize for
+        """
         delta = self.random_state.uniform(
             low=-self.specular_perturbation_size, 
             high=self.specular_perturbation_size, 
@@ -167,6 +221,12 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_ambient(self, name):
+        """
+        Helper function to randomize ambient attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source to randomize for
+        """
         delta = self.random_state.uniform(
             low=-self.ambient_perturbation_size, 
             high=self.ambient_perturbation_size, 
@@ -178,6 +238,12 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_diffuse(self, name):
+        """
+        Helper function to randomize diffuse attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source to randomize for
+        """
         delta = self.random_state.uniform(
             low=-self.diffuse_perturbation_size, 
             high=self.diffuse_perturbation_size, 
@@ -189,6 +255,12 @@ class LightingModder(BaseModder):
         )
 
     def _randomize_active(self, name):
+        """
+        Helper function to randomize active nature of a specific light source
+
+        Args:
+            name (str): Name of the lighting source to randomize for
+        """
         active = int(self.random_state.uniform() > 0.5)
         self.set_active(
             name,
@@ -196,12 +268,35 @@ class LightingModder(BaseModder):
         )
 
     def get_pos(self, name):
+        """
+        Grabs position of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+
+        Returns:
+            np.array: (x,y,z) position of lighting source
+
+        Raises:
+            AssertionError: Invalid light name
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         return self.model.light_pos[lightid]
 
     def set_pos(self, name, value):
+        """
+        Sets position of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+            value (np.array): (x,y,z) position to set lighting source to
+
+        Raises:
+            AssertionError: Invalid light name
+            AssertionError: Invalid @value
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
@@ -211,12 +306,35 @@ class LightingModder(BaseModder):
         self.model.light_pos[lightid] = value
 
     def get_dir(self, name):
+        """
+        Grabs direction of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+
+        Returns:
+            np.array: (x,y,z) direction of lighting source
+
+        Raises:
+            AssertionError: Invalid light name
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         return self.model.light_dir[lightid] 
 
     def set_dir(self, name, value):
+        """
+        Sets direction of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+            value (np.array): (ax,ay,az) direction to set lighting source to
+
+        Raises:
+            AssertionError: Invalid light name
+            AssertionError: Invalid @value
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
@@ -226,24 +344,69 @@ class LightingModder(BaseModder):
         self.model.light_dir[lightid] = value
 
     def get_active(self, name):
+        """
+        Grabs active nature of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+
+        Returns:
+            int: Whether light source is active (1) or not (0)
+
+        Raises:
+            AssertionError: Invalid light name
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         return self.model.light_active[lightid]
 
     def set_active(self, name, value):
+        """
+        Sets active nature of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+            value (int): Whether light source is active (1) or not (0)
+
+        Raises:
+            AssertionError: Invalid light name
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         self.model.light_active[lightid] = value
 
     def get_specular(self, name):
+        """
+        Grabs specular attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+
+        Returns:
+            np.array: (r,g,b) specular color of lighting source
+
+        Raises:
+            AssertionError: Invalid light name
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         return self.model.light_specular[lightid]
 
     def set_specular(self, name, value):
+        """
+        Sets specular attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+            value (np.array): (r,g,b) specular color to set lighting source to
+
+        Raises:
+            AssertionError: Invalid light name
+            AssertionError: Invalid @value
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
@@ -253,12 +416,35 @@ class LightingModder(BaseModder):
         self.model.light_specular[lightid] = value
 
     def get_ambient(self, name):
+        """
+        Grabs ambient attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+
+        Returns:
+            np.array: (r,g,b) ambient color of lighting source
+
+        Raises:
+            AssertionError: Invalid light name
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         return self.model.light_ambient[lightid]
 
     def set_ambient(self, name, value):
+        """
+        Sets ambient attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+            value (np.array): (r,g,b) ambient color to set lighting source to
+
+        Raises:
+            AssertionError: Invalid light name
+            AssertionError: Invalid @value
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
@@ -268,12 +454,35 @@ class LightingModder(BaseModder):
         self.model.light_ambient[lightid] = value
 
     def get_diffuse(self, name):
+        """
+        Grabs diffuse attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+
+        Returns:
+            np.array: (r,g,b) diffuse color of lighting source
+
+        Raises:
+            AssertionError: Invalid light name
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
         return self.model.light_diffuse[lightid]
 
     def set_diffuse(self, name, value):
+        """
+        Sets diffuse attribute of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+            value (np.array): (r,g,b) diffuse color to set lighting source to
+
+        Raises:
+            AssertionError: Invalid light name
+            AssertionError: Invalid @value
+        """
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
@@ -282,15 +491,47 @@ class LightingModder(BaseModder):
 
         self.model.light_diffuse[lightid] = value
 
-    # def set_castshadow(self, name, value):
-    #     lightid = self.get_lightid(name)
-    #     assert lightid > -1, "Unkwnown light %s" % name
-    #     self.model.light_castshadow[lightid] = value
-
     def get_lightid(self, name):
+        """
+        Grabs unique id number of a specific light source
+
+        Args:
+            name (str): Name of the lighting source
+
+        Returns:
+            int: id of lighting source. -1 if not found
+        """
         return self.model.light_name2id(name)
 
+
 class CameraModder(BaseModder):
+    """
+    Modder for modifying camera attributes in mujoco sim
+
+    Args:
+        sim (MjSim): MjSim object
+
+        random_state (None or RandomState): instance of np.random.RandomState
+
+        camera_names (None or list of str): list of camera names to use for randomization. If not provided,
+            all cameras are used for randomization.
+
+        randomize_position (bool): if True, randomize camera position
+
+        randomize_rotation (bool): if True, randomize camera rotation
+
+        randomize_fovy (bool): if True, randomize camera fovy
+
+        position_perturbation_size (float): size of camera position perturbations to each dimension
+
+        rotation_perturbation_size (float): magnitude of camera rotation perturbations in axis-angle.
+            Default corresponds to around 5 degrees.
+
+        fovy_perturbation_size (float): magnitude of camera fovy perturbations (corresponds to focusing)
+
+    Raises:
+        AssertionError: [No randomization selected]
+    """
     def __init__(
         self,
         sim,
@@ -303,20 +544,6 @@ class CameraModder(BaseModder):
         rotation_perturbation_size=0.087,
         fovy_perturbation_size=5.,
     ):
-        """
-        Args:
-            sim (MjSim): MjSim object
-            random_state (RandomState): instance of np.random.RandomState
-            camera_names ([string]): list of camera names to use for randomization. If not provided,
-                all cameras are used for randomization.
-            perturb_position (bool): if True, randomize camera position
-            perturb_rotation (bool): if True, randomize camera rotation
-            perturb_fovy (bool): if True, randomize camera fovy
-            position_perturbation_size (float): size of camera position perturbations to each dimension
-            rotation_perturbation_size (float): magnitude of camera rotation perturbations in axis-angle.
-                Default corresponds to around 5 degrees.
-            fovy_perturbation_size (float): magnitude of camera fovy perturbations (corresponds to focusing)
-        """
         super().__init__(sim, random_state=random_state)
 
         assert randomize_position or randomize_rotation or randomize_fovy
@@ -355,6 +582,9 @@ class CameraModder(BaseModder):
             self.set_fovy(camera_name, self._defaults[camera_name]['fovy'])
 
     def randomize(self):
+        """
+        Randomizes all requested camera values within the sim
+        """
         for camera_name in self.camera_names:
             if self.randomize_position:
                 self._randomize_position(camera_name)
@@ -366,6 +596,12 @@ class CameraModder(BaseModder):
                 self._randomize_fovy(camera_name)
 
     def _randomize_position(self, name):
+        """
+        Helper function to randomize position of a specific camera
+
+        Args:
+            name (str): Name of the camera to randomize for
+        """
         delta_pos = self.random_state.uniform(
             low=-self.position_perturbation_size, 
             high=self.position_perturbation_size, 
@@ -377,9 +613,15 @@ class CameraModder(BaseModder):
         )
 
     def _randomize_rotation(self, name):
+        """
+        Helper function to randomize orientation of a specific camera
+
+        Args:
+            name (str): Name of the camera to randomize for
+        """
         # sample a small, random axis-angle delta rotation
         random_axis, random_angle = trans.random_axis_angle(angle_limit=self.rotation_perturbation_size, random_state=self.random_state)
-        random_delta_rot = trans.quat2mat(trans.axisangle2quat(axis=random_axis, angle=random_angle))
+        random_delta_rot = trans.quat2mat(trans.axisangle2quat(random_axis * random_angle))
         
         # compute new rotation and set it
         base_rot = trans.quat2mat(trans.convert_quat(self._defaults[name]['quat'], to='xyzw'))
@@ -391,6 +633,12 @@ class CameraModder(BaseModder):
         )
 
     def _randomize_fovy(self, name):
+        """
+        Helper function to randomize fovy of a specific camera
+
+        Args:
+            name (str): Name of the camera to randomize for
+        """
         delta_fovy = self.random_state.uniform(
             low=-self.fovy_perturbation_size,
             high=self.fovy_perturbation_size,
@@ -401,35 +649,104 @@ class CameraModder(BaseModder):
         )
 
     def get_fovy(self, name):
+        """
+        Grabs fovy of a specific camera
+
+        Args:
+            name (str): Name of the camera
+
+        Returns:
+            float: vertical field of view of the camera, expressed in degrees
+
+        Raises:
+            AssertionError: Invalid camera name
+        """
         camid = self.get_camid(name)
         assert camid > -1, "Unknown camera %s" % name
         return self.model.cam_fovy[camid]
 
     def set_fovy(self, name, value):
+        """
+        Sets fovy of a specific camera
+
+        Args:
+            name (str): Name of the camera
+            value (float): vertical field of view of the camera, expressed in degrees
+
+        Raises:
+            AssertionError: Invalid camera name
+            AssertionError: Invalid value
+        """
         camid = self.get_camid(name)
         assert 0 < value < 180
         assert camid > -1, "Unknown camera %s" % name
         self.model.cam_fovy[camid] = value
 
     def get_quat(self, name):
+        """
+        Grabs orientation of a specific camera
+
+        Args:
+            name (str): Name of the camera
+
+        Returns:
+            np.array: (w,x,y,z) orientation of the camera, expressed in quaternions
+
+        Raises:
+            AssertionError: Invalid camera name
+        """
         camid = self.get_camid(name)
         assert camid > -1, "Unknown camera %s" % name
         return self.model.cam_quat[camid]
 
     def set_quat(self, name, value):
+        """
+        Sets orientation of a specific camera
+
+        Args:
+            name (str): Name of the camera
+            value (np.array): (w,x,y,z) orientation of the camera, expressed in quaternions
+
+        Raises:
+            AssertionError: Invalid camera name
+            AssertionError: Invalid value
+        """
         value = list(value)
         assert len(value) == 4, (
-            "Expectd value of length 3, instead got %s" % value)
+            "Expectd value of length 4, instead got %s" % value)
         camid = self.get_camid(name)
         assert camid > -1, "Unknown camera %s" % name
         self.model.cam_quat[camid] = value
 
     def get_pos(self, name):
+        """
+        Grabs position of a specific camera
+
+        Args:
+            name (str): Name of the camera
+
+        Returns:
+            np.array: (x,y,z) position of the camera
+
+        Raises:
+            AssertionError: Invalid camera name
+        """
         camid = self.get_camid(name)
         assert camid > -1, "Unknown camera %s" % name
         return self.model.cam_pos[camid]
 
     def set_pos(self, name, value):
+        """
+        Sets position of a specific camera
+
+        Args:
+            name (str): Name of the camera
+            value (np.array): (x,y,z) position of the camera
+
+        Raises:
+            AssertionError: Invalid camera name
+            AssertionError: Invalid value
+        """
         value = list(value)
         assert len(value) == 3, (
             "Expected value of length 3, instead got %s" % value)
@@ -438,6 +755,15 @@ class CameraModder(BaseModder):
         self.model.cam_pos[camid] = value
 
     def get_camid(self, name):
+        """
+        Grabs unique id number of a specific camera
+
+        Args:
+            name (str): Name of the camera
+
+        Returns:
+            int: id of camera. -1 if not found
+        """
         return self.model.camera_name2id(name)
 
 
@@ -449,10 +775,39 @@ class TextureModder(BaseModder):
         modder.whiten_materials()  # ensures materials won't impact colors
         modder.set_checker('some_geom', (255, 0, 0), (0, 0, 0))
         modder.rand_all('another_geom')
+
     Note: in order for the textures to take full effect, you'll need to set
     the rgba values for all materials to [1, 1, 1, 1], otherwise the texture
     colors will be modulated by the material colors. Call the
     `whiten_materials` helper method to set all material colors to white.
+
+    Args:
+        sim (MjSim): MjSim object
+
+        random_state (RandomState): instance of np.random.RandomState
+
+        geom_names ([string]): list of geom names to use for randomization. If not provided,
+            all geoms are used for randomization.
+
+        randomize_local (bool): if True, constrain RGB color variations to be close to the
+            original RGB colors per geom and texture. Otherwise, RGB color values will
+            be sampled uniformly at random.
+
+        randomize_material (bool): if True, randomizes material properties associated with a
+            given texture (reflectance, shininess, specular)
+
+        local_rgb_interpolation (float): determines the size of color variations from
+            the base geom colors when @randomize_local is True.
+
+        local_material_interpolation (float): determines the size of material variations from
+            the base material when @randomize_local and @randomize_material are both True.
+
+        texture_variations (list of str): a list of texture variation strings. Each string
+            must be either 'rgb', 'checker', 'noise', or 'gradient' and corresponds to
+            a specific kind of texture randomization. For each geom that has a material
+            and texture, a random variation from this list is sampled and applied.
+
+        randomize_skybox (bool): if True, apply texture variations to the skybox as well.
     """
 
     def __init__(
@@ -464,42 +819,9 @@ class TextureModder(BaseModder):
         randomize_material=False,
         local_rgb_interpolation=0.1,
         local_material_interpolation=0.2,
-        texture_variations=['rgb', 'checker', 'noise', 'gradient'],
+        texture_variations=('rgb', 'checker', 'noise', 'gradient'),
         randomize_skybox=True,
-        # texture_path=None,
     ):
-        """
-        Args:
-            sim (MjSim): MjSim object
-
-            random_state (RandomState): instance of np.random.RandomState
-
-            geom_names ([string]): list of geom names to use for randomization. If not provided,
-                all geoms are used for randomization.
-
-            randomize_local (bool): if True, constrain RGB color variations to be close to the
-                original RGB colors per geom and texture. Otherwise, RGB color values will
-                be sampled uniformly at random.
-
-            randomize_material (bool): if True, randomizes material properties associated with a
-                given texture (reflectance, shininess, specular)
-
-            local_rgb_interpolation (float): determines the size of color variations from
-                the base geom colors when @randomize_local is True.
-
-            local_material_interpolation (float): determines the size of material variations from
-                the base material when @randomize_local and @randomize_material are both True.
-
-            texture_variations ([string]): a list of texture variation strings. Each string
-                must be either 'rgb', 'checker', 'noise', or 'gradient' and corresponds to
-                a specific kind of texture randomization. For each geom that has a material
-                and texture, a random variation from this list is sampled and applied.
-
-            randomize_skybox (bool): if True, apply texture variations to the skybox as well.
-
-            texture_path (string): optional path to texture images files to use for random texture
-                generation
-        """
         super().__init__(sim, random_state=random_state)
 
         if geom_names is None:
@@ -594,6 +916,12 @@ class TextureModder(BaseModder):
             self._randomize_texture("skybox")
 
     def _randomize_geom_color(self, name):
+        """
+        Helper function to randomize color of a specific geom
+
+        Args:
+            name (str): Name of the geom to randomize for
+        """
         if self.randomize_local:
             random_color = self.random_state.uniform(0, 1, size=3)
             rgb = (1. - self.local_rgb_interpolation) * self._defaults[name]['rgb'] + self.local_rgb_interpolation * random_color
@@ -602,11 +930,23 @@ class TextureModder(BaseModder):
         self.set_geom_rgb(name, rgb)
 
     def _randomize_texture(self, name):
+        """
+        Helper function to randomize texture of a specific geom
+
+        Args:
+            name (str): Name of the geom to randomize for
+        """
         keys = list(self._texture_variation_callbacks.keys())
         choice = keys[self.random_state.randint(len(keys))]
         self._texture_variation_callbacks[choice](name)
 
     def _randomize_material(self, name):
+        """
+        Helper function to randomize material of a specific geom
+
+        Args:
+            name (str): Name of the geom to randomize for
+        """
         # Return immediately if this is the skybox
         if name == 'skybox':
             return
@@ -617,19 +957,43 @@ class TextureModder(BaseModder):
         self.set_material(name, material, perturb=self.randomize_local)
 
     def rand_checker(self, name):
+        """
+        Generates a random checker pattern for a specific geom
+
+        Args:
+            name (str): Name of the geom to randomize for
+        """
         rgb1, rgb2 = self.get_rand_rgb(2)
         self.set_checker(name, rgb1, rgb2, perturb=self.randomize_local)
 
     def rand_gradient(self, name):
+        """
+        Generates a random gradient pattern for a specific geom
+
+        Args:
+            name (str): Name of the geom to randomize for
+        """
         rgb1, rgb2 = self.get_rand_rgb(2)
         vertical = bool(self.random_state.uniform() > 0.5)
         self.set_gradient(name, rgb1, rgb2, vertical=vertical, perturb=self.randomize_local)
 
     def rand_rgb(self, name):
+        """
+        Generates a random RGB color for a specific geom
+
+        Args:
+            name (str): Name of the geom to randomize for
+        """
         rgb = self.get_rand_rgb()
         self.set_rgb(name, rgb, perturb=self.randomize_local)
 
     def rand_noise(self, name):
+        """
+        Generates a random RGB noise pattern for a specific geom
+
+        Args:
+            name (str): Name of the geom to randomize for
+        """
         fraction = 0.1 + self.random_state.uniform() * 0.8
         rgb1, rgb2 = self.get_rand_rgb(2)
         self.set_noise(name, rgb1, rgb2, fraction, perturb=self.randomize_local)
@@ -651,18 +1015,40 @@ class TextureModder(BaseModder):
                 mat_id = self.model.geom_matid[geom_id]
                 self.model.mat_rgba[mat_id, :] = 1.0
 
-        # self.model.mat_rgba[:] = 1.0
-        # self.model.geom_rgba[:] = 1.0
-
     def get_geom_rgb(self, name):
+        """
+        Grabs rgb color of a specific geom
+
+        Args:
+            name (str): Name of the geom
+
+        Returns:
+            np.array: (r,g,b) geom colors
+        """
         geom_id = self.model.geom_name2id(name)
         return self.model.geom_rgba[geom_id, :3]
 
     def set_geom_rgb(self, name, rgb):
+        """
+        Sets rgb color of a specific geom
+
+        Args:
+            name (str): Name of the geom
+            rgb (np.array): (r,g,b) geom colors
+        """
         geom_id = self.model.geom_name2id(name)
         self.model.geom_rgba[geom_id, :3] = rgb
 
     def get_rand_rgb(self, n=1):
+        """
+        Grabs a batch of random rgb tuple combos
+
+        Args:
+            n (int): How many sets of rgb tuples to randomly generate
+
+        Returns:
+            np.array or n-tuple: if n > 1, each tuple entry is a rgb tuple. else, single (r,g,b) array
+        """
         def _rand_rgb():
             return np.array(self.random_state.uniform(size=3) * 255,
                             dtype=np.uint8)
@@ -672,28 +1058,16 @@ class TextureModder(BaseModder):
         else:
             return tuple(_rand_rgb() for _ in range(n))
 
-    # def set_existing_texture(self, name):
-    #     bitmap = self.get_texture(name).bitmap
-    #     img = Image.new("RGB", (bitmap.shape[1], bitmap.shape[0]))
-
-    #     img_path = self.texture_path + '/' + self.random_state.choice(os.listdir(self.texture_path))
-    #     img = Image.open(img_path).convert('RGB')
-    #     img = img.convert('RGB')
-    #     if name == 'skybox':
-    #         img = img.resize((256, 256))
-    #     elif name =='table_visual':
-    #         img = img.resize((512, 512))
-    #     else:
-    #         img = img.resize((32, 32))
-    #     img = np.array(img)
-    #     img = img.astype(np.uint8)
-    #     img = np.concatenate([img] * int(bitmap.shape[0] / img.shape[0]), 0)
-    #     img.resize(bitmap.shape)
-    #     bitmap[..., :] = img
-
-    #     self.upload_texture(name)
-
     def get_texture(self, name):
+        """
+        Grabs texture of a specific geom
+
+        Args:
+            name (str): Name of the geom
+
+        Returns:
+            Texture: texture associated with the geom
+        """
         tex_id = self._name_to_tex_id(name)
         texture = self.textures[tex_id]
         return texture
@@ -706,6 +1080,11 @@ class TextureModder(BaseModder):
         If @perturb is True, then use the computed bitmap
         to perturb the default bitmap slightly, instead
         of replacing it.
+
+        Args:
+            name (str): Name of the geom
+            bitmap (np.array): 3d-array representing rgb pixel-wise values
+            perturb (bool): Whether to perturb the inputted bitmap or not
         """
         bitmap_to_set = self.get_texture(name).bitmap
         if perturb:
@@ -714,6 +1093,15 @@ class TextureModder(BaseModder):
         self.upload_texture(name)
 
     def get_material(self, name):
+        """
+        Grabs material of a specific geom
+
+        Args:
+            name (str): Name of the geom
+
+        Returns:
+            np.array: (reflectance, shininess, specular) material properties associated with the geom
+        """
         mat_id = self._name_to_mat_id(name)
         # Material is in tuple form (reflectance, shininess, specular)
         material = np.array((self.model.mat_reflectance[mat_id],
@@ -728,6 +1116,11 @@ class TextureModder(BaseModder):
         If @perturb is True, then use the computed material
         to perturb the default material slightly, instead
         of replacing it.
+
+        Args:
+            name (str): Name of the geom
+            material (np.array): (reflectance, shininess, specular) material properties associated with the geom
+            perturb (bool): Whether to perturb the inputted material properties or not
         """
         mat_id = self._name_to_mat_id(name)
         if perturb:
@@ -738,6 +1131,15 @@ class TextureModder(BaseModder):
         self.model.mat_specular[mat_id] = material[2]
 
     def get_checker_matrices(self, name):
+        """
+        Grabs checker pattern matrix associated with @name.
+
+        Args:
+            name (str): Name of geom
+
+        Returns:
+            np.array: 3d-array representing rgb checker pattern
+        """
         tex_id = self._name_to_tex_id(name)
         return self._texture_checker_mats[tex_id]
 
@@ -746,6 +1148,12 @@ class TextureModder(BaseModder):
         Use the two checker matrices to create a checker
         pattern from the two colors, and set it as 
         the texture for geom @name.
+
+        Args:
+            name (str): Name of geom
+            rgb1 (3-array): (r,g,b) value for one half of checker pattern
+            rgb2 (3-array): (r,g,b) value for other half of checker pattern
+            perturb (bool): Whether to perturb the resulting checker pattern or not
         """
         cbd1, cbd2 = self.get_checker_matrices(name)
         rgb1 = np.asarray(rgb1).reshape([1, 1, -1])
@@ -757,11 +1165,14 @@ class TextureModder(BaseModder):
     def set_gradient(self, name, rgb1, rgb2, vertical=True, perturb=False):
         """
         Creates a linear gradient from rgb1 to rgb2.
+
         Args:
-        - rgb1 (array): start color
-        - rgb2 (array): end color
-        - vertical (bool): if True, the gradient in the positive
-            y-direction, if False it's in the positive x-direction.
+            name (str): Name of geom
+            rgb1 (3-array): start color
+            rgb2 (3- array): end color
+            vertical (bool): if True, the gradient in the positive
+                y-direction, if False it's in the positive x-direction.
+            perturb (bool): Whether to perturb the resulting gradient pattern or not
         """
         # NOTE: MuJoCo's gradient uses a sigmoid. Here we simplify
         # and just use a linear gradient... We could change this
@@ -783,6 +1194,11 @@ class TextureModder(BaseModder):
         """
         Just set the texture bitmap for geom @name
         to a constant rgb value.
+
+        Args:
+            name (str): Name of geom
+            rgb (3-array): desired (r,g,b) color
+            perturb (bool): Whether to perturb the resulting color pattern or not
         """
         bitmap = self.get_texture(name).bitmap
         new_bitmap = np.zeros_like(bitmap)
@@ -792,11 +1208,14 @@ class TextureModder(BaseModder):
 
     def set_noise(self, name, rgb1, rgb2, fraction=0.9, perturb=False):
         """
+        Sets the texture bitmap for geom @name to a noise pattern
+
         Args:
-        - name (str): name of geom
-        - rgb1 (array): background color
-        - rgb2 (array): color of random noise foreground color
-        - fraction (float): fraction of pixels with foreground color
+            name (str): name of geom
+            rgb1 (3-array): background color
+            rgb2 (3-array): color of random noise foreground color
+            fraction (float): fraction of pixels with foreground color
+            perturb (bool): Whether to perturb the resulting color pattern or not
         """
         bitmap = self.get_texture(name).bitmap
         h, w = bitmap.shape[:2]
@@ -811,6 +1230,9 @@ class TextureModder(BaseModder):
     def upload_texture(self, name):
         """
         Uploads the texture to the GPU so it's available in the rendering.
+
+        Args:
+            name (str): name of geom
         """
         texture = self.get_texture(name)
         if not self.sim.render_contexts:
@@ -823,6 +1245,12 @@ class TextureModder(BaseModder):
         Helper function to determined if the geom @name has
         an assigned material and that the material has
         an assigned texture.
+
+        Args:
+            name (str): name of geom
+
+        Returns:
+            bool: True if specific geom has both material and texture associated, else False
         """
         geom_id = self.model.geom_name2id(name)
         mat_id = self.model.geom_matid[geom_id]
@@ -836,6 +1264,15 @@ class TextureModder(BaseModder):
     def _name_to_tex_id(self, name):
         """
         Helper function to get texture id from geom name.
+
+        Args:
+            name (str): name of geom
+
+        Returns:
+            int: id of texture associated with geom
+
+        Raises:
+            AssertionError: [No texture associated with geom]
         """
 
         # handle skybox separately
@@ -857,6 +1294,16 @@ class TextureModder(BaseModder):
     def _name_to_mat_id(self, name):
         """
         Helper function to get material id from geom name.
+
+        Args:
+            name (str): name of geom
+
+        Returns:
+            int: id of material associated with geom
+
+        Raises:
+            ValueError: [No material associated with skybox]
+            AssertionError: [No material associated with geom]
         """
 
         # handle skybox separately
@@ -867,17 +1314,6 @@ class TextureModder(BaseModder):
         geom_id = self.model.geom_name2id(name)
         mat_id = self.model.geom_matid[geom_id]
         return mat_id
-
-    # def _build_tex_geom_map(self):
-    #     # Build a map from tex_id to geom_ids, so we can check
-    #     # for collisions.
-    #     self._geom_ids_by_tex_id = defaultdict(list)
-    #     for geom_id in range(self.model.ngeom):
-    #         mat_id = self.model.geom_matid[geom_id]
-    #         if mat_id >= 0:
-    #             tex_id = self.model.mat_texid[mat_id]
-    #             if tex_id >= 0:
-    #                 self._geom_ids_by_tex_id[tex_id].append(geom_id)
 
     def _cache_checker_matrices(self):
         """
@@ -896,6 +1332,19 @@ class TextureModder(BaseModder):
             self._texture_checker_mats.append(self._make_checker_matrices(h, w))
 
     def _make_checker_matrices(self, h, w):
+        """
+        Helper function to quickly generate binary matrices used to create checker patterns
+
+        Args:
+            h (int): Desired height of matrices
+            w (int): Desired width of matrices
+
+        Returns:
+            2-tuple:
+
+                - (np.array): 2d-array representing first half of checker matrix
+                - (np.array): 2d-array representing second half of checker matrix
+        """
         re = np.r_[((w + 1) // 2) * [0, 1]]
         ro = np.r_[((w + 1) // 2) * [1, 0]]
         cbd1 = np.expand_dims(np.row_stack(((h + 1) // 2) * [re, ro]), -1)[:h, :w]
@@ -906,9 +1355,14 @@ class TextureModder(BaseModder):
 # From mjtTexture
 MJT_TEXTURE_ENUM = ['2d', 'cube', 'skybox']
 
-class Texture():
+
+class Texture:
     """
     Helper class for operating on the MuJoCo textures.
+
+    Args:
+        model (MjModel): Mujoco sim model
+        tex_id (int): id of specific texture in mujoco sim
     """
 
     __slots__ = ['id', 'type', 'height', 'width', 'tex_adr', 'tex_rgb']
@@ -923,11 +1377,18 @@ class Texture():
 
     @property
     def bitmap(self):
+        """
+        Grabs color bitmap associated with this texture from the mujoco sim.
+
+        Returns:
+            np.array: 3d-array representing the rgb texture bitmap
+        """
         size = self.height * self.width * 3
         data = self.tex_rgb[self.tex_adr:self.tex_adr + size]
         return data.reshape((self.height, self.width, 3))
 
-class PhysicalParameterModder:
+
+class PhysicalParameterModder(BaseModder):
     """
     Modder for various physical parameters of the mujoco model
     can use to modify parameters stored in MjModel (ie friction, damping, etc.) as
@@ -935,19 +1396,27 @@ class PhysicalParameterModder:
     To modify a parameteter, use the parameter to be changed as a keyword argument to
     self.mod and the new value as the value for that argument. Supports arbitray many
     modifications in a single step.
-    NOTE: It is necesary to perform sim.forward after performing the modification.
-    NOTE: Some parameters might not be able to be changed. users are to verify that
-          after the call to forward that the parameter is indeed changed.
-    """
-    def __init__(self, sim):
-        self.sim = sim
 
-    @property
-    def model(self):
-        return self.sim.model
+    :NOTE: It is necesary to perform sim.forward after performing the modification.
+    :NOTE: Some parameters might not be able to be changed. users are to verify that
+          after the call to forward that the parameter is indeed changed.
+
+    Args:
+        sim (MjSim): Mujoco sim instance
+
+        random_state (RandomState): instance of np.random.RandomState, specific
+            seed used to randomize these modifications without impacting other
+            numpy seeds / randomizations
+    """
+    def __init__(self, sim, random_state=None):
+        super().__init__(sim=sim, random_state=random_state)
 
     @property
     def opt(self):
+        """
+        Returns:
+             ?: MjModel sim options
+        """
         return self.sim.model.opt
 
     def __getattr__(self, name):
@@ -974,6 +1443,9 @@ class PhysicalParameterModder:
         Method to actually mod. Assumes passing in keyword arguments with key being the parameter to
         modify and the value being the value to set
         Feel free to add more as we see fit.
+
+        Args:
+            **kwargs (dict): Physical parameters to actually modify mid-sim
         """
         for to_mod in kwargs:
             val = kwargs[to_mod]

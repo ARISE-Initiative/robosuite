@@ -53,9 +53,8 @@ def convert_quat(q, to="xyzw"):
     If to == 'xyzw', then the input is in 'wxyz' format, and vice-versa.
 
     Args:
-        q: a 4-dim numpy array corresponding to a quaternion
-        to: a string, either 'xyzw' or 'wxyz', determining
-            which convention to convert to.
+        q (np.array): a 4-dim array corresponding to a quaternion
+        to (str): either 'xyzw' or 'wxyz', determining which convention to convert to.
     """
     if to == "xyzw":
         return q[[1, 2, 3, 0]]
@@ -65,10 +64,20 @@ def convert_quat(q, to="xyzw"):
 
 
 def quat_multiply(quaternion1, quaternion0):
-    """Return multiplication of two quaternions.
+    """
+    Return multiplication of two quaternions (q1 * q0).
+
+    E.g.:
     >>> q = quat_multiply([1, -2, 3, 4], [-5, 6, 7, 8])
     >>> np.allclose(q, [-44, -14, 48, 28])
     True
+
+    Args:
+        quaternion1 (np.array): (x,y,z,w) quaternion
+        quaternion0 (np.array): (x,y,z,w) quaternion
+
+    Returns:
+        np.array: (x,y,z,w) multiplied quaternion
     """
     x0, y0, z0, w0 = quaternion0
     x1, y1, z1, w1 = quaternion1
@@ -84,11 +93,20 @@ def quat_multiply(quaternion1, quaternion0):
 
 
 def quat_conjugate(quaternion):
-    """Return conjugate of quaternion.
+    """
+    Return conjugate of quaternion.
+
+    E.g.:
     >>> q0 = random_quaternion()
     >>> q1 = quat_conjugate(q0)
     >>> q1[3] == q0[3] and all(q1[:3] == -q0[:3])
     True
+
+    Args:
+        quaternion (np.array): (x,y,z,w) quaternion
+
+    Returns:
+        np.array: (x,y,z,w) quaternion conjugate
     """
     return np.array(
         (-quaternion[0], -quaternion[1], -quaternion[2], quaternion[3]),
@@ -97,11 +115,20 @@ def quat_conjugate(quaternion):
 
 
 def quat_inverse(quaternion):
-    """Return inverse of quaternion.
+    """
+    Return inverse of quaternion.
+
+    E.g.:
     >>> q0 = random_quaternion()
     >>> q1 = quat_inverse(q0)
     >>> np.allclose(quat_multiply(q0, q1), [0, 0, 0, 1])
     True
+
+    Args:
+        quaternion (np.array): (x,y,z,w) quaternion
+
+    Returns:
+        np.array: (x,y,z,w) quaternion inverse
     """
     return quat_conjugate(quaternion) / np.dot(quaternion, quaternion)
 
@@ -110,26 +137,46 @@ def quat_distance(quaternion1, quaternion0):
     """
     Returns distance between two quaternions, such that distance * quaternion0 = quaternion1
 
-    Note: Assumes quaternion in form: {x,y,z,w}
+    Args:
+        quaternion1 (np.array): (x,y,z,w) quaternion
+        quaternion0 (np.array): (x,y,z,w) quaternion
+
+    Returns:
+        np.array: (x,y,z,w) quaternion distance
     """
     return quat_multiply(quaternion1, quat_inverse(quaternion0))
 
 
 def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
-    """Return spherical linear interpolation between two quaternions.
+    """
+    Return spherical linear interpolation between two quaternions.
+
+    E.g.:
     >>> q0 = random_quat()
     >>> q1 = random_quat()
     >>> q = quat_slerp(q0, q1, 0.0)
     >>> np.allclose(q, q0)
     True
+
     >>> q = quat_slerp(q0, q1, 1.0, 1)
     >>> np.allclose(q, q1)
     True
+
     >>> q = quat_slerp(q0, q1, 0.5)
     >>> angle = math.acos(np.dot(q0, q))
     >>> np.allclose(2.0, math.acos(np.dot(q0, q1)) / angle) or \
         np.allclose(2.0, math.acos(-np.dot(q0, q1)) / angle)
     True
+
+    Args:
+        quat0 (np.array): (x,y,z,w) quaternion startpoint
+        quat1 (np.array): (x,y,z,w) quaternion endpoint
+        fraction (float): fraction of interpolation to calculate
+        spin ( ):
+        shortestpath (bool): If True, will calculate the shortest path
+
+    Returns:
+        np.array: (x,y,z,w) quaternion distance
     """
     q0 = unit_vector(quat0[:4])
     q1 = unit_vector(quat1[:4])
@@ -155,16 +202,23 @@ def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
 
 
 def random_quat(rand=None):
-    """Return uniform random unit quaternion.
-    rand: array like or None
-        Three independent random variables that are uniformly distributed
-        between 0 and 1.
+    """
+    Return uniform random unit quaternion.
+
+    E.g.:
     >>> q = random_quat()
     >>> np.allclose(1.0, vector_norm(q))
     True
     >>> q = random_quat(np.random.random(3))
     >>> q.shape
     (4,)
+
+    Args:
+        rand (3-array or None): If specified, must be three independent random variables that are uniformly distributed
+            between 0 and 1.
+
+    Returns:
+        np.array: (x,y,z,w) random quaternion
     """
     if rand is None:
         rand = np.random.rand(3)
@@ -180,6 +234,7 @@ def random_quat(rand=None):
         dtype=np.float32,
     )
 
+
 def random_axis_angle(angle_limit=None, random_state=None):
     """
     Samples an axis-angle rotation by first sampling a random axis
@@ -188,6 +243,13 @@ def random_axis_angle(angle_limit=None, random_state=None):
 
     If @random_state is provided (instance of np.random.RandomState), it
     will be used to generate random numbers.
+
+    Args:
+        angle_limit (None or float): If set, determines magnitude limit of angles to generate
+        random_state (None or RandomState): RNG to use if specified
+
+    Raises:
+        AssertionError: [Invalid RNG]
     """
     if angle_limit is None:
         angle_limit = 2. * np.pi
@@ -212,10 +274,10 @@ def vec(values):
     Converts value tuple into a numpy vector.
 
     Args:
-        values: a tuple of numbers
+        values (n-array): a tuple of numbers
 
     Returns:
-        a numpy vector of given values
+        np.array: vector of given values
     """
     return np.array(values, dtype=np.float32)
 
@@ -225,10 +287,10 @@ def mat4(array):
     Converts an array to 4x4 matrix.
 
     Args:
-        array: the array in form of vec, list, or tuple
+        array (n-array): the array in form of vec, list, or tuple
 
     Returns:
-        a 4x4 numpy matrix
+        np.array: a 4x4 numpy matrix
     """
     return np.array(array, dtype=np.float32).reshape((4, 4))
 
@@ -238,11 +300,13 @@ def mat2pose(hmat):
     Converts a homogeneous 4x4 matrix into pose.
 
     Args:
-        hmat: a 4x4 homogeneous matrix
+        hmat (np.array): a 4x4 homogeneous matrix
 
     Returns:
-        (pos, orn) tuple where pos is vec3 float in cartesian,
-            orn is vec4 float quaternion
+        2-tuple:
+
+            - (np.array) (x,y,z) position array in cartesian coordinates
+            - (np.array) (x,y,z,w) orientation array in quaternion form
     """
     pos = hmat[:3, 3]
     orn = mat2quat(hmat[:3, :3])
@@ -255,10 +319,10 @@ def mat2quat(rmat):
     Converts given rotation matrix to quaternion.
 
     Args:
-        rmat: 3x3 rotation matrix
+        rmat (np.array): 3x3 rotation matrix
 
     Returns:
-        vec4 float quaternion angles
+        np.array: (x,y,z,w) float quaternion angles
     """
     M = np.asarray(rmat).astype(np.float32)[:3, :3]
 
@@ -291,7 +355,19 @@ def mat2quat(rmat):
     return q1[inds]
 
 
-def euler2mat(euler: object) -> object: #assume xyz
+def euler2mat(euler):
+    """
+    Converts euler angles into rotation matrix form
+
+    Args:
+        euler (np.array): (r,p,y) angles
+
+    Returns:
+        np.array: 3x3 rotation matrix
+
+    Raises:
+        AssertionError: [Invalid input shape]
+    """
 
     euler = np.asarray(euler, dtype=np.float64)
     assert euler.shape[-1] == 3, "Invalid shaped euler {}".format(euler)
@@ -320,11 +396,11 @@ def mat2euler(rmat, axes="sxyz"):
     Converts given rotation matrix to euler angles in radian.
 
     Args:
-        rmat: 3x3 rotation matrix
-        axes: One of 24 axis sequences as string or encoded tuple
+        rmat (np.array): 3x3 rotation matrix
+        axes (str): One of 24 axis sequences as string or encoded tuple (see top of this module)
 
     Returns:
-        converted euler angles in radian vec3 float
+        np.array: (r,p,y) converted euler angles in radian vec3 float
     """
     try:
         firstaxis, parity, repetition, frame = _AXES2TUPLE[axes.lower()]
@@ -369,11 +445,11 @@ def pose2mat(pose):
     Converts pose to homogeneous matrix.
 
     Args:
-        pose: a (pos, orn) tuple where pos is vec3 float cartesian, and
+        pose (2-tuple): a (pos, orn) tuple where pos is vec3 float cartesian, and
             orn is vec4 float quaternion.
 
     Returns:
-        4x4 homogeneous matrix
+        np.array: 4x4 homogeneous matrix
     """
     homo_pose_mat = np.zeros((4, 4), dtype=np.float32)
     homo_pose_mat[:3, :3] = quat2mat(pose[1])
@@ -385,13 +461,13 @@ def pose2mat(pose):
 @jit_decorator
 def quat2mat(quaternion):
     """
-    Converts given quaternion (x, y, z, w) to matrix.
+    Converts given quaternion to matrix.
 
     Args:
-        quaternion: vec4 float angles
+        quaternion (np.array): (x,y,z,w) vec4 float angles
 
     Returns:
-        3x3 rotation matrix
+        np.array: 3x3 rotation matrix
     """
     # awkward semantics for use with numba
     inds = np.array([3, 0, 1, 2])
@@ -413,8 +489,14 @@ def quat2mat(quaternion):
 
 def quat2axisangle(quat):
     """
-    Converts (x, y, z, w) quaternion to axis-angle format.
+    Converts quaternion to axis-angle format.
     Returns a unit vector direction scaled by its angle in radians.
+
+    Args:
+        quat (np.array): (x,y,z,w) vec4 float angles
+
+    Returns:
+        np.array: (ax,ay,az) axis-angle exponential coordinates
     """
     # clip quaternion
     if quat[3] > 1.:
@@ -432,7 +514,13 @@ def quat2axisangle(quat):
 
 def axisangle2quat(vec):
     """
-    Converts scaled axis-angle to (x, y, z, w) quat.
+    Converts scaled axis-angle to quat.
+
+    Args:
+        vec (np.array): (ax,ay,az) axis-angle exponential coordinates
+
+    Returns:
+        np.array: (x,y,z,w) vec4 float angles
     """
     # Grab angle
     angle = np.linalg.norm(vec)
@@ -456,11 +544,11 @@ def pose_in_A_to_pose_in_B(pose_A, pose_A_in_B):
     to a homogenous matrix corresponding to the same point C in frame B.
 
     Args:
-        pose_A: numpy array of shape (4,4) corresponding to the pose of C in frame A
-        pose_A_in_B: numpy array of shape (4,4) corresponding to the pose of A in frame B
+        pose_A (np.array): 4x4 matrix corresponding to the pose of C in frame A
+        pose_A_in_B (np.array): 4x4 matrix corresponding to the pose of A in frame B
 
     Returns:
-        numpy array of shape (4,4) corresponding to the pose of C in frame B
+        np.array: 4x4 matrix corresponding to the pose of C in frame B
     """
 
     # pose of A in B takes a point in A and transforms it to a point in C.
@@ -473,14 +561,14 @@ def pose_in_A_to_pose_in_B(pose_A, pose_A_in_B):
 
 def pose_inv(pose):
     """
-    Computes the inverse of a homogenous matrix corresponding to the pose of some
+    Computes the inverse of a homogeneous matrix corresponding to the pose of some
     frame B in frame A. The inverse is the pose of frame A in frame B.
 
     Args:
-        pose: numpy array of shape (4,4) for the pose to inverse
+        pose (np.array): 4x4 matrix for the pose to inverse
 
     Returns:
-        numpy array of shape (4,4) for the inverse pose
+        np.array: 4x4 matrix for the inverse pose
     """
 
     # Note, the inverse of a pose matrix is the following
@@ -504,6 +592,12 @@ def _skew_symmetric_translation(pos_A_in_B):
     """
     Helper function to get a skew symmetric translation matrix for converting quantities
     between frames.
+
+    Args:
+        pos_A_in_B (np.array): (x,y,z) position of A in frame B
+
+    Returns:
+        np.array: 3x3 skew symmetric translation matrix
     """
     return np.array(
         [
@@ -525,12 +619,15 @@ def vel_in_A_to_vel_in_B(vel_A, ang_vel_A, pose_A_in_B):
     Converts linear and angular velocity of a point in frame A to the equivalent in frame B.
 
     Args:
-        vel_A: 3-dim iterable for linear velocity in A
-        ang_vel_A: 3-dim iterable for angular velocity in A
-        pose_A_in_B: numpy array of shape (4,4) corresponding to the pose of A in frame B
+        vel_A (np.array): (vx,vy,vz) linear velocity in A
+        ang_vel_A (np.array): (wx,wy,wz) angular velocity in A
+        pose_A_in_B (np.array): 4x4 matrix corresponding to the pose of A in frame B
 
     Returns:
-        vel_B, ang_vel_B: two numpy arrays of shape (3,) for the velocities in B
+        2-tuple:
+
+            - (np.array) (vx,vy,vz) linear velocities in frame B
+            - (np.array) (wx,wy,wz) angular velocities in frame B
     """
     pos_A_in_B = pose_A_in_B[:3, 3]
     rot_A_in_B = pose_A_in_B[:3, :3]
@@ -545,12 +642,15 @@ def force_in_A_to_force_in_B(force_A, torque_A, pose_A_in_B):
     Converts linear and rotational force at a point in frame A to the equivalent in frame B.
 
     Args:
-        force_A: 3-dim iterable for linear force in A
-        torque_A: 3-dim iterable for rotational force (moment) in A
-        pose_A_in_B: numpy array of shape (4,4) corresponding to the pose of A in frame B
+        force_A (np.array): (fx,fy,fz) linear force in A
+        torque_A (np.array): (tx,ty,tz) rotational force (moment) in A
+        pose_A_in_B (np.array): 4x4 matrix corresponding to the pose of A in frame B
 
     Returns:
-        force_B, torque_B: two numpy arrays of shape (3,) for the forces in B
+        2-tuple:
+
+            - (np.array) (fx,fy,fz) linear forces in frame B
+            - (np.array) (tx,ty,tz) moments in frame B
     """
     pos_A_in_B = pose_A_in_B[:3, 3]
     rot_A_in_B = pose_A_in_B[:3, :3]
@@ -564,8 +664,7 @@ def rotation_matrix(angle, direction, point=None):
     """
     Returns matrix to rotate about axis defined by point and direction.
 
-    Examples:
-
+    E.g.:
         >>> angle = (random.random() - 0.5) * (2*math.pi)
         >>> direc = numpy.random.random(3) - 0.5
         >>> point = numpy.random.random(3) - 0.5
@@ -573,17 +672,27 @@ def rotation_matrix(angle, direction, point=None):
         >>> R1 = rotation_matrix(angle-2*math.pi, direc, point)
         >>> is_same_transform(R0, R1)
         True
+
         >>> R0 = rotation_matrix(angle, direc, point)
         >>> R1 = rotation_matrix(-angle, -direc, point)
         >>> is_same_transform(R0, R1)
         True
+
         >>> I = numpy.identity(4, numpy.float32)
         >>> numpy.allclose(I, rotation_matrix(math.pi*2, direc))
         True
+
         >>> numpy.allclose(2., numpy.trace(rotation_matrix(math.pi/2,
         ...                                                direc, point)))
         True
 
+    Args:
+        angle (float): Magnitude of rotation
+        direction (np.array): (ax,ay,az) axis about which to rotate
+        point (None or np.array): If specified, is the (x,y,z) point about which the rotation will occur
+
+    Returns:
+        np.array: 4x4 homogeneous matrix that includes the desired rotation
     """
     sina = math.sin(angle)
     cosa = math.cos(angle)
@@ -617,9 +726,15 @@ def clip_translation(dpos, limit):
 
     Scales down the norm of the dpos to 'limit' if norm(dpos) > limit, else returns immediately
 
-    :param dpos: n-dim Translation being clipped (e,g.: (x, y, z)) -- numpy array
-    :param limit: Value to limit translation by -- magnitude (scalar, in same units as input)
-    :return: Clipped translation (same dimension as inputs) and whether the value was clipped or not
+    Args:
+        dpos (n-array): n-dim Translation being clipped (e,g.: (x, y, z)) -- numpy array
+        limit (float): Value to limit translation by -- magnitude (scalar, in same units as input)
+
+    Returns:
+        2-tuple:
+
+            - (np.array) Clipped translation (same dimension as inputs)
+            - (bool) whether the value was clipped or not
     """
     input_norm = np.linalg.norm(dpos)
     return (dpos * limit / input_norm, True) if input_norm > limit else (dpos, False)
@@ -631,9 +746,15 @@ def clip_rotation(quat, limit):
 
     Converts rotation to axis-angle, clips, then re-converts back into quaternion
 
-    :param quat: Rotation being clipped (x, y, z, w) -- numpy array
-    :param limit: Value to limit rotation by -- magnitude (scalar, in radians)
-    :return: Clipped rotation quaternion (x, y, z, w) and whether the value was clipped or not
+    Args:
+        quat (np.array): (x,y,z,w) rotation being clipped
+        limit (float): Value to limit rotation by -- magnitude (scalar, in radians)
+
+    Returns:
+        2-tuple:
+
+            - (np.array) Clipped rotation quaternion (x, y, z, w)
+            - (bool) whether the value was clipped or not
     """
     clipped = False
 
@@ -669,14 +790,14 @@ def clip_rotation(quat, limit):
 
 def make_pose(translation, rotation):
     """
-    Makes a homogenous pose matrix from a translation vector and a rotation matrix.
+    Makes a homogeneous pose matrix from a translation vector and a rotation matrix.
 
     Args:
-        translation: a 3-dim iterable
-        rotation: a 3x3 matrix
+        translation (np.array): (x,y,z) translation value
+        rotation (np.array): a 3x3 matrix representing rotation
 
     Returns:
-        pose: a 4x4 homogenous matrix
+        pose (np.array): a 4x4 homogeneous matrix
     """
     pose = np.zeros((4, 4))
     pose[:3, :3] = rotation
@@ -689,30 +810,41 @@ def unit_vector(data, axis=None, out=None):
     """
     Returns ndarray normalized by length, i.e. eucledian norm, along axis.
 
-    Examples:
-
+    E.g.:
         >>> v0 = numpy.random.random(3)
         >>> v1 = unit_vector(v0)
         >>> numpy.allclose(v1, v0 / numpy.linalg.norm(v0))
         True
+
         >>> v0 = numpy.random.rand(5, 4, 3)
         >>> v1 = unit_vector(v0, axis=-1)
         >>> v2 = v0 / numpy.expand_dims(numpy.sqrt(numpy.sum(v0*v0, axis=2)), 2)
         >>> numpy.allclose(v1, v2)
         True
+
         >>> v1 = unit_vector(v0, axis=1)
         >>> v2 = v0 / numpy.expand_dims(numpy.sqrt(numpy.sum(v0*v0, axis=1)), 1)
         >>> numpy.allclose(v1, v2)
         True
+
         >>> v1 = numpy.empty((5, 4, 3), dtype=numpy.float32)
         >>> unit_vector(v0, axis=1, out=v1)
         >>> numpy.allclose(v1, v2)
         True
+
         >>> list(unit_vector([]))
         []
+
         >>> list(unit_vector([1.0]))
         [1.0]
 
+    Args:
+        data (np.array): data to normalize
+        axis (None or int): If specified, determines specific axis along data to normalize
+        out (None or np.array): If specified, will store computation in this variable
+
+    Returns:
+        None or np.array: If @out is not specified, will return normalized vector. Otherwise, stores the output in @out
     """
     if out is None:
         data = np.array(data, dtype=np.float32, copy=True)
@@ -738,11 +870,11 @@ def get_orientation_error(target_orn, current_orn):
     For use in an impedance controller / task-space PD controller.
 
     Args:
-        target_orn: 4-dim iterable, desired orientation as a (x, y, z, w) quaternion
-        current_orn: 4-dim iterable, current orientation as a (x, y, z, w) quaternion
+        target_orn (np.array): (x, y, z, w) desired quaternion orientation
+        current_orn (np.array): (x, y, z, w) current quaternion orientation
 
     Returns:
-        orn_error: 3-dim numpy array for current orientation error, corresponds to
+        orn_error (np.array): (ax,ay,az) current orientation error, corresponds to
             (target_orn - current_orn)
     """
     current_orn = np.array(
@@ -765,11 +897,11 @@ def get_pose_error(target_pose, current_pose):
     correspond to the rotational error.
 
     Args:
-        target_pose: a 4x4 homogenous matrix for the target pose
-        current_pose: a 4x4 homogenous matrix for the current pose
+        target_pose (np.array): a 4x4 homogenous matrix for the target pose
+        current_pose (np.array): a 4x4 homogenous matrix for the current pose
 
     Returns:
-        A 6-dim numpy array for the pose error.
+        np.array: 6-dim pose error.
     """
     error = np.zeros(6)
 
@@ -796,5 +928,11 @@ def get_pose_error(target_pose, current_pose):
 def matrix_inverse(matrix):
     """
     Helper function to have an efficient matrix inversion function.
+
+    Args:
+        matrix (np.array): 2d-array representing a matrix
+
+    Returns:
+        np.array: 2d-array representing the matrix inverse
     """
     return np.linalg.inv(matrix)

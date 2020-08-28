@@ -13,6 +13,9 @@ import robosuite.utils.transform_utils as T
 def choose_environment():
     """
     Prints out environment options, and returns the selected env_name choice
+
+    Returns:
+        str: Chosen environment name
     """
     # get the list of all environments
     envs = sorted(suite.ALL_ENVIRONMENTS)
@@ -41,6 +44,9 @@ def choose_environment():
 def choose_controller():
     """
     Prints out controller options, and returns the requested controller name
+
+    Returns:
+        str: Chosen controller name
     """
     # get the list of all controllers
     controllers_info = suite.controllers.CONTROLLER_INFO
@@ -69,7 +75,10 @@ def choose_controller():
 
 def choose_multi_arm_config():
     """
-    Prints out multi-arm environment configuration options, and returns the requested controller name
+    Prints out multi-arm environment configuration options, and returns the requested config name
+
+    Returns:
+        str: Requested multi-arm configuration name
     """
     # Get the list of all multi arm configs
     env_configs = {
@@ -103,6 +112,12 @@ def choose_robots(exclude_bimanual=False):
     """
     Prints out robot options, and returns the requested robot. Restricts options to single-armed robots if
     @exclude_bimanual is set to True (False by default)
+
+    Args:
+        exclude_bimanual (bool): If set, excludes bimanual robots from the robot options
+
+    Returns:
+        str: Requested robot name
     """
     # Get the list of robots
     robots = {
@@ -151,13 +166,24 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     Args:
         device (Device): A device from which user inputs can be converted into actions. Can be either a Spacemouse or
             Keyboard device class
+
         robot (Robot): Which robot we're controlling
+
         active_arm (str): Only applicable for multi-armed setups (e.g.: multi-arm environments or bimanual robots).
             Allows inputs to be converted correctly if the control type (e.g.: IK) is dependent on arm choice.
             Choices are {right, left}
+
         env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
             correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
             {bimanual, single-arm-parallel, single-arm-opposed}
+
+    Returns:
+        2-tuple:
+
+            - (None or np.array): Action interpreted from @device including any gripper action(s). None if we get a
+                reset signal from the device
+            - (None or int): 1 if desired close, -1 if desired open gripper state. None if get a reset signal from the
+                device
 
     """
     state = device.get_controller_state()
