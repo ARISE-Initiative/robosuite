@@ -33,6 +33,7 @@ DEFAULT_WIPE_CONFIG = {
     "num_sensors": 100,                             # How many particles of dirt to generate in the environment
 
     # settings for thresholds
+    "contact_threshold": 3,                         # Minimum eef force to qualify as contact [N]
     "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the sensor (wipe the peg)
     "pressure_threshold_max": 70,                   # maximum force allowed (N)
 
@@ -222,6 +223,7 @@ class Wipe(RobotEnv):
         self.coverage_factor = self.task_config['coverage_factor']
 
         # settings for thresholds
+        self.contact_threshold = self.task_config['contact_threshold']
         self.touch_threshold = self.task_config['touch_threshold']
         self.pressure_threshold = self.task_config['touch_threshold']
         self.pressure_threshold_max = self.task_config['pressure_threshold_max']
@@ -449,7 +451,7 @@ class Wipe(RobotEnv):
                             1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe))
 
                 # Reward for keeping contact
-                if self.sim.data.ncon != 0:
+                if self.sim.data.ncon != 0 and self._has_gripper_contact:
                     reward += self.wipe_contact_reward
 
                 # Penalty for excessive force with the end-effector
@@ -503,15 +505,16 @@ class Wipe(RobotEnv):
         # Delta goes down
         delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))
 
-        self.mujoco_arena = WipeArena(table_full_size=self.table_full_size,
-                                      table_friction=self.table_friction,
-                                      table_offset=np.array(self.table_offset) + np.array((0, 0, delta_height)),
-                                      table_friction_std=self.table_friction_std,
-                                      coverage_factor=self.coverage_factor,
-                                      num_sensors=self.num_sensors,
-                                      line_width=self.line_width,
-                                      two_clusters=self.two_clusters
-                                      )
+        self.mujoco_arena = WipeArena(
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction,
+            table_offset=np.array(self.table_offset) + np.array((0, 0, delta_height)),
+            table_friction_std=self.table_friction_std,
+            coverage_factor=self.coverage_factor,
+            num_sensors=self.num_sensors,
+            line_width=self.line_width,
+            two_clusters=self.two_clusters
+        )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
 
@@ -541,9 +544,9 @@ class Wipe(RobotEnv):
         self.collisions = 0
         self.f_excess = 0
 
-        # ee resets
-        self.ee_force_bias = np.zeros(3)
-        self.ee_torque_bias = np.zeros(3)
+        # ee resets - bias at initial state
+        self.ee_force_bias = self.robots[0].ee_force
+        self.ee_torque_bias = self.robots[0].ee_torque
 
     def _get_observation(self):
         """
@@ -564,6 +567,13 @@ class Wipe(RobotEnv):
             OrderedDict: Observations from the environment
         """
         di = super()._get_observation()
+
+        # Get prefix from robot model to avoid naming clashes for multiple robots
+        pf = self.robots[0].robot_model.naming_prefix
+
+        # Add binary contact observation
+        di[pf + "contact-obs"] = self._has_gripper_contact
+        di[pf + "robot-state"] = np.concatenate((di[pf + "robot-state"], [di[pf + "contact-obs"]]))
 
         # object information in the observation
         if self.use_object_obs:
@@ -658,3 +668,14 @@ class Wipe(RobotEnv):
         """
         if type(robots) is list:
             assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
+
+    @property
+    def _has_gripper_contact(self):
+        """
+        Determines whether the gripper is making contact with an object, as defined by the eef force surprassing
+        a certain threshold defined by self.contact_threshold
+
+        Returns:
+            bool: True if contact is surpasses given threshold magnitude
+        """
+        return np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias) > self.contact_threshold
