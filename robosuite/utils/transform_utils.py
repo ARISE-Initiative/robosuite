@@ -147,7 +147,7 @@ def quat_distance(quaternion1, quaternion0):
     return quat_multiply(quaternion1, quat_inverse(quaternion0))
 
 
-def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
+def quat_slerp(quat0, quat1, fraction, shortestpath=True):
     """
     Return spherical linear interpolation between two quaternions.
 
@@ -158,7 +158,7 @@ def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
     >>> np.allclose(q, q0)
     True
 
-    >>> q = quat_slerp(q0, q1, 1.0, 1)
+    >>> q = quat_slerp(q0, q1, 1.0)
     >>> np.allclose(q, q1)
     True
 
@@ -172,7 +172,6 @@ def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
         quat0 (np.array): (x,y,z,w) quaternion startpoint
         quat1 (np.array): (x,y,z,w) quaternion endpoint
         fraction (float): fraction of interpolation to calculate
-        spin ( ):
         shortestpath (bool): If True, will calculate the shortest path
 
     Returns:
@@ -191,7 +190,7 @@ def quat_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
         # invert rotation
         d = -d
         q1 *= -1.0
-    angle = math.acos(np.clip(d, -1, 1)) + spin * math.pi
+    angle = math.acos(np.clip(d, -1, 1))
     if abs(angle) < EPS:
         return q0
     isin = 1.0 / math.sin(angle)
