@@ -1,14 +1,6 @@
 # robosuite
 
-## Latest Updates
-[03/08/2020] Added new [helper script](robosuite/scripts/tune_camera.py) to tune camera pose :camera:
-
-[02/08/2020] Added models and environments with the [Panda](https://www.franka.de/technology) arm from Franka Emika :panda_face:
-
-[12/10/2019] Migrated to MuJoCo 2.0 in our v0.3.0 release (install through [pip](https://pypi.org/project/robosuite/)) :tada:
-
-
-![gallery of_environments](resources/gallery.png)
+![gallery_of_environments](docs/images/gallery.png)
 
 **robosuite** is a tookit and simulation benchmark powered by the [MuJoCo physics engine](http://mujoco.org/) for reproducible robotics research. The current release concentrates on reinforcement learning for robot manipulation. This library is designed to smoothly interoperate with the [Surreal Distributed Reinforcement Learning Framework](https://github.com/SurrealAI/Surreal).
 
