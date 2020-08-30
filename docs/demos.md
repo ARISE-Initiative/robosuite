@@ -2,7 +2,7 @@
 
 We provide a collection of [demo scripts](https://github.com/Unknown-Initiative/robosuite-dev/tree/v1.0/robosuite/demos) to showcase the functionalities in **robosuite**.
 
-### Modular Simulation Creation
+### Environment Configuration
 The `demo_random_action.py` sciprt is the starter demo script that you should try first. It highlights the modular design of our simulated environments. It enables users to create new simulation instances by choosing one [environment](modules/environments), one or more [robots](modules/robots), and their [controllers](modules/controllers) from the command line. The script creates an environment instance and controls the robots with uniform random actions drawn from the controller-specific action space. The list of all environments, robots, controllers, and gripper types supported in the current version of **robosuite** are defined by `suite.ALL_ENVIRONMENTS`, `suite.ALL_ROBOTS`, `suite.ALL_CONTROLLERS`, and `suite.ALL_GRIPPERS` respectively.
 
 
