@@ -8,7 +8,7 @@ Reinforcement learning has been a powerful and generic tool in robotics. Reinfor
 
 This framework was originally developed since late 2017 by researchers in [Stanford Vision and Learning Lab](http://svl.stanford.edu/) (SVL) as an internal tool for robot learning research. Today it is actively maintained and used for robotics research projects in SVL.
 
-This release of Surreal Robotics Suite contains a set of benchmarking manipulation tasks and a modularized design of APIs for building new environments. We highlight these primary features below:
+This release of **robosuite** contains a set of benchmarking manipulation tasks and a modularized design of APIs for building new environments. We highlight these primary features below:
 
 * [**standardized tasks**](robosuite/environments): a set of single-arm and bimanual manipulation tasks of large diversity and varying complexity.
 * [**procedural generation**](robosuite/models): modularized APIs for programmatically creating new scenes and new tasks as a combinations of robot models, arenas, and parameterized 3D objects;

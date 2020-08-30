@@ -17,14 +17,6 @@ robosuite.environments.door
    :undoc-members:
    :show-inheritance:
 
-robosuite.environments.empty
------------------------------------
-
-.. automodule:: robosuite.environments.empty
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 robosuite.environments.lift
 ----------------------------------
 

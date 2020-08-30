@@ -57,7 +57,7 @@ if __name__ == "__main__":
     options = {}
 
     # print welcome info
-    print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
+    print("Welcome to robosuite v{}!".format(suite.__version__))
     print(suite.__logo__)
 
     # Choose environment and add it to options

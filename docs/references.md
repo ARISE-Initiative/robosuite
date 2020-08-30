@@ -1,4 +1,4 @@
-# Papers using robosuite
+# Projects using robosuite
 
 A list of references of papers and projects that use robosuite.
 

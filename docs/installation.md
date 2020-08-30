@@ -1,5 +1,5 @@
 # Installation
-robosuite officially supports Mac OS X and Linux on Python 3.5 or 3.7. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
+robosuite officially supports Mac OS X and Linux on Python 3. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
 
 The base installation requires the MuJoCo physics engine (with [mujoco-py](https://github.com/openai/mujoco-py), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate`.
 
@@ -20,7 +20,7 @@ First download MuJoCo 2.0 ([Linux](https://www.roboti.us/download/mujoco200_linu
 
 2. Test your installation with
 ```sh
-    $ python -m robosuite.demo
+    $ python -m robosuite.demos.demo_random_action
 ```
 
 ### Install from source
@@ -43,5 +43,5 @@ First download MuJoCo 2.0 ([Linux](https://www.roboti.us/download/mujoco200_linu
 
 4. Test your installation with
 ```sh
-    $ python robosuite/demo.py
+    $ python robosuite/demos/demo_random_action.py
 ```
