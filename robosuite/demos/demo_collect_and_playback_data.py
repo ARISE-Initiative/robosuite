@@ -2,7 +2,7 @@
 Record trajectory data with the DataCollectionWrapper wrapper and play them back.
 
 Example:
-    $ python demo_collect_and_playback_data.py --environment BaxterLift
+    $ python demo_collect_and_playback_data.py --environment Lift
 """
 
 import os

@@ -1,6 +1,5 @@
 """
-This demo script demonstrates the various functionalities of each controller available within robosuite (list of
-supported controllers are shown at the bottom of this docstring).
+This demo script demonstrates the various functionalities of each controller available within robosuite.
 
 For a given controller, runs through each dimension and executes a perturbation "test_value" from its
 neutral (stationary) value for a certain amount of time "steps_per_action", and then returns to all neutral values
@@ -28,7 +27,7 @@ for time "steps_per_rest" before proceeding with the next action dim.
         then the y direction, then the z direction, and then begin sequentially rotating about its x-axis,
         then y-axis, then z-axis.
 
-Please reference the controller README in the robosuite/controllers directory for an overview of each controller.
+Please reference the documentation of Controllers in the Modules section for an overview of each controller.
 Controllers are expected to behave in a generally controlled manner, according to their control space. The expected
 sequential qualitative behavior during the test is described below for each controller:
 
@@ -121,6 +120,7 @@ if __name__ == "__main__":
     env = suite.make(
         **options,
         has_renderer=True,
+        has_offscreen_renderer=False,
         ignore_done=True,
         use_camera_obs=False,
         horizon=(steps_per_action + steps_per_rest) * num_test_steps,

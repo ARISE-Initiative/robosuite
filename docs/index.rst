@@ -16,7 +16,6 @@ Welcome to robosuite's documentation!
    installation
    quickstart
    demos
-   scripts
 
 .. (TODO) Roberto (Yuke will do overview)
 
