@@ -15,19 +15,19 @@ First download MuJoCo 2.0 ([Linux](https://www.roboti.us/download/mujoco200_linu
 ### Install from pip
 1. After setting up mujoco, robosuite can be installed with
 ```sh
-    $ pip install robosuite
+$ pip install robosuite
 ```
 
 2. Test your installation with
 ```sh
-    $ python -m robosuite.demos.demo_random_action
+$ python -m robosuite.demos.demo_random_action
 ```
 
 ### Install from source
 1. Clone the robosuite repository
 ```sh 
-    $ git clone https://github.com/StanfordVL/robosuite.git
-    $ cd robosuite
+$ git clone https://github.com/StanfordVL/robosuite.git
+$ cd robosuite
 ```
 
 2. Install the base requirements with
@@ -43,5 +43,5 @@ First download MuJoCo 2.0 ([Linux](https://www.roboti.us/download/mujoco200_linu
 
 4. Test your installation with
 ```sh
-    $ python robosuite/demos/demo_random_action.py
+$ python robosuite/demos/demo_random_action.py
 ```

@@ -2,9 +2,10 @@
 
 This script provides an example of using the pygame library for rendering
 camera observations as an alternative to the default mujoco_py renderer.
+This is useful for running robosuite on operating systems where mujoco_py is incompatible.
 
 Example:
-    $ python run_pygame_renderer.py --environment BaxterPegInHole --width 1000 --height 1000
+    $ python demo_pygame_renderer.py --environment Stack --width 1000 --height 1000
 """
 
 import sys
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-    parser.add_argument("--camera", type=str, default="agentview", help="Name of camera to render")
+    parser.add_argument("--camera", type=str, default="frontview", help="Name of camera to render")
     parser.add_argument("--timesteps", type=int, default=10000)
     parser.add_argument("--width", type=int, default=512)
     parser.add_argument("--height", type=int, default=384)
@@ -37,7 +38,6 @@ if __name__ == "__main__":
         camera_names=args.camera,
         camera_heights=height,
         camera_widths=width,
-        gripper_visualizations=True,
         use_camera_obs=True,
         use_object_obs=False,
     )
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     for i in range(args.timesteps):
 
         # issue random actions
-        action = 0.5 * np.random.randn(env.action_dim)
+        action = np.random.randn(env.robots[0].dof)
         obs, reward, done, info = env.step(action)
 
         for event in pygame.event.get():

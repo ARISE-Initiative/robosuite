@@ -29,7 +29,7 @@ def collect_random_trajectory(env, timesteps=1000):
     dof = env.action_dim
 
     for t in range(timesteps):
-        action = 0.5 * np.random.randn(dof)
+        action = np.random.randn(dof)
         env.step(action)
         env.render()
         if t % 100 == 0:
@@ -69,10 +69,10 @@ def playback_trajectory(env, ep_dir):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="Stack")
-    parser.add_argument("--robots", nargs="+", type=str, default="Sawyer", help="Which robot(s) to use in the env")
+    parser.add_argument("--environment", type=str, default="Door")
+    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
     parser.add_argument("--directory", type=str, default="/tmp/")
-    parser.add_argument("--timesteps", type=int, default=2000)
+    parser.add_argument("--timesteps", type=int, default=1000)
     args = parser.parse_args()
 
     # create original environment
@@ -82,7 +82,8 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         has_renderer=True,
-        control_freq=100,
+        has_offscreen_renderer=False,
+        control_freq=20,
     )
     data_directory = args.directory
 

@@ -44,7 +44,7 @@ Main difference is that user inputs with ik's rotations are always taken relativ
     user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
 
     Notes:
-        OSC also tends to be more computationally efficient since IK relies on backend pybullet sim
+        OSC also tends to be more computationally efficient since IK relies on the backend pybullet IK solver.
 
 
 ***Choose environment specifics with the following arguments***
@@ -239,5 +239,4 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
-            print(reward)
             env.render()

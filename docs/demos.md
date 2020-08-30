@@ -1,4 +1,4 @@
-# Demos
+# Demo Showcases
 
 We provide a collection of [demo scripts](https://github.com/Unknown-Initiative/robosuite-dev/tree/v1.0/robosuite/demos) to showcase the functionalities in **robosuite**.
 
@@ -39,31 +39,140 @@ Thus the `OSC_POSE` controller should be expected to sequentially move linearly 
 * `JOINT_VELOCITY`: Robot Joints move sequentially in a controlled fashion
 * `JOINT_TORQUE`: Unlike other controllers, joint torque controller is expected to act rather lethargic, as the "controller" is really just a wrapper for direct torque control of the mujoco actuators. Therefore, a "neutral" value of 0 torque will not guarantee a stable robot when it has non-zero velocity!
 
+
+### Domain Randomization
+
+The `demo_domain_randomization.py` script showcases our domain randomization functionality. Domain randomization can be easily enabled by wrapping an environment with the [DomainRandomizationWrapper](source/robosuite.wrappers). At this moment, the randomization functionality focuses on visual variations, including colors, textures, and camera viewpoints.
+
+![collection of grippers](images/domain_randomization.png)
+
 ### Gripper Selection
 The `demo_gripper_selection.py` script shows you how to select gripper for an environment. This is controlled by `gripper_type` keyword argument. The set of all grippers is defined by the global variable `robosuite.ALL_GRIPPERS`.
 
 ![collection of grippers](images/gripper_collection.png)
 
-### demo_collect_and_playback_data.py
-
-### demo_gym_functionality.py
-
-
-### demo_learning_curriculum.py
+### Gripper Interaction & Procedural Generation
+The `demo_gripper_interaction.py` script illustrates the process of importing grippers into a scene and making it interact
+with the objects with actuators. It also shows how to procedurally generate a scene with the Modeling APIs of the MJCF utility functions.
 
 
-### demo_device_control.py
+### Trajectory Replay
+The `demo_collect_and_playback_data.py` shows how to record robot roll-out trajectory data with the [DataCollectionWrapper](source/robosuite.wrappers) wrapper and play them back. This wrapper records and stores the environment states in a trajectory to temporary files in `.npz` format (default path: `/tmp`). During playback, it loads the stored states from disk and resets the simulator to these states. Example:
+```
+$ python demo_collect_and_playback_data.py --environment Door
+```
+
+### OpenAI Gym-style APIs
+This `demo_gym_functionality.py` script shows how to adapt an environment to be compatible with the [OpenAI Gym](https://gym.openai.com/)-style APIs. This is useful when using learning pipelines that require supporting these APIs. For instance, this can be used with [OpenAI Baselines](https://github.com/openai/baselines) to train agents with RL. We base this script off of some code snippets found in the [Getting Started with Gym](https://gym.openai.com/docs/) section of the OpenAI gym documentation. The following snippet was used to demo basic functionality in OpenAI Gym.
+
+```python
+import gym
+env = gym.make('CartPole-v0')
+for i_episode in range(20):
+    observation = env.reset()
+    for t in range(100):
+        env.render()
+        print(observation)
+        action = env.action_space.sample()
+        observation, reward, done, info = env.step(action)
+        if done:
+            print("Episode finished after {} timesteps".format(t+1))
+            break
+```
+
+To adapt the **robosuite** APIs to be compatible with OpenAI Gym's style, this script demonstrates how this can be easily achieved by using the [GymWrapper](source/robosuite.wrappers).
 
 
-### demo_pygame_renderer.py
+### Teleoperation
+The `demo_device_control.py` scripts shows how to teleoperate robot with [control devices](modules/devices), such as keyboard or SpaceMouse. The user input device can be set by the `--device` argument, with the following two options:
+
+* **Keyboard**
+    We use the keyboard to control the end-effector of the robot.
+    The keyboard provides 6-DoF control commands through various keys.
+    The commands are mapped to joint velocities through an inverse kinematics
+    solver from Bullet physics.
+
+    **Note:**
+        To run this script with Mac OS X, you must run it with root access.
+
+* **SpaceMouse**
+    We use the SpaceMouse 3D mouse from [3Dconnexion](https://www.3dconnexion.com/spacemouse_wireless/en/) to control the end-effector of the robot. The mouse provides 6-DoF control commands.
+
+    We used the SpaceMouse Wireless. The paper below used the same device
+    to collect human demonstrations for imitation learning.
+
+    ```text
+    Reinforcement and Imitation Learning for Diverse Visuomotor Skills
+    Yuke Zhu, Ziyu Wang, Josh Merel, Andrei Rusu, Tom Erez, Serkan Cabi, Saran Tunyasuvunakool,
+    János Kramár, Raia Hadsell, Nando de Freitas, Nicolas Heess
+    RSS 2018
+    ```
+
+    **Note:**
+        This current implementation only supports Mac OS X (Linux support can be added).
+        Download and install the [driver](https://www.3dconnexion.com/service/drivers.html) before running the script.
+
+Additionally, `--pos_sensitivity` and `--rot_sensitivity` provide relative gains for increasing / decreasing the user input
+device sensitivity. The `--controller` argument determines the choice of using either inverse kinematics controller (`ik`) or operational space controller (`osc`). The main difference is that user inputs with `ik`'s rotations are always taken relative to eef coordinate frame, whereas user inputs with `osc`'s rotations are taken relative to global frame (i.e., static / camera frame of reference). `osc` also tends to be more computationally efficient since `ik` relies on the backend [pybullet](https://github.com/bulletphysics/bullet3) IK solver.
 
 
+Furthermore, please choose environment specifics with the following arguments:
 
-### demo_domain_randomization.py
+* `--environment`: Task to perform, e.g., `Lift`, `TwoArmPegInHole`, `NutAssembly`, etc.
+
+* `--robots`: Robot(s) with which to perform the task. Can be any in {`Panda`, `Sawyer`, `Baxter`}. Note that the
+        environments include sanity checks, such that a `TwoArm...` environment will only accept either a 2-tuple of
+        robot names or a single bimanual robot name, according to the specified configuration (see below), and all
+        other environments will only accept a single single-armed robot name
+
+* `--config`: Exclusively applicable and only should be specified for `TwoArm...` environments. Specifies the robot
+        configuration desired for the task. Options are {`bimanual`, `single-arm-parallel`, and `single-arm-opposed`}
+
+    * `bimanual`: Sets up the environment for a single bimanual robot. Expects a single bimanual robot name to
+                be specified in the `--robots` argument
+
+    * `single-arm-parallel`: Sets up the environment such that two single-armed robots are stationed next to
+                each other facing the same direction. Expects a 2-tuple of single-armed robot names to be specified
+                in the `--robots` argument.
+
+    * `single-arm-opposed`: Sets up the environment such that two single-armed robots are stationed opposed from
+                each other, facing each other from opposite directions. Expects a 2-tuple of single-armed robot names
+                to be specified in the `--robots` argument.
+
+* `--arm`: Exclusively applicable and only should be specified for `TwoArm...` environments. Specifies which of the
+        multiple arm eef's to control. The other (passive) arm will remain stationary. Options are {`right`, `left`}
+        (from the point of view of the robot(s) facing against the viewer direction)
+
+* `--switch-on-click`: Exclusively applicable and only should be specified for `TwoArm...` environments. If enabled,
+        will switch the current arm being controlled every time the gripper input is pressed
+
+* `--toggle-camera-on-click`: If enabled, gripper input presses will cycle through the available camera angles
+
+Examples:
+* For normal single-arm environment:
+```
+$ python demo_device_control.py --environment PickPlaceCan --robots Sawyer --controller osc
+```
+* For two-arm bimanual environment:
+```
+$ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left --controller osc
+```
+* For two-arm multi single-arm robot environment:
+```
+$ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config single-arm-parallel --controller osc
+```
+In **robosuite**, we use this teleoperation script extensively for debugging environment designs, tuning reward functions, and collecting human demonstration data.
 
 
-### demo_gripper_interaction.py
+### PyGame Renderer
+This `demo_pygame_renderer.py` script provides an example of using the `pygame` library for rendering camera observations as an alternative to the default `mujoco_py` renderer. This is useful for running **robosuite** on operating systems where `mujoco_py` is incompatible. Example:
+```
+$ python demo_pygame_renderer.py --environment Stack --width 1000 --height 1000
+```
 
 
-
-### demo_video_recording.py
+### Video Recording
+The `demo_video_recording.py` script shows how to record a video of robot roll-out with the `imageio` library. This script uses offscreen rendering. This is useful for generating qualitative videos of robot policy behaviors. The generated video is in the mp4 format. Example:
+```sh
+$ python demo_video_recording.py --environment Lift --robots Panda
+```
