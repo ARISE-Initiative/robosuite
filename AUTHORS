@@ -1,4 +1,3 @@
-# robosuite was originally developed in Stanford Vision and Learning (SVL) Lab.
 # This file contains an official list of authors of this framework.
 
 # Names should be added to this file as:
@@ -7,10 +6,13 @@
 
 Core Team
 Yuke Zhu <yukez@cs.utexas.edu>
-
 Ajay Mandlekar <amandlek@stanford.edu>
-Joan Creus-Costa <jcreus@stanford.edu>
-Anchit Gupta <anchitg@stanford.edu>
+Roberto Martín-Martín <roberto.martinmartin@stanford.edu>
 Josiah Wong <jdwong@stanford.edu>
 
+Past Contributors
+Joan Creus-Costa <jcreus@stanford.edu>
+Anchit Gupta <anchitg@stanford.edu>
 Jiren Zhu <jirenz@stanford.edu>
+Michelle Lee <mishlee@stanford.edu>
+Andrew Kondrich <andrewk1@stanford.edu>
