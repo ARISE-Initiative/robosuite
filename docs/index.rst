@@ -31,7 +31,6 @@ Welcome to robosuite's documentation!
    modules/sensors
    modules/devices
    modules/renderers
-   modules/wrappers
 
 .. toctree::
    :maxdepth: 1
