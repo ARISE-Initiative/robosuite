@@ -4,7 +4,7 @@
 
 **robosuite** is a robotic simulation library powered by the [MuJoCo physics engine](http://mujoco.org/) for accessible and reproducible robot learning research. The current release focuses on robot manipulation. **robosuite** is part of the broader Advancing Robot Intelligence through Simulated Environments (ARISE) Initiative.
 
-Data-driven algorithms, such as reinforcement learning and imitation learning, provide a powerful and generic tool in robotics. These learning paradigms, fueled by new advances in deep learning, have achieved some exciting successes in a variety of robot control problems. However, the challenges of reproducibility and the limited accessibility of robot hardware (especially during a pandemic) have impaired research progress. The overarching goal of **robosuite** is to provide:
+Data-driven algorithms, such as reinforcement learning and imitation learning, provide a powerful and generic tool in robotics. These learning paradigms, fueled by new advances in deep learning, have achieved some exciting successes in a variety of robot control problems. However, the challenges of reproducibility and the limited accessibility of robot hardware (especially during a pandemic) have impaired research progress. The overarching goal of **robosuite** is to provide researchers with:
 
 * a standardized set of benchmarking tasks for rigorus evaluation and algorithm development;
 * a modular design that offers great flexibility to design new robot simulation environments;

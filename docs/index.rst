@@ -25,8 +25,8 @@ Welcome to robosuite's documentation!
 
    modules/overview
    modules/robots
-   modules/objects
    modules/controllers
+   modules/objects
    modules/environments
    modules/sensors
    modules/devices
