@@ -18,7 +18,7 @@ Base Robot
 
 
 SingleArm Robot
-----------
+---------------
 
 .. autoclass:: robosuite.robots.single_arm.SingleArm
 
@@ -27,7 +27,7 @@ SingleArm Robot
 
 
 Bimanual Robot
-----------
+--------------
 
 .. autoclass:: robosuite.robots.bimanual.Bimanual
 

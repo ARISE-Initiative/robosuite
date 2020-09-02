@@ -22,13 +22,13 @@ Base Object Model
 
 
 XML Object Model
------------------
+----------------
 
 .. autoclass:: robosuite.models.objects.objects.MujocoXMLObject
 
 
 Generated Object Model
------------------
+----------------------
 
 .. autoclass:: robosuite.models.objects.objects.MujocoGeneratedObject
 

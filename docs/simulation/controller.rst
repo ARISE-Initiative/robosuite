@@ -26,7 +26,7 @@ Base Controller
 
 
 Joint Position Controller
----------------
+-------------------------
 
 .. autoclass:: robosuite.controllers.joint_pos.JointPositionController
 
@@ -37,7 +37,7 @@ Joint Position Controller
 
 
 Joint Velocity Controller
----------------
+-------------------------
 
 .. autoclass:: robosuite.controllers.joint_vel.JointVelocityController
 
@@ -46,7 +46,7 @@ Joint Velocity Controller
 
 
 Joint Torque Controller
----------------
+-----------------------
 
 .. autoclass:: robosuite.controllers.joint_tor.JointTorqueController
 
@@ -55,7 +55,7 @@ Joint Torque Controller
 
 
 Operation Space Controller
----------------
+--------------------------
 
 .. autoclass:: robosuite.controllers.osc.OperationalSpaceController
 
@@ -65,7 +65,7 @@ Operation Space Controller
 
 
 Inverse Kinematics Controller
----------------
+-----------------------------
 
 .. autoclass:: robosuite.controllers.ik.InverseKinematicsController
 

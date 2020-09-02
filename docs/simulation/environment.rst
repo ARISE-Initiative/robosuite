@@ -24,7 +24,7 @@ Base Environment
 
 
 Robot Environment
-----------------
+-----------------
 
 .. autoclass:: robosuite.environments.robot_env.RobotEnv
 

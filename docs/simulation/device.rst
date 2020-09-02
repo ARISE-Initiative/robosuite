@@ -14,7 +14,7 @@ Base Device
 
 
 Keyboard Device
------------
+---------------
 
 .. autoclass:: robosuite.devices.keyboard.Keyboard
 
@@ -25,7 +25,7 @@ Keyboard Device
 
 
 Spacemouse Device
------------
+-----------------
 
 .. autoclass:: robosuite.devices.spacemouse.SpaceMouse
 
