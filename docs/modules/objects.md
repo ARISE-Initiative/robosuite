@@ -1,4 +1,4 @@
-# Object
+# Objects
 
 ## How to create a custom object
 Objects, such as boxes and cans, are essential to building manipulation environments. We designed the [MujocoObject](../robosuite/models/objects/objects.py) interfaces to standardize and simplify the procedure for importing 3D models into the scene or procedurally generate new objects. MuJoCo defines models via the [MJCF](http://www.mujoco.org/book/modeling.html) xml format. These MJCF files can either be stored as XML files on disk and loaded into simulator, or be created on-the-fly by code prior to simulation. Based on these two mechanisms of how MJCF models are created, we offer two main ways of creating your own object:

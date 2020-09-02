@@ -13,3 +13,5 @@
   - One of the original developers of robosuite v0.3
 - [Michelle Lee](http://stanford.edu/~mishlee/)
   - Helped design the Operational Space controller.
+- [Andrew Kondrich](http://www.andrewkondrich.com/) and [Jonathan Booher](https://web.stanford.edu/~jaustinb/)
+  - Helped implement some domain randomization utilities.

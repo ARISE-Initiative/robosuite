@@ -16,7 +16,6 @@ Welcome to robosuite's documentation!
    installation
    quickstart
    demos
-   scripts
 
 .. (TODO) Roberto (Yuke will do overview)
 
@@ -26,13 +25,12 @@ Welcome to robosuite's documentation!
 
    modules/overview
    modules/robots
-   modules/objects
    modules/controllers
+   modules/objects
    modules/environments
    modules/sensors
    modules/devices
    modules/renderers
-   modules/wrappers
 
 .. toctree::
    :maxdepth: 1
@@ -83,5 +81,5 @@ Indices and tables
 
 * :ref:`genindex`
 
-.. * :ref:`modindex`
-.. * :ref:`search`
+* :ref:`modindex`
+* :ref:`search`

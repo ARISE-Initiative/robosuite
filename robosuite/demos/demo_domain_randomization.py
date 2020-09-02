@@ -13,7 +13,7 @@ if __name__ == "__main__":
     options = {}
 
     # print welcome info
-    print("Welcome to Surreal Robotics Suite v{}!".format(suite.__version__))
+    print("Welcome to robosuite v{}!".format(suite.__version__))
     print(suite.__logo__)
 
     # Choose environment and add it to options
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     low, high = env.action_spec
 
     # do visualization
-    for i in range(10000):
+    for i in range(100):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
         env.render()

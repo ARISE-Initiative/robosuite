@@ -1,14 +1,18 @@
-# Surreal Robotics Suite was originally developed in Stanford Vision and Learning (SVL) Lab.
 # This file contains an official list of authors of this framework.
 
 # Names should be added to this file as:
 # Name or Organization <email address>
 # The email address is not required for organizations.
 
-Stanford University
-Yuke Zhu <yukez@cs.stanford.edu>
-Jiren Zhu <jirenz@stanford.edu>
+Core Team
+Yuke Zhu <yukez@cs.utexas.edu>
 Ajay Mandlekar <amandlek@stanford.edu>
+Roberto Martín-Martín <roberto.martinmartin@stanford.edu>
+Josiah Wong <jdwong@stanford.edu>
+
+Past Contributors
 Joan Creus-Costa <jcreus@stanford.edu>
 Anchit Gupta <anchitg@stanford.edu>
-Josiah Wong <jdwong@stanford.edu>
+Jiren Zhu <jirenz@stanford.edu>
+Michelle Lee <mishlee@stanford.edu>
+Andrew Kondrich <andrewk1@stanford.edu>
