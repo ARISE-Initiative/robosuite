@@ -9,7 +9,8 @@ class MujocoObject:
     """
     Base class for all objects.
 
-    We use Mujoco Objects to implement all objects that
+    We use Mujoco Objects to implement all objects that:
+
         1) may appear for multiple times in a task
         2) can be swapped between different tasks
 
@@ -320,7 +321,7 @@ class MujocoGeneratedObject(MujocoObject):
         Mujoco texture / material tags, respectively
 
         Note that the "file" attribute for the "texture" tag should be specified relative to the textures directory
-            located in robosuite/models/assets/textures/
+        located in robosuite/models/assets/textures/
 
         Args:
             material (CustomMaterial): Material to add to this object
