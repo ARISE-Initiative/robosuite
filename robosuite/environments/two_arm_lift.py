@@ -296,12 +296,12 @@ class TwoArmLift(RobotEnv):
             if len(_contacts_0) > 0:
                 reward += 0.5
             else:
-                reward += 0.5 * (1 - 10.0 * np.tanh(_g0h_dist))
+                reward += 0.5 * (1 - np.tanh(10.0 * _g0h_dist))
 
             if len(_contacts_1) > 0:
                 reward += 0.5
             else:
-                reward += 0.5 * (1 - 10.0 * np.tanh(_g1h_dist))
+                reward += 0.5 * (1 - np.tanh(10.0 * _g1h_dist))
 
         # if we're not reward shaping, we need to scale our sparse reward so that the max reward is identical
         # to its dense version
