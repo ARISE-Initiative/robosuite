@@ -41,6 +41,7 @@ DEFAULT_WIPE_CONFIG = {
     "print_results": False,                         # Whether to print results or not
     "get_info": False,                              # Whether to grab info after each env step if not
     "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
+    "early_terminations": False,                    # Whether we allow for early terminations or not
 }
 
 
@@ -221,6 +222,7 @@ class Wipe(RobotEnv):
         self.line_width = self.task_config['line_width']
         self.two_clusters = self.task_config['two_clusters']
         self.coverage_factor = self.task_config['coverage_factor']
+        self.num_sensors = self.task_config['num_sensors']
 
         # settings for thresholds
         self.contact_threshold = self.task_config['contact_threshold']
@@ -232,7 +234,7 @@ class Wipe(RobotEnv):
         self.print_results = self.task_config['print_results']
         self.get_info = self.task_config['get_info']
         self.use_robot_obs = self.task_config['use_robot_obs']
-        self.num_sensors = self.task_config['num_sensors']
+        self.early_terminations = self.task_config['early_terminations']
 
         # Scale reward if desired (see reward method for details)
         self.reward_normalization_factor = horizon / \
@@ -654,8 +656,9 @@ class Wipe(RobotEnv):
             info['percent_viapoints_'] = len(self.wiped_sensors) / len(self.model.arena.sensor_names)
             info['f_excess'] = self.f_excess
 
-        # allow episode to finish early
-        done = done or self._check_terminated()
+        # allow episode to finish early if allowed
+        if self.early_terminations:
+            done = done or self._check_terminated()
 
         return reward, done, info
 
