@@ -1,60 +1,223 @@
 # Environments
 
-Environments load scene models from [Models](../models) and create a simulation of the task. In addition to model instantiation, the environment classes implement the definitions of observations, reward functions, success conditions, etc. that are required APIs for reinforcement learning.
+Environments are the main **robosuite** API objects that external code will interact with. Each environment corresponds to a robot manipulation task and provides a standard interface for an agent to interact with the environment. 
 
-Currently, we have implemented six manipulation tasks with two robots, _Sawyer_ and _Baxter_. Our rationale of designing these tasks is to offer single-arm and bimanual manipulation tasks of large diversity and varying complexity. In the default settings, The robots are controlled via joint velocity. There are three types of observations: proprioceptive feature (`robot-state`), object-centric feature (`object-state`) and RGB/RGB-D image (`image`). Proprioceptive observations contain: `cos` and `sin` of robot joint positions, robot joint velocities and current configuration of the gripper. Object-centric observations contain task-specific features. Image observations are RGB/RGB-D images (`256 x 256` by default). When trained on states, the agent receives `robot-state` and `object-state` observations. When trained on pixels, the agent receives `robot-state` and `image` observations.
+Next, we will describe how to create an environment, how to interact with an environment, and how each environment creates a simulated task in the MuJoCo physics engine. We will use the `TwoArmLift` environment as a running example for each section.
 
-All environments should inherit a base [MujocoEnv](base.py) class which registers the environment. The environments for each robot type should inherit their corresponding base environment classes, such as [SawyerEnv](sawyer.py) and [BaxterEnv](baxter.py), which define some robot-specific logic. All environments are automatically added to the registry and can be instantiated by the `make` function.
+## Making an Environment
+
+Environments are created by calling `robosuite.make` with the name of the task and with a set of arguments that configure environment properties. We provide a few examples of different use cases below.
 
 ```python
-import robosuite as suite
+import robosuite
+from robosuite.controllers import load_controller_config
 
-# below provide examples of initializing environments for different purposes
-# see all possible configurations in environment python classes
+# load default controller parameters for Operational Space Control (OSC)
+controller_config = load_controller_config(default_controller="OSC_POSE")
 
-# create an environment for screen visualization
-env = suite.make(
-    "SawyerLift",      # environment name (see below)
-    has_renderer=True, # create on-screen renderer
+# create an environment to visualize on-screen
+env = robosuite.make(
+    "TwoArmLift",
+    robots=["Sawyer", "Panda"],             # load a Sawyer robot and a Panda robot
+    gripper_types="default",                # use default grippers per robot arm
+    controller_configs=controller_config,   # each arm is controlled using OSC
+    env_configuration="single-arm-opposed", # (two-arm envs only) arms face each other
+    has_renderer=True,                      # on-screen rendering
+    render_camera="frontview",              # visualize the "frontview" camera
+    has_offscreen_renderer=False,           # no off-screen rendering
+    control_freq=20,                        # 20 hz control for applied actions
+    horizon=200,                            # each episode terminates after 200 steps
+    use_object_obs=False,                   # no observations needed
+    use_camera_obs=False,                   # no observations needed
 )
 
-# create an environment for learning on states
-env = suite.make(
-    "SawyerLift",
-    has_renderer=False,           # no on-screen renderer
-    has_offscreen_renderer=False, # no off-screen renderer
-    use_object_obs=True,          # use object-centric feature
-    use_camera_obs=False,         # no camera observations
+# create an environment for policy learning from low-dimensional observations
+env = robosuite.make(
+    "TwoArmLift",
+    robots=["Sawyer", "Panda"],             # load a Sawyer robot and a Panda robot
+    gripper_types="default",                # use default grippers per robot arm
+    controller_configs=controller_config,   # each arm is controlled using OSC
+    env_configuration="single-arm-opposed", # (two-arm envs only) arms face each other
+    has_renderer=False,                     # no on-screen rendering
+    has_offscreen_renderer=False,           # no off-screen rendering
+    control_freq=20,                        # 20 hz control for applied actions
+    horizon=200,                            # each episode terminates after 200 steps
+    use_object_obs=True,                    # provide object observations to agent
+    use_camera_obs=False,                   # don't provide image observations to agent
+    reward_shaping=True,                    # use a dense reward signal for learning
 )
 
-# create an environment for learning on pixels
-env = suite.make(
-    "SawyerLift",
-    has_renderer=False,          # no on-screen renderer
-    has_offscreen_renderer=True, # off-screen renderer is required for camera observations
-    ignore_done=True,            # (optional) never terminates episode
-    use_camera_obs=True,         # use camera observations
-    camera_height=84,            # set camera height
-    camera_width=84,             # set camera width
-    camera_name='agentview',     # use "agentview" camera
-    use_object_obs=False,        # no object feature when training on pixels
-    reward_shaping=True          # (optional) using a shaping reward
+# create an environment for policy learning from pixels
+env = robosuite.make(
+    "TwoArmLift",
+    robots=["Sawyer", "Panda"],             # load a Sawyer robot and a Panda robot
+    gripper_types="default",                # use default grippers per robot arm
+    controller_configs=controller_config,   # each arm is controlled using OSC
+    env_configuration="single-arm-opposed", # (two-arm envs only) arms face each other
+    has_renderer=False,                     # no on-screen rendering
+    has_offscreen_renderer=True,            # off-screen rendering needed for image obs
+    control_freq=20,                        # 20 hz control for applied actions
+    horizon=200,                            # each episode terminates after 200 steps
+    use_object_obs=False,                   # don't provide object observations to agent
+    use_camera_obs=False,                   # provide image observations to agent
+    camera_names="agentview",               # use "agentview" camera for observations
+    camera_heights=84,                      # image height
+    camera_widths=84,                       # image width
+    reward_shaping=True,                    # use a dense reward signal for learning
 )
 ```
 
-Task Descriptions
------------------
+### Modular Design
 
-We provide a brief description of each environment below:
+We provide a few additional details on a few keyword arguments below to highlight the modular structure of creating **robosuite** environments, and how easy it is to configure different environment features.
 
-[SawyerLift](sawyer_lift.py): A cube is placed on the tabletop. The Sawyer robot is rewarded for lifting the cube with a parallel-jaw gripper. We randomize the size and the placement of the cube.
+- `robots` : this argument can be used to easily instantiate tasks with different robot arms. For example, we could change the task to use two "Jaco" robots by passing `robots=["Jaco", "Jaco"]`
+- `gripper_types` : this argument can be used to easily swap out different grippers for each robot arm. For example, suppose we want to swap the default grippers for the arms in the example above. We could just pass `gripper_types=["PandaGripper", "RethinkGripper"]` to achieve this
+- `controller_configs` : this argument can be used to easily replace the action space for each robot arm. For example, if we would like to control the arm using joint velocities instead of OSC, we could use `load_controller_config(default_controller="JOINT_VELOCITY")` in the example above
+- `env_configuration` : this argument is used for two-arm tasks to easily configure how the robots are oriented with respect to one another. For example, in the `TwoArmLift` environment, we could pass `env_configuration="single-arm-parallel"` instead so that the robot arms are located next to each other, instead of opposite each other
 
-[SawyerStack](sawyer_stack.py): A red cube and a green cube are placed on the tabletop. The Sawyer robot is rewarded for lifting the red cube with a parallel-jaw gripper and stack it on top of the green cube.
+## Interacting with an Environment
 
-[BaxterPegInHole](baxter_peg_in_hole.py): The Baxter robot holds a board with a squared hole in the center in its right hand, and a long stick in the left hand. The goal is to move both arms to insert the peg into the hole.
+### Policy Loop
 
-[BaxterLift](baxter_lift.py): A pot with two handles is placed on the tabletop. The Baxter robot is rewarded for lifting the pot above the table by a threshold while not tilting the pot over 30 degrees. Thus the robot has to coordinate its two hands to grasp the handles and balance the pot.
+```python
+# this example assumes an env has already been created, and performs one agent rollout
+import numpy as np
 
-[SawyerPickPlace](sawyer_pick_place.py): The Sawyer robot tackles a pick-and-place task, where the goal is to pick four objects from each category in a bin and to place them into their corresponding containers. This task also include several variants of easier mode, which only consists of one object.
+def get_policy_action(obs):
+    # a trained policy could be used here, but we choose a random action
+    low, high = env.action_spec
+    return np.random.uniform(low, high)
 
-[SawyerNutAssembly](sawyer_nut_assembly.py): Two colored pegs are mounted to the tabletop. The Sawyer robot needs to declutter four nuts lying on top of each other and assembles them onto their corresponding pegs. This task also include several variants of easier mode, which only consists of one nut.
+# reset the environment to prepare for a rollout
+obs = env.reset()
+
+done = False
+ret = 0.
+while not done:
+    action = get_policy_action(obs)         # use observation to decide on an action
+    obs, reward, done, _ = env.step(action) # play action
+    ret += reward
+print("rollout completed with return {}".format(ret))
+```
+
+### Observations
+
+**robosuite** observations are dictionaries that include key-value pairs per modality. This makes it easy for agents to work with modalities of different shapes (for example, flat proprioception observations, and pixel observations). Below, we list commonly used observation keys.
+
+- `robot0_robot-state`, `robot1_robot-state` : proprioception observations for each robot arm. This includes the arm joint positions (encoded using `sin` and `cos`), arm joint velocities, end effector pose, gripper finger positions, and gripper finger velocities. The shape for this modality is flat (e.g. `(N,)`).
+- `object-state` : task-specific object observations. For example, the `TwoArmLift` environment provides the pose of the pot, the position of each handle, and the relative position of each robot gripper with respect to each handle. The shape for this modality is flat (e.g. `(N,)`).
+- `{camera_name}_image` : image observations for camera with name `camera_name`. The shape for this modality is `(H, W, 3)` where `H` and `W` are the height and width of the image respectively. The image is **flipped** across the height dimension due to issues with `mujoco-py` - so we recommend applying an operation like `im = im[::-1]` to fix this.
+- `{camera_name}_depth` : depth image observations for camera with name `camera_name`. The shape for this modality is `(H, W)` where `H` and `W` are the height and width of the image respectively. The image is **flipped** across the height dimension due to issues with `mujoco-py` - so we recommend applying an operation like `im = im[::-1]` to fix this.
+
+### Rewards and Termination
+
+Each environment implements a reward function in the `reward` method of each environment class. The reward can be either be a binary success or failure reward (`1` if the current state is a task completion state, `0` otherwise) or a dense, shaped reward that is crafted to be (mostly) non-negative and non-decreasing along trajectories that solve the task. The reward function that is used is determined by the `reward_shaping` argument. The binary success check that is used to compute the sparse reward is implemented in the  `_check_success` method of each environment class.
+
+Importantly, **robosuite** environments do not terminate if a success criterion is reached, but always continue for a fixed number of timesteps, determined by the `horizon` argument. This is a standard design decision for reinforcement learning in robot manipulation domains.
+
+- TODO (Josiah): put example of reward function and success criteria for `TwoArmLift`
+
+## Task Models
+
+Every environment owns its own `MJCF` model that sets up the MuJoCo physics simulation by loading the robots, the workspace, and the objects into the simulator appropriately. This MuJoCo simulation model is programmatically instantiated in the `_load_model` function of each environment, by creating an instance of the `Task` class.
+
+Each `Task` class instance owns an `Arena` model, a list of `Robot` model instances, and a list of `Object` model instances. These are **robosuite** classes that introduce a useful abstraction in order to make designing scenes in MuJoCo easy. Every `Arena` is based off of an xml that defines the workspace (for example, table or bins) and camera locations. Every `Robot` is a MuJoCo model of each type of robot arm (e.g. Sawyer, Panda, etc.). Every `Object` model corresponds to a physical object loaded into the simulation (e.g. cube, pot with handles, etc.).
+
+Each `Task` class instance also takes a `placement_initializer` as input. The `placement_initializer` determines the start state distribution for the environment by sampling a set of valid, non-colliding placements for all of the objects in the scene at the start of each episode (e.g. when `env.reset()` is called).
+
+## Task Descriptions
+
+- TODO: for each environment
+  - have a sequence of pictures that lead to the task being solved
+  - decide if we want these
+    - object-state description 
+    - reward function description
+    - success check description
+
+We provide a brief description of each environment below.
+
+### Single-Arm Tasks
+
+#### Lift
+
+- Scene Description
+  - A cube is placed on the tabletop in front of a single robot arm.
+- Goal
+  - The robot arm must lift the cube above a certain height.
+- Start State Distribution
+  - The cube location is randomized at the beginning of each episode.
+
+#### Stack
+
+- Scene Description
+  - Two cubes are placed on the tabletop in front of a single robot arm.
+- Goal
+  - The robot must place one cube on top of the other cube. 
+- Start State Distribution
+  - The cube locations are randomized at the beginning of each episode.
+
+#### Pick Place
+
+- Scene Description
+  - Four objects are placed in a bin in front of a single robot arm. There are four containers next to the bin.
+- Goal
+  - The robot must place each object into its corresponding container. This task also has easier single-object variants.
+- Start State Distribution
+  - The object locations are randomized at the beginning of each episode.
+
+#### Nut Assembly
+
+- Scene Description
+  - Two colored pegs (one square and one round) are mounted on the tabletop, and two colored nuts (one square and one round) are placed on the table in front of a single robot arm.
+- Goal
+  - The robot must fit the square nut onto the square peg and the round nut onto the round peg. This task also has easier single nut-and-peg variants.
+- Start State Distribution
+  - The nut locations are randomized at the beginning of each episode.
+
+#### Door
+
+- Scene Description
+  - A door with a handle is mounted in free space in front of a single robot arm.
+- Goal
+  - The robot arm must learn to turn the handle and open the door.
+- Start State Distribution
+  - The door location is randomized at the beginning of each episode.
+
+#### Wipe
+
+- Scene Description
+  - A table with a whiteboard surface and some markings is placed in front of a single robot arm, which has a whiteboard eraser mounted on its hand.
+- Goal
+  - The robot arm must learn to wipe the whiteboard surface and clean all of the markings.
+- Start State Distribution
+  - The whiteboard markings are randomized at the beginning of each episode.
+
+### Two-Arm Tasks
+
+#### Two Arm Lift
+
+- Scene Description
+  - A large pot with two handles is placed on a table top. Two robot arms are placed on the same side of the table or on opposite ends of the table.
+- Goal
+  - The two robot arms must each grab a handle and lift the pot together, above a certain height, while keeping the pot level.
+- Start State Distribution
+  - The pot location is randomized at the beginning of each episode.
+
+#### Two Arm Peg In Hole
+
+- Scene Description
+  - Two robot arms are placed either next to each other or opposite each other. One robot arm holds a board with a square hole in the center, and the other robot arm holds a long peg.
+- Goal
+  - The two robot arms must coordinate to insert the peg into the hole.
+- Start State Distribution
+  - The initial arm configurations are randomized at the beginning of each episode.
+
+#### Two Arm Handoff
+
+- Scene Description
+  - A hammer is placed on a narrow table. Two robot arms are placed on the same side of the table or on opposite ends of the table.
+- Goal
+  - The two robot arms must coordinate so that the arm closer to the hammer picks it up and hands it to the other arm.
+- Start State Distribution
+  - The hammer location and size is randomized at the beginning of each episode.
