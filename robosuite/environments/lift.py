@@ -231,7 +231,7 @@ class Lift(RobotEnv):
             reward = 2.25
 
         # use a shaping reward
-        if self.reward_shaping:
+        elif self.reward_shaping:
 
             # reaching reward
             cube_pos = self.sim.data.body_xpos[self.cube_body_id]
