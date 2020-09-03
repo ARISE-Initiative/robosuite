@@ -1,6 +1,6 @@
 # I/O Devices
 
-Devices are used to read user input and collect human demonstrations. Demonstrations can be collected by either using a keyboard or a [SpaceNavigator 3D Mouse](https://www.3dconnexion.com/spacemouse_compact/en/) with the [collect_human_demonstrations](robosuite/scripts/collect_human_demonstrations.py) script. More generally, we support any interface that implements the [Device](device.py) abstract base class. In order to support your own custom device, simply subclass this base class and implement the required methods.
+Devices are used to read user input and teleoperate simulated robots in real time. This is achieved by either using a keyboard or a [SpaceNavigator 3D Mouse](https://www.3dconnexion.com/spacemouse_compact/en/), and whose teleoperative capabilities can be demonstrated with the [demo_device_control.py](../demos.html#teleoperation) script. More generally, we support any interface that implements the [Device](../simulation/device) abstract base class. In order to support your own custom device, simply subclass this base class and implement the required methods.
 
 ## Keyboard
 
