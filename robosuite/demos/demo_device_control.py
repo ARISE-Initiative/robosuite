@@ -51,10 +51,11 @@ Main difference is that user inputs with ik's rotations are always taken relativ
 
     --environment: Task to perform, e.g.: "Lift", "TwoArmPegInHole", "NutAssembly", etc.
 
-    --robots: Robot(s) with which to perform the task. Can be any in {"Panda", "Sawyer", "Baxter"}. Note that the
-        environments include sanity checks, such that a "TwoArm..." environment will only accept either a 2-tuple of
-        robot names or a single bimanual robot name, according to the specified configuration (see below), and all
-        other environments will only accept a single single-armed robot name
+    --robots: Robot(s) with which to perform the task. Can be any in
+        {"Panda", "Sawyer", "IIWA", "Jaco", "Kinova3", "UR5e", "Baxter"}. Note that the environments include sanity
+        checks, such that a "TwoArm..." environment will only accept either a 2-tuple of robot names or a single
+        bimanual robot name, according to the specified configuration (see below), and all other environments will
+        only accept a single single-armed robot name
 
     --config: Exclusively applicable and only should be specified for "TwoArm..." environments. Specifies the robot
         configuration desired for the task. Options are {"bimanual", "single-arm-parallel", and "single-arm-opposed"}
