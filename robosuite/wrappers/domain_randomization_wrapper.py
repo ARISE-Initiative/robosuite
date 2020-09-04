@@ -1,60 +1,6 @@
 """
 This file implements a wrapper for facilitating domain randomization over
 robosuite environments.
-
-Categories of DR:
-
-    Observation Noise
-
-        All
-
-            Sensor Dropout
-
-                TODO
-
-        RGB Image
-
-            Texture Randomization
-                Color (Relative / Absolute)
-                Pattern
-
-            Camera Randomization
-                Position (Relative)
-                Rotation (Relative)
-
-            Lighting Randomization
-                Position (Relative)
-                Direction (Relative)
-                Color (Relative)
-                    Specular
-                    Ambient
-                    Diffuse
-                Active
-                CastShadow
-                    TODO: do we really want this? excluding for now...
-
-        Low-Dimension
-
-            Pose Noise
-            Joint Noise
-            Velocity Noise
-
-            TODO (requires observation categorization, too much of a pain for now...)
-                -Perhaps only noise up the proprioception??? (and assume fixed set of keys)
-        
-    Action Noise
-
-        TODO
-
-    Dynamics Parameter Noise
-
-        TODO
-
-TODO: Implement Observation Dropout, Action Noise, Dynamics Randomization
-TODO: why can we still see things with all the lights off?
-TODO: each composite object should specify texture groups that get randomized together
-    (geom groups per texture)
-TODO: color perturbations could probably be improved by using a space other than RGB
 """
 import numpy as np
 
@@ -224,7 +170,6 @@ class DomainRandomizationWrapper(Wrapper):
                 - (bool) whether the current episode is completed or not
                 - (dict) misc information
         """
-        ### TODO: randomization here? with condition check ###
 
         # functionality for randomizing at a particular frequency
         if self.randomize_every_n_steps > 0:
