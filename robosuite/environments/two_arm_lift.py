@@ -236,9 +236,6 @@ class TwoArmLift(RobotEnv):
         """
         reward = 0
 
-        pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
-        table_height = self.sim.data.site_xpos[self.table_top_id][2]
-
         # check if the pot is tilted more than 30 degrees
         mat = T.quat2mat(self._pot_quat)
         z_unit = [0, 0, 1]
@@ -249,13 +246,13 @@ class TwoArmLift(RobotEnv):
 
         # check for goal completion: cube is higher than the table top above a margin
         if self._check_success():
-            reward = 1.0 * direction_coef
+            reward = 3.0 * direction_coef
 
         # use a shaping reward
-        if self.reward_shaping:
-            reward = 0
-
+        elif self.reward_shaping:
             # lifting reward
+            pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
+            table_height = self.sim.data.site_xpos[self.table_top_id][2]
             elevation = pot_bottom_height - table_height
             r_lift = min(max(elevation - 0.05, 0), 0.2)
             reward += 10. * direction_coef * r_lift
@@ -302,11 +299,6 @@ class TwoArmLift(RobotEnv):
                 reward += 0.5
             else:
                 reward += 0.5 * (1 - np.tanh(10.0 * _g1h_dist))
-
-        # if we're not reward shaping, we need to scale our sparse reward so that the max reward is identical
-        # to its dense version
-        else:
-            reward *= 3.0
 
         if self.reward_scale is not None:
             reward *= self.reward_scale / 3.0
