@@ -4,9 +4,10 @@ a set of demonstrations stored in a hdf5 file.
 
 Arguments:
     --folder (str): Path to demonstrations
-    --use_actions (optional): If this flag is provided, the actions are played back 
+    --use-actions (optional): If this flag is provided, the actions are played back
         through the MuJoCo simulator, instead of loading the simulator states
         one by one.
+    --visualize-gripper (optional): If set, will visualize the gripper site
 
 Example:
     $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/SawyerPickPlace/
@@ -35,6 +36,10 @@ if __name__ == "__main__":
         "--use-actions", 
         action='store_true',
     )
+    parser.add_argument(
+        "--visualize-gripper",
+        action='store_true',
+    )
     args = parser.parse_args()
 
     demo_path = args.folder
@@ -46,9 +51,10 @@ if __name__ == "__main__":
     env = robosuite.make(
         **env_info,
         has_renderer=True,
+        has_offscreen_renderer=False,
         ignore_done=True,
         use_camera_obs=False,
-        gripper_visualizations=True,
+        gripper_visualizations=args.visualize_gripper,
         reward_shaping=True,
         control_freq=100,
     )
@@ -81,6 +87,11 @@ if __name__ == "__main__":
 
             # load the initial state
             env.sim.set_state_from_flattened(states[0])
+            if not args.visualize_gripper:
+                # We make the gripper site invisible
+                robot = env.robots[0]
+                env.sim.model.site_rgba[robot.eef_site_id] = np.zeros(4)
+                env.sim.model.site_rgba[robot.eef_cylinder_id] = np.zeros(4)
             env.sim.forward()
 
             # load the actions and play them back open-loop
@@ -102,6 +113,12 @@ if __name__ == "__main__":
             # force the sequence of internal mujoco states one by one
             for state in states:
                 env.sim.set_state_from_flattened(state)
+                if not args.visualize_gripper:
+                    # We make the gripper site invisible
+                    robot = env.robots[0]
+                    env.sim.model.site_rgba[robot.eef_site_id] = np.zeros(4)
+                    env.sim.model.site_rgba[robot.eef_cylinder_id] = np.zeros(4)
+
                 env.sim.forward()
                 env.render()
 

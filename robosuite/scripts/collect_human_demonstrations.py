@@ -33,6 +33,7 @@ parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Whic
 parser.add_argument("--config", type=str, default="single-arm-opposed",
                     help="Specified environment configuration if necessary")
 parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
+parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
 parser.add_argument("--controller", type=str, default="OSC_POSE",
                     help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'")
 parser.add_argument("--device", type=str, default="keyboard")
@@ -55,7 +56,6 @@ def collect_human_trajectory(env, device):
     env.reset()
 
     # ID = 2 always corresponds to agentview
-    env.viewer.set_camera(camera_id=2)
     env.render()
 
     is_first = True
@@ -69,7 +69,7 @@ def collect_human_trajectory(env, device):
         active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
         # Get the newest action
-        action = input2action(
+        action, grasp = input2action(
             device=device,
             robot=active_robot,
             active_arm=args.arm,
@@ -98,7 +98,6 @@ def collect_human_trajectory(env, device):
             env.sim.reset()
             env.sim.set_state_from_flattened(initial_mjstate)
             env.sim.forward()
-            env.viewer.set_camera(camera_id=2)
 
         env.render()
 
@@ -247,7 +246,8 @@ if __name__ == "__main__":
     env = suite.make(
         **config,
         has_renderer=True,
-        render_camera="agentview",
+        has_offscreen_renderer=False,
+        render_camera=args.camera,
         ignore_done=True,
         use_camera_obs=False,
         gripper_visualizations=True,
