@@ -71,9 +71,9 @@ env = robosuite.make(
 
 We provide a few additional details on a few keyword arguments below to highlight the modular structure of creating **robosuite** environments, and how easy it is to configure different environment features.
 
-- `robots` : this argument can be used to easily instantiate tasks with different robot arms. For example, we could change the task to use two "Jaco" robots by passing `robots=["Jaco", "Jaco"]`
-- `gripper_types` : this argument can be used to easily swap out different grippers for each robot arm. For example, suppose we want to swap the default grippers for the arms in the example above. We could just pass `gripper_types=["PandaGripper", "RethinkGripper"]` to achieve this
-- `controller_configs` : this argument can be used to easily replace the action space for each robot arm. For example, if we would like to control the arm using joint velocities instead of OSC, we could use `load_controller_config(default_controller="JOINT_VELOCITY")` in the example above
+- `robots` : this argument can be used to easily instantiate tasks with different robot arms. For example, we could change the task to use two "Jaco" robots by passing `robots=["Jaco", "Jaco"]`. Once the environment is initialized, these robots (as captured by the [Robot](robots) class) can be accessed via the `robots` array attribute within the environment, i.e.: `env.robots[i]` for the `ith` robot arm in the environment.
+- `gripper_types` : this argument can be used to easily swap out different grippers for each robot arm. For example, suppose we want to swap the default grippers for the arms in the example above. We could just pass `gripper_types=["PandaGripper", "RethinkGripper"]` to achieve this. Note that a single type can also be used to automatically broadcast the same gripper type across all arms.
+- `controller_configs` : this argument can be used to easily replace the action space for each robot arm. For example, if we would like to control the arm using joint velocities instead of OSC, we could use `load_controller_config(default_controller="JOINT_VELOCITY")` in the example above. Similar to `gripper_types` this value can either be per-arm specific or a single configuration to broadcast to all robot arms.
 - `env_configuration` : this argument is used for two-arm tasks to easily configure how the robots are oriented with respect to one another. For example, in the `TwoArmLift` environment, we could pass `env_configuration="single-arm-parallel"` instead so that the robot arms are located next to each other, instead of opposite each other
 
 ## Interacting with an Environment
@@ -112,11 +112,71 @@ print("rollout completed with return {}".format(ret))
 
 ### Rewards and Termination
 
-Each environment implements a reward function in the `reward` method of each environment class. The reward can be either be a binary success or failure reward (`1` if the current state is a task completion state, `0` otherwise) or a dense, shaped reward that is crafted to be (mostly) non-negative and non-decreasing along trajectories that solve the task. The reward function that is used is determined by the `reward_shaping` argument. The binary success check that is used to compute the sparse reward is implemented in the  `_check_success` method of each environment class.
+Each environment implements a reward function in the `reward` method of each environment class. The reward can be either be a binary success or failure reward (nonzero if the current state is a task completion state) or a dense, shaped reward that is crafted to be (mostly) non-negative and non-decreasing along trajectories that solve the task. The reward function that is used is determined by the `reward_shaping` argument. The binary success check that is used to compute the sparse reward is implemented in the  `_check_success` method of each environment class.
 
 Importantly, **robosuite** environments do not terminate if a success criterion is reached, but always continue for a fixed number of timesteps, determined by the `horizon` argument. This is a standard design decision for reinforcement learning in robot manipulation domains.
 
-- TODO (Josiah): put example of reward function and success criteria for `TwoArmLift`
+We provide an example via the reward function and success criteria for `TwoArmLift` below.  Note that for simplicity, we provide function aliases instead of actual implementation details so that the logic remains easy to follow:
+
+For the success criteria, we simply want to check if the pot is successfully lifted above a certain height threshold over the table, and return `True` or `False` accordingly.
+
+```python
+def _check_success(self):
+    pot_height = get_pot_height()
+    table_height = get_table_height()
+    return pot_height > table_height + 0.10
+```
+
+The reward function is a bit more involved. First, we initialize our reward variable to 0 and grab relevant sensory data from the environment, checking to see if the pot is tilted or not.
+```python
+def reward(self, action=None):
+    reward = 0
+    pot_tilt = get_pot_tilt()
+
+    # check if the pot is tilted more than 30 degrees
+    cos_30 = np.cos(np.pi / 6)
+    direction_coef = 1 if pot_tilt >= cos_30 else 0
+```
+
+Next, we first check to see if we have completed the task (the pot being lifted above the table and not overly tilted), and if so, apply the un-normalized reward.
+```python
+    if self._check_success():
+    reward = 3.0 * direction_coef
+```
+
+Otherwise, we'll only provide partial rewards if we're using reward shaping, and calculate the appropriate reward.
+```python
+    elif self.reward_shaping:
+        
+        # lifting reward (smooth value between [0, 2])
+        pot_height = get_pot_height()
+        r_lift = min(max(pot_height - 0.05, 0), 0.2)
+        reward += 10. * direction_coef * r_lift
+        
+        # reaching / grasping reward (smooth value between [0, 1])
+        left_hand_handle_contact = is_left_contact()
+        right_hand_handle_contact = is_right_contact()
+        left_hand_handle_distance = get_left_distance()
+        right_hand_handle_distance = get_right_distance()
+        
+        # Half of reward for each hand converging to the correct handle
+        if left_hand_handle_contact:
+            reward += 0.5
+        else:
+            reward += 0.5 * (1 - np.tanh(10.0 * left_hand_handle_distance))
+        if right_hand_handle_contact:
+            reward += 0.5
+        else:
+            reward += 0.5 * (1 - np.tanh(10.0 * right_hand_handle_distance))
+```
+
+Lastly, we need to normalize our reward and then re-scale its value to `reward_scale` if it is specified before finally returning the calculated reward.
+```python
+    if self.reward_scale is not None:
+        reward *= self.reward_scale / 3.0
+        
+    return reward
+```
 
 ## Task Models
 
