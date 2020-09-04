@@ -599,6 +599,15 @@ class Wipe(RobotEnv):
 
         return di
 
+    def _check_success(self):
+        """
+        Checks if Task succeeds (all dirt wiped).
+
+        Returns:
+            bool: True if completed task
+        """
+        return True if len(self.wiped_sensors) == len(self.model.arena.sensor_names) else False
+
     def _check_terminated(self):
         """
         Check if the task has completed one way or another. The following conditions lead to termination:
@@ -619,8 +628,8 @@ class Wipe(RobotEnv):
                 print(40 * '-' + " COLLIDED " + 40 * '-')
             terminated = True
 
-        # Prematurely terminate if finished
-        if len(self.wiped_sensors) == len(self.model.arena.sensor_names):
+        # Prematurely terminate if task is success
+        if self._check_success():
             if self.print_results:
                 print(40 * '+' + " FINISHED WIPING " + 40 * '+')
             terminated = True

@@ -522,6 +522,18 @@ class RobotEnv(MujocoEnv):
             # Now, load the robot models
             self.robots[idx].load_model()
 
+    def reward(self, action):
+        """
+        Runs superclass method by default
+        """
+        return super().reward(action)
+
+    def _check_success(self):
+        """
+        Runs superclass method by default
+        """
+        return super()._check_success()
+
     def _check_robot_configuration(self, robots):
         """
         Sanity check to make sure inputted robots and the corresponding requested task/configuration combo is legal.

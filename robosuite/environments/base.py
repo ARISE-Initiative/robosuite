@@ -328,7 +328,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns:
             float: Reward from environment
         """
-        return 0
+        raise NotImplementedError
 
     def render(self):
         """
@@ -416,12 +416,12 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def _check_success(self):
         """
-        Checks if the task has been completed.
+        Checks if the task has been completed. Should be implemented by subclasses
 
         Returns:
             bool: True if the task has been completed
         """
-        return False
+        raise NotImplementedError
 
     def _destroy_viewer(self):
         """
