@@ -12,6 +12,8 @@ The high-level features of **robosuite**'s robots are described as follows:
 
 * **Self-Enclosed Abstraction**: For a given task and environment, any information relevant to the specific robot instance can be found within the properties and methods within that instance. This means that each robot is responsible for directly setting its initial state within the simulation at the start of each episode, and also directly controls the robot in simulation via torques outputted by its controller's transformed actions.
 
+
+## Usage
 Below, we discuss the usage and functionality of the robots over the course of its program lifetime.
 
 #### Initialization
@@ -22,3 +24,35 @@ During a given simulation episode (each `env.step(...)` call), the environment w
 
 #### Callables
 At any given time, each robot has a set of `properties` whose real-time values can be accessed at any time. These include specifications for a given robot, such as its DOF, action dimension, and torque limits, as well as proprioceptive values, such as its joint positions and velocities. Additionally, if the robot is enabled with any sensors, those readings can also be polled as well. A full list of robot properties can be found in the [Robots API](../simulation/robot) section.
+
+
+## Models
+**robosuite** currently supports seven commercially-available robot models. We briefly describe each individual model along with its features below:
+
+#### Panda
+![panda_robot](../images/robot_model_Panda.png)
+[Panda](https://www.franka.de/technology) is a 7DOF and relatively new robot model produced by Franka Emika, and boasts high positional accuracy and repeatability. A common choice for both simulated and real-robot research, we provide a substantial set of [benchmarking](../algorithms/benchmarking) experiments using this robot. The default gripper for this robot is the `PandaGripper`, a parallel-jaw gripper equipped with two small finger pads, that comes shipped with the robot arm.
+
+#### Sawyer
+![sawyer_robot](../images/robot_model_Sawyer.png)
+[Sawyer](https://www.rethinkrobotics.com/sawyer) is Rethink Robotic's 7DOF single-arm robot, which also features an additional 8th joint (inactive and disabled by default in **robosuite**) for swiveling its display monitor. Along with Panda, Sawyer serves as the second testing robot for our set of benchmarking experiments. Sawyer's default `RethinkGripper` model is a parallel-jaw gripper with long fingers and useful for grasping a variety of objects.
+
+#### LBR IIWA 7
+![iiwa_robot](../images/robot_model_IIWA.png)
+[IIWA](https://www.kuka.com/en-us/products/robotics-systems/industrial-robots/lbr-iiwa) is one of KUKA's industrial-grade 7DOF robots, and is equipped with the strongest actuators of the group, with its per-joint torque limits exceeding nearly all the other models in **robosuite** by over twofold! By default, IIWA is equipped with the `Robotiq140Gripper`, [Robotiq's 140mm variation](https://robotiq.com/products/2f85-140-adaptive-robot-gripper) of their multi-purpose two finger gripper models.
+
+#### Jaco
+![jaco_robot](../images/robot_model_Jaco.png)
+[Jaco](https://www.kinovarobotics.com/en/products/assistive-technologies/kinova-jaco-assistive-robotic-arm) is a popular sleek 7DOF robot produced by Kinova Robotics and intended for human assistive applications. As such, it is relatively weak in terms of max torque capabilities. Jaco comes equipped with the `JacoThreeFingerGripper` by default, a three-pronged gripper with multi-jointed fingers.
+
+#### Kinova Gen3
+![kinova3_robot](../images/robot_model_Kinova3.png)
+[Kinova3](https://www.kinovarobotics.com/en/products/gen3-robot) is Kinova's newest 7DOF robot, with integrated sensor modules and interfaces designed for research-oriented applications. It is marginally stronger than its Jaco counterpart, and is equipped with the `Robotiq85Gripper`, [Robotiq's 85mm variation](https://robotiq.com/products/2f85-140-adaptive-robot-gripper) of their multi-purpose two finger gripper models.
+
+#### UR5e
+![ur5e_robot](../images/robot_model_UR5e.png)
+[UR5e](https://www.universal-robots.com/products/ur5-robot/) is Universal Robot's newest update to the UR5 line, and is a 6DOF robot intended for collaborative applications. This newest model boasts an improved footprint and embedded force-torque sensor in its end effector. This arm also uses the `Robotiq85Gripper` by default in **robosuite**.
+
+#### Baxter
+![baxter_robot](../images/robot_model_Baxter.png)
+[Baxter](http://collabrobots.com/about-baxter-robot/) is an older but classic bimanual robot originally produced by Rethink Robotics but now owned by CoThink Robotics, and is equipped with two 7DOF arms as well as an addition joint for controlling its swiveling display screen (inactive and disabled by default in **robosuite**). Each arm can be controlled independently in, and is the single multi-armed model currently supported in **robosuite**. Each arm is equipped with a `RethinkGripper` by default.
