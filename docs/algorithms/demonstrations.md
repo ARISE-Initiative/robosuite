@@ -23,7 +23,7 @@ Note that the rendering window must be active for these commands to work.
 |   c-v    |      rotate arm about z-axis       |
 |   ESC    |                quit                |
 
-### SpaceNavigator 3D Mouse controls
+### 3Dconnexion SpaceMouse controls
 
 |          Control          |                Command                |
 | :-----------------------: | :-----------------------------------: |
