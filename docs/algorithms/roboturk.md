@@ -4,11 +4,7 @@
 
 ## Updated Datasets compatible with v1.0
 
-TODO: put this section in after the action-spaces project is complete, and we have numbers for all of this.
-
-Several changes have taken place in robosuite from `v0.3` to `v1.0`. In order to adapt the RoboTurk pilot datasets to our new environments and robot controllers, we attempted to playback the demonstrations by having each robot controller try to track the seqeunce of robot states in each demonstrations, resulting in a new set of demonstrations where the robot tried to reproduce the motions from the original demonstrations. However, this form of playback is not guaranteed to result in successful demonstrations, even though the original demonstrations were all successful. We filtered out the demonstrations that could not be played back successfully, resulting in datasets of reduced size.
-
-We report some dataset metrics below. The datasets have the same structure as the ones collected by the `collect_human_demonstrations.py` script.
+We are currently in the process of reformatting the demonstrations. These datasets will be made available soon.
 
 ## Original Datasets compatible with v0.3
 
