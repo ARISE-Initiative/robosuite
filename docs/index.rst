@@ -6,8 +6,6 @@
 Welcome to robosuite's documentation!
 =====================================
 
-.. (TODO) Yuke
-
 .. toctree::
    :maxdepth: 1
    :caption: Introduction
@@ -16,8 +14,6 @@ Welcome to robosuite's documentation!
    installation
    quickstart
    demos
-
-.. (TODO) Roberto (Yuke will do overview)
 
 .. toctree::
    :maxdepth: 1
@@ -56,8 +52,6 @@ Welcome to robosuite's documentation!
 
    source/robosuite
 
-.. (TODO) Ajay
-
 .. toctree::
    :maxdepth: 1
    :caption: Algorithms
@@ -65,8 +59,6 @@ Welcome to robosuite's documentation!
    algorithms/benchmarking
    algorithms/demonstrations
    algorithms/roboturk
-
-.. (TODO) Ajay (add reference list)
 
 .. toctree::
    :maxdepth: 1
@@ -79,6 +71,5 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-
 * :ref:`modindex`
 * :ref:`search`
