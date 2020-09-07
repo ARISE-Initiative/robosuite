@@ -8,15 +8,15 @@ Cameras bundle a name to a set of properties to render images of the environment
 
 #### Renderers
 
-Renderers compute virtual images of the environment based on the properties defined in the cameras. In Robosuite, the user can select one of these three renderers:
+Renderers compute virtual images of the environment based on the properties defined in the cameras. In Robosuite, the user can select one of these two renderers:
 
 ##### MjViewer
 
 This is the default renderer from Mujoco. Based on OpenGL, our assets and environment definitions have been tuned to look good with this renderer. 
 
-##### iGibson Renderer
+##### <!--iGibson Renderer-->
 
-This renderer is included in the [iGibson simulator](http://svl.stanford.edu/igibson/). We include an initial (not optimized) set of alternative meshes (OBJ files instead of the STL used by MjViewer) to be used with this simulator. The iGibson simulator can be used in simple mode (renders only albedo) or in physics-based rendering (PBR) mode (renders additional properties such as metallic, or roughness). 
+<!--This renderer is included in the [iGibson simulator](http://svl.stanford.edu/igibson/). We include an initial (not optimized) set of alternative meshes (OBJ files instead of the STL used by MjViewer) to be used with this simulator. The iGibson simulator can be used in simple mode (renders only albedo) or in physics-based rendering (PBR) mode (renders additional properties such as metallic, or roughness).--> 
 
 ##### PyGame
 
