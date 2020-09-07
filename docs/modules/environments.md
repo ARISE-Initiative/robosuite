@@ -201,6 +201,8 @@ We provide a brief description of each environment below.
 
 #### Lift
 
+![env_lift](../images/env_lift.png)
+
 - Scene Description
   - A cube is placed on the tabletop in front of a single robot arm.
 - Goal
@@ -209,6 +211,8 @@ We provide a brief description of each environment below.
   - The cube location is randomized at the beginning of each episode.
 
 #### Stack
+
+![env_stack](../images/env_stack.png)
 
 - Scene Description
   - Two cubes are placed on the tabletop in front of a single robot arm.
@@ -219,6 +223,8 @@ We provide a brief description of each environment below.
 
 #### Pick Place
 
+![env_pick_place](../images/env_pick_place.png)
+
 - Scene Description
   - Four objects are placed in a bin in front of a single robot arm. There are four containers next to the bin.
 - Goal
@@ -227,6 +233,8 @@ We provide a brief description of each environment below.
   - The object locations are randomized at the beginning of each episode.
 
 #### Nut Assembly
+
+![env_nut_assembly](../images/env_nut_assembly.png)
 
 - Scene Description
   - Two colored pegs (one square and one round) are mounted on the tabletop, and two colored nuts (one square and one round) are placed on the table in front of a single robot arm.
@@ -237,6 +245,8 @@ We provide a brief description of each environment below.
 
 #### Door
 
+![env_door](../images/env_door.png)
+
 - Scene Description
   - A door with a handle is mounted in free space in front of a single robot arm.
 - Goal
@@ -245,6 +255,8 @@ We provide a brief description of each environment below.
   - The door location is randomized at the beginning of each episode.
 
 #### Wipe
+
+TODO
 
 - Scene Description
   - A table with a whiteboard surface and some markings is placed in front of a single robot arm, which has a whiteboard eraser mounted on its hand.
@@ -257,6 +269,8 @@ We provide a brief description of each environment below.
 
 #### Two Arm Lift
 
+![env_two_arm_lift](../images/env_two_arm_lift.png)
+
 - Scene Description
   - A large pot with two handles is placed on a table top. Two robot arms are placed on the same side of the table or on opposite ends of the table.
 - Goal
@@ -266,6 +280,8 @@ We provide a brief description of each environment below.
 
 #### Two Arm Peg In Hole
 
+TODO
+
 - Scene Description
   - Two robot arms are placed either next to each other or opposite each other. One robot arm holds a board with a square hole in the center, and the other robot arm holds a long peg.
 - Goal
@@ -274,6 +290,8 @@ We provide a brief description of each environment below.
   - The initial arm configurations are randomized at the beginning of each episode.
 
 #### Two Arm Handoff
+
+![env_two_arm_handoff](../images/env_two_arm_handoff.png)
 
 - Scene Description
   - A hammer is placed on a narrow table. Two robot arms are placed on the same side of the table or on opposite ends of the table.
