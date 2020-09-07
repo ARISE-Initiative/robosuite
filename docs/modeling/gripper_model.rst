@@ -1,9 +1,7 @@
 Gripper Model
 =============
 
-The GripperModel class serves as a direct intermediary class that reads in information from a corresponding gripper XML
-file and also contains relevant hard-coded information from that XML. In conjunction with the RobotModel class, this
-serves as the core modeling component of the higher-level Robot class used in simulation.
+The `GripperModel` class serves as a direct intermediary class that reads in information from a corresponding gripper XML file and also contains relevant hard-coded information from that XML. In conjunction with the `RobotModel` class, this serves as the core modeling component of the higher-level Robot class used in simulation.
 
 Base Gripper Model
 ------------------

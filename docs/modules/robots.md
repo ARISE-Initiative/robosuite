@@ -2,11 +2,11 @@
 
 ![robot_overview_diagram](../images/robot_module.png)
 
-**Robots** are a key component in robosuite, and serve as the embodiment of a given agent as well as the central interaction point within an environment and key interface to mujoco for the robot-related state and control. **robosuite** captures this level of abstraction with the [Robot](../simulation/robot)-based classes, with support for both single-armed and bimnaual variations. In turn, the Robot class is centrally defined by a [RobotModel](../modeling/robot_model), [GripperModel(s)](../modeling/gripper_model) (with no gripper being represented by a dummy class), and [Controller(s)](../simulation/controller).
+**Robots** are a key component in **robosuite**, and serve as the embodiment of a given agent as well as the central interaction point within an environment and key interface to MuJoCo for the robot-related state and control. **robosuite** captures this level of abstraction with the [Robot](../simulation/robot)-based classes, with support for both single-armed and bimanual variations. In turn, the Robot class is centrally defined by a [RobotModel](../modeling/robot_model), [GripperModel(s)](../modeling/gripper_model) (with no gripper being represented by a dummy class), and [Controller(s)](../simulation/controller).
 
 The high-level features of **robosuite**'s robots are described as follows:
 
-* **Diverse and Realistic Models**: **robosuite** provides models for 8 commercially-available robots (including the bimanual Baxter robot), 7 grippers (including the popular Robotiq 140 / 85 models), and 6 controllers, with model properties either taken directly from company website or raw spec sheets.
+* **Diverse and Realistic Models**: **robosuite** provides models for 8 commercially-available robots (including the bimanual Baxter robot), 7 grippers (including the popular Robotiq 140 / 85 models), and 6 controllers, with model properties either taken directly from the company website or raw spec sheets.
 
 * **Modularized Support**: Robots are designed to be plug-n-play -- any combinations of robots, grippers, and controllers can be used, assuming the given environment is intended for the desired robot configuration. Because each robot is assigned a unique ID number, multiple instances of identical robots can be instantiated within the simulation without error.
 
@@ -17,7 +17,7 @@ The high-level features of **robosuite**'s robots are described as follows:
 Below, we discuss the usage and functionality of the robots over the course of its program lifetime.
 
 #### Initialization
-During environment creation (`suite.make(...)`), individual robots are both instantiated and initialized. A desired RobotModel, GripperModel(s), and Controller(s) (where multiple can be specified for bimanual robots) are loaded into each robot, with the models being passed into the environment to compose the final mujoco simulation object. Each robot is then set to its initial state.
+During environment creation (`suite.make(...)`), individual robots are both instantiated and initialized. The desired RobotModel, GripperModel(s), and Controller(s) (where multiple can be specified for bimanual robots) are loaded into each robot, with the models being passed into the environment to compose the final MuJoCo simulation object. Each robot is then set to its initial state.
 
 #### Runtime
 During a given simulation episode (each `env.step(...)` call), the environment will receive a set of actions and distribute them accordingly to each robot, according to their respective action spaces. Each robot then converts these actions into low-level torques via their respective controllers, and directly execute these torques in the simulation. At the conclusion of the environment step, each robot will pass its set of robot-specific observations to the environment, which will then concatenate and append additional task-level observations before passing them as output from the `env.step(...)` call.
@@ -39,7 +39,7 @@ At any given time, each robot has a set of `properties` whose real-time values c
 
 #### LBR IIWA 7
 ![iiwa_robot](../images/robot_model_IIWA.png)
-[IIWA](https://www.kuka.com/en-us/products/robotics-systems/industrial-robots/lbr-iiwa) is one of KUKA's industrial-grade 7DOF robots, and is equipped with the strongest actuators of the group, with its per-joint torque limits exceeding nearly all the other models in **robosuite** by over twofold! By default, IIWA is equipped with the `Robotiq140Gripper`, [Robotiq's 140mm variation](https://robotiq.com/products/2f85-140-adaptive-robot-gripper) of their multi-purpose two finger gripper models.
+[IIWA](https://www.kuka.com/en-us/products/robotics-systems/industrial-robots/lbr-iiwa) is one of KUKA's industrial-grade 7DOF robots, and is equipped with the strongest actuators of the group, with its per-joint torque limits exceeding nearly all the other models in **robosuite** by over twofold! By default, IIWA is equipped with the `Robotiq140Gripper`, [Robotiq's 140mm variation](https://robotiq.com/products/2f85-140-adaptive-robot-gripper) of their multi-purpose two-finger gripper models.
 
 #### Jaco
 ![jaco_robot](../images/robot_model_Jaco.png)
@@ -47,7 +47,7 @@ At any given time, each robot has a set of `properties` whose real-time values c
 
 #### Kinova Gen3
 ![kinova3_robot](../images/robot_model_Kinova3.png)
-[Kinova3](https://www.kinovarobotics.com/en/products/gen3-robot) is Kinova's newest 7DOF robot, with integrated sensor modules and interfaces designed for research-oriented applications. It is marginally stronger than its Jaco counterpart, and is equipped with the `Robotiq85Gripper`, [Robotiq's 85mm variation](https://robotiq.com/products/2f85-140-adaptive-robot-gripper) of their multi-purpose two finger gripper models.
+[Kinova3](https://www.kinovarobotics.com/en/products/gen3-robot) is Kinova's newest 7DOF robot, with integrated sensor modules and interfaces designed for research-oriented applications. It is marginally stronger than its Jaco counterpart, and is equipped with the `Robotiq85Gripper`, [Robotiq's 85mm variation](https://robotiq.com/products/2f85-140-adaptive-robot-gripper) of their multi-purpose two-finger gripper models.
 
 #### UR5e
 ![ur5e_robot](../images/robot_model_UR5e.png)
@@ -55,4 +55,4 @@ At any given time, each robot has a set of `properties` whose real-time values c
 
 #### Baxter
 ![baxter_robot](../images/robot_model_Baxter.png)
-[Baxter](http://collabrobots.com/about-baxter-robot/) is an older but classic bimanual robot originally produced by Rethink Robotics but now owned by CoThink Robotics, and is equipped with two 7DOF arms as well as an addition joint for controlling its swiveling display screen (inactive and disabled by default in **robosuite**). Each arm can be controlled independently in, and is the single multi-armed model currently supported in **robosuite**. Each arm is equipped with a `RethinkGripper` by default.
+[Baxter](http://collabrobots.com/about-baxter-robot/) is an older but classic bimanual robot originally produced by Rethink Robotics but now owned by CoThink Robotics, and is equipped with two 7DOF arms as well as an additional joint for controlling its swiveling display screen (inactive and disabled by default in **robosuite**). Each arm can be controlled independently, and is the single multi-armed model currently supported in **robosuite**. Each arm is equipped with a `RethinkGripper` by default.
