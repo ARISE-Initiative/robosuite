@@ -25,7 +25,7 @@ Welcome to robosuite's documentation!
 
    modules/overview
    modules/robots
-   modules/controllers
+   modules/controllers.ipynb
    modules/objects
    modules/environments
    modules/sensors

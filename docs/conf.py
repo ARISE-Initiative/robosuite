@@ -40,6 +40,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.autodoc',
     'recommonmark', # use Sphinx-1.4 or newer
+    'nbsphinx',
 ]
 
 # Sphinx-apidoc variables
@@ -56,7 +57,7 @@ templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-source_suffix = ['.rst', '.md']
+source_suffix = ['.rst', '.md', '.ipynb']
 
 # The master toctree document.
 master_doc = 'index'
