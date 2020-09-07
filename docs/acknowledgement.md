@@ -1,17 +1,3 @@
-# Acknowledgement
+# Acknowledgements
 
-## Core Developers
-
-- [Ajay Mandlekar](http://web.stanford.edu/~amandlek/)
-- [Roberto Martín-Martín](https://robertomartinmartin.com/)
-- [Josiah Wong](https://www.jowo.me/about)
-- [Yuke Zhu](https://www.cs.utexas.edu/~yukez/)
-
-## Contributors
-
-- [Jiren Zhu](https://github.com/jirenz)
-  - One of the original developers of robosuite v0.3
-- [Michelle Lee](http://stanford.edu/~mishlee/)
-  - Helped design the Operational Space controller.
-- [Andrew Kondrich](http://www.andrewkondrich.com/) and [Jonathan Booher](https://web.stanford.edu/~jaustinb/)
-  - Helped implement some domain randomization utilities.
+**robosuite** is built on the [MuJoCo engine](http://www.mujoco.org/) with the Python interfaces provided by [mujoco-py](https://github.com/openai/mujoco-py). We would also like to thank Jiren Zhu, Michelle Lee, Andrew Kondrich, Jonathan Booher, Joan Creus-Costa, Anchit Gupta, and many other members of the [Stanford People, AI, & Robots (PAIR) Group](http://pair.stanford.edu/) for their contributions and feedback to this project.

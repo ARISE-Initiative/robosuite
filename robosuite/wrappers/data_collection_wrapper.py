@@ -141,12 +141,6 @@ class DataCollectionWrapper(Wrapper):
             self.states.append(state)
 
             info = {}
-            # Grab torques from all robots in the environment
-            torques = []
-            for robot in self.env.robots:
-                torques = np.concatenate([torques, robot.torques])
-            # Store torques and action as info
-            info["joint_torques"] = np.array(torques)
             info["actions"] = np.array(action)
             self.action_infos.append(info)
 

@@ -21,28 +21,8 @@ from robosuite import load_controller_config
 from robosuite.wrappers import DataCollectionWrapper
 from robosuite.utils.input_utils import input2action
 
-# Arguments
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--directory",
-    type=str,
-    default=os.path.join(suite.models.assets_root, "demonstrations"),
-)
-parser.add_argument("--environment", type=str, default="Lift")
-parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-parser.add_argument("--config", type=str, default="single-arm-opposed",
-                    help="Specified environment configuration if necessary")
-parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
-parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
-parser.add_argument("--controller", type=str, default="OSC_POSE",
-                    help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'")
-parser.add_argument("--device", type=str, default="keyboard")
-parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
-parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")
-args = parser.parse_args()
 
-
-def collect_human_trajectory(env, device):
+def collect_human_trajectory(env, device, arm, env_configuration):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -51,6 +31,8 @@ def collect_human_trajectory(env, device):
     Args:
         env (MujocoEnv): environment to control
         device (Device): to receive controls from the device
+        arms (str): which arm to control (eg bimanual) 'right' or 'left'
+        env_configuration (str): specified environment configuration
     """
 
     env.reset()
@@ -66,14 +48,14 @@ def collect_human_trajectory(env, device):
     # Loop until we get a reset from the input or the task completes
     while True:
         # Set active robot
-        active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
+        active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
 
         # Get the newest action
         action, grasp = input2action(
             device=device,
             robot=active_robot,
-            active_arm=args.arm,
-            env_configuration=args.config
+            active_arm=arm,
+            env_configuration=env_configuration
         )
 
         # If action is none, then this a reset so we should break
@@ -121,8 +103,7 @@ def collect_human_trajectory(env, device):
 def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
     """
     Gathers the demonstrations saved in @directory into a
-    single hdf5 file, and another directory that contains the 
-    raw model.xml files.
+    single hdf5 file.
 
     The strucure of the hdf5 file is as follows.
 
@@ -133,35 +114,19 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
         env (attribute) - environment name on which demos were collected
 
         demo1 (group) - every demonstration has a group
-            model_file (attribute) - name of corresponding model xml in `models` directory
+            model_file (attribute) - model xml string for demonstration
             states (dataset) - flattened mujoco states
-            joint_torques (dataset) - joint torques applied during demonstration
             actions (dataset) - actions applied during demonstration
-            right_dpos (dataset) - end effector delta position command for
-                single arm robot or right arm
-            right_dquat (dataset) - end effector delta rotation command for
-                single arm robot or right arm
-            left_dpos (dataset) - end effector delta position command for
-                left arm (bimanual robot only)
-            left_dquat (dataset) - end effector delta rotation command for
-                left arm (bimanual robot only)
 
         demo2 (group)
         ...
 
     Args:
         directory (str): Path to the directory containing raw demonstrations.
-        out_dir (str): Path to where to store the hdf5 file and model xmls. 
-            The model xmls will be stored in a subdirectory called `models`.
+        out_dir (str): Path to where to store the hdf5 file. 
         env_info (str): JSON-encoded string containing environment information,
             including controller and robot info
     """
-
-    # store model xmls in this directory
-    model_dir = os.path.join(out_dir, "models")
-    if os.path.isdir(model_dir):
-        shutil.rmtree(model_dir)
-    os.makedirs(model_dir)
 
     hdf5_path = os.path.join(out_dir, "demo.hdf5")
     f = h5py.File(hdf5_path, "w")
@@ -176,7 +141,6 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
 
         state_paths = os.path.join(directory, ep_directory, "state_*.npz")
         states = []
-        joint_torques = []
         actions = []
 
         for state_file in sorted(glob(state_paths)):
@@ -185,7 +149,6 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
 
             states.extend(dic["states"])
             for ai in dic["action_infos"]:
-                joint_torques.append(ai["joint_torques"])
                 actions.append(ai["actions"])
                 
         if len(states) == 0:
@@ -194,27 +157,20 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
         # Delete the first actions and the last state. This is because when the DataCollector wrapper
         # recorded the states and actions, the states were recorded AFTER playing that action.
         del states[-1]
-        del joint_torques[0]
         del actions[0]
 
         num_eps += 1
         ep_data_grp = grp.create_group("demo_{}".format(num_eps))
 
-        # store model file name as an attribute
-        ep_data_grp.attrs["model_file"] = "model_{}.xml".format(num_eps)
+        # store model xml as an attribute
+        xml_path = os.path.join(directory, ep_directory, "model.xml")
+        with open(xml_path, "r") as f:
+            xml_str = f.read()
+        ep_data_grp.attrs["model_file"] = xml_str
 
         # write datasets for states and actions
         ep_data_grp.create_dataset("states", data=np.array(states))
-        ep_data_grp.create_dataset("joint_torques", data=np.array(joint_torques))
         ep_data_grp.create_dataset("actions", data=np.array(actions))
-
-        # copy over and rename model xml
-        xml_path = os.path.join(directory, ep_directory, "model.xml")
-        shutil.copy(xml_path, model_dir)
-        os.rename(
-            os.path.join(model_dir, "model.xml"),
-            os.path.join(model_dir, "model_{}.xml".format(num_eps)),
-        )
 
     # write dataset attributes (metadata)
     now = datetime.datetime.now()
@@ -228,6 +184,27 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
 
 
 if __name__ == "__main__":
+    # Arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--directory",
+        type=str,
+        default=os.path.join(suite.models.assets_root, "demonstrations"),
+    )
+    parser.add_argument("--environment", type=str, default="Lift")
+    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+    parser.add_argument("--config", type=str, default="single-arm-opposed",
+                        help="Specified environment configuration if necessary")
+    parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
+    parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
+    parser.add_argument("--controller", type=str, default="OSC_POSE",
+                        help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'")
+    parser.add_argument("--device", type=str, default="keyboard")
+    parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
+    parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")
+    args = parser.parse_args()
+
+
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
 
@@ -286,5 +263,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device)
+        collect_human_trajectory(env, device, args.arm, args.config)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

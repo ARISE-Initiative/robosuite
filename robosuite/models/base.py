@@ -149,7 +149,6 @@ class MujocoXML(object):
         with open(fname, "w") as f:
             xml_str = ET.tostring(self.root, encoding="unicode")
             if pretty:
-                # TODO: get a better pretty print library
                 parsed_xml = xml.dom.minidom.parseString(xml_str)
                 xml_str = parsed_xml.toprettyxml(newl="")
             f.write(xml_str)
