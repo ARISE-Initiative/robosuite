@@ -22,7 +22,7 @@ For the Lift task, both OSC_POSE and JOINT_VELOCITY were tested on Panda and Saw
 ### Stack
 For the Stack task, both OSC_POSE and JOINT_VELOCITY were tested on Panda and Sawyer robots.
 
-[EXPERIMENTS STILL RUNNING]
+![sac_stack](../images/benchmarking/sac_stack.png)
 
 ### Pick Place
 For the Pick Place task, single-object simplified variations of the task were used. Specifically, PickPlaceCan and PickPlaceMilk were both tested on Panda and Sawyer robots with OSC_POSE.
