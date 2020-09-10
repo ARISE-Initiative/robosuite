@@ -42,7 +42,7 @@ class GymWrapper(Wrapper):
                 keys += ["robot{}_robot-state".format(idx)]
         self.keys = keys
 
-        # TODO: What is this?
+        # Gym specific attributes
         self.env.spec = None
         self.metadata = None
 

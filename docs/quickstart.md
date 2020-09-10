@@ -88,7 +88,7 @@ world.worldbody.append(sphere)
 ```python
 model = world.get_model(mode="mujoco_py")
 ```
-This is an `MjModel` instance than can then be used for simulation. For example,
+This is an `MjModel` instance that can then be used for simulation. For example,
 ```
 from mujoco_py import MjSim, MjViewer
 
