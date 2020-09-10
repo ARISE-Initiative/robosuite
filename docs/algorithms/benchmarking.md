@@ -27,12 +27,16 @@ For the Stack task, both OSC_POSE and JOINT_VELOCITY were tested on Panda and Sa
 ### Pick Place
 For the Pick Place task, single-object simplified variations of the task were used. Specifically, PickPlaceCan and PickPlaceMilk were both tested on Panda and Sawyer robots with OSC_POSE.
 
-[EXPERIMENTS STILL RUNNING]
+PickPlaceCan
+![sac_pick_place_can](../images/benchmarking/sac_pick_place_can.png)
+
+PickPlaceMilk
+![sac_pick_place_milk](../images/benchmarking/sac_pick_place_milk.png)
 
 ### Nut Assembly
 For the Nut Assembly task, a single-object simplified variation of the task were used. Specifically, NutAssemblyRound was tested on Panda and Sawyer robots with OSC_POSE.
 
-[EXPERIMENTS STILL RUNNING]
+![sac_nut_assembly_round](../images/benchmarking/sac_nut_assembly_round.png)
 
 ### Door
 For the Door task, both OSC_POSE and JOINT_VELOCITY were tested on Panda and Sawyer robots.
@@ -47,17 +51,17 @@ For the Wipe task, both OSC_POSE and JOINT_VELOCITY were tested on Panda and Saw
 ### Two Arm Lift
 For the Two Arm Lift task, OSC_POSE was tested on a Panda-Panda pair and Sawyer-Sawyer pair of robots.
 
-[EXPERIMENTS STILL RUNNING]
+![sac_two_arm_lift](../images/benchmarking/sac_two_arm_lift.png)
 
 ### Two Arm Peg in Hole
 For the Two Arm Peg in Hole task, OSC_POSE was tested on a Panda-Sawyer pair.
 
-[EXPERIMENTS STILL RUNNING]
+![sac_two_arm_peg_in_hole](../images/benchmarking/sac_two_arm_peg_in_hole.png)
 
 ### Two Arm Handoff
 For the Two Arm Handoff task, OSC_POSE was tested on a Panda-Panda pair and Sawyer-Sawyer pair of robots.
 
-[EXPERIMENTS STILL RUNNING]
+![sac_two_arm_handoff](../images/benchmarking/sac_two_arm_handoff.png)
 
 
 
