@@ -46,7 +46,7 @@ For the Door task, both OSC_POSE and JOINT_VELOCITY were tested on Panda and Saw
 ### Wipe
 For the Wipe task, both OSC_POSE and JOINT_VELOCITY were tested on Panda and Sawyer robots.
 
-[EXPERIMENTS STILL RUNNING]
+![sac_wipe](../images/benchmarking/sac_wipe.png)
 
 ### Two Arm Lift
 For the Two Arm Lift task, OSC_POSE was tested on a Panda-Panda pair and Sawyer-Sawyer pair of robots.
