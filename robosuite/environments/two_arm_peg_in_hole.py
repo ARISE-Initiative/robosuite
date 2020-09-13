@@ -221,14 +221,14 @@ class TwoArmPegInHole(RobotEnv):
         """
         reward = 0
 
-        t, d, cos = self._compute_orientation()
-
         # Right location and angle
-        if d < 0.06 and -0.12 <= t <= 0.14 and cos > 0.95:
+        if self._check_success():
             reward = 1.0
 
         # use a shaping reward
         if self.reward_shaping:
+            # Grab relevant values
+            t, d, cos = self._compute_orientation()
             # reaching reward
             hole_pos = self.sim.data.body_xpos[self.hole_body_id]
             gripper_site_pos = self.sim.data.body_xpos[self.peg_body_id]
