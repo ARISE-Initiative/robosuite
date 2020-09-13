@@ -223,7 +223,8 @@ class TwoArmLift(RobotEnv):
             - Reaching: in [0, 0.5], per-arm component that is proportional to the distance between each arm and its
               respective pot handle, and exactly 0.5 when grasping the handle
               - Note that the agent only gets the lifting reward when flipping no more than 30 degrees.
-            - Lifting: in [0, 2.0], proportional to the pot's height above the table, and capped at a certain threshold
+            - Grasping: in {0, 0.25}, binary per-arm component awarded if the gripper is grasping its correct handle
+            - Lifting: in [0, 1.5], proportional to the pot's height above the table, and capped at a certain threshold
 
         Note that the final reward is normalized and scaled by reward_scale / 3.0 as
         well so that the max score is equal to reward_scale
@@ -254,7 +255,7 @@ class TwoArmLift(RobotEnv):
             pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
             table_height = self.sim.data.site_xpos[self.table_top_id][2]
             elevation = pot_bottom_height - table_height
-            r_lift = min(max(elevation - 0.05, 0), 0.2)
+            r_lift = min(max(elevation - 0.05, 0), 0.15)
             reward += 10. * direction_coef * r_lift
 
             _gripper_0_to_handle = self._gripper_0_to_handle
@@ -265,40 +266,62 @@ class TwoArmLift(RobotEnv):
 
             # Single bimanual robot setting
             if self.env_configuration == "bimanual":
-                _contacts_0 = list(
+                _contacts_0_lf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper["left"].contact_geoms, self.pot.handle_2_geoms()
+                        self.robots[0].gripper["left"].important_geoms["left_finger"], self.pot.handle_2_geoms()
                     )
-                )
-                _contacts_1 = list(
+                )) > 0
+                _contacts_0_rf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper["right"].contact_geoms, self.pot.handle_1_geoms()
+                        self.robots[0].gripper["left"].important_geoms["right_finger"], self.pot.handle_2_geoms()
                     )
-                )
+                )) > 0
+                _contacts_1_lf = len(list(
+                    self.find_contacts(
+                        self.robots[1].gripper["right"].important_geoms["left_finger"], self.pot.handle_1_geoms()
+                    )
+                )) > 0
+                _contacts_1_rf = len(list(
+                    self.find_contacts(
+                        self.robots[1].gripper["right"].important_geoms["right_finger"], self.pot.handle_1_geoms()
+                    )
+                )) > 0
             # Multi single arm setting
             else:
-                _contacts_0 = list(
+                _contacts_0_lf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper.contact_geoms, self.pot.handle_2_geoms()
+                        self.robots[0].gripper.important_geoms["left_finger"], self.pot.handle_2_geoms()
                     )
-                )
-                _contacts_1 = list(
+                )) > 0
+                _contacts_0_rf = len(list(
                     self.find_contacts(
-                        self.robots[1].gripper.contact_geoms, self.pot.handle_1_geoms()
+                        self.robots[0].gripper.important_geoms["right_finger"], self.pot.handle_2_geoms()
                     )
-                )
+                )) > 0
+                _contacts_1_lf = len(list(
+                    self.find_contacts(
+                        self.robots[1].gripper.important_geoms["left_finger"], self.pot.handle_1_geoms()
+                    )
+                )) > 0
+                _contacts_1_rf = len(list(
+                    self.find_contacts(
+                        self.robots[1].gripper.important_geoms["right_finger"], self.pot.handle_1_geoms()
+                    )
+                )) > 0
             _g0h_dist = np.linalg.norm(_gripper_0_to_handle)
             _g1h_dist = np.linalg.norm(_gripper_1_to_handle)
 
-            if len(_contacts_0) > 0:
-                reward += 0.5
-            else:
-                reward += 0.5 * (1 - np.tanh(10.0 * _g0h_dist))
+            # Grasping reward
+            if _contacts_0_lf and _contacts_0_rf:
+                reward += 0.25
+            # Reaching reward
+            reward += 0.5 * (1 - np.tanh(10.0 * _g0h_dist))
 
-            if len(_contacts_1) > 0:
-                reward += 0.5
-            else:
-                reward += 0.5 * (1 - np.tanh(10.0 * _g1h_dist))
+            # Grasping reward
+            if _contacts_1_lf and _contacts_1_rf:
+                reward += 0.25
+            # Reaching reward
+            reward += 0.5 * (1 - np.tanh(10.0 * _g1h_dist))
 
         if self.reward_scale is not None:
             reward *= self.reward_scale / 3.0
