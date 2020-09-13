@@ -486,7 +486,7 @@ class RobotEnv(MujocoEnv):
                         self.sim.model.jnt_range[robot._ref_joint_indexes]
                     )
             ):
-                if not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
+                if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
                     print("Joint limit reached in joint " + str(qidx))
                     joint_limits[idx] = True
         return joint_limits
