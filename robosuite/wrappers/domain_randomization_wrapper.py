@@ -104,6 +104,8 @@ class DomainRandomizationWrapper(Wrapper):
         self.randomize_on_reset = randomize_on_reset
         self.randomize_every_n_steps = randomize_every_n_steps
 
+        self.step_counter = 0
+
         self.modders = []
 
         if self.randomize_color:
