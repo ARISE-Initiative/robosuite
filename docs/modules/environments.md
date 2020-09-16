@@ -188,13 +188,6 @@ Each `Task` class instance also takes a `placement_initializer` as input. The `p
 
 ## Task Descriptions
 
-- TODO: for each environment
-  - have a sequence of pictures that lead to the task being solved
-  - decide if we want these
-    - object-state description 
-    - reward function description
-    - success check description
-
 We provide a brief description of each environment below.
 
 ### Single-Arm Tasks
@@ -256,7 +249,7 @@ We provide a brief description of each environment below.
 
 #### Wipe
 
-TODO
+![env_door](../images/env_wipe.png)
 
 - Scene Description
   - A table with a whiteboard surface and some markings is placed in front of a single robot arm, which has a whiteboard eraser mounted on its hand.
@@ -280,7 +273,7 @@ TODO
 
 #### Two Arm Peg In Hole
 
-TODO
+![env_two_arm_handoff](../images/env_two_arm_peg_in_hole.png)
 
 - Scene Description
   - Two robot arms are placed either next to each other or opposite each other. One robot arm holds a board with a square hole in the center, and the other robot arm holds a long peg.
