@@ -153,6 +153,10 @@ class DomainRandomizationWrapper(Wrapper):
         # reset counter for doing domain randomization at a particular frequency
         self.step_counter = 0
 
+        # update sims
+        for modder in self.modders:
+            modder.update_sim(self.env.simz)
+
         if self.randomize_on_reset:
             # domain randomize + regenerate observation
             self.randomize_domain()

@@ -38,6 +38,15 @@ class BaseModder():
         else:
             self.random_state = random_state
 
+    def update_sim(self, sim):
+        """
+        Setter function to update internal sim variable
+
+        Args:
+            sim (MjSim): MjSim object
+        """
+        self.sim = sim
+
     @property
     def model(self):
         """
