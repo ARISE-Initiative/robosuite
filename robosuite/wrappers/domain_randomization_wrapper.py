@@ -155,7 +155,7 @@ class DomainRandomizationWrapper(Wrapper):
 
         # update sims
         for modder in self.modders:
-            modder.update_sim(self.env.simz)
+            modder.update_sim(self.env.sim)
 
         if self.randomize_on_reset:
             # domain randomize + regenerate observation
