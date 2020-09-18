@@ -23,7 +23,7 @@ This release of **robosuite** contains seven robot models, eight gripper models,
 
 ## Citations
 Please cite [robosuite](https://robosuite.ai) if you use this framework in your publications:
-```
+```bibtex
 @inproceedings{robosuite2020,
   title={robosuite: modular simulation framework and benchmark environments for robot learning},
   author={Yuke Zhu and Josiah Wong and Ajay Mandlekar and Roberto Mart\'{i}n-Mart\'{i}n},
