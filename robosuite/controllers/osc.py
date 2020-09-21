@@ -249,8 +249,7 @@ class OperationalSpaceController(Controller):
             self.goal_ori = set_goal_orientation(scaled_delta[3:],
                                                  self.ee_ori_mat,
                                                  orientation_limit=self.orientation_limits,
-                                                 set_ori=set_ori,
-                                                 axis_angle=True)
+                                                 set_ori=set_ori)
         self.goal_pos = set_goal_position(scaled_delta[:3],
                                           self.ee_pos,
                                           position_limit=self.position_limits,
@@ -284,7 +283,7 @@ class OperationalSpaceController(Controller):
         if self.interpolator_pos is not None:
             # Linear case
             if self.interpolator_pos.order == 1:
-                desired_pos = self.interpolator_pos.get_interpolated_goal(self.ee_pos)
+                desired_pos = self.interpolator_pos.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass
@@ -295,7 +294,7 @@ class OperationalSpaceController(Controller):
             # relative orientation based on difference between current ori and ref
             self.relative_ori = orientation_error(self.ee_ori_mat, self.ori_ref)
 
-            ori_error = self.interpolator_ori.get_interpolated_goal(self.relative_ori)
+            ori_error = self.interpolator_ori.get_interpolated_goal()
         else:
             desired_ori = np.array(self.goal_ori)
             ori_error = orientation_error(desired_ori, self.ee_ori_mat)

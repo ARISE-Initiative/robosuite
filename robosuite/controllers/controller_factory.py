@@ -9,6 +9,7 @@ from .interpolators.linear_interpolator import LinearInterpolator
 
 import json
 import os
+import numpy as np
 
 from copy import deepcopy
 
@@ -107,8 +108,7 @@ def controller_factory(name, params):
 
     interpolator = None
     if params["interpolation"] == "linear":
-        interpolator = LinearInterpolator(max_delta=0.5,
-                                          ndim=params["ndim"],
+        interpolator = LinearInterpolator(ndim=params["ndim"],
                                           controller_freq=(1 / params["sim"].model.opt.timestep),
                                           policy_freq=params["policy_freq"],
                                           ramp_ratio=params["ramp_ratio"])
@@ -133,8 +133,12 @@ def controller_factory(name, params):
         ori_interpolator = None
         if interpolator is not None:
             interpolator.dim = 3                # EE IK control uses dim 3 for pos and dim 4 for ori
+            interpolator.start = np.zeros(3)
+            interpolator.goal = np.zeros(3)
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.dim = 4
+            ori_interpolator.start = np.array((0, 0, 0, 1))
+            ori_interpolator.goal = np.array((0, 0, 0, 1))
             ori_interpolator.ori_interpolate = "quat"
 
         # Import pybullet server if necessary

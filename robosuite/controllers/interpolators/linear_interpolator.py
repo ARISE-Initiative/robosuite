@@ -10,9 +10,6 @@ class LinearInterpolator(Interpolator):
     Abstracted to interpolate n-dimensions
 
     Args:
-        max_delta (float): Maximum single change in dx allowed by the system.
-                Note that this should be in units magnitude / step
-
         ndim (int): Number of dimensions to interpolate
 
         controller_freq (float): Frequency (Hz) of the controller
@@ -24,8 +21,6 @@ class LinearInterpolator(Interpolator):
             :Note: Num total interpolation steps will be equal to np.floor(ramp_ratio * controller_freq / policy_freq)
                     i.e.: how many controller steps we get per action space update
 
-        use_delta_goal (bool): Whether to interpret inputs as delta goals from a current position or absolute values
-
         ori_interpolate (None or str): If set, assumes that we are interpolating angles (orientation)
             Specified string determines assumed type of input:
 
@@ -33,7 +28,6 @@ class LinearInterpolator(Interpolator):
                 `'quat'`: Quaternion inputs
     """
     def __init__(self,
-                 max_delta,
                  ndim,
                  controller_freq,
                  policy_freq,
@@ -42,9 +36,6 @@ class LinearInterpolator(Interpolator):
                  ori_interpolate=None,
                  ):
 
-        self.max_delta = max_delta                                 # Maximum allowed change per interpolator step
-        self.goal = None                                           # Requested goal
-        self.start = None                                          # Start state
         self.dim = ndim                                            # Number of dimensions to interpolate
         self.order = 1                                             # Order of the interpolator (1 = linear)
         self.step = 0                                              # Current step of the interpolator
@@ -54,14 +45,22 @@ class LinearInterpolator(Interpolator):
                                                                    # not implemented yet- TODO)
         self.ori_interpolate = ori_interpolate                     # Whether this is interpolating orientation or not
 
-    def set_goal(self, goal, start=None):
+        # Set start and goal states
+        if self.ori_interpolate is not None:
+            if self.ori_interpolate == 'euler':
+                self.start = np.zeros(3)
+            else:   # quaternions
+                self.start = np.array((0, 0, 0, 1))
+        else:
+            self.start = np.zeros(ndim)
+        self.goal = np.array(self.start)
+
+    def set_goal(self, goal):
         """
-        Takes a requested goal and updates internal parameters for next interpolation step
+        Takes a requested (absolute) goal and updates internal parameters for next interpolation step
 
         Args:
-            goal (np.array): Requested goal (either absolute or delta value). Should be same dimension as self.dim
-            start (np.array): Only relevant if "self.use_delta_goal" is set. This is the current state from which
-                the goal will be taken relative to
+            np.array: Requested goal (absolute value). Should be same dimension as self.dim
         """
         # First, check to make sure requested goal shape is the same as self.dim
         if goal.shape[0] != self.dim:
@@ -69,41 +68,28 @@ class LinearInterpolator(Interpolator):
             raise ValueError("LinearInterpolator: Input size wrong for goal; got {}, needs to be {}!".format(
                 goal.shape[0], self.dim))
 
-        # Update goal and save start state
+        # Update start and goal
+        self.start = np.array(self.goal)
         self.goal = np.array(goal)
-        self.start = start
 
         # Reset interpolation steps
         self.step = 0
 
-    def get_interpolated_goal(self, x):
+    def get_interpolated_goal(self):
         """
-        Takes the current state and provides the next step in interpolation given the remaining steps.
+        Provides the next step in interpolation given the remaining steps.
 
-        NOTE: If this interpolator is for orientation, it is assumed to be receiving
-
-        Args:
-            x (np.array): Current state. Should be same dimension as self.dim
-
-                :NOTE: If this interpolator is for orientation, x is assumed to be the current relative rotation from
-                    the initial goal that was set. Otherwise, it is assumed to be an absolute value
+        NOTE: If this interpolator is for orientation, it is assumed to be receiving either euler angles or quaternions
 
         Returns:
-            x_current (np.array): Next position in the interpolated trajectory
+            np.array: Next position in the interpolated trajectory
         """
-        # First, check to make sure x in same shape as self.dim
-        if x.shape[0] != self.dim:
-            print("Current position: {}".format(x))
-            raise ValueError("LinearInterpolator: Input size wrong; needs to be {}!".format(self.dim))
-
-        # Also make sure goal has been set
-        if self.goal is None:
-            raise ValueError("LinearInterpolator: Goal has not been set yet!")
-
+        # Grab start position
+        x = np.array(self.start)
         # Calculate the desired next step based on remaining interpolation steps
         if self.ori_interpolate is not None:
             # This is an orientation interpolation, so we interpolate linearly around a sphere instead
-            goal = self.goal
+            goal = np.array(self.goal)
             if self.ori_interpolate == "euler":
                 # this is assumed to be euler angles (x,y,z), so we need to first map to quat
                 x = T.mat2quat(T.euler2mat(x))
@@ -112,24 +98,12 @@ class LinearInterpolator(Interpolator):
             # Interpolate to the next sequence
             x_current = T.quat_slerp(x, goal,
                                      fraction=(self.step + 1) / self.total_steps)
-            # Check if dx is greater than max value; if it is; clamp and notify user
-            dx, clipped = T.clip_rotation(T.quat_distance(x_current, x), self.max_delta)
-            if clipped:
-                print(
-                    "LinearInterpolator: WARNING: Requested interpolation (ori) exceeds max speed;"
-                    "clamping to {}.".format(dx))
-            x_current = dx
             if self.ori_interpolate == "euler":
                 # Map back to euler
                 x_current = T.mat2euler(T.quat2mat(x_current))
         else:
             # This is a normal interpolation
             dx = (self.goal - x) / (self.total_steps - self.step)
-            # Check if dx is greater than max value; if it is; clamp and notify user
-            dx, clipped = T.clip_translation(dx, self.max_delta)
-            if clipped:
-                print("LinearInterpolator: WARNING: Requested interpolation "
-                      "exceeds max speed; clamping to {}.".format(dx))
             x_current = x + dx
 
         # Increment step if there's still steps remaining based on ramp ratio

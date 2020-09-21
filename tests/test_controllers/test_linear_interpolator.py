@@ -4,39 +4,22 @@ Test the linear interpolator on the Lift task with Sawyer arm environment as a t
 The linear interpolator is meant to increase the stability and overall safety of a robot arm's trajectory when reaching
 a setpoint, "ramping up" the actual action command sent to a given controller from zero to the actual inputted action
 over a fraction of the timesteps in betwteen each high-level input action (the "ramp ratio"). As a result, the
-resulting trajectory is slower, but smoother, proportional to the interpolator's ramp ratio setting.
+resulting trajectory should be smoother, proportional to the interpolator's ramp ratio setting.
 
 This test verifies that the linear interpolator works correctly on both the IK and OSC controller for both position and
 orientation, and proceeds as follows:
 
-    1. Given a constant delta position action, and with the interpolator disabled, we will measure the number of
-        timesteps it takes for the Sawyer arm to reach a certain location threshold in the world frame
+    1. Given a constant delta position action, and with the interpolator disabled, we will measure the sum of absolute
+        changes in joint torques between individual simulation timesteps
 
     2. We will repeat Step 1, but this time with the interpolator enabled and with a ramp ratio of 1.0 (max value)
 
-    3. We expect and verify that the difference in timesteps measured between Steps 1 and 2 are as expected, according
-        to the following equation:
+    3. We expect the interpolated trajectories to experience a smaller overall magnitude of changes in torques, due to
+        the setpoints between controller timesteps being smoothed out over the ramp ratio.
 
-            > Total distance travelled = d = ∫v(t) dt ≈ ∑ v_i * t_s, where t_s is the number of seconds per timestep
-
-                > This is equivalent to the area plotted under the velocity-time curve. While this varies between
-                    controllers (OSC is torque-based while IK is velocity-based), both controllers use a proportional
-                    gain term for converging to a given setpoint, implying that an interpolated trajectory will have a
-                    lower overall average velocity
-
-                > Since average velocity v_bar ∝ d / timesteps, and our d is constant:
-
-                        >> timesteps_2 > timesteps_1
-
-    **************************************************************************************************************
-    ** Therefore, we expect the interpolated trajectory (with a ramp ratio of 1) to take distinctly longer in   **
-    **  order to reach the same end goal as the non-interpolated trajectory                                     **
-    **************************************************************************************************************
-
-Note: For the test, we set an arbitrary threshold ratio of 1.10 of interpolated time / non-interpolated time that we
-        assume as the minimum
+Note: As this is a qualitative test, it is up to the user to evaluate the output and determine the expected behavior of
+the tested controllers.
 """
-# TODO: Interpolators drift slightly in the beginning, proportional to ramp ratio -- is this to be expected?
 
 import numpy as np
 
@@ -73,16 +56,39 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
 args = parser.parse_args()
 
+# Setup printing options for numbers
+np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+
+# function to run the actual sim in order to receive summed absolute delta torques
+def step(env, action, current_torques):
+    env.timestep += 1
+    policy_step = True
+    summed_abs_delta_torques = np.zeros(7)
+
+    for i in range(int(env.control_timestep / env.model_timestep)):
+        env.sim.forward()
+        env._pre_action(action, policy_step)
+        last_torques = current_torques
+        current_torques = env.robots[0].torques
+        summed_abs_delta_torques += np.abs(current_torques - last_torques)
+        env.sim.step()
+        policy_step = False
+
+    env.cur_time += env.control_timestep
+    out = env._post_action(action)
+    return out, summed_abs_delta_torques, current_torques
+
 
 # Running the actual test #
 def test_linear_interpolator():
 
-    for controller_name in ["OSC_POSE", "IK_POSE"]:
+    for controller_name in ["IK_POSE", "OSC_POSE"]:
 
         for traj in ["pos", "ori"]:
 
-            # Define counter to increment timesteps for each trajectory
+            # Define counter to increment timesteps and torques for each trajectory
             timesteps = [0, 0]
+            summed_abs_delta_torques = [np.zeros(7), np.zeros(7)]
 
             for interpolator in [None, "linear"]:
                 # Define numpy seed so we guarantee consistent starting pos / ori for each trajectory
@@ -126,7 +132,8 @@ def test_linear_interpolator():
                 if args.render:
                     env.viewer.set_camera(camera_id=0)
 
-                # Keep track of state of robot eef (pos, ori (euler))
+                # Keep track of state of robot eef (pos, ori (euler)) and torques
+                current_torques = np.zeros(7)
                 initial_state = [env.robots[0]._right_hand_pos, T.mat2euler(env.robots[0]._right_hand_orn)]
                 dstate = [env.robots[0]._right_hand_pos - initial_state[0],
                           T.mat2euler(env.robots[0]._right_hand_orn) - initial_state[1]]
@@ -148,24 +155,21 @@ def test_linear_interpolator():
 
                 # Run trajectory until the threshold condition is met
                 while abs(dstate[k][indexes[k]]) < abs(thresholds[k]):
-                    env.step(action)
+                    _, summed_torques, current_torques = step(env, action, current_torques)
                     if args.render:
                         env.render()
 
-                    # Update timestep count and state
+                    # Update torques, timestep count, and state
+                    summed_abs_delta_torques[j] += summed_torques
                     timesteps[j] += 1
                     dstate = [env.robots[0]._right_hand_pos - initial_state[0],
                               T.mat2euler(env.robots[0]._right_hand_orn) - initial_state[1]]
 
                 # When finished, print out the timestep results
-                print("Completed trajectory. Took {} timesteps total.".format(timesteps[j]))
+                print("Completed trajectory. Total summed absolute delta torques: {}".format(summed_abs_delta_torques[j]))
 
                 # Shut down this env before starting the next test
                 env.close()
-
-            # Assert that the interpolated path is slower than the non-interpolated one
-            assert timesteps[1] > min_ratio * timesteps[0], "Error: Interpolated trajectory time should be longer " \
-                                                            "than non-interpolated!"
 
     # Tests completed!
     print()

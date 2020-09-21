@@ -166,22 +166,17 @@ def set_goal_position(delta,
 def set_goal_orientation(delta,
                          current_orientation,
                          orientation_limit=None,
-                         set_ori=None,
-                         axis_angle=False):
+                         set_ori=None):
     """
     Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
     @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
     an orientation matrix specified to define a global orientation
 
-    If @axis_angle is set to True, then this assumes the input in axis angle form, that is,
-        a scaled axis angle 3-array [ax, ay, az]
-
     Args:
-        delta (np.array): Desired relative change in orientation
-        current_orientation (np.array): Current orientation
+        delta (np.array): Desired relative change in orientation, in axis-angle form [ax, ay, az]
+        current_orientation (np.array): Current orientation, in rotation matrix form
         orientation_limit (None or np.array): 2d array defining the (min, max) limits of permissible orientation goal commands
         set_ori (None or np.array): If set, will ignore @delta and set the goal orientation to this value
-        axis_angle (bool): If True, assumes inputs are in axis-angle form. Otherwise, assumes they are euler angles
 
     Returns:
         np.array: calculated goal orientation in absolute coordinates
@@ -195,13 +190,9 @@ def set_goal_orientation(delta,
 
     # otherwise use delta to set goal orientation
     else:
-        if axis_angle:
-            # convert axis-angle value to rotation matrix
-            quat_error = trans.axisangle2quat(delta)
-            rotation_mat_error = trans.quat2mat(quat_error)
-        else:
-            # convert euler value to rotation matrix
-            rotation_mat_error = trans.euler2mat(-delta)
+        # convert axis-angle value to rotation matrix
+        quat_error = trans.axisangle2quat(delta)
+        rotation_mat_error = trans.quat2mat(quat_error)
         goal_orientation = np.dot(rotation_mat_error.T, current_orientation)
 
     # check for orientation limits

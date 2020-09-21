@@ -588,7 +588,7 @@ class InverseKinematicsController(JointVelocityController):
         if self.interpolator_pos is not None:
             # Linear case
             if self.interpolator_pos.order == 1:
-                desired_pos = self.interpolator_pos.get_interpolated_goal(self.ee_pos)
+                desired_pos = self.interpolator_pos.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass
@@ -601,7 +601,7 @@ class InverseKinematicsController(JointVelocityController):
             if self.interpolator_ori.order == 1:
                 # relative orientation based on difference between current ori and ref
                 self.relative_ori = orientation_error(self.ee_ori_mat, self.ori_ref)
-                ori_error = self.interpolator_ori.get_interpolated_goal(T.mat2quat(T.euler2mat(self.relative_ori)))
+                ori_error = self.interpolator_ori.get_interpolated_goal()
                 rotation = T.quat2mat(ori_error)
             else:
                 # Nonlinear case not currently supported
