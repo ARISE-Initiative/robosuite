@@ -81,3 +81,47 @@ So all the important definitions are in the [bread.xml](../robosuite/models/asse
 
 ## Creating a procedurally generated object
 Procedurally generated objects have been used in [several](https://arxiv.org/abs/1802.09564) [recent](https://arxiv.org/abs/1806.09266) [works](https://arxiv.org/abs/1709.07857) to train control policies with improved robustness and generalization. Here you can programmatically generate an MJCF XML of an object from scratch using `xml.etree.ElementTree`. The implementation is straightforward and interested readers should refer to `_get_collision` and `get_visual` method of `MujocoGeneratedObject`, defined [here](../robosuite/models/objects/generated_objects.py). For instance, the `BaxterLift` environment used a pot with two side handles. This object is created with the procedural generation APIs, see [here](../robosuite/models/objects/generated_objects.py#L8).
+
+## Placing Objects
+
+Object locations are initialized on every environment reset using instances of the `ObjectPositionSampler` class. Object samplers use the `bottom_site` and `top_site` sites of each object in order to place objects on top of other objects, and the `horizontal_radius_site` site in order to ensure that objects do not collide with one another. The most basic sampler is the `UniformRandomSampler` class - this just uses rejection sampling to place objects randomly. As an example, consider the following code snippet from the `__init__` method of the `Lift` environment class.
+
+```python
+self.placement_initializer = UniformRandomSampler(
+    x_range=[-0.03, 0.03],
+    y_range=[-0.03, 0.03],
+    ensure_object_boundary_in_range=False,
+    rotation=None,
+    z_offset=0.01,
+)
+```
+
+This will sample the cube location uniformly at random in a box of size `0.03` with random z-rotation, and with an offset of `0.01` above the table surface. 
+
+Another common sampler is the `SequentialCompositeSampler`, which is useful for composing multiple uniform random placement samplers together. As an example, consider the following code snippet from the `__init__` method of the `NutAssembly` environment class. 
+
+```python
+self.placement_initializer = SequentialCompositeSampler()
+self.placement_initializer.sample_on_top(
+    "SquareNut0",
+    surface_name="table",
+    x_range=[-0.115, -0.11],
+    y_range=[0.11, 0.225],
+    rotation=None,
+    rotation_axis='z',
+    z_offset=0.02,
+    ensure_object_boundary_in_range=False,
+)
+self.placement_initializer.sample_on_top(
+    "RoundNut0",
+    surface_name="table",
+    x_range=[-0.115, -0.11],
+    y_range=[-0.225, -0.11],
+    rotation=None,
+    rotation_axis='z',
+    z_offset=0.02,
+    ensure_object_boundary_in_range=False,
+)
+```
+
+The code snippet above results in two `UniformRandomSampler` instances being used to place the nuts onto the table surface - one for each type of nut. Notice this also allows the nuts to be initialized in separate regions of the table. The `SequentialCompositeSampler` makes it easy to compose multiple placement initializers together in order to specify how different objects should be initialized in an environment.
