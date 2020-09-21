@@ -273,7 +273,7 @@ We provide a brief description of each environment below.
 
 #### Two Arm Peg In Hole
 
-![env_two_arm_handoff](../images/env_two_arm_peg_in_hole.png)
+![env_two_arm_peg_in_hole](../images/env_two_arm_peg_in_hole.png)
 
 - Scene Description
   - Two robot arms are placed either next to each other or opposite each other. One robot arm holds a board with a square hole in the center, and the other robot arm holds a long peg.
@@ -282,9 +282,9 @@ We provide a brief description of each environment below.
 - Start State Distribution
   - The initial arm configurations are randomized at the beginning of each episode.
 
-#### Two Arm Handoff
+#### Two Arm Handover
 
-![env_two_arm_handoff](../images/env_two_arm_handoff.png)
+![env_two_arm_handover](../images/env_two_arm_handover.png)
 
 - Scene Description
   - A hammer is placed on a narrow table. Two robot arms are placed on the same side of the table or on opposite ends of the table.

@@ -58,10 +58,10 @@ For the Two Arm Peg in Hole task, OSC_POSE was tested on a Panda-Sawyer pair.
 
 ![sac_two_arm_peg_in_hole](../images/benchmarking/sac_two_arm_peg_in_hole.png)
 
-### Two Arm Handoff
-For the Two Arm Handoff task, OSC_POSE was tested on a Panda-Panda pair and Sawyer-Sawyer pair of robots.
+### Two Arm Handover
+For the Two Arm Handover task, OSC_POSE was tested on a Panda-Panda pair and Sawyer-Sawyer pair of robots.
 
-![sac_two_arm_handoff](../images/benchmarking/sac_two_arm_handoff.png)
+![sac_two_arm_handover](../images/benchmarking/sac_two_arm_handover.png)
 
 
 

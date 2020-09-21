@@ -11,9 +11,9 @@ from robosuite.models.robots import check_bimanual
 import robosuite.utils.transform_utils as T
 
 
-class TwoArmHandoff(RobotEnv):
+class TwoArmHandover(RobotEnv):
     """
-    This class corresponds to the handoff task for two robot arms.
+    This class corresponds to the handover task for two robot arms.
 
     Args:
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
@@ -59,7 +59,7 @@ class TwoArmHandoff(RobotEnv):
             :Note: Specifying "default" will automatically use the default noise settings.
                 Specifying None will automatically create the required dict with "magnitude" set to 0.0.
 
-        prehensile (bool): If true, handoff object starts on the table. Else, the object starts in Arm0's gripper
+        prehensile (bool): If true, handover object starts on the table. Else, the object starts in Arm0's gripper
 
         table_full_size (3-tuple): x, y, and z dimensions of the table.
 
@@ -242,7 +242,7 @@ class TwoArmHandoff(RobotEnv):
               conditioned on the handle being lifted from the table and being grasped by Arm 0
             - Mutual Grasping: (5) in {0, 1.5}, nonzero if both Arm 0 and Arm 1 are gripping the hammer (Arm 1 must be
               gripping the handle) while lifted above the table
-            - Handoff: (6) in {0, 2.0}, nonzero when only Arm 1 is gripping the handle and has the handle
+            - Handover: (6) in {0, 2.0}, nonzero when only Arm 1 is gripping the handle and has the handle
               lifted above the table
 
         Note that the final reward is normalized and scaled by reward_scale / 2.0 as
@@ -529,7 +529,7 @@ class TwoArmHandoff(RobotEnv):
         Check if hammer is successfully handed off
 
         Returns:
-            bool: True if handoff has been completed
+            bool: True if handover has been completed
         """
         # Grab relevant params
         arm0_grasp_any, arm1_grasp_handle, hammer_height, table_height = self._get_task_info()

@@ -57,10 +57,10 @@ robosuite.environments.stack
    :undoc-members:
    :show-inheritance:
 
-robosuite.environments.two\_arm\_handoff
+robosuite.environments.two\_arm\_handover
 -----------------------------------------------
 
-.. automodule:: robosuite.environments.two_arm_handoff
+.. automodule:: robosuite.environments.two_arm_handover
    :members:
    :undoc-members:
    :show-inheritance:

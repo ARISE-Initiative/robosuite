@@ -13,7 +13,7 @@ CYAN = [0, 1, 1, 1]
 class HammerObject(MujocoGeneratedObject):
     """
     Generates a Hammer object with a cylindrical or box-shaped handle, cubic head, cylindrical face and triangular claw
-    (used in Handoff task)
+    (used in Handover task)
 
     Args:
         name (str): Name of this Hammer object
