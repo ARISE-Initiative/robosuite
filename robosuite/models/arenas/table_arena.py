@@ -98,5 +98,4 @@ class TableArena(Arena):
         Returns:
             np.array: (x,y,z) table position
         """
-        table_height = np.array([0, 0, self.table_offset[2]])
-        return string_to_array(self.floor.get("pos")) + table_height
+        return string_to_array(self.floor.get("pos")) + self.table_offset

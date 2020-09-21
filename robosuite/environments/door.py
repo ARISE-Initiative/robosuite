@@ -164,8 +164,8 @@ class Door(RobotEnv):
             self.placement_initializer = placement_initializer
         else:
             self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.13, -0.11],
-                y_range=[-0.36, -0.34],
+                x_range=[0.07, 0.09],
+                y_range=[-0.01, 0.01],
                 ensure_object_boundary_in_range=False,
                 rotation=(-np.pi / 2. - 0.25, -np.pi / 2.),
                 rotation_axis='z',
@@ -324,7 +324,7 @@ class Door(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for the Door object
-            door_pos, door_quat = self.placement_initializer.sample()
+            door_pos, door_quat = self.model.place_objects()
             door_body_id = self.sim.model.body_name2id("Door")
             self.sim.model.body_pos[door_body_id] = door_pos[0]
             self.sim.model.body_quat[door_body_id] = door_quat[0]

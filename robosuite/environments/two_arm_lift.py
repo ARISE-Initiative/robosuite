@@ -278,12 +278,12 @@ class TwoArmLift(RobotEnv):
                 )) > 0
                 _contacts_1_lf = len(list(
                     self.find_contacts(
-                        self.robots[1].gripper["right"].important_geoms["left_finger"], self.pot.handle_1_geoms()
+                        self.robots[0].gripper["right"].important_geoms["left_finger"], self.pot.handle_1_geoms()
                     )
                 )) > 0
                 _contacts_1_rf = len(list(
                     self.find_contacts(
-                        self.robots[1].gripper["right"].important_geoms["right_finger"], self.pot.handle_1_geoms()
+                        self.robots[0].gripper["right"].important_geoms["right_finger"], self.pot.handle_1_geoms()
                     )
                 )) > 0
             # Multi single arm setting
@@ -405,7 +405,7 @@ class TwoArmLift(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.placement_initializer.sample()
+            obj_pos, obj_quat = self.model.place_objects()
 
             # Loop through all objects and reset their positions
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):

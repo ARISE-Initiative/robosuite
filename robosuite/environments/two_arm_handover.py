@@ -194,7 +194,7 @@ class TwoArmHandover(RobotEnv):
             rotation_axis = 'y' if self.prehensile else 'z'
             self.placement_initializer = UniformRandomSampler(
                 x_range=[-0.1, 0.1],
-                y_range=[-0.5, -0.4],
+                y_range=[-0.05, 0.05],
                 ensure_object_boundary_in_range=False,
                 rotation=None,
                 rotation_axis=rotation_axis,
@@ -383,7 +383,7 @@ class TwoArmHandover(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.placement_initializer.sample()
+            obj_pos, obj_quat = self.model.place_objects()
 
             # Loop through all objects and reset their positions
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):

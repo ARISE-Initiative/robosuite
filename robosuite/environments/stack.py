@@ -423,7 +423,7 @@ class Stack(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.placement_initializer.sample()
+            obj_pos, obj_quat = self.model.place_objects()
 
             # Loop through all objects and reset their positions
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
