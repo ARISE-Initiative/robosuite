@@ -18,8 +18,8 @@ For the Block Stacking task, both OSC_POSE and JOINT_VELOCITY were tested on Pan
 
 ![sac_stack](../images/benchmarking/sac_stack.png)
 
-### Pick Place
-For the Pick Place task, single-object simplified variations of the task were used. Specifically, PickPlaceCan and PickPlaceMilk were both tested on Panda and Sawyer robots with OSC_POSE.
+### Pick-and-Place
+For the Pick-and-Place task, single-object simplified variations of the task were used. Specifically, PickPlaceCan and PickPlaceMilk were both tested on Panda and Sawyer robots with OSC_POSE.
 
 PickPlaceCan
 ![sac_pick_place_can](../images/benchmarking/sac_pick_place_can.png)
