@@ -30,7 +30,7 @@ DEFAULT_WIPE_CONFIG = {
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_sensors": 100,                             # How many particles of dirt to generate in the environment
+    "num_sensors": 50,                              # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 3,                         # Minimum eef force to qualify as contact [N]
@@ -590,7 +590,8 @@ class Wipe(RobotEnv):
                         self.sim.model.site_name2id(self.model.arena.sensor_site_names[sensor_name])])
                 di['sensor' + str(sensor_id) + '_pos'] = sensor_pos
                 acc = np.concatenate([acc, di['sensor' + str(sensor_id) + '_pos']])
-                acc = np.concatenate([acc, [[0, 1][sensor_id in self.wiped_sensors]]])
+                di['sensor' + str(sensor_id) + '_wiped'] = [0, 1][sensor_id in self.wiped_sensors]
+                acc = np.concatenate([acc, [di['sensor' + str(sensor_id) + '_wiped']]])
                 # proprioception
                 if self.use_robot_obs:
                     di['gripper_to_sensor' + str(sensor_id)] = gripper_site_pos - sensor_pos
