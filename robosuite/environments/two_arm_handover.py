@@ -442,30 +442,51 @@ class TwoArmHandover(RobotEnv):
 
         # Single bimanual robot setting
         if self.env_configuration == "bimanual":
-            _contacts_0_all = list(
+            _contacts_0_lf = len(list(
                 self.find_contacts(
-                    self.robots[0].gripper["left"].contact_geoms, self.hammer.all_geoms
+                    self.robots[0].gripper["left"].important_geoms["left_finger"], self.hammer.all_geoms
                 )
-            )
-            _contacts_1_handle = list(
+            )) > 0
+            _contacts_0_rf = len(list(
                 self.find_contacts(
-                    self.robots[0].gripper["right"].contact_geoms, self.hammer.handle_geoms
+                    self.robots[0].gripper["left"].important_geoms["right_finger"], self.hammer.all_geoms
                 )
-            )
+            )) > 0
+            _contacts_1_lf = len(list(
+                self.find_contacts(
+                    self.robots[0].gripper["right"].important_geoms["left_finger"], self.hammer.handle_geoms
+                )
+            )) > 0
+            _contacts_1_rf = len(list(
+                self.find_contacts(
+                    self.robots[0].gripper["right"].important_geoms["right_finger"], self.hammer.handle_geoms
+                )
+            )) > 0
         # Multi single arm setting
         else:
-            _contacts_0_all = list(
+            _contacts_0_lf = len(list(
                 self.find_contacts(
-                    self.robots[0].gripper.contact_geoms, self.hammer.all_geoms
+                    self.robots[0].gripper.important_geoms["left_finger"], self.hammer.all_geoms
                 )
-            )
-            _contacts_1_handle = list(
+            )) > 0
+            _contacts_0_rf = len(list(
                 self.find_contacts(
-                    self.robots[1].gripper.contact_geoms, self.hammer.handle_geoms
+                    self.robots[0].gripper.important_geoms["right_finger"], self.hammer.all_geoms
                 )
-            )
-        arm0_grasp_any = True if len(_contacts_0_all) > 0 else False
-        arm1_grasp_handle = True if len(_contacts_1_handle) > 0 else False
+            )) > 0
+            _contacts_1_lf = len(list(
+                self.find_contacts(
+                    self.robots[1].gripper.important_geoms["left_finger"], self.hammer.handle_geoms
+                )
+            )) > 0
+            _contacts_1_rf = len(list(
+                self.find_contacts(
+                    self.robots[1].gripper.important_geoms["right_finger"], self.hammer.handle_geoms
+                )
+            )) > 0
+
+        arm0_grasp_any = True if _contacts_0_lf and _contacts_0_rf else False
+        arm1_grasp_handle = True if _contacts_1_lf and _contacts_1_rf else False
 
         # Return all relevant values
         return arm0_grasp_any, arm1_grasp_handle, hammer_height, table_height
