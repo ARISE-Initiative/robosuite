@@ -43,6 +43,7 @@ extensions = [
     'nbsphinx',
 ]
 
+
 # Sphinx-apidoc variables
 apidoc_module_dir = "../robosuite"
 apidoc_output_dir = "reference"
@@ -64,7 +65,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'robosuite'
-copyright = u'Stanford Univeristy and University of Texas at Austin 2020'
+copyright = u'Stanford Univeristy and The University of Texas at Austin 2020'
 author = u'Yuke Zhu, Josiah Wong, Jiren Zhu, Ajay Mandlekar, Roberto Martín-Martín'
 
 # The version info for the project you're documenting, acts as replacement for
