@@ -9,7 +9,7 @@
     	<motor ctrllimited="true" ctrlrange="-9.0 9.0" joint="right_j6" name="torq_right_j6"/>
     </actuator>
     <asset>
-    	<mesh file="meshes/pedestal.stl" name="pedestal"/>
+    	<mesh file="../common_meshes/pedestal.stl" name="pedestal"/>
     	<mesh file="meshes/base.stl" name="base"/>
     	<mesh file="meshes/l0.stl" name="l0"/>
     	<mesh file="meshes/head.stl" name="head"/>
@@ -53,7 +53,7 @@
     		</body>
     		<body name="pedestal" pos="0 0 0">
     			<inertial diaginertia="6.0869 5.81635 4.20915" mass="60.864" pos="0 0 0" quat="0.659267 -0.259505 -0.260945 0.655692"/>
-    			<geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_vis1" material="pedestal_mat"/>
+    			<geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_vis1" material="pedestal_mat" />
     			<geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col1"/>
     		</body>
     		<body name="right_arm_base_link" pos="0 0 0">

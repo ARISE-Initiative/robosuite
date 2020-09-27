@@ -11,7 +11,7 @@
         <motor ctrllimited="true" ctrlrange="-13.0 13.0" joint="Actuator7" name="torq_j7"/>
     </actuator>
     <asset>
-        <mesh file="meshes/pedestal.stl" name="pedestal"/>
+        <mesh file="../common_meshes/pedestal.stl" name="pedestal"/>
         <mesh name="base_link" file="meshes/base_link.stl" />
         <mesh name="shoulder_link" file="meshes/shoulder_link.stl" />
         <mesh name="half_arm_1_link" file="meshes/half_arm_1_link.stl" />
@@ -20,6 +20,12 @@
         <mesh name="spherical_wrist_1_link" file="meshes/spherical_wrist_1_link.stl" />
         <mesh name="spherical_wrist_2_link" file="meshes/spherical_wrist_2_link.stl" />
         <mesh name="bracelet_with_vision_link" file="meshes/bracelet_with_vision_link.stl" />
+
+        <!-- Custom textures based on body names for domain randomization -->
+        <texture type="cube" name="pedestal_tex" builtin="flat" width="100" height="100" rgb1="0.2 0.2 0.2" rgb2="0.2 0.2 0.2"/>
+
+        <!-- Custom mats based on body names for domain randomization -->
+        <material name="pedestal_mat" texture="pedestal_tex"/>
     </asset>
     <worldbody>
         <body name="base" pos="0 0 0">
@@ -41,7 +47,7 @@
             </body>
             <body name="pedestal" pos="0 0 0">
                 <inertial diaginertia="6.0869 5.81635 4.20915" mass="60.864" pos="0 0 0" quat="0.659267 -0.259505 -0.260945 0.655692"/>
-                <geom conaffinity="0" contype="0" group="1" mesh="pedestal" pos="0.26 0.345 -0.91488" quat="0.5 0.5 -0.5 -0.5" rgba="0.2 0.2 0.2 1" type="mesh" name="pedestal_col1"/>
+                <geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_col1" material="pedestal_mat" />
                 <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col2"/>
             </body>
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="base_link" />

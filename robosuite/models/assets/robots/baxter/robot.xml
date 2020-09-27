@@ -15,7 +15,6 @@
     <mesh name="W0" file="meshes/upper_forearm/W0.stl" />
     <mesh name="W1" file="meshes/lower_forearm/W1.stl" />
     <mesh name="W2" file="meshes/wrist/W2.stl" />
-    <mesh name="paddle_tip" file="meshes/electric_gripper/fingers/paddle_tip.stl" />
 
     <!-- Custom textures based on body names for domain randomization -->
 

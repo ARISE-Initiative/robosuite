@@ -26,7 +26,7 @@
         <mesh name="link5_vis" file="meshes/link5_vis.stl" />
         <mesh name="link6_vis" file="meshes/link6_vis.stl" />
         <mesh name="link7_vis" file="meshes/link7_vis.stl" />
-        <mesh file="meshes/pedestal.stl" name="pedestal"/>
+        <mesh file="../common_meshes/pedestal.stl" name="pedestal"/>
 
         <!-- Custom textures based on body names for domain randomization -->
         <texture type="cube" name="pedestal_tex" builtin="flat" width="100" height="100" rgb1="0.2 0.2 0.2" rgb2="0.2 0.2 0.2"/>
@@ -59,7 +59,7 @@
                 </body>
                 <body name="pedestal" pos="0 0 0">
                     <inertial diaginertia="6.0869 5.81635 4.20915" mass="60.864" pos="0 0 0" quat="0.659267 -0.259505 -0.260945 0.655692"/>
-                    <geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_col1" material="pedestal_mat"/>
+                    <geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_col1" material="pedestal_mat" />
                     <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col2"/>
                 </body>
             </body>
