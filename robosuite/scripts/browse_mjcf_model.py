@@ -6,20 +6,18 @@ Example:
     $ python browse_arena_model.py --filepath ../models/assets/arenas/table_arena.xml
 """
 
-import sys
 import argparse
-import numpy as np
 import os
 
 from mujoco_py import load_model_from_path
 from mujoco_py import MjSim, MjViewer
 
-import robosuite
+import robosuite as suite
 
 
 if __name__ == "__main__":
 
-    arena_file = os.path.join(robosuite.models.assets_root, "arenas/pegs_arena.xml")
+    arena_file = os.path.join(suite.models.assets_root, "arenas/pegs_arena.xml")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--filepath", type=str, default=arena_file)

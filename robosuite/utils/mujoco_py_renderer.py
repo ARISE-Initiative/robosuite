@@ -5,12 +5,25 @@ from collections import defaultdict
 
 
 class CustomMjViewer(MjViewer):
+    """
+    Custom class extending the vanilla MjViewer class to add additional key-stroke callbacks
+    """
 
     keypress = defaultdict(list)
     keyup = defaultdict(list)
     keyrepeat = defaultdict(list)
 
     def key_callback(self, window, key, scancode, action, mods):
+        """
+        Processes key callbacks from the glfw renderer
+
+        Args:
+            window (GLFWwindow): GLFW window instance
+            key (int): keycode
+            scancode (int): scancode
+            action (int): action code
+            mods (int): mods
+        """
         if action == glfw.PRESS:
             tgt = self.keypress
         elif action == glfw.RELEASE:
@@ -34,22 +47,30 @@ class CustomMjViewer(MjViewer):
 
 
 class MujocoPyRenderer:
+    """
+    Mujoco-py renderer object
+
+    Args:
+        sim: MjSim object
+    """
     def __init__(self, sim):
-        """
-        Args:
-            sim: MjSim object
-        """
         self.viewer = CustomMjViewer(sim)
         self.callbacks = {}
 
     def set_camera(self, camera_id):
         """
         Set the camera view to the specified camera ID.
+
+        Args:
+            camera_id (int): id of the camera to set the current viewer to
         """
         self.viewer.cam.fixedcamid = camera_id
         self.viewer.cam.type = const.CAMERA_FIXED
 
     def render(self):
+        """
+        Renders the screen
+        """
         # safe for multiple calls
         self.viewer.render()
 
@@ -66,6 +87,10 @@ class MujocoPyRenderer:
         Parameter 'any' will ensure that the callback is called on any key down,
         and block default mujoco viewer callbacks from executing, except for
         the ESC callback to close the viewer.
+
+        Args:
+            key (int): keycode
+            fn (function handle): function callback to associate with the keypress
         """
         self.viewer.keypress[key].append(fn)
 
@@ -75,6 +100,10 @@ class MujocoPyRenderer:
         Parameter 'any' will ensure that the callback is called on any key up,
         and block default mujoco viewer callbacks from executing, except for 
         the ESC callback to close the viewer.
+
+        Args:
+            key (int): keycode
+            fn (function handle): function callback to associate with the keypress
         """
         self.viewer.keyup[key].append(fn)
 
@@ -84,5 +113,9 @@ class MujocoPyRenderer:
         Parameter 'any' will ensure that the callback is called on any key repeat,
         and block default mujoco viewer callbacks from executing, except for 
         the ESC callback to close the viewer.
+
+        Args:
+            key (int): keycode
+            fn (function handle): function callback to associate with the keypress
         """
         self.viewer.keyrepeat[key].append(fn)

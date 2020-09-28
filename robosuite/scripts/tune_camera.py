@@ -18,6 +18,7 @@ import robosuite.utils.transform_utils as T
 DELTA_POS_KEY_PRESS = 0.05 # delta camera position per key press
 DELTA_ROT_KEY_PRESS = 1 # delta camera angle per key press
 
+
 def modify_xml_for_camera_movement(xml, camera_name):
     """
     Cameras in mujoco are 'fixed', so they can't be moved by default.
@@ -31,6 +32,9 @@ def modify_xml_for_camera_movement(xml, camera_name):
 
     See http://www.mujoco.org/forum/index.php?threads/move-camera.2201/ for
     further details.
+
+    xml (str): Mujoco sim XML file as a string
+    camera_name (str): Name of camera to tune
     """
     tree = ET.fromstring(xml)
     wb = tree.find("worldbody")
@@ -63,9 +67,11 @@ def modify_xml_for_camera_movement(xml, camera_name):
 def move_camera(env, direction, scale, camera_id):
     """
     Move the camera view along a direction (in the camera frame).
-    :param direction: a 3-dim numpy array for where to move camera in camera frame
-    :param scale: a float for how much to move along that direction
-    :param camera_id: which camera to modify
+
+    Args:
+        direction (np.arry): 3-array for where to move camera in camera frame
+        scale (float): how much to move along that direction
+        camera_id (int): which camera to modify
     """
 
     # current camera pose
@@ -77,12 +83,15 @@ def move_camera(env, direction, scale, camera_id):
     env.sim.data.set_mocap_pos("cameramover", camera_pos)
     env.sim.forward()
 
+
 def rotate_camera(env, direction, angle, camera_id):
     """
     Rotate the camera view about a direction (in the camera frame).
-    :param direction: a 3-dim numpy array for where to move camera in camera frame
-    :param angle: a float for how much to rotate about that direction
-    :param camera_id: which camera to modify
+
+    Args:
+        direction (np.array): 3-array for where to move camera in camera frame
+        angle (float): how much to rotate about that direction
+        camera_id (int): which camera to modify
     """
 
     # current camera rotation
@@ -102,6 +111,10 @@ class KeyboardHandler:
     def __init__(self, env, camera_id):
         """
         Store internal state here.
+
+        Args:
+            env (MujocoEnv): Environment to use
+            camera_id (int): which camera to modify
         """
         self.env = env
         self.camera_id = camera_id
@@ -109,6 +122,13 @@ class KeyboardHandler:
     def on_press(self, window, key, scancode, action, mods):
         """
         Key handler for key presses.
+
+        Args:
+            window: [NOT USED]
+            key (int): keycode corresponding to the key that was pressed
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
 
         # controls for moving position
@@ -156,20 +176,33 @@ class KeyboardHandler:
     def on_release(self, window, key, scancode, action, mods):
         """
         Key handler for key releases.
+
+        Args:
+            window: [NOT USED]
+            key: [NOT USED]
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
         pass
 
+
 def print_command(char, info):
+    """
+    Prints out the command + relevant info entered by user
+
+    Args:
+        char (str): Command entered
+        info (str): Any additional info to print
+    """
     char += " " * (10 - len(char))
     print("{}\t{}".format(char, info))
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--env",
-        type=str,
-        default="SawyerLift",
-    )
+    parser.add_argument("--env", type=str, default="Lift")
+    parser.add_argument("--robots", nargs="+", type=str, default="Sawyer", help="Which robot(s) to use in the env")
     args = parser.parse_args()
 
     print("\nWelcome to the camera tuning script! You will be able to tune a camera view")
@@ -188,8 +221,8 @@ if __name__ == "__main__":
     inp = input("\nPlease paste a camera xml tag below (e.g. <camera ... />) \nOR leave blank for an example:\n")
 
     if len(inp) == 0:
-        if args.env != "SawyerLift":
-            raise Exception("ERROR: env must be SawyerLift to run default example.")
+        if args.env != "Lift":
+            raise Exception("ERROR: env must be Lift to run default example.")
         print("\nUsing an example tag corresponding to the frontview camera.")
         print("This xml tag was copied from robosuite/models/assets/arenas/table_arena.xml")
         inp = '<camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>'
@@ -207,7 +240,9 @@ if __name__ == "__main__":
     # make the environment
     env = robosuite.make(
         args.env,
+        robots=args.robots,
         has_renderer=True,
+        has_offscreen_renderer=False,
         ignore_done=True,
         use_camera_obs=False,
         control_freq=100,
@@ -242,7 +277,7 @@ if __name__ == "__main__":
     # just spin to let user interact with glfw window
     spin_count = 0
     while True:
-        action = np.zeros(env.dof)
+        action = np.zeros(env.action_dim)
         obs, reward, done, _ = env.step(action)
         env.render()
         spin_count += 1
@@ -252,6 +287,7 @@ if __name__ == "__main__":
             camera_quat = T.convert_quat(env.sim.data.get_mocap_quat("cameramover"), to='xyzw')
             world_camera_pose = T.make_pose(camera_pos, T.quat2mat(camera_quat))
             file_camera_pose = world_in_file.dot(world_camera_pose)
+            # TODO: Figure out why numba causes black screen of death (specifically, during mat2pose --> mat2quat call below)
             camera_pos, camera_quat = T.mat2pose(file_camera_pose)
             camera_quat = T.convert_quat(camera_quat, to='wxyz')
 

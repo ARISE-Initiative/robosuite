@@ -8,43 +8,70 @@ import robosuite as suite
 
 def test_all_environments():
 
-    envs = sorted(suite.environments.ALL_ENVS)
-
+    envs = sorted(suite.ALL_ENVIRONMENTS)
     for env_name in envs:
+        # Create config dict
+        env_config = {"env_name": env_name}
+        for robot_name in ("Panda", "Sawyer", "Baxter"):
+            # create an environment for learning on pixels
+            config = None
+            if "TwoArm" in env_name:
+                if robot_name == "Baxter":
+                    robots = robot_name
+                    config = "bimanual"
+                else:
+                    robots = [robot_name, robot_name]
+                    config = "single-arm-opposed"
+                # compile configuration specs
+                env_config["robots"] = robots
+                env_config["env_configuration"] = config
+            else:
+                if robot_name == "Baxter":
+                    continue
+                env_config["robots"] = robot_name
 
-        # create an environment for learning on pixels
-        env = suite.make(
-            env_name,
-            has_renderer=False,  # no on-screen renderer
-            has_offscreen_renderer=True,  # off-screen renderer is required for camera observations
-            ignore_done=True,  # (optional) never terminates episode
-            use_camera_obs=True,  # use camera observations
-            camera_height=84,  # set camera height
-            camera_width=84,  # set camera width
-            camera_name="agentview",  # use "agentview" camera
-            use_object_obs=False,  # no object feature when training on pixels
-            reward_shaping=True,  # (optional) using a shaping reward
-        )
+            # Notify user of which test we are currently on
+            print("Testing env: {} with robots {} with config {}...".format(env_name, env_config["robots"], config))
 
-        obs = env.reset()
+            # Create environment
+            env = suite.make(
+                **env_config,
+                has_renderer=False,  # no on-screen renderer
+                has_offscreen_renderer=True,  # off-screen renderer is required for camera observations
+                ignore_done=True,  # (optional) never terminates episode
+                use_camera_obs=True,  # use camera observations
+                camera_heights=84,  # set camera height
+                camera_widths=84,  # set camera width
+                camera_names="agentview",  # use "agentview" camera
+                use_object_obs=False,  # no object feature when training on pixels
+                reward_shaping=True,  # (optional) using a shaping reward
+            )
 
-        # get action range
-        action_min, action_max = env.action_spec
-        assert action_min.shape == action_max.shape
+            obs = env.reset()
 
-        # run 10 random actions
-        for _ in range(10):
+            # get action range
+            action_min, action_max = env.action_spec
+            assert action_min.shape == action_max.shape
 
-            assert "robot-state" in obs
-            assert obs["robot-state"].ndim == 1
+            # Get robot prefix
+            pr = env.robots[0].robot_model.naming_prefix
 
-            assert "image" in obs
-            assert obs["image"].shape == (84, 84, 3)
+            # run 10 random actions
+            for _ in range(10):
 
-            assert "object-state" not in obs
+                assert pr + "robot-state" in obs
+                assert obs[pr + "robot-state"].ndim == 1
 
-            action = np.random.uniform(action_min, action_max)
-            obs, reward, done, info = env.step(action)
+                assert "agentview_image" in obs
+                assert obs["agentview_image"].shape == (84, 84, 3)
+
+                assert "object-state" not in obs
+
+                action = np.random.uniform(action_min, action_max)
+                obs, reward, done, info = env.step(action)
+
+    # Tests passed!
+    print("All environment tests passed successfully!")
 
 
 if __name__ == "__main__":
