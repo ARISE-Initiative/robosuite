@@ -15,7 +15,7 @@ def robotiq_three_finger_tester(render,
         quat="0 0 1 0",
         gripper_low_pos=-0.02,
         gripper_high_pos=0.1,
-        box_size=[0.04] * 3,
+        box_size=[0.035] * 3,
         box_density=500,
         render=render,
     )

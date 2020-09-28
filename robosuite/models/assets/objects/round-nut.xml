@@ -1,20 +1,17 @@
 <mujoco model="round-nut">
-  <asset>
-    <texture file="../textures/metal.png" type="2d" name="tex-metal"/>
-    <material name="metal" reflectance="0.7" texrepeat="1 1" texture="tex-metal" texuniform="true"/>
-  </asset>
+  <!-- Note: Texture / material is defined in the PegsArena xml file! -->
   <worldbody>
     <body>
       <body name="collision">
-        <geom pos="-0.04245 0 0.0" size="0.01125 0.0225 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="0.04245 0 0.0" size="0.01125 0.0225 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="0 -0.04245 0.0" size="0.0225 0.01125 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="0 0.04245 0.0" size="0.0225 0.01125 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="-0.03 -0.03 0.0" size="0.01125 0.0225 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="0.03 0.03 0.0" size="0.01125 0.0225 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="0.03 -0.03 0.0" size="0.0225 0.01125 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="-0.03 0.03 0.0" size="0.0225 0.01125 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
-        <geom pos="0.06 0 0.0" size="0.02525 0.015875 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" rgba="1 0 0 1" group="1" condim="4"/>
+        <geom pos="-0.04245 0 0.0" size="0.01125 0.0225 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="0.04245 0 0.0" size="0.01125 0.0225 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="0 -0.04245 0.0" size="0.0225 0.01125 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="0 0.04245 0.0" size="0.0225 0.01125 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="-0.03 -0.03 0.0" size="0.01125 0.0225 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="0.03 0.03 0.0" size="0.01125 0.0225 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="0.03 -0.03 0.0" size="0.0225 0.01125 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="-0.03 0.03 0.0" size="0.0225 0.01125 0.01" axisangle='0 0 1 0.785398' type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
+        <geom pos="0.06 0 0.0" size="0.02525 0.015875 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="smetal" />
       </body>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.05" name="bottom_site"/>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 0.025" name="top_site"/>

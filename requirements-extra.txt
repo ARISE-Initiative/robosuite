@@ -1,5 +1,5 @@
 # required for IK controllers
-pybullet==1.9.5
+pybullet==2.6.9
 
 # required for GymWrapper
 gym
@@ -9,3 +9,6 @@ hidapi
 
 # required for demonstration utils
 h5py
+
+# required for pygame renderer
+pygame

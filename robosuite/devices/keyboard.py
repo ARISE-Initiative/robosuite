@@ -9,12 +9,18 @@ from robosuite.utils.transform_utils import rotation_matrix
 
 
 class Keyboard(Device):
-    """A minimalistic driver class for a Keyboard."""
+    """
+    A minimalistic driver class for a Keyboard.
 
-    def __init__(self):
-        """
-        Initialize a Keyboard device.
-        """
+    Args:
+        pos_sensitivity (float): Magnitude of input position command scaling
+        rot_sensitivity (float): Magnitude of scale input rotation commands scaling
+    """
+
+    def __init__(self,
+                 pos_sensitivity=1.0,
+                 rot_sensitivity=1.0
+                 ):
 
         self._display_controls()
         self._reset_internal_state()
@@ -23,7 +29,11 @@ class Keyboard(Device):
         self._enabled = False
         self._pos_step = 0.05
 
-    def _display_controls(self):
+        self.pos_sensitivity = pos_sensitivity
+        self.rot_sensitivity = rot_sensitivity
+
+    @staticmethod
+    def _display_controls():
         """
         Method to pretty print controls.
         """
@@ -49,6 +59,8 @@ class Keyboard(Device):
         Resets internal state of controller, except for the reset signal.
         """
         self.rotation = np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
+        self.raw_drotation = np.zeros(3) # immediate roll, pitch, yaw delta values from keyboard hits
+        self.last_drotation = np.zeros(3)
         self.pos = np.zeros(3)  # (x, y, z)
         self.last_pos = np.zeros(3)
         self.grasp = False
@@ -63,12 +75,21 @@ class Keyboard(Device):
         self._enabled = True
 
     def get_controller_state(self):
-        """Returns the current state of the keyboard, a dictionary of pos, orn, grasp, and reset."""
+        """
+        Grabs the current state of the keyboard.
+
+        Returns:
+            dict: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
+        """
+
         dpos = self.pos - self.last_pos
         self.last_pos = np.array(self.pos)
+        raw_drotation = self.raw_drotation - self.last_drotation # create local variable to return, then reset internal drotation
+        self.last_drotation = np.array(self.raw_drotation)
         return dict(
             dpos=dpos,
             rotation=self.rotation,
+            raw_drotation=raw_drotation,
             grasp=int(self.grasp),
             reset=self._reset_state,
         )
@@ -76,45 +97,65 @@ class Keyboard(Device):
     def on_press(self, window, key, scancode, action, mods):
         """
         Key handler for key presses.
+
+        Args:
+            window: [NOT USED]
+            key (int): keycode corresponding to the key that was pressed
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
 
         # controls for moving position
         if key == glfw.KEY_W:
-            self.pos[0] -= self._pos_step  # dec x
+            self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
         elif key == glfw.KEY_S:
-            self.pos[0] += self._pos_step  # inc x
+            self.pos[0] += self._pos_step * self.pos_sensitivity   # inc x
         elif key == glfw.KEY_A:
-            self.pos[1] -= self._pos_step  # dec y
+            self.pos[1] -= self._pos_step * self.pos_sensitivity   # dec y
         elif key == glfw.KEY_D:
-            self.pos[1] += self._pos_step  # inc y
+            self.pos[1] += self._pos_step * self.pos_sensitivity   # inc y
         elif key == glfw.KEY_F:
-            self.pos[2] -= self._pos_step  # dec z
+            self.pos[2] -= self._pos_step * self.pos_sensitivity   # dec z
         elif key == glfw.KEY_R:
-            self.pos[2] += self._pos_step  # inc z
+            self.pos[2] += self._pos_step * self.pos_sensitivity   # inc z
 
         # controls for moving orientation
         elif key == glfw.KEY_Z:
-            drot = rotation_matrix(angle=0.1, direction=[1., 0., 0.])[:3, :3]
+            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1., 0., 0.])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates x
+            self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_X:
-            drot = rotation_matrix(angle=-0.1, direction=[1., 0., 0.])[:3, :3]
+            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1., 0., 0.])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates x
+            self.raw_drotation[1] += 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_T:
-            drot = rotation_matrix(angle=0.1, direction=[0., 1., 0.])[:3, :3]
+            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0., 1., 0.])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates y
+            self.raw_drotation[0] += 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_G:
-            drot = rotation_matrix(angle=-0.1, direction=[0., 1., 0.])[:3, :3]
+            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0., 1., 0.])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates y
+            self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_C:
-            drot = rotation_matrix(angle=0.1, direction=[0., 0., 1.])[:3, :3]
+            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0., 0., 1.])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates z
+            self.raw_drotation[2] += 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_V:
-            drot = rotation_matrix(angle=-0.1, direction=[0., 0., 1.])[:3, :3]
+            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0., 0., 1.])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates z
+            self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
 
     def on_release(self, window, key, scancode, action, mods):
         """
         Key handler for key releases.
+
+        Args:
+            window: [NOT USED]
+            key (int): keycode corresponding to the key that was pressed
+            scancode: [NOT USED]
+            action: [NOT USED]
+            mods: [NOT USED]
         """
 
         # controls for grasping
