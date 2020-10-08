@@ -15,262 +15,289 @@ from robosuite.models.robots import create_robot
 import open3d as o3d
 
 class VirtualWrapper(Wrapper):
-	"""
-	Initializes the ViSII wrapper.
-	Args:
-		env (MujocoEnv instance): The environment to wrap.
-		width (int, optional)
-		height (int, optional)
-		use_noise (bool, optional): Use noise or denoise
-		debug_mode (bool, optional): Use debug mode for visii
-	"""
-	def __init__(self,
-				 env,
-				 width=500,
-				 height=500,
-				 use_noise=True,
-				 debug_mode=False):
+    """
+    Initializes the ViSII wrapper.
+    Args:
+        env (MujocoEnv instance): The environment to wrap.
+        width (int, optional)
+        height (int, optional)
+        use_noise (bool, optional): Use noise or denoise
+        debug_mode (bool, optional): Use debug mode for visii
+    """
+    def __init__(self,
+                 env,
+                 width=500,
+                 height=500,
+                 use_noise=True,
+                 debug_mode=False):
 
-		super().__init__(env)
+        super().__init__(env)
 
-		# Camera variables
-		self.width  = width
-		self.height = height
+        # Camera variables
+        self.width  = width
+        self.height = height
 
-		if debug_mode:
-			visii.initialize_interactive()
-		else:
-			visii.initialize_headless()
+        if debug_mode:
+            visii.initialize_interactive()
+        else:
+            visii.initialize_headless()
 
-		if not use_noise: 
-			visii.enable_denoiser()
+        if not use_noise: 
+            visii.enable_denoiser()
 
-		light_1 = visii.entity.create(
-			name      = "light_1",
-			mesh      = visii.mesh.create_plane("light_1"),
-			transform = visii.transform.create("light_1"),
-		)
+        light_1 = visii.entity.create(
+            name      = "light_1",
+            mesh      = visii.mesh.create_plane("light_1"),
+            transform = visii.transform.create("light_1"),
+        )
 
-		light_1.set_light(
-			visii.light.create("light_1")
-		)
+        light_1.set_light(
+            visii.light.create("light_1")
+        )
 
-		light_1.get_light().set_intensity(20000)
-		light_1.get_transform().set_scale(visii.vec3(0.3))
-		light_1.get_transform().set_position(visii.vec3(-3, -3, 2))
-		
-		floor = visii.entity.create(
-			name      = "floor",
-			mesh      = visii.mesh.create_plane("plane"),
-			material  = visii.material.create("plane"),
-			transform = visii.transform.create("plane")
-		)
-		floor.get_transform().set_scale(visii.vec3(10))
-		floor.get_transform().set_position(visii.vec3(0, 0, -5))
-		floor.get_material().set_base_color(visii.vec3(0.8, 1, 0.8))
-		floor.get_material().set_roughness(0.4)
-		floor.get_material().set_specular(0)
+        light_1.get_light().set_intensity(20000)
+        light_1.get_transform().set_scale(visii.vec3(0.3))
+        light_1.get_transform().set_position(visii.vec3(-3, -3, 2))
+        
+        floor = visii.entity.create(
+            name      = "floor",
+            mesh      = visii.mesh.create_plane("plane"),
+            material  = visii.material.create("plane"),
+            transform = visii.transform.create("plane")
+        )
+        floor.get_transform().set_scale(visii.vec3(10))
+        floor.get_transform().set_position(visii.vec3(0, 0, -5))
+        floor.get_material().set_base_color(visii.vec3(0.8, 1, 0.8))
+        floor.get_material().set_roughness(0.4)
+        floor.get_material().set_specular(0)
 
-		#self.static_obj_init()
-		self.camera_init()
+        #self.static_obj_init()
+        self.camera_init()
 
-		# Sets the primary camera to the renderer to the camera entity
-		visii.set_camera_entity(self.camera) 
+        # Sets the primary camera to the renderer to the camera entity
+        visii.set_camera_entity(self.camera) 
 
-		# TODO (yifeng): 1. Put camera intiialization to a seprate
-		# method - DONE
-		# TODO (yifeng): 2. Create another function to configure the camera
-		# parameters when needed - DONE
+        # TODO (yifeng): 1. Put camera intiialization to a seprate
+        # method - DONE
+        # TODO (yifeng): 2. Create another function to configure the camera
+        # parameters when needed - DONE
 
-		self.camera_configuration(pos_vec = visii.vec3(0, 0, 1), 
-								  at_vec  = visii.vec3(0,0,0), 
-								  up_vec  = visii.vec3(0,0,1),
-								  eye_vec = visii.vec3(1.5, 1.5, 1.5))
-		
-		# Environment configuration
-		self._dome_light_intensity = 1
-		visii.set_dome_light_intensity(self._dome_light_intensity)
+        self.camera_configuration(pos_vec = visii.vec3(0, 0, 1), 
+                                  at_vec  = visii.vec3(0,0,0), 
+                                  up_vec  = visii.vec3(0,0,1),
+                                  eye_vec = visii.vec3(1.5, 1.5, 1.5))
+        
+        # Environment configuration
+        self._dome_light_intensity = 1
+        visii.set_dome_light_intensity(self._dome_light_intensity)
 
-		visii.set_max_bounce_depth(2)
+        visii.set_max_bounce_depth(2)
 
-		self.model = None
-		
-		self.robots = []
-		self.robots_names = self.env.robot_names
+        self.model = None
+        
+        self.robots = []
+        self.robots_names = self.env.robot_names
 
-		idNum = 1
-		for robot in self.robot_names:
-			robot_model = create_robot(robot, idn = idNum) # only taking the first robot for now
-			self.robots.append(robot_model)
-			idNum+=1
+        idNum = 1
+        for robot in self.robot_names:
+            robot_model = create_robot(robot, idn = idNum) # only taking the first robot for now
+            self.robots.append(robot_model)
+            idNum+=1
 
-		### PASS IN XML FILE BASED ON ROBOT
-		robot_xml_filepath = '../models/assets/robots/sawyer/robot.xml'
-		self.initalize_simulation(robot_xml_filepath)
+        ### PASS IN XML FILE BASED ON ROBOT
+        robot_xml_filepath = '../models/assets/robots/sawyer/robot.xml'
+        self.initalize_simulation(robot_xml_filepath)
 
-		self.base_pos = self.sim.data.body_xpos[self.sim.model.body_name2id("right_l1")]
-		print(self.base_pos)
+        #Available "body" names = ('world', 'base', 'controller_box', 'pedestal_feet', 'torso', 'pedestal', 'right_arm_base_link', 
+        #                          'right_l0', 'head', 'screen', 'head_camera', 'right_torso_itb', 'right_l1', 'right_l2', 'right_l3', 
+        #                          'right_l4', 'right_arm_itb', 'right_l5', 'right_hand_camera', 'right_wrist', 'right_l6', 'right_hand',
+        #                          'right_l4_2', 'right_l2_2', 'right_l1_2').
 
-	def close(self):
-		visii.deinitialize()
+        self.parts = ['base', 'head', 'right_l0', 'right_l1', 'right_l2', 'right_l3', 'right_l4', 'right_l5', 'right_l6']
 
-	def static_obj_init(self):
+        self.positions = self.getPositions(self.parts)
+        print(self.parts)     # testing
+        print(self.positions) # testing
 
-		# create the tables and walls
-		raise NotImplementedError
+    def close(self):
+        visii.deinitialize()
 
-	def camera_init(self):
+    def camera_init(self):
 
-		# intializes the camera
-		self.camera = visii.entity.create(
-			name = "camera",
-			transform = visii.transform.create("camera_transform"),
-		)
+        # intializes the camera
+        self.camera = visii.entity.create(
+            name = "camera",
+            transform = visii.transform.create("camera_transform"),
+        )
 
-		self.camera.set_camera(
-			visii.camera.create_perspective_from_fov(
-				name = "camera_camera", 
-				field_of_view = 1, 
-				aspect = float(self.width)/float(self.height)
-			)
-		)
+        self.camera.set_camera(
+            visii.camera.create_perspective_from_fov(
+                name = "camera_camera", 
+                field_of_view = 1, 
+                aspect = float(self.width)/float(self.height)
+            )
+        )
 
-	def camera_configuration(self, pos_vec, at_vec, up_vec, eye_vec):
+    def camera_configuration(self, pos_vec, at_vec, up_vec, eye_vec):
 
-		# configures the camera
-		self.camera.get_transform().set_position(pos_vec)
+        # configures the camera
+        self.camera.get_transform().set_position(pos_vec)
 
-		self.camera.get_transform().look_at(
-			at  = at_vec, # look at (world coordinate)
-			up  = up_vec, # up vector
-			eye = eye_vec,
-			previous = False
-		)
+        self.camera.get_transform().look_at(
+            at  = at_vec, # look at (world coordinate)
+            up  = up_vec, # up vector
+            eye = eye_vec,
+            previous = False
+        )
 
-	def initalize_simulation(self, xml_file = None):
-		
-		self.mjpy_model = load_model_from_path(xml_file) if xml_file else self.model.get_model(mode="mujoco_py")
+    def static_obj_init(self):
 
-		# Creates the simulation
-		self.sim = MjSim(self.mjpy_model)
+        # create the tables and walls
+        raise NotImplementedError
 
-	def str_to_class(self, str):
-		return getattr(sys.modules[__name__], str)
+    def initalize_simulation(self, xml_file = None):
+        
+        self.mjpy_model = load_model_from_path(xml_file) if xml_file else self.model.get_model(mode="mujoco_py")
 
-	def reset(self):
-		self.obs_dict = self.env.reset()
+        # Creates the simulation
+        self.sim = MjSim(self.mjpy_model)
+        self.sim.step()
 
-	def step(self, action):
+    def str_to_class(self, str):
+        return getattr(sys.modules[__name__], str)
 
-		"""
-		Updates the states for the wrapper given a certain action
-		"""
+    def reset(self):
+        self.obs_dict = self.env.reset()
 
-		obs_dict, reward, done, info = self.env.step(action)
-		self.update(obs_dict, reward, done, info)
+    def step(self, action):
 
-		return obs_dict, reward, done, info
+        """
+        Updates the states for the wrapper given a certain action
+        """
 
-	def update(self, obs_dict, reward, done, info):
-		self.obs_dict = obs_dict
-		self.reward   = reward
-		self.done     = done
-		self.info     = info
+        obs_dict, reward, done, info = self.env.step(action)
+        self.update(obs_dict, reward, done, info)
 
-		# call the render function to update the states in the window
+        return obs_dict, reward, done, info
 
-	def render(self, render_type):
-		"""
-		Renders the scene
-		Arg:
-			render_type: tells the method whether to save to png or save to hdr
-		"""
+    def update(self, obs_dict, reward, done, info):
+        self.obs_dict = obs_dict
+        self.reward   = reward
+        self.done     = done
+        self.info     = info
 
-		# For now I am only rendering it as a png
+        # call the render function to update the states in the window
 
-		# stl file extension
-		mesh = o3d.io.read_triangle_mesh('../models/assets/robots/sawyer/meshes/base.stl')
-		link_name = 'base'
+    def render(self, render_type):
+        """
+        Renders the scene
+        Arg:
+            render_type: tells the method whether to save to png or save to hdr
+        """
 
-		normals  = np.array(mesh.vertex_normals).flatten().tolist()
-		vertices = np.array(mesh.vertices).flatten().tolist() 
+        # For now I am only rendering it as a png
 
-		mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
+        # stl file extension
+        for i in range(len(self.parts)):
 
-		link_entity = visii.entity.create(
-			name      = link_name,
-			mesh      = mesh,
-			transform = visii.transform.create(link_name),
-			material  = visii.material.create(link_name)
-		)
+            part = self.parts[i]
+            # joint files
+            if (part[-2:-1] == 'l' and part[-1:].isdigit()):
+                part = part[-2:] 
 
-		link_entity.get_transform().set_position(visii.vec3(0, 0, 0.2))
+            mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/sawyer/meshes/{part}.stl') # change
+            link_name = part
 
-		link_entity.get_material().set_base_color(visii.vec3(0.2, 0.2, 0.2))
-		link_entity.get_material().set_metallic(0)
-		link_entity.get_material().set_transmission(0)
-		link_entity.get_material().set_roughness(0.3)
+            normals  = np.array(mesh.vertex_normals).flatten().tolist()
+            vertices = np.array(mesh.vertices).flatten().tolist() 
 
-		visii.render_to_png(
-			width             = self.width,
-			height            = self.height, 
-			samples_per_pixel = 500,   
-			image_path        = 'temp.png'
-		)
-		
-	#def parse_mjcf_files(self):
+            mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
+
+            link_entity = visii.entity.create(
+                name      = link_name,
+                mesh      = mesh,
+                transform = visii.transform.create(link_name),
+                material  = visii.material.create(link_name)
+            )
+
+            part_position = self.positions[i]
+
+            link_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
+
+            link_entity.get_material().set_base_color(visii.vec3(0.2, 0.2, 0.2))
+            link_entity.get_material().set_metallic(0)
+            link_entity.get_material().set_transmission(0)
+            link_entity.get_material().set_roughness(0.3)
+
+        visii.render_to_png(
+            width             = self.width,
+            height            = self.height, 
+            samples_per_pixel = 500,   
+            image_path        = 'temp.png'
+        )
+        
+    def getPositions(self, parts):
+
+        positions = []
+
+        for part in parts:
+            positions.append(np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(part)]))
+
+        return positions
+
+    #def parse_mjcf_files(self):
 
 
-	def printState(self): # For testing purposes
-		print(self.obs_dict)
+    def printState(self): # For testing purposes
+        print(self.obs_dict)
 
-	def get_camera_intrinsics(self):
-		"""Get camera intrinsics matrix
-		"""
-		raise NotImplementedError
+    def get_camera_intrinsics(self):
+        """Get camera intrinsics matrix
+        """
+        raise NotImplementedError
 
-	def get_camera_extrinsics(self):
-		"""Get camera extrinsics matrix
-		"""
-		raise NotImplementedError
+    def get_camera_extrinsics(self):
+        """Get camera extrinsics matrix
+        """
+        raise NotImplementedError
 
-	def set_camera_intrinsics(self):
-		"""Set camera intrinsics matrix
-		"""
-		raise NotImplementedError
+    def set_camera_intrinsics(self):
+        """Set camera intrinsics matrix
+        """
+        raise NotImplementedError
 
-	def set_camera_extrinsics(self):
-		"""Set camera extrinsics matrix
-		"""
-		raise NotImplementedError
-		
-		
+    def set_camera_extrinsics(self):
+        """Set camera extrinsics matrix
+        """
+        raise NotImplementedError
+        
+        
 if __name__ == '__main__':
 
-	env = VirtualWrapper(
-		env = suite.make(
-				"Lift",
-				robots = "Sawyer",
-				reward_shaping=True,
-				has_renderer=False,       # no on-screen renderer
-				has_offscreen_renderer=False, # no off-screen renderer
-				ignore_done=True,
-				use_object_obs=True,      # use object-centric feature
-				use_camera_obs=False,     # no camera observations
-				control_freq=10,
-			),
-		use_noise=False,
-	)
+    env = VirtualWrapper(
+        env = suite.make(
+                "Lift",
+                robots = "Sawyer",
+                reward_shaping=True,
+                has_renderer=False,       # no on-screen renderer
+                has_offscreen_renderer=False, # no off-screen renderer
+                ignore_done=True,
+                use_object_obs=True,      # use object-centric feature
+                use_camera_obs=False,     # no camera observations
+                control_freq=10,
+            ),
+        use_noise=False,
+    )
 
-	env.reset()
+    env.reset()
 
-	action = np.random.randn(8)
-	obs, reward, done, info = env.step(action)
+    action = np.random.randn(8)
+    obs, reward, done, info = env.step(action)
 
-	#env.printState() # For testing purposes
+    #env.printState() # For testing purposes
 
-	#env.render(render_type = "png")
+    env.render(render_type = "png")
 
-	env.close()
+    env.close()
 
-	print('Done.')
+    print('Done.')
