@@ -2,6 +2,10 @@
 
 ![gallery of_environments](docs/images/gallery.png)
 
+[**[Homepage]**](https://robosuite.ai/) &ensp; [**[White Paper]**](https://arxiv.org/abs/2009.12293) &ensp; [**[Documentations]**](https://robosuite.ai/docs/overview.html) &ensp; [**[ARISE Initiative]**](https://github.com/ARISE-Initiative)
+
+-------
+
 **robosuite** is a simulation framework powered by the [MuJoCo](http://mujoco.org/) physics engine for robot learning. It also offers a suite of benchmark environments for reproducible research. The current release (v1.0) features manipulation tasks with feature supports of procedural generation, advanced controllers, teleoperation, etc. This project is part of the broader [Advancing Robot Intelligence through Simulated Environments (ARISE) Initiative](https://github.com/ARISE-Initiative), with the aim of lowering the barriers of entry for cutting-edge research at the intersection of AI and Robotics.
 
 Data-driven algorithms, such as reinforcement learning and imitation learning, provide a powerful and generic tool in robotics. These learning paradigms, fueled by new advances in deep learning, have achieved some exciting successes in a variety of robot control problems. However, the challenges of reproducibility and the limited accessibility of robot hardware (especially during a pandemic) have impaired research progress. The overarching goal of **robosuite** is to provide researchers with:
@@ -10,7 +14,7 @@ Data-driven algorithms, such as reinforcement learning and imitation learning, p
 * a modular design that offers great flexibility to design new robot simulation environments;
 * a high-quality implementation of robot controllers and off-the-shelf learning algorithms to lower the barriers to entry.
 
-This framework was originally developed since late 2017 by researchers in [Stanford Vision and Learning Lab](http://svl.stanford.edu/) (SVL) as an internal tool for robot learning research. Now it is actively maintained and used for robotics research projects in SVL and the [UT-Austin Robot Perception and Learning (RPL) Lab](https://www.cs.utexas.edu/~yukez/).
+This framework was originally developed since late 2017 by researchers in [Stanford Vision and Learning Lab](http://svl.stanford.edu) (SVL) as an internal tool for robot learning research. Now it is actively maintained and used for robotics research projects in SVL and the [UT-Austin Robot Perception and Learning (RPL) Lab](http://rpl.cs.utexas.edu).
 
 This release of **robosuite** contains seven robot models, eight gripper models, six controller modes, and nine standardized tasks. It also offers a modular design of APIs for building new environments with procedural generation. We highlight these primary features below:
 
