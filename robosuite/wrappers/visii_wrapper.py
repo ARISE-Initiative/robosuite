@@ -13,6 +13,7 @@ from robosuite.wrappers import Wrapper
 from robosuite.models.robots import Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 from robosuite.models.robots import create_robot
 import open3d as o3d
+import math
 
 class VirtualWrapper(Wrapper):
     """
@@ -113,9 +114,47 @@ class VirtualWrapper(Wrapper):
         #                          'right_l4', 'right_arm_itb', 'right_l5', 'right_hand_camera', 'right_wrist', 'right_l6', 'right_hand',
         #                          'right_l4_2', 'right_l2_2', 'right_l1_2').
 
+        # TODO (Yifeng): You should be reading these parts' names from
+        # the xml files directly
+
         self.parts = ['base', 'head', 'right_l0', 'right_l1', 'right_l2', 'right_l3', 'right_l4', 'right_l5', 'right_l6']
 
+        # TODO (Yifeng): Try to create a list of objects, one of which
+        # contains: geom info, position info, orientation info
         self.positions = self.getPositions(self.parts)
+
+
+        def quaternion_from_matrix3(matrix3):
+            """Return quaternion from 3x3 rotation matrix.
+
+            >>> R = rotation_matrix4(0.123, (1, 2, 3))
+            >>> q = quaternion_from_matrix4(R)
+            >>> numpy.allclose(q, [0.0164262, 0.0328524, 0.0492786, 0.9981095])
+            True
+
+            """
+            EPS = 1e-6
+            q = np.empty((4, ), dtype=np.float64)
+            M = np.array(matrix3, dtype=np.float64, copy=False)[:3, :3]
+            t = np.trace(M) + 1
+            if t <= -EPS:
+                warnings.warn('Numerical warning of [t = np.trace(M) + 1 = {}]'\
+                        .format(t))
+            t = max(t, EPS)
+            q[3] = t
+            q[2] = M[1, 0] - M[0, 1]
+            q[1] = M[0, 2] - M[2, 0]
+            q[0] = M[2, 1] - M[1, 2]
+            q *= 0.5 / math.sqrt(t)
+            return q
+
+        self.quats = []
+        for part in self.parts:
+            R = self.sim.data.body_xmat[self.sim.model.body_name2id(part)].reshape(3, 3)
+            quat_xyzw = quaternion_from_matrix3(R)
+            quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
+            self.quats.append(quat_wxyz)
+            
         print(self.parts)     # testing
         print(self.positions) # testing
 
@@ -223,6 +262,12 @@ class VirtualWrapper(Wrapper):
             part_position = self.positions[i]
 
             link_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
+
+            part_quaternion = self.quats[i]
+            link_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
+                                                                part_quaternion[1],
+                                                                part_quaternion[2],
+                                                                part_quaternion[3]))
 
             link_entity.get_material().set_base_color(visii.vec3(0.2, 0.2, 0.2))
             link_entity.get_material().set_metallic(0)
