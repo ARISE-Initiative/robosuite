@@ -36,8 +36,12 @@ class VirtualWrapper(Wrapper):
         super().__init__(env)
 
         # Camera variables
-        self.width  = width
-        self.height = height
+        self.width             = width
+        self.height            = height
+        self.samples_per_pixel = 10
+        self.image_counter     = 0
+        self.render_number     = 1
+        self.entities          = []
 
         if debug_mode:
             visii.initialize_interactive()
@@ -73,7 +77,6 @@ class VirtualWrapper(Wrapper):
         floor.get_material().set_roughness(0.4)
         floor.get_material().set_specular(0)
 
-        #self.static_obj_init()
         self.camera_init()
 
         # Sets the primary camera to the renderer to the camera entity
@@ -116,37 +119,10 @@ class VirtualWrapper(Wrapper):
         tree = ET.parse(robot_xml_filepath)
         root = tree.getroot()
         
-        self.parts      = []
-        self.meshes     = []
-        self.mesh_parts = []
+        self.dynamic_obj_init(root)
 
-        # Stores all the meshes required for the robot
-        for body in root.iter('body'):
-            self.parts.append(body.get('name'))
-            for geom in body.findall('geom'):
-                geom_mesh = geom.get('mesh')
-                if geom_mesh != None:
-                    self.meshes.append(geom_mesh)
-                    self.mesh_parts.append(body.get('name'))
-
-        # TODO (Yifeng): Try to create a list of objects, one of which
-        # contains: geom info, position info, orientation info
-        self.positions = self.getPositions(self.mesh_parts) # position information for the robot
-        self.geoms     = self.getGeoms(root) # geometry information for the robot
-        self.quats     = [] # orientation information for the robot
-
-        # print(self.parts)
-        # print(self.meshes)
-        print(self.mesh_parts)
-        print(self.positions) # testing
-
-        for part in self.mesh_parts:
-            R = self.sim.data.body_xmat[self.sim.model.body_name2id(part)].reshape(3, 3)
-            quat_xyzw = self.quaternion_from_matrix3(R)
-            quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
-            self.quats.append(quat_wxyz)
-
-        print(self.quats)
+        # initialize the static objects
+        #self.static_obj_init()
 
     def close(self):
         visii.deinitialize()
@@ -182,7 +158,35 @@ class VirtualWrapper(Wrapper):
     def static_obj_init(self):
 
         # create the tables and walls
+
         raise NotImplementedError
+
+    def dynamic_obj_init(self, root):
+
+        self.parts      = []
+        self.meshes     = []
+        self.mesh_parts = []
+
+        # Stores all the meshes required for the robot
+        for body in root.iter('body'):
+            self.parts.append(body.get('name'))
+            for geom in body.findall('geom'):
+                geom_mesh = geom.get('mesh')
+                if geom_mesh != None:
+                    self.meshes.append(geom_mesh)
+                    self.mesh_parts.append(body.get('name'))
+
+        # TODO (Yifeng): Try to create a list of objects, one of which
+        # contains: geom info, position info, orientation info
+        self.positions = self.get_positions(self.mesh_parts) # position information for the robot
+        self.geoms     = self.get_geoms(root) # geometry information for the robot
+        self.quats     = self.get_quats() # orientation information for the robot
+
+        # print(self.parts)
+        # print(self.meshes)
+        # print(self.mesh_parts)
+        # print(self.positions) # testing
+        # print(self.quats)
 
     def initalize_simulation(self, xml_file = None):
         
@@ -205,6 +209,7 @@ class VirtualWrapper(Wrapper):
         """
 
         obs_dict, reward, done, info = self.env.step(action)
+        self.sim.step()
         self.update(obs_dict, reward, done, info)
 
         return obs_dict, reward, done, info
@@ -215,7 +220,15 @@ class VirtualWrapper(Wrapper):
         self.done     = done
         self.info     = info
 
+        self.image_counter += 1
+
+        # changing the angles to the new angles of the joints
+        self.positions = self.get_positions(self.mesh_parts)
+        self.quats = self.get_quats()
+
         # call the render function to update the states in the window
+        self.render(render_type = "png")
+
 
     def render(self, render_type):
         """
@@ -229,22 +242,37 @@ class VirtualWrapper(Wrapper):
         # stl file extension
         for i in range(len(self.meshes)):
 
-            part_mesh = self.meshes[i]
+            link_entity = None
 
-            mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/sawyer/meshes/{part_mesh}.stl') # change
-            link_name = part_mesh
+            if(self.render_number == 1):
 
-            normals  = np.array(mesh.vertex_normals).flatten().tolist()
-            vertices = np.array(mesh.vertices).flatten().tolist() 
+                part_mesh = self.meshes[i]
 
-            mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
+                if(part_mesh == 'pedestal'):
+                    mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/common_meshes/{part_mesh}.stl') # change
+                else:
+                    mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/{self.robot_names[0].lower()}/meshes/{part_mesh}.stl') # change
+          
+                link_name = part_mesh
 
-            link_entity = visii.entity.create(
-                name      = link_name,
-                mesh      = mesh,
-                transform = visii.transform.create(link_name),
-                material  = visii.material.create(link_name)
-            )
+                # print(f'Succesfully read: {part_mesh}')
+
+                normals  = np.array(mesh.vertex_normals).flatten().tolist()
+                vertices = np.array(mesh.vertices).flatten().tolist() 
+
+                mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
+
+                link_entity = visii.entity.create(
+                    name      = link_name,
+                    mesh      = mesh,
+                    transform = visii.transform.create(link_name),
+                    material  = visii.material.create(link_name)
+                )
+
+                self.entities.append(link_entity)
+
+            else:
+                link_entity = self.entities[i]
 
             part_position = self.positions[i]
 
@@ -264,9 +292,11 @@ class VirtualWrapper(Wrapper):
         visii.render_to_png(
             width             = self.width,
             height            = self.height, 
-            samples_per_pixel = 500,   
-            image_path        = 'temp.png'
+            samples_per_pixel = self.samples_per_pixel,   
+            image_path        = f'images/temp_{self.image_counter}.png'
         )
+
+        self.render_number += 1
         
     def quaternion_from_matrix3(self, matrix3):
             """Return quaternion from 3x3 rotation matrix.
@@ -290,7 +320,7 @@ class VirtualWrapper(Wrapper):
             q *= 0.5 / math.sqrt(t)
             return q
 
-    def getPositions(self, parts):
+    def get_positions(self, parts):
 
         positions = []
 
@@ -299,7 +329,7 @@ class VirtualWrapper(Wrapper):
 
         return positions
 
-    def getGeoms(self, root):
+    def get_geoms(self, root):
 
         geoms = []
 
@@ -310,8 +340,16 @@ class VirtualWrapper(Wrapper):
 
         return geoms
 
-    #def parse_mjcf_files(self):
+    def get_quats(self):
+        quats = []
+        for part in self.mesh_parts:
+            R = self.sim.data.body_xmat[self.sim.model.body_name2id(part)].reshape(3, 3)
+            # print(part, R)
+            quat_xyzw = self.quaternion_from_matrix3(R)
+            quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
+            quats.append(quat_wxyz)
 
+        return quats
 
     def printState(self): # For testing purposes
         print(self.obs_dict)
@@ -339,29 +377,36 @@ class VirtualWrapper(Wrapper):
         
 if __name__ == '__main__':
 
+    # Registered environments: Lift, Stack, NutAssembly, NutAssemblySingle, NutAssemblySquare, NutAssemblyRound,
+    #                          PickPlace, PickPlaceSingle, PickPlaceMilk, PickPlaceBread, PickPlaceCereal, 
+    #                          PickPlaceCan, Door, Wipe, TwoArmLift, TwoArmPegInHole, TwoArmHandoff
+
+    # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
+
     env = VirtualWrapper(
         env = suite.make(
-                "Lift",
+                "Stack",
                 robots = "Sawyer",
                 reward_shaping=True,
-                has_renderer=False,       # no on-screen renderer
+                has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
-                use_object_obs=True,      # use object-centric feature
-                use_camera_obs=False,     # no camera observations
-                control_freq=10,
+                use_object_obs=True,          # use object-centric feature
+                use_camera_obs=False,         # no camera observations
+                control_freq=10, 
             ),
         use_noise=False,
     )
 
     env.reset()
 
+    #env.render(render_type = "png") # initial rendering of the robot
+
     action = np.random.randn(8)
-    obs, reward, done, info = env.step(action)
 
-    #env.printState() # For testing purposes
-
-    env.render(render_type = "png")
+    for i in range(5):
+        obs, reward, done, info = env.step(action)
+        #env.printState() # for testing purposes
 
     env.close()
 
