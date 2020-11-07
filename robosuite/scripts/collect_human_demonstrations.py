@@ -75,7 +75,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             # applied because the data collector wrapper only starts recording
             # after the first action has been played.
             initial_mjstate = env.sim.get_state().flatten()
-            xml_str = env.model.get_xml()
+            xml_str = env.sim.model.get_xml()
             env.reset_from_xml_string(xml_str)
             env.sim.reset()
             env.sim.set_state_from_flattened(initial_mjstate)
