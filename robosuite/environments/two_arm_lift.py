@@ -449,8 +449,6 @@ class TwoArmLift(RobotEnv):
             di["cube_pos"] = cube_pos
             di["cube_quat"] = cube_quat
 
-            di[pr0 + "eef_xpos"] = self._eef0_xpos
-            di[pr1 + "eef_xpos"] = self._eef1_xpos
             di["handle_0_xpos"] = np.array(self._handle_0_xpos)
             di["handle_1_xpos"] = np.array(self._handle_1_xpos)
             di[pr0 + "gripper_to_handle"] = np.array(self._gripper_0_to_handle)
@@ -460,8 +458,6 @@ class TwoArmLift(RobotEnv):
                 [
                     di["cube_pos"],
                     di["cube_quat"],
-                    di[pr0 + "eef_xpos"],
-                    di[pr1 + "eef_xpos"],
                     di["handle_0_xpos"],
                     di["handle_1_xpos"],
                     di[pr0 + "gripper_to_handle"],

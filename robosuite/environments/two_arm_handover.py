@@ -526,8 +526,6 @@ class TwoArmHandover(RobotEnv):
             di["hammer_quat"] = np.array(self._hammer_quat)
             di["handle_xpos"] = np.array(self._handle_xpos)
 
-            di[pr0 + "eef_xpos"] = np.array(self._eef0_xpos)
-            di[pr1 + "eef_xpos"] = np.array(self._eef1_xpos)
             di[pr0 + "gripper_to_handle"] = np.array(self._gripper_0_to_handle)
             di[pr1 + "gripper_to_handle"] = np.array(self._gripper_1_to_handle)
 
@@ -536,8 +534,6 @@ class TwoArmHandover(RobotEnv):
                     di["hammer_pos"],
                     di["hammer_quat"],
                     di["handle_xpos"],
-                    di[pr0 + "eef_xpos"],
-                    di[pr1 + "eef_xpos"],
                     di[pr0 + "gripper_to_handle"],
                     di[pr1 + "gripper_to_handle"],
                 ]
