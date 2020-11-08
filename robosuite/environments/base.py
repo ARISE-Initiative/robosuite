@@ -398,12 +398,17 @@ class MujocoEnv(metaclass=EnvMeta):
         Finds contact between two geom groups.
 
         Args:
-            geoms_1 (list of str): a list of geom names
-            geoms_2 (list of str): another list of geom names
+            geoms_1 (str or list of str): an individual geom name or list of geom names
+            geoms_2 (str or list of str): another individual geom name or list of geom names
 
         Returns:
             generator: iterator of all contacts between @geoms_1 and @geoms_2
         """
+        # Check if either geoms_1 or geoms_2 is a string, convert to list if so
+        if type(geoms_1) is str:
+            geoms_1 = [geoms_1]
+        if type(geoms_2) is str:
+            geoms_2 = [geoms_2]
         for contact in self.sim.data.contact[0 : self.sim.data.ncon]:
             # check contact geom in geoms
             c1_in_g1 = self.sim.model.geom_id2name(contact.geom1) in geoms_1
