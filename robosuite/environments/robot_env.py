@@ -418,16 +418,18 @@ class RobotEnv(MujocoEnv):
 
     def _check_gripper_contact(self):
         """
-        Checks whether each gripper is in contact with an object.
+        Checks whether each gripper is in contact with an object. Note that each entry in the return list corresponds
+        to each robot in the env.robots list. This means that a bimanual robot will have its own nested list within the
+        return list at the corresponding entry.
 
         Returns:
-            list of bool: True if the specific gripper is in contact with an object
+            list of bool: True if the specific gripper is in contact with an object.
         """
         collisions = [False] * self.num_robots
         for idx, robot in enumerate(self.robots):
             for contact in self.sim.data.contact[: self.sim.data.ncon]:
                 # Single arm case
-                if robot.arm_type == "single":
+                if robot.robot_model.arm_type == "single":
                     if (
                         self.sim.model.geom_id2name(contact.geom1)
                         in robot.gripper.contact_geoms
@@ -438,15 +440,17 @@ class RobotEnv(MujocoEnv):
                         break
                 # Bimanual case
                 else:
-                    for arm in robot.arms:
+                    # Set this list entry to be its own list of bools
+                    collisions[idx] = [False, False]
+                    for i, arm in enumerate(robot.arms):
                         if (
                                 self.sim.model.geom_id2name(contact.geom1)
                                 in robot.gripper[arm].contact_geoms
                                 or self.sim.model.geom_id2name(contact.geom2)
                                 in robot.gripper[arm].contact_geoms
                         ):
-                            collisions[idx] = True
-                            break
+                            collisions[idx][i] = True
+                            continue
         return collisions
 
     def _check_arm_contact(self):
