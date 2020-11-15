@@ -34,9 +34,9 @@ We always love to see more test coverage. When it is appropriate, add a new test
 Coding Conventions
 ------------------
 We value readability and adhere to the following coding conventions:
-- We indent using four spaces (soft tabs)
-- We always put spaces after list items and method parameters (e.g., `[1, 2, 3]` rather than `[1,2,3]`), and around operators and hash arrows (e.g., `x += 1` rather than `x+=1`)
-- We use the [Google Python Style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) for the docstrings
+- Indent using four spaces (soft tabs)
+- Always put spaces after list items and method parameters (e.g., `[1, 2, 3]` rather than `[1,2,3]`), and around operators and hash arrows (e.g., `x += 1` rather than `x+=1`)
+- Use the [Google Python Style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) for the docstrings
 - For scripts such as in [demos](https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/demos) and [tests](https://github.com/ARISE-Initiative/robosuite/tree/master/tests),
   include a docstring at the top of the file that describes the high-level purpose of the script and/or instructions on how to use the scripts (if relevant).
 
