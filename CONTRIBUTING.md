@@ -28,7 +28,7 @@ $ python -m pytest
 Submission
 ----------
 Please read the coding conventions below and make sure that your code is consistent with ours. When making a contribution, make a [pull request](https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/proposing-changes-to-your-work-with-pull-requests)
-to robosuite with an itemized list of what you have done. When you submit a pull request, it is immensely helpful to include an example script on how to run the code. 
+to robosuite with an itemized list of what you have done. When you submit a pull request, it is immensely helpful to include example script(s) that showcase the proposed changes and highlight any new APIs. 
 We always love to see more test coverage. When it is appropriate, add a new test to the [tests](https://github.com/ARISE-Initiative/robosuite/tree/master/tests) folder for checking the correctness of your code.
 
 Coding Conventions
@@ -38,7 +38,7 @@ We value readability and adhere to the following coding conventions:
 - We always put spaces after list items and method parameters (e.g., `[1, 2, 3]` rather than `[1,2,3]`), and around operators and hash arrows (e.g., `x += 1` rather than `x+=1`)
 - We use the [Google Python Style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) for the docstrings
 - For scripts such as in [demos](https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/demos) and [tests](https://github.com/ARISE-Initiative/robosuite/tree/master/tests),
-  inlcude a short snippet of instructions on how to use the scripts on the top of the file.
+  include a docstring at the top of the file that describes the high-level purpose of the script and/or instructions on how to use the scripts (if relevant).
 
 We look forward to your contributions. Thanks!
 
