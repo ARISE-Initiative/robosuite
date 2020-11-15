@@ -3,13 +3,13 @@ How to Contribute
 
 We are so happy to see you reading this page!
 
-Our team wholeheartedly welcomes the community to contribute to robosuite. For the long-term success of this project, we need the helps from volunteers for new functionalities and new task designs. Before you plan to make contributions, here are the important resources to get started with:
+Our team wholeheartedly welcomes the community to contribute to robosuite. Contributions from members of the community will help ensure the long-term success of this project. Before you plan to make contributions, here are important resources to get started with:
 
 - Read the robosuite [documentations](https://robosuite.ai/docs/overview.html) and [whitepaper](https://robosuite.ai/assets/whitepaper.pdf)
 - Check our latest status from existing [issues](https://github.com/ARISE-Initiative/robosuite/issues), [pull requests](https://github.com/ARISE-Initiative/robosuite/pulls), and [branches](https://github.com/ARISE-Initiative/robosuite/branches) and avoid duplicate efforts
 - Join our [ARISE Slack](https://ariseinitiative.slack.com) workspace for technical discussions. Please [email us](mailto:yukez@cs.utexas.edu) to be added to the workspace.
 
-We encourage the community to make the four major types of contributions:
+We encourage the community to make four major types of contributions:
 
 - **Bug fixes**: Address open issues and fix bugs presented in the `master` branch
 - **Environment designs:** Design new environments and add them to our existing set of [environments](https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/environments)
@@ -18,7 +18,7 @@ We encourage the community to make the four major types of contributions:
 
 Testing
 -------
-Before submitting your contributions, make sure that the changes do not break the existing functionalities.
+Before submitting your contributions, make sure that the changes do not break existing functionalities.
 We have a handful of [tests](https://github.com/ARISE-Initiative/robosuite/tree/master/tests) for verifying the correctness of the code.
 You can run all the tests with the following command in the root folder of robosuite. Make sure that it does not throw any error before you proceed to the next step.
 ```sh
