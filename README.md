@@ -10,7 +10,7 @@ Data-driven algorithms, such as reinforcement learning and imitation learning, p
 * a modular design that offers great flexibility to design new robot simulation environments;
 * a high-quality implementation of robot controllers and off-the-shelf learning algorithms to lower the barriers to entry.
 
-This framework was originally developed since late 2017 by researchers in [Stanford Vision and Learning Lab](http://svl.stanford.edu/) (SVL) as an internal tool for robot learning research. Now it is actively maintained and used for robotics research projects in SVL and the [UT-Austin Robot Perception and Learning (RPL) Lab](https://www.cs.utexas.edu/~yukez/). We welcome community contributions to this project. For details please check out our [contribution guidelines](CONTRIBUTING.md).
+This framework was originally developed since late 2017 by researchers in [Stanford Vision and Learning Lab](http://svl.stanford.edu/) (SVL) as an internal tool for robot learning research. Now it is actively maintained and used for robotics research projects in SVL and the [UT-Austin Robot Perception and Learning (RPL) Lab](https://www.cs.utexas.edu/~yukez/). We welcome community contributions to this project. For details please check out our [contributing guidelines](CONTRIBUTING.md).
 
 This release of **robosuite** contains seven robot models, eight gripper models, six controller modes, and nine standardized tasks. It also offers a modular design of APIs for building new environments with procedural generation. We highlight these primary features below:
 
