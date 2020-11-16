@@ -108,7 +108,7 @@ class SpaceMouse(Device):
 
     def __init__(self,
                  vendor_id=9583,
-                 product_id=50734,
+                 product_id=50735,
                  pos_sensitivity=1.0,
                  rot_sensitivity=1.0
                  ):
