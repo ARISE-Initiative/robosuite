@@ -37,15 +37,17 @@ class VirtualWrapper(Wrapper):
 
         super().__init__(env)
 
-        print(env.robots[0].gripper)
+        # print(env.robots[0].gripper.file)
+        # quit()
 
         # Camera variables
         self.width                  = width
         self.height                 = height
-        self.samples_per_pixel      = 20
+        self.samples_per_pixel      = 100
         self.image_counter          = 0
         self.render_number          = 1
         self.entities               = []
+        self.gripper_entities       = {}
         self.static_objects         = []
         self.static_object_entities = []
 
@@ -110,7 +112,8 @@ class VirtualWrapper(Wrapper):
         #     idNum+=1
 
         # Passes the xml file based on the robot
-        robot_xml_filepath = f'../models/assets/robots/{self.env.robot_names[0].lower()}/robot.xml'
+        robot_xml_filepath   = f'../models/assets/robots/{self.env.robot_names[0].lower()}/robot.xml'
+        gripper_xml_filepath = env.robots[0].gripper.file
         self.initalize_simulation(robot_xml_filepath)
 
         # TODO (Yifeng): You should be reading these parts' names from
@@ -119,7 +122,10 @@ class VirtualWrapper(Wrapper):
         tree = ET.parse(robot_xml_filepath)
         root = tree.getroot()
         
-        self.dynamic_obj_init(root)
+        tree_gripper = ET.parse(gripper_xml_filepath)
+        root_gripper = tree_gripper.getroot()
+
+        self.dynamic_obj_init(root, root_gripper)
 
         # initialize the static objects
         # self.static_obj_init()
@@ -155,7 +161,7 @@ class VirtualWrapper(Wrapper):
             previous = False
         )
 
-    def dynamic_obj_init(self, root):
+    def dynamic_obj_init(self, root, root_gripper):
 
         self.parts       = []
         self.meshes      = []
@@ -179,14 +185,40 @@ class VirtualWrapper(Wrapper):
                 if meshBoolean:
                     self.mesh_colors[prev_mesh] = mesh_color
 
-        print(self.meshes)
-        print(self.mesh_colors)
+        # print(self.meshes)
+        # print(self.mesh_colors)
 
         # TODO (Yifeng): Try to create a list of objects, one of which
         # contains: geom info, position info, orientation info
-        self.positions = self.get_positions(self.mesh_parts) # position information for the robot
+        self.positions = self.get_positions(part_type = 'robot', 
+                                            parts = self.mesh_parts) # position information for the robot
         self.geoms     = self.get_geoms(root) # geometry information for the robot
         self.quats     = self.get_quats() # orientation information for the robot
+
+        self.gripper_parts      = []
+        self.gripper_mesh_types = {}
+        self.gripper_mesh_files = {}
+        self.gripper_colors = {}
+
+        for asset in root_gripper.iter('asset'):
+
+            for mesh in asset.findall('mesh'):
+                self.gripper_mesh_files[mesh.get('name')] = mesh.get('file')
+
+        # getting all the meshes and other information for the grippers
+        for body in root_gripper.iter('body'):
+            self.gripper_parts.append(body.get('name'))
+            for geom in body.findall('geom'):
+                geom_mesh = geom.get('mesh')
+                if geom_mesh != None: 
+                    if body.get('name') not in self.gripper_mesh_types:
+                        self.gripper_mesh_types[body.get('name')] = [geom_mesh]
+                    else:
+                        self.gripper_mesh_types[body.get('name')].append(geom_mesh)
+
+        self.gripper_positions = self.get_positions(part_type = 'gripper', 
+                                                    parts = self.gripper_parts)
+        self.gripper_quats = self.get_quats_gripper()
 
     def initalize_simulation(self, xml_file = None):
         
@@ -223,8 +255,13 @@ class VirtualWrapper(Wrapper):
         self.image_counter += 1
 
         # changing the angles to the new angles of the joints
-        self.positions = self.get_positions(self.mesh_parts)
+        self.positions = self.get_positions(part_type = 'robot', 
+                                            parts = self.mesh_parts)
         self.quats = self.get_quats()
+
+        self.gripper_positions = self.get_positions(part_type = 'gripper', 
+                                                    parts = self.gripper_parts)
+        self.gripper_quats = self.get_quats_gripper()
 
     def render(self, render_type):
         """
@@ -354,7 +391,51 @@ class VirtualWrapper(Wrapper):
             link_entity.get_material().set_metallic(0)
             link_entity.get_material().set_transmission(0)
             link_entity.get_material().set_roughness(0.3)
-        
+
+        count = 0
+        for key in self.gripper_mesh_types:
+            
+            gripper_entity = None
+
+            gripper_mesh_arr = self.gripper_mesh_types[key]
+
+            for mesh in gripper_mesh_arr:
+
+                if self.render_number == 1:
+                    mesh_gripper = o3d.io.read_triangle_mesh(f'../models/assets/grippers/{self.gripper_mesh_files[mesh]}')
+                    mesh_name = f'{key}_{mesh}_mesh'
+
+                    normals  = np.array(mesh_gripper.vertex_normals).flatten().tolist()
+                    vertices = np.array(mesh_gripper.vertices).flatten().tolist()
+                    mesh_gripper = visii.mesh.create_from_data(mesh_name, positions=vertices, normals=normals)
+                    gripper_entity = visii.entity.create(
+                        name      = mesh_name,
+                        mesh      = mesh_gripper,
+                        transform = visii.transform.create(mesh_name),
+                        material  = visii.material.create(mesh_name)
+                    )
+
+                    self.gripper_entities[f'{key}_{mesh}'] = gripper_entity
+
+                else:
+                    gripper_entity = self.gripper_entities[f'{key}_{mesh}']
+
+                part_position = self.gripper_positions[count]
+                print(f'{key} ==> {mesh} ==> {part_position}')
+                gripper_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
+
+                part_quaternion = self.gripper_quats[count]
+                gripper_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
+                                                                       part_quaternion[1],
+                                                                       part_quaternion[2],
+                                                                       part_quaternion[3]))
+
+                gripper_entity.get_material().set_metallic(0)
+                gripper_entity.get_material().set_transmission(0)
+                gripper_entity.get_material().set_roughness(0.3)
+
+            count+=1
+
         visii.render_to_png(
             width             = self.width,
             height            = self.height, 
@@ -386,12 +467,12 @@ class VirtualWrapper(Wrapper):
             q *= 0.5 / math.sqrt(t)
             return q
 
-    def get_positions(self, parts):
+    def get_positions(self, part_type, parts):
 
         positions = []
 
         for part in parts:
-            positions.append(np.array(self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'robot0_{part}')]))
+            positions.append(np.array(self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'{part_type}0_{part}')]))
 
         return positions
 
@@ -410,6 +491,17 @@ class VirtualWrapper(Wrapper):
         quats = []
         for part in self.mesh_parts:
             R = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(f'robot0_{part}')].reshape(3, 3)
+            # print(part, R)
+            quat_xyzw = self.quaternion_from_matrix3(R)
+            quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
+            quats.append(quat_wxyz)
+
+        return quats
+
+    def get_quats_gripper(self):
+        quats = []
+        for part in self.gripper_parts:
+            R = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(f'gripper0_{part}')].reshape(3, 3)
             # print(part, R)
             quat_xyzw = self.quaternion_from_matrix3(R)
             quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
@@ -470,7 +562,7 @@ if __name__ == '__main__':
 
     env.printState()
 
-    for i in range(200):
+    for i in range(100):
         action = np.random.randn(8)
         obs, reward, done, info = env.step(action)
 
