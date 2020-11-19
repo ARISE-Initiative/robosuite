@@ -173,8 +173,8 @@ class OperationalSpaceController(Controller):
             self.control_dim += 6
 
         # limits
-        self.position_limits = position_limits
-        self.orientation_limits = orientation_limits
+        self.position_limits = np.array(position_limits) if position_limits is not None else position_limits
+        self.orientation_limits = np.array(orientation_limits) if orientation_limits is not None else orientation_limits
 
         # control frequency
         self.control_freq = policy_freq

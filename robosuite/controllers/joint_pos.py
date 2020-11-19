@@ -120,7 +120,7 @@ class JointPositionController(Controller):
         self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits
-        self.position_limits = qpos_limits
+        self.position_limits = np.array(qpos_limits) if qpos_limits is not None else qpos_limits
 
         # kp kd
         self.kp = self.nums2array(kp, self.control_dim)
