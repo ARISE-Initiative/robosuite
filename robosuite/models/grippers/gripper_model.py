@@ -2,6 +2,7 @@
 Defines the base class of all grippers
 """
 from robosuite.models.base import MujocoXML
+from robosuite.utils.mjcf_utils import GRIPPER_COLLISION_COLOR
 import numpy as np
 
 
@@ -25,6 +26,9 @@ class GripperModel(MujocoXML):
 
         # Update all xml element prefixes
         self.add_prefix(self.naming_prefix)
+
+        # Update collision geom colors
+        self.recolor_collision_geoms(GRIPPER_COLLISION_COLOR)
 
         # Set public attributes with prefixes appended to values
         self.joints = [self.naming_prefix + joint for joint in self._joints]

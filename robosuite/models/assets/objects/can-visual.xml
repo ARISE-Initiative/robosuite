@@ -1,11 +1,8 @@
-<mujoco model="can">
-  <asset>
-    <mesh file="meshes/can.stl" name="can_mesh"/>
-  </asset>
+<mujoco model="can-visual">
+  <!-- note: the mesh needed for this object is defined in can.xml -->
   <worldbody>
     <body>
-      <body name="visual">
-        <geom pos="0 0 0" mesh="can_mesh" type="mesh" rgba="0.8 0.8 0.8 0.3"  conaffinity="0" contype="0" group="0" mass="0.0001"/>
+      <body name="object">
         <geom pos="0 0 0" mesh="can_mesh" type="mesh" rgba="0.8 0.8 0.8 0.3"  conaffinity="0" contype="0" group="1" mass="0.0001"/>
       </body>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.06" name="bottom_site"/>

@@ -430,7 +430,7 @@ class PickPlace(RobotEnv):
         bin_y_half = self.mujoco_arena.table_full_size[1] / 2 - 0.05
 
         # each object should just be sampled in the bounds of the bin (with some tolerance)
-        for obj_name in self.mujoco_objects:
+        for obj_name in self.collision_objects:
 
             self.placement_initializer.sample_on_top(
                 obj_name,
@@ -523,7 +523,7 @@ class PickPlace(RobotEnv):
             visual_ob_name = ("Visual" + self.item_names[j] + "0")
             visual_ob = self.vis_inits[j](
                 name=visual_ob_name,
-                joints=[], # no free joint for visual objects
+                joints=[],  # no free joint for visual objects
             )
             lst.append((visual_ob_name, visual_ob))
         self.visual_objects = OrderedDict(lst)
@@ -537,7 +537,8 @@ class PickPlace(RobotEnv):
             )
             lst.append((ob_name, ob))
 
-        self.mujoco_objects = OrderedDict(lst)
+        self.collision_objects = OrderedDict(lst)
+        self.mujoco_objects = OrderedDict(**self.visual_objects, **self.collision_objects)
         self.n_objects = len(self.mujoco_objects)
 
         # task includes arena, robot, and objects of interest
@@ -545,8 +546,7 @@ class PickPlace(RobotEnv):
         self.model = ManipulationTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects, 
-            visual_objects=self.visual_objects, 
+            mujoco_objects=self.mujoco_objects,
             initializer=self.placement_initializer,
         )
 
@@ -579,7 +579,7 @@ class PickPlace(RobotEnv):
         for i in range(len(self.ob_inits)):
             obj_str = str(self.item_names[i]) + "0"
             self.obj_body_id[obj_str] = self.sim.model.body_name2id(obj_str)
-            self.obj_geom_id[obj_str] = self.sim.model.geom_name2id(obj_str)
+            self.obj_geom_id[obj_str] = self.sim.model.geom_name2id(obj_str + "_0")
 
         # for checking distance to / contact with objects we want to pick up
         self.target_object_body_ids = list(map(int, self.obj_body_id.values()))
@@ -616,10 +616,11 @@ class PickPlace(RobotEnv):
 
             # Loop through all objects and reset their positions
             for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+                if "visual" not in obj_name.lower():
+                    self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
 
-        # information of objects
-        self.object_names = list(self.mujoco_objects.keys())
+        # information of (collision) objects
+        self.object_names = list(self.collision_objects.keys())
         self.object_site_ids = [
             self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
         ]

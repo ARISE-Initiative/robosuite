@@ -258,8 +258,8 @@ class TwoArmLift(RobotEnv):
             r_lift = min(max(elevation - 0.05, 0), 0.15)
             reward += 10. * direction_coef * r_lift
 
-            _gripper_0_to_handle = self._gripper_0_to_handle
-            _gripper_1_to_handle = self._gripper_1_to_handle
+            _gripper0_to_handle0 = self._gripper0_to_handle0
+            _gripper1_to_handle1 = self._gripper1_to_handle1
 
             # gh stands for gripper-handle
             # When grippers are far away, tell them to be closer
@@ -268,48 +268,48 @@ class TwoArmLift(RobotEnv):
             if self.env_configuration == "bimanual":
                 _contacts_0_lf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper["left"].important_geoms["left_finger"], self.pot.handle_2_geoms()
+                        self.robots[0].gripper["left"].important_geoms["left_finger"], self.pot.handle1_geoms
                     )
                 )) > 0
                 _contacts_0_rf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper["left"].important_geoms["right_finger"], self.pot.handle_2_geoms()
+                        self.robots[0].gripper["left"].important_geoms["right_finger"], self.pot.handle1_geoms
                     )
                 )) > 0
                 _contacts_1_lf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper["right"].important_geoms["left_finger"], self.pot.handle_1_geoms()
+                        self.robots[0].gripper["right"].important_geoms["left_finger"], self.pot.handle0_geoms
                     )
                 )) > 0
                 _contacts_1_rf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper["right"].important_geoms["right_finger"], self.pot.handle_1_geoms()
+                        self.robots[0].gripper["right"].important_geoms["right_finger"], self.pot.handle0_geoms
                     )
                 )) > 0
             # Multi single arm setting
             else:
                 _contacts_0_lf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper.important_geoms["left_finger"], self.pot.handle_2_geoms()
+                        self.robots[0].gripper.important_geoms["left_finger"], self.pot.handle1_geoms
                     )
                 )) > 0
                 _contacts_0_rf = len(list(
                     self.find_contacts(
-                        self.robots[0].gripper.important_geoms["right_finger"], self.pot.handle_2_geoms()
+                        self.robots[0].gripper.important_geoms["right_finger"], self.pot.handle1_geoms
                     )
                 )) > 0
                 _contacts_1_lf = len(list(
                     self.find_contacts(
-                        self.robots[1].gripper.important_geoms["left_finger"], self.pot.handle_1_geoms()
+                        self.robots[1].gripper.important_geoms["left_finger"], self.pot.handle0_geoms
                     )
                 )) > 0
                 _contacts_1_rf = len(list(
                     self.find_contacts(
-                        self.robots[1].gripper.important_geoms["right_finger"], self.pot.handle_1_geoms()
+                        self.robots[1].gripper.important_geoms["right_finger"], self.pot.handle0_geoms
                     )
                 )) > 0
-            _g0h_dist = np.linalg.norm(_gripper_0_to_handle)
-            _g1h_dist = np.linalg.norm(_gripper_1_to_handle)
+            _g0h_dist = np.linalg.norm(_gripper0_to_handle0)
+            _g1h_dist = np.linalg.norm(_gripper1_to_handle1)
 
             # Grasping reward
             if _contacts_0_lf and _contacts_0_rf:
@@ -367,15 +367,15 @@ class TwoArmLift(RobotEnv):
         self.mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
-        self.pot = PotWithHandlesObject(name="pot")
-        self.mujoco_objects = OrderedDict([("pot", self.pot)])
+        self.pot_name = "pot"
+        self.pot = PotWithHandlesObject(name=self.pot_name)
+        self.mujoco_objects = OrderedDict([(self.pot_name, self.pot)])
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects, 
-            visual_objects=None, 
+            mujoco_objects=self.mujoco_objects,
             initializer=self.placement_initializer,
         )
         self.model.place_objects()
@@ -389,11 +389,11 @@ class TwoArmLift(RobotEnv):
         super()._get_reference()
 
         # Additional object references from this env
-        self.pot_body_id = self.sim.model.body_name2id("pot")
-        self.handle_1_site_id = self.sim.model.site_name2id("pot_handle_1")
-        self.handle_0_site_id = self.sim.model.site_name2id("pot_handle_2")
+        self.pot_body_id = self.sim.model.body_name2id(self.pot_name)
+        self.handle1_site_id = self.sim.model.site_name2id(f"{self.pot_name}_handle0")
+        self.handle0_site_id = self.sim.model.site_name2id(f"{self.pot_name}_handle1")
         self.table_top_id = self.sim.model.site_name2id("table_top")
-        self.pot_center_id = self.sim.model.site_name2id("pot_center")
+        self.pot_center_id = self.sim.model.site_name2id(f"{self.pot_name}_center")
 
     def _reset_internal(self):
         """
@@ -449,19 +449,19 @@ class TwoArmLift(RobotEnv):
             di["cube_pos"] = cube_pos
             di["cube_quat"] = cube_quat
 
-            di["handle_0_xpos"] = np.array(self._handle_0_xpos)
-            di["handle_1_xpos"] = np.array(self._handle_1_xpos)
-            di[pr0 + "gripper_to_handle"] = np.array(self._gripper_0_to_handle)
-            di[pr1 + "gripper_to_handle"] = np.array(self._gripper_1_to_handle)
+            di["handle0_xpos"] = np.array(self._handle0_xpos)
+            di["handle1_xpos"] = np.array(self._handle1_xpos)
+            di[pr0 + "gripper_to_handle0"] = np.array(self._gripper0_to_handle0)
+            di[pr1 + "gripper_to_handle1"] = np.array(self._gripper1_to_handle1)
 
             di["object-state"] = np.concatenate(
                 [
                     di["cube_pos"],
                     di["cube_quat"],
-                    di["handle_0_xpos"],
-                    di["handle_1_xpos"],
-                    di[pr0 + "gripper_to_handle"],
-                    di[pr1 + "gripper_to_handle"],
+                    di["handle0_xpos"],
+                    di["handle1_xpos"],
+                    di[pr0 + "gripper_to_handle0"],
+                    di[pr1 + "gripper_to_handle1"],
                 ]
             )
 
@@ -513,24 +513,24 @@ class TwoArmLift(RobotEnv):
                                  "instead, got {}.".format(self.env_configuration, is_bimanual, check_bimanual(robot)))
 
     @property
-    def _handle_0_xpos(self):
+    def _handle0_xpos(self):
         """
         Grab the position of the left (blue) hammer handle.
 
         Returns:
             np.array: (x,y,z) position of handle
         """
-        return self.sim.data.site_xpos[self.handle_0_site_id]
+        return self.sim.data.site_xpos[self.handle0_site_id]
 
     @property
-    def _handle_1_xpos(self):
+    def _handle1_xpos(self):
         """
         Grab the position of the right (green) hammer handle.
 
         Returns:
             np.array: (x,y,z) position of handle
         """
-        return self.sim.data.site_xpos[self.handle_1_site_id]
+        return self.sim.data.site_xpos[self.handle1_site_id]
 
     @property
     def _pot_quat(self):
@@ -579,21 +579,21 @@ class TwoArmLift(RobotEnv):
             return np.array(self.sim.data.site_xpos[self.robots[1].eef_site_id])
 
     @property
-    def _gripper_0_to_handle(self):
+    def _gripper0_to_handle0(self):
         """
         Calculate vector from the left gripper to the left pot handle.
 
         Returns:
             np.array: (dx,dy,dz) distance vector between handle and EEF0
         """
-        return self._handle_0_xpos - self._eef0_xpos
+        return self._handle0_xpos - self._eef0_xpos
 
     @property
-    def _gripper_1_to_handle(self):
+    def _gripper1_to_handle1(self):
         """
         Calculate vector from the right gripper to the right pot handle.
 
         Returns:
             np.array: (dx,dy,dz) distance vector between handle and EEF0
         """
-        return self._handle_1_xpos - self._eef1_xpos
+        return self._handle1_xpos - self._eef1_xpos

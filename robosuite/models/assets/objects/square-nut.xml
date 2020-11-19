@@ -2,12 +2,12 @@
   <!-- Note: Texture / material is defined in the PegsArena xml file! -->
   <worldbody>
     <body>
-      <body name="collision">
-        <geom pos="-0.03325 0 0" size="0.0105 0.04375 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.2" group="1" condim="4" material="bmetal" />
-        <geom pos="0.0 0.03325 0" size="0.03125 0.0105 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="bmetal" />
-        <geom pos="0.0 -0.03325 0" size="0.03125 0.0105 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="bmetal" />
-        <geom pos="0.03325 0 0" size="0.0105 0.04375 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="bmetal" />
-        <geom pos="0.054 0 0" size="0.02525 0.015875 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="1" condim="4" material="bmetal" />
+      <body name="object">
+        <geom pos="-0.03325 0 0" size="0.0105 0.04375 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.2" group="0" condim="4" material="bmetal" />
+        <geom pos="0.0 0.03325 0" size="0.03125 0.0105 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
+        <geom pos="0.0 -0.03325 0" size="0.03125 0.0105 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
+        <geom pos="0.03325 0 0" size="0.0105 0.04375 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
+        <geom pos="0.054 0 0" size="0.02525 0.015875 0.01" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.1" group="0" condim="4" material="bmetal" />
       </body>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.05" name="bottom_site"/>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 0.01" name="top_site"/>

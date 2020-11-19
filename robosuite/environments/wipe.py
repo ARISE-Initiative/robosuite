@@ -422,7 +422,7 @@ class Wipe(RobotEnv):
             for new_sensor_active_id in new_sensors_active_ids:
                 # Grab relevant sensor id info
                 sensor_name = self.model.arena.sensor_site_names['contact_' + str(new_sensor_active_id) + '_sensor']
-                new_sensor_active_geom_id = self.sim.model.geom_name2id(sensor_name)
+                new_sensor_active_geom_id = self.sim.model.geom_name2id(sensor_name + "_vis")
                 # Make this sensor transparent since we wiped it (alpha = 0)
                 self.sim.model.geom_rgba[new_sensor_active_geom_id] = [0, 0, 0, 0]
                 # Add this sensor the wiped list
@@ -526,10 +526,12 @@ class Wipe(RobotEnv):
         self.mujoco_objects = OrderedDict()
 
         # task includes arena, robot, and objects of interest
-        self.model = ManipulationTask(self.mujoco_arena,
-                                   [robot.robot_model for robot in self.robots],
-                                   self.mujoco_objects,
-                                   initializer=self.placement_initializer)
+        self.model = ManipulationTask(
+            mujoco_arena=self.mujoco_arena,
+            mujoco_robots=[robot.robot_model for robot in self.robots],
+            mujoco_objects=self.mujoco_objects,
+            initializer=self.placement_initializer
+        )
         self.model.place_objects()
 
     def _reset_internal(self):

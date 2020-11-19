@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from robosuite.models.base import MujocoXML
 from robosuite.utils import XMLError
-from robosuite.utils.mjcf_utils import array_to_string
+from robosuite.utils.mjcf_utils import array_to_string, ROBOT_COLLISION_COLOR
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 import numpy as np
@@ -89,6 +89,9 @@ class RobotModel(MujocoXML, metaclass=RobotModelMeta):
 
         # Update all xml element prefixes
         self.add_prefix(self.naming_prefix)
+
+        # Recolor all collision geoms appropriately
+        self.recolor_collision_geoms(ROBOT_COLLISION_COLOR)
 
         # key: gripper name and value: gripper model
         self.grippers = OrderedDict()

@@ -12,6 +12,11 @@ import robosuite
 RED = [1, 0, 0, 1]
 GREEN = [0, 1, 0, 1]
 BLUE = [0, 0, 1, 1]
+CYAN = [0, 1, 1, 1]
+ROBOT_COLLISION_COLOR = [0, 0.5, 0, 1]
+GRIPPER_COLLISION_COLOR = [0, 0, 0.5, 1]
+OBJECT_COLLISION_COLOR = [0.5, 0, 0, 1]
+ENVIRONMENT_COLLISION_COLOR = [0.5, 0.5, 0, 1]
 
 TEXTURES = {
     "WoodRed": "red-wood.png",
@@ -111,7 +116,7 @@ def new_joint(**kwargs):
     Creates a joint tag with attributes specified by @**kwargs.
 
     Args:
-        **kwargs (dict): Specified attributes for the new joint
+        **kwargs: Specified attributes for the new joint
 
     Returns:
         ET.Element: new joint xml element
@@ -128,7 +133,7 @@ def new_actuator(joint, act_type="actuator", **kwargs):
         joint (str): type of actuator transmission.
             see all types here: http://mujoco.org/book/modeling.html#actuator
         act_type (str): actuator type. Defaults to "actuator"
-        **kwargs (dict): Any additional specified attributes for the new joint
+        **kwargs: Any additional specified attributes for the new joint
 
     Returns:
         ET.Element: new actuator xml element
@@ -151,7 +156,7 @@ def new_site(name, rgba=RED, pos=(0, 0, 0), size=(0.005,), **kwargs):
         rgba (4-array): (r,g,b,a) color and transparency. Defaults to solid red.
         pos (3-array): (x,y,z) 3d position of the site.
         size (array of float): site size (sites are spherical by default).
-        **kwargs (dict): Any additional specified attributes for the new site
+        **kwargs: Any additional specified attributes for the new site
 
     Returns:
         ET.Element: new site xml element
@@ -184,7 +189,7 @@ def new_geom(geom_type, size, pos=(0, 0, 0), rgba=RED, group=0, **kwargs):
         rgba (4-array): (r,g,b,a) color and transparency. Defaults to solid red.
         group (int): the integrer group that the geom belongs to. useful for
             separating visual and physical elements.
-        **kwargs (dict): Any additional specified attributes for the new geom
+        **kwargs: Any additional specified attributes for the new geom
 
     Returns:
         ET.Element: new geom xml element
@@ -209,7 +214,7 @@ def new_body(name=None, pos=None, **kwargs):
     Args:
         name (str): body name.
         pos (3-array): (x,y,z) 3d position of the body frame.
-        **kwargs (dict): Any additional specified attributes for the new body
+        **kwargs: Any additional specified attributes for the new body
 
     Returns:
         ET.Element: new body xml element
@@ -230,7 +235,7 @@ def new_inertial(name=None, pos=(0, 0, 0), mass=None, **kwargs):
         name (str): [NOT USED]
         pos (3-array): (x,y,z) 3d position of the inertial frame.
         mass (float): The mass of inertial
-        **kwargs (dict): Any additional specified attributes for the new inertial element
+        **kwargs: Any additional specified attributes for the new inertial element
 
     Returns:
         ET.Element: new inertial xml element
@@ -278,6 +283,24 @@ def postprocess_model_xml(xml_str):
         elem.set("file", new_path)
 
     return ET.tostring(root, encoding="utf8").decode("utf8")
+
+
+def add_to_dict(dic, **kwargs):
+    """
+    Helper function to add key-values to dictionary @dic where each entry is its own array (list).
+    Args:
+        dic (dict): Dictionary to which new key / value pairs will be added. If the key already exists,
+            will append the value to that key entry
+
+    Returns:
+        dict: Modified dictionary
+    """
+    for k, v in kwargs.items():
+        if k in dic:
+            dic[k].append(v)
+        else:
+            dic[k] = [v]
+    return dic
 
 
 class CustomMaterial(object):

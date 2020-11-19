@@ -378,9 +378,9 @@ class Stack(RobotEnv):
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
-            self.mujoco_arena,
-            [robot.robot_model for robot in self.robots],
-            self.mujoco_objects,
+            mujoco_arena=self.mujoco_arena,
+            mujoco_robots=[robot.robot_model for robot in self.robots],
+            mujoco_objects=self.mujoco_objects,
             initializer=self.placement_initializer,
         )
         self.model.place_objects()

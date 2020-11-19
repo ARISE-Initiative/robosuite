@@ -466,8 +466,7 @@ class NutAssembly(RobotEnv):
         self.model = ManipulationTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects, 
-            visual_objects=None, 
+            mujoco_objects=self.mujoco_objects,
             initializer=self.placement_initializer,
         )
 
@@ -495,7 +494,7 @@ class NutAssembly(RobotEnv):
             self.obj_body_id[obj_str] = self.sim.model.body_name2id(obj_str)
             geom_ids = []
             for j in range(self.ngeoms[i]):
-                geom_ids.append(self.sim.model.geom_name2id(obj_str + "-{}".format(j)))
+                geom_ids.append(self.sim.model.geom_name2id(obj_str + "_{}".format(j)))
             self.obj_geom_id[obj_str] = geom_ids
 
         # information of objects

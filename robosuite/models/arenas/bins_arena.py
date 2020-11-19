@@ -17,8 +17,6 @@ class BinsArena(Arena):
     def __init__(
         self, bin1_pos=(0.1, -0.5, 0.8), table_full_size=(0.39, 0.49, 0.82), table_friction=(1, 0.005, 0.0001)
     ):
-        """
-        """
         super().__init__(xml_path_completion("arenas/bins_arena.xml"))
 
         self.table_full_size = np.array(table_full_size)

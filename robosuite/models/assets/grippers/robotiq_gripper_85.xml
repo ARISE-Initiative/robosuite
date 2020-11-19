@@ -45,50 +45,50 @@
 
             <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link" />
-            <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link" name="hand_collision" />
+            <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link" name="hand_collision" />
             <body name="left_outer_knuckle" pos="0 -0.0306011 0.054904" quat="0 0 0 1">
                 <inertial pos="0.000163875 0.0554825 -0.0100755" quat="0.920541 0.390623 -0.00362953 0.00231744" mass="0.0311462" diaginertia="5.11372e-05 4.89464e-05 4.95906e-06" />
                 <joint name="finger_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle_vis" />
-                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle" name="left_outer_knuckle_collision" solref="0.01 0.25" />
+                <geom type="mesh" group="0" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle" name="left_outer_knuckle_collision" solref="0.01 0.25" />
                 <geom pos="0 0.0315 -0.0041" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger_vis" />
-                <geom pos="0 0.0315 -0.0041" type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger" name="left_outer_finger_collision" solref="0.01 0.25" />
+                <geom pos="0 0.0315 -0.0041" type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger" name="left_outer_finger_collision" solref="0.01 0.25" />
                 <body name="left_inner_finger" pos="0 0.0376 0.043">
                     <inertial pos="0.000199506 0.0032692 0.00175282" quat="0.933621 0.35825 -0.00273441 0.00104851" mass="0.0156391" diaginertia="1.57977e-05 1.51089e-05 1.4647e-06" />
                     <joint name="left_inner_finger_joint" pos="0 0 0" axis="1 0 0" limited="true" range="-0.8757 0.8757" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger_vis" />
-                    <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger" name="left_inner_finger_collision" solref="0.01 0.25" />
+                    <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger" name="left_inner_finger_collision" solref="0.01 0.25" />
                     <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" contype="0" conaffinity="0" group="1" rgba="0.9 0.9 0.9 1" />
-                    <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" rgba="0.9 0.9 0.9 1" name="left_fingertip_collision" solref="0.01 0.25" />
+                    <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" group="0" rgba="0.9 0.9 0.9 1" name="left_fingertip_collision" solref="0.01 0.25" />
                 </body>
             </body>
             <body name="left_inner_knuckle" pos="0 -0.0127 0.06142" quat="0 0 0 1">
                 <inertial pos="0.000123012 0.0507851 0.00103969" quat="0.497203 0.502496 -0.507943 0.492221" mass="0.0271177" diaginertia="2.83809e-05 2.61936e-05 2.81319e-06" />
                 <joint name="left_inner_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8757" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle_vis" />
-                <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle" name="left_inner_knuckle_collision" />
+                <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle" name="left_inner_knuckle_collision" />
             </body>
             <body name="right_outer_knuckle" pos="0 0.0306011 0.054904">
                 <inertial pos="0.000163875 0.0554825 -0.0100755" quat="0.920541 0.390623 -0.00362953 0.00231744" mass="0.0311462" diaginertia="5.11372e-05 4.89464e-05 4.95906e-06" />
                 <joint name="right_outer_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle_vis" />
-                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle" name="right_outer_knuckle_collision" solref="0.01 0.25" />
+                <geom type="mesh" group="0" rgba="0.792157 0.819608 0.933333 1" mesh="robotiq_arg2f_85_outer_knuckle" name="right_outer_knuckle_collision" solref="0.01 0.25" />
                 <geom pos="0 0.0315 -0.0041" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger_vis" />
-                <geom pos="0 0.0315 -0.0041" type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger" name="right_outer_finger_collision" solref="0.01 0.25" />
+                <geom pos="0 0.0315 -0.0041" type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_outer_finger" name="right_outer_finger_collision" solref="0.01 0.25" />
                 <body name="right_inner_finger" pos="0 0.0376 0.043">
                     <inertial pos="0.000199506 0.0032692 0.00175282" quat="0.933621 0.35825 -0.00273441 0.00104851" mass="0.0156391" diaginertia="1.57977e-05 1.51089e-05 1.4647e-06" />
                     <joint name="right_inner_finger_joint" pos="0 0 0" axis="1 0 0" limited="true" range="-0.8757 0.8757" />
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger_vis" />
-                    <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger" name="right_inner_finger_collision" solref="0.01 0.25" />
+                    <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_finger" name="right_inner_finger_collision" solref="0.01 0.25" />
                     <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" contype="0" conaffinity="0" group="1" rgba="0.9 0.9 0.9 1" />
-                    <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" rgba="0.9 0.9 0.9 1" name="right_fingertip_collision" solref="0.01 0.25" />
+                    <geom size="0.011 0.003175 0.01875" pos="0 -0.0220203 0.03242" type="box" group="0" rgba="0.9 0.9 0.9 1" name="right_fingertip_collision" solref="0.01 0.25" />
                 </body>
             </body>
             <body name="right_inner_knuckle" pos="0 0.0127 0.06142">
                 <inertial pos="0.000123012 0.0507851 0.00103969" quat="0.497203 0.502496 -0.507943 0.492221" mass="0.0271177" diaginertia="2.83809e-05 2.61936e-05 2.81319e-06" />
                 <joint name="right_inner_knuckle_joint" pos="0 0 0" axis="1 0 0" limited="true" range="0 0.8757" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle_vis" />
-                <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle" name="right_inner_knuckle_collision" />
+                <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_85_inner_knuckle" name="right_inner_knuckle_collision" />
             </body>
         </body>
     </worldbody>

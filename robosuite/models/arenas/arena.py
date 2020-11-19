@@ -1,12 +1,16 @@
 import numpy as np
 
 from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import array_to_string, string_to_array
-from robosuite.utils.mjcf_utils import new_geom, new_body, new_joint
+from robosuite.utils.mjcf_utils import array_to_string, string_to_array, \
+    new_geom, new_body, new_joint, ENVIRONMENT_COLLISION_COLOR
 
 
 class Arena(MujocoXML):
     """Base arena class."""
+
+    def __init__(self, fname):
+        super().__init__(fname)
+        self.recolor_collision_geoms(ENVIRONMENT_COLLISION_COLOR)
 
     def set_origin(self, offset):
         """

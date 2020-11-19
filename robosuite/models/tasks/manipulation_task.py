@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from robosuite.models.world import MujocoWorldBase
 from robosuite.models.tasks import UniformRandomSampler
-from robosuite.models.objects import MujocoGeneratedObject, MujocoXMLObject
+from robosuite.models.objects import MujocoObject
 from robosuite.utils.mjcf_utils import new_joint, array_to_string
 
 
@@ -22,9 +22,6 @@ class ManipulationTask(MujocoWorldBase):
 
         mujoco_objects (OrderedDict of MujocoObject): a list of MJCF models of physical objects
 
-        visual_objects (OrderedDict of MujocoObject): a list of MJCF models of visual-only objects that do not
-            participate in collisions
-
         initializer (ObjectPositionSampler): placement sampler to initialize object positions.
 
     Raises:
@@ -35,8 +32,7 @@ class ManipulationTask(MujocoWorldBase):
         self, 
         mujoco_arena, 
         mujoco_robots, 
-        mujoco_objects, 
-        visual_objects=None, 
+        mujoco_objects,
         initializer=None,
     ):
         super().__init__()
@@ -48,23 +44,16 @@ class ManipulationTask(MujocoWorldBase):
         if initializer is None:
             initializer = UniformRandomSampler()
 
-        if visual_objects is None:
-            visual_objects = collections.OrderedDict()
-
         assert isinstance(mujoco_objects, collections.OrderedDict)
-        assert isinstance(visual_objects, collections.OrderedDict)
 
         mujoco_objects = deepcopy(mujoco_objects)
-        visual_objects = deepcopy(visual_objects)
 
         # xml manifestations of all objects
         self.objects = []
         self.merge_objects(mujoco_objects)
-        self.merge_objects(visual_objects, is_visual=True)
 
-        merged_objects = collections.OrderedDict(**mujoco_objects, **visual_objects)
+        merged_objects = collections.OrderedDict(**mujoco_objects)
         self.mujoco_objects = mujoco_objects
-        self.visual_objects = visual_objects
 
         self.initializer = initializer
         self.initializer.setup(merged_objects, self.table_top_offset, self.table_size)
@@ -90,32 +79,29 @@ class ManipulationTask(MujocoWorldBase):
         self.table_size = mujoco_arena.table_full_size
         self.merge(mujoco_arena)
 
-    def merge_objects(self, mujoco_objects, is_visual=False):
+    def merge_objects(self, mujoco_objects):
         """
         Adds object models to the MJCF model.
 
         Args:
-            mujoco_objects (OrderedDict or MujocoObject): objects to merge into this MJCF model
-            is_visual (bool): Whether the object is a visual object or not
+            mujoco_objects (OrderedDict of MujocoObject): objects to merge into this MJCF model
         """
-        if not is_visual:
-            self.max_horizontal_radius = 0
+        self.max_horizontal_radius = 0
 
         for obj_name, obj_mjcf in mujoco_objects.items():
-            assert(isinstance(obj_mjcf, MujocoGeneratedObject) or isinstance(obj_mjcf, MujocoXMLObject))
+            assert(isinstance(obj_mjcf, MujocoObject))
             self.merge_asset(obj_mjcf)
             # Load object
-            if is_visual:
-                obj = obj_mjcf.get_visual(site=False)
-            else:
-                obj = obj_mjcf.get_collision(site=True)
+            obj = obj_mjcf.get_object_subtree(site=(obj_mjcf.obj_type != "visual"))
 
             for i, joint in enumerate(obj_mjcf.joints):
-                obj.append(new_joint(name="{}_jnt{}".format(obj_name, i), **joint))
+                if "name" not in joint:
+                    joint["name"] = "{}_jnt{}".format(obj_name, i)
+                obj.append(new_joint(**joint))
             self.objects.append(obj)
             self.worldbody.append(obj)
 
-            if not is_visual:
+            if obj_mjcf.obj_type != "visual":
                 self.max_horizontal_radius = max(
                     self.max_horizontal_radius, obj_mjcf.get_horizontal_radius()
                 )

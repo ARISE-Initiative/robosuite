@@ -5,6 +5,7 @@ import io
 import numpy as np
 
 from robosuite.utils import XMLError
+from robosuite.utils.mjcf_utils import array_to_string
 
 
 class MujocoXML(object):
@@ -279,3 +280,27 @@ class MujocoXML(object):
         for child in root:
             if child.tag in tags:
                 self._add_prefix_recursively(child, tags, prefix)
+
+    def recolor_collision_geoms(self, rgba):
+        """
+        Utility method to recolor all collision geoms (where collision geoms are defined as being part of group 0).
+
+        Args:
+            rgba (4-array): (R, G, B, A) values to assign to all geoms with this group.
+        """
+        for body in self.worldbody:
+            self._recolor_collision_geoms_recursively(body, rgba)
+
+    def _recolor_collision_geoms_recursively(self, root, rgba):
+        """
+        Iteratively searches through all children nodes in "root" element to find all geoms belonging to group 0 and set
+        the corresponding rgba value to the specified @rgba argument.
+
+        Args:
+            root (ET.Element): Root of the xml element tree to start recursively searching through
+            rgba (4-array): (R, G, B, A) values to assign to all geoms with this group.
+        """
+        for child in root:
+            if child.tag == "geom" and child.get("group") in {None, "0"}:
+                child.set("rgba", array_to_string(rgba))
+            self._recolor_collision_geoms_recursively(child, rgba)

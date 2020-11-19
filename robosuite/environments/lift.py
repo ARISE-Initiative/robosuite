@@ -318,8 +318,7 @@ class Lift(RobotEnv):
         self.model = ManipulationTask(
             mujoco_arena=self.mujoco_arena, 
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects, 
-            visual_objects=None, 
+            mujoco_objects=self.mujoco_objects,
             initializer=self.placement_initializer,
         )
         self.model.place_objects()

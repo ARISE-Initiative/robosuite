@@ -94,9 +94,10 @@ class WipeArena(TableArena):
                 density=1,
                 material=dirt,
                 friction=friction,
+                obj_type="visual",
             )
             self.merge_asset(square2)
-            visual_c = square2.get_visual(site=True)
+            visual_c = square2.get_object_subtree(site=True)
             visual_c.set("pos", array_to_string([pos[0], pos[1], self.table_half_size[2]]))
             visual_c.find("site").set("pos", [0, 0, 0.005])
             visual_c.find("site").set("rgba", array_to_string([0, 0, 0, 0]))
@@ -128,7 +129,7 @@ class WipeArena(TableArena):
                 pos = self.sample_start_pos()
             # Get IDs to the body, geom, and site of each sensor
             body_id = sim.model.body_name2id(sensor_name)
-            geom_id = sim.model.geom_name2id(sensor_name)
+            geom_id = sim.model.geom_name2id(sensor_name + "_vis")
             # Determine new position for this sensor
             position = np.array([pos[0], pos[1], self.table_half_size[2]])
             # Set the current sensor (body) to this new position

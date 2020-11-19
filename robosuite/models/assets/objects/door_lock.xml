@@ -13,22 +13,22 @@
   </asset>
     <worldbody>
       <body name="door_body">
-        <body name="collision">
+        <body name="object">
           <body name="frame" pos="0 0.22 0" quat="0.707388 0 0 -0.706825">
               <inertial pos="0.3 0 0" quat="0.5 0.5 0.5 0.5" mass="7.85398" diaginertia="0.923301 0.764585 0.168533" />
-              <geom size="0.03 0.3" pos="0.555 0 0" type="cylinder" rgba="1 1 1 1" group="1" name="r_frame"/>
-              <geom size="0.03 0.3" pos="0.045 0 0" type="cylinder" rgba="1 1 1 1" group="1" name="l_frame"/>
+              <geom size="0.03 0.3" pos="0.555 0 0" type="cylinder" rgba="1 1 1 1" group="0" name="r_frame"/>
+              <geom size="0.03 0.3" pos="0.045 0 0" type="cylinder" rgba="1 1 1 1" group="0" name="l_frame"/>
               <body name="door" pos="0.3 0 0">
                   <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="2.43455" diaginertia="0.0913751 0.0521615 0.043714" />
                   <joint name="door_hinge" pos="0.255 0 0" axis="0 0 1" range="0.0 0.4" damping="1" frictionloss="1" limited="true"/>
-                  <geom size="0.22 0.02 .29" type="box" friction="1 1 1" group="1" name="door_box" material="MatDarkWood"/>
+                  <geom size="0.22 0.02 .29" type="box" friction="1 1 1" group="0" name="door_box" material="MatDarkWood"/>
                   <body name="latch" pos="-0.175 0 -0.025">
                       <inertial pos="-0.017762 0.0138544 0" quat="0.365653 0.605347 -0.36522 0.605365" mass="0.1" diaginertia="0.0483771 0.0410001 0.0111013" />
                       <joint name="latch_joint" pos="0 0 0" axis="0 1 0" range="-1.57 1.57" frictionloss="0.1" damping="0" limited="true" springref="0" stiffness="1" />
-                      <geom fromto="0 0.0625 0 0 -0.125 0" size="0.025" type="cylinder" group="1" name="handle_base" material="MatMetal"/>
-                      <geom size="0.075 0.015 0.02" pos="0.075 -0.10 0" type="box" group="1" name="handle" material="MatMetal"/>
-                      <geom size="0.025 0.0125 0.03125" pos="-0.03125 0.05 0" quat="0.707388 0 0.706825 0" type="box" group="1" name="latch" material="MatMetal"/>
-                      <geom size="0.025 0.0125" pos="-0.0625 0.05 0" quat="0.707388 0.706825 0 0" type="cylinder" group="1" name="latch_tip" material="MatMetal"/>
+                      <geom fromto="0 0.0625 0 0 -0.125 0" size="0.025" type="cylinder" group="0" name="handle_base" material="MatMetal"/>
+                      <geom size="0.075 0.015 0.02" pos="0.075 -0.10 0" type="box" group="0" name="handle" material="MatMetal"/>
+                      <geom size="0.025 0.0125 0.03125" pos="-0.03125 0.05 0" quat="0.707388 0 0.706825 0" type="box" group="0" name="latch" material="MatMetal"/>
+                      <geom size="0.025 0.0125" pos="-0.0625 0.05 0" quat="0.707388 0.706825 0 0" type="cylinder" group="0" name="latch_tip" material="MatMetal"/>
                       <!-- Don't render the door handle site by default -->
                       <site name="door_handle" pos="0.125 -0.10 0" size="0.02" rgba="0 0 1 0" />
                   </body>

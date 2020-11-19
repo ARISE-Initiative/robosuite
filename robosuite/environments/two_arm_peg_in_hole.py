@@ -314,13 +314,13 @@ class TwoArmPegInHole(RobotEnv):
         )
 
         # Load hole object
-        self.hole_obj = self.hole.get_collision(site=True)
+        self.hole_obj = self.hole.get_object_subtree(site=True)
         self.hole_obj.set("quat", "0 0 0.707 0.707")
         self.hole_obj.set("pos", "0.11 0 0.17")
         self.model.merge_asset(self.hole)
 
         # Load peg object
-        self.peg_obj = self.peg.get_collision(site=True)
+        self.peg_obj = self.peg.get_object_subtree(site=True)
         self.peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
         self.model.merge_asset(self.peg)
 

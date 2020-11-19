@@ -9,7 +9,8 @@ class BottleObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/bottle.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/bottle.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class CanObject(MujocoXMLObject):
@@ -18,7 +19,8 @@ class CanObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/can.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/can.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class LemonObject(MujocoXMLObject):
@@ -27,7 +29,8 @@ class LemonObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/lemon.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/lemon.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class MilkObject(MujocoXMLObject):
@@ -36,7 +39,8 @@ class MilkObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/milk.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/milk.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class BreadObject(MujocoXMLObject):
@@ -45,7 +49,8 @@ class BreadObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/bread.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/bread.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class CerealObject(MujocoXMLObject):
@@ -54,7 +59,8 @@ class CerealObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/cereal.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/cereal.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class SquareNutObject(MujocoXMLObject):
@@ -63,7 +69,8 @@ class SquareNutObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/square-nut.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/square-nut.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class RoundNutObject(MujocoXMLObject):
@@ -72,7 +79,8 @@ class RoundNutObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/round-nut.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/round-nut.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class MilkVisualObject(MujocoXMLObject):
@@ -84,7 +92,8 @@ class MilkVisualObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/milk-visual.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/milk-visual.xml"),
+                         name=name, joints=joints, obj_type="visual", duplicate_collision_geoms=True)
 
 
 class BreadVisualObject(MujocoXMLObject):
@@ -96,7 +105,8 @@ class BreadVisualObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/bread-visual.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/bread-visual.xml"),
+                         name=name, joints=joints, obj_type="visual", duplicate_collision_geoms=True)
 
 
 class CerealVisualObject(MujocoXMLObject):
@@ -108,7 +118,8 @@ class CerealVisualObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/cereal-visual.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/cereal-visual.xml"),
+                         name=name, joints=joints, obj_type="visual", duplicate_collision_geoms=True)
 
 
 class CanVisualObject(MujocoXMLObject):
@@ -120,7 +131,8 @@ class CanVisualObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/can-visual.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/can-visual.xml"),
+                         name=name, joints=joints, obj_type="visual", duplicate_collision_geoms=True)
 
 
 class PlateWithHoleObject(MujocoXMLObject):
@@ -129,7 +141,8 @@ class PlateWithHoleObject(MujocoXMLObject):
     """
 
     def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/plate-with-hole.xml"), name=name, joints=joints)
+        super().__init__(xml_path_completion("objects/plate-with-hole.xml"),
+                         name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
 
 
 class DoorObject(MujocoXMLObject):
@@ -145,7 +158,8 @@ class DoorObject(MujocoXMLObject):
         xml_path = "objects/door.xml"
         if lock:
             xml_path = "objects/door_lock.xml"
-        super().__init__(xml_path_completion(xml_path), name=name, joints=joints)
+        super().__init__(xml_path_completion(xml_path),
+            name=name, joints=joints, obj_type="all", duplicate_collision_geoms=True)
         self.lock = lock
         self.friction = friction
         self.damping = damping
@@ -161,8 +175,8 @@ class DoorObject(MujocoXMLObject):
         Args:
             friction (3-tuple of float): friction parameters to override the ones specified in the XML
         """
-        collision = self.worldbody.find("./body/body[@name='collision']")
-        node = collision.find("./body[@name='frame']")
+        obj = self.worldbody.find("./body/body[@name='object']")
+        node = obj.find("./body[@name='frame']")
         node = node.find("./body[@name='door']")
         hinge = node.find("./joint[@name='door_hinge']")
         hinge.set("frictionloss", array_to_string(np.array([friction])))
@@ -174,8 +188,8 @@ class DoorObject(MujocoXMLObject):
         Args:
             damping (float): damping parameter to override the ones specified in the XML
         """
-        collision = self.worldbody.find("./body/body[@name='collision']")
-        node = collision.find("./body[@name='frame']")
+        obj = self.worldbody.find("./body/body[@name='object']")
+        node = obj.find("./body[@name='frame']")
         node = node.find("./body[@name='door']")
         hinge = node.find("./joint[@name='door_hinge']")
         hinge.set("damping", array_to_string(np.array([damping])))

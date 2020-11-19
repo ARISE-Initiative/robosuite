@@ -1,8 +1,19 @@
 import copy
+from copy import deepcopy
 import xml.etree.ElementTree as ET
 
 from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial
+from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR
+
+
+# Dict mapping geom type string keywords to group number
+GEOMTYPE2GROUP = {
+    "collision": {0},                 # If we want to use a geom for physics, but NOT visualize
+    "visual": {1},                    # If we want to use a geom for visualization, but NOT physics
+    "all": {0, 1},                    # If we want to use a geom for BOTH physics + visualization
+}
+
+GEOM_GROUPS = GEOMTYPE2GROUP.keys()
 
 
 class MujocoObject:
@@ -15,10 +26,24 @@ class MujocoObject:
         2) can be swapped between different tasks
 
     Typical methods return copy so the caller can all joints/attributes as wanted
+
+    Args:
+        obj_type (str): Geom elements to generate / extract for this object. Must be one of:
+
+            :`'collision'`: Only collision geoms are returned (this corresponds to group 0 geoms)
+            :`'visual'`: Only visual geoms are returned (this corresponds to group 1 geoms)
+            :`'all'`: All geoms are returned
+
+        duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
+            visual geom copy
+
     """
 
-    def __init__(self):
+    def __init__(self, obj_type="all", duplicate_collision_geoms=True):
         self.asset = ET.Element("asset")
+        assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
+        self.obj_type = obj_type
+        self.duplicate_collision_geoms = duplicate_collision_geoms
 
     def get_bottom_offset(self):
         """
@@ -56,34 +81,18 @@ class MujocoObject:
             float: radius
         """
         raise NotImplementedError
-        # return 2
 
-    def get_collision(self, site=False):
+    def get_object_subtree(self, site=False):
+
         """
         Returns a ET.Element
-        It is a <body/> subtree that defines all collision related fields
+        It is a <body/> subtree that defines all collision and / or visualization related fields
         of this object.
         Return should be a copy.
         Must be defined by subclass.
 
         Args:
-            site (bool): Add a site (with name @name when applicable) to the returned body
-
-        Returns:
-            ET.Element: body
-        """
-        raise NotImplementedError
-
-    def get_visual(self, site=False):
-        """
-        Returns a ET.Element
-        It is a <body/> subtree that defines all visualization related fields
-        of this object.
-        Return should be a copy.
-        Must be defined by subclass.
-
-        Args:
-            site (bool): Add a site (with name @name when applicable) to the returned body
+            site (bool): If set, add a site (with name @name when applicable) to the returned body
 
         Returns:
             ET.Element: body
@@ -103,6 +112,7 @@ class MujocoObject:
             "size": "0.002 0.002 0.002",
             "rgba": "1 0 0 1",
             "type": "sphere",
+            "group": "0",
         }
 
 
@@ -112,14 +122,30 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
 
     Args:
         fname (str): XML File path
-        name (None or str): Name of this MujocoXMLObject
+
+        name (str): Name of this MujocoXMLObject
+
         joints (list of dict): each dictionary corresponds to a joint that will be created for this object. The
             dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo xml specification.
+
+        obj_type (str): Geom elements to generate / extract for this object. Must be one of:
+
+            :`'collision'`: Only collision geoms are returned (this corresponds to group 0 geoms)
+            :`'visual'`: Only visual geoms are returned (this corresponds to group 1 geoms)
+            :`'all'`: All geoms are returned
+
+        duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
+            visual geom copy
     """
 
-    def __init__(self, fname, name=None, joints=None):
+    def __init__(self, fname, name, joints=None, obj_type="all",  duplicate_collision_geoms=True):
         MujocoXML.__init__(self, fname)
+        # Set obj type and duplicate args
+        assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
+        self.obj_type = obj_type
+        self.duplicate_collision_geoms = duplicate_collision_geoms
 
+        # Set name
         self.name = name
 
         # joints for this object
@@ -142,41 +168,92 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
-    def get_collision(self, site=False):
+    def get_object_subtree(self, site=False):
+        # Parse object
+        obj = copy.deepcopy(self.worldbody.find("./body/body[@name='object']"))
+        # Rename this top level object body
+        obj.attrib.pop("name")
+        obj.attrib["name"] = self.name
+        # Get all geom_pairs in this tree
+        geom_pairs = self._get_geoms(obj)
 
-        collision = copy.deepcopy(self.worldbody.find("./body/body[@name='collision']"))
-        collision.attrib.pop("name")
-        if self.name is not None:
-            collision.attrib["name"] = self.name
-            geoms = collision.findall("geom")
-            if len(geoms) == 1:
-                geoms[0].set("name", self.name)
+        # Define a temp function so we don't duplicate so much code
+        obj_type = self.obj_type
+
+        def _should_keep(el):
+            return int(el.get("group")) in GEOMTYPE2GROUP[obj_type]
+
+        # Loop through each of these pairs and modify them according to @elements arg
+        for i, (parent, element) in enumerate(geom_pairs):
+            # Delete non-relevant geoms and rename remaining ones
+            if not _should_keep(element):
+                parent.remove(element)
             else:
-                for i in range(len(geoms)):
-                    geoms[i].set("name", "{}-{}".format(self.name, i))
+                g_name = element.get("name")
+                modded_name = f"{self.name}_{g_name}" if g_name is not None else f"{self.name}_{i}"
+                element.set("name", modded_name)
+                # Also optionally duplicate collision geoms if requested (and this is a collision geom)
+                if self.duplicate_collision_geoms and int(element.get("group")) in {None, 0}:
+                    parent.append(self._duplicate_visual_from_collision(element))
+                    # Also manually set the visual appearances to the original collision model
+                    element.set("rgba", array_to_string(OBJECT_COLLISION_COLOR))
+                    if element.get("material") is not None:
+                        del element.attrib["material"]
+        # Lastly, add the site if requested
         if site:
             # add a site as well
             template = self.get_site_attrib_template()
             template["rgba"] = "1 0 0 0"
-            if self.name is not None:
-                template["name"] = self.name
-            collision.append(ET.Element("site", attrib=template))
-        return collision
+            template["name"] = self.name
+            obj.append(ET.Element("site", attrib=template))
 
-    def get_visual(self, site=False):
+        return obj
 
-        visual = copy.deepcopy(self.worldbody.find("./body/body[@name='visual']"))
-        visual.attrib.pop("name")
-        if self.name is not None:
-            visual.attrib["name"] = self.name
-        if site:
-            # add a site as well
-            template = self.get_site_attrib_template()
-            template["rgba"] = "1 0 0 0"
-            if self.name is not None:
-                template["name"] = self.name
-            visual.append(ET.Element("site", attrib=template))
-        return visual
+    @staticmethod
+    def _duplicate_visual_from_collision(element):
+        """
+        Helper function to duplicate a geom element to be a visual element. Namely, this corresponds to the
+        following attribute requirements: group=1, conaffinity/contype=0, no mass, name appended with "_visual"
+
+        Args:
+            element (ET.Element): element to duplicate as a visual geom
+
+        Returns:
+            element (ET.Element): duplicated element
+        """
+        # Copy element
+        vis_element = deepcopy(element)
+        # Modify for visual-specific attributes (group=1, conaffinity/contype=0, no mass, update name)
+        vis_element.set("group", "1")
+        vis_element.set("conaffinity", "0")
+        vis_element.set("contype", "0")
+        vis_element.set("mass", "1e-8")
+        vis_element.set("name", vis_element.get("name") + "_visual")
+        return vis_element
+
+    def _get_geoms(self, root, parent=None):
+        """
+        Helper function to recursively search through element tree starting at @root and returns
+        a list of (parent, child) tuples where the child is a geom element
+
+        Args:
+            root (ET.Element): Root of xml element tree to start recursively searching through
+            parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
+                during the recursive call
+
+        Returns:
+            list: array of (parent, child) tuples where the child element is a geom type
+        """
+        # Initialize return array
+        geom_pairs = []
+        # If the parent exists and this is a geom element, we add this current (parent, element) combo to the output
+        if parent is not None and root.tag == "geom":
+            geom_pairs.append((parent, root))
+        # Loop through all children elements recursively and add to pairs
+        for child in root:
+            geom_pairs += self._get_geoms(child, parent=root)
+        # Return all found pairs
+        return geom_pairs
 
 
 class MujocoGeneratedObject(MujocoObject):
@@ -212,8 +289,19 @@ class MujocoGeneratedObject(MujocoObject):
 
             Note that specifying a custom texture in this way automatically overrides any rgba values set
 
-        joints (list of dict): each dictionary corresponds to a joint that will be created for this object. The
-            dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo xml specification.
+        joints (None or str or list of dict): Joints for this object. If None, no joint will be created. If "default",
+            a single joint will be crated. Else, should be a list of dict, where each dictionary corresponds to a joint
+            that will be created for this object. The dictionary should specify the joint attributes (type, pos, etc.)
+            according to the MuJoCo xml specification.
+
+        obj_type (str): Geom elements to generate / extract for this object. Must be one of:
+
+            :`'collision'`: Only collision geoms are returned (this corresponds to group 0 geoms)
+            :`'visual'`: Only visual geoms are returned (this corresponds to group 1 geoms)
+            :`'all'`: All geoms are returned
+
+        duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
+            visual geom copy
     """
 
     def __init__(
@@ -226,9 +314,11 @@ class MujocoGeneratedObject(MujocoObject):
         solref=None,
         solimp=None,
         material=None,
-        joints=None,
+        joints="default",
+        obj_type="all",
+        duplicate_collision_geoms=True,
     ):
-        super().__init__()
+        super().__init__(obj_type=obj_type, duplicate_collision_geoms=duplicate_collision_geoms)
 
         self.name = name
 
@@ -276,8 +366,10 @@ class MujocoGeneratedObject(MujocoObject):
             self.append_material(material)
 
         # joints for this object
-        if joints is None:
+        if joints == "default":
             self.joints = [{'type': 'free'}]  # default free joint
+        elif joints is None:
+            self.joints = []
         else:
             self.joints = joints
 
@@ -299,8 +391,7 @@ class MujocoGeneratedObject(MujocoObject):
         Returns:
             dict: Initial template with `'pos'` and `'group'` already specified
         """
-        # TODO: collision group should be 0, but this removes the generated obj like the cube when we only render visual meshes
-        return {"pos": "0 0 0", "group": "1"}
+        return {"group": "0", "rgba": array_to_string(OBJECT_COLLISION_COLOR)}
 
     @staticmethod
     def get_visual_attrib_template():
@@ -310,7 +401,7 @@ class MujocoGeneratedObject(MujocoObject):
         Returns:
             dict: Initial template with `'conaffinity'`, `'contype'`, and `'group'` already specified
         """
-        return {"conaffinity": "0", "contype": "0", "group": "1"}
+        return {"conaffinity": "0", "contype": "0", "mass": "1e-8", "group": "1"}
 
     def append_material(self, material):
         """
@@ -333,50 +424,48 @@ class MujocoGeneratedObject(MujocoObject):
         self.asset.append(ET.Element("texture", attrib=material.tex_attrib))
         self.asset.append(ET.Element("material", attrib=material.mat_attrib))
 
-    def _get_collision(self, site=False, ob_type="box"):
-        main_body = ET.Element("body")
-        main_body.set("name", self.name)
-        template = self.get_collision_attrib_template()
-        template["name"] = self.name
-        template["type"] = ob_type
-        if self.material == "default":
-            template["rgba"] = "0.5 0.5 0.5 1" # mujoco default
-            template["material"] = "{}_mat".format(self.name)
-        elif self.material is not None:
-            template["material"] = self.material.mat_attrib["name"]
-        else:
-            template["rgba"] = array_to_string(self.rgba)
-        template["size"] = array_to_string(self.size)
-        template["density"] = str(self.density)
-        template["friction"] = array_to_string(self.friction)
-        template["solref"] = array_to_string(self.solref)
-        template["solimp"] = array_to_string(self.solimp)
-        main_body.append(ET.Element("geom", attrib=template))
-        if site:
-            # add a site as well
-            template = self.get_site_attrib_template()
-            template["name"] = self.name
-            main_body.append(ET.Element("site", attrib=template))
-        return main_body
+    def get_object_subtree(self, site=False):
+        raise NotImplementedError
 
-    def _get_visual(self, site=False, ob_type="box"):
-        main_body = ET.Element("body")
-        main_body.set("name", self.name)
-        template = self.get_visual_attrib_template()
-        template["name"] = self.name
-        template["type"] = ob_type
-        if self.material == "default":
-            template["rgba"] = "0.5 0.5 0.5 1"  # mujoco default
-            template["material"] = "{}_mat".format(self.name)
-        elif self.material is not None:
-            template["material"] = self.material.mat_attrib["name"]
-        else:
-            template["rgba"] = array_to_string(self.rgba)
-        template["size"] = array_to_string(self.size)
-        main_body.append(ET.Element("geom", attrib=template))
+    def _get_object_subtree(self, site=False, ob_type="box"):
+        # Create element tree
+        obj = ET.Element("body")
+        obj.set("name", self.name)
+
+        # Get base element attributes
+        element_attr = {
+            "name": self.name,
+            "type": ob_type,
+            "size": array_to_string(self.size)
+        }
+
+        # Add collision geom if necessary
+        if self.obj_type in {"collision", "all"}:
+            col_element_attr = deepcopy(element_attr)
+            col_element_attr.update(self.get_collision_attrib_template())
+            # col_element_attr["name"] += "_col"
+            col_element_attr["density"] = str(self.density)
+            col_element_attr["friction"] = array_to_string(self.friction)
+            col_element_attr["solref"] = array_to_string(self.solref)
+            col_element_attr["solimp"] = array_to_string(self.solimp)
+            obj.append(ET.Element("geom", attrib=col_element_attr))
+        # Add visual geom if necessary
+        if self.obj_type in {"visual", "all"}:
+            vis_element_attr = deepcopy(element_attr)
+            vis_element_attr.update(self.get_visual_attrib_template())
+            vis_element_attr["name"] += "_vis"
+            if self.material == "default":
+                vis_element_attr["rgba"] = "0.5 0.5 0.5 1"  # mujoco default
+                vis_element_attr["material"] = "{}_mat".format(self.name)
+            elif self.material is not None:
+                vis_element_attr["material"] = self.material.mat_attrib["name"]
+            else:
+                vis_element_attr["rgba"] = array_to_string(self.rgba)
+            obj.append(ET.Element("geom", attrib=vis_element_attr))
+        # Lastly, add site as well if requested
         if site:
             # add a site as well
-            template = self.get_site_attrib_template()
-            template["name"] = self.name
-            main_body.append(ET.Element("site", attrib=template))
-        return main_body
+            site_element_attr = self.get_site_attrib_template()
+            site_element_attr["name"] = self.name
+            obj.append(ET.Element("site", attrib=site_element_attr))
+        return obj
