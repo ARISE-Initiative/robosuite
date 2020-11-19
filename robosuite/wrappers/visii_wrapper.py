@@ -43,7 +43,7 @@ class VirtualWrapper(Wrapper):
         # Camera variables
         self.width                  = width
         self.height                 = height
-        self.samples_per_pixel      = 100
+        self.samples_per_pixel      = 20
         self.image_counter          = 0
         self.render_number          = 1
         self.entities               = []
@@ -220,6 +220,15 @@ class VirtualWrapper(Wrapper):
                                                     parts = self.gripper_parts)
         self.gripper_quats = self.get_quats_gripper()
 
+        print(f'Gripper Parts: {self.gripper_parts}\n')
+        print(f'Gripper Mesh Types: {self.gripper_mesh_types}\n')
+        print(f'Gripper STL Files: {self.gripper_mesh_files}\n')
+        print(f'Gripper Part Positions: {self.gripper_positions}\n')
+        print(f'Gripper Quats: {self.gripper_quats}\n')
+        print('-----\n\n')
+
+        # quit()
+
     def initalize_simulation(self, xml_file = None):
         
         self.mjpy_model = load_model_from_path(xml_file) if xml_file else self.model.get_model(mode="mujoco_py")
@@ -252,8 +261,6 @@ class VirtualWrapper(Wrapper):
         self.done     = done
         self.info     = info
 
-        self.image_counter += 1
-
         # changing the angles to the new angles of the joints
         self.positions = self.get_positions(part_type = 'robot', 
                                             parts = self.mesh_parts)
@@ -269,7 +276,7 @@ class VirtualWrapper(Wrapper):
         Arg:
             render_type: tells the method whether to save to png or save to hdr
         """
-
+        self.image_counter += 1
         # Creating a table/base
         if self.render_number == 1:
 
@@ -392,7 +399,7 @@ class VirtualWrapper(Wrapper):
             link_entity.get_material().set_transmission(0)
             link_entity.get_material().set_roughness(0.3)
 
-        count = 0
+        print(self.gripper_positions)
         for key in self.gripper_mesh_types:
             
             gripper_entity = None
@@ -402,6 +409,7 @@ class VirtualWrapper(Wrapper):
             for mesh in gripper_mesh_arr:
 
                 if self.render_number == 1:
+                    # print(f'rendering... {key} => {mesh}')
                     mesh_gripper = o3d.io.read_triangle_mesh(f'../models/assets/grippers/{self.gripper_mesh_files[mesh]}')
                     mesh_name = f'{key}_{mesh}_mesh'
 
@@ -420,11 +428,11 @@ class VirtualWrapper(Wrapper):
                 else:
                     gripper_entity = self.gripper_entities[f'{key}_{mesh}']
 
-                part_position = self.gripper_positions[count]
+                part_position = self.gripper_positions[key]
                 print(f'{key} ==> {mesh} ==> {part_position}')
                 gripper_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
 
-                part_quaternion = self.gripper_quats[count]
+                part_quaternion = self.gripper_quats[key]
                 gripper_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
                                                                        part_quaternion[1],
                                                                        part_quaternion[2],
@@ -433,8 +441,6 @@ class VirtualWrapper(Wrapper):
                 gripper_entity.get_material().set_metallic(0)
                 gripper_entity.get_material().set_transmission(0)
                 gripper_entity.get_material().set_roughness(0.3)
-
-            count+=1
 
         visii.render_to_png(
             width             = self.width,
@@ -469,10 +475,16 @@ class VirtualWrapper(Wrapper):
 
     def get_positions(self, part_type, parts):
 
-        positions = []
+        positions = None
 
-        for part in parts:
-            positions.append(np.array(self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'{part_type}0_{part}')]))
+        if part_type == 'robot':
+            positions = []
+            for part in parts:
+                positions.append(np.array(self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'robot0_{part}')]))
+        elif part_type == 'gripper':
+            positions = {}
+            for part in parts:
+                positions[part] = self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'gripper0_{part}')]
 
         return positions
 
@@ -499,13 +511,12 @@ class VirtualWrapper(Wrapper):
         return quats
 
     def get_quats_gripper(self):
-        quats = []
+        quats = {}
         for part in self.gripper_parts:
             R = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(f'gripper0_{part}')].reshape(3, 3)
-            # print(part, R)
             quat_xyzw = self.quaternion_from_matrix3(R)
             quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
-            quats.append(quat_wxyz)
+            quats[part] = quat_wxyz
 
         return quats
 
@@ -544,7 +555,7 @@ if __name__ == '__main__':
     env = VirtualWrapper(
         env = suite.make(
                 "Stack",
-                robots = "Sawyer",
+                robots = "Panda",
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
