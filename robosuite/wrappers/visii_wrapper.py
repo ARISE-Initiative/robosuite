@@ -30,8 +30,8 @@ class VirtualWrapper(Wrapper):
     """
     def __init__(self,
                  env,
-                 width=500,
-                 height=500,
+                 width=1000,
+                 height=1000,
                  use_noise=True,
                  debug_mode=False):
 
@@ -61,7 +61,7 @@ class VirtualWrapper(Wrapper):
 
         light_1 = visii.entity.create(
             name      = "light_1",
-            mesh      = visii.mesh.create_plane("light_1"),
+            mesh      = visii.mesh.create_sphere("light_1"),
             transform = visii.transform.create("light_1"),
         )
 
@@ -69,9 +69,9 @@ class VirtualWrapper(Wrapper):
             visii.light.create("light_1")
         )
 
-        light_1.get_light().set_intensity(20000)
+        light_1.get_light().set_intensity(200)
         light_1.get_transform().set_scale(visii.vec3(0.3))
-        light_1.get_transform().set_position(visii.vec3(-3, -3, 2))
+        light_1.get_transform().set_position(visii.vec3(3, 3, 4))
         
         floor = visii.entity.create(
             name      = "floor",
@@ -93,11 +93,16 @@ class VirtualWrapper(Wrapper):
         self.camera_configuration(pos_vec = visii.vec3(0, 0, 1), 
                                   at_vec  = visii.vec3(0, 0, 1), 
                                   up_vec  = visii.vec3(0, 0, 1),
-                                  eye_vec = visii.vec3(1.5, 1.5, 1.5))
+                                  eye_vec = visii.vec3(0.6, 0.0, 1.0))
         
         # Environment configuration
         self._dome_light_intensity = 1
         visii.set_dome_light_intensity(self._dome_light_intensity)
+
+        # visii.set_dome_light_sky(
+        #     sun_position=visii.vec3(10, 0, 10),
+        #     sky_tint=visii.vec3(1, 0.1, 0.8),
+        # )
 
         visii.set_max_bounce_depth(2)
 
@@ -198,6 +203,7 @@ class VirtualWrapper(Wrapper):
         self.gripper_parts      = []
         self.gripper_mesh_types = {}
         self.gripper_mesh_files = {}
+        self.gripper_mesh_quats = {}
         self.gripper_colors = {}
 
         for asset in root_gripper.iter('asset'):
@@ -210,11 +216,18 @@ class VirtualWrapper(Wrapper):
             self.gripper_parts.append(body.get('name'))
             for geom in body.findall('geom'):
                 geom_mesh = geom.get('mesh')
-                if geom_mesh != None: 
+                if geom_mesh != None:
+                    geom_quat = geom.get('quat')
+                    if geom_quat is None:
+                        geom_quat = [1, 0, 0, 0]
+                    else:
+                        geom_quat = [float(element) for element in geom_quat.split(' ')]
                     if body.get('name') not in self.gripper_mesh_types:
                         self.gripper_mesh_types[body.get('name')] = [geom_mesh]
+                        self.gripper_mesh_quats[body.get('name')] = [geom_quat]
                     else:
                         self.gripper_mesh_types[body.get('name')].append(geom_mesh)
+                        self.gripper_mesh_quats[body.get('name')].append(geom_quat)
 
         self.gripper_positions = self.get_positions(part_type = 'gripper', 
                                                     parts = self.gripper_parts)
@@ -341,8 +354,8 @@ class VirtualWrapper(Wrapper):
             obj.get_material().set_base_color(visii.vec3(self.mujoco_objects[i].rgba[0], 
                                                          self.mujoco_objects[i].rgba[1],
                                                          self.mujoco_objects[i].rgba[2]))
-            obj.get_material().set_metallic(0)
-            obj.get_material().set_transmission(0)
+            obj.get_material().set_metallic(0.2)
+            obj.get_material().set_transmission(0.2)
             obj.get_material().set_roughness(0.3)
             
         # For now we are only rendering it as a png
@@ -352,6 +365,8 @@ class VirtualWrapper(Wrapper):
 
             link_entity = None
             part_mesh = self.meshes[i]
+            if 'vis' not in part_mesh and part_mesh != 'pedestal':
+                continue
 
             if(self.render_number == 1):
 
@@ -401,13 +416,14 @@ class VirtualWrapper(Wrapper):
 
         print(self.gripper_positions)
         for key in self.gripper_mesh_types:
-            
             gripper_entity = None
 
             gripper_mesh_arr = self.gripper_mesh_types[key]
+            gripper_mesh_quat = self.gripper_mesh_quats[key]
 
-            for mesh in gripper_mesh_arr:
-
+            for (mesh, mesh_quat) in zip(gripper_mesh_arr, gripper_mesh_quat):
+                if 'vis' not in mesh:
+                    continue
                 if self.render_number == 1:
                     # print(f'rendering... {key} => {mesh}')
                     mesh_gripper = o3d.io.read_triangle_mesh(f'../models/assets/grippers/{self.gripper_mesh_files[mesh]}')
@@ -429,15 +445,21 @@ class VirtualWrapper(Wrapper):
                     gripper_entity = self.gripper_entities[f'{key}_{mesh}']
 
                 part_position = self.gripper_positions[key]
-                print(f'{key} ==> {mesh} ==> {part_position}')
+                print(f'{key} ==> {mesh} ==> {self.gripper_quats[key]}, {mesh_quat}')
+
                 gripper_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
 
                 part_quaternion = self.gripper_quats[key]
-                gripper_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
-                                                                       part_quaternion[1],
-                                                                       part_quaternion[2],
-                                                                       part_quaternion[3]))
+                visii_part_quat = visii.quat(*part_quaternion) * visii.quat(*mesh_quat)
+                gripper_entity.get_transform().set_rotation(visii_part_quat)
+                # gripper_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
+                #                                                        part_quaternion[1],
+                #                                                        part_quaternion[2],
+                #                                                        part_quaternion[3]))
 
+                if mesh == 'finger_vis':
+                    gripper_entity.get_material().set_base_color(visii.vec3(0.5, 0.5, 0.5))
+                
                 gripper_entity.get_material().set_metallic(0)
                 gripper_entity.get_material().set_transmission(0)
                 gripper_entity.get_material().set_roughness(0.3)
@@ -485,6 +507,7 @@ class VirtualWrapper(Wrapper):
             positions = {}
             for part in parts:
                 positions[part] = self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'gripper0_{part}')]
+                print(part)
 
         return positions
 
@@ -517,6 +540,7 @@ class VirtualWrapper(Wrapper):
             quat_xyzw = self.quaternion_from_matrix3(R)
             quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
             quats[part] = quat_wxyz
+            print(f'gripper0_{part}: ', R, quat_wxyz)
 
         return quats
 
@@ -557,7 +581,7 @@ if __name__ == '__main__':
                 "Stack",
                 robots = "Panda",
                 reward_shaping=True,
-                has_renderer=False,           # no on-screen renderer
+                has_renderer=True,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
@@ -565,6 +589,7 @@ if __name__ == '__main__':
                 control_freq=10, 
             ),
         use_noise=False,
+        debug_mode=True,
     )
 
     env.reset()
@@ -573,15 +598,21 @@ if __name__ == '__main__':
 
     env.printState()
 
-    for i in range(100):
-        action = np.random.randn(8)
+    for i in range(3):
+        action = np.zeros(8)
         obs, reward, done, info = env.step(action)
-
-        if i%100 == 0:
-            env.render(render_type = "png")
-
-        # env.printState() # for testing purposes
+    #     if i%100 == 0:
+    env.render(render_type = "png")
+    env.env.render()
+    print(env.sim.model.body_names)
+    for body in env.sim.model.body_names:
+        R = env.env.sim.data.body_xmat[env.env.sim.model.body_name2id(f'{body}')].reshape(3, 3)
+        quat_xyzw = env.quaternion_from_matrix3(R)
+        pos = env.env.sim.data.body_xpos[env.env.sim.model.body_name2id(f'{body}')]        
+        print(body, pos, quat_xyzw)
     
+        # env.printState() # for testing purposes
+    input()
     env.close()
     
     print('Done.')
