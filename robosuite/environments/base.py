@@ -3,6 +3,9 @@ from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
+from robosuite.models.base import MujocoModel
+
+import numpy as np
 
 REGISTERED_ENVS = {}
 
@@ -44,7 +47,7 @@ class EnvMeta(type):
         cls = super().__new__(meta, name, bases, class_dict)
 
         # List all environments that should not be registered here.
-        _unregistered_envs = ["MujocoEnv", "RobotEnv"]
+        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv"]
 
         if cls.__name__ not in _unregistered_envs:
             register_env(cls)
@@ -56,6 +59,12 @@ class MujocoEnv(metaclass=EnvMeta):
     Initializes a Mujoco Environment.
 
     Args:
+        use_indicator_object (bool): if True, sets up an indicator object that
+            is useful for debugging.
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
+
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -88,6 +97,8 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def __init__(
         self,
+        use_indicator_object=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -109,6 +120,12 @@ class MujocoEnv(metaclass=EnvMeta):
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
         self.viewer = None
+
+        # whether to use indicator object or not
+        self.use_indicator_object = use_indicator_object
+
+        # Whether to render visual sites in this env
+        self.env_visualization = env_visualization
 
         # Simulation-specific attributes
         self.control_freq = control_freq
@@ -158,7 +175,15 @@ class MujocoEnv(metaclass=EnvMeta):
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        pass
+        # Indicator object references
+        if self.use_indicator_object:
+            ind_qpos = self.sim.model.get_joint_qpos_addr("pos_indicator")
+            self._ref_indicator_pos_low, self._ref_indicator_pos_high = ind_qpos
+
+            ind_qvel = self.sim.model.get_joint_qvel_addr("pos_indicator")
+            self._ref_indicator_vel_low, self._ref_indicator_vel_high = ind_qvel
+
+            self.indicator_id = self.sim.model.body_name2id("pos_indicator")
 
     def _initialize_sim(self, xml_string=None):
         """
@@ -225,6 +250,10 @@ class MujocoEnv(metaclass=EnvMeta):
                 self.sim.add_render_context(render_context)
             self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
             self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+
+        # Set visuals for objects
+        for obj in self.model.mujoco_objects:
+            obj.set_sites_visibility(sim=self.sim, visible=self.env_visualization)
 
         # additional housekeeping
         self.sim_state_initial = self.sim.get_state()
@@ -316,6 +345,10 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # done if number of elapsed timesteps is greater than horizon
         self.done = (self.timestep >= self.horizon) and not self.ignore_done
+
+        # Run any necessary visualization
+        self._visualization()
+
         return reward, self.done, {}
 
     def reward(self, action):
@@ -350,6 +383,37 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         observation = self._get_observation()
         return observation
+
+    def move_indicator(self, pos):
+        """
+        Sets 3d position of indicator object to @pos.
+
+        Args:
+            pos (3-tuple): (x,y,z) values to place the indicator within the env
+        """
+        if self.use_indicator_object:
+            index = self._ref_indicator_pos_low
+            self.sim.data.qpos[index:index + 3] = pos
+
+    def clear_objects(self, object_names):
+        """
+        Clears objects with the name @object_names out of the task space. This is useful
+        for supporting task modes with single types of objects, as in
+        @self.single_object_mode without changing the model definition.
+
+        Args:
+            object_names (str or list of str): Name of object(s) to remove from the task workspace
+        """
+        object_names = {object_names} if type(object_names) is str else set(object_names)
+        for obj in self.model.mujoco_objects:
+            if obj.name in object_names:
+                self.sim.data.set_joint_qpos(obj.joints[0], np.array((10, 10, 10, 1, 0, 0, 0)))
+
+    def _visualization(self):
+        """
+        Do any needed visualization here
+        """
+        pass
 
     @property
     def action_spec(self):
@@ -393,31 +457,66 @@ class MujocoEnv(metaclass=EnvMeta):
         # Turn off deterministic reset
         self.deterministic_reset = False
 
-    def find_contacts(self, geoms_1, geoms_2):
+    def check_contact(self, geoms_1, geoms_2=None):
         """
         Finds contact between two geom groups.
 
         Args:
-            geoms_1 (str or list of str): an individual geom name or list of geom names
-            geoms_2 (str or list of str): another individual geom name or list of geom names
+            geoms_1 (str or list of str or MujocoModel): an individual geom name or list of geom names or a model. If
+                a MujocoModel is specified, the geoms checked will be its contact_geoms
+            geoms_2 (str or list of str or MujocoModel or None): another individual geom name or list of geom names.
+                If a MujocoModel is specified, the geoms checked will be its contact_geoms. If None, will check
+                any collision with @geoms_1 to any other geom in the environment
 
         Returns:
-            generator: iterator of all contacts between @geoms_1 and @geoms_2
+            bool: True if any geom in @geoms_1 is in contact with any geom in @geoms_2.
         """
         # Check if either geoms_1 or geoms_2 is a string, convert to list if so
         if type(geoms_1) is str:
             geoms_1 = [geoms_1]
+        elif isinstance(geoms_1, MujocoModel):
+            geoms_1 = geoms_1.contact_geoms
         if type(geoms_2) is str:
             geoms_2 = [geoms_2]
-        for contact in self.sim.data.contact[0 : self.sim.data.ncon]:
+        elif isinstance(geoms_2, MujocoModel):
+            geoms_2 = geoms_2.contact_geoms
+        for contact in self.sim.data.contact[: self.sim.data.ncon]:
             # check contact geom in geoms
             c1_in_g1 = self.sim.model.geom_id2name(contact.geom1) in geoms_1
-            c2_in_g2 = self.sim.model.geom_id2name(contact.geom2) in geoms_2
+            c2_in_g2 = self.sim.model.geom_id2name(contact.geom2) in geoms_2 if geoms_2 is not None else True
             # check contact geom in geoms (flipped)
             c2_in_g1 = self.sim.model.geom_id2name(contact.geom2) in geoms_1
-            c1_in_g2 = self.sim.model.geom_id2name(contact.geom1) in geoms_2
+            c1_in_g2 = self.sim.model.geom_id2name(contact.geom1) in geoms_2 if geoms_2 is not None else True
             if (c1_in_g1 and c2_in_g2) or (c1_in_g2 and c2_in_g1):
-                yield contact
+                return True
+        return False
+
+    def get_contacts(self, model):
+        """
+        Checks for any contacts with @model (as defined by @model's contact_geoms) and returns the set of
+        geom names currently in contact with that model (excluding the geoms that are part of the model itself).
+
+        Args:
+            model (MujocoModel): Model to check contacts for.
+
+        Returns:
+            set: Unique geoms that are actively in contact with this model.
+
+        Raises:
+            AssertionError: [Invalid input type]
+        """
+        # Make sure model is MujocoModel type
+        assert isinstance(model, MujocoModel), \
+            "Inputted model must be of type MujocoModel; got type {} instead!".format(type(model))
+        contact_set = set()
+        for contact in self.sim.data.contact[: self.sim.data.ncon]:
+            # check contact geom in geoms; add to contact set if match is found
+            g1, g2 = self.sim.model.geom_id2name(contact.geom1), self.sim.model.geom_id2name(contact.geom2)
+            if g1 in model.contact_geoms and g2 not in model.contact_geoms:
+                contact_set.add(g2)
+            elif g2 in model.contact_geoms and g1 not in model.contact_geoms:
+                contact_set.add(g1)
+        return contact_set
 
     def _check_success(self):
         """

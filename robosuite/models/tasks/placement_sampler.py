@@ -1,38 +1,80 @@
 import collections
 import numpy as np
 
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from robosuite.utils import RandomizationError
 from robosuite.utils.transform_utils import quat_multiply
+from robosuite.models.objects import MujocoObject
 
 
 class ObjectPositionSampler:
     """
     Base class of object placement sampler.
+
+    Args:
+        mujoco_objects (None or MujocoObject or list of MujocoObject): single model or list of MJCF object models
+
+        ensure_object_boundary_in_range (bool): If True, will ensure that the object is enclosed within a given boundary
+            (should be implemented by subclass)
+
+        ensure_valid_placement (bool): If True, will check for correct (valid) object placements
+
+        reference_pos (3-array): global (x,y,z) position relative to which sampling will occur
+
+        z_offset (float): Add a small z-offset to placements. This is useful for fixed objects
+            that do not move (i.e. no free joint) to place them above the table.
     """
 
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        mujoco_objects=None,
+        ensure_object_boundary_in_range=True,
+        ensure_valid_placement=True,
+        reference_pos=(0, 0, 0),
+        z_offset=0.,
+    ):
+        # Setup attributes
+        if mujoco_objects is None:
+            self.mujoco_objects = []
+        else:
+            # Shallow copy the list so we don't modify the inputted list but still keep the object references
+            self.mujoco_objects = [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else copy(mujoco_objects)
+        self.ensure_object_boundary_in_range = ensure_object_boundary_in_range
+        self.ensure_valid_placement = ensure_valid_placement
+        self.reference_pos = reference_pos
+        self.z_offset = z_offset
 
-    def setup(self, mujoco_objects, table_top_offset, table_size):
+    def add_objects(self, mujoco_objects):
         """
-        Required setup for this sampler
+        Add additional objects to this sampler. Checks to make sure there's no identical objects already stored.
 
         Args:
-            mujoco_objects (OrderedDict of MujocoObject): a list of MJCF models of physical objects
-            table_top_offset (3-array of float): (x,y,z) offset values for the table
-            table_size (3-array of float): (x,y,z) fullsize values for the table
+            mujoco_objects (MujocoObject or list of MujocoObject): single model or list of MJCF object models
         """
-        self.mujoco_objects = mujoco_objects
-        assert isinstance(self.mujoco_objects, collections.OrderedDict)
-        self.n_obj = len(self.mujoco_objects)
-        self.table_top_offset = table_top_offset
-        self.table_size = table_size
+        mujoco_objects = [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+        for obj in mujoco_objects:
+            assert obj not in self.mujoco_objects, "Object '{}' already in sampler!".format(obj.name)
+            self.mujoco_objects.append(obj)
 
-    def sample(self):
+    def sample(self, fixtures=None, reference=None, on_top=True):
         """
-        Sampling function to place objects. Should be implemented by subclasses
+        Uniformly sample on a surface (not necessarily table surface).
+
+        Args:
+            fixtures (dict): dictionary of current object placements in the scene as well as any other relevant
+                obstacles that should not be in contact with newly sampled objects. Used to make sure newly
+                generated placements are valid. Should be object names mapped to (pos, quat, MujocoObject)
+
+            reference (str or 3-tuple or None): if provided, sample relative placement. Can either be a string, which
+                corresponds to an existing object found in @fixtures, or a direct (x,y,z) value. If None, will sample
+                relative to this sampler's `'reference_pos'` value.
+
+            on_top (bool): if True, sample placement on top of the reference object.
+
+        Return:
+            dict: dictionary of all object placements, mapping object_names to (pos, quat, obj), including the
+                placements specified in @fixtures. Note quat is in (w,x,y,z) form
         """
         raise NotImplementedError
 
@@ -42,17 +84,11 @@ class UniformRandomSampler(ObjectPositionSampler):
     Places all objects within the table uniformly random.
 
     Args:
-        x_range (2-array of float): override the x_range used to uniformly place objects
-            if None, default to x-range of table. Note that this is with respect to (0,0) = center of table.
+        mujoco_objects (None or MujocoObject or list of MujocoObject): single model or list of MJCF object models
 
-        y_range (2-array of float): override the y_range used to uniformly place objects
-            if None default to y-range of table. Note that this is with respect to (0,0) = center of table.
+        x_range (2-array of float): Specify the (min, max) relative x_range used to uniformly place objects
 
-        ensure_object_boundary_in_range (bool):
-            :`True`: The center of object is at position:
-                 [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
-            :`False`:
-                [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
+        y_range (2-array of float): Specify the (min, max) relative y_range used to uniformly place objects
 
         rotation (None or float or Iterable):
             :`None`: Add uniform random random rotation
@@ -61,27 +97,46 @@ class UniformRandomSampler(ObjectPositionSampler):
 
         rotation_axis (str): Can be 'x', 'y', or 'z'. Axis about which to apply the requested rotation
 
+        ensure_object_boundary_in_range (bool):
+            :`True`: The center of object is at position:
+                 [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
+            :`False`:
+                [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
+
+        ensure_valid_placement (bool): If True, will check for correct (valid) object placements
+
+        reference_pos (3-array): global (x,y,z) position relative to which sampling will occur
+
         z_offset (float): Add a small z-offset to placements. This is useful for fixed objects
             that do not move (i.e. no free joint) to place them above the table.
     """
 
     def __init__(
         self,
-        x_range=None,
-        y_range=None,
-        ensure_object_boundary_in_range=True,
+        mujoco_objects=None,
+        x_range=(0, 0),
+        y_range=(0, 0),
         rotation=None,
         rotation_axis='z',
+        ensure_object_boundary_in_range=True,
+        ensure_valid_placement=True,
+        reference_pos=(0, 0, 0),
         z_offset=0.,
     ):
         self.x_range = x_range
         self.y_range = y_range
-        self.ensure_object_boundary_in_range = ensure_object_boundary_in_range
         self.rotation = rotation
         self.rotation_axis = rotation_axis
-        self.z_offset = z_offset
 
-    def sample_x(self, object_horizontal_radius):
+        super().__init__(
+            mujoco_objects=mujoco_objects,
+            ensure_object_boundary_in_range=ensure_object_boundary_in_range,
+            ensure_valid_placement=ensure_valid_placement,
+            reference_pos=reference_pos,
+            z_offset=z_offset,
+        )
+
+    def _sample_x(self, object_horizontal_radius):
         """
         Samples the x location for a given object
 
@@ -91,17 +146,13 @@ class UniformRandomSampler(ObjectPositionSampler):
         Returns:
             float: sampled x position
         """
-        x_range = self.x_range
-        if x_range is None:
-            x_range = [-self.table_size[0] / 2, self.table_size[0] / 2]
-        minimum = min(x_range)
-        maximum = max(x_range)
+        minimum, maximum = self.x_range
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_y(self, object_horizontal_radius):
+    def _sample_y(self, object_horizontal_radius):
         """
         Samples the y location for a given object
 
@@ -111,17 +162,13 @@ class UniformRandomSampler(ObjectPositionSampler):
         Returns:
             float: sampled y position
         """
-        y_range = self.y_range
-        if y_range is None:
-            y_range = [-self.table_size[0] / 2, self.table_size[0] / 2]
-        minimum = min(y_range)
-        maximum = max(y_range)
+        minimum, maximum = self.y_range
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
         return np.random.uniform(high=maximum, low=minimum)
 
-    def sample_quat(self):
+    def _sample_quat(self):
         """
         Samples the orientation for a given object
 
@@ -151,99 +198,93 @@ class UniformRandomSampler(ObjectPositionSampler):
             # Invalid axis specified, raise error
             raise ValueError("Invalid rotation axis specified. Must be 'x', 'y', or 'z'. Got: {}".format(self.rotation_axis))
 
-    def sample(self, fixtures=None, return_placements=False, reference_object_name=None, sample_on_top=False):
+    def sample(self, fixtures=None, reference=None, on_top=True):
         """
-        Uniformly sample on a surface (not necessarily table surface).
+        Uniformly sample relative to this sampler's reference_pos or @reference (if specified).
 
         Args:
-            fixtures (dict): current dictionary of object placements in the scene. Used to make sure
-                generated placements are valid.
+            fixtures (dict): dictionary of current object placements in the scene as well as any other relevant
+                obstacles that should not be in contact with newly sampled objects. Used to make sure newly
+                generated placements are valid. Should be object names mapped to (pos, quat, MujocoObject)
 
-            return_placements (bool): if True, return the updated dictionary
-                of object placements.
+            reference (str or 3-tuple or None): if provided, sample relative placement. Can either be a string, which
+                corresponds to an existing object found in @fixtures, or a direct (x,y,z) value. If None, will sample
+                relative to this sampler's `'reference_pos'` value.
 
-            reference_object_name (str): if provided, sample placement relative to this object's
-                placement (which must be provided in @fixtures).
-
-            sample_on_top (bool): if True, sample placement on top of the reference object.
+            on_top (bool): if True, sample placement on top of the reference object. This corresponds to a sampled
+                z-offset of the current sampled object's bottom_offset + the reference object's top_offset
+                (if specified)
 
         Return:
-            2-tuple or 3-tuple:
-
-                - (list) list of placed object positions
-
-                - (list) list of placed object quaternions
-
-                - (dict) if @return_placements is True, returns a dictionary of all
-                    object placements, including the ones placed by this sampler.
+            dict: dictionary of all object placements, mapping object_names to (pos, quat, obj), including the
+                placements specified in @fixtures. Note quat is in (w,x,y,z) form
 
         Raises:
             RandomizationError: [Cannot place all objects]
-            AssertionError: [Reference object name does not exist]
+            AssertionError: [Reference object name does not exist, invalid inputs]
         """
-        pos_arr = []
-        quat_arr = []
-
-        if fixtures is None:
-            placed_objects = {}
+        # Standardize inputs
+        placed_objects = {} if fixtures is None else deepcopy(fixtures)
+        if reference is None:
+            base_offset = self.reference_pos
+        elif type(reference) is str:
+            assert reference in placed_objects, "Invalid reference received. Current options are: {}, requested: {}"\
+                .format(placed_objects.keys(), reference)
+            ref_pos, _, ref_obj = placed_objects[reference]
+            base_offset = np.array(ref_pos)
+            if on_top:
+                base_offset += np.array((0, 0, ref_obj.get_top_offset()[-1]))
         else:
-            placed_objects = deepcopy(fixtures)
+            base_offset = np.array(reference)
+            assert base_offset.shape[0] == 3, "Invalid reference received. Should be (x,y,z) 3-tuple, but got: {}"\
+                .format(base_offset)
 
-        # compute reference position
-        base_offset = self.table_top_offset
-        if reference_object_name is not None:
-            assert reference_object_name in placed_objects
-            reference_pos, reference_mjcf = placed_objects[reference_object_name]
-            base_offset[:2] = reference_pos[:2]
-            if sample_on_top:
-                base_offset[-1] = reference_pos[-1] + reference_mjcf.get_top_offset()[-1]  # set surface z
+        # Sample pos and quat for all objects assigned to this sampler
+        for obj in self.mujoco_objects:
+            # First make sure the currently sampled object hasn't already been sampled
+            assert obj.name not in placed_objects, "Object '{}' has already been sampled!".format(obj.name)
 
-        index = 0
-        for obj_name, obj_mjcf in self.mujoco_objects.items():
-            horizontal_radius = obj_mjcf.get_horizontal_radius()
-            bottom_offset = obj_mjcf.get_bottom_offset()
+            horizontal_radius = obj.get_horizontal_radius()
+            bottom_offset = obj.get_bottom_offset()
             success = False
             for i in range(5000):  # 5000 retries
-                object_x = self.sample_x(horizontal_radius) + base_offset[0]
-                object_y = self.sample_y(horizontal_radius) + base_offset[1]
-                object_z = base_offset[2] + self.z_offset - bottom_offset[-1]
+                object_x = self._sample_x(horizontal_radius) + base_offset[0]
+                object_y = self._sample_y(horizontal_radius) + base_offset[1]
+                object_z = self.z_offset + base_offset[2]
+                if on_top:
+                    object_z -= bottom_offset[-1]
 
                 # objects cannot overlap
                 location_valid = True
-                for (x, y, z), other_obj_mjcf in placed_objects.values():
-                    if (
-                        np.linalg.norm([object_x - x, object_y - y], 2)
-                        <= other_obj_mjcf.get_horizontal_radius() + horizontal_radius
-                    ) and (
-                        object_z - z <= other_obj_mjcf.get_top_offset()[-1] - bottom_offset[-1]
-                    ):
-                        location_valid = False
-                        break
+                if self.ensure_valid_placement:
+                    for (x, y, z), _, other_obj in placed_objects.values():
+                        if (
+                            np.linalg.norm((object_x - x, object_y - y))
+                            <= other_obj.get_horizontal_radius() + horizontal_radius
+                        ) and (
+                            object_z - z <= other_obj.get_top_offset()[-1] - bottom_offset[-1]
+                        ):
+                            location_valid = False
+                            break
 
                 if location_valid:
-                    # location is valid, put the object down
-                    pos = (object_x, object_y, object_z)
-                    placed_objects[obj_name] = (pos, obj_mjcf)
-
-                    # random z-rotation
-                    quat = self.sample_quat()
+                    # random rotation
+                    quat = self._sample_quat()
 
                     # multiply this quat by the object's initial rotation if it has the attribute specified
-                    if hasattr(obj_mjcf, "init_quat"):
-                        quat = quat_multiply(quat, obj_mjcf.init_quat)
+                    if hasattr(obj, "init_quat"):
+                        quat = quat_multiply(quat, obj.init_quat)
 
-                    quat_arr.append(quat)
-                    pos_arr.append(pos)
+                    # location is valid, put the object down
+                    pos = (object_x, object_y, object_z)
+                    placed_objects[obj.name] = (pos, quat, obj)
                     success = True
                     break
 
             if not success:
-                raise RandomizationError("Cannot place all objects on the desk")
-            index += 1
+                raise RandomizationError("Cannot place all objects ):")
 
-        if return_placements:
-            return pos_arr, quat_arr, placed_objects
-        return pos_arr, quat_arr
+        return placed_objects
 
 
 class SequentialCompositeSampler(ObjectPositionSampler):
@@ -253,189 +294,97 @@ class SequentialCompositeSampler(ObjectPositionSampler):
     be sampled on top of other objects or relative to other object placements.
     """
     def __init__(self):
-        self.mujoco_objects = None
-        self.samplers = collections.OrderedDict()
-        self.table_top_offset = None
-        self.table_size = None
-        self.n_obj = None
+        # Samplers / args will be filled in later
+        self.samplers = []
+        self.sample_args = []
 
-    def append_sampler(self, object_name, sampler, **kwargs):
+        super().__init__()
+
+    def append_sampler(self, sampler, sample_args=None):
         """
-        Adds a new placement initializer with corresponding objects and arguments
+        Adds a new placement initializer with corresponding @sampler and arguments
 
         Args:
-            object_name (str): Name of object to add
             sampler (ObjectPositionSampler): sampler to add
-            **kwargs: Additional arguments to pass to the sampler
+            sample_args (None or dict): If specified, should be additional arguments to pass to @sampler's sample()
+                call. Should map corresponding sampler's arguments to values (excluding @fixtures argument)
 
         Raises:
             AssertionError: [Object name in samplers]
         """
-        assert object_name not in self.samplers
-        self.samplers[object_name] = {'sampler': sampler, 'object_names': [object_name], 'sample_kwargs': kwargs}
+        # Verify that all added mujoco objects haven't already been added, and add to this sampler's objects dict
+        for obj in sampler.mujoco_objects:
+            assert obj not in self.mujoco_objects, f"Object '{obj.name}' already has sampler associated with it!"
+            self.mujoco_objects.append(obj)
+        self.samplers.append(sampler)
+        self.sample_args.append(sample_args)
 
-    def hide(self, object_name):
+    def hide(self, mujoco_objects):
         """
         Helper method to remove an object from the workspace.
 
         Args:
-            object_name (str): Name of object to hide
+            mujoco_objects (MujocoObject or list of MujocoObject): Object(s) to hide
         """
         sampler = UniformRandomSampler(
+            mujoco_objects=mujoco_objects,
             x_range=[-10, -20],
             y_range=[-10, -20],
             rotation=[0, 0],
             rotation_axis='z',
             z_offset=10,
-            ensure_object_boundary_in_range=False
+            ensure_object_boundary_in_range=False,
+            ensure_valid_placement=False,
         )
-        self.append_sampler(object_name=object_name, sampler=sampler)
+        self.append_sampler(sampler=sampler)
 
-    def _sample_on_top(self, object_name, surface_name, sampler):
+    def add_objects(self, mujoco_objects):
         """
-        Samples @object_name's position relative to a given @surface_name using @sampler
-
-        Args:
-            object_name (str): Object whose position is being sampled
-            surface_name (str): Object name upon which the position will be sampled
-            sampler (ObjectPositionSampler): Sampler to use to sample position
-
-        Raises:
-            AssertionError: [surface name not in samplers]
+        Override super method to make sure user doesn't call this (all objects should implicitly belong to sub-samplers)
         """
-        if surface_name == 'table':
-            self.append_sampler(object_name=object_name, sampler=sampler)
-        else:
-            assert surface_name in self.samplers  # surface needs to be placed first
-            self.append_sampler(
-                object_name=object_name,
-                sampler=sampler,
-                reference_object_name=surface_name,
-                sample_on_top=True
-            )
+        raise AttributeError("add_objects() should not be called for SequentialCompsiteSamplers!")
 
-    def sample_on_top(
-        self,
-        object_name,
-        surface_name='table',
-        x_range=None,
-        y_range=None,
-        rotation=None,
-        rotation_axis='z',
-        z_offset=0.0,
-        ensure_object_boundary_in_range=True
-    ):
-        """
-        Sample placement on top of a surface object.
-
-        Args:
-            object_name (str): Name of object to sample for
-
-            surface_name (str): Name of object upon which the position will be sampled
-
-            x_range (2-array of float): override the x_range used to uniformly place objects
-                if None, default to x-range of table. Note that this is with respect to (0,0) = center of table.
-
-            y_range (2-array of float): override the y_range used to uniformly place objects
-                if None default to y-range of table. Note that this is with respect to (0,0) = center of table.
-
-            rotation (None or float or Iterable):
-                :`None`: Add uniform random random rotation
-                :`Iterable (a,b)`: Uniformly randomize rotation angle between a and b (in radians)
-                :`value`: Add fixed angle rotation
-
-            rotation_axis (str): Can be 'x', 'y', or 'z'. Axis about which to apply the requested rotation
-
-            z_offset (float): Add a small z-offset to placements. This is useful for fixed objects
-                that do not move (i.e. no free joint) to place them above the table.
-
-            ensure_object_boundary_in_range (bool):
-                :`True`: The center of object is at position:
-                     [uniform(min x_range + radius, max x_range - radius)], [uniform(min x_range + radius, max x_range - radius)]
-                :`False`:
-                    [uniform(min x_range, max x_range)], [uniform(min x_range, max x_range)]
-        """
-        sampler = UniformRandomSampler(
-            x_range=x_range,
-            y_range=y_range,
-            rotation=rotation,
-            rotation_axis=rotation_axis,
-            z_offset=z_offset,
-            ensure_object_boundary_in_range=ensure_object_boundary_in_range
-        )
-        return self._sample_on_top(object_name, surface_name, sampler)
-
-    def setup(self, mujoco_objects, table_top_offset, table_size):
-        """
-        Overrides super implementation so that we can setup all placement
-        initializers we own.
-
-        Args:
-            mujoco_objects (OrderedDict of MujocoObject): a list of MJCF models of physical objects
-            table_top_offset (3-array of float): (x,y,z) offset values for the table
-            table_size (3-array of float): (x,y,z) fullsize values for the table
-
-        Raises:
-            AssertionError: [Mujoco Objects is not OrderedDict]
-        """
-        self.mujoco_objects = mujoco_objects
-        assert(isinstance(mujoco_objects, collections.OrderedDict))
-        self.table_top_offset = table_top_offset
-        self.table_size = table_size
-        self.n_obj = len(self.mujoco_objects)
-
-        for object_name, sampler_config in self.samplers.items():
-            object_names = sampler_config['object_names']
-            sampler = sampler_config['sampler']
-            objs = collections.OrderedDict((o, mujoco_objects[o]) for o in object_names)
-            sampler.setup(mujoco_objects=objs, table_top_offset=table_top_offset, table_size=table_size)
-
-    def sample(self, fixtures=None, return_placements=False):
+    def sample(self, fixtures=None, reference=None, on_top=True):
         """
         Sample from each placement initializer sequentially, in the order
         that they were appended.
 
         Args:
-            fixtures (dict): current dictionary of object placements in the scene. Used to make sure
-                generated placements are valid.
+            fixtures (dict): dictionary of current object placements in the scene as well as any other relevant
+                obstacles that should not be in contact with newly sampled objects. Used to make sure newly
+                generated placements are valid. Should be object names mapped to (pos, quat, MujocoObject)
 
-            return_placements (bool): if True, return the updated dictionary
-                of object placements.
+            reference (str or 3-tuple or None): if provided, sample relative placement. This will override each
+                sampler's @reference argument if not already specified. Can either be a string, which
+                corresponds to an existing object found in @fixtures, or a direct (x,y,z) value. If None, will sample
+                relative to this sampler's `'reference_pos'` value.
+
+            on_top (bool): if True, sample placement on top of the reference object. This will override each
+                sampler's @on_top argument if not already specified. This corresponds to a sampled
+                z-offset of the current sampled object's bottom_offset + the reference object's top_offset
+                (if specified)
 
         Return:
-            2-tuple or 3-tuple:
-
-                - (list) list of placed object positions
-
-                - (list) list of placed object quaternions
-
-                - (dict) if @return_placements is True, returns a dictionary of all
-                    object placements, including the ones placed by this sampler.
+            dict: dictionary of all object placements, mapping object_names to (pos, quat, obj), including the
+                placements specified in @fixtures. Note quat is in (w,x,y,z) form
 
         Raises:
             RandomizationError: [Cannot place all objects]
         """
-        if fixtures is None:
-            placements = {}
-        else:
-            placements = deepcopy(fixtures)
+        # Standardize inputs
+        placed_objects = {} if fixtures is None else deepcopy(fixtures)
 
-        # make sure all objects have samplers specified
-        named_samples = collections.OrderedDict()
-        for k in self.mujoco_objects:
-            assert k in self.samplers
-            named_samples[k] = None
+        # Iterate through all samplers to sample
+        for sampler, s_args in zip(self.samplers, self.sample_args):
+            # Pre-process sampler args
+            if s_args is None:
+                s_args = {}
+            for arg_name, arg in zip(("reference", "on_top"), (reference, on_top)):
+                if arg_name not in s_args:
+                    s_args[arg_name] = arg
+            # Run sampler
+            new_placements = sampler.sample(fixtures=placed_objects, **s_args)
+            # Update placements
+            placed_objects.update(new_placements)
 
-        for obj_name, sampler in self.samplers.items():
-            pos_arr, quat_arr, new_placements = \
-                sampler['sampler'].sample(fixtures=placements, return_placements=True, **sampler["sample_kwargs"])
-            named_samples[obj_name] = (pos_arr[0], quat_arr[0])
-            placements.update(new_placements)
-
-        all_pos_arr = [p[0] for p in named_samples.values()]
-        all_quat_arr = [p[1] for p in named_samples.values()]
-
-        if return_placements:
-            return all_pos_arr, all_quat_arr, placements
-        else:
-            return all_pos_arr, all_quat_arr
+        return placed_objects

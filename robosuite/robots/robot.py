@@ -2,6 +2,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
+from robosuite.utils.control_utils import DeltaBuffer
 
 from mujoco_py import MjSim
 
@@ -10,7 +11,7 @@ from robosuite.models.robots import create_robot
 
 class Robot(object):
     """
-    Initializes a robot simulation object, as defined by a single corresponding robot arm XML and associated gripper XML
+    Initializes a robot simulation object, as defined by a single corresponding robot XML
 
     Args:
         robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
@@ -30,6 +31,12 @@ class Robot(object):
             :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
 
             :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
+
+        robot_visualization (bool): True if using robot visualization. Useful for teleoperation.
+
+        control_freq (float): how many control signals to receive
+            in every second. This sets the amount of simulation time
+            that passes between every action input.
     """
 
     def __init__(
@@ -38,12 +45,16 @@ class Robot(object):
         idn=0,
         initial_qpos=None,
         initialization_noise=None,
+        robot_visualization=False,
+        control_freq=10,
     ):
         # Set relevant attributes
         self.sim = None                                     # MjSim this robot is tied to
         self.name = robot_type                              # Specific robot to instantiate
         self.idn = idn                                      # Unique ID of this robot
         self.robot_model = None                             # object holding robot model-specific info
+        self.robot_visualization = robot_visualization      # Whether to visualize robot model sites or not
+        self.control_freq = control_freq                    # controller Hz
 
         # Scaling of Gaussian initial noise applied to robot joints
         self.initialization_noise = initialization_noise
@@ -62,9 +73,11 @@ class Robot(object):
         self._ref_joint_indexes = None                      # xml joint indexes for robot in mjsim
         self._ref_joint_pos_indexes = None                  # xml joint position indexes in mjsim
         self._ref_joint_vel_indexes = None                  # xml joint velocity indexes in mjsim
-        self._ref_joint_pos_actuator_indexes = None         # xml joint pos actuator indexes for robot in mjsim
-        self._ref_joint_vel_actuator_indexes = None         # xml joint vel actuator indexes for robot in mjsim
-        self._ref_joint_torq_actuator_indexes = None        # xml joint torq actuator indexes for robot in mjsim
+        self._ref_joint_actuator_indexes = None             # xml joint (torq) actuator indexes for robot in mjsim
+
+        self.recent_qpos = None                             # Current and last robot arm qpos
+        self.recent_actions = None                          # Current and last action applied
+        self.recent_torques = None                          # Current and last torques applied
 
     def _load_controller(self):
         """
@@ -120,8 +133,13 @@ class Robot(object):
         self._load_controller()
 
         # Update base pos / ori references
-        self.base_pos = self.sim.data.get_body_xpos(self.robot_model.robot_base)
-        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3)))
+        self.base_pos = self.sim.data.get_body_xpos(self.robot_model.root_body)
+        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3)))
+
+        # Setup buffers to hold recent values
+        self.recent_qpos = DeltaBuffer(dim=len(self.joint_indexes))
+        self.recent_actions = DeltaBuffer(dim=self.action_dim)
+        self.recent_torques = DeltaBuffer(dim=len(self.joint_indexes))
 
     def setup_references(self):
         """
@@ -143,19 +161,9 @@ class Robot(object):
         ]
 
         # indices for joint pos actuation, joint vel actuation, gripper actuation
-        self._ref_joint_pos_actuator_indexes = [
+        self._ref_joint_actuator_indexes = [
             self.sim.model.actuator_name2id(actuator)
-            for actuator in self.robot_model.actuators["pos"]
-        ]
-
-        self._ref_joint_vel_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator)
-            for actuator in self.robot_model.actuators["vel"]
-        ]
-
-        self._ref_joint_torq_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator)
-            for actuator in self.robot_model.actuators["torq"]
+            for actuator in self.robot_model.actuators
         ]
 
     def control(self, action, policy_step=False):
@@ -171,12 +179,6 @@ class Robot(object):
         """
         raise NotImplementedError
 
-    def visualize_gripper(self):
-        """
-        Do any needed visualization here.
-        """
-        raise NotImplementedError
-
     def get_observations(self, di: OrderedDict):
         """
         Returns an OrderedDict containing robot observations [(name_string, np.array), ...].
@@ -185,28 +187,87 @@ class Robot(object):
 
             `'robot-state'`: contains robot-centric information.
         """
-        raise NotImplementedError
+        # Get prefix from robot model to avoid naming clashes for multiple robots
+        pf = self.robot_model.naming_prefix
+
+        # proprioceptive features
+        di[pf + "joint_pos"] = np.array(
+            [self.sim.data.qpos[x] for x in self._ref_joint_pos_indexes]
+        )
+        di[pf + "joint_vel"] = np.array(
+            [self.sim.data.qvel[x] for x in self._ref_joint_vel_indexes]
+        )
+
+        robot_states = [
+            np.sin(di[pf + "joint_pos"]),
+            np.cos(di[pf + "joint_pos"]),
+            di[pf + "joint_vel"],
+        ]
+
+        di[pf + "robot-state"] = np.concatenate(robot_states)
+        return di
+
+    def check_q_limits(self):
+        """
+        Check if this robot is either very close or at the joint limits
+
+        Returns:
+            bool: True if this arm is near its joint limits
+        """
+        tolerance = 0.1
+        for (qidx, (q, q_limits)) in enumerate(
+                zip(
+                    self.sim.data.qpos[self._ref_joint_pos_indexes],
+                    self.sim.model.jnt_range[self._ref_joint_indexes]
+                )
+        ):
+            if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
+                print("Joint limit reached in joint " + str(qidx))
+                return True
+        return False
+
+    def visualize(self):
+        """
+        Do any necessary visualization for this robot
+        """
+        self.robot_model.set_sites_visibility(sim=self.sim, visible=self.robot_visualization)
 
     @property
     def action_limits(self):
         """
         Action lower/upper limits per dimension.
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum (low) action values
+                - (np.array) maximum (high) action values
         """
         raise NotImplementedError
 
     @property
     def torque_limits(self):
         """
-        Action lower/upper limits per dimension.
+        Torque lower/upper limits per dimension.
+
+        Returns:
+            2-tuple:
+
+                - (np.array) minimum (low) torque values
+                - (np.array) maximum (high) torque values
         """
-        raise NotImplementedError
+        # Torque limit values pulled from relevant robot.xml file
+        low = self.sim.model.actuator_ctrlrange[self._ref_joint_actuator_indexes, 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_joint_actuator_indexes, 1]
+
+        return low, high
 
     @property
     def action_dim(self):
         """
-        Action space dimension for this robot (controller dimension + gripper dof)
+        Action space dimension for this robot
         """
-        raise NotImplementedError
+        return self.action_limits[0].shape[0]
 
     @property
     def dof(self):
@@ -233,8 +294,8 @@ class Robot(object):
         rot_in_world = self.sim.data.get_body_xmat(name).reshape((3, 3))
         pose_in_world = T.make_pose(pos_in_world, rot_in_world)
 
-        base_pos_in_world = self.sim.data.get_body_xpos(self.robot_model.robot_base)
-        base_rot_in_world = self.sim.data.get_body_xmat(self.robot_model.robot_base).reshape((3, 3))
+        base_pos_in_world = self.sim.data.get_body_xpos(self.robot_model.root_body)
+        base_rot_in_world = self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3))
         base_pose_in_world = T.make_pose(base_pos_in_world, base_rot_in_world)
         world_pose_in_base = T.pose_inv(base_pose_in_world)
 
@@ -250,6 +311,18 @@ class Robot(object):
         """
         self.sim.data.qpos[self._ref_joint_pos_indexes] = jpos
         self.sim.forward()
+
+    @property
+    def js_energy(self):
+        """
+        Returns:
+            np.array: the energy consumed by each joint between previous and current steps
+        """
+        # We assume in the motors torque is proportional to current (and voltage is constant)
+        # In that case the amount of power scales proportional to the torque and the energy is the
+        # time integral of that
+        # Note that we use mean torque
+        return np.abs((1.0 / self.control_freq) * self.recent_torques.average)
 
     @property
     def _joint_positions(self):

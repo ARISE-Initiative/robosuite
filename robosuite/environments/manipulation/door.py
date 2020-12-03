@@ -1,15 +1,14 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.environments.robot_env import RobotEnv
-from robosuite.robots import SingleArm
+from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import DoorObject
 from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
 
 
-class Door(RobotEnv):
+class Door(SingleArmEnv):
     """
     This class corresponds to the door opening task for a single robot arm.
 
@@ -17,6 +16,9 @@ class Door(RobotEnv):
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
             (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
             Note: Must be a single single-arm robot!
+
+        env_configuration (str): Specifies how to position the robots within the environment (default is "default").
+            For most single arm environments, this argument has no impact on the robot setup.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -61,12 +63,19 @@ class Door(RobotEnv):
 
         reward_shaping (bool): if True, use dense rewards.
 
-        placement_initializer (ObjectPositionSampler instance): if provided, will
+        placement_initializer (ObjectPositionSampler): if provided, will
             be used to place objects on every reset, else a UniformRandomSampler
             is used by default.
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
+
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -119,6 +128,7 @@ class Door(RobotEnv):
     def __init__(
         self,
         robots,
+        env_configuration="default",
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
@@ -130,6 +140,8 @@ class Door(RobotEnv):
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -144,9 +156,6 @@ class Door(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        # First, verify that only one robot is being inputted
-        self._check_robot_configuration(robots)
-
         # settings for table top (hardcoded since it's not an essential part of the environment)
         self.table_full_size = (0.8, 0.3, 0.05)
         self.table_offset = (-0.2, -0.35, 0.8)
@@ -166,19 +175,24 @@ class Door(RobotEnv):
             self.placement_initializer = UniformRandomSampler(
                 x_range=[0.07, 0.09],
                 y_range=[-0.01, 0.01],
-                ensure_object_boundary_in_range=False,
                 rotation=(-np.pi / 2. - 0.25, -np.pi / 2.),
                 rotation_axis='z',
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
             )
 
         super().__init__(
             robots=robots,
+            env_configuration=env_configuration,
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
+            robot_visualizations=robot_visualizations,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -249,44 +263,38 @@ class Door(RobotEnv):
         """
         super()._load_model()
 
-        # Verify the correct robot has been loaded
-        assert isinstance(self.robots[0], SingleArm), \
-            "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
-
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
-        self.mujoco_arena = TableArena(
+        mujoco_arena = TableArena(
             table_full_size=self.table_full_size,
             table_offset=self.table_offset,
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
-        self.mujoco_arena.set_origin([0, 0, 0])
+        mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
-        door = DoorObject(
+        self.door = DoorObject(
             name="Door",
             friction=0.0,
             damping=0.1,
             lock=self.use_latch,
-            joints=[],  # ensures that door object does not have a free joint
         )
-        self.mujoco_objects = OrderedDict([("Door", door)])
-        self.n_objects = len(self.mujoco_objects)
+
+        # Add door to initializer
+        self.placement_initializer.add_objects(self.door)
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
-            mujoco_arena=self.mujoco_arena, 
+            mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects,
-            initializer=self.placement_initializer,
+            mujoco_objects=self.door,
         )
-        self.model.place_objects()
 
     def _get_reference(self):
         """
@@ -298,20 +306,13 @@ class Door(RobotEnv):
 
         # Additional object references from this env
         self.object_body_ids = dict()
-        self.object_body_ids["door"] = self.sim.model.body_name2id("door")
-        self.object_body_ids["frame"] = self.sim.model.body_name2id("frame")
-        self.object_body_ids["latch"] = self.sim.model.body_name2id("latch")
-        self.door_handle_site_id = self.sim.model.site_name2id("door_handle")
-        self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr("door_hinge")
+        self.object_body_ids["door"] = self.sim.model.body_name2id(self.door.door_body)
+        self.object_body_ids["frame"] = self.sim.model.body_name2id(self.door.frame_body)
+        self.object_body_ids["latch"] = self.sim.model.body_name2id(self.door.latch_body)
+        self.door_handle_site_id = self.sim.model.site_name2id(self.door.important_sites["handle"])
+        self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr(self.door.joints[0])
         if self.use_latch:
-            self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr("latch_joint")
-
-        self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
-        ]
-        self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
-        ]
+            self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr(self.door.joints[1])
 
     def _reset_internal(self):
         """
@@ -322,11 +323,14 @@ class Door(RobotEnv):
         # Reset all object positions using initializer sampler if we're not directly loading from an xml
         if not self.deterministic_reset:
 
-            # Sample from the placement initializer for the Door object
-            door_pos, door_quat = self.model.place_objects()
-            door_body_id = self.sim.model.body_name2id("Door")
-            self.sim.model.body_pos[door_body_id] = door_pos[0]
-            self.sim.model.body_quat[door_body_id] = door_quat[0]
+            # Sample from the placement initializer for all objects
+            object_placements = self.placement_initializer.sample()
+
+            # We know we're only setting a single object (the door), so specifically set its pose
+            door_pos, door_quat, _ = object_placements[self.door.name]
+            door_body_id = self.sim.model.body_name2id(self.door.root_body)
+            self.sim.model.body_pos[door_body_id] = door_pos
+            self.sim.model.body_quat[door_body_id] = door_quat
 
     def _get_observation(self):
         """
@@ -394,46 +398,16 @@ class Door(RobotEnv):
         """
         Do any needed visualization here. Overrides superclass implementations.
         """
+        # Run super call first
+        super()._visualization()
 
-        # color the gripper site appropriately based on distance to door handle
+        # Color the gripper visualization site according to its distance to the cube
         if self.robots[0].gripper_visualization:
-            # get distance to door handle
-            dist = np.sum(
-                np.square(
-                    self._handle_xpos
-                    - self.sim.data.get_site_xpos(self.robots[0].gripper.visualization_sites["grip_site"])
-                )
+            self._visualize_gripper_to_target(
+                gripper=self.robots[0].gripper,
+                target=self.door.important_sites["handle"],
+                target_type="site"
             )
-
-            # set RGBA for the EEF site here
-            max_dist = 0.1
-            scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
-            rgba = np.zeros(4)
-            rgba[0] = 1 - scaled
-            rgba[1] = scaled
-            rgba[3] = 0.5
-
-            self.sim.model.site_rgba[self.robots[0].eef_site_id] = rgba
-
-    def _check_robot_configuration(self, robots):
-        """
-        Sanity check to make sure the inputted robots and configuration is acceptable
-
-        Args:
-            robots (str or list of str): Robots to instantiate within this env
-        """
-        if type(robots) is list:
-            assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
-
-    @property
-    def _eef_xpos(self):
-        """
-        Grabs End Effector position
-
-        Returns:
-            np.array: End effector(x,y,z)
-        """
-        return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
 
     @property
     def _handle_xpos(self):

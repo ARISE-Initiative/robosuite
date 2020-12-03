@@ -2,8 +2,9 @@ import copy
 from copy import deepcopy
 import xml.etree.ElementTree as ET
 
-from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR
+from robosuite.models.base import MujocoXML, MujocoModel
+from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR,\
+                                       sort_elements, new_joint, add_prefix
 
 
 # Dict mapping geom type string keywords to group number
@@ -16,7 +17,7 @@ GEOMTYPE2GROUP = {
 GEOM_GROUPS = GEOMTYPE2GROUP.keys()
 
 
-class MujocoObject:
+class MujocoObject(MujocoModel):
     """
     Base class for all objects.
 
@@ -40,10 +41,92 @@ class MujocoObject:
     """
 
     def __init__(self, obj_type="all", duplicate_collision_geoms=True):
+        super().__init__()
         self.asset = ET.Element("asset")
         assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
         self.obj_type = obj_type
         self.duplicate_collision_geoms = duplicate_collision_geoms
+
+        # Attributes that should be filled in within the subclass
+        self.name = None
+        self._obj = None
+
+        # Attributes that are auto-filled by _get_object_properties call
+        self._root_body = None
+        self._bodies = None
+        self._joints = None
+        self._actuators = None
+        self._sites = None
+        self._contact_geoms = None
+        self._visual_geoms = None
+
+    @property
+    def naming_prefix(self):
+        return "{}_".format(self.name)
+
+    @property
+    def root_body(self):
+        return self.correct_naming(self._root_body)
+
+    @property
+    def bodies(self):
+        return self.correct_naming(self._bodies)
+
+    @property
+    def joints(self):
+        return self.correct_naming(self._joints)
+
+    @property
+    def actuators(self):
+        return self.correct_naming(self._actuators)
+
+    @property
+    def sites(self):
+        return self.correct_naming(self._sites)
+
+    @property
+    def contact_geoms(self):
+        return self.correct_naming(self._contact_geoms)
+
+    @property
+    def visual_geoms(self):
+        return self.correct_naming(self._visual_geoms)
+
+    @property
+    def important_geoms(self):
+        """
+        Returns:
+             dict: (Default is no important geoms; i.e.: empty dict)
+        """
+        return {}
+
+    @property
+    def important_sites(self):
+        """
+        Returns:
+            dict:
+
+                :`obj`: Object default site
+        """
+        return {"obj": self.naming_prefix + "default_site"}
+
+    @property
+    def sensors(self):
+        """
+        Returns:
+            dict: (Default is no sensors; i.e.: empty dict)
+        """
+        return {}
+
+    def get_obj(self):
+        """
+        Returns the generated / extracted object, in XML ElementTree form.
+
+        Returns:
+            ET.Element: Object in XML form.
+        """
+        assert self._obj is not None, "Object XML tree has not been generated yet!"
+        return self._obj
 
     def get_bottom_offset(self):
         """
@@ -82,7 +165,7 @@ class MujocoObject:
         """
         raise NotImplementedError
 
-    def get_object_subtree(self, site=False):
+    def _get_object_subtree(self):
 
         """
         Returns a ET.Element
@@ -91,13 +174,33 @@ class MujocoObject:
         Return should be a copy.
         Must be defined by subclass.
 
-        Args:
-            site (bool): If set, add a site (with name @name when applicable) to the returned body
-
         Returns:
             ET.Element: body
         """
         raise NotImplementedError
+
+    def _get_object_properties(self):
+        """
+        Helper function to extract relevant object properties (bodies, joints, contact/visual geoms, etc...) from this
+        object's XML tree. Assumes the self._obj attribute has already been filled.
+        """
+        # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
+        _elements = sort_elements(root=self.get_obj())
+        assert len(_elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
+                                                 "got {}".format(len(_elements["root_body"]))
+        _elements["root_body"] = _elements["root_body"][0]
+        _elements["bodies"] = [_elements["root_body"]] + _elements["bodies"] if "bodies" in _elements else \
+                              [_elements["root_body"]]
+        self._root_body = _elements["root_body"].get("name")
+        self._bodies = [e.get("name") for e in _elements.get("bodies", [])]
+        self._joints = [e.get("name") for e in _elements.get("joints", [])]
+        self._actuators = [e.get("name") for e in _elements.get("actuators", [])]
+        self._sites = [e.get("name") for e in _elements.get("sites", [])]
+        self._contact_geoms = [e.get("name") for e in _elements.get("contact_geoms", [])]
+        self._visual_geoms = [e.get("name") for e in _elements.get("visual_geoms", [])]
+
+        # Add prefix to all elements
+        add_prefix(root=self.get_obj(), prefix=self.naming_prefix)
 
     @staticmethod
     def get_site_attrib_template():
@@ -115,6 +218,18 @@ class MujocoObject:
             "group": "0",
         }
 
+    @staticmethod
+    def get_joint_attrib_template():
+        """
+        Returns attribs of free joint
+
+        Returns:
+            dict: Dictionary of default joint attributes
+        """
+        return {
+            "type": "free",
+        }
+
 
 class MujocoXMLObject(MujocoXML, MujocoObject):
     """
@@ -125,8 +240,10 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
 
         name (str): Name of this MujocoXMLObject
 
-        joints (list of dict): each dictionary corresponds to a joint that will be created for this object. The
-            dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo xml specification.
+        joints (None or str or list of dict): each dictionary corresponds to a joint that will be created for this
+            object. The dictionary should specify the joint attributes (type, pos, etc.) according to the MuJoCo xml
+            specification. If "default", a single free-joint will be automatically generated. If None, no joints will
+            be created.
 
         obj_type (str): Geom elements to generate / extract for this object. Must be one of:
 
@@ -138,7 +255,7 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
             visual geom copy
     """
 
-    def __init__(self, fname, name, joints=None, obj_type="all",  duplicate_collision_geoms=True):
+    def __init__(self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True):
         MujocoXML.__init__(self, fname)
         # Set obj type and duplicate args
         assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
@@ -149,31 +266,43 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         self.name = name
 
         # joints for this object
-        if joints is None:
-            self.joints = [{'type': 'free'}]  # default free joint
+        if joints == "default":
+            self.joint_specs = [self.get_joint_attrib_template()]  # default free joint
+        elif joints is None:
+            self.joint_specs = []
         else:
-            self.joints = joints
+            self.joint_specs = joints
+
+        # Make sure all joints have names!
+        for i, joint_spec in enumerate(self.joint_specs):
+            if "name" not in joint_spec:
+                joint_spec["name"] = "joint{}".format(i)
+
+        # Lastly, parse XML tree appropriately
+        self._obj = self._get_object_subtree()
+
+        # Extract the appropriate private attributes for this
+        self._get_object_properties()
 
     def get_bottom_offset(self):
-        bottom_site = self.worldbody.find("./body/site[@name='bottom_site']")
+        bottom_site = self.worldbody.find("./body/site[@name='{}bottom_site']".format(self.naming_prefix))
         return string_to_array(bottom_site.get("pos"))
 
     def get_top_offset(self):
-        top_site = self.worldbody.find("./body/site[@name='top_site']")
+        top_site = self.worldbody.find("./body/site[@name='{}top_site']".format(self.naming_prefix))
         return string_to_array(top_site.get("pos"))
 
     def get_horizontal_radius(self):
         horizontal_radius_site = self.worldbody.find(
-            "./body/site[@name='horizontal_radius_site']"
+            "./body/site[@name='{}horizontal_radius_site']".format(self.naming_prefix)
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
-    def get_object_subtree(self, site=False):
+    def _get_object_subtree(self):
         # Parse object
         obj = copy.deepcopy(self.worldbody.find("./body/body[@name='object']"))
-        # Rename this top level object body
-        obj.attrib.pop("name")
-        obj.attrib["name"] = self.name
+        # Rename this top level object body (will have self.naming_prefix added later)
+        obj.attrib["name"] = "main"
         # Get all geom_pairs in this tree
         geom_pairs = self._get_geoms(obj)
 
@@ -190,24 +319,32 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
                 parent.remove(element)
             else:
                 g_name = element.get("name")
-                modded_name = f"{self.name}_{g_name}" if g_name is not None else f"{self.name}_{i}"
-                element.set("name", modded_name)
+                g_name = g_name if g_name is not None else f"g{i}"
+                element.set("name", g_name)
                 # Also optionally duplicate collision geoms if requested (and this is a collision geom)
-                if self.duplicate_collision_geoms and int(element.get("group")) in {None, 0}:
+                if self.duplicate_collision_geoms and element.get("group") in {None, "0"}:
                     parent.append(self._duplicate_visual_from_collision(element))
                     # Also manually set the visual appearances to the original collision model
                     element.set("rgba", array_to_string(OBJECT_COLLISION_COLOR))
                     if element.get("material") is not None:
                         del element.attrib["material"]
-        # Lastly, add the site if requested
-        if site:
-            # add a site as well
-            template = self.get_site_attrib_template()
-            template["rgba"] = "1 0 0 0"
-            template["name"] = self.name
-            obj.append(ET.Element("site", attrib=template))
+        # add joint(s)
+        for joint_spec in self.joint_specs:
+            obj.append(new_joint(**joint_spec))
+        # Lastly, add a site for this object
+        template = self.get_site_attrib_template()
+        template["rgba"] = "1 0 0 0"
+        template["name"] = "default_site"
+        obj.append(ET.Element("site", attrib=template))
 
         return obj
+
+    def _get_object_properties(self):
+        """
+        Extends the base class method to also add prefixes to all bodies in this object
+        """
+        super()._get_object_properties()
+        add_prefix(root=self.root, prefix=self.naming_prefix)
 
     @staticmethod
     def _duplicate_visual_from_collision(element):
@@ -231,14 +368,14 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         vis_element.set("name", vis_element.get("name") + "_visual")
         return vis_element
 
-    def _get_geoms(self, root, parent=None):
+    def _get_geoms(self, root, _parent=None):
         """
         Helper function to recursively search through element tree starting at @root and returns
         a list of (parent, child) tuples where the child is a geom element
 
         Args:
             root (ET.Element): Root of xml element tree to start recursively searching through
-            parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
+            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
                 during the recursive call
 
         Returns:
@@ -247,133 +384,16 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         # Initialize return array
         geom_pairs = []
         # If the parent exists and this is a geom element, we add this current (parent, element) combo to the output
-        if parent is not None and root.tag == "geom":
-            geom_pairs.append((parent, root))
+        if _parent is not None and root.tag == "geom":
+            geom_pairs.append((_parent, root))
         # Loop through all children elements recursively and add to pairs
         for child in root:
-            geom_pairs += self._get_geoms(child, parent=root)
+            geom_pairs += self._get_geoms(child, _parent=root)
         # Return all found pairs
         return geom_pairs
 
 
 class MujocoGeneratedObject(MujocoObject):
-    """
-    Base class for all programmatically generated mujoco object
-    i.e., every MujocoObject that does not have an corresponding xml file
-
-    Args:
-        name (str): (unique) name to identify this generated object
-
-        size (n-tuple of float): relevant size parameters for the object, should be of size 1 - 3
-
-        rgba (4-tuple of float): Color
-
-        density (float): Density
-
-        friction (3-tuple of float): (sliding friction, torsional friction, and rolling friction).
-            A single float can also be specified, in order to set the sliding friction (the other values) will
-            be set to the MuJoCo default. See http://www.mujoco.org/book/modeling.html#geom for details.
-
-        solref (2-tuple of float): MuJoCo solver parameters that handle contact.
-            See http://www.mujoco.org/book/XMLreference.html for more details.
-
-        solimp (3-tuple of float): MuJoCo solver parameters that handle contact.
-            See http://www.mujoco.org/book/XMLreference.html for more details.
-
-        material (CustomMaterial or `'default'` or None): if "default", add a template material and texture for this
-            object that is used to color the geom(s).
-            Otherwise, input is expected to be a CustomMaterial object
-
-            See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
-            Mujoco texture / material tags, respectively
-
-            Note that specifying a custom texture in this way automatically overrides any rgba values set
-
-        joints (None or str or list of dict): Joints for this object. If None, no joint will be created. If "default",
-            a single joint will be crated. Else, should be a list of dict, where each dictionary corresponds to a joint
-            that will be created for this object. The dictionary should specify the joint attributes (type, pos, etc.)
-            according to the MuJoCo xml specification.
-
-        obj_type (str): Geom elements to generate / extract for this object. Must be one of:
-
-            :`'collision'`: Only collision geoms are returned (this corresponds to group 0 geoms)
-            :`'visual'`: Only visual geoms are returned (this corresponds to group 1 geoms)
-            :`'all'`: All geoms are returned
-
-        duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
-            visual geom copy
-    """
-
-    def __init__(
-        self,
-        name,
-        size=None,
-        rgba=None,
-        density=None,
-        friction=None,
-        solref=None,
-        solimp=None,
-        material=None,
-        joints="default",
-        obj_type="all",
-        duplicate_collision_geoms=True,
-    ):
-        super().__init__(obj_type=obj_type, duplicate_collision_geoms=duplicate_collision_geoms)
-
-        self.name = name
-
-        if size is None:
-            size = [0.05, 0.05, 0.05]
-        self.size = list(size)
-
-        if rgba is None:
-            rgba = [1, 0, 0, 1]
-        assert len(rgba) == 4, "rgba must be a length 4 array"
-        self.rgba = list(rgba)
-
-        if density is None:
-            density = 1000  # water
-        self.density = density
-
-        if friction is None:
-            friction = [1, 0.005, 0.0001]  # MuJoCo default
-        elif isinstance(friction, float) or isinstance(friction, int):
-            friction = [friction, 0.005, 0.0001]
-        assert len(friction) == 3, "friction must be a length 3 array or a single number"
-        self.friction = list(friction)
-
-        if solref is None:
-            self.solref = [0.02, 1.]  # MuJoCo default
-        else:
-            self.solref = solref
-
-        if solimp is None:
-            self.solimp = [0.9, 0.95, 0.001]  # MuJoCo default
-        else:
-            self.solimp = solimp
-
-        self.material = material
-        if material == "default":
-            # add in default texture and material for this object (for domain randomization)
-            default_tex = CustomMaterial(
-                texture=self.rgba,
-                tex_name="{}_tex".format(self.name),
-                mat_name="{}_mat".format(self.name),
-            )
-            self.append_material(default_tex)
-        elif material is not None:
-            # add in custom texture and material
-            self.append_material(material)
-
-        # joints for this object
-        if joints == "default":
-            self.joints = [{'type': 'free'}]  # default free joint
-        elif joints is None:
-            self.joints = []
-        else:
-            self.joints = joints
-
-        self.sanity_check()
 
     def sanity_check(self):
         """
@@ -423,49 +443,18 @@ class MujocoGeneratedObject(MujocoObject):
         # Add texture and material inputs to asset
         self.asset.append(ET.Element("texture", attrib=material.tex_attrib))
         self.asset.append(ET.Element("material", attrib=material.mat_attrib))
+        # Update prefix for assets
+        add_prefix(root=self.asset, prefix=self.naming_prefix)
 
-    def get_object_subtree(self, site=False):
+    # Methods that still need to be defined by subclass
+    def _get_object_subtree(self):
         raise NotImplementedError
 
-    def _get_object_subtree(self, site=False, ob_type="box"):
-        # Create element tree
-        obj = ET.Element("body")
-        obj.set("name", self.name)
+    def get_bottom_offset(self):
+        raise NotImplementedError
 
-        # Get base element attributes
-        element_attr = {
-            "name": self.name,
-            "type": ob_type,
-            "size": array_to_string(self.size)
-        }
+    def get_top_offset(self):
+        raise NotImplementedError
 
-        # Add collision geom if necessary
-        if self.obj_type in {"collision", "all"}:
-            col_element_attr = deepcopy(element_attr)
-            col_element_attr.update(self.get_collision_attrib_template())
-            # col_element_attr["name"] += "_col"
-            col_element_attr["density"] = str(self.density)
-            col_element_attr["friction"] = array_to_string(self.friction)
-            col_element_attr["solref"] = array_to_string(self.solref)
-            col_element_attr["solimp"] = array_to_string(self.solimp)
-            obj.append(ET.Element("geom", attrib=col_element_attr))
-        # Add visual geom if necessary
-        if self.obj_type in {"visual", "all"}:
-            vis_element_attr = deepcopy(element_attr)
-            vis_element_attr.update(self.get_visual_attrib_template())
-            vis_element_attr["name"] += "_vis"
-            if self.material == "default":
-                vis_element_attr["rgba"] = "0.5 0.5 0.5 1"  # mujoco default
-                vis_element_attr["material"] = "{}_mat".format(self.name)
-            elif self.material is not None:
-                vis_element_attr["material"] = self.material.mat_attrib["name"]
-            else:
-                vis_element_attr["rgba"] = array_to_string(self.rgba)
-            obj.append(ET.Element("geom", attrib=vis_element_attr))
-        # Lastly, add site as well if requested
-        if site:
-            # add a site as well
-            site_element_attr = self.get_site_attrib_template()
-            site_element_attr["name"] = self.name
-            obj.append(ET.Element("site", attrib=site_element_attr))
-        return obj
+    def get_horizontal_radius(self):
+        raise NotImplementedError

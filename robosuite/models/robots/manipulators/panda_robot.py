@@ -1,9 +1,9 @@
 import numpy as np
-from robosuite.models.robots.robot_model import RobotModel
+from robosuite.models.robots.manipulators.manipulator_model import ManipulatorModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class Panda(RobotModel):
+class Panda(ManipulatorModel):
     """
     Panda is a sensitive single-arm robot designed by Franka.
 
@@ -19,11 +19,7 @@ class Panda(RobotModel):
         self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
 
     @property
-    def dof(self):
-        return 7
-
-    @property
-    def gripper(self):
+    def default_gripper(self):
         return "PandaGripper"
 
     @property
@@ -45,36 +41,3 @@ class Panda(RobotModel):
     @property
     def arm_type(self):
         return "single"
-
-    @property
-    def _joints(self):
-        return ["joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"]
-
-    @property
-    def _eef_name(self):
-        return "right_hand"
-
-    @property
-    def _robot_base(self):
-        return "base"
-
-    @property
-    def _actuators(self):
-        return {
-            "pos": [],  # No position actuators for panda
-            "vel": [],  # No velocity actuators for panda
-            "torq": ["torq_j1", "torq_j2", "torq_j3", "torq_j4", "torq_j5", "torq_j6", "torq_j7"]
-        }
-
-    @property
-    def _contact_geoms(self):
-        return ["link1_collision", "link2_collision", "link3_collision", "link4_collision",
-                "link5_collision", "link6_collision", "link7_collision"]
-
-    @property
-    def _root(self):
-        return "link0"
-
-    @property
-    def _links(self):
-        return ["link1", "link2", "link3", "link4", "link5", "link6", "link7"]

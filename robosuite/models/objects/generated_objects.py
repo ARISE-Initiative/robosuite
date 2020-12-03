@@ -1,14 +1,13 @@
 import numpy as np
 
 from robosuite.models.objects import MujocoGeneratedObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, array_to_string, add_to_dict
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, array_to_string, add_to_dict, get_size
 from robosuite.utils.mjcf_utils import RED, GREEN, BLUE, CYAN, OBJECT_COLLISION_COLOR, CustomMaterial
 import robosuite.utils.transform_utils as T
 
 from collections.abc import Iterable
 
 from copy import deepcopy
-import xml.etree.ElementTree as ET
 
 
 class CompositeObject(MujocoGeneratedObject):
@@ -18,10 +17,10 @@ class CompositeObject(MujocoGeneratedObject):
     Note that by default, specifying None for a specific geom element will usually set a value to the mujoco defaults.
 
     Args:
+        name (str): Name of overall object
+
         total_size (list): (x, y, z) half-size in each dimension for the bounding box for
             this Composite object
-
-        object_name (str): Name of overall object
 
         geom_types (list): list of geom types in the composite. Must correspond
             to MuJoCo geom primitives, such as "box" or "capsule".
@@ -46,10 +45,6 @@ class CompositeObject(MujocoGeneratedObject):
 
         geom_quats (list): list of (w, x, y, z) quaternions for each geom.
 
-        joints (list): list of joints to use for each geom. Note that each entry should be its own list of dictionaries,
-            where each dictionary specifies the specific joint attributes necessary.
-            See http://www.mujoco.org/book/XMLreference.html#joint for reference.
-
         rgba (list): (r, g, b, a) default values to use if geom-specific @geom_rgbas isn't specified for a given element
 
         density (float or list of float): either single value to use for all geom densities or geom-specific values
@@ -64,7 +59,22 @@ class CompositeObject(MujocoGeneratedObject):
             overall object bounding box defined by @total_size. Else, the corner of this bounding box is considered the
             origin.
 
-        sites (list of dict): list of sites to add to this object. Each dict should specify the appropriate attributes
+        body_mapping (None or dict): If specified, defines a multi-body object, where each entry in the dict maps a
+            geom_name to a new sub-body definition. This allows for multi-bodied objects with nested geoms. When the
+            keyword-specified geom_name is encountered during procedural generation, the corresponding body
+            specification will be used to generate a new body element, which will be appended to the current XML Tree.
+            All subsequent geoms will then be appended to this new child body. Default is None, which corresponds
+            to the single-body case
+
+        joints (None or str or list): Joints to use for each body. If None, no joints will be used for this entire
+            object. If "default", a single free joint will be added to the top-level body of this object. Otherwise,
+            should be a list equal to length to the number of entries in body_mapping + 1, where each entry should
+            either be None or its own list of dictionaries. Each dictionary should specify the specific joint
+            attributes necessary. See http://www.mujoco.org/book/XMLreference.html#joint for reference.
+
+        sites (None or list): list of sites to add to each body. If None, only the default top-level object site will
+            be used. Otherwise, should be a list equal to number of entries in body_mapping + 1, where each entry should
+            either be None or its own list of dictionaries. Each dictionary should specify the appropriate attributes
             for the given site. See http://www.mujoco.org/book/XMLreference.html#site for reference.
 
         obj_types (str or list of str): either single obj_type for all geoms or geom-specific type. Choices are
@@ -73,8 +83,8 @@ class CompositeObject(MujocoGeneratedObject):
 
     def __init__(
         self,
+        name,
         total_size,
-        object_name,
         geom_types,
         geom_locations,
         geom_sizes,
@@ -83,157 +93,82 @@ class CompositeObject(MujocoGeneratedObject):
         geom_materials=None,
         geom_frictions=None,
         geom_quats=None,
-        joints="default",
         rgba=None,
         density=100.,
         solref=(0.02, 1.),
         solimp=(0.9, 0.95, 0.001),
         locations_relative_to_center=False,
+        body_mapping=None,
+        joints="default",
         sites=None,
         obj_types="all",
         duplicate_collision_geoms=True,
     ):
-        super().__init__(
-            name=object_name,
-            joints=joints,
-            rgba=rgba,
-            duplicate_collision_geoms=duplicate_collision_geoms,
-        )
+        # Always call superclass first
+        super().__init__(duplicate_collision_geoms=duplicate_collision_geoms)
+
+        self.name = name
+
+        # Create bodies
+        self.body_mapping = {"root": {"name": "main"}}
+        if body_mapping is not None:
+            self.body_mapping.update(body_mapping)
+        n_bodies = len(self.body_mapping.keys())
+
+        # Set joints
+        if joints is None:
+            self.body_joint_specs = [None] * n_bodies
+        elif joints == "default":
+            self.body_joint_specs = [[self.get_joint_attrib_template()]] + [None] * (n_bodies - 1)
+        else:
+            self.body_joint_specs = joints
+
+        # Make sure all joints are named appropriately
+        j_num = 0
+        for joint_spec in self.body_joint_specs:
+            if type(joint_spec) in {tuple, list}:
+                for j_spec in joint_spec:
+                    if "name" not in j_spec:
+                        j_spec["name"] = "joint{}".format(j_num)
+                        j_num += 1
+
+        # Set sites
+        self.body_site_specs = sites if sites is not None else [None] * n_bodies
+
+        # Make sure all sites are named appropriately
+        s_num = 0
+        for site_spec in self.body_site_specs:
+            if type(site_spec) in {tuple, list}:
+                for s_spec in site_spec:
+                    if "name" not in s_spec:
+                        s_spec["name"] = "site{}".format(s_num)
+                        s_num += 1
 
         n_geoms = len(geom_types)
         self.total_size = np.array(total_size)
         self.geom_types = np.array(geom_types)
         self.geom_locations = np.array(geom_locations)
         self.geom_sizes = deepcopy(geom_sizes)
-        self.geom_names = list(geom_names) if geom_names is not None else None
-        self.geom_rgbas = list(geom_rgbas) if geom_rgbas is not None else None
-        self.geom_materials = list(geom_materials) if geom_materials is not None else None
-        self.geom_frictions = list(geom_frictions) if geom_frictions is not None else None
+        self.geom_names = list(geom_names) if geom_names is not None else [None] * n_geoms
+        self.geom_rgbas = list(geom_rgbas) if geom_rgbas is not None else [None] * n_geoms
+        self.geom_materials = list(geom_materials) if geom_materials is not None else [None] * n_geoms
+        self.geom_frictions = list(geom_frictions) if geom_frictions is not None else [None] * n_geoms
         self.density = [density] * n_geoms if density is None or type(density) in {float, int} else list(density)
         self.solref = [solref] * n_geoms if solref is None or type(solref[0]) in {float, int} else list(solref)
         self.solimp = [solimp] * n_geoms if obj_types is None or type(solimp[0]) in {float, int} else list(solimp)
         self.rgba = rgba        # override superclass setting of this variable
         self.locations_relative_to_center = locations_relative_to_center
-        self.geom_quats = deepcopy(geom_quats) if geom_quats is not None else None
-        self.sites = sites
+        self.geom_quats = deepcopy(geom_quats) if geom_quats is not None else [None] * n_geoms
         self.obj_types = [obj_types] * n_geoms if obj_types is None or type(obj_types) is str else list(obj_types)
 
-    def get_bottom_offset(self):
-        return np.array([0., 0., -self.total_size[2]])
+        # Always run sanity check
+        self.sanity_check()
 
-    def get_top_offset(self):
-        return np.array([0., 0., self.total_size[2]])
+        # Lastly, parse XML tree appropriately
+        self._obj = self._get_object_subtree()
 
-    def get_horizontal_radius(self):
-        return np.linalg.norm(self.total_size[:2], 2)
-
-    def _size_to_cartesian_half_lengths(self, geom_type, geom_size):
-        """
-        converts from geom size specification to x, y, and z half-length bounding box
-        """
-        if geom_type in ['box', 'ellipsoid']:
-            return geom_size
-        if geom_type == 'sphere':
-            # size is radius
-            return [geom_size[0], geom_size[0], geom_size[0]]
-        if geom_type == 'capsule':
-            # size is radius, half-length of cylinder part
-            return [geom_size[0], geom_size[0], geom_size[0] + geom_size[1]]
-        if geom_type == 'cylinder':
-            # size is radius, half-length
-            return [geom_size[0], geom_size[0], geom_size[1]]
-        raise Exception("unsupported geom type!")
-
-    def get_object_subtree(self, site=None):
-        obj = new_body()
-        obj.set("name", self.name)
-
-        for i in range(self.geom_locations.shape[0]):
-            # geom type
-            geom_type = self.geom_types[i]
-            # get cartesian size from size spec
-            size = self.geom_sizes[i]
-            cartesian_size = self._size_to_cartesian_half_lengths(geom_type, size)
-            if self.locations_relative_to_center:
-                # no need to convert
-                pos = self.geom_locations[i]
-            else:
-                # use geom location to convert to position coordinate (the origin is the
-                # center of the composite object)
-                loc = self.geom_locations[i]
-                pos = [
-                    (-self.total_size[0] + cartesian_size[0]) + loc[0],
-                    (-self.total_size[1] + cartesian_size[1]) + loc[1],
-                    (-self.total_size[2] + cartesian_size[2]) + loc[2],
-                ]
-
-            # geom name
-            if self.geom_names is not None:
-                geom_name = "{}_{}".format(self.name, self.geom_names[i])
-            else:
-                geom_name = "{}_{}".format(self.name, i)
-
-            # geom rgba
-            if self.geom_rgbas is not None and self.geom_rgbas[i] is not None:
-                geom_rgba = self.geom_rgbas[i]
-            else:
-                geom_rgba = self.rgba
-
-            # geom friction
-            if self.geom_frictions is not None and self.geom_frictions[i] is not None:
-                geom_friction = array_to_string(self.geom_frictions[i])
-            else:
-                geom_friction = array_to_string(np.array([1., 0.005, 0.0001])) # mujoco default
-
-            # Define base geom attributes
-            geom_attr = {
-                "size": size,
-                "pos": pos,
-                "name": geom_name,
-                "geom_type": geom_type,
-            }
-
-            # Optionally define quat if specified
-            if self.geom_quats is not None:
-                geom_attr['quat'] = array_to_string(self.geom_quats[i])
-
-            # Add collision geom if necessary
-            if self.obj_types[i] in {"collision", "all"}:
-                col_geom_attr = deepcopy(geom_attr)
-                col_geom_attr.update(self.get_collision_attrib_template())
-                if self.density[i] is not None:
-                    col_geom_attr['density'] = str(self.density[i])
-                col_geom_attr['friction'] = geom_friction
-                col_geom_attr['solref'] = array_to_string(self.solref[i])
-                col_geom_attr['solimp'] = array_to_string(self.solimp[i])
-                col_geom_attr['rgba'] = OBJECT_COLLISION_COLOR
-                obj.append(new_geom(**col_geom_attr))
-
-            # Add visual geom if necessary
-            if self.obj_types[i] in {"visual", "all"}:
-                vis_geom_attr = deepcopy(geom_attr)
-                vis_geom_attr.update(self.get_visual_attrib_template())
-                vis_geom_attr["name"] += "_vis"
-                if self.geom_materials is not None:
-                    vis_geom_attr['material'] = self.geom_materials[i]
-                vis_geom_attr["rgba"] = geom_rgba
-                obj.append(new_geom(**vis_geom_attr))
-
-        # add top level site if requested
-        if site:
-            # add a site as well
-            site_element_attr = self.get_site_attrib_template()
-            site_element_attr["rgba"] = "1 0 0 0"
-            site_element_attr["name"] = self.name
-            obj.append(ET.Element("site", attrib=site_element_attr))
-
-        # Also create specific sites requested
-        if self.sites is not None:
-            # add relevant sites
-            for s in self.sites:
-                obj.append(ET.Element("site", attrib=s))
-
-        return obj
+        # Extract the appropriate private attributes for this
+        self._get_object_properties()
 
     def get_bounding_box_size(self):
         return np.array(self.total_size)
@@ -255,6 +190,149 @@ class CompositeObject(MujocoGeneratedObject):
         lb[2] -= 0.01
 
         return np.all(object_position > lb) and np.all(object_position < ub)
+
+    def get_bottom_offset(self):
+        return np.array([0., 0., -self.total_size[2]])
+
+    def get_top_offset(self):
+        return np.array([0., 0., self.total_size[2]])
+
+    def get_horizontal_radius(self):
+        return np.linalg.norm(self.total_size[:2], 2)
+
+    def _get_object_subtree(self):
+        # Initialize top-level body
+        obj = new_body(**self.body_mapping["root"])
+        cur_obj = obj
+        body_num = 0
+
+        # Add top level joint(s)
+        if self.body_joint_specs[0] is not None:
+            for j_spec in self.body_joint_specs[0]:
+                obj.append(new_joint(**j_spec))
+
+        # Add top level site(s)
+        if self.body_site_specs[0] is not None:
+            for s_spec in self.body_site_specs[0]:
+                obj.append(new_site(**s_spec))
+
+        # Add default object top-level site
+        site_element_attr = self.get_site_attrib_template()
+        site_element_attr["rgba"] = "1 0 0 0"
+        site_element_attr["name"] = "default_site"
+        obj.append(new_site(**site_element_attr))
+
+        # Loop through all geoms and generate the composite object
+        for i, (obj_type, g_type, g_size, g_loc, g_name, g_rgba, g_friction,
+                g_quat, g_material, g_density, g_solref, g_solimp) in enumerate(zip(
+                self.obj_types,
+                self.geom_types,
+                self.geom_sizes,
+                self.geom_locations,
+                self.geom_names,
+                self.geom_rgbas,
+                self.geom_frictions,
+                self.geom_quats,
+                self.geom_materials,
+                self.density,
+                self.solref,
+                self.solimp,
+        )):
+            # geom type
+            geom_type = g_type
+            # get cartesian size from size spec
+            size = g_size
+            cartesian_size = self._size_to_cartesian_half_lengths(geom_type, size)
+            if self.locations_relative_to_center:
+                # no need to convert
+                pos = g_loc
+            else:
+                # use geom location to convert to position coordinate (the origin is the
+                # center of the composite object)
+                pos = [
+                    (-self.total_size[0] + cartesian_size[0]) + g_loc[0],
+                    (-self.total_size[1] + cartesian_size[1]) + g_loc[1],
+                    (-self.total_size[2] + cartesian_size[2]) + g_loc[2],
+                ]
+
+            # geom name
+            geom_name = g_name if g_name is not None else f"g{i}"
+
+            # geom rgba
+            geom_rgba = g_rgba if g_rgba is not None else self.rgba
+
+            # geom friction
+            geom_friction = array_to_string(g_friction) if g_friction is not None else \
+                            array_to_string(np.array([1., 0.005, 0.0001]))  # mujoco default
+
+            # Define base geom attributes
+            geom_attr = {
+                "size": size,
+                "pos": pos,
+                "name": geom_name,
+                "type": geom_type,
+            }
+
+            # Optionally define quat if specified
+            if g_quat is not None:
+                geom_attr['quat'] = array_to_string(g_quat)
+
+            # Add collision geom if necessary
+            if obj_type in {"collision", "all"}:
+                col_geom_attr = deepcopy(geom_attr)
+                col_geom_attr.update(self.get_collision_attrib_template())
+                if g_density is not None:
+                    col_geom_attr['density'] = str(g_density)
+                col_geom_attr['friction'] = geom_friction
+                col_geom_attr['solref'] = array_to_string(g_solref)
+                col_geom_attr['solimp'] = array_to_string(g_solimp)
+                col_geom_attr['rgba'] = OBJECT_COLLISION_COLOR
+                cur_obj.append(new_geom(**col_geom_attr))
+
+            # Add visual geom if necessary
+            if obj_type in {"visual", "all"}:
+                vis_geom_attr = deepcopy(geom_attr)
+                vis_geom_attr.update(self.get_visual_attrib_template())
+                vis_geom_attr["name"] += "_vis"
+                if g_material is not None:
+                    vis_geom_attr['material'] = g_material
+                vis_geom_attr["rgba"] = geom_rgba
+                cur_obj.append(new_geom(**vis_geom_attr))
+
+            # If the current geom is in our body_mapping, then we need to create a new nested body to append to
+            if g_name in self.body_mapping:
+                # Increment body count
+                body_num += 1
+                child_body = new_body(**self.body_mapping[g_name])
+                # Set the current body to be this new body
+                cur_obj = child_body
+                # Add appropriate joint(s) and site(s)
+                if self.body_joint_specs[body_num] is not None:
+                    for j_spec in self.body_joint_specs[body_num]:
+                        cur_obj.append(new_joint(**j_spec))
+                if self.body_site_specs[body_num] is not None:
+                    for s_spec in self.body_site_specs[body_num]:
+                        cur_obj.append(new_site(**s_spec))
+
+        return obj
+
+    @staticmethod
+    def _size_to_cartesian_half_lengths(geom_type, geom_size):
+        """
+        converts from geom size specification to x, y, and z half-length bounding box
+        """
+        if geom_type in ['box', 'ellipsoid']:
+            return geom_size
+        if geom_type == 'sphere':
+            # size is radius
+            return [geom_size[0], geom_size[0], geom_size[0]]
+        if geom_type == 'capsule':
+            # size is radius, half-length of cylinder part
+            return [geom_size[0], geom_size[0], geom_size[0] + geom_size[1]]
+        if geom_type == 'cylinder':
+            # size is radius, half-length
+            return [geom_size[0], geom_size[0], geom_size[1]]
+        raise Exception("unsupported geom type!")
 
 
 class HammerObject(CompositeObject):
@@ -390,12 +468,13 @@ class HammerObject(CompositeObject):
             self.handle_length + 2 * self.head_halfsize
         ))
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
-        obj_args = {
+        base_args = {
             "total_size": full_size / 2.0,
-            "object_name": self.name,
+            "name": self.name,
             "locations_relative_to_center": True,
             "obj_types": "all",
         }
+        obj_args = {}
 
         # Add handle component
         assert self.handle_shape in {"cylinder", "box"},\
@@ -470,6 +549,9 @@ class HammerObject(CompositeObject):
             density=self.handle_density * self.head_density_ratio,
         )
 
+        # Add back in base args
+        obj_args.update(base_args)
+
         # Return this dict
         return obj_args
 
@@ -490,7 +572,7 @@ class HammerObject(CompositeObject):
         Returns:
             list of str: geom names corresponding to hammer handle
         """
-        return ["hammer_handle"]
+        return self.correct_naming(["handle"])
 
     @property
     def head_geoms(self):
@@ -498,7 +580,7 @@ class HammerObject(CompositeObject):
         Returns:
             list of str: geom names corresponding to hammer head
         """
-        return ["hammer_head"]
+        return self.correct_naming(["head"])
 
     @property
     def face_geoms(self):
@@ -506,7 +588,7 @@ class HammerObject(CompositeObject):
         Returns:
             list of str: geom names corresponding to hammer face
         """
-        return ["hammer_neck", "hammer_face"]
+        return self.correct_naming(["neck", "face"])
 
     @property
     def claw_geoms(self):
@@ -514,7 +596,7 @@ class HammerObject(CompositeObject):
         Returns:
             list of str: geom names corresponding to hammer claw
         """
-        return ["hammer_claw"]
+        return self.correct_naming(["claw"])
 
     @property
     def all_geoms(self):
@@ -591,10 +673,13 @@ class PotWithHandlesObject(CompositeObject):
         self.rgba_handle_1 = np.array(rgba_handle_1) if rgba_handle_1 else BLUE
         self.solid_handle = solid_handle
 
-        # Geoms to be filled when generated
-        self.handle0_geoms = None
-        self.handle1_geoms = None
+        # Element references to be filled when generated
+        self._handle0_geoms = None
+        self._handle1_geoms = None
         self.pot_base = None
+
+        # Other private attributes
+        self._important_sites = {}
 
         # Create dictionary of values to create geoms for composite object and run super init
         super().__init__(**self._get_geom_attrs())
@@ -642,17 +727,6 @@ class PotWithHandlesObject(CompositeObject):
     def get_horizontal_radius(self):
         return np.sqrt(2) * (max(self.body_half_size) + self.handle_length)
 
-    @property
-    def handle_distance(self):
-
-        """
-        Calculates how far apart the handles are
-
-        Returns:
-            float: handle distance
-        """
-        return self.body_half_size[1] * 2 + self.handle_length * 2
-
     def _get_geom_attrs(self):
         """
         Creates geom elements that will be passed to superclass CompositeObject constructor
@@ -666,22 +740,23 @@ class PotWithHandlesObject(CompositeObject):
             self.body_half_size,
         ))
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
-        obj_args = {
+        base_args = {
             "total_size": full_size / 2.0,
-            "object_name": self.name,
+            "name": self.name,
             "locations_relative_to_center": True,
             "obj_types": "all",
-            "sites": [],
         }
+        site_attrs = []
+        obj_args = {}
 
         # Initialize geom lists
-        self.handle0_geoms = []
-        self.handle1_geoms = []
+        self._handle0_geoms = []
+        self._handle1_geoms = []
 
         # Add main pot body
         # Base geom
         name = f"base"
-        self.pot_base = [f"{self.name}_{name}"]
+        self.pot_base = [name]
         add_to_dict(
             dic=obj_args,
             geom_types="box",
@@ -725,14 +800,16 @@ class PotWithHandlesObject(CompositeObject):
         ])
         side_bar_size = np.array([self.handle_radius, self.handle_length / 2, self.handle_radius])
         handle_z = self.body_half_size[2] - self.handle_radius
-        for i, (handle_side, rgba) in enumerate(zip([1.0, -1.0], [self.rgba_handle_0, self.rgba_handle_1])):
+        for i, (g_list, handle_side, rgba) in enumerate(zip(
+                [self._handle0_geoms, self._handle1_geoms],
+                [1.0, -1.0],
+                [self.rgba_handle_0, self.rgba_handle_1]
+        )):
             handle_center = np.array((0, handle_side * (self.body_half_size[1] + self.handle_length), handle_z))
-            # Get reference to relevant geom list
-            g_list = getattr(self, f"handle{i}_geoms")
             # Solid handle case
-            name = f"handle{i}"
-            g_list.append(f"{self.name}_{name}")
             if self.solid_handle:
+                name = f"handle{i}"
+                g_list.append(name)
                 add_to_dict(
                     dic=obj_args,
                     geom_types="box",
@@ -749,7 +826,7 @@ class PotWithHandlesObject(CompositeObject):
             else:
                 # Center bar
                 name = f"handle{i}_c"
-                g_list.append(f"{self.name}_{name}")
+                g_list.append(name)
                 add_to_dict(
                     dic=obj_args,
                     geom_types="box",
@@ -765,7 +842,7 @@ class PotWithHandlesObject(CompositeObject):
                 # Side bars
                 for bar_side, suffix in zip([-1., 1.], ["-", "+"]):
                     name = f"handle{i}_{suffix}"
-                    g_list.append(f"{self.name}_{name}")
+                    g_list.append(name)
                     add_to_dict(
                         dic=obj_args,
                         geom_types="box",
@@ -784,24 +861,61 @@ class PotWithHandlesObject(CompositeObject):
                     )
             # Add relevant site
             handle_site = self.get_site_attrib_template()
+            handle_name = f"handle{i}"
             handle_site.update({
-                "name": f"{self.name}_handle{i}",
+                "name": handle_name,
                 "pos": array_to_string(handle_center - handle_side * np.array([0, 0.005, 0])),
                 "size": "0.005",
                 "rgba": rgba,
             })
-            obj_args["sites"].append(handle_site)
+            site_attrs.append(handle_site)
+            # Add to important sites
+            self._important_sites[f"handle{i}"] = self.naming_prefix + handle_name
 
         # Add pot body site
         pot_site = self.get_site_attrib_template()
+        center_name = "center"
         pot_site.update({
-            "name": f"{self.name}_center",
+            "name": center_name,
             "size": "0.005",
         })
-        obj_args["sites"].append(pot_site)
+        site_attrs.append(pot_site)
+        # Add to important sites
+        self._important_sites["center"] = self.naming_prefix + center_name
+
+        # Add back in base args and site args
+        obj_args.update(base_args)
+        obj_args["sites"] = [site_attrs]        # All sites are part of main (top) body
 
         # Return this dict
         return obj_args
+
+    @property
+    def handle_distance(self):
+
+        """
+        Calculates how far apart the handles are
+
+        Returns:
+            float: handle distance
+        """
+        return self.body_half_size[1] * 2 + self.handle_length * 2
+
+    @property
+    def handle0_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to handle0 (green handle)
+        """
+        return self.correct_naming(self._handle0_geoms)
+
+    @property
+    def handle1_geoms(self):
+        """
+        Returns:
+            list of str: geom names corresponding to handle1 (blue handle)
+        """
+        return self.correct_naming(self._handle1_geoms)
 
     @property
     def handle_geoms(self):
@@ -809,49 +923,213 @@ class PotWithHandlesObject(CompositeObject):
         Returns:
             list of str: geom names corresponding to both handles
         """
-        return self.handle0_geoms() + self.handle1_geoms()
+        return self.handle0_geoms + self.handle1_geoms
+
+    @property
+    def important_sites(self):
+        """
+        Returns:
+            dict: In addition to any default sites for this object, also provides the following entries
+
+                :`'handle0'`: Name of handle0 location site
+                :`'handle1'`: Name of handle1 location site
+        """
+        # Get dict from super call and add to it
+        dic = super().important_sites
+        dic.update(self._important_sites)
+        return dic
 
 
-def _get_size(size,
-              size_max,
-              size_min,
-              default_max,
-              default_min):
+class PrimitiveObject(MujocoGeneratedObject):
     """
-    Helper method for providing a size, or a range to randomize from
+    Base class for all programmatically generated mujoco object
+    i.e., every MujocoObject that does not have an corresponding xml file
 
     Args:
-        size (n-array): Array of numbers that explicitly define the size
-        size_max (n-array): Array of numbers that define the custom max size from which to randomly sample
-        size_min (n-array): Array of numbers that define the custom min size from which to randomly sample
-        default_max (n-array): Array of numbers that define the default max size from which to randomly sample
-        default_min (n-array): Array of numbers that define the default min size from which to randomly sample
+        name (str): (unique) name to identify this generated object
 
-    Returns:
-        np.array: size generated
+        size (n-tuple of float): relevant size parameters for the object, should be of size 1 - 3
 
-    Raises:
-        ValueError: [Inconsistent array sizes]
+        rgba (4-tuple of float): Color
+
+        density (float): Density
+
+        friction (3-tuple of float): (sliding friction, torsional friction, and rolling friction).
+            A single float can also be specified, in order to set the sliding friction (the other values) will
+            be set to the MuJoCo default. See http://www.mujoco.org/book/modeling.html#geom for details.
+
+        solref (2-tuple of float): MuJoCo solver parameters that handle contact.
+            See http://www.mujoco.org/book/XMLreference.html for more details.
+
+        solimp (3-tuple of float): MuJoCo solver parameters that handle contact.
+            See http://www.mujoco.org/book/XMLreference.html for more details.
+
+        material (CustomMaterial or `'default'` or None): if "default", add a template material and texture for this
+            object that is used to color the geom(s).
+            Otherwise, input is expected to be a CustomMaterial object
+
+            See http://www.mujoco.org/book/XMLreference.html#asset for specific details on attributes expected for
+            Mujoco texture / material tags, respectively
+
+            Note that specifying a custom texture in this way automatically overrides any rgba values set
+
+        joints (None or str or list of dict): Joints for this object. If None, no joint will be created. If "default",
+            a single (free) joint will be crated. Else, should be a list of dict, where each dictionary corresponds to
+            a joint that will be created for this object. The dictionary should specify the joint attributes
+            (type, pos, etc.) according to the MuJoCo xml specification.
+
+        obj_type (str): Geom elements to generate / extract for this object. Must be one of:
+
+            :`'collision'`: Only collision geoms are returned (this corresponds to group 0 geoms)
+            :`'visual'`: Only visual geoms are returned (this corresponds to group 1 geoms)
+            :`'all'`: All geoms are returned
+
+        duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
+            visual geom copy
     """
-    if len(default_max) != len(default_min):
-        raise ValueError('default_max = {} and default_min = {}'
-                         .format(str(default_max), str(default_min)) +
-                         ' have different lengths')
-    if size is not None:
-        if (size_max is not None) or (size_min is not None):
-            raise ValueError('size = {} overrides size_max = {}, size_min = {}'
-                             .format(size, size_max, size_min))
-    else:
-        if size_max is None:
-            size_max = default_max
-        if size_min is None:
-            size_min = default_min
-        size = np.array([np.random.uniform(size_min[i], size_max[i])
-                         for i in range(len(default_max))])
-    return np.array(size)
+
+    def __init__(
+        self,
+        name,
+        size=None,
+        rgba=None,
+        density=None,
+        friction=None,
+        solref=None,
+        solimp=None,
+        material=None,
+        joints="default",
+        obj_type="all",
+        duplicate_collision_geoms=True,
+    ):
+        # Always call superclass first
+        super().__init__(obj_type=obj_type, duplicate_collision_geoms=duplicate_collision_geoms)
+
+        # Set name
+        self.name = name
+
+        if size is None:
+            size = [0.05, 0.05, 0.05]
+        self.size = list(size)
+
+        if rgba is None:
+            rgba = [1, 0, 0, 1]
+        assert len(rgba) == 4, "rgba must be a length 4 array"
+        self.rgba = list(rgba)
+
+        if density is None:
+            density = 1000  # water
+        self.density = density
+
+        if friction is None:
+            friction = [1, 0.005, 0.0001]  # MuJoCo default
+        elif isinstance(friction, float) or isinstance(friction, int):
+            friction = [friction, 0.005, 0.0001]
+        assert len(friction) == 3, "friction must be a length 3 array or a single number"
+        self.friction = list(friction)
+
+        if solref is None:
+            self.solref = [0.02, 1.]  # MuJoCo default
+        else:
+            self.solref = solref
+
+        if solimp is None:
+            self.solimp = [0.9, 0.95, 0.001]  # MuJoCo default
+        else:
+            self.solimp = solimp
+
+        self.material = material
+        if material == "default":
+            # add in default texture and material for this object (for domain randomization)
+            default_tex = CustomMaterial(
+                texture=self.rgba,
+                tex_name="tex",
+                mat_name="mat",
+            )
+            self.append_material(default_tex)
+        elif material is not None:
+            # add in custom texture and material
+            self.append_material(material)
+
+        # joints for this object
+        if joints == "default":
+            self.joint_specs = [self.get_joint_attrib_template()]  # default free joint
+        elif joints is None:
+            self.joint_specs = []
+        else:
+            self.joint_specs = joints
+
+        # Make sure all joints have names!
+        for i, joint_spec in enumerate(self.joint_specs):
+            if "name" not in joint_spec:
+                joint_spec["name"] = "joint{}".format(i)
+
+        # Always run sanity check
+        self.sanity_check()
+
+        # Lastly, parse XML tree appropriately
+        self._obj = self._get_object_subtree()
+
+        # Extract the appropriate private attributes for this
+        self._get_object_properties()
+
+    def _get_object_subtree_(self, ob_type="box"):
+        # Create element tree
+        obj = new_body(name="main")
+
+        # Get base element attributes
+        element_attr = {
+            "name": "g0",
+            "type": ob_type,
+            "size": array_to_string(self.size)
+        }
+
+        # Add collision geom if necessary
+        if self.obj_type in {"collision", "all"}:
+            col_element_attr = deepcopy(element_attr)
+            col_element_attr.update(self.get_collision_attrib_template())
+            col_element_attr["density"] = str(self.density)
+            col_element_attr["friction"] = array_to_string(self.friction)
+            col_element_attr["solref"] = array_to_string(self.solref)
+            col_element_attr["solimp"] = array_to_string(self.solimp)
+            obj.append(new_geom(**col_element_attr))
+        # Add visual geom if necessary
+        if self.obj_type in {"visual", "all"}:
+            vis_element_attr = deepcopy(element_attr)
+            vis_element_attr.update(self.get_visual_attrib_template())
+            vis_element_attr["name"] += "_vis"
+            if self.material == "default":
+                vis_element_attr["rgba"] = "0.5 0.5 0.5 1"  # mujoco default
+                vis_element_attr["material"] = "mat"
+            elif self.material is not None:
+                vis_element_attr["material"] = self.material.mat_attrib["name"]
+            else:
+                vis_element_attr["rgba"] = array_to_string(self.rgba)
+            obj.append(new_geom(**vis_element_attr))
+        # add joint(s)
+        for joint_spec in self.joint_specs:
+            obj.append(new_joint(**joint_spec))
+        # add a site as well
+        site_element_attr = self.get_site_attrib_template()
+        site_element_attr["name"] = "default_site"
+        obj.append(new_site(**site_element_attr))
+        return obj
+
+    # Methods that still need to be defined by subclass
+    def _get_object_subtree(self):
+        raise NotImplementedError
+
+    def get_bottom_offset(self):
+        raise NotImplementedError
+
+    def get_top_offset(self):
+        raise NotImplementedError
+
+    def get_horizontal_radius(self):
+        raise NotImplementedError
 
 
-class BoxObject(MujocoGeneratedObject):
+class BoxObject(PrimitiveObject):
     """
     A box object.
 
@@ -875,11 +1153,11 @@ class BoxObject(MujocoGeneratedObject):
         obj_type="all",
         duplicate_collision_geoms=True,
     ):
-        size = _get_size(size,
-                         size_max,
-                         size_min,
-                         [0.07, 0.07, 0.07],
-                         [0.03, 0.03, 0.03])
+        size = get_size(size,
+                        size_max,
+                        size_min,
+                        [0.07, 0.07, 0.07],
+                        [0.03, 0.03, 0.03])
         super().__init__(
             name=name,
             size=size,
@@ -912,11 +1190,11 @@ class BoxObject(MujocoGeneratedObject):
     def get_horizontal_radius(self):
         return np.linalg.norm(self.size[0:2], 2)
 
-    def get_object_subtree(self, site=False):
-        return self._get_object_subtree(site=site, ob_type="box")
+    def _get_object_subtree(self):
+        return self._get_object_subtree_(ob_type="box")
 
 
-class CylinderObject(MujocoGeneratedObject):
+class CylinderObject(PrimitiveObject):
     """
     A cylinder object.
 
@@ -940,11 +1218,11 @@ class CylinderObject(MujocoGeneratedObject):
         obj_type="all",
         duplicate_collision_geoms=True,
     ):
-        size = _get_size(size,
-                         size_max,
-                         size_min,
-                         [0.07, 0.07],
-                         [0.03, 0.03])
+        size = get_size(size,
+                        size_max,
+                        size_min,
+                        [0.07, 0.07],
+                        [0.03, 0.03])
         super().__init__(
             name=name,
             size=size,
@@ -977,11 +1255,11 @@ class CylinderObject(MujocoGeneratedObject):
     def get_horizontal_radius(self):
         return self.size[0]
 
-    def get_object_subtree(self, site=False):
-        return self._get_object_subtree(site=site, ob_type="cylinder")
+    def _get_object_subtree(self):
+        return self._get_object_subtree_(ob_type="cylinder")
 
 
-class BallObject(MujocoGeneratedObject):
+class BallObject(PrimitiveObject):
     """
     A ball (sphere) object.
 
@@ -1005,11 +1283,11 @@ class BallObject(MujocoGeneratedObject):
         obj_type="all",
         duplicate_collision_geoms=True,
     ):
-        size = _get_size(size,
-                         size_max,
-                         size_min,
-                         [0.07],
-                         [0.03])
+        size = get_size(size,
+                        size_max,
+                        size_min,
+                        [0.07],
+                        [0.03])
         super().__init__(
             name=name,
             size=size,
@@ -1042,11 +1320,11 @@ class BallObject(MujocoGeneratedObject):
     def get_horizontal_radius(self):
         return self.size[0]
 
-    def get_object_subtree(self, site=False):
-        return self._get_object_subtree(site=site, ob_type="sphere")
+    def _get_object_subtree(self):
+        return self._get_object_subtree_(ob_type="sphere")
 
 
-class CapsuleObject(MujocoGeneratedObject):
+class CapsuleObject(PrimitiveObject):
     """
     A capsule object.
 
@@ -1070,11 +1348,11 @@ class CapsuleObject(MujocoGeneratedObject):
         obj_type="all",
         duplicate_collision_geoms=True,
     ):
-        size = _get_size(size,
-                         size_max,
-                         size_min,
-                         [0.07, 0.07],
-                         [0.03, 0.03])
+        size = get_size(size,
+                        size_max,
+                        size_min,
+                        [0.07, 0.07],
+                        [0.03, 0.03])
         super().__init__(
             name=name,
             size=size,
@@ -1107,5 +1385,5 @@ class CapsuleObject(MujocoGeneratedObject):
     def get_horizontal_radius(self):
         return self.size[0]
 
-    def get_object_subtree(self, site=False):
-        return self._get_object_subtree(site=site, ob_type="capsule")
+    def _get_object_subtree(self):
+        return self._get_object_subtree_(ob_type="capsule")

@@ -55,7 +55,7 @@
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
 
             <!-- This site was added for visualization. -->
-            <site name="grip_site" pos="0 0 -0.27" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <site name="grip_site" pos="0 0 -0.27" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
             <!-- This site was added for visualization. -->
             <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
 
@@ -73,6 +73,7 @@
                     <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_140_inner_finger" name="left_inner_finger_collision"/>
                     <geom size="0.0135 0.0325 0.00375" pos="0 0.0457554 -0.0272203" type="box" contype="0" conaffinity="0" group="1" rgba="0.9 0.9 0.9 1" />
                     <geom size="0.015 0.035 0.00375" pos="0 0.0457554 -0.0272203" type="box" group="0" rgba="0.9 0.9 0.9 1" name="left_fingertip_collision" solref="0.01 0.25"/>
+                    <geom size="0.014 0.033 0.001" pos="0 0.045 -0.031" type="box" group="0" name="left_fingerpad_collision" />
                 </body>
             </body>
             <body name="left_inner_knuckle" pos="0.0127 1.01133e-05 -0.122945" quat="-0.64507 0.290316 -0.290085 0.644556">
@@ -95,6 +96,7 @@
                     <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_140_inner_finger" name="right_inner_finger_collision"/>
                     <geom size="0.0135 0.0325 0.00375" pos="0 0.0457554 -0.0272203" type="box" contype="0" conaffinity="0" group="1" rgba="0.9 0.9 0.9 1" />
                     <geom size="0.015 0.035 0.00375" pos="0 0.0457554 -0.0272203" type="box" group="0" rgba="0.9 0.9 0.9 1" name="right_fingertip_collision" solref="0.01 0.25"/>
+                    <geom size="0.014 0.033 0.001" pos="0 0.045 -0.031" type="box" group="0" name="right_fingerpad_collision" />
                 </body>
             </body>
             <body name="right_inner_knuckle" pos="-0.0127 -1.01133e-05 -0.122945" quat="-0.644556 0.290085 0.290316 -0.64507">

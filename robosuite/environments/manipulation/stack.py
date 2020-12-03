@@ -4,15 +4,14 @@ import numpy as np
 from robosuite.utils.transform_utils import convert_quat
 from robosuite.utils.mjcf_utils import CustomMaterial
 
-from robosuite.environments.robot_env import RobotEnv
-from robosuite.robots import SingleArm
+from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
 
 
-class Stack(RobotEnv):
+class Stack(SingleArmEnv):
     """
     This class corresponds to the stacking task for a single robot arm.
 
@@ -20,6 +19,9 @@ class Stack(RobotEnv):
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
             (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
             Note: Must be a single single-arm robot!
+
+        env_configuration (str): Specifies how to position the robots within the environment (default is "default").
+            For most single arm environments, this argument has no impact on the robot setup.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -66,12 +68,19 @@ class Stack(RobotEnv):
 
         reward_shaping (bool): if True, use dense rewards.
 
-        placement_initializer (ObjectPositionSampler instance): if provided, will
+        placement_initializer (ObjectPositionSampler): if provided, will
             be used to place objects on every reset, else a UniformRandomSampler
             is used by default.
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
+
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -124,6 +133,7 @@ class Stack(RobotEnv):
     def __init__(
         self,
         robots,
+        env_configuration="default",
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
@@ -136,6 +146,8 @@ class Stack(RobotEnv):
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -150,15 +162,10 @@ class Stack(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        """
-
-        """
-        # First, verify that only one robot is being inputted
-        self._check_robot_configuration(robots)
-
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
+        self.table_offset = np.array((0, 0, 0.8))
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -174,18 +181,24 @@ class Stack(RobotEnv):
             self.placement_initializer = UniformRandomSampler(
                 x_range=[-0.08, 0.08],
                 y_range=[-0.08, 0.08],
-                ensure_object_boundary_in_range=False,
                 rotation=None,
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
+                z_offset=0.01,
             )
 
         super().__init__(
             robots=robots,
+            env_configuration=env_configuration,
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
+            robot_visualizations=robot_visualizations,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -256,42 +269,21 @@ class Stack(RobotEnv):
                 - (float): reward for lifting and aligning
                 - (float): reward for stacking
         """
-        # reaching is successful when the gripper site is close to
-        # the center of the cube
+        # reaching is successful when the gripper site is close to the center of the cube
         cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
         cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
         dist = np.linalg.norm(gripper_site_pos - cubeA_pos)
         r_reach = (1 - np.tanh(10.0 * dist)) * 0.25
 
-        # collision checking
-        touch_left_finger = False
-        touch_right_finger = False
-        touch_cubeA_cubeB = False
-
-        for i in range(self.sim.data.ncon):
-            c = self.sim.data.contact[i]
-            if c.geom1 in self.l_finger_geom_ids and c.geom2 == self.cubeA_geom_id:
-                touch_left_finger = True
-            if c.geom1 == self.cubeA_geom_id and c.geom2 in self.l_finger_geom_ids:
-                touch_left_finger = True
-            if c.geom1 in self.r_finger_geom_ids and c.geom2 == self.cubeA_geom_id:
-                touch_right_finger = True
-            if c.geom1 == self.cubeA_geom_id and c.geom2 in self.r_finger_geom_ids:
-                touch_right_finger = True
-            if c.geom1 == self.cubeA_geom_id and c.geom2 == self.cubeB_geom_id:
-                touch_cubeA_cubeB = True
-            if c.geom1 == self.cubeB_geom_id and c.geom2 == self.cubeA_geom_id:
-                touch_cubeA_cubeB = True
-
-        # additional grasping reward
-        if touch_left_finger and touch_right_finger:
+        # grasping reward
+        grasping_cubeA = self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cubeA)
+        if grasping_cubeA:
             r_reach += 0.25
 
-        # lifting is successful when the cube is above the table top
-        # by a margin
+        # lifting is successful when the cube is above the table top by a margin
         cubeA_height = cubeA_pos[2]
-        table_height = self.mujoco_arena.table_offset[2]
+        table_height = self.table_offset[2]
         cubeA_lifted = cubeA_height > table_height + 0.04
         r_lift = 1.0 if cubeA_lifted else 0.0
 
@@ -302,11 +294,10 @@ class Stack(RobotEnv):
             )
             r_lift += 0.5 * (1 - np.tanh(horiz_dist))
 
-        # stacking is successful when the block is lifted and
-        # the gripper is not holding the object
+        # stacking is successful when the block is lifted and the gripper is not holding the object
         r_stack = 0
-        not_touching = not touch_left_finger and not touch_right_finger
-        if not_touching and r_lift > 0 and touch_cubeA_cubeB:
+        cubeA_touching_cubeB = self.check_contact(self.cubeA, self.cubeB)
+        if not grasping_cubeA and r_lift > 0 and cubeA_touching_cubeB:
             r_stack = 2.0
 
         return r_reach, r_lift, r_stack
@@ -317,25 +308,21 @@ class Stack(RobotEnv):
         """
         super()._load_model()
 
-        # Verify the correct robot has been loaded
-        assert isinstance(self.robots[0], SingleArm), \
-            "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
-
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
-        self.mujoco_arena = TableArena(
+        mujoco_arena = TableArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
-            table_offset=(0, 0, 0.8),
+            table_offset=self.table_offset,
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
-        self.mujoco_arena.set_origin([0, 0, 0])
+        mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
         tex_attrib = {
@@ -360,30 +347,30 @@ class Stack(RobotEnv):
             tex_attrib=tex_attrib,
             mat_attrib=mat_attrib,
         )
-        cubeA = BoxObject(
+        self.cubeA = BoxObject(
             name="cubeA",
             size_min=[0.02, 0.02, 0.02], 
             size_max=[0.02, 0.02, 0.02], 
             rgba=[1, 0, 0, 1],
             material=redwood,
         )
-        cubeB = BoxObject(
+        self.cubeB = BoxObject(
             name="cubeB",
             size_min=[0.025, 0.025, 0.025],
             size_max=[0.025, 0.025, 0.025],
             rgba=[0, 1, 0, 1],
             material=greenwood,
         )
-        self.mujoco_objects = OrderedDict([("cubeA", cubeA), ("cubeB", cubeB)])
+
+        # Add cubes to initializer
+        self.placement_initializer.add_objects([self.cubeA, self.cubeB])
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
-            mujoco_arena=self.mujoco_arena,
+            mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots],
-            mujoco_objects=self.mujoco_objects,
-            initializer=self.placement_initializer,
+            mujoco_objects=[self.cubeA, self.cubeB],
         )
-        self.model.place_objects()
 
     def _get_reference(self):
         """
@@ -394,24 +381,8 @@ class Stack(RobotEnv):
         super()._get_reference()
 
         # Additional object references from this env
-        self.cubeA_body_id = self.sim.model.body_name2id("cubeA")
-        self.cubeB_body_id = self.sim.model.body_name2id("cubeB")
-
-        # information of objects
-        self.object_names = list(self.mujoco_objects.keys())
-        self.object_site_ids = [
-            self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
-        ]
-
-        # id of grippers for contact checking
-        self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
-        ]
-        self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
-        ]
-        self.cubeA_geom_id = self.sim.model.geom_name2id("cubeA")
-        self.cubeB_geom_id = self.sim.model.geom_name2id("cubeB")
+        self.cubeA_body_id = self.sim.model.body_name2id(self.cubeA.root_body)
+        self.cubeB_body_id = self.sim.model.body_name2id(self.cubeB.root_body)
 
     def _reset_internal(self):
         """
@@ -423,11 +394,11 @@ class Stack(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.model.place_objects()
+            object_placements = self.placement_initializer.sample()
 
             # Loop through all objects and reset their positions
-            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+            for obj_pos, obj_quat, obj in object_placements.values():
+                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
 
     def _get_observation(self):
         """
@@ -504,38 +475,9 @@ class Stack(RobotEnv):
         """
         Do any needed visualization here. Overrides superclass implementations.
         """
+        # Run super call first
+        super()._visualization()
 
-        # color the gripper site appropriately based on distance to cube
+        # Color the gripper visualization site according to its distance to cubeA
         if self.robots[0].gripper_visualization:
-            # find closest object
-            square_dist = lambda x: np.sum(
-                np.square(x - self.sim.data.get_site_xpos(self.robots[0].gripper.visualization_sites["grip_site"]))
-            )
-            dists = np.array(list(map(square_dist, self.sim.data.site_xpos)))
-            dists[self.robots[0].eef_site_id] = np.inf  # make sure we don't pick the same site
-            dists[self.robots[0].eef_cylinder_id] = np.inf
-            ob_dists = dists[
-                self.object_site_ids
-            ]  # filter out object sites we care about
-            min_dist = np.min(ob_dists)
-
-            # set RGBA for the EEF site here
-            max_dist = 0.1
-            scaled = (1.0 - min(min_dist / max_dist, 1.)) ** 15
-            rgba = np.zeros(4)
-            rgba[0] = 1 - scaled
-            rgba[1] = scaled
-            rgba[3] = 0.5
-
-            self.sim.model.site_rgba[self.robots[0].eef_site_id] = rgba
-
-    def _check_robot_configuration(self, robots):
-        """
-        Sanity check to make sure the inputted robots and configuration is acceptable
-
-        Args:
-            robots (str or list of str): Robots to instantiate within this env
-        """
-        if type(robots) is list:
-            assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
-
+            self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cubeA)

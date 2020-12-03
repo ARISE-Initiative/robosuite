@@ -3,15 +3,14 @@ import random
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.robot_env import RobotEnv
-from robosuite.robots import SingleArm
+from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
-from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler
+from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler, UniformRandomSampler
 
 
-class NutAssembly(RobotEnv):
+class NutAssembly(SingleArmEnv):
     """
     This class corresponds to the nut assembly task for a single robot arm.
 
@@ -19,6 +18,9 @@ class NutAssembly(RobotEnv):
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
             (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
             Note: Must be a single single-arm robot!
+
+        env_configuration (str): Specifies how to position the robots within the environment (default is "default").
+            For most single arm environments, this argument has no impact on the robot setup.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -65,7 +67,7 @@ class NutAssembly(RobotEnv):
 
         reward_shaping (bool): if True, use dense rewards.
 
-        placement_initializer (ObjectPositionSampler instance): if provided, will
+        placement_initializer (ObjectPositionSampler): if provided, will
             be used to place objects on every reset, else a UniformRandomSampler
             is used by default.
 
@@ -87,6 +89,13 @@ class NutAssembly(RobotEnv):
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
+
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -140,6 +149,7 @@ class NutAssembly(RobotEnv):
     def __init__(
         self,
         robots,
+        env_configuration="default",
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
@@ -154,6 +164,8 @@ class NutAssembly(RobotEnv):
         single_object_mode=0,
         nut_type=None,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -168,9 +180,6 @@ class NutAssembly(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        # First, verify that only one robot is being inputted
-        self._check_robot_configuration(robots)
-
         # task settings
         self.single_object_mode = single_object_mode
         self.nut_to_id = {"square": 0, "round": 1}
@@ -186,6 +195,7 @@ class NutAssembly(RobotEnv):
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
+        self.table_offset = np.array((0, 0, 0.82))
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -198,38 +208,20 @@ class NutAssembly(RobotEnv):
         if placement_initializer:
             self.placement_initializer = placement_initializer
         else:
-            # treat sampling of each type of nut differently since we require different
-            # sampling ranges for each
+            # treat sampling of each type of nut differently since we require different sampling ranges for each
             self.placement_initializer = SequentialCompositeSampler()
-            self.placement_initializer.sample_on_top(
-                "SquareNut0",
-                surface_name="table",
-                x_range=[-0.115, -0.11],
-                y_range=[0.11, 0.225],
-                rotation=None,
-                rotation_axis='z',
-                z_offset=0.02,
-                ensure_object_boundary_in_range=False,
-            )
-            self.placement_initializer.sample_on_top(
-                "RoundNut0",
-                surface_name="table",
-                x_range=[-0.115, -0.11],
-                y_range=[-0.225, -0.11],
-                rotation=None,
-                rotation_axis='z',
-                z_offset=0.02,
-                ensure_object_boundary_in_range=False,
-            )
 
         super().__init__(
             robots=robots,
+            env_configuration=env_configuration,
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
+            robot_visualizations=robot_visualizations,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -306,75 +298,60 @@ class NutAssembly(RobotEnv):
         hover_mult = 0.7
 
         # filter out objects that are already on the correct pegs
-        names_to_reach = []
-        objs_to_reach = []
-        geoms_to_grasp = []
-        geoms_by_array = []
-
-        for i in range(len(self.ob_inits)):
+        active_nuts = []
+        for i, nut in enumerate(self.nuts):
             if self.objects_on_pegs[i]:
                 continue
-            obj_str = str(self.item_names[i]) + "0"
-            names_to_reach.append(obj_str)
-            objs_to_reach.append(self.obj_body_id[obj_str])
-            geoms_to_grasp.extend(self.obj_geom_id[obj_str])
-            geoms_by_array.append(self.obj_geom_id[obj_str])
+            active_nuts.append(nut)
 
-        ### reaching reward governed by distance to closest object ###
+        # reaching reward governed by distance to closest object
         r_reach = 0.
-        if len(objs_to_reach):
-            # reaching reward via minimum distance to the handles of the objects (the last geom of each nut)
-            geom_ids = [elem[-1] for elem in geoms_by_array]
-            target_geom_pos = self.sim.data.geom_xpos[geom_ids]
-            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-            dists = np.linalg.norm(
-                target_geom_pos - gripper_site_pos.reshape(1, -1), axis=1
-            )
+        if active_nuts:
+            # reaching reward via minimum distance to the handles of the objects
+            dists = [
+                self._gripper_to_target(
+                    gripper=self.robots[0].gripper,
+                    target=active_nut.important_sites["handle"],
+                    target_type="site",
+                    return_distance=True,
+                ) for active_nut in active_nuts
+            ]
             r_reach = (1 - np.tanh(10.0 * min(dists))) * reach_mult
 
-        ### grasping reward for touching any objects of interest ###
-        touch_left_finger = False
-        touch_right_finger = False
-        for i in range(self.sim.data.ncon):
-            c = self.sim.data.contact[i]
-            if c.geom1 in geoms_to_grasp:
-                if c.geom2 in self.l_finger_geom_ids:
-                    touch_left_finger = True
-                if c.geom2 in self.r_finger_geom_ids:
-                    touch_right_finger = True
-            elif c.geom2 in geoms_to_grasp:
-                if c.geom1 in self.l_finger_geom_ids:
-                    touch_left_finger = True
-                if c.geom1 in self.r_finger_geom_ids:
-                    touch_right_finger = True
-        has_grasp = touch_left_finger and touch_right_finger
-        r_grasp = int(has_grasp) * grasp_mult
+        # grasping reward for touching any objects of interest
+        r_grasp = int(self._check_grasp(
+            gripper=self.robots[0].gripper,
+            object_geoms=[g for active_nut in active_nuts for g in active_nut.contact_geoms])
+        ) * grasp_mult
 
-        ### lifting reward for picking up an object ###
+        # lifting reward for picking up an object
         r_lift = 0.
         table_pos = np.array(self.sim.data.body_xpos[self.table_body_id])
-        if len(objs_to_reach) and r_grasp > 0.:
+        if active_nuts and r_grasp > 0.:
             z_target = table_pos[2] + 0.2
-            object_z_locs = self.sim.data.body_xpos[objs_to_reach][:, 2]
+            object_z_locs = self.sim.data.body_xpos[[self.obj_body_id[active_nut.name]
+                                                     for active_nut in active_nuts]][:, 2]
             z_dists = np.maximum(z_target - object_z_locs, 0.)
             r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (
                     lift_mult - grasp_mult
             )
 
-        ### hover reward for getting object above peg ###
+        # hover reward for getting object above peg
         r_hover = 0.
-        if len(objs_to_reach):
-            r_hovers = np.zeros(len(objs_to_reach))
-            for i in range(len(objs_to_reach)):
-                if names_to_reach[i].startswith(self.item_names[0]):
-                    peg_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id])[:2]
-                elif names_to_reach[i].startswith(self.item_names[1]):
-                    peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id])[:2]
-                else:
-                    raise Exception(
-                        "Got invalid object to reach: {}".format(names_to_reach[i])
-                    )
-                ob_xy = self.sim.data.body_xpos[objs_to_reach[i]][:2]
+        if active_nuts:
+            r_hovers = np.zeros(len(active_nuts))
+            peg_body_ids = [self.peg1_body_id, self.peg2_body_id]
+            for i, nut in enumerate(active_nuts):
+                valid_obj = False
+                peg_pos = None
+                for nut_name, idn in self.nut_to_id.items():
+                    if nut_name in nut.name.lower():
+                        peg_pos = np.array(self.sim.data.body_xpos[peg_body_ids[idn]])[:2]
+                        valid_obj = True
+                        break
+                if not valid_obj:
+                    raise Exception("Got invalid object to reach: {}".format(nut.name))
+                ob_xy = self.sim.data.body_xpos[self.obj_body_id[nut.name]][:2]
                 dist = np.linalg.norm(peg_pos - ob_xy)
                 r_hovers[i] = r_lift + (1 - np.tanh(10.0 * dist)) * (
                         hover_mult - lift_mult
@@ -393,29 +370,10 @@ class NutAssembly(RobotEnv):
         if (
                 abs(obj_pos[0] - peg_pos[0]) < 0.03
                 and abs(obj_pos[1] - peg_pos[1]) < 0.03
-                and obj_pos[2] < self.mujoco_arena.table_offset[2] + 0.05
+                and obj_pos[2] < self.table_offset[2] + 0.05
         ):
             res = True
         return res
-
-    def clear_objects(self, obj):
-        """
-        Clears objects without the name @obj out of the task space. This is useful
-        for supporting task modes with single types of objects, as in
-        @self.single_object_mode without changing the model definition.
-
-        Args:
-            obj (str): Name of object to keep in the task space
-        """
-        for obj_name, obj_mjcf in self.mujoco_objects.items():
-            if obj_name == obj:
-                continue
-            else:
-                sim_state = self.sim.get_state()
-                # print(self.sim.model.get_joint_qpos_addr(obj_name))
-                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name + "_jnt0")[0]] = 10
-                self.sim.set_state(sim_state)
-                self.sim.forward()
 
     def _load_model(self):
         """
@@ -423,55 +381,67 @@ class NutAssembly(RobotEnv):
         """
         super()._load_model()
 
-        # Verify the correct robot has been loaded
-        assert isinstance(self.robots[0], SingleArm), \
-            "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
-
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
-        self.mujoco_arena = PegsArena(
+        mujoco_arena = PegsArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
-            table_offset=(0, 0, 0.82)
+            table_offset=self.table_offset,
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
-        self.mujoco_arena.set_origin([0, 0, 0])
+        mujoco_arena.set_origin([0, 0, 0])
 
-        # define mujoco objects
-        self.ob_inits = [SquareNutObject, RoundNutObject]
-        self.item_names = ["SquareNut", "RoundNut"]
-        self.item_names_org = list(self.item_names)
-        self.obj_to_use = (self.item_names[1] + "{}").format(0)
-        self.ngeoms = [5, 9]
+        # define nuts
+        self.nuts = []
 
-        lst = []
-        for i in range(len(self.ob_inits)):
-            ob_name = (self.item_names[i] + "0")
-            ob = self.ob_inits[i](
-                name=ob_name,
-                joints=[dict(type="free", damping="0.0005")], # damp the free joint for each object
-            )
-            lst.append((ob_name, ob))
+        # We need to check if custom placement initializer has been specified. This is true if the sampler is either
+        # NOT a SequentialCompsiteSampler OR if the sampler already has sub-samplers in it
+        is_custom_sampler = not isinstance(self.placement_initializer, SequentialCompositeSampler) or \
+            len(self.placement_initializer.samplers) > 0
 
-        self.mujoco_objects = OrderedDict(lst)
-        self.n_objects = len(self.mujoco_objects)
+        for i, (nut_cls, nut_name, default_y_range) in enumerate(zip(
+                (SquareNutObject, RoundNutObject),
+                ("SquareNut", "RoundNut"),
+                ([0.11, 0.225], [-0.225, -0.11]),
+        )):
+            nut = nut_cls(name=nut_name)
+            self.nuts.append(nut)
+            # Add this nut to the placement initializer
+            if is_custom_sampler:
+                if isinstance(self.placement_initializer, SequentialCompositeSampler):
+                    # assumes user has already specified two samplers so we add nuts to them
+                    self.placement_initializer.samplers[i].add_objects(nut)
+                else:
+                    # This is assumed to be a flat sampler, so we just add all nuts to this sampler
+                    self.placement_initializer.add_objects(nut)
+            else:
+                # Default sampler; must define sub-samplers
+                self.placement_initializer.append_sampler(
+                    sampler=UniformRandomSampler(
+                        mujoco_objects=nut,
+                        x_range=[-0.115, -0.11],
+                        y_range=default_y_range,
+                        rotation=None,
+                        rotation_axis='z',
+                        ensure_object_boundary_in_range=False,
+                        ensure_valid_placement=True,
+                        reference_pos=self.table_offset,
+                        z_offset=0.02,
+                    )
+                )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
-            mujoco_arena=self.mujoco_arena, 
+            mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects,
-            initializer=self.placement_initializer,
+            mujoco_objects=self.nuts,
         )
-
-        # set positions of objects
-        self.model.place_objects()
 
     def _get_reference(self):
         """
@@ -489,35 +459,15 @@ class NutAssembly(RobotEnv):
         self.peg1_body_id = self.sim.model.body_name2id("peg1")
         self.peg2_body_id = self.sim.model.body_name2id("peg2")
 
-        for i in range(len(self.ob_inits)):
-            obj_str = str(self.item_names[i]) + "0"
-            self.obj_body_id[obj_str] = self.sim.model.body_name2id(obj_str)
-            geom_ids = []
-            for j in range(self.ngeoms[i]):
-                geom_ids.append(self.sim.model.geom_name2id(obj_str + "_{}".format(j)))
-            self.obj_geom_id[obj_str] = geom_ids
+        for nut in self.nuts:
+            self.obj_body_id[nut.name] = self.sim.model.body_name2id(nut.root_body)
+            self.obj_geom_id[nut.name] = [self.sim.model.geom_name2id(g) for g in nut.contact_geoms]
 
         # information of objects
-        self.object_names = list(self.mujoco_objects.keys())
-        self.object_site_ids = [
-            self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
-        ]
-
-        # id of grippers for contact checking
-        self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
-        ]
-        self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
-        ]
-        # self.sim.data.contact # list, geom1, geom2
-        self.collision_check_geom_names = self.sim.model._geom_name2id.keys()
-        self.collision_check_geom_ids = [
-            self.sim.model._geom_name2id[k] for k in self.collision_check_geom_names
-        ]
+        self.object_site_ids = [self.sim.model.site_name2id(nut.important_sites["handle"]) for nut in self.nuts]
 
         # keep track of which objects are on their corresponding pegs
-        self.objects_on_pegs = np.zeros(len(self.ob_inits))
+        self.objects_on_pegs = np.zeros(len(self.nuts))
 
     def _reset_internal(self):
         """
@@ -529,25 +479,21 @@ class NutAssembly(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.model.place_objects()
+            object_placements = self.placement_initializer.sample()
 
             # Loop through all objects and reset their positions
-            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
-
-        # information of objects
-        self.object_names = list(self.mujoco_objects.keys())
-        self.object_site_ids = [
-            self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
-        ]
+            for obj_pos, obj_quat, obj in object_placements.values():
+                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
 
         # Move objects out of the scene depending on the mode
+        nut_names = {nut.name for nut in self.nuts}
         if self.single_object_mode == 1:
-            self.obj_to_use = (random.choice(self.item_names) + "{}").format(0)
-            self.clear_objects(self.obj_to_use)
+            self.obj_to_use = random.choice(list(nut_names))
         elif self.single_object_mode == 2:
-            self.obj_to_use = (self.item_names[self.nut_id] + "{}").format(0)
-            self.clear_objects(self.obj_to_use)
+            self.obj_to_use = self.nuts[self.nut_id].name
+        if self.single_object_mode in {1, 2}:
+            nut_names.remove(self.obj_to_use)
+            self.clear_objects(list(nut_names))
 
     def _get_observation(self):
         """
@@ -581,13 +527,13 @@ class NutAssembly(RobotEnv):
             gripper_pose = T.pose2mat((di[pr + "eef_pos"], di[pr + "eef_quat"]))
             world_pose_in_gripper = T.pose_inv(gripper_pose)
 
-            for i in range(len(self.item_names_org)):
+            for i, nut in enumerate(self.nuts):
 
                 if self.single_object_mode == 2 and self.nut_id != i:
                     # skip observations
                     continue
 
-                obj_str = str(self.item_names_org[i]) + "0"
+                obj_str = nut.name
                 obj_pos = np.array(self.sim.data.body_xpos[self.obj_body_id[obj_str]])
                 obj_quat = T.convert_quat(
                     self.sim.data.body_xquat[self.obj_body_id[obj_str]], to="xyzw"
@@ -608,14 +554,14 @@ class NutAssembly(RobotEnv):
 
             if self.single_object_mode == 1:
                 # zero out other objs
-                for obj_str, obj_mjcf in self.mujoco_objects.items():
-                    if obj_str == self.obj_to_use:
+                for obj in self.model.mujoco_objects:
+                    if obj.name == self.obj_to_use:
                         continue
                     else:
-                        di["{}_pos".format(obj_str)] *= 0.0
-                        di["{}_quat".format(obj_str)] *= 0.0
-                        di["{}_to_{}eef_pos".format(obj_str, pr)] *= 0.0
-                        di["{}_to_{}eef_quat".format(obj_str, pr)] *= 0.0
+                        di["{}_pos".format(obj.name)] *= 0.0
+                        di["{}_quat".format(obj.name)] *= 0.0
+                        di["{}_to_{}eef_pos".format(obj.name, pr)] *= 0.0
+                        di["{}_to_{}eef_quat".format(obj.name, pr)] *= 0.0
 
             di["object-state"] = np.concatenate([di[k] for k in object_state_keys])
 
@@ -630,8 +576,8 @@ class NutAssembly(RobotEnv):
         """
         # remember objects that are on the correct pegs
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-        for i in range(len(self.ob_inits)):
-            obj_str = str(self.item_names[i]) + "0"
+        for i, nut in enumerate(self.nuts):
+            obj_str = nut.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
             dist = np.linalg.norm(gripper_site_pos - obj_pos)
             r_reach = 1 - np.tanh(10.0 * dist)
@@ -641,47 +587,30 @@ class NutAssembly(RobotEnv):
             return np.sum(self.objects_on_pegs) > 0  # need one object on peg
 
         # returns True if all objects are on correct pegs
-        return np.sum(self.objects_on_pegs) == len(self.ob_inits)
+        return np.sum(self.objects_on_pegs) == len(self.nuts)
 
     def _visualization(self):
         """
         Do any needed visualization here. Overrides superclass implementations.
         """
-
-        # color the gripper site appropriately based on distance to cube
+        # color the gripper site appropriately based on distance to closest nut
         if self.robots[0].gripper_visualization:
             # find closest object
-            square_dist = lambda x: np.sum(
-                np.square(x - self.sim.data.get_site_xpos(self.robots[0].gripper.visualization_sites["grip_site"]))
+            dists = [
+                self._gripper_to_target(
+                    gripper=self.robots[0].gripper,
+                    target=nut.important_sites["handle"],
+                    target_type="site",
+                    return_distance=True,
+                ) for nut in self.nuts
+            ]
+            closest_nut_id = np.argmin(dists)
+            # Visualize the distance to this target
+            self._visualize_gripper_to_target(
+                gripper=self.robots[0].gripper,
+                target=self.nuts[closest_nut_id].important_sites["handle"],
+                target_type="site",
             )
-            dists = np.array(list(map(square_dist, self.sim.data.site_xpos)))
-            dists[self.robots[0].eef_site_id] = np.inf  # make sure we don't pick the same site
-            dists[self.robots[0].eef_cylinder_id] = np.inf
-            ob_dists = dists[
-                self.object_site_ids
-            ]  # filter out object sites we care about
-            min_dist = np.min(ob_dists)
-            ob_id = np.argmin(ob_dists)
-
-            # set RGBA for the EEF site here
-            max_dist = 0.1
-            scaled = (1.0 - min(min_dist / max_dist, 1.)) ** 15
-            rgba = np.zeros(4)
-            rgba[0] = 1 - scaled
-            rgba[1] = scaled
-            rgba[3] = 0.5
-
-            self.sim.model.site_rgba[self.robots[0].eef_site_id] = rgba
-
-    def _check_robot_configuration(self, robots):
-        """
-        Sanity check to make sure the inputted robots and configuration is acceptable
-
-        Args:
-            robots (str or list of str): Robots to instantiate within this env
-        """
-        if type(robots) is list:
-            assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
 
 
 class NutAssemblySingle(NutAssembly):

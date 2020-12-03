@@ -22,42 +22,8 @@ class Robotiq140GripperBase(GripperModel):
         return action
 
     @property
-    def dof(self):
-        return 2
-
-    @property
     def init_qpos(self):
         return np.array([0.012, 0.065, 0.065, -0.012, 0.065, 0.065])
-
-    @property
-    def _joints(self):
-        return ["finger_joint", "left_inner_finger_joint",
-                "left_inner_knuckle_joint", "right_outer_knuckle_joint",
-                "right_inner_finger_joint", "right_inner_knuckle_joint"]
-
-    @property
-    def _actuators(self):
-        return [
-            "finger_1",
-            "finger_2",
-        ]
-
-    @property
-    def _contact_geoms(self):
-        return [
-            "hand_collision",
-            "left_outer_knuckle_collision",
-            "left_outer_finger_collision",
-            "left_inner_finger_collision",
-            "left_fingertip_collision",
-            "left_inner_knuckle_collision",
-            "right_outer_knuckle_collision",
-            "right_outer_finger_collision",
-            "right_inner_finger_collision",
-            "right_fingertip_collision",
-            "right_inner_knuckle_collision",
-
-        ]
 
     @property
     def _important_geoms(self):
@@ -65,13 +31,17 @@ class Robotiq140GripperBase(GripperModel):
             "left_finger": [
                 "left_outer_finger_collision",
                 "left_inner_finger_collision",
-                "left_fingertip_collision"
+                "left_fingertip_collision",
+                "left_fingerpad_collision",
             ],
             "right_finger": [
                 "right_outer_finger_collision",
                 "right_inner_finger_collision",
-                "right_fingertip_collision"
+                "right_fingertip_collision",
+                "right_fingerpad_collision",
             ],
+            "left_fingerpad": ["left_fingerpad_collision"],
+            "right_fingerpad": ["right_fingerpad_collision"],
         }
 
 

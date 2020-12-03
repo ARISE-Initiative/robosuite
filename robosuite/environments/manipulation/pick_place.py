@@ -3,8 +3,7 @@ import random
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.robot_env import RobotEnv
-from robosuite.robots import SingleArm
+from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import BinsArena
 from robosuite.models.objects import (
@@ -19,10 +18,10 @@ from robosuite.models.objects import (
     CerealVisualObject,
     CanVisualObject,
 )
-from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler
+from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler, UniformRandomSampler
 
 
-class PickPlace(RobotEnv):
+class PickPlace(SingleArmEnv):
     """
     This class corresponds to the pick place task for a single robot arm.
 
@@ -30,6 +29,9 @@ class PickPlace(RobotEnv):
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
             (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
             Note: Must be a single single-arm robot!
+
+        env_configuration (str): Specifies how to position the robots within the environment (default is "default").
+            For most single arm environments, this argument has no impact on the robot setup.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -99,6 +101,13 @@ class PickPlace(RobotEnv):
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
 
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
+
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -151,6 +160,7 @@ class PickPlace(RobotEnv):
     def __init__(
         self,
         robots,
+        env_configuration="default",
         controller_configs=None,
         gripper_types="default",
         gripper_visualizations=False,
@@ -166,6 +176,8 @@ class PickPlace(RobotEnv):
         single_object_mode=0,
         object_type=None,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -180,12 +192,10 @@ class PickPlace(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        # First, verify that only one robot is being inputted
-        self._check_robot_configuration(robots)
-
         # task settings
         self.single_object_mode = single_object_mode
         self.object_to_id = {"milk": 0, "bread": 1, "cereal": 2, "can": 3}
+        self.obj_names = ["Milk", "Bread", "Cereal", "Can"]
         if object_type is not None:
             assert (
                     object_type in self.object_to_id.keys()
@@ -214,12 +224,15 @@ class PickPlace(RobotEnv):
 
         super().__init__(
             robots=robots,
+            env_configuration=env_configuration,
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
+            robot_visualizations=robot_visualizations,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -296,79 +309,66 @@ class PickPlace(RobotEnv):
         hover_mult = 0.7
 
         # filter out objects that are already in the correct bins
-        objs_to_reach = []
-        geoms_to_grasp = []
-        target_bin_placements = []
-        for i in range(len(self.ob_inits)):
+        active_objs = []
+        for i, obj in enumerate(self.objects):
             if self.objects_in_bins[i]:
                 continue
-            obj_str = str(self.item_names[i]) + "0"
-            objs_to_reach.append(self.obj_body_id[obj_str])
-            geoms_to_grasp.append(self.obj_geom_id[obj_str])
-            target_bin_placements.append(self.target_bin_placements[i])
-        target_bin_placements = np.array(target_bin_placements)
+            active_objs.append(obj)
 
-        ### reaching reward governed by distance to closest object ###
+        # reaching reward governed by distance to closest object
         r_reach = 0.
-        if len(objs_to_reach):
+        if active_objs:
             # get reaching reward via minimum distance to a target object
-            target_object_pos = self.sim.data.body_xpos[objs_to_reach]
-            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-            dists = np.linalg.norm(
-                target_object_pos - gripper_site_pos.reshape(1, -1), axis=1
-            )
+            dists = [
+                self._gripper_to_target(
+                    gripper=self.robots[0].gripper,
+                    target=active_obj.root_body,
+                    target_type="body",
+                    return_distance=True,
+                ) for active_obj in active_objs
+            ]
             r_reach = (1 - np.tanh(10.0 * min(dists))) * reach_mult
 
-        ### grasping reward for touching any objects of interest ###
-        touch_left_finger = False
-        touch_right_finger = False
-        for i in range(self.sim.data.ncon):
-            c = self.sim.data.contact[i]
-            if c.geom1 in geoms_to_grasp:
-                bin_id = geoms_to_grasp.index(c.geom1)
-                if c.geom2 in self.l_finger_geom_ids:
-                    touch_left_finger = True
-                if c.geom2 in self.r_finger_geom_ids:
-                    touch_right_finger = True
-            elif c.geom2 in geoms_to_grasp:
-                bin_id = geoms_to_grasp.index(c.geom2)
-                if c.geom1 in self.l_finger_geom_ids:
-                    touch_left_finger = True
-                if c.geom1 in self.r_finger_geom_ids:
-                    touch_right_finger = True
-        has_grasp = touch_left_finger and touch_right_finger
-        r_grasp = int(has_grasp) * grasp_mult
+        # grasping reward for touching any objects of interest
+        r_grasp = int(self._check_grasp(
+            gripper=self.robots[0].gripper,
+            object_geoms=[g for active_obj in active_objs for g in active_obj.contact_geoms])
+        ) * grasp_mult
 
-        ### lifting reward for picking up an object ###
+        # lifting reward for picking up an object
         r_lift = 0.
-        if len(objs_to_reach) and r_grasp > 0.:
+        if active_objs and r_grasp > 0.:
             z_target = self.bin2_pos[2] + 0.25
-            object_z_locs = self.sim.data.body_xpos[objs_to_reach][:, 2]
+            object_z_locs = self.sim.data.body_xpos[[self.obj_body_id[active_obj.name]
+                                                     for active_obj in active_objs]][:, 2]
             z_dists = np.maximum(z_target - object_z_locs, 0.)
             r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (
                     lift_mult - grasp_mult
             )
 
-        ### hover reward for getting object above bin ###
+        # hover reward for getting object above bin
         r_hover = 0.
-        if len(objs_to_reach):
+        if active_objs:
+            target_bin_ids = [self.object_to_id[active_obj.name.lower()] for active_obj in active_objs]
             # segment objects into left of the bins and above the bins
-            object_xy_locs = self.sim.data.body_xpos[objs_to_reach][:, :2]
+            object_xy_locs = self.sim.data.body_xpos[[self.obj_body_id[active_obj.name]
+                                                     for active_obj in active_objs]][:, :2]
             y_check = (
-                    np.abs(object_xy_locs[:, 1] - target_bin_placements[:, 1])
+                    np.abs(object_xy_locs[:, 1] - self.target_bin_placements[target_bin_ids, 1])
                     < self.bin_size[1] / 4.
             )
             x_check = (
-                    np.abs(object_xy_locs[:, 0] - target_bin_placements[:, 0])
+                    np.abs(object_xy_locs[:, 0] - self.target_bin_placements[target_bin_ids, 0])
                     < self.bin_size[0] / 4.
             )
             objects_above_bins = np.logical_and(x_check, y_check)
             objects_not_above_bins = np.logical_not(objects_above_bins)
             dists = np.linalg.norm(
-                target_bin_placements[:, :2] - object_xy_locs, axis=1
+                self.target_bin_placements[target_bin_ids, :2] - object_xy_locs, axis=1
             )
-            # objects to the left get r_lift added to hover reward, those on the right get max(r_lift) added (to encourage dropping)
-            r_hover_all = np.zeros(len(objs_to_reach))
+            # objects to the left get r_lift added to hover reward,
+            # those on the right get max(r_lift) added (to encourage dropping)
+            r_hover_all = np.zeros(len(active_objs))
             r_hover_all[objects_above_bins] = lift_mult + (
                     1 - np.tanh(10.0 * dists[objects_above_bins])
             ) * (hover_mult - lift_mult)
@@ -400,25 +400,6 @@ class PickPlace(RobotEnv):
             res = False
         return res
 
-    def clear_objects(self, obj):
-        """
-        Clears objects without the name @obj out of the task space. This is useful
-        for supporting task modes with single types of objects, as in
-        @self.single_object_mode without changing the model definition.
-
-        Args:
-            obj (str): Name of object to keep in the task space
-        """
-        for obj_name, obj_mjcf in self.mujoco_objects.items():
-            if obj_name == obj:
-                continue
-            else:
-                sim_state = self.sim.get_state()
-                # print(self.sim.model.get_joint_qpos_addr(obj_name))
-                sim_state.qpos[self.sim.model.get_joint_qpos_addr(obj_name + "_jnt0")[0]] = 10
-                self.sim.set_state(sim_state)
-                self.sim.forward()
-
     def _get_placement_initializer(self):
         """
         Helper function for defining placement initializer and object sampling bounds.
@@ -426,26 +407,27 @@ class PickPlace(RobotEnv):
         self.placement_initializer = SequentialCompositeSampler()
 
         # can sample anywhere in bin
-        bin_x_half = self.mujoco_arena.table_full_size[0] / 2 - 0.05
-        bin_y_half = self.mujoco_arena.table_full_size[1] / 2 - 0.05
+        bin_x_half = self.model.mujoco_arena.table_full_size[0] / 2 - 0.05
+        bin_y_half = self.model.mujoco_arena.table_full_size[1] / 2 - 0.05
 
         # each object should just be sampled in the bounds of the bin (with some tolerance)
-        for obj_name in self.collision_objects:
-
-            self.placement_initializer.sample_on_top(
-                obj_name,
-                surface_name="table",
+        self.placement_initializer.append_sampler(
+            sampler=UniformRandomSampler(
+                mujoco_objects=self.objects,
                 x_range=[-bin_x_half, bin_x_half],
                 y_range=[-bin_y_half, bin_y_half],
                 rotation=None,
                 rotation_axis='z',
-                z_offset=0.,
                 ensure_object_boundary_in_range=True,
+                ensure_valid_placement=True,
+                reference_pos=self.bin1_pos,
+                z_offset=0.,
             )
+        )
 
         # each visual object should just be at the center of each target bin
         index = 0
-        for obj_name in self.visual_objects:
+        for vis_obj in self.visual_objects:
 
             # get center of target bin
             bin_x_low = self.bin2_pos[0]
@@ -464,17 +446,19 @@ class PickPlace(RobotEnv):
             # placement is relative to object bin, so compute difference and send to placement initializer
             rel_center = bin_center - self.bin1_pos[:2]
 
-            self.placement_initializer.sample_on_top(
-                obj_name,
-                surface_name="table",
-                x_range=[rel_center[0], rel_center[0]],
-                y_range=[rel_center[1], rel_center[1]],
-                rotation=0.,
-                rotation_axis='z',
-                z_offset=self.bin2_pos[2] - self.bin1_pos[2],
-                ensure_object_boundary_in_range=False,
+            self.placement_initializer.append_sampler(
+                sampler=UniformRandomSampler(
+                    mujoco_objects=vis_obj,
+                    x_range=[rel_center[0], rel_center[0]],
+                    y_range=[rel_center[1], rel_center[1]],
+                    rotation=0.,
+                    rotation_axis='z',
+                    ensure_object_boundary_in_range=False,
+                    ensure_valid_placement=False,
+                    reference_pos=self.bin1_pos,
+                    z_offset=self.bin2_pos[2] - self.bin1_pos[2],
+                )
             )
-
             index += 1
 
     def _load_model(self):
@@ -483,77 +467,51 @@ class PickPlace(RobotEnv):
         """
         super()._load_model()
 
-        # Verify the correct robot has been loaded
-        assert isinstance(self.robots[0], SingleArm), \
-            "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
-
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["bins"]
         self.robots[0].robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
-        self.mujoco_arena = BinsArena(
+        mujoco_arena = BinsArena(
             bin1_pos=self.bin1_pos,
             table_full_size=self.table_full_size,
             table_friction=self.table_friction
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
-        self.mujoco_arena.set_origin([0, 0, 0])
+        mujoco_arena.set_origin([0, 0, 0])
 
         # store some arena attributes
-        self.bin_size = self.mujoco_arena.table_full_size
+        self.bin_size = mujoco_arena.table_full_size
 
-        # define mujoco objects
-        self.ob_inits = [MilkObject, BreadObject, CerealObject, CanObject]
-        self.vis_inits = [
-            MilkVisualObject,
-            BreadVisualObject,
-            CerealVisualObject,
-            CanVisualObject,
-        ]
-        self.item_names = ["Milk", "Bread", "Cereal", "Can"]
-        self.item_names_org = list(self.item_names)
-        self.obj_to_use = (self.item_names[0] + "{}").format(0)
+        self.objects = []
+        self.visual_objects = []
+        for vis_obj_cls, obj_name in zip(
+                (MilkVisualObject, BreadVisualObject, CerealVisualObject, CanVisualObject),
+                self.obj_names,
+        ):
+            vis_name = "Visual" + obj_name
+            vis_obj = vis_obj_cls(name=vis_name)
+            self.visual_objects.append(vis_obj)
 
-        lst = []
-        for j in range(len(self.vis_inits)):
-            visual_ob_name = ("Visual" + self.item_names[j] + "0")
-            visual_ob = self.vis_inits[j](
-                name=visual_ob_name,
-                joints=[],  # no free joint for visual objects
-            )
-            lst.append((visual_ob_name, visual_ob))
-        self.visual_objects = OrderedDict(lst)
-
-        lst = []
-        for i in range(len(self.ob_inits)):
-            ob_name = (self.item_names[i] + "0")
-            ob = self.ob_inits[i](
-                name=ob_name,
-                joints=[dict(type="free", damping="0.0005")], # damp the free joint for each object
-            )
-            lst.append((ob_name, ob))
-
-        self.collision_objects = OrderedDict(lst)
-        self.mujoco_objects = OrderedDict(**self.visual_objects, **self.collision_objects)
-        self.n_objects = len(self.mujoco_objects)
+        for obj_cls, obj_name in zip(
+                (MilkObject, BreadObject, CerealObject, CanObject),
+                self.obj_names,
+        ):
+            obj = obj_cls(name=obj_name)
+            self.objects.append(obj)
 
         # task includes arena, robot, and objects of interest
-        self._get_placement_initializer()
         self.model = ManipulationTask(
-            mujoco_arena=self.mujoco_arena, 
+            mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects,
-            initializer=self.placement_initializer,
+            mujoco_objects=self.visual_objects + self.objects,
         )
 
-        # set positions of objects
-        self.model.place_objects()
-
-        # self.model.place_visual()
+        # Generate placement initializer
+        self._get_placement_initializer()
 
     def _get_reference(self):
         """
@@ -567,31 +525,18 @@ class PickPlace(RobotEnv):
         self.obj_body_id = {}
         self.obj_geom_id = {}
 
-        # id of grippers for contact checking
-        self.l_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["left_finger"]
-        ]
-        self.r_finger_geom_ids = [
-            self.sim.model.geom_name2id(x) for x in self.robots[0].gripper.important_geoms["right_finger"]
-        ]
-
         # object-specific ids
-        for i in range(len(self.ob_inits)):
-            obj_str = str(self.item_names[i]) + "0"
-            self.obj_body_id[obj_str] = self.sim.model.body_name2id(obj_str)
-            self.obj_geom_id[obj_str] = self.sim.model.geom_name2id(obj_str + "_0")
-
-        # for checking distance to / contact with objects we want to pick up
-        self.target_object_body_ids = list(map(int, self.obj_body_id.values()))
-        self.contact_with_object_geom_ids = list(map(int, self.obj_geom_id.values()))
+        for obj in (self.visual_objects + self.objects):
+            self.obj_body_id[obj.name] = self.sim.model.body_name2id(obj.root_body)
+            self.obj_geom_id[obj.name] = [self.sim.model.geom_name2id(g) for g in obj.contact_geoms]
 
         # keep track of which objects are in their corresponding bins
-        self.objects_in_bins = np.zeros(len(self.ob_inits))
+        self.objects_in_bins = np.zeros(len(self.objects))
 
         # target locations in bin for each object type
-        self.target_bin_placements = np.zeros((len(self.ob_inits), 3))
-        for j in range(len(self.ob_inits)):
-            bin_id = j
+        self.target_bin_placements = np.zeros((len(self.objects), 3))
+        for i, obj in enumerate(self.objects):
+            bin_id = i
             bin_x_low = self.bin2_pos[0]
             bin_y_low = self.bin2_pos[1]
             if bin_id == 0 or bin_id == 2:
@@ -600,7 +545,7 @@ class PickPlace(RobotEnv):
                 bin_y_low -= self.bin_size[1] / 2.
             bin_x_low += self.bin_size[0] / 4.
             bin_y_low += self.bin_size[1] / 4.
-            self.target_bin_placements[j, :] = [bin_x_low, bin_y_low, self.bin2_pos[2]]
+            self.target_bin_placements[i, :] = [bin_x_low, bin_y_low, self.bin2_pos[2]]
 
     def _reset_internal(self):
         """
@@ -612,30 +557,31 @@ class PickPlace(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.model.place_objects()
+            object_placements = self.placement_initializer.sample()
 
             # Loop through all objects and reset their positions
-            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                if "visual" not in obj_name.lower():
-                    self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
-
-        # information of (collision) objects
-        self.object_names = list(self.collision_objects.keys())
-        self.object_site_ids = [
-            self.sim.model.site_name2id(ob_name) for ob_name in self.object_names
-        ]
+            for obj_pos, obj_quat, obj in object_placements.values():
+                # Set the visual object body locations
+                if "visual" in obj.name.lower():
+                    self.sim.model.body_pos[self.obj_body_id[obj.name]] = obj_pos
+                    self.sim.model.body_quat[self.obj_body_id[obj.name]] = obj_quat
+                else:
+                    # Set the collision object joints
+                    self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
 
         # Set the bins to the desired position
         self.sim.model.body_pos[self.sim.model.body_name2id("bin1")] = self.bin1_pos
         self.sim.model.body_pos[self.sim.model.body_name2id("bin2")] = self.bin2_pos
 
         # Move objects out of the scene depending on the mode
+        obj_names = {obj.name for obj in self.objects}
         if self.single_object_mode == 1:
-            self.obj_to_use = (random.choice(self.item_names) + "{}").format(0)
-            self.clear_objects(self.obj_to_use)
+            self.obj_to_use = random.choice(list(obj_names))
         elif self.single_object_mode == 2:
-            self.obj_to_use = (self.item_names[self.object_id] + "{}").format(0)
-            self.clear_objects(self.obj_to_use)
+            self.obj_to_use = self.objects[self.object_id].name
+        if self.single_object_mode in {1, 2}:
+            obj_names.remove(self.obj_to_use)
+            self.clear_objects(list(obj_names))
 
     def _get_observation(self):
         """
@@ -669,13 +615,13 @@ class PickPlace(RobotEnv):
             gripper_pose = T.pose2mat((di[pr + "eef_pos"], di[pr + "eef_quat"]))
             world_pose_in_gripper = T.pose_inv(gripper_pose)
 
-            for i in range(len(self.item_names_org)):
+            for i, obj in enumerate(self.objects):
 
                 if self.single_object_mode == 2 and self.object_id != i:
                     # Skip adding to observations
                     continue
 
-                obj_str = str(self.item_names_org[i]) + "0"
+                obj_str = obj.name
                 obj_pos = np.array(self.sim.data.body_xpos[self.obj_body_id[obj_str]])
                 obj_quat = T.convert_quat(
                     self.sim.data.body_xquat[self.obj_body_id[obj_str]], to="xyzw"
@@ -697,14 +643,14 @@ class PickPlace(RobotEnv):
 
             if self.single_object_mode == 1:
                 # Zero out other objects observations
-                for obj_str, obj_mjcf in self.mujoco_objects.items():
-                    if obj_str == self.obj_to_use:
+                for obj in self.objects:
+                    if obj.name == self.obj_to_use:
                         continue
                     else:
-                        di["{}_pos".format(obj_str)] *= 0.0
-                        di["{}_quat".format(obj_str)] *= 0.0
-                        di["{}_to_{}eef_pos".format(obj_str, pr)] *= 0.0
-                        di["{}_to_{}eef_quat".format(obj_str, pr)] *= 0.0
+                        di["{}_pos".format(obj.name)] *= 0.0
+                        di["{}_quat".format(obj.name)] *= 0.0
+                        di["{}_to_{}eef_pos".format(obj.name, pr)] *= 0.0
+                        di["{}_to_{}eef_quat".format(obj.name, pr)] *= 0.0
 
             di["object-state"] = np.concatenate([di[k] for k in object_state_keys])
 
@@ -719,61 +665,42 @@ class PickPlace(RobotEnv):
         """
         # remember objects that are in the correct bins
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-        for i in range(len(self.ob_inits)):
-            obj_str = str(self.item_names[i]) + "0"
+        for i, obj in enumerate(self.objects):
+            obj_str = obj.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
             dist = np.linalg.norm(gripper_site_pos - obj_pos)
             r_reach = 1 - np.tanh(10.0 * dist)
-            self.objects_in_bins[i] = int(
-                (not self.not_in_bin(obj_pos, i)) and r_reach < 0.6
-            )
+            self.objects_in_bins[i] = int((not self.not_in_bin(obj_pos, i)) and r_reach < 0.6)
 
         # returns True if a single object is in the correct bin
-        if self.single_object_mode == 1 or self.single_object_mode == 2:
+        if self.single_object_mode in {1, 2}:
             return np.sum(self.objects_in_bins) > 0
 
         # returns True if all objects are in correct bins
-        return np.sum(self.objects_in_bins) == len(self.ob_inits)
+        return np.sum(self.objects_in_bins) == len(self.objects)
 
     def _visualization(self):
         """
         Do any needed visualization here. Overrides superclass implementations.
         """
-
-        # color the gripper site appropriately based on distance to cube
+        # color the gripper site appropriately based on distance to closest nut
         if self.robots[0].gripper_visualization:
             # find closest object
-            square_dist = lambda x: np.sum(
-                np.square(x - self.sim.data.get_site_xpos(self.robots[0].gripper.visualization_sites["grip_site"]))
+            dists = [
+                self._gripper_to_target(
+                    gripper=self.robots[0].gripper,
+                    target=obj.root_body,
+                    target_type="body",
+                    return_distance=True,
+                ) for obj in self.objects
+            ]
+            closest_obj_id = np.argmin(dists)
+            # Visualize the distance to this target
+            self._visualize_gripper_to_target(
+                gripper=self.robots[0].gripper,
+                target=self.objects[closest_obj_id].root_body,
+                target_type="body",
             )
-            dists = np.array(list(map(square_dist, self.sim.data.site_xpos)))
-            dists[self.robots[0].eef_site_id] = np.inf  # make sure we don't pick the same site
-            dists[self.robots[0].eef_cylinder_id] = np.inf
-            ob_dists = dists[
-                self.object_site_ids
-            ]  # filter out object sites we care about
-            min_dist = np.min(ob_dists)
-            ob_id = np.argmin(ob_dists)
-
-            # set RGBA for the EEF site here
-            max_dist = 0.1
-            scaled = (1.0 - min(min_dist / max_dist, 1.)) ** 15
-            rgba = np.zeros(4)
-            rgba[0] = 1 - scaled
-            rgba[1] = scaled
-            rgba[3] = 0.5
-
-            self.sim.model.site_rgba[self.robots[0].eef_site_id] = rgba
-
-    def _check_robot_configuration(self, robots):
-        """
-        Sanity check to make sure the inputted robots and configuration is acceptable
-
-        Args:
-            robots (str or list of str): Robots to instantiate within this env
-        """
-        if type(robots) is list:
-            assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
 
 
 class PickPlaceSingle(PickPlace):

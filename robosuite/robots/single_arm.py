@@ -7,14 +7,14 @@ import robosuite.utils.transform_utils as T
 from robosuite.models.grippers import gripper_factory
 from robosuite.controllers import controller_factory, load_controller_config
 
-from robosuite.robots.robot import Robot
+from robosuite.robots.manipulator import Manipulator
 from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
 
 import os
 import copy
 
 
-class SingleArm(Robot):
+class SingleArm(Manipulator):
     """
     Initializes a single-armed robot simulation object.
 
@@ -45,8 +45,9 @@ class SingleArm(Robot):
             within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
             default gripper
 
-        gripper_visualization (bool): True if using gripper visualization.
-            Useful for teleoperation.
+        gripper_visualization (bool): True if using gripper visualization. Useful for teleoperation.
+
+        robot_visualization (bool): True if using robot visualization. Useful for teleoperation.
 
         control_freq (float): how many control signals to receive
             in every second. This sets the amount of simulation time
@@ -62,6 +63,7 @@ class SingleArm(Robot):
         initialization_noise=None,
         gripper_type="default",
         gripper_visualization=False,
+        robot_visualization=False,
         control_freq=10
     ):
 
@@ -70,7 +72,6 @@ class SingleArm(Robot):
         self.gripper_type = gripper_type
         self.has_gripper = self.gripper_type is not None
         self.gripper_visualization = gripper_visualization
-        self.control_freq = control_freq
 
         self.gripper = None                                 # Gripper class
         self.gripper_joints = None                          # xml joint names for gripper
@@ -82,9 +83,6 @@ class SingleArm(Robot):
         self.eef_cylinder_id = None                         # xml element id for eef cylinder in mjsim
         self.torques = None                                 # Current torques being applied
 
-        self.recent_qpos = None                             # Current and last robot arm qpos
-        self.recent_actions = None                          # Current and last action applied
-        self.recent_torques = None                          # Current and last torques applied
         self.recent_ee_forcetorques = None                  # Current and last forces / torques sensed at eef
         self.recent_ee_pose = None                          # Current and last eef pose (pos + ori (quat))
         self.recent_ee_vel = None                           # Current and last eef velocity
@@ -96,6 +94,8 @@ class SingleArm(Robot):
             idn=idn,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
+            robot_visualization=robot_visualization,
+            control_freq=control_freq,
         )
 
     def _load_controller(self):
@@ -121,7 +121,7 @@ class SingleArm(Robot):
         #   policy (control) freq, and ndim (# joints)
         self.controller_config["robot_name"] = self.name
         self.controller_config["sim"] = self.sim
-        self.controller_config["eef_name"] = self.gripper.visualization_sites["grip_site"]
+        self.controller_config["eef_name"] = self.gripper.important_sites["grip_site"]
         self.controller_config["eef_rot_offset"] = self.eef_rot_offset
         self.controller_config["joint_indexes"] = {
             "joints": self.joint_indexes,
@@ -152,7 +152,7 @@ class SingleArm(Robot):
         if self.has_gripper:
             if self.gripper_type == 'default':
                 # Load the default gripper from the robot file
-                self.gripper = gripper_factory(self.robot_model.gripper, idn=self.idn)
+                self.gripper = gripper_factory(self.robot_model.default_gripper, idn=self.idn)
             else:
                 # Load user-specified gripper
                 self.gripper = gripper_factory(self.gripper_type, idn=self.idn)
@@ -161,9 +161,7 @@ class SingleArm(Robot):
             self.gripper = gripper_factory(None, idn=self.idn)
         # Grab eef rotation offset
         self.eef_rot_offset = T.quat_multiply(self.robot_model.hand_rotation_offset, self.gripper.rotation_offset)
-        # Use gripper visualization if necessary
-        if not self.gripper_visualization:
-            self.gripper.hide_visualization()
+        # Add gripper to this robot model
         self.robot_model.add_gripper(self.gripper)
 
     def reset(self, deterministic=False):
@@ -187,10 +185,7 @@ class SingleArm(Robot):
         # Update base pos / ori references in controller
         self.controller.update_base_pose(self.base_pos, self.base_ori)
 
-        # Setup buffers to hold recent values
-        self.recent_qpos = DeltaBuffer(dim=len(self.joint_indexes))
-        self.recent_actions = DeltaBuffer(dim=self.action_dim)
-        self.recent_torques = DeltaBuffer(dim=len(self.joint_indexes))
+        # # Setup buffers to hold recent values
         self.recent_ee_forcetorques = DeltaBuffer(dim=6)
         self.recent_ee_pose = DeltaBuffer(dim=7)
         self.recent_ee_vel = DeltaBuffer(dim=6)
@@ -222,8 +217,8 @@ class SingleArm(Robot):
             ]
 
         # IDs of sites for eef visualization
-        self.eef_site_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_site"])
-        self.eef_cylinder_id = self.sim.model.site_name2id(self.gripper.visualization_sites["grip_cylinder"])
+        self.eef_site_id = self.sim.model.site_name2id(self.gripper.important_sites["grip_site"])
+        self.eef_cylinder_id = self.sim.model.site_name2id(self.gripper.important_sites["grip_cylinder"])
 
     def control(self, action, policy_step=False):
         """
@@ -265,10 +260,10 @@ class SingleArm(Robot):
 
         # Get gripper action, if applicable
         if self.has_gripper:
-            self.grip_action(gripper_action)
+            self.grip_action(gripper=self.gripper, gripper_action=gripper_action)
 
         # Apply joint torque control
-        self.sim.data.ctrl[self._ref_joint_torq_actuator_indexes] = self.torques
+        self.sim.data.ctrl[self._ref_joint_actuator_indexes] = self.torques
 
         # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:
@@ -287,28 +282,11 @@ class SingleArm(Robot):
             ee_acc = np.array([np.convolve(col, np.ones(10) / 10., mode='valid')[0] for col in diffs.transpose()])
             self.recent_ee_acc.push(ee_acc)
 
-    def grip_action(self, gripper_action):
-        """
-        Executes gripper @action for specified @arm
-
-        Args:
-            gripper_action (float): Value between [-1,1] to send to gripper
-        """
-        gripper_action_actual = self.gripper.format_action(gripper_action)
-        # rescale normalized gripper action to control ranges
-        ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes]
-        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-        applied_gripper_action = bias + weight * gripper_action_actual
-        self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes] = applied_gripper_action
-
     def visualize_gripper(self):
         """
         Visualizes the gripper site(s) if applicable.
         """
-        if self.gripper_visualization:
-            # By default, color the ball red
-            self.sim.model.site_rgba[self.eef_site_id] = [1., 0., 0., 1.]
+        self.gripper.set_sites_visibility(sim=self.sim, visible=self.gripper_visualization)
 
     def get_observations(self, di: OrderedDict):
         """
@@ -324,23 +302,13 @@ class SingleArm(Robot):
         Returns:
             OrderedDict: Augmented set of observations that include this robot's proprioceptive observations
         """
+        # Get general robot observations first
+        di = super().get_observations(di)
+
         # Get prefix from robot model to avoid naming clashes for multiple robots
         pf = self.robot_model.naming_prefix
 
-        # proprioceptive features
-        di[pf + "joint_pos"] = np.array(
-            [self.sim.data.qpos[x] for x in self._ref_joint_pos_indexes]
-        )
-        di[pf + "joint_vel"] = np.array(
-            [self.sim.data.qvel[x] for x in self._ref_joint_vel_indexes]
-        )
-
-        robot_states = [
-            np.sin(di[pf + "joint_pos"]),
-            np.cos(di[pf + "joint_pos"]),
-            di[pf + "joint_vel"],
-        ]
-
+        robot_states = []
         # Add in eef pos / qpos
         di[pf + "eef_pos"] = np.array(self.sim.data.site_xpos[self.eef_site_id])
         di[pf + "eef_quat"] = T.convert_quat(
@@ -358,7 +326,7 @@ class SingleArm(Robot):
             )
             robot_states.extend([di[pf + "gripper_qpos"], di[pf + "gripper_qvel"]])
 
-        di[pf + "robot-state"] = np.concatenate(robot_states)
+        di[pf + "robot-state"] = np.concatenate([di[pf + "robot-state"], robot_states])
         return di
 
     @property
@@ -379,57 +347,6 @@ class SingleArm(Robot):
         high = np.concatenate([high_c, high])
 
         return low, high
-
-    @property
-    def torque_limits(self):
-        """
-        Torque lower/upper limits per dimension.
-
-        Returns:
-            2-tuple:
-
-                - (np.array) minimum (low) torque values
-                - (np.array) maximum (high) torque values
-        """
-        # Torque limit values pulled from relevant robot.xml file
-        low = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 0]
-        high = self.sim.model.actuator_ctrlrange[self._ref_joint_torq_actuator_indexes, 1]
-
-        return low, high
-
-    @property
-    def action_dim(self):
-        """
-        Action space dimension for this robot (controller dimension + gripper dof)
-
-        Returns:
-            int: action dimension
-        """
-        return self.controller.control_dim + self.gripper.dof if self.has_gripper else self.controller.control_dim
-
-    @property
-    def dof(self):
-        """
-        Returns:
-            int: degrees of freedom of the robot (with grippers).
-        """
-        # Get the dof of the base robot model
-        dof = super().dof
-        if self.has_gripper:
-            dof += self.gripper.dof
-        return dof
-
-    @property
-    def js_energy(self):
-        """
-        Returns:
-            np.array: the energy consumed by each joint between previous and current steps
-        """
-        # We assume in the motors torque is proportional to current (and voltage is constant)
-        # In that case the amount of power scales proportional to the torque and the energy is the
-        # time integral of that
-        # Note that we use mean torque
-        return np.abs((1.0 / self.control_freq) * self.recent_torques.average)
 
     @property
     def ee_ft_integral(self):
@@ -455,7 +372,7 @@ class SingleArm(Robot):
         return self.get_sensor_measurement(self.gripper.sensors["torque_ee"])
 
     @property
-    def _right_hand_pose(self):
+    def _hand_pose(self):
         """
         Returns:
             np.array: (4,4) array corresponding to the eef pose in base frame of robot.
@@ -463,15 +380,15 @@ class SingleArm(Robot):
         return self.pose_in_base_from_name(self.robot_model.eef_name)
 
     @property
-    def _right_hand_quat(self):
+    def _hand_quat(self):
         """
         Returns:
             np.array: (x,y,z,w) eef quaternion in base frame of robot.
         """
-        return T.mat2quat(self._right_hand_orn)
+        return T.mat2quat(self._hand_orn)
 
     @property
-    def _right_hand_total_velocity(self):
+    def _hand_total_velocity(self):
         """
         Returns:
             np.array: 6-array representing the total eef velocity (linear + angular) in the base frame
@@ -489,35 +406,35 @@ class SingleArm(Robot):
         return np.concatenate([eef_lin_vel, eef_rot_vel])
 
     @property
-    def _right_hand_pos(self):
+    def _hand_pos(self):
         """
         Returns:
             np.array: 3-array representing the position of eef in base frame of robot.
         """
-        eef_pose_in_base = self._right_hand_pose
+        eef_pose_in_base = self._hand_pose
         return eef_pose_in_base[:3, 3]
 
     @property
-    def _right_hand_orn(self):
+    def _hand_orn(self):
         """
         Returns:
             np.array: (3,3) array representing the orientation of eef in base frame of robot as a rotation matrix.
         """
-        eef_pose_in_base = self._right_hand_pose
+        eef_pose_in_base = self._hand_pose
         return eef_pose_in_base[:3, :3]
 
     @property
-    def _right_hand_vel(self):
+    def _hand_vel(self):
         """
         Returns:
             np.array: (x,y,z) velocity of eef in base frame of robot.
         """
-        return self._right_hand_total_velocity[:3]
+        return self._hand_total_velocity[:3]
 
     @property
-    def _right_hand_ang_vel(self):
+    def _hand_ang_vel(self):
         """
         Returns:
             np.array: (ax,ay,az) angular velocity of eef in base frame of robot.
         """
-        return self._right_hand_total_velocity[3:]
+        return self._hand_total_velocity[3:]

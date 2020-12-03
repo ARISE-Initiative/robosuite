@@ -1,5 +1,7 @@
 <mujoco model="bread-visual">
-  <!-- note: the mesh needed for this object is defined in bread.xml -->
+  <asset>
+    <mesh file="meshes/bread.stl" name="bread_mesh" scale="0.8 0.8 0.8"/>
+  </asset>
   <worldbody>
     <body>
       <body name="object">

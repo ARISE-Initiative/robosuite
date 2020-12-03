@@ -1,8 +1,7 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.environments.robot_env import RobotEnv
-from robosuite.robots import SingleArm
+from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import WipeArena
 from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
@@ -30,11 +29,11 @@ DEFAULT_WIPE_CONFIG = {
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_sensors": 50,                              # How many particles of dirt to generate in the environment
+    "num_markers": 50,                              # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 3,                         # Minimum eef force to qualify as contact [N]
-    "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the sensor (wipe the peg)
+    "touch_threshold": 5,                           # force threshold (N) to overcome to change the color of the marker (wipe the peg)
     "pressure_threshold_max": 70,                   # maximum force allowed (N)
 
     # misc settings
@@ -45,7 +44,7 @@ DEFAULT_WIPE_CONFIG = {
 }
 
 
-class Wipe(RobotEnv):
+class Wipe(SingleArmEnv):
     """
     This class corresponds to the Wiping task for a single robot arm
 
@@ -53,6 +52,9 @@ class Wipe(RobotEnv):
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
             (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
             Note: Must be a single single-arm robot!
+
+        env_configuration (str): Specifies how to position the robots within the environment (default is "default").
+            For most single arm environments, this argument has no impact on the robot setup.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -93,12 +95,15 @@ class Wipe(RobotEnv):
 
         reward_shaping (bool): if True, use dense rewards.
 
-        placement_initializer (ObjectPositionSampler instance): if provided, will
-            be used to place objects on every reset, else a UniformRandomSampler
-            is used by default.
-
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
+
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -157,6 +162,7 @@ class Wipe(RobotEnv):
     def __init__(
         self,
         robots,
+        env_configuration="default",
         controller_configs=None,
         gripper_types="WipingGripper",
         gripper_visualizations=False,
@@ -165,8 +171,9 @@ class Wipe(RobotEnv):
         use_object_obs=True,
         reward_scale=1.0,
         reward_shaping=True,
-        placement_initializer=None,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -182,9 +189,6 @@ class Wipe(RobotEnv):
         camera_depths=False,
         task_config=None,
     ):
-        # First, verify that only one robot is being inputted
-        self._check_robot_configuration(robots)
-
         # Assert that the gripper type is None
         assert gripper_types == "WipingGripper",\
             "Tried to specify gripper other than WipingGripper in Wipe environment!"
@@ -214,15 +218,16 @@ class Wipe(RobotEnv):
 
         # settings for table top
         self.table_full_size = self.task_config['table_full_size']
-        self.table_offset = self.task_config['table_offset']
-        self.table_friction = self.task_config['table_friction']
-        self.table_friction_std = self.task_config['table_friction_std']
         self.table_height = self.task_config['table_height']
         self.table_height_std = self.task_config['table_height_std']
+        delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))  # sample variation in height
+        self.table_offset = np.array(self.task_config['table_offset']) + np.array((0, 0, delta_height))
+        self.table_friction = self.task_config['table_friction']
+        self.table_friction_std = self.task_config['table_friction_std']
         self.line_width = self.task_config['line_width']
         self.two_clusters = self.task_config['two_clusters']
         self.coverage_factor = self.task_config['coverage_factor']
-        self.num_sensors = self.task_config['num_sensors']
+        self.num_markers = self.task_config['num_markers']
 
         # settings for thresholds
         self.contact_threshold = self.task_config['contact_threshold']
@@ -238,7 +243,7 @@ class Wipe(RobotEnv):
 
         # Scale reward if desired (see reward method for details)
         self.reward_normalization_factor = horizon / \
-            (self.num_sensors * self.unit_wiped_reward +
+            (self.num_markers * self.unit_wiped_reward +
              horizon * (self.wipe_contact_reward + self.task_complete_reward))
 
         # ee resets
@@ -246,7 +251,7 @@ class Wipe(RobotEnv):
         self.ee_torque_bias = np.zeros(3)
 
         # set other wipe-specific attributes
-        self.wiped_sensors = []
+        self.wiped_markers = []
         self.collisions = 0
         self.f_excess = 0
         self.metadata = []
@@ -255,24 +260,17 @@ class Wipe(RobotEnv):
         # whether to include and use ground-truth object states
         self.use_object_obs = use_object_obs
 
-        # object placement initializer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            self.placement_initializer = UniformRandomSampler(
-                x_range=[0, 0.2],
-                y_range=[0, 0.2],
-                ensure_object_boundary_in_range=False,
-                rotation=None)
-
         super().__init__(
             robots=robots,
+            env_configuration=env_configuration,
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
+            robot_visualizations=robot_visualizations,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -288,7 +286,7 @@ class Wipe(RobotEnv):
             camera_depths=camera_depths,
         )
 
-    def reward(self, action):
+    def reward(self, action=None):
         """
         Reward function for the task.
 
@@ -316,7 +314,7 @@ class Wipe(RobotEnv):
 
         Note that the final per-step reward is normalized given the theoretical best episode return and then scaled:
         reward_scale * (horizon /
-        (num_sensors * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
+        (num_markers * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
 
         Args:
             action (np array): [NOT USED]
@@ -329,18 +327,18 @@ class Wipe(RobotEnv):
         total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
 
         # Neg Reward from collisions of the arm with the table
-        if self._check_arm_contact()[0]:
+        if self.check_contact(self.robots[0].robot_model):
             if self.reward_shaping:
                 reward = self.arm_limit_collision_penalty
             self.collisions += 1
-        elif self._check_q_limits()[0]:
+        elif self.robots[0].check_q_limits():
             if self.reward_shaping:
                 reward = self.arm_limit_collision_penalty
             self.collisions += 1
         else:
             # If the arm is not colliding or in joint limits, we check if we are wiping
             # (we don't want to reward wiping if there are unsafe situations)
-            sensors_active_ids = []
+            active_markers = []
 
             # Current 3D location of the corners of the wiping tool in world frame
             c_geoms = self.robots[0].gripper.important_geoms["corners"]
@@ -380,75 +378,65 @@ class Wipe(RobotEnv):
             # Only go into this computation if there are contact points
             if self.sim.data.ncon != 0:
 
-                # Check each sensor that is still active
-                for sensor_name in self.model.arena.sensor_names:
+                # Check each marker that is still active
+                for marker in self.model.mujoco_arena.markers:
 
-                    # Current sensor 3D location in world frame
-                    # sensor_pos = np.array(
-                    #     self.sim.data.body_xpos[self.sim.model.site_bodyid[self.sim.model.site_name2id(self.model.arena.sensor_site_names[sensor_name])]])
-                    sensor_pos = np.array(
-                        self.sim.data.site_xpos[
-                            self.sim.model.site_name2id(self.model.arena.sensor_site_names[sensor_name])])
+                    # Current marker 3D location in world frame
+                    marker_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
 
                     # We use the second tool corner as point on the plane and define the vector connecting
-                    # the sensor position to that point
-                    v = sensor_pos - corner2_pos
+                    # the marker position to that point
+                    v = marker_pos - corner2_pos
 
-                    # Shortest distance between the center of the sensor and the plane
+                    # Shortest distance between the center of the marker and the plane
                     dist = np.dot(v, n)
 
-                    # Projection of the center of the sensor onto the plane
-                    projected_point = np.array(sensor_pos) - dist * n
+                    # Projection of the center of the marker onto the plane
+                    projected_point = np.array(marker_pos) - dist * n
 
-                    # Positive distances means the center of the sensor is over the plane
-                    # The plane is aligned with the bottom of the wiper and pointing up, so the sensor would be over it
+                    # Positive distances means the center of the marker is over the plane
+                    # The plane is aligned with the bottom of the wiper and pointing up, so the marker would be over it
                     if dist > 0.0:
                         # Distance smaller than this threshold means we are close to the plane on the upper part
                         if dist < 0.02:
                             # Write touching points and projected point in coordinates of the plane
                             pp_2 = np.array(
                                 [np.dot(projected_point - corner2_pos, v1), np.dot(projected_point - corner2_pos, v2)])
-                            # Check if sensor is within the tool center:
+                            # Check if marker is within the tool center:
                             if PointInRectangle(pp[0], pp[1], pp[2], pp[3], pp_2):
-                                parts = sensor_name.split('_')
-                                sensors_active_ids += [int(parts[1])]
+                                active_markers.append(marker)
 
-            # Obtain the list of currently active (wiped) sensors that where not wiped before
-            # These are the sensors we are wiping at this step
-            lall = np.where(np.isin(sensors_active_ids, self.wiped_sensors, invert=True))
-            new_sensors_active_ids = np.array(sensors_active_ids)[lall]
+            # Obtain the list of currently active (wiped) markers that where not wiped before
+            # These are the markers we are wiping at this step
+            lall = np.where(np.isin(active_markers, self.wiped_markers, invert=True))
+            new_active_markers = np.array(active_markers)[lall]
 
-            # Loop through all new sensors we are wiping at this step
-            for new_sensor_active_id in new_sensors_active_ids:
-                # Grab relevant sensor id info
-                sensor_name = self.model.arena.sensor_site_names['contact_' + str(new_sensor_active_id) + '_sensor']
-                new_sensor_active_geom_id = self.sim.model.geom_name2id(sensor_name + "_vis")
-                # Make this sensor transparent since we wiped it (alpha = 0)
-                self.sim.model.geom_rgba[new_sensor_active_geom_id] = [0, 0, 0, 0]
-                # Add this sensor the wiped list
-                self.wiped_sensors += [new_sensor_active_id]
+            # Loop through all new markers we are wiping at this step
+            for new_active_marker in new_active_markers:
+                # Grab relevant marker id info
+                new_active_marker_geom_id = self.sim.model.geom_name2id(new_active_marker.visual_geoms[0])
+                # Make this marker transparent since we wiped it (alpha = 0)
+                self.sim.model.geom_rgba[new_active_marker_geom_id][3] = 0
+                # Add this marker the wiped list
+                self.wiped_markers.append(new_active_marker)
                 # Add reward if we're using the dense reward
                 if self.reward_shaping:
                     reward += self.unit_wiped_reward
 
             # Additional reward components if using dense rewards
             if self.reward_shaping:
-                # If we haven't wiped all the sensors yet, add a smooth reward for getting closer
+                # If we haven't wiped all the markers yet, add a smooth reward for getting closer
                 # to the centroid of the dirt to wipe
-                if len(self.wiped_sensors) < len(self.model.arena.sensor_names):
+                if len(self.wiped_markers) < self.num_markers:
                     mean_distance_to_things_to_wipe = 0
-                    num_non_wiped_sensors = 0
-                    for sensor_name in self.model.arena.sensor_names:
-                        parts = sensor_name.split('_')
-                        sensor_id = int(parts[1])
-                        if sensor_id not in self.wiped_sensors:
-                            sensor_pos = np.array(
-                                self.sim.data.site_xpos[
-                                    self.sim.model.site_name2id(self.model.arena.sensor_site_names[sensor_name])])
-                            gripper_position = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
-                            mean_distance_to_things_to_wipe += np.linalg.norm(gripper_position - sensor_pos)
-                            num_non_wiped_sensors += 1
-                    mean_distance_to_things_to_wipe /= max(1, num_non_wiped_sensors)
+                    num_non_wiped_markers = 0
+                    for marker in self.model.mujoco_arena.markers:
+                        if marker not in self.wiped_markers:
+                            marker_pos = np.array(
+                                self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
+                            mean_distance_to_things_to_wipe += np.linalg.norm(marker_pos - self._eef_xpos)
+                            num_non_wiped_markers += 1
+                    mean_distance_to_things_to_wipe /= max(1, num_non_wiped_markers)
                     reward += self.distance_multiplier * (
                             1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe))
 
@@ -465,24 +453,25 @@ class Wipe(RobotEnv):
                 reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
 
             # Final reward if all wiped
-            if len(self.wiped_sensors) == len(self.model.arena.sensor_names):
+            if len(self.wiped_markers) == self.num_markers:
                 reward += self.task_complete_reward
 
         # Printing results
         if self.print_results:
-            string_to_print = 'Process {pid}, timestep {ts:>4}: reward: {rw:8.4f} wiped sensors: {ws:>3} collisions: {sc:>3} f-excess: {fe:>3}'.format(
-                pid=id(multiprocessing.current_process()),
-                ts=self.timestep,
-                rw=reward,
-                ws=len(self.wiped_sensors),
-                sc=self.collisions,
-                fe=self.f_excess)
+            string_to_print = 'Process {pid}, timestep {ts:>4}: reward: {rw:8.4f}' \
+                              'wiped markers: {ws:>3} collisions: {sc:>3} f-excess: {fe:>3}'.format(
+                                pid=id(multiprocessing.current_process()),
+                                ts=self.timestep,
+                                rw=reward,
+                                ws=len(self.wiped_markers),
+                                sc=self.collisions,
+                                fe=self.f_excess)
             print(string_to_print)
 
         # If we're scaling our reward, we normalize the per-step rewards given the theoretical best episode return
         # This is equivalent to scaling the reward by:
         #   reward_scale * (horizon /
-        #       (num_sensors * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
+        #       (num_markers * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
         if self.reward_scale:
             reward *= self.reward_scale * self.reward_normalization_factor
         return reward
@@ -493,10 +482,6 @@ class Wipe(RobotEnv):
         """
         super()._load_model()
 
-        # Verify the correct robot has been loaded
-        assert isinstance(self.robots[0], SingleArm), \
-            "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
-
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         self.robots[0].robot_model.set_base_xpos(xpos)
@@ -504,47 +489,38 @@ class Wipe(RobotEnv):
         # Get robot's contact geoms
         self.robot_contact_geoms = self.robots[0].robot_model.contact_geoms
 
-        # Delta goes down
-        delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))
-
-        self.mujoco_arena = WipeArena(
+        mujoco_arena = WipeArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
-            table_offset=np.array(self.table_offset) + np.array((0, 0, delta_height)),
+            table_offset=self.table_offset,
             table_friction_std=self.table_friction_std,
             coverage_factor=self.coverage_factor,
-            num_sensors=self.num_sensors,
+            num_markers=self.num_markers,
             line_width=self.line_width,
             two_clusters=self.two_clusters
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
-        self.mujoco_arena.set_origin([0, 0, 0])
-
-        self.mujoco_objects = OrderedDict()
+        mujoco_arena.set_origin([0, 0, 0])
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
-            mujoco_arena=self.mujoco_arena,
+            mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots],
-            mujoco_objects=self.mujoco_objects,
-            initializer=self.placement_initializer
         )
-        self.model.place_objects()
 
     def _reset_internal(self):
         super()._reset_internal()
 
         # inherited class should reset positions of objects (only if we're not using a deterministic reset)
         if not self.deterministic_reset:
-            self.model.place_objects()
-            self.mujoco_arena.reset_arena(self.sim)
+            self.model.mujoco_arena.reset_arena(self.sim)
 
         # Reset all internal vars for this wipe task
         self.timestep = 0
-        self.wiped_sensors = []
+        self.wiped_markers = []
         self.collisions = 0
         self.f_excess = 0
 
@@ -581,23 +557,19 @@ class Wipe(RobotEnv):
 
         # object information in the observation
         if self.use_object_obs:
-            gripper_site_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
+            gripper_site_pos = self._eef_xpos
             # position of objects to wipe
             acc = np.array([])
-            for sensor_name in self.model.arena.sensor_names:
-                parts = sensor_name.split('_')
-                sensor_id = int(parts[1])
-                sensor_pos = np.array(
-                    self.sim.data.site_xpos[
-                        self.sim.model.site_name2id(self.model.arena.sensor_site_names[sensor_name])])
-                di['sensor' + str(sensor_id) + '_pos'] = sensor_pos
-                acc = np.concatenate([acc, di['sensor' + str(sensor_id) + '_pos']])
-                di['sensor' + str(sensor_id) + '_wiped'] = [0, 1][sensor_id in self.wiped_sensors]
-                acc = np.concatenate([acc, [di['sensor' + str(sensor_id) + '_wiped']]])
+            for i, marker in enumerate(self.model.mujoco_arena.markers):
+                marker_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
+                di[f'marker{i}_pos'] = marker_pos
+                acc = np.concatenate([acc, di[f'marker{i}_pos']])
+                di[f'marker{i}_wiped'] = [0, 1][marker in self.wiped_markers]
+                acc = np.concatenate([acc, [di[f'marker{i}_wiped']]])
                 # proprioception
                 if self.use_robot_obs:
-                    di['gripper_to_sensor' + str(sensor_id)] = gripper_site_pos - sensor_pos
-                    acc = np.concatenate([acc, di['gripper_to_sensor' + str(sensor_id)]])
+                    di[f'gripper_to_marker{i}'] = gripper_site_pos - marker_pos
+                    acc = np.concatenate([acc, di[f'gripper_to_marker{i}']])
             di['object-state'] = acc
 
         return di
@@ -609,7 +581,7 @@ class Wipe(RobotEnv):
         Returns:
             bool: True if completed task
         """
-        return True if len(self.wiped_sensors) == len(self.model.arena.sensor_names) else False
+        return True if len(self.wiped_markers) == self.num_markers else False
 
     def _check_terminated(self):
         """
@@ -626,7 +598,7 @@ class Wipe(RobotEnv):
         terminated = False
 
         # Prematurely terminate if contacting the table with the arm
-        if self._check_arm_contact()[0]:
+        if self.check_contact(self.robots[0].robot_model):
             if self.print_results:
                 print(40 * '-' + " COLLIDED " + 40 * '-')
             terminated = True
@@ -638,7 +610,7 @@ class Wipe(RobotEnv):
             terminated = True
 
         # Prematurely terminate if contacting the table with the arm
-        if self._check_q_limits()[0]:
+        if self.robots[0].check_q_limits():
             if self.print_results:
                 print(40 * '-' + " JOINT LIMIT " + 40 * '-')
             terminated = True
@@ -662,10 +634,10 @@ class Wipe(RobotEnv):
         reward, done, info = super()._post_action(action)
 
         if self.get_info:
-            info['add_vals'] = ['nwipedsensors', 'colls', 'percent_viapoints_', 'f_excess']
-            info['nwipedsensors'] = len(self.wiped_sensors)
+            info['add_vals'] = ['nwipedmarkers', 'colls', 'percent_viapoints_', 'f_excess']
+            info['nwipedmarkers'] = len(self.wiped_markers)
             info['colls'] = self.collisions
-            info['percent_viapoints_'] = len(self.wiped_sensors) / len(self.model.arena.sensor_names)
+            info['percent_viapoints_'] = len(self.wiped_markers) / self.num_markers
             info['f_excess'] = self.f_excess
 
         # allow episode to finish early if allowed
@@ -673,16 +645,6 @@ class Wipe(RobotEnv):
             done = done or self._check_terminated()
 
         return reward, done, info
-
-    def _check_robot_configuration(self, robots):
-        """
-        Sanity check to make sure the inputted robots and configuration is acceptable
-
-        Args:
-            robots (str or list of str): Robots to instantiate within this env
-        """
-        if type(robots) is list:
-            assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
 
     @property
     def _has_gripper_contact(self):

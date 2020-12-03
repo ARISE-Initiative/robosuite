@@ -1,16 +1,15 @@
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.robot_env import RobotEnv
-from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string
+from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
+from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string, find_elements
 
 from robosuite.models.objects import CylinderObject, PlateWithHoleObject
 from robosuite.models.arenas import EmptyArena
-from robosuite.models import MujocoWorldBase
-from robosuite.models.robots import check_bimanual
+from robosuite.models.tasks import ManipulationTask
 
 
-class TwoArmPegInHole(RobotEnv):
+class TwoArmPegInHole(TwoArmEnv):
     """
     This class corresponds to the peg-in-hole task for two robot arms.
 
@@ -26,15 +25,17 @@ class TwoArmPegInHole(RobotEnv):
             :`'single-arm-parallel'`: Only applicable for multi single arm setups. Sets up the (two) single armed
                 robots next to each other on the -x side of the table
             :`'single-arm-opposed'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots opposed from each others on the opposite +/-y sides of the table (Default option)
+                robots opposed from each others on the opposite +/-y sides of the table.
+
+        Note that "default" corresponds to either "bimanual" if a bimanual robot is used or "single-arm-opposed" if two
+        single-arm robots are used.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
             dict if same controller is to be used for all robots or else it should be a list of the same length as
             "robots" param
 
-        gripper_types (str or list of str): type of gripper, used to instantiate
-            gripper models from gripper factory.
+        gripper_types (str or list of str): type of gripper, used to instantiate gripper models from gripper factory.
             For this environment, setting a value other than the default (None) will raise an AssertionError, as
             this environment is not meant to be used with any gripper at all.
 
@@ -76,6 +77,13 @@ class TwoArmPegInHole(RobotEnv):
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
+
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -143,6 +151,8 @@ class TwoArmPegInHole(RobotEnv):
         peg_radius=(0.015, 0.03),
         peg_length=0.13,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -157,10 +167,6 @@ class TwoArmPegInHole(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        # First, verify that correct number of robots are being inputted
-        self.env_configuration = env_configuration
-        self._check_robot_configuration(robots)
-
         # Assert that the gripper type is None
         assert gripper_types is None, "Tried to specify gripper other than None in TwoArmPegInHole environment!"
 
@@ -177,12 +183,15 @@ class TwoArmPegInHole(RobotEnv):
 
         super().__init__(
             robots=robots,
+            env_configuration=env_configuration,
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
+            robot_visualizations=robot_visualizations,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -198,7 +207,7 @@ class TwoArmPegInHole(RobotEnv):
             camera_depths=camera_depths,
         )
 
-    def reward(self, action):
+    def reward(self, action=None):
         """
         Reward function for the task.
 
@@ -241,8 +250,7 @@ class TwoArmPegInHole(RobotEnv):
             reward += 1 - np.tanh(np.abs(t))
             reward += cos
 
-        # if we're not reward shaping, we need to scale our sparse reward so that the max reward is identical
-        # to its dense version
+        # if we're not reward shaping, scale sparse reward so that the max reward is identical to its dense version
         else:
             reward *= 5.0
 
@@ -278,18 +286,15 @@ class TwoArmPegInHole(RobotEnv):
                     robot.robot_model.set_base_xpos(xpos)
 
         # Add arena and robot
-        self.model = MujocoWorldBase()
-        self.mujoco_arena = EmptyArena()
+        mujoco_arena = EmptyArena()
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
-        self.model.merge(self.mujoco_arena)
-        for robot in self.robots:
-            self.model.merge(robot.robot_model)
+            mujoco_arena.add_pos_indicator()
+
+        # Arena always gets set to zero origin
+        mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
-        self.hole = PlateWithHoleObject(
-            name="hole",
-        )
+        self.hole = PlateWithHoleObject(name="hole")
         tex_attrib = {
             "type": "cube",
         }
@@ -311,30 +316,40 @@ class TwoArmPegInHole(RobotEnv):
             size_max=(self.peg_radius[1], self.peg_length),
             material=greenwood,
             rgba=[0, 1, 0, 1],
+            joints=None,
         )
 
         # Load hole object
-        self.hole_obj = self.hole.get_object_subtree(site=True)
-        self.hole_obj.set("quat", "0 0 0.707 0.707")
-        self.hole_obj.set("pos", "0.11 0 0.17")
-        self.model.merge_asset(self.hole)
+        hole_obj = self.hole.get_obj()
+        hole_obj.set("quat", "0 0 0.707 0.707")
+        hole_obj.set("pos", "0.11 0 0.17")
 
         # Load peg object
-        self.peg_obj = self.peg.get_object_subtree(site=True)
-        self.peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
-        self.model.merge_asset(self.peg)
+        peg_obj = self.peg.get_obj()
+        peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
 
-        # Depending on env configuration, append appropriate objects to arms
+        # Append appropriate objects to arms
         if self.env_configuration == "bimanual":
-            self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[0].robot_model.eef_name["left"])).append(self.hole_obj)
-            self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[0].robot_model.eef_name["right"])).append(self.peg_obj)
+            r_eef, l_eef = [self.robots[0].robot_model.eef_name[arm] for arm in self.robots[0].arms]
+            r_model, l_model = [self.robots[0].robot_model, self.robots[0].robot_model]
         else:
-            self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[1].robot_model.eef_name)).append(self.hole_obj)
-            self.model.worldbody.find(".//body[@name='{}']"
-                                      .format(self.robots[0].robot_model.eef_name)).append(self.peg_obj)
+            r_eef, l_eef = [robot.robot_model.eef_name for robot in self.robots]
+            r_model, l_model = [self.robots[0].robot_model, self.robots[1].robot_model]
+        r_body = find_elements(root=r_model.worldbody, tags="body", attribs={"name": r_eef}, return_first=True)
+        l_body = find_elements(root=l_model.worldbody, tags="body", attribs={"name": l_eef}, return_first=True)
+        r_body.append(peg_obj)
+        l_body.append(hole_obj)
+
+        # task includes arena, robot, and objects of interest
+        # We don't add peg and hole directly since they were already appended to the robots
+        self.model = ManipulationTask(
+            mujoco_arena=mujoco_arena,
+            mujoco_robots=[robot.robot_model for robot in self.robots],
+        )
+
+        # Make sure to add relevant assets from peg and hole objects
+        self.model.merge_asset(self.hole)
+        self.model.merge_asset(self.peg)
 
     def _get_reference(self):
         """
@@ -345,8 +360,8 @@ class TwoArmPegInHole(RobotEnv):
         super()._get_reference()
 
         # Additional object references from this env
-        self.hole_body_id = self.sim.model.body_name2id("hole")
-        self.peg_body_id = self.sim.model.body_name2id("peg")
+        self.hole_body_id = self.sim.model.body_name2id(self.hole.root_body)
+        self.peg_body_id = self.sim.model.body_name2id(self.peg.root_body)
 
     def _reset_internal(self):
         """
@@ -463,9 +478,7 @@ class TwoArmPegInHole(RobotEnv):
         return (
             t,
             d,
-            abs(
-                np.dot(hole_normal, v) / np.linalg.norm(hole_normal) / np.linalg.norm(v)
-            ),
+            abs(np.dot(hole_normal, v) / np.linalg.norm(hole_normal) / np.linalg.norm(v)),
         )
 
     def _peg_pose_in_hole_frame(self):
@@ -477,13 +490,13 @@ class TwoArmPegInHole(RobotEnv):
             np.array: (4,4) matrix corresponding to the pose of the peg in the hole frame
         """
         # World frame
-        peg_pos_in_world = self.sim.data.get_body_xpos("peg")
-        peg_rot_in_world = self.sim.data.get_body_xmat("peg").reshape((3, 3))
+        peg_pos_in_world = self.sim.data.get_body_xpos(self.peg.root_body)
+        peg_rot_in_world = self.sim.data.get_body_xmat(self.peg.root_body).reshape((3, 3))
         peg_pose_in_world = T.make_pose(peg_pos_in_world, peg_rot_in_world)
 
         # World frame
-        hole_pos_in_world = self.sim.data.get_body_xpos("hole")
-        hole_rot_in_world = self.sim.data.get_body_xmat("hole").reshape((3, 3))
+        hole_pos_in_world = self.sim.data.get_body_xpos(self.hole.root_body)
+        hole_rot_in_world = self.sim.data.get_body_xmat(self.hole.root_body).reshape((3, 3))
         hole_pose_in_world = T.make_pose(hole_pos_in_world, hole_rot_in_world)
 
         world_pose_in_hole = T.pose_inv(hole_pose_in_world)
@@ -492,35 +505,3 @@ class TwoArmPegInHole(RobotEnv):
             peg_pose_in_world, world_pose_in_hole
         )
         return peg_pose_in_hole
-
-    def _check_robot_configuration(self, robots):
-        """
-        Sanity check to make sure the inputted robots and configuration is acceptable
-
-        Args:
-            robots (str or list of str): Robots to instantiate within this env
-        """
-        robots = robots if type(robots) == list or type(robots) == tuple else [robots]
-        if self.env_configuration == "single-arm-opposed" or self.env_configuration == "single-arm-parallel":
-            # Specifically two robots should be inputted!
-            is_bimanual = False
-            if type(robots) is not list or len(robots) != 2:
-                raise ValueError("Error: Exactly two single-armed robots should be inputted "
-                                 "for this task configuration!")
-        elif self.env_configuration == "bimanual":
-            is_bimanual = True
-            # Specifically one robot should be inputted!
-            if type(robots) is list and len(robots) != 1:
-                raise ValueError("Error: Exactly one bimanual robot should be inputted "
-                                 "for this task configuration!")
-        else:
-            # This is an unknown env configuration, print error
-            raise ValueError("Error: Unknown environment configuration received. Only 'bimanual',"
-                             "'single-arm-parallel', and 'single-arm-opposed' are supported. Got: {}"
-                             .format(self.env_configuration))
-
-        # Lastly, check to make sure all inputted robot names are of their correct type (bimanual / not bimanual)
-        for robot in robots:
-            if check_bimanual(robot) != is_bimanual:
-                raise ValueError("Error: For {} configuration, expected bimanual check to return {}; "
-                                 "instead, got {}.".format(self.env_configuration, is_bimanual, check_bimanual(robot)))

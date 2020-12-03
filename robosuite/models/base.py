@@ -2,10 +2,9 @@ import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 import io
-import numpy as np
 
 from robosuite.utils import XMLError
-from robosuite.utils.mjcf_utils import array_to_string
+from robosuite.utils.mjcf_utils import array_to_string, find_elements
 
 
 class MujocoXML(object):
@@ -33,7 +32,12 @@ class MujocoXML(object):
         self.tendon = self.create_default_element("tendon")
         self.equality = self.create_default_element("equality")
         self.contact = self.create_default_element("contact")
-        self.default = self.create_default_element("default")
+
+        # Parse any default classes and replace them inline
+        default = self.create_default_element("default")
+        default_classes = self._get_default_classes(default)
+        self._replace_defaults_inline(default_dic=default_classes)
+
         self.resolve_asset_dependency()
 
     def resolve_asset_dependency(self):
@@ -65,7 +69,7 @@ class MujocoXML(object):
         self.root.append(ele)
         return ele
 
-    def merge(self, others, merge_body=True):
+    def merge(self, others, merge_body="default"):
         """
         Default merge method.
 
@@ -73,7 +77,9 @@ class MujocoXML(object):
             others (MujocoXML or list of MujocoXML): other xmls to merge into this one
                 raises XML error if @others is not a MujocoXML instance.
                 merges <worldbody/>, <actuator/> and <asset/> of @others into @self
-            merge_body (bool): True if merging child bodies of @others
+            merge_body (None or str): If set, will merge child bodies of @others. Default is "default", which
+                corresponds to the root worldbody for this XML. Otherwise, should be an existing body name
+                that exists in this XML.
 
         Raises:
             XMLError: [Invalid XML instance]
@@ -83,9 +89,11 @@ class MujocoXML(object):
         for idx, other in enumerate(others):
             if not isinstance(other, MujocoXML):
                 raise XMLError("{} is not a MujocoXML instance.".format(type(other)))
-            if merge_body:
+            if merge_body is not None:
+                root = self.worldbody if merge_body == "default" else \
+                    find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
                 for body in other.worldbody:
-                    self.worldbody.append(body)
+                    root.append(body)
             self.merge_asset(other)
             for one_actuator in other.actuator:
                 self.actuator.append(one_actuator)
@@ -97,8 +105,6 @@ class MujocoXML(object):
                 self.equality.append(one_equality)
             for one_contact in other.contact:
                 self.contact.append(one_contact)
-            for one_default in other.default:
-                self.default.append(one_default)
 
     def get_model(self, mode="mujoco_py"):
         """
@@ -159,7 +165,7 @@ class MujocoXML(object):
         Merges other files in a custom logic.
 
         Args:
-            other (MujocoXML): other xml file whose assets will be merged into this one
+            other (MujocoXML or MujocoObject): other xml file whose assets will be merged into this one
         """
         for asset in other.asset:
             asset_name = asset.get("name")
@@ -196,8 +202,8 @@ class MujocoXML(object):
 
         Args:
             prefix (str): Prefix to be appended to all requested elements in this XML
-            tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
-                prepended to it
+            tags (list or tuple or set): Tags to be searched in the XML. All elements with specified tags will have
+                "prefix" prepended to it
         """
         # Define tags as a set
         tags = set(tags)
@@ -263,8 +269,8 @@ class MujocoXML(object):
         Args:
             root (ET.Element): Root of the xml element tree to start recursively searching through
                 (e.g.: `self.worldbody`)
-            tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
-                prepended to it
+            tags (list or tuple or set): Tags to be searched in the XML. All elements with specified tags will have
+                "prefix" prepended to it
             prefix (str): Prefix to be appended to all requested elements in this XML
         """
         # First re-name this element
@@ -294,7 +300,8 @@ class MujocoXML(object):
     def _recolor_collision_geoms_recursively(self, root, rgba):
         """
         Iteratively searches through all children nodes in "root" element to find all geoms belonging to group 0 and set
-        the corresponding rgba value to the specified @rgba argument.
+        the corresponding rgba value to the specified @rgba argument. Note: also removes any material values for this
+        model.
 
         Args:
             root (ET.Element): Root of the xml element tree to start recursively searching through
@@ -303,4 +310,203 @@ class MujocoXML(object):
         for child in root:
             if child.tag == "geom" and child.get("group") in {None, "0"}:
                 child.set("rgba", array_to_string(rgba))
+                child.attrib.pop("material", None)
+
             self._recolor_collision_geoms_recursively(child, rgba)
+
+    @staticmethod
+    def _get_default_classes(default):
+        """
+        Utility method to convert all default tags into a nested dictionary of values -- this will be used to replace
+        all elements' class tags inline with the appropriate defaults if not specified.
+
+        Args:
+            default (ET.Element): Nested default tag XML root.
+
+        Returns:
+            dict: Nested dictionary, where each default class name is mapped to its own dict mapping element tag names
+                (e.g.: geom, site, etc.) to the set of default attributes for that tag type
+        """
+        # Create nested dict to return
+        default_dic = {}
+        # Parse the default tag accordingly
+        for cls in default:
+            default_dic[cls.get("class")] = {child.tag: child for child in cls}
+        return default_dic
+
+    def _replace_defaults_inline(self, default_dic, root=None):
+        """
+        Utility method to replace all default class attributes recursively in the XML tree starting from @root
+        with the corresponding defaults in @default_dic if they are not explicitly specified for ta given element.
+
+        Args:
+            root (ET.Element): Root of the xml element tree to start recursively replacing defaults. Only is used by
+                recursive calls
+            default_dic (dict): Nested dictionary, where each default class name is mapped to its own dict mapping
+                element tag names (e.g.: geom, site, etc.) to the set of default attributes for that tag type
+        """
+        # If root is None, this is the top level call -- replace root with self.root
+        if root is None:
+            root = self.root
+        # Check this current element if it contains any class elements
+        cls_name = root.attrib.pop("class", None)
+        if cls_name is not None:
+            # If the tag for this element is contained in our default dic, we add any defaults that are not
+            # explicitly specified in this
+            tag_attrs = default_dic[cls_name].get(root.tag, None)
+            if tag_attrs is not None:
+                for k, v in tag_attrs.items():
+                    if root.get(k, None) is None:
+                        root.set(k, v)
+        # Loop through all child elements
+        for child in root:
+            self._replace_defaults_inline(default_dic=default_dic, root=child)
+
+
+class MujocoModel(object):
+    """
+    Base class for all simulation models used in mujoco.
+
+    Standardizes core API for accessing models' relevant geoms, names, etc.
+    """
+    def correct_naming(self, names):
+        """
+        Corrects all strings in @names by adding the naming prefix to it and returns the name-corrected values
+
+        Args:
+            names (str, list, or dict): Name(s) to be corrected
+
+        Raises:
+            TypeError: [Invalid input type]
+        """
+        if type(names) is str:
+            return self.naming_prefix + names
+        elif type(names) is list:
+            return [self.naming_prefix + name for name in names]
+        elif type(names) is dict:
+            names = names.copy()
+            for key, val in names.items():
+                names[key] = self.correct_naming(val)
+            return names
+        else:
+            # Assumed to be type error
+            raise TypeError("Error: type of 'names' must be str, list, or dict!")
+
+    def set_sites_visibility(self, sim, visible):
+        """
+        Set all site visual states for this model.
+
+        Args:
+            sim (MjSim): Current active mujoco simulation instance
+            visible (bool): If True, will visualize model sites. Else, will hide the sites.
+        """
+        # Loop through all visualization geoms and set their alpha values appropriately
+        for vis_g in self.sites:
+            vis_g_id = sim.model.site_name2id(vis_g)
+            if (visible and sim.model.site_rgba[vis_g_id][3] < 0) or \
+                    (not visible and sim.model.site_rgba[vis_g_id][3] > 0):
+                # We toggle the alpha value
+                sim.model.site_rgba[vis_g_id][3] = -sim.model.site_rgba[vis_g_id][3]
+
+    @property
+    def naming_prefix(self):
+        """
+        Generates a standardized prefix to prevent naming collisions
+
+        Returns:
+            str: Prefix unique to this model.
+        """
+        raise NotImplementedError
+
+    @property
+    def root_body(self):
+        """
+        Root body name for this model. This should correspond to the top-level body element in the equivalent mujoco xml
+        tree for this object.
+        """
+        raise NotImplementedError
+
+    @property
+    def bodies(self):
+        """
+        Returns:
+            list: Body names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def joints(self):
+        """
+        Returns:
+            list: Joint names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def actuators(self):
+        """
+        Returns:
+            list: Actuator names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def sites(self):
+        """
+        Returns:
+             list: Site names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def contact_geoms(self):
+        """
+        List of names corresponding to the geoms used to determine contact with this model.
+
+        Returns:
+            list: relevant contact geoms for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def visual_geoms(self):
+        """
+        List of names corresponding to the geoms used for visual rendering of this model.
+
+        Returns:
+            list: relevant visual geoms for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def important_geoms(self):
+        """
+        Geoms corresponding to important components of this model. String keywords should be mapped to lists of geoms.
+
+        Returns:
+            dict of list: Important set of geoms, where each set of geoms are grouped as a list and are
+            organized by keyword string entries into a dict
+        """
+        raise NotImplementedError
+
+    @property
+    def important_sites(self):
+        """
+        Dict of sites corresponding to the important site geoms (e.g.: used to aid visualization during sim).
+
+        Returns:
+            dict: Important site geoms, where each specific geom name is mapped from keyword string entries
+                in the dict
+        """
+        raise NotImplementedError
+
+    @property
+    def sensors(self):
+        """
+        Dict of sensors enabled for this model.
+
+        Returns:
+            dict: Sensors for this model, where each specific sensor name is mapped from keyword string entries
+                in the dict
+        """
+        raise NotImplementedError

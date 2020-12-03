@@ -2,10 +2,7 @@ import numpy as np
 
 from robosuite.environments.base import MujocoEnv
 
-from robosuite.robots.single_arm import SingleArm
-from robosuite.robots.bimanual import Bimanual
-from robosuite.models.robots import check_bimanual
-
+from robosuite.robots import ROBOT_CLASS_MAPPING
 from robosuite.controllers import reset_controllers
 
 
@@ -14,23 +11,15 @@ class RobotEnv(MujocoEnv):
     Initializes a robot environment in Mujoco.
 
     Args:
-        robots: Specification for specific robot arm(s) to be instantiated within this env
-            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
+        robots: Specification for specific robot(s) to be instantiated within this env
+
+        env_configuration (str): Specifies how to position the robot(s) within the environment. Default is "default",
+            which should be interpreted accordingly by any subclasses.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
             dict if same controller is to be used for all robots or else it should be a list of the same length as
             "robots" param
-
-        gripper_types (None or str or list of str): type of gripper, used to instantiate
-            gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
-            with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
-            overrides the default gripper. Should either be single str if same gripper type is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
-        gripper_visualizations (bool or list of bool): True if using gripper visualization.
-            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
 
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
@@ -51,6 +40,13 @@ class RobotEnv(MujocoEnv):
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
+
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -96,6 +92,8 @@ class RobotEnv(MujocoEnv):
             bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
             "camera names" param.
 
+        robot_configs (list of dict): Per-robot configurations set from any subclass initializers.
+
     Raises:
         ValueError: [Camera obs require offscreen renderer]
         ValueError: [Camera name must be specified to use camera obs]
@@ -104,12 +102,13 @@ class RobotEnv(MujocoEnv):
     def __init__(
         self,
         robots,
+        env_configuration="default",
         controller_configs=None,
-        gripper_types="default",
-        gripper_visualizations=False,
         initialization_noise=None,
         use_camera_obs=True,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -123,7 +122,12 @@ class RobotEnv(MujocoEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
+        robot_configs=None,
     ):
+        # First, verify that correct number of robots are being inputted
+        self.env_configuration = env_configuration
+        self._check_robot_configuration(robots)
+
         # Robot
         robots = list(robots) if type(robots) is list or type(robots) is tuple else [robots]
         self.num_robots = len(robots)
@@ -137,9 +141,8 @@ class RobotEnv(MujocoEnv):
         # Initialization Noise
         initialization_noise = self._input2list(initialization_noise, self.num_robots)
 
-        # Gripper
-        gripper_types = self._input2list(gripper_types, self.num_robots)
-        gripper_visualizations = self._input2list(gripper_visualizations, self.num_robots)
+        # Visualization
+        robot_visualizations = self._input2list(robot_visualizations, self.num_robots)
 
         # Observations -- Ground truth = object_obs, Image data = camera_obs
         self.use_camera_obs = use_camera_obs
@@ -160,23 +163,26 @@ class RobotEnv(MujocoEnv):
         if self.use_camera_obs and self.camera_names is None:
             raise ValueError("Must specify at least one camera name when using camera obs")
 
-        # Robot configurations
+        # Robot configurations -- update from subclass configs
+        if robot_configs is None:
+            robot_configs = [{} for _ in range(self.num_robots)]
         self.robot_configs = [
-            {
-                "controller_config": controller_configs[idx],
-                "initialization_noise": initialization_noise[idx],
-                "gripper_type": gripper_types[idx],
-                "gripper_visualization": gripper_visualizations[idx],
-                "control_freq": control_freq
-            }
-            for idx in range(self.num_robots)
+            dict(
+                **{
+                    "controller_config": controller_configs[idx],
+                    "initialization_noise": initialization_noise[idx],
+                    "robot_visualization": robot_visualizations[idx],
+                    "control_freq": control_freq
+                },
+                **robot_config,
+            )
+            for idx, robot_config in enumerate(robot_configs)
         ]
-
-        # whether to use indicator object or not
-        self.use_indicator_object = use_indicator_object
 
         # Run superclass init
         super().__init__(
+            use_indicator_object=use_indicator_object,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=self.has_offscreen_renderer,
             render_camera=render_camera,
@@ -215,17 +221,6 @@ class RobotEnv(MujocoEnv):
         """
         return self._action_dim
 
-    def move_indicator(self, pos):
-        """
-        Sets 3d position of indicator object to @pos.
-
-        Args:
-            pos (3-tuple): (x,y,z) values to place the indicator within the env
-        """
-        if self.use_indicator_object:
-            index = self._ref_indicator_pos_low
-            self.sim.data.qpos[index : index + 3] = pos
-
     @staticmethod
     def _input2list(inp, length):
         """
@@ -262,16 +257,6 @@ class RobotEnv(MujocoEnv):
         for robot in self.robots:
             robot.reset_sim(self.sim)
             robot.setup_references()
-
-        # Indicator object references
-        if self.use_indicator_object:
-            ind_qpos = self.sim.model.get_joint_qpos_addr("pos_indicator")
-            self._ref_indicator_pos_low, self._ref_indicator_pos_high = ind_qpos
-
-            ind_qvel = self.sim.model.get_joint_qvel_addr("pos_indicator")
-            self._ref_indicator_vel_low, self._ref_indicator_vel_high = ind_qvel
-
-            self.indicator_id = self.sim.model.body_name2id("pos_indicator")
 
     def _reset_internal(self):
         """
@@ -356,25 +341,6 @@ class RobotEnv(MujocoEnv):
                 ] = self.sim.data.qfrc_bias[
                     self._ref_indicator_vel_low: self._ref_indicator_vel_high]
 
-    def _post_action(self, action):
-        """
-        Run any necessary visualization after running the action
-
-        Args:
-            action (np.array): Action being passed during this timestep
-
-        Returns:
-            3-tuple:
-
-                - (float) reward from the environment
-                - (bool) whether the current episode is completed or not
-                - (dict) empty dict to be filled with information by subclassed method
-
-        """
-        ret = super()._post_action(action)
-        self._visualization()
-        return ret
-
     def _get_observation(self):
         """
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
@@ -416,92 +382,15 @@ class RobotEnv(MujocoEnv):
 
         return di
 
-    def _check_gripper_contact(self):
-        """
-        Checks whether each gripper is in contact with an object. Note that each entry in the return list corresponds
-        to each robot in the env.robots list. This means that a bimanual robot will have its own nested list within the
-        return list at the corresponding entry.
-
-        Returns:
-            list of bool: True if the specific gripper is in contact with an object.
-        """
-        collisions = [False] * self.num_robots
-        for idx, robot in enumerate(self.robots):
-            for contact in self.sim.data.contact[: self.sim.data.ncon]:
-                # Single arm case
-                if robot.robot_model.arm_type == "single":
-                    if (
-                        self.sim.model.geom_id2name(contact.geom1)
-                        in robot.gripper.contact_geoms
-                        or self.sim.model.geom_id2name(contact.geom2)
-                        in robot.gripper.contact_geoms
-                    ):
-                        collisions[idx] = True
-                        break
-                # Bimanual case
-                else:
-                    # Set this list entry to be its own list of bools
-                    collisions[idx] = [False, False]
-                    for i, arm in enumerate(robot.arms):
-                        if (
-                                self.sim.model.geom_id2name(contact.geom1)
-                                in robot.gripper[arm].contact_geoms
-                                or self.sim.model.geom_id2name(contact.geom2)
-                                in robot.gripper[arm].contact_geoms
-                        ):
-                            collisions[idx][i] = True
-                            continue
-        return collisions
-
-    def _check_arm_contact(self):
-        """
-        Checks whether each robot arm is in contact with an object.
-
-        Returns:
-            list of bool: True if the specific gripper is in contact with an object
-        """
-        collisions = [False] * self.num_robots
-        for idx, robot in enumerate(self.robots):
-            for contact in self.sim.data.contact[: self.sim.data.ncon]:
-                # Single arm case and Bimanual case are the same
-                if (
-                    self.sim.model.geom_id2name(contact.geom1)
-                    in robot.robot_model.contact_geoms
-                    or self.sim.model.geom_id2name(contact.geom2)
-                    in robot.robot_model.contact_geoms
-                ):
-                    collisions[idx] = True
-                    break
-        return collisions
-
-    def _check_q_limits(self):
-        """
-        Check if each robot arm is either very close or at the joint limits
-
-        Returns:
-            list of bool: True if the specific arm is near its joint limits
-        """
-        joint_limits = [False] * self.num_robots
-        tolerance = 0.1
-        for idx, robot in enumerate(self.robots):
-            for (qidx, (q, q_limits)) in enumerate(
-                    zip(
-                        self.sim.data.qpos[robot._ref_joint_pos_indexes],
-                        self.sim.model.jnt_range[robot._ref_joint_indexes]
-                    )
-            ):
-                if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
-                    print("Joint limit reached in joint " + str(qidx))
-                    joint_limits[idx] = True
-        return joint_limits
-
     def _visualization(self):
         """
         Do any needed visualization here
         """
-        # Loop over robot grippers to visualize them independently
+        # Run superclass method first
+        super()._visualization()
+        # Loop over robots to visualize them independently
         for robot in self.robots:
-            robot.visualize_gripper()
+            robot.visualize()
 
     def _load_robots(self):
         """
@@ -510,19 +399,7 @@ class RobotEnv(MujocoEnv):
         # Loop through robots and instantiate Robot object for each
         for idx, (name, config) in enumerate(zip(self.robot_names, self.robot_configs)):
             # Create the robot instance
-            if not check_bimanual(name):
-                self.robots[idx] = SingleArm(
-                    robot_type=name,
-                    idn=idx,
-                    **config
-                )
-            else:
-                self.robots[idx] = Bimanual(
-                    robot_type=name,
-                    idn=idx,
-                    **config
-                )
-
+            self.robots[idx] = ROBOT_CLASS_MAPPING[name](robot_type=name, idn=idx, **config)
             # Now, load the robot models
             self.robots[idx].load_model()
 

@@ -1,6 +1,6 @@
 <!-- This is the base xml for all physics simulations. Set global configs here. -->
 <mujoco model="base">
-  <compiler angle="radian" meshdir="meshes/"/>
+  <compiler angle="radian" meshdir="meshes/" inertiagrouprange="0 0"/>
   <option impratio="20" cone="elliptic"/>
   <size nconmax="5000" njmax="5000"/>
 

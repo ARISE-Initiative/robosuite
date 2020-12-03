@@ -87,7 +87,8 @@
         </body>
         <body name="head" pos="0.06 0 0.686">
           <inertial pos="0 0 0" quat="0.339345 0.850736 -0.347392 0.201027" mass="0.547767" diaginertia="0.00474065 0.00461087 0.00199949" />
-          <joint limited="true" damping="0" armature=".01" name="head_pan" type="hinge" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" />
+          <!-- Don't use head joint -->
+          <!-- <joint limited="true" damping="0" armature=".01" name="head_pan" type="hinge" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708" /> -->
           <geom name="head_vis" margin="0.001" class="viz" material="head_mat" mesh="H0" />
           <body name="screen" pos="0.1227 0 0" quat="0.453099 0.542864 0.542864 0.453099">
             <inertial pos="0 0 0" quat="0.995785 0.0113501 -0.000390852 0.0910132" mass="0.440171" diaginertia="0.0040484 0.00275826 0.00150834" />

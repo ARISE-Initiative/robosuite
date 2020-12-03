@@ -1,17 +1,16 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.environments.robot_env import RobotEnv
+from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import PotWithHandlesObject
 from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
-from robosuite.models.robots import check_bimanual
 
 import robosuite.utils.transform_utils as T
 
 
-class TwoArmLift(RobotEnv):
+class TwoArmLift(TwoArmEnv):
     """
     This class corresponds to the lifting task for two robot arms.
 
@@ -27,7 +26,10 @@ class TwoArmLift(RobotEnv):
             :`'single-arm-parallel'`: Only applicable for multi single arm setups. Sets up the (two) single armed
                 robots next to each other on the -x side of the table
             :`'single-arm-opposed'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots opposed from each others on the opposite +/-y sides of the table (Default option)
+                robots opposed from each others on the opposite +/-y sides of the table.
+
+        Note that "default" corresponds to either "bimanual" if a bimanual robot is used or "single-arm-opposed" if two
+        single-arm robots are used.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -74,12 +76,19 @@ class TwoArmLift(RobotEnv):
 
         reward_shaping (bool): if True, use dense rewards.
 
-        placement_initializer (ObjectPositionSampler instance): if provided, will
+        placement_initializer (ObjectPositionSampler): if provided, will
             be used to place objects on every reset, else a UniformRandomSampler
             is used by default.
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
+
+        robot_visualizations (bool or list of bool): True if using robot visualization.
+            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
+            robots or else it should be a list of the same length as "robots" param
+
+        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
+            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -147,6 +156,8 @@ class TwoArmLift(RobotEnv):
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
+        robot_visualizations=False,
+        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -161,13 +172,10 @@ class TwoArmLift(RobotEnv):
         camera_widths=256,
         camera_depths=False,
     ):
-        # First, verify that correct number of robots are being inputted
-        self.env_configuration = env_configuration
-        self._check_robot_configuration(robots)
-
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
+        self.table_offset = np.array((0, 0, 0.8))
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -184,17 +192,22 @@ class TwoArmLift(RobotEnv):
                 x_range=[-0.03, 0.03],
                 y_range=[-0.03, 0.03],
                 ensure_object_boundary_in_range=False,
-                rotation=(-np.pi / 3, np.pi / 3),
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
+                rotation=(np.pi + -np.pi / 3, np.pi + np.pi / 3),
             )
 
         super().__init__(
             robots=robots,
+            env_configuration=env_configuration,
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
+            robot_visualizations=robot_visualizations,
+            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -264,61 +277,21 @@ class TwoArmLift(RobotEnv):
             # gh stands for gripper-handle
             # When grippers are far away, tell them to be closer
 
-            # Single bimanual robot setting
-            if self.env_configuration == "bimanual":
-                _contacts_0_lf = len(list(
-                    self.find_contacts(
-                        self.robots[0].gripper["left"].important_geoms["left_finger"], self.pot.handle1_geoms
-                    )
-                )) > 0
-                _contacts_0_rf = len(list(
-                    self.find_contacts(
-                        self.robots[0].gripper["left"].important_geoms["right_finger"], self.pot.handle1_geoms
-                    )
-                )) > 0
-                _contacts_1_lf = len(list(
-                    self.find_contacts(
-                        self.robots[0].gripper["right"].important_geoms["left_finger"], self.pot.handle0_geoms
-                    )
-                )) > 0
-                _contacts_1_rf = len(list(
-                    self.find_contacts(
-                        self.robots[0].gripper["right"].important_geoms["right_finger"], self.pot.handle0_geoms
-                    )
-                )) > 0
-            # Multi single arm setting
-            else:
-                _contacts_0_lf = len(list(
-                    self.find_contacts(
-                        self.robots[0].gripper.important_geoms["left_finger"], self.pot.handle1_geoms
-                    )
-                )) > 0
-                _contacts_0_rf = len(list(
-                    self.find_contacts(
-                        self.robots[0].gripper.important_geoms["right_finger"], self.pot.handle1_geoms
-                    )
-                )) > 0
-                _contacts_1_lf = len(list(
-                    self.find_contacts(
-                        self.robots[1].gripper.important_geoms["left_finger"], self.pot.handle0_geoms
-                    )
-                )) > 0
-                _contacts_1_rf = len(list(
-                    self.find_contacts(
-                        self.robots[1].gripper.important_geoms["right_finger"], self.pot.handle0_geoms
-                    )
-                )) > 0
+            # Get contacts
+            (g0, g1) = (self.robots[0].gripper["right"], self.robots[0].gripper["left"]) if \
+                self.env_configuration == "bimanual" else (self.robots[0].gripper, self.robots[1].gripper)
+
             _g0h_dist = np.linalg.norm(_gripper0_to_handle0)
             _g1h_dist = np.linalg.norm(_gripper1_to_handle1)
 
             # Grasping reward
-            if _contacts_0_lf and _contacts_0_rf:
+            if self._check_grasp(gripper=g0, object_geoms=self.pot.handle0_geoms):
                 reward += 0.25
             # Reaching reward
             reward += 0.5 * (1 - np.tanh(10.0 * _g0h_dist))
 
             # Grasping reward
-            if _contacts_1_lf and _contacts_1_rf:
+            if self._check_grasp(gripper=g1, object_geoms=self.pot.handle1_geoms):
                 reward += 0.25
             # Reaching reward
             reward += 0.5 * (1 - np.tanh(10.0 * _g1h_dist))
@@ -355,30 +328,29 @@ class TwoArmLift(RobotEnv):
                     robot.robot_model.set_base_xpos(xpos)
 
         # load model for table top workspace
-        self.mujoco_arena = TableArena(
+        mujoco_arena = TableArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
-            table_offset=(0, 0, 0.8),
+            table_offset=self.table_offset,
         )
         if self.use_indicator_object:
-            self.mujoco_arena.add_pos_indicator()
+            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
-        self.mujoco_arena.set_origin([0, 0, 0])
+        mujoco_arena.set_origin([0, 0, 0])
 
         # initialize objects of interest
-        self.pot_name = "pot"
-        self.pot = PotWithHandlesObject(name=self.pot_name)
-        self.mujoco_objects = OrderedDict([(self.pot_name, self.pot)])
+        self.pot = PotWithHandlesObject(name="pot")
+
+        # Add pot to initializer
+        self.placement_initializer.add_objects(self.pot)
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
-            mujoco_arena=self.mujoco_arena, 
+            mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=self.mujoco_objects,
-            initializer=self.placement_initializer,
+            mujoco_objects=self.pot,
         )
-        self.model.place_objects()
 
     def _get_reference(self):
         """
@@ -389,11 +361,11 @@ class TwoArmLift(RobotEnv):
         super()._get_reference()
 
         # Additional object references from this env
-        self.pot_body_id = self.sim.model.body_name2id(self.pot_name)
-        self.handle1_site_id = self.sim.model.site_name2id(f"{self.pot_name}_handle0")
-        self.handle0_site_id = self.sim.model.site_name2id(f"{self.pot_name}_handle1")
+        self.pot_body_id = self.sim.model.body_name2id(self.pot.root_body)
+        self.handle0_site_id = self.sim.model.site_name2id(self.pot.important_sites["handle0"])
+        self.handle1_site_id = self.sim.model.site_name2id(self.pot.important_sites["handle1"])
         self.table_top_id = self.sim.model.site_name2id("table_top")
-        self.pot_center_id = self.sim.model.site_name2id(f"{self.pot_name}_center")
+        self.pot_center_id = self.sim.model.site_name2id(self.pot.important_sites["center"])
 
     def _reset_internal(self):
         """
@@ -405,11 +377,11 @@ class TwoArmLift(RobotEnv):
         if not self.deterministic_reset:
 
             # Sample from the placement initializer for all objects
-            obj_pos, obj_quat = self.model.place_objects()
+            object_placements = self.placement_initializer.sample()
 
             # Loop through all objects and reset their positions
-            for i, (obj_name, _) in enumerate(self.mujoco_objects.items()):
-                self.sim.data.set_joint_qpos(obj_name + "_jnt0", np.concatenate([np.array(obj_pos[i]), np.array(obj_quat[i])]))
+            for obj_pos, obj_quat, obj in object_placements.values():
+                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
 
     def _get_observation(self):
         """
@@ -467,6 +439,25 @@ class TwoArmLift(RobotEnv):
 
         return di
 
+    def _visualization(self):
+        """
+        Visualize each gripper site proportional to the distance to their respective handles
+        """
+        # Run super call first
+        super()._visualization()
+
+        # Color the gripper visualization site according to its distance to the cube
+        handles = [self.pot.important_sites[f"handle{i}"] for i in range(2)]
+        if self.env_configuration == "bimanual":
+            visualizations = [self.robots[0].gripper_visualization[arm] for arm in self.robots[0].arms]
+            grippers = [self.robots[0].gripper[arm] for arm in self.robots[0].arms]
+        else:
+            visualizations = [robot.gripper_visualization for robot in self.robots]
+            grippers = [robot.gripper for robot in self.robots]
+        for vis, gripper, handle in zip(visualizations, grippers, handles):
+            if vis:
+                self._visualize_gripper_to_target(gripper=gripper, target=handle, target_type="site")
+
     def _check_success(self):
         """
         Check if pot is successfully lifted
@@ -479,38 +470,6 @@ class TwoArmLift(RobotEnv):
 
         # cube is higher than the table top above a margin
         return pot_bottom_height > table_height + 0.10
-
-    def _check_robot_configuration(self, robots):
-        """
-        Sanity check to make sure the inputted robots and configuration is acceptable
-
-        Args:
-            robots (str or list of str): Robots to instantiate within this env
-        """
-        robots = robots if type(robots) == list or type(robots) == tuple else [robots]
-        if self.env_configuration == "single-arm-opposed" or self.env_configuration == "single-arm-parallel":
-            # Specifically two robots should be inputted!
-            is_bimanual = False
-            if type(robots) is not list or len(robots) != 2:
-                raise ValueError("Error: Exactly two single-armed robots should be inputted "
-                                 "for this task configuration!")
-        elif self.env_configuration == "bimanual":
-            is_bimanual = True
-            # Specifically one robot should be inputted!
-            if type(robots) is list and len(robots) != 1:
-                raise ValueError("Error: Exactly one bimanual robot should be inputted "
-                                 "for this task configuration!")
-        else:
-            # This is an unknown env configuration, print error
-            raise ValueError("Error: Unknown environment configuration received. Only 'bimanual',"
-                             "'single-arm-parallel', and 'single-arm-opposed' are supported. Got: {}"
-                             .format(self.env_configuration))
-
-        # Lastly, check to make sure all inputted robot names are of their correct type (bimanual / not bimanual)
-        for robot in robots:
-            if check_bimanual(robot) != is_bimanual:
-                raise ValueError("Error: For {} configuration, expected bimanual check to return {}; "
-                                 "instead, got {}.".format(self.env_configuration, is_bimanual, check_bimanual(robot)))
 
     @property
     def _handle0_xpos(self):
@@ -541,42 +500,6 @@ class TwoArmLift(RobotEnv):
             np.array: (x,y,z,w) quaternion of the pot body
         """
         return T.convert_quat(self.sim.data.body_xquat[self.pot_body_id], to="xyzw")
-
-    @property
-    def _world_quat(self):
-        """
-        Grab the world orientation
-
-        Returns:
-            np.array: (x,y,z,w) world quaternion
-        """
-        return T.convert_quat(np.array([1, 0, 0, 0]), to="xyzw")
-
-    @property
-    def _eef0_xpos(self):
-        """
-        Grab the position of Robot 0's end effector.
-
-        Returns:
-            np.array: (x,y,z) position of EEF0
-        """
-        if self.env_configuration == "bimanual":
-            return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id["left"]])
-        else:
-            return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
-
-    @property
-    def _eef1_xpos(self):
-        """
-        Grab the position of Robot 1's end effector.
-
-        Returns:
-            np.array: (x,y,z) position of EEF1
-        """
-        if self.env_configuration == "bimanual":
-            return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]])
-        else:
-            return np.array(self.sim.data.site_xpos[self.robots[1].eef_site_id])
 
     @property
     def _gripper0_to_handle0(self):

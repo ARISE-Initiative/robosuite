@@ -1,5 +1,7 @@
 <mujoco model="can-visual">
-  <!-- note: the mesh needed for this object is defined in can.xml -->
+  <asset>
+    <mesh file="meshes/can.stl" name="can_mesh"/>
+  </asset>
   <worldbody>
     <body>
       <body name="object">
