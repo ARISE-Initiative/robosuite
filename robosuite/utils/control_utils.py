@@ -290,6 +290,9 @@ class RingBuffer(Buffer):
         self.dim = dim
         self.length = length
 
+        # Variable so that initial average values are accurate
+        self._size = 0
+
         # Save pointer to current place in the buffer
         self.ptr = 0
 
@@ -303,9 +306,11 @@ class RingBuffer(Buffer):
         Args:
             value (int or float or array): Value(s) to push into the array (taken as a single new element)
         """
-        # Add value, then increment pointer
+        # Add value, then increment pointer (and size if necessary)
         self.buf[self.ptr] = np.array(value)
         self.ptr = (self.ptr + 1) % self.length
+        if self._size < self.length:
+            self._size += 1
 
     def clear(self):
         """
@@ -313,6 +318,7 @@ class RingBuffer(Buffer):
         """
         self.buf = np.zeros((self.length, self.dim))
         self.ptr = 0
+        self._size = 0
 
     @property
     def average(self):
@@ -322,7 +328,7 @@ class RingBuffer(Buffer):
         Returns:
             float or np.array: Averaged value of all elements in buffer
         """
-        return np.mean(self.buf, axis=0)
+        return np.mean(self.buf[:self._size], axis=0)
 
 
 class DeltaBuffer(Buffer):
