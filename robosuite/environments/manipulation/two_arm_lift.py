@@ -185,17 +185,7 @@ class TwoArmLift(TwoArmEnv):
         self.use_object_obs = use_object_obs
 
         # object placement initializer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.03, 0.03],
-                y_range=[-0.03, 0.03],
-                ensure_object_boundary_in_range=False,
-                ensure_valid_placement=True,
-                reference_pos=self.table_offset,
-                rotation=(np.pi + -np.pi / 3, np.pi + np.pi / 3),
-            )
+        self.placement_initializer = placement_initializer
 
         super().__init__(
             robots=robots,
@@ -342,8 +332,20 @@ class TwoArmLift(TwoArmEnv):
         # initialize objects of interest
         self.pot = PotWithHandlesObject(name="pot")
 
-        # Add pot to initializer
-        self.placement_initializer.add_objects(self.pot)
+        # Create placement initializer
+        if self.placement_initializer is not None:
+            self.placement_initializer.reset()
+            self.placement_initializer.add_objects(self.pot)
+        else:
+            self.placement_initializer = UniformRandomSampler(
+                mujoco_objects=self.pot,
+                x_range=[-0.03, 0.03],
+                y_range=[-0.03, 0.03],
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
+                rotation=(np.pi + -np.pi / 3, np.pi + np.pi / 3),
+            )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(

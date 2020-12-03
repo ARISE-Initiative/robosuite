@@ -1,7 +1,7 @@
 import collections
 import numpy as np
 
-from copy import deepcopy, copy
+from copy import copy
 
 from robosuite.utils import RandomizationError
 from robosuite.utils.transform_utils import quat_multiply
@@ -56,6 +56,12 @@ class ObjectPositionSampler:
         for obj in mujoco_objects:
             assert obj not in self.mujoco_objects, "Object '{}' already in sampler!".format(obj.name)
             self.mujoco_objects.append(obj)
+
+    def reset(self):
+        """
+        Resets this sampler. Removes all mujoco objects from this sampler.
+        """
+        self.mujoco_objects = []
 
     def sample(self, fixtures=None, reference=None, on_top=True):
         """
@@ -224,7 +230,7 @@ class UniformRandomSampler(ObjectPositionSampler):
             AssertionError: [Reference object name does not exist, invalid inputs]
         """
         # Standardize inputs
-        placed_objects = {} if fixtures is None else deepcopy(fixtures)
+        placed_objects = {} if fixtures is None else copy(fixtures)
         if reference is None:
             base_offset = self.reference_pos
         elif type(reference) is str:
@@ -344,6 +350,14 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         """
         raise AttributeError("add_objects() should not be called for SequentialCompsiteSamplers!")
 
+    def reset(self):
+        """
+        Resets this sampler. In addition to base method, iterates over all sub-samplers and resets them
+        """
+        super().reset()
+        for sampler in self.samplers:
+            sampler.reset()
+
     def sample(self, fixtures=None, reference=None, on_top=True):
         """
         Sample from each placement initializer sequentially, in the order
@@ -372,7 +386,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
             RandomizationError: [Cannot place all objects]
         """
         # Standardize inputs
-        placed_objects = {} if fixtures is None else deepcopy(fixtures)
+        placed_objects = {} if fixtures is None else copy(fixtures)
 
         # Iterate through all samplers to sample
         for sampler, s_args in zip(self.samplers, self.sample_args):

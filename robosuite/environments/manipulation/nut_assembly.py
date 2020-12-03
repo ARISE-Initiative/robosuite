@@ -205,11 +205,7 @@ class NutAssembly(SingleArmEnv):
         self.use_object_obs = use_object_obs
 
         # object placement initializer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            # treat sampling of each type of nut differently since we require different sampling ranges for each
-            self.placement_initializer = SequentialCompositeSampler()
+        self.placement_initializer = placement_initializer
 
         super().__init__(
             robots=robots,
@@ -400,31 +396,12 @@ class NutAssembly(SingleArmEnv):
         # define nuts
         self.nuts = []
 
-        # We need to check if custom placement initializer has been specified. This is true if the sampler is either
-        # NOT a SequentialCompsiteSampler OR if the sampler already has sub-samplers in it
-        is_custom_sampler = not isinstance(self.placement_initializer, SequentialCompositeSampler) or \
-            len(self.placement_initializer.samplers) > 0
-
-        for i, (nut_cls, nut_name, default_y_range) in enumerate(zip(
-                (SquareNutObject, RoundNutObject),
-                ("SquareNut", "RoundNut"),
-                ([0.11, 0.225], [-0.225, -0.11]),
-        )):
-            nut = nut_cls(name=nut_name)
-            self.nuts.append(nut)
-            # Add this nut to the placement initializer
-            if is_custom_sampler:
-                if isinstance(self.placement_initializer, SequentialCompositeSampler):
-                    # assumes user has already specified two samplers so we add nuts to them
-                    self.placement_initializer.samplers[i].add_objects(nut)
-                else:
-                    # This is assumed to be a flat sampler, so we just add all nuts to this sampler
-                    self.placement_initializer.add_objects(nut)
-            else:
-                # Default sampler; must define sub-samplers
+        # Create default (SequentialCompositeSampler) sampler if it has not already been specified
+        if self.placement_initializer is None:
+            self.placement_initializer = SequentialCompositeSampler()
+            for default_y_range in ([0.11, 0.225], [-0.225, -0.11]):
                 self.placement_initializer.append_sampler(
                     sampler=UniformRandomSampler(
-                        mujoco_objects=nut,
                         x_range=[-0.115, -0.11],
                         y_range=default_y_range,
                         rotation=None,
@@ -435,6 +412,22 @@ class NutAssembly(SingleArmEnv):
                         z_offset=0.02,
                     )
                 )
+        # Reset sampler before adding any new samplers / objects
+        self.placement_initializer.reset()
+
+        for i, (nut_cls, nut_name) in enumerate(zip(
+                (SquareNutObject, RoundNutObject),
+                ("SquareNut", "RoundNut"),
+        )):
+            nut = nut_cls(name=nut_name)
+            self.nuts.append(nut)
+            # Add this nut to the placement initializer
+            if isinstance(self.placement_initializer, SequentialCompositeSampler):
+                # assumes we have two samplers so we add nuts to them
+                self.placement_initializer.samplers[i].add_objects(nut)
+            else:
+                # This is assumed to be a flat sampler, so we just add all nuts to this sampler
+                self.placement_initializer.add_objects(nut)
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(

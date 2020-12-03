@@ -175,18 +175,7 @@ class Stack(SingleArmEnv):
         self.use_object_obs = use_object_obs
 
         # object placement initializer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.08, 0.08],
-                y_range=[-0.08, 0.08],
-                rotation=None,
-                ensure_object_boundary_in_range=False,
-                ensure_valid_placement=True,
-                reference_pos=self.table_offset,
-                z_offset=0.01,
-            )
+        self.placement_initializer = placement_initializer
 
         super().__init__(
             robots=robots,
@@ -361,15 +350,28 @@ class Stack(SingleArmEnv):
             rgba=[0, 1, 0, 1],
             material=greenwood,
         )
-
-        # Add cubes to initializer
-        self.placement_initializer.add_objects([self.cubeA, self.cubeB])
+        cubes = [self.cubeA, self.cubeB]
+        # Create placement initializer
+        if self.placement_initializer is not None:
+            self.placement_initializer.reset()
+            self.placement_initializer.add_objects(cubes)
+        else:
+            self.placement_initializer = UniformRandomSampler(
+                mujoco_objects=cubes,
+                x_range=[-0.08, 0.08],
+                y_range=[-0.08, 0.08],
+                rotation=None,
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
+                z_offset=0.01,
+            )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
             mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots],
-            mujoco_objects=[self.cubeA, self.cubeB],
+            mujoco_objects=cubes,
         )
 
     def _get_reference(self):

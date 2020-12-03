@@ -194,20 +194,7 @@ class TwoArmHandover(TwoArmEnv):
         self.use_object_obs = use_object_obs
 
         # object placement initializer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            # Set rotation about y-axis if hammer starts on table else rotate about z if it starts in gripper
-            rotation_axis = 'y' if self.prehensile else 'z'
-            self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.1, 0.1],
-                y_range=[-0.05, 0.05],
-                rotation=None,
-                rotation_axis=rotation_axis,
-                ensure_object_boundary_in_range=False,
-                ensure_valid_placement=True,
-                reference_pos=self.table_offset,
-            )
+        self.placement_initializer = placement_initializer
 
         super().__init__(
             robots=robots,
@@ -356,8 +343,23 @@ class TwoArmHandover(TwoArmEnv):
         # initialize objects of interest
         self.hammer = HammerObject(name="hammer")
 
-        # Add hammer to initializer
-        self.placement_initializer.add_objects(self.hammer)
+        # Create placement initializer
+        if self.placement_initializer is not None:
+            self.placement_initializer.reset()
+            self.placement_initializer.add_objects(self.hammer)
+        else:
+            # Set rotation about y-axis if hammer starts on table else rotate about z if it starts in gripper
+            rotation_axis = 'y' if self.prehensile else 'z'
+            self.placement_initializer = UniformRandomSampler(
+                mujoco_objects=self.hammer,
+                x_range=[-0.1, 0.1],
+                y_range=[-0.05, 0.05],
+                rotation=None,
+                rotation_axis=rotation_axis,
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
+            )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(

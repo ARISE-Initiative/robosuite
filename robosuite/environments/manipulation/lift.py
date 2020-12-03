@@ -175,18 +175,7 @@ class Lift(SingleArmEnv):
         self.use_object_obs = use_object_obs
 
         # object placement initializer
-        if placement_initializer:
-            self.placement_initializer = placement_initializer
-        else:
-            self.placement_initializer = UniformRandomSampler(
-                x_range=[-0.03, 0.03],
-                y_range=[-0.03, 0.03],
-                rotation=None,
-                ensure_object_boundary_in_range=False,
-                ensure_valid_placement=True,
-                reference_pos=self.table_offset,
-                z_offset=0.01,
-            )
+        self.placement_initializer = placement_initializer
 
         super().__init__(
             robots=robots,
@@ -311,8 +300,21 @@ class Lift(SingleArmEnv):
             material=redwood,
         )
 
-        # Add cube to initializer
-        self.placement_initializer.add_objects(self.cube)
+        # Create placement initializer
+        if self.placement_initializer is not None:
+            self.placement_initializer.reset()
+            self.placement_initializer.add_objects(self.cube)
+        else:
+            self.placement_initializer = UniformRandomSampler(
+                mujoco_objects=self.cube,
+                x_range=[-0.03, 0.03],
+                y_range=[-0.03, 0.03],
+                rotation=None,
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
+                z_offset=0.01,
+            )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
