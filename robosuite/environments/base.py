@@ -198,7 +198,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Create the simulation instance and run a single step to make sure changes have propagated through sim state
         self.sim = MjSim(self.mjpy_model)
-        self.sim.step()
+        self.sim.forward()
 
         # Setup sim time based on control frequency
         self.initialize_time(self.control_freq)
