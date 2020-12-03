@@ -560,6 +560,18 @@ def find_elements(root, tags, attribs, return_first=True):
     return elements if elements else None
 
 
+def save_sim_model(sim, fname):
+    """
+    Saves the current model xml from @sim at file location @fname.
+
+    Args:
+        sim (MjSim): XML file to save, in string form
+        fname (str): Absolute filepath to the location to save the file
+    """
+    with open(fname, "w") as f:
+        sim.save(file=f, format="xml")
+
+
 class CustomMaterial(object):
     """
     Simple class to instantiate the necessary parameters to define an appropriate texture / material combo

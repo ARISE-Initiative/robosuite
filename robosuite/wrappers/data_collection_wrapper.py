@@ -8,6 +8,7 @@ import time
 import numpy as np
 
 from robosuite.wrappers import Wrapper
+from robosuite.utils.mjcf_utils import save_sim_model
 
 
 class DataCollectionWrapper(Wrapper):
@@ -81,7 +82,7 @@ class DataCollectionWrapper(Wrapper):
 
         # save the model xml
         xml_path = os.path.join(self.ep_directory, "model.xml")
-        self.env.model.save_model(xml_path)
+        save_sim_model(sim=self.sim, fname=xml_path)
 
     def _flush(self):
         """
