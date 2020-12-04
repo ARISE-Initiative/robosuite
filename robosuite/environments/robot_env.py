@@ -21,6 +21,12 @@ class RobotEnv(MujocoEnv):
             dict if same controller is to be used for all robots or else it should be a list of the same length as
             "robots" param
 
+        mount_types (None or str or list of str): type of mount, used to instantiate mount models from mount factory.
+            Default is "default", which is the default mount associated with the robot(s) the 'robots' specification.
+            None results in no mount, and any other (valid) model overrides the default mount. Should either be
+            single str if same mount type is to be used for all robots or else it should be a list of the same
+            length as "robots" param
+
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -103,6 +109,7 @@ class RobotEnv(MujocoEnv):
         self,
         robots,
         env_configuration="default",
+        mount_types="default",
         controller_configs=None,
         initialization_noise=None,
         use_camera_obs=True,
@@ -134,6 +141,9 @@ class RobotEnv(MujocoEnv):
         self.robot_names = robots
         self.robots = self._input2list(None, self.num_robots)
         self._action_dim = None
+
+        # Mount
+        mount_types = self._input2list(mount_types, self.num_robots)
 
         # Controller
         controller_configs = self._input2list(controller_configs, self.num_robots)
@@ -170,6 +180,7 @@ class RobotEnv(MujocoEnv):
             dict(
                 **{
                     "controller_config": controller_configs[idx],
+                    "mount_type": mount_types[idx],
                     "initialization_noise": initialization_noise[idx],
                     "robot_visualization": robot_visualizations[idx],
                     "control_freq": control_freq

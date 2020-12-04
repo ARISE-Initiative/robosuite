@@ -239,7 +239,7 @@ class UniformRandomSampler(ObjectPositionSampler):
             ref_pos, _, ref_obj = placed_objects[reference]
             base_offset = np.array(ref_pos)
             if on_top:
-                base_offset += np.array((0, 0, ref_obj.get_top_offset()[-1]))
+                base_offset += np.array((0, 0, ref_obj.top_offset[-1]))
         else:
             base_offset = np.array(reference)
             assert base_offset.shape[0] == 3, "Invalid reference received. Should be (x,y,z) 3-tuple, but got: {}"\
@@ -250,8 +250,8 @@ class UniformRandomSampler(ObjectPositionSampler):
             # First make sure the currently sampled object hasn't already been sampled
             assert obj.name not in placed_objects, "Object '{}' has already been sampled!".format(obj.name)
 
-            horizontal_radius = obj.get_horizontal_radius()
-            bottom_offset = obj.get_bottom_offset()
+            horizontal_radius = obj.horizontal_radius
+            bottom_offset = obj.bottom_offset
             success = False
             for i in range(5000):  # 5000 retries
                 object_x = self._sample_x(horizontal_radius) + base_offset[0]
@@ -266,9 +266,9 @@ class UniformRandomSampler(ObjectPositionSampler):
                     for (x, y, z), _, other_obj in placed_objects.values():
                         if (
                             np.linalg.norm((object_x - x, object_y - y))
-                            <= other_obj.get_horizontal_radius() + horizontal_radius
+                            <= other_obj.horizontal_radius + horizontal_radius
                         ) and (
-                            object_z - z <= other_obj.get_top_offset()[-1] - bottom_offset[-1]
+                            object_z - z <= other_obj.top_offset[-1] - bottom_offset[-1]
                         ):
                             location_valid = False
                             break

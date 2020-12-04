@@ -22,6 +22,12 @@ class ManipulationEnv(RobotEnv):
             dict if same controller is to be used for all robots or else it should be a list of the same length as
             "robots" param
 
+        mount_types (None or str or list of str): type of mount, used to instantiate mount models from mount factory.
+            Default is "default", which is the default mount associated with the robot(s) the 'robots' specification.
+            None results in no mount, and any other (valid) model overrides the default mount. Should either be
+            single str if same mount type is to be used for all robots or else it should be a list of the same
+            length as "robots" param
+
         gripper_types (None or str or list of str): type of gripper, used to instantiate
             gripper models from gripper factory. Default is "default", which is the default grippers(s) associated
             with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
@@ -113,6 +119,7 @@ class ManipulationEnv(RobotEnv):
         robots,
         env_configuration="default",
         controller_configs=None,
+        mount_types="default",
         gripper_types="default",
         gripper_visualizations=False,
         initialization_noise=None,
@@ -156,6 +163,7 @@ class ManipulationEnv(RobotEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
+            mount_types=mount_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,

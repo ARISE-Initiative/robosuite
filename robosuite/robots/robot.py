@@ -2,6 +2,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
+from robosuite.models.mounts import mount_factory
 from robosuite.utils.control_utils import DeltaBuffer
 
 from mujoco_py import MjSim
@@ -32,6 +33,10 @@ class Robot(object):
 
             :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
+        mount_type (str): type of mount, used to instantiate mount models from mount factory.
+            Default is "default", which is the default mount associated with this robot's corresponding model.
+            None results in no mount, and any other (valid) model overrides the default mount.
+
         robot_visualization (bool): True if using robot visualization. Useful for teleoperation.
 
         control_freq (float): how many control signals to receive
@@ -45,6 +50,7 @@ class Robot(object):
         idn=0,
         initial_qpos=None,
         initialization_noise=None,
+        mount_type="default",
         robot_visualization=False,
         control_freq=10,
     ):
@@ -55,6 +61,7 @@ class Robot(object):
         self.robot_model = None                             # object holding robot model-specific info
         self.robot_visualization = robot_visualization      # Whether to visualize robot model sites or not
         self.control_freq = control_freq                    # controller Hz
+        self.mount_type = mount_type                        # Type of mount to use
 
         # Scaling of Gaussian initial noise applied to robot joints
         self.initialization_noise = initialization_noise
@@ -90,6 +97,12 @@ class Robot(object):
         Loads robot and optionally add grippers.
         """
         self.robot_model = create_robot(self.name, idn=self.idn)
+
+        # Add mount if specified
+        if self.mount_type == "default":
+            self.robot_model.add_mount(mount=mount_factory(self.robot_model.default_mount, idn=self.idn))
+        else:
+            self.robot_model.add_mount(mount=mount_factory(self.mount_type, idn=self.idn))
 
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:

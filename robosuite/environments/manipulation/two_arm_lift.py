@@ -191,6 +191,7 @@ class TwoArmLift(TwoArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
+            mount_types="default",
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
@@ -255,7 +256,7 @@ class TwoArmLift(TwoArmEnv):
         # use a shaping reward
         elif self.reward_shaping:
             # lifting reward
-            pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
+            pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.top_offset[2]
             table_height = self.sim.data.site_xpos[self.table_top_id][2]
             elevation = pot_bottom_height - table_height
             r_lift = min(max(elevation - 0.05, 0), 0.15)
@@ -467,7 +468,7 @@ class TwoArmLift(TwoArmEnv):
         Returns:
             bool: True if pot is lifted
         """
-        pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.get_top_offset()[2]
+        pot_bottom_height = self.sim.data.site_xpos[self.pot_center_id][2] - self.pot.top_offset[2]
         table_height = self.sim.data.site_xpos[self.table_top_id][2]
 
         # cube is higher than the table top above a margin

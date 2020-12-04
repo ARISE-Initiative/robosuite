@@ -226,6 +226,7 @@ class PickPlace(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
+            mount_types="default",
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,

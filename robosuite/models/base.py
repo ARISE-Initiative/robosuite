@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 import io
 
 from robosuite.utils import XMLError
-from robosuite.utils.mjcf_utils import array_to_string, find_elements
+from robosuite.utils.mjcf_utils import array_to_string, find_elements, sort_elements, add_material, string_to_array
 
 
 class MujocoXML(object):
@@ -24,7 +24,6 @@ class MujocoXML(object):
         self.folder = os.path.dirname(fname)
         self.tree = ET.parse(fname)
         self.root = self.tree.getroot()
-        self.name = self.root.get("model")
         self.worldbody = self.create_default_element("worldbody")
         self.actuator = self.create_default_element("actuator")
         self.sensor = self.create_default_element("sensor")
@@ -362,6 +361,16 @@ class MujocoXML(object):
         for child in root:
             self._replace_defaults_inline(default_dic=default_dic, root=child)
 
+    @property
+    def name(self):
+        """
+        Returns name of this MujocoXML
+
+        Returns:
+            str: Name of this MujocoXML
+        """
+        return self.root.get("model")
+
 
 class MujocoModel(object):
     """
@@ -407,6 +416,16 @@ class MujocoModel(object):
                     (not visible and sim.model.site_rgba[vis_g_id][3] > 0):
                 # We toggle the alpha value
                 sim.model.site_rgba[vis_g_id][3] = -sim.model.site_rgba[vis_g_id][3]
+
+    @property
+    def name(self):
+        """
+        Name for this model. Should be unique.
+
+        Returns:
+            str: Unique name for this model.
+        """
+        raise NotImplementedError
 
     @property
     def naming_prefix(self):
@@ -459,6 +478,14 @@ class MujocoModel(object):
         raise NotImplementedError
 
     @property
+    def sensors(self):
+        """
+        Returns:
+             list: Sensor names for this model
+        """
+        raise NotImplementedError
+
+    @property
     def contact_geoms(self):
         """
         List of names corresponding to the geoms used to determine contact with this model.
@@ -501,12 +528,226 @@ class MujocoModel(object):
         raise NotImplementedError
 
     @property
-    def sensors(self):
+    def important_sensors(self):
         """
-        Dict of sensors enabled for this model.
+        Dict of important sensors enabled for this model.
 
         Returns:
-            dict: Sensors for this model, where each specific sensor name is mapped from keyword string entries
-                in the dict
+            dict: Important sensors for this model, where each specific sensor name is mapped from keyword string
+                entries in the dict
         """
         raise NotImplementedError
+
+    @property
+    def bottom_offset(self):
+        """
+        Returns vector from model root body to model bottom.
+        Useful for, e.g. placing models on a surface.
+        Must be defined by subclass.
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        raise NotImplementedError
+
+    @property
+    def top_offset(self):
+        """
+        Returns vector from model root body to model top.
+        Useful for, e.g. placing models on a surface.
+        Must be defined by subclass.
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        raise NotImplementedError
+
+    @property
+    def horizontal_radius(self):
+        """
+        Returns maximum distance from model root body to any radial point of the model.
+
+        Helps us put models programmatically without them flying away due to a huge initial contact force.
+        Must be defined by subclass.
+
+        Returns:
+            float: radius
+        """
+        raise NotImplementedError
+
+
+class MujocoXMLModel(MujocoXML, MujocoModel):
+    """
+    Base class for all MujocoModels that are based on a raw XML file.
+
+    Args:
+        fname (str): Path to relevant xml file from which to create this robot instance
+        idn (int or str): Number or some other unique identification string for this model instance
+    """
+
+    def __init__(self, fname, idn=0):
+        super().__init__(fname)
+
+        # Set id and add prefixes to all body names to prevent naming clashes
+        self.idn = idn
+
+        # Define other variables that get filled later
+        self.mount = None
+
+        # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
+        self._elements = sort_elements(root=self.root)
+        assert len(self._elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
+                                                      "got {}".format(len(self._elements["root_body"]))
+        self._elements["root_body"] = self._elements["root_body"][0]
+        self._elements["bodies"] = [self._elements["root_body"]] + self._elements["bodies"] if \
+            "bodies" in self._elements else [self._elements["root_body"]]
+        self._root_body = self._elements["root_body"].get("name")
+        self._bodies = [e.get("name") for e in self._elements.get("bodies", [])]
+        self._joints = [e.get("name") for e in self._elements.get("joints", [])]
+        self._actuators = [e.get("name") for e in self._elements.get("actuators", [])]
+        self._sites = [e.get("name") for e in self._elements.get("sites", [])]
+        self._sensors = [e.get("name") for e in self._elements.get("sensors", [])]
+        self._contact_geoms = [e.get("name") for e in self._elements.get("contact_geoms", [])]
+        self._visual_geoms = [e.get("name") for e in self._elements.get("visual_geoms", [])]
+        self._base_offset = string_to_array(self._elements["root_body"].get("pos", "0 0 0"))
+
+        # Update all xml element prefixes
+        self.add_prefix(self.naming_prefix)
+
+        # Recolor all collision geoms appropriately
+        self.recolor_collision_geoms(self.contact_geom_rgba)
+
+        # Add default materials
+        tex_element, mat_element, _ = add_material(root=self.worldbody, naming_prefix=self.naming_prefix)
+        self.asset.append(tex_element)
+        self.asset.append(mat_element)
+
+    @property
+    def base_offset(self):
+        """
+        Provides position offset of root body.
+
+        Returns:
+            3-array: (x,y,z) pos value of root_body body element. If no pos in element, returns all zeros.
+        """
+        return self._base_offset
+
+    @property
+    def name(self):
+        return "{}{}".format(type(self).__name__, self.idn)
+
+    @property
+    def naming_prefix(self):
+        return "{}_".format(self.idn)
+
+    @property
+    def root_body(self):
+        return self.correct_naming(self._root_body)
+
+    @property
+    def bodies(self):
+        return self.correct_naming(self._bodies)
+
+    @property
+    def joints(self):
+        return self.correct_naming(self._joints)
+
+    @property
+    def actuators(self):
+        return self.correct_naming(self._actuators)
+
+    @property
+    def sites(self):
+        return self.correct_naming(self._sites)
+
+    @property
+    def sensors(self):
+        return self.correct_naming(self._sensors)
+
+    @property
+    def contact_geoms(self):
+        return self.correct_naming(self._contact_geoms)
+
+    @property
+    def visual_geoms(self):
+        return self.correct_naming(self._visual_geoms)
+
+    @property
+    def important_sites(self):
+        return self.correct_naming(self._important_sites)
+
+    @property
+    def important_geoms(self):
+        return self.correct_naming(self._important_geoms)
+
+    @property
+    def important_sensors(self):
+        return self.correct_naming(self._important_sensors)
+
+    @property
+    def _important_sites(self):
+        """
+        Dict of sites corresponding to the important site geoms (e.g.: used to aid visualization during sim).
+
+        Returns:
+            dict: Important site geoms, where each specific geom name is mapped from keyword string entries
+                in the dict. Note that the mapped sites should be the RAW site names found directly in the XML file --
+                the naming prefix will be automatically added in the public method call
+        """
+        raise NotImplementedError
+
+    @property
+    def _important_geoms(self):
+        """
+        Geoms corresponding to important components of this model. String keywords should be mapped to lists of geoms.
+
+        Returns:
+            dict of list: Important set of geoms, where each set of geoms are grouped as a list and are
+                organized by keyword string entries into a dict. Note that the mapped geoms should be the RAW geom
+                names found directly in the XML file -- the naming prefix will be automatically added in the
+                public method call
+        """
+        raise NotImplementedError
+
+    @property
+    def _important_sensors(self):
+        """
+        Dict of important sensors enabled for this model.
+
+        Returns:
+            dict: Important sensors for this model, where each specific sensor name is mapped from keyword string
+                entries in the dict. Note that the mapped geoms should be the RAW sensor names found directly in the
+                XML file -- the naming prefix will be automatically added in the public method call
+        """
+        raise NotImplementedError
+
+    @property
+    def contact_geom_rgba(self):
+        """
+        RGBA color to assign to all contact geoms for this model
+
+        Returns:
+            4-array: (r,g,b,a) values from 0 to 1 for this model's set of contact geoms
+        """
+        raise NotImplementedError
+
+    @property
+    def bottom_offset(self):
+        """
+        Returns vector from model root body to model bottom.
+        Useful for, e.g. placing models on a surface.
+        By default, this corresponds to the root_body's base offset.
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        return self.base_offset
+
+    @property
+    def top_offset(self):
+        raise NotImplementedError
+
+    @property
+    def horizontal_radius(self):
+        raise NotImplementedError
+

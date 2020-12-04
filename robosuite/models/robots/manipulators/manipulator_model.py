@@ -12,12 +12,11 @@ class ManipulatorModel(RobotModel):
     Args:
         fname (str): Path to relevant xml file from which to create this robot instance
         idn (int or str): Number or some other unique identification string for this robot instance
-        bottom_offset (3-array of float): x,y,z offset desired from initial coordinates
     """
 
-    def __init__(self, fname, idn=0, bottom_offset=(0, 0, 0)):
+    def __init__(self, fname, idn=0):
         # Always run super init first
-        super().__init__(fname, idn=idn, bottom_offset=bottom_offset)
+        super().__init__(fname, idn=idn)
 
         # key: gripper name and value: gripper model
         self.grippers = OrderedDict()
@@ -42,17 +41,16 @@ class ManipulatorModel(RobotModel):
 
     def add_gripper(self, gripper, arm_name=None):
         """
-        Mounts gripper to arm.
+        Mounts @gripper to arm.
 
         Throws error if robot already has a gripper or gripper type is incorrect.
 
         Args:
-            gripper (MujocoGripper): gripper MJCF model
+            gripper (GripperModel): gripper MJCF model
             arm_name (str): name of arm mount -- defaults to self.eef_name if not specified
 
         Raises:
             ValueError: [Multiple grippers]
-            XMLError: [No / invalid actuator]
         """
         if arm_name is None:
             arm_name = self.eef_name
@@ -72,19 +70,6 @@ class ManipulatorModel(RobotModel):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def important_sites(self):
-        """
-        Returns:
-            dict:
-
-                :`'ee'`: Name of end effector site
-                :`'ee_x'`: Name of end effector site (x-axis)
-                :`'ee_y'`: Name of end effector site (y-axis)
-                :`'ee_z'`: Name of end effector site (z-axis)
-        """
-        return {site: self.naming_prefix + site for site in ("ee", "ee_x", "ee_y", "ee_z")}
-
-    @property
     def eef_name(self):
         """
         Returns:
@@ -96,6 +81,19 @@ class ManipulatorModel(RobotModel):
     # -------------------------------------------------------------------------------------- #
     # -------------------------- Private Properties ---------------------------------------- #
     # -------------------------------------------------------------------------------------- #
+
+    @property
+    def _important_sites(self):
+        """
+        Returns:
+            dict:
+
+                :`'ee'`: Name of end effector site
+                :`'ee_x'`: Name of end effector site (x-axis)
+                :`'ee_y'`: Name of end effector site (y-axis)
+                :`'ee_z'`: Name of end effector site (z-axis)
+        """
+        return {site: site for site in ("ee", "ee_x", "ee_y", "ee_z")}
 
     @property
     def _eef_name(self):
@@ -148,6 +146,18 @@ class ManipulatorModel(RobotModel):
                 :`'table'`: lambda function that takes in table_length and returns corresponding (x,y,z) offset
                     if placed in the table arena
         """
+        raise NotImplementedError
+
+    @property
+    def top_offset(self):
+        raise NotImplementedError
+
+    @property
+    def _horizontal_radius(self):
+        raise NotImplementedError
+
+    @property
+    def default_mount(self):
         raise NotImplementedError
 
     @property

@@ -200,6 +200,7 @@ class TwoArmHandover(TwoArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
+            mount_types="default",
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
@@ -443,7 +444,7 @@ class TwoArmHandover(TwoArmEnv):
         # Get height of hammer and table and define height threshold
         hammer_angle_offset = (self.hammer.handle_length / 2 + 2*self.hammer.head_halfsize) * np.sin(self._hammer_angle)
         hammer_height = self.sim.data.geom_xpos[self.hammer_handle_geom_id][2]\
-            - self.hammer.get_top_offset()[2]\
+            - self.hammer.top_offset[2]\
             - hammer_angle_offset
         table_height = self.sim.data.site_xpos[self.table_top_id][2]
 

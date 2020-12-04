@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 from robosuite.models.base import MujocoXML, MujocoModel
 from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR,\
-                                       sort_elements, new_joint, add_prefix
+                                       sort_elements, new_joint, add_prefix, add_material
 
 
 # Dict mapping geom type string keywords to group number
@@ -48,7 +48,7 @@ class MujocoObject(MujocoModel):
         self.duplicate_collision_geoms = duplicate_collision_geoms
 
         # Attributes that should be filled in within the subclass
-        self.name = None
+        self._name = None
         self._obj = None
 
         # Attributes that are auto-filled by _get_object_properties call
@@ -59,6 +59,10 @@ class MujocoObject(MujocoModel):
         self._sites = None
         self._contact_geoms = None
         self._visual_geoms = None
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def naming_prefix(self):
@@ -83,6 +87,10 @@ class MujocoObject(MujocoModel):
     @property
     def sites(self):
         return self.correct_naming(self._sites)
+
+    @property
+    def sensors(self):
+        return self.correct_naming(self._sensors)
 
     @property
     def contact_geoms(self):
@@ -111,7 +119,7 @@ class MujocoObject(MujocoModel):
         return {"obj": self.naming_prefix + "default_site"}
 
     @property
-    def sensors(self):
+    def important_sensors(self):
         """
         Returns:
             dict: (Default is no sensors; i.e.: empty dict)
@@ -128,36 +136,36 @@ class MujocoObject(MujocoModel):
         assert self._obj is not None, "Object XML tree has not been generated yet!"
         return self._obj
 
-    def get_bottom_offset(self):
+    @property
+    def bottom_offset(self):
         """
-        Returns vector from object center to object bottom.
-        Helps us put objects on a surface.
+        Returns vector from model root body to model bottom.
+        Useful for, e.g. placing models on a surface.
         Must be defined by subclass.
 
         Returns:
-            np.array: (dx, dy, dz) vector, eg. np.array([0, 0, -2])
+            np.array: (dx, dy, dz) offset vector
         """
         raise NotImplementedError
 
-    def get_top_offset(self):
+    @property
+    def top_offset(self):
         """
-        Returns vector from object center to object top.
-        Helps us put other objects on this object.
+        Returns vector from model root body to model top.
+        Useful for, e.g. placing models on a surface.
         Must be defined by subclass.
 
         Returns:
-            np.array: (dx, dy, dz) vector, eg. np.array([0, 0, 2])
+            np.array: (dx, dy, dz) offset vector
         """
         raise NotImplementedError
 
-    def get_horizontal_radius(self):
+    @property
+    def horizontal_radius(self):
         """
-        Returns scalar
-        If object a,b has horizontal distance d
-        a.get_horizontal_radius() + b.get_horizontal_radius() < d
-        should mean that a, b has no contact
+        Returns maximum distance from model root body to any radial point of the model.
 
-        Helps us put objects programmatically without them flying away due to a huge initial contact force.
+        Helps us put models programmatically without them flying away due to a huge initial contact force.
         Must be defined by subclass.
 
         Returns:
@@ -196,8 +204,14 @@ class MujocoObject(MujocoModel):
         self._joints = [e.get("name") for e in _elements.get("joints", [])]
         self._actuators = [e.get("name") for e in _elements.get("actuators", [])]
         self._sites = [e.get("name") for e in _elements.get("sites", [])]
+        self._sensors = [e.get("name") for e in _elements.get("sensors", [])]
         self._contact_geoms = [e.get("name") for e in _elements.get("contact_geoms", [])]
         self._visual_geoms = [e.get("name") for e in _elements.get("visual_geoms", [])]
+
+        # Add default materials
+        tex_element, mat_element, _ = add_material(root=self.get_obj(), naming_prefix=self.naming_prefix)
+        self.asset.append(tex_element)
+        self.asset.append(mat_element)
 
         # Add prefix to all elements
         add_prefix(root=self.get_obj(), prefix=self.naming_prefix)
@@ -263,7 +277,7 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         self.duplicate_collision_geoms = duplicate_collision_geoms
 
         # Set name
-        self.name = name
+        self._name = name
 
         # joints for this object
         if joints == "default":
@@ -283,20 +297,6 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
 
         # Extract the appropriate private attributes for this
         self._get_object_properties()
-
-    def get_bottom_offset(self):
-        bottom_site = self.worldbody.find("./body/site[@name='{}bottom_site']".format(self.naming_prefix))
-        return string_to_array(bottom_site.get("pos"))
-
-    def get_top_offset(self):
-        top_site = self.worldbody.find("./body/site[@name='{}top_site']".format(self.naming_prefix))
-        return string_to_array(top_site.get("pos"))
-
-    def get_horizontal_radius(self):
-        horizontal_radius_site = self.worldbody.find(
-            "./body/site[@name='{}horizontal_radius_site']".format(self.naming_prefix)
-        )
-        return string_to_array(horizontal_radius_site.get("pos"))[0]
 
     def _get_object_subtree(self):
         # Parse object
@@ -392,6 +392,23 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         # Return all found pairs
         return geom_pairs
 
+    @property
+    def bottom_offset(self):
+        bottom_site = self.worldbody.find("./body/site[@name='{}bottom_site']".format(self.naming_prefix))
+        return string_to_array(bottom_site.get("pos"))
+
+    @property
+    def top_offset(self):
+        top_site = self.worldbody.find("./body/site[@name='{}top_site']".format(self.naming_prefix))
+        return string_to_array(top_site.get("pos"))
+
+    @property
+    def horizontal_radius(self):
+        horizontal_radius_site = self.worldbody.find(
+            "./body/site[@name='{}horizontal_radius_site']".format(self.naming_prefix)
+        )
+        return string_to_array(horizontal_radius_site.get("pos"))[0]
+
 
 class MujocoGeneratedObject(MujocoObject):
 
@@ -450,11 +467,11 @@ class MujocoGeneratedObject(MujocoObject):
     def _get_object_subtree(self):
         raise NotImplementedError
 
-    def get_bottom_offset(self):
+    def bottom_offset(self):
         raise NotImplementedError
 
-    def get_top_offset(self):
+    def top_offset(self):
         raise NotImplementedError
 
-    def get_horizontal_radius(self):
+    def horizontal_radius(self):
         raise NotImplementedError

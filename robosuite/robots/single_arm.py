@@ -40,6 +40,10 @@ class SingleArm(Manipulator):
 
             :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
+        mount_type (str): type of mount, used to instantiate mount models from mount factory.
+            Default is "default", which is the default mount associated with this robot's corresponding model.
+            None results in no mount, and any other (valid) model overrides the default mount.
+
         gripper_type (str): type of gripper, used to instantiate
             gripper models from gripper factory. Default is "default", which is the default gripper associated
             within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
@@ -61,6 +65,7 @@ class SingleArm(Manipulator):
         controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
+        mount_type="default",
         gripper_type="default",
         gripper_visualization=False,
         robot_visualization=False,
@@ -94,6 +99,7 @@ class SingleArm(Manipulator):
             idn=idn,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
+            mount_type=mount_type,
             robot_visualization=robot_visualization,
             control_freq=control_freq,
         )
@@ -362,14 +368,14 @@ class SingleArm(Manipulator):
         Returns:
             np.array: force applied at the force sensor at the robot arm's eef
         """
-        return self.get_sensor_measurement(self.gripper.sensors["force_ee"])
+        return self.get_sensor_measurement(self.gripper.important_sensors["force_ee"])
 
     @property
     def ee_torque(self):
         """
         Returns torque applied at the torque sensor at the robot arm's eef
         """
-        return self.get_sensor_measurement(self.gripper.sensors["torque_ee"])
+        return self.get_sensor_measurement(self.gripper.important_sensors["torque_ee"])
 
     @property
     def _hand_pose(self):

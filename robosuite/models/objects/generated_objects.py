@@ -107,7 +107,7 @@ class CompositeObject(MujocoGeneratedObject):
         # Always call superclass first
         super().__init__(duplicate_collision_geoms=duplicate_collision_geoms)
 
-        self.name = name
+        self._name = name
 
         # Create bodies
         self.body_mapping = {"root": {"name": "main"}}
@@ -190,15 +190,6 @@ class CompositeObject(MujocoGeneratedObject):
         lb[2] -= 0.01
 
         return np.all(object_position > lb) and np.all(object_position < ub)
-
-    def get_bottom_offset(self):
-        return np.array([0., 0., -self.total_size[2]])
-
-    def get_top_offset(self):
-        return np.array([0., 0., self.total_size[2]])
-
-    def get_horizontal_radius(self):
-        return np.linalg.norm(self.total_size[:2], 2)
 
     def _get_object_subtree(self):
         # Initialize top-level body
@@ -334,6 +325,18 @@ class CompositeObject(MujocoGeneratedObject):
             return [geom_size[0], geom_size[0], geom_size[1]]
         raise Exception("unsupported geom type!")
 
+    @property
+    def bottom_offset(self):
+        return np.array([0., 0., -self.total_size[2]])
+
+    @property
+    def top_offset(self):
+        return np.array([0., 0., self.total_size[2]])
+
+    @property
+    def horizontal_radius(self):
+        return np.linalg.norm(self.total_size[:2], 2)
+
 
 class HammerObject(CompositeObject):
     """
@@ -389,7 +392,7 @@ class HammerObject(CompositeObject):
         rgba_claw=None,
     ):
         # Set name
-        self.name = name
+        self._name = name
 
         # Set handle type and density ratio
         self.handle_shape = handle_shape
@@ -445,15 +448,6 @@ class HammerObject(CompositeObject):
         # Append materials to object
         self.append_material(metal)
         self.append_material(wood)
-
-    def get_bottom_offset(self):
-        return np.array([0, 0, -self.handle_radius])
-
-    def get_top_offset(self):
-        return np.array([0, 0, self.handle_radius])
-
-    def get_horizontal_radius(self):
-        return self.head_halfsize + 0.5 * self.handle_length
 
     def _get_geom_attrs(self):
         """
@@ -606,6 +600,18 @@ class HammerObject(CompositeObject):
         """
         return self.handle_geoms + self.head_geoms + self.face_geoms + self.claw_geoms
 
+    @property
+    def bottom_offset(self):
+        return np.array([0, 0, -self.handle_radius])
+
+    @property
+    def top_offset(self):
+        return np.array([0, 0, self.handle_radius])
+
+    @property
+    def horizontal_radius(self):
+        return self.head_halfsize + 0.5 * self.handle_length
+
 
 class PotWithHandlesObject(CompositeObject):
     """
@@ -657,7 +663,7 @@ class PotWithHandlesObject(CompositeObject):
         thickness=0.01,  # For body
     ):
         # Set name
-        self.name = name
+        self._name = name
 
         # Set object attributes
         self.body_half_size = np.array(body_half_size)
@@ -717,15 +723,6 @@ class PotWithHandlesObject(CompositeObject):
         self.append_material(redwood)
         self.append_material(greenwood)
         self.append_material(bluewood)
-
-    def get_bottom_offset(self):
-        return np.array([0, 0, -1 * self.body_half_size[2]])
-
-    def get_top_offset(self):
-        return np.array([0, 0, self.body_half_size[2]])
-
-    def get_horizontal_radius(self):
-        return np.sqrt(2) * (max(self.body_half_size) + self.handle_length)
 
     def _get_geom_attrs(self):
         """
@@ -939,6 +936,18 @@ class PotWithHandlesObject(CompositeObject):
         dic.update(self._important_sites)
         return dic
 
+    @property
+    def bottom_offset(self):
+        return np.array([0, 0, -1 * self.body_half_size[2]])
+
+    @property
+    def top_offset(self):
+        return np.array([0, 0, self.body_half_size[2]])
+
+    @property
+    def horizontal_radius(self):
+        return np.sqrt(2) * (max(self.body_half_size) + self.handle_length)
+
 
 class PrimitiveObject(MujocoGeneratedObject):
     """
@@ -1006,7 +1015,7 @@ class PrimitiveObject(MujocoGeneratedObject):
         super().__init__(obj_type=obj_type, duplicate_collision_geoms=duplicate_collision_geoms)
 
         # Set name
-        self.name = name
+        self._name = name
 
         if size is None:
             size = [0.05, 0.05, 0.05]
@@ -1119,13 +1128,13 @@ class PrimitiveObject(MujocoGeneratedObject):
     def _get_object_subtree(self):
         raise NotImplementedError
 
-    def get_bottom_offset(self):
+    def bottom_offset(self):
         raise NotImplementedError
 
-    def get_top_offset(self):
+    def top_offset(self):
         raise NotImplementedError
 
-    def get_horizontal_radius(self):
+    def horizontal_radius(self):
         raise NotImplementedError
 
 
@@ -1181,17 +1190,20 @@ class BoxObject(PrimitiveObject):
         """
         assert len(self.size) == 3, "box size should have length 3"
 
-    def get_bottom_offset(self):
-        return np.array([0, 0, -1 * self.size[2]])
-
-    def get_top_offset(self):
-        return np.array([0, 0, self.size[2]])
-
-    def get_horizontal_radius(self):
-        return np.linalg.norm(self.size[0:2], 2)
-
     def _get_object_subtree(self):
         return self._get_object_subtree_(ob_type="box")
+
+    @property
+    def bottom_offset(self):
+        return np.array([0, 0, -1 * self.size[2]])
+
+    @property
+    def top_offset(self):
+        return np.array([0, 0, self.size[2]])
+
+    @property
+    def horizontal_radius(self):
+        return np.linalg.norm(self.size[0:2], 2)
 
 
 class CylinderObject(PrimitiveObject):
@@ -1246,17 +1258,20 @@ class CylinderObject(PrimitiveObject):
         """
         assert len(self.size) == 2, "cylinder size should have length 2"
 
-    def get_bottom_offset(self):
-        return np.array([0, 0, -1 * self.size[1]])
-
-    def get_top_offset(self):
-        return np.array([0, 0, self.size[1]])
-
-    def get_horizontal_radius(self):
-        return self.size[0]
-
     def _get_object_subtree(self):
         return self._get_object_subtree_(ob_type="cylinder")
+
+    @property
+    def bottom_offset(self):
+        return np.array([0, 0, -1 * self.size[1]])
+
+    @property
+    def top_offset(self):
+        return np.array([0, 0, self.size[1]])
+
+    @property
+    def horizontal_radius(self):
+        return self.size[0]
 
 
 class BallObject(PrimitiveObject):
@@ -1311,17 +1326,20 @@ class BallObject(PrimitiveObject):
         """
         assert len(self.size) == 1, "ball size should have length 1"
 
-    def get_bottom_offset(self):
-        return np.array([0, 0, -1 * self.size[0]])
-
-    def get_top_offset(self):
-        return np.array([0, 0, self.size[0]])
-
-    def get_horizontal_radius(self):
-        return self.size[0]
-
     def _get_object_subtree(self):
         return self._get_object_subtree_(ob_type="sphere")
+
+    @property
+    def bottom_offset(self):
+        return np.array([0, 0, -1 * self.size[0]])
+
+    @property
+    def top_offset(self):
+        return np.array([0, 0, self.size[0]])
+
+    @property
+    def horizontal_radius(self):
+        return self.size[0]
 
 
 class CapsuleObject(PrimitiveObject):
@@ -1376,14 +1394,17 @@ class CapsuleObject(PrimitiveObject):
         """
         assert len(self.size) == 2, "capsule size should have length 2"
 
-    def get_bottom_offset(self):
-        return np.array([0, 0, -1 * (self.size[0] + self.size[1])])
-
-    def get_top_offset(self):
-        return np.array([0, 0, (self.size[0] + self.size[1])])
-
-    def get_horizontal_radius(self):
-        return self.size[0]
-
     def _get_object_subtree(self):
         return self._get_object_subtree_(ob_type="capsule")
+
+    @property
+    def bottom_offset(self):
+        return np.array([0, 0, -1 * (self.size[0] + self.size[1])])
+
+    @property
+    def top_offset(self):
+        return np.array([0, 0, (self.size[0] + self.size[1])])
+
+    @property
+    def horizontal_radius(self):
+        return self.size[0]

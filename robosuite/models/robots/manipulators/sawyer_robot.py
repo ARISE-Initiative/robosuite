@@ -9,11 +9,14 @@ class Sawyer(ManipulatorModel):
 
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
-        bottom_offset (3-array): (x,y,z) offset desired from initial coordinates
     """
 
-    def __init__(self, idn=0, bottom_offset=(0, 0, -0.913)):
-        super().__init__(xml_path_completion("robots/sawyer/robot.xml"), idn=idn, bottom_offset=bottom_offset)
+    def __init__(self, idn=0):
+        super().__init__(xml_path_completion("robots/sawyer/robot.xml"), idn=idn)
+
+    @property
+    def default_mount(self):
+        return "RethinkMount"
 
     @property
     def default_gripper(self):
@@ -34,6 +37,14 @@ class Sawyer(ManipulatorModel):
             "empty": (-0.6, 0, 0),
             "table": lambda table_length: (-0.16 - table_length/2, 0, 0)
         }
+
+    @property
+    def top_offset(self):
+        return np.array((0, 0, 1.0))
+
+    @property
+    def _horizontal_radius(self):
+        return 0.5
 
     @property
     def arm_type(self):

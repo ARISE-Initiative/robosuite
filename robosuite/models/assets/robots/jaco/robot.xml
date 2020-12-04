@@ -11,7 +11,6 @@
         <motor ctrllimited="true" ctrlrange="-6.8 6.8" joint="j2s7s300_joint_7" name="torq_j7"/>
     </actuator>
     <asset>
-        <mesh file="../common_meshes/pedestal.stl" name="pedestal"/>
         <mesh name="base" file="meshes/base.stl" />
         <mesh name="shoulder" file="meshes/shoulder.stl" />
         <mesh name="ring_big" file="meshes/ring_big.stl" />
@@ -22,92 +21,71 @@
         <mesh name="wrist_spherical_1" file="meshes/wrist_spherical_1.stl" />
         <mesh name="wrist_spherical_2" file="meshes/wrist_spherical_2.stl" />
 
-        <!-- Custom textures based on body names for domain randomization -->
-        <texture type="cube" name="pedestal_tex" builtin="flat" width="100" height="100" rgb1="0.2 0.2 0.2" rgb2="0.2 0.2 0.2"/>
-
-        <!-- Custom mats based on body names for domain randomization -->
-        <material name="pedestal_mat" texture="pedestal_tex"/>
-
         <!-- Materials for robot -->
         <material name="carbon_jaco" specular="1" shininess="1" reflectance="1" rgba="0.05 0.05 0.05 1" emission="1" />
         <material name="grey_plastic_jaco" specular="0.5" shininess="0" reflectance="0" rgba="0.12 0.14 0.14 1" emission="1" />
     </asset>
     <worldbody>
         <body name="base" pos="0 0 0">
-
             <!-- robot view -->
             <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
             <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
-            <body name="controller_box" pos="0 0 0">
-                <inertial diaginertia="1.71363 1.27988 0.809981" mass="46.64" pos="-0.325 0 -0.38"/>
-                <geom pos="-0.325 0 -0.38" size="0.11 0.2 0.265" type="box" name="controller_box_col"/>
-            </body>
-            <body name="pedestal_feet" pos="0 0 0">
-                <inertial diaginertia="8.16095 9.59375 15.0785" mass="167.09" pos="-0.1225 0 -0.758"/>
-                <geom pos="-0.1225 0 -0.758" size="0.385 0.35 0.155" type="box" name="pedestal_feet_col"/>
-            </body>
-            <body name="torso" pos="0 0 0">
-                <inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
-                <geom conaffinity="0" contype="0" group="1" rgba="0.2 0.2 0.2 1" size="0.05 0.05 0.05" type="box" name="torso_col"/>
-            </body>
-            <body name="pedestal" pos="0 0 0">
-                <inertial diaginertia="6.0869 5.81635 4.20915" mass="60.864" pos="0 0 0" quat="0.659267 -0.259505 -0.260945 0.655692"/>
-                <geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_col1" material="pedestal_mat" />
-                <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col2"/>
-            </body>
-            <!--<inertial pos="0 0 0.05" mass="4" diaginertia="0.4 0.4 0.4" />-->
-            <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="base" />
-            <geom type="mesh" material="carbon_jaco" mesh="base" />
-            <body name="j2s7s300_link_1" pos="0 0 0.15675" quat="0 0 1 0">
-                <inertial pos="0 -0.002 -0.0605" mass="0.7477" diaginertia="0.00152032 0.00152032 0.00059816" />
-                <joint name="j2s7s300_joint_1" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" frictionloss="0.01"/>
-                <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="shoulder" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" mesh="ring_big" />
-                <geom type="mesh" material="carbon_jaco" mesh="shoulder" name="s_collision"/>
-                <body name="j2s7s300_link_2" pos="0 0.0016 -0.11875" quat="0 0 -0.707107 0.707107">
-                    <inertial pos="0 -0.103563 0" quat="0.707107 0.707107 0 0" mass="0.8447" diaginertia="0.00247074 0.00247074 0.000380115" />
-                    <joint name="j2s7s300_joint_2" pos="0 0 0" axis="0 0 1" limited="true" range="0.820305 5.46288" damping="0.1" frictionloss="0.01"/>
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="arm_half_1" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" mesh="ring_big" />
-                    <geom type="mesh" material="carbon_jaco" mesh="arm_half_1" name="ah1_collision"/>
-                    <body name="j2s7s300_link_3" pos="0 -0.205 0" quat="0.707107 -0.707107 0 0">
-                        <inertial pos="0 0 -0.102245" mass="0.8447" diaginertia="0.00247074 0.00247074 0.000380115" />
-                        <joint name="j2s7s300_joint_3" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" frictionloss="0.01"/>
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="arm_half_2" />
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" mesh="ring_big" />
-                        <geom type="mesh" material="carbon_jaco" mesh="arm_half_2" name="ah2_collision"/>
-                        <body name="j2s7s300_link_4" pos="0 0 -0.205" quat="0 0 0.707107 0.707107">
-                            <inertial pos="0 0.081 -0.0086" quat="0.707107 0.707107 0 0" mass="0.6763" diaginertia="0.00142022 0.00142022 0.000304335" />
-                            <joint name="j2s7s300_joint_4" pos="0 0 0" axis="0 0 1" limited="true" range="0.523599 5.75959" damping="0.1" frictionloss="0.01"/>
-                            <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="forearm" />
-                            <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" mesh="ring_small" />
-                            <geom type="mesh" material="carbon_jaco" mesh="forearm" name="f_collision"/>
-                            <body name="j2s7s300_link_5" pos="0 0.2073 -0.0114" quat="0 0 -0.707107 0.707107">
-                                <inertial pos="0 0.00288489 -0.0541933" mass="0.463" diaginertia="0.000432132 0.000432132 9.26e-05" />
-                                <joint name="j2s7s300_joint_5" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" frictionloss="0.01"/>
-                                <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="wrist_spherical_1" />
-                                <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" mesh="ring_small" />
-                                <geom type="mesh" material="carbon_jaco" mesh="wrist_spherical_1" name="ws1_collision"/>
-                                <body name="j2s7s300_link_6" pos="0 0 -0.10375" quat="0 0 0.707107 0.707107">
-                                    <inertial pos="0 0.0497209 -0.00285628" quat="0.707107 0.707107 0 0" mass="0.463" diaginertia="0.000432132 0.000432132 9.26e-05" />
-                                    <joint name="j2s7s300_joint_6" pos="0 0 0" axis="0 0 1" limited="true" range="1.13446 5.14872" damping="0.01" frictionloss="0.01"/>
-                                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="wrist_spherical_2" />
-                                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" mesh="ring_small" />
-                                    <geom type="mesh" material="carbon_jaco" mesh="wrist_spherical_2" name="ws2_collision"/>
-                                    <body name="j2s7s300_link_7" pos="0 0.10375 0" quat="0 0 -0.707107 0.707107">
-                                        <inertial pos="0 0 -0.06" quat="0.5 0.5 -0.5 0.5" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" /> <!--mass="0.99" diaginertia="0.0005816 0.000345324 0.000345324" /> -->
-                                        <joint name="j2s7s300_joint_7" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.01" frictionloss="0.01"/>
-                                        <body name="right_hand" pos="0 0 0" quat="0 1 0 0">
-                                            <!-- This sites were added for visualization. They are all standardized between models-->
-                                            <!-- Position mimics the gripper attachment point (right_hand) -->
-                                            <!--  Y-axis should be perpendicular to grasping motion, and Z-axis should point out of the robot eef -->
-                                            <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
-                                            <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
-                                            <site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
-                                            <site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
-                                            <!-- This camera points out from the eef. -->
-                                            <camera mode="fixed" name="eye_in_hand" pos="0.08 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
-                                            <!-- To add gripper -->
+            <!-- mount attached here -->
+            <body name="j2s7s300_link_0" pos="0 0 0">
+                <inertial pos="0 0 0.05" mass="4" diaginertia="0.4 0.4 0.4" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="base" />
+                <geom type="mesh" material="carbon_jaco" mesh="base" />
+                <body name="j2s7s300_link_1" pos="0 0 0.15675" quat="0 0 1 0">
+                    <inertial pos="0 -0.002 -0.0605" mass="0.7477" diaginertia="0.00152032 0.00152032 0.00059816" />
+                    <joint name="j2s7s300_joint_1" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" frictionloss="0.01"/>
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" name="s_visual" mesh="shoulder" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" name="s_ring_visual" mesh="ring_big" />
+                    <geom type="mesh" material="carbon_jaco" mesh="shoulder" name="s_collision"/>
+                    <body name="j2s7s300_link_2" pos="0 0.0016 -0.11875" quat="0 0 -0.707107 0.707107">
+                        <inertial pos="0 -0.103563 0" quat="0.707107 0.707107 0 0" mass="0.8447" diaginertia="0.00247074 0.00247074 0.000380115" />
+                        <joint name="j2s7s300_joint_2" pos="0 0 0" axis="0 0 1" limited="true" range="0.820305 5.46288" damping="0.1" frictionloss="0.01"/>
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" name="ah1_visual" mesh="arm_half_1" />
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" name="ah1_ring_visual" mesh="ring_big" />
+                        <geom type="mesh" material="carbon_jaco" mesh="arm_half_1" name="ah1_collision"/>
+                        <body name="j2s7s300_link_3" pos="0 -0.205 0" quat="0.707107 -0.707107 0 0">
+                            <inertial pos="0 0 -0.102245" mass="0.8447" diaginertia="0.00247074 0.00247074 0.000380115" />
+                            <joint name="j2s7s300_joint_3" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" frictionloss="0.01"/>
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" name="ah2_visual" mesh="arm_half_2" />
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" name="ah2_ring_visual" mesh="ring_big" />
+                            <geom type="mesh" material="carbon_jaco" mesh="arm_half_2" name="ah2_collision"/>
+                            <body name="j2s7s300_link_4" pos="0 0 -0.205" quat="0 0 0.707107 0.707107">
+                                <inertial pos="0 0.081 -0.0086" quat="0.707107 0.707107 0 0" mass="0.6763" diaginertia="0.00142022 0.00142022 0.000304335" />
+                                <joint name="j2s7s300_joint_4" pos="0 0 0" axis="0 0 1" limited="true" range="0.523599 5.75959" damping="0.1" frictionloss="0.01"/>
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" name="f_visual" mesh="forearm" />
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" name="f_ring_visual" mesh="ring_small" />
+                                <geom type="mesh" material="carbon_jaco" mesh="forearm" name="f_collision"/>
+                                <body name="j2s7s300_link_5" pos="0 0.2073 -0.0114" quat="0 0 -0.707107 0.707107">
+                                    <inertial pos="0 0.00288489 -0.0541933" mass="0.463" diaginertia="0.000432132 0.000432132 9.26e-05" />
+                                    <joint name="j2s7s300_joint_5" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" frictionloss="0.01"/>
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" name="ws1_visual" mesh="wrist_spherical_1" />
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" name="ws1_ring_visual" mesh="ring_small" />
+                                    <geom type="mesh" material="carbon_jaco" mesh="wrist_spherical_1" name="ws1_collision"/>
+                                    <body name="j2s7s300_link_6" pos="0 0 -0.10375" quat="0 0 0.707107 0.707107">
+                                        <inertial pos="0 0.0497209 -0.00285628" quat="0.707107 0.707107 0 0" mass="0.463" diaginertia="0.000432132 0.000432132 9.26e-05" />
+                                        <joint name="j2s7s300_joint_6" pos="0 0 0" axis="0 0 1" limited="true" range="1.13446 5.14872" damping="0.01" frictionloss="0.01"/>
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" name="ws2_visual" mesh="wrist_spherical_2" />
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_jaco" name="ws2_ring_visual" mesh="ring_small" />
+                                        <geom type="mesh" material="carbon_jaco" mesh="wrist_spherical_2" name="ws2_collision"/>
+                                        <body name="j2s7s300_link_7" pos="0 0.10375 0" quat="0 0 -0.707107 0.707107">
+                                            <inertial pos="0 0 -0.06" quat="0.5 0.5 -0.5 0.5" mass="1e-6" diaginertia="1e-6 1e-6 1e-6" /> <!--mass="0.99" diaginertia="0.0005816 0.000345324 0.000345324" /> -->
+                                            <joint name="j2s7s300_joint_7" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.01" frictionloss="0.01"/>
+                                            <body name="right_hand" pos="0 0 0" quat="0 1 0 0">
+                                                <!-- This sites were added for visualization. They are all standardized between models-->
+                                                <!-- Position mimics the gripper attachment point (right_hand) -->
+                                                <!--  Y-axis should be perpendicular to grasping motion, and Z-axis should point out of the robot eef -->
+                                                <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
+                                                <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                                                <site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" group="1"/>
+                                                <site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" group="1"/>
+                                                <!-- This camera points out from the eef. -->
+                                                <camera mode="fixed" name="eye_in_hand" pos="0.08 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
+                                                <!-- To add gripper -->
+                                            </body>
                                         </body>
                                     </body>
                                 </body>

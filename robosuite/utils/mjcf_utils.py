@@ -6,6 +6,7 @@ import numpy as np
 from collections.abc import Iterable
 from PIL import Image
 from pathlib import Path
+from copy import deepcopy
 
 import robosuite
 
@@ -14,9 +15,47 @@ GREEN = [0, 1, 0, 1]
 BLUE = [0, 0, 1, 1]
 CYAN = [0, 1, 1, 1]
 ROBOT_COLLISION_COLOR = [0, 0.5, 0, 1]
+MOUNT_COLLISION_COLOR = [0.5, 0.5, 0, 1]
 GRIPPER_COLLISION_COLOR = [0, 0, 0.5, 1]
 OBJECT_COLLISION_COLOR = [0.5, 0, 0, 1]
 ENVIRONMENT_COLLISION_COLOR = [0.5, 0.5, 0, 1]
+SENSOR_TYPES = {
+    "touch",
+    "accelerometer",
+    "velocimeter",
+    "gyro",
+    "force",
+    "torque",
+    "magnetometer",
+    "rangefinder",
+    "jointpos",
+    "jointvel",
+    "tendonpos",
+    "tendonvel",
+    "actuatorpos",
+    "actuatorvel",
+    "actuatorfrc",
+    "ballangvel",
+    "jointlimitpos",
+    "jointlimitvel",
+    "jointlimitfrc",
+    "tendonlimitpos",
+    "tendonlimitvel",
+    "tendonlimitfrc",
+    "framepos",
+    "framequat",
+    "framexaxis",
+    "frameyaxis",
+    "framezaxis",
+    "framelinvel",
+    "frameangvel",
+    "framelinacc",
+    "frameangacc",
+    "subtreecom",
+    "subtreelinvel",
+    "subtreeangmom",
+    "user",
+}
 
 TEXTURES = {
     "WoodRed": "red-wood.png",
@@ -49,6 +88,94 @@ TEXTURES = {
 }
 
 ALL_TEXTURES = TEXTURES.keys()
+
+
+class CustomMaterial(object):
+    """
+    Simple class to instantiate the necessary parameters to define an appropriate texture / material combo
+
+    Instantiates a nested dict holding necessary components for procedurally generating a texture / material combo
+
+    Please see http://www.mujoco.org/book/XMLreference.html#asset for specific details on
+        attributes expected for Mujoco texture / material tags, respectively
+
+    Note that the values in @tex_attrib and @mat_attrib can be in string or array / numerical form.
+
+    Args:
+        texture (None or str or 4-array): Name of texture file to be imported. If a string, should be part of
+            ALL_TEXTURES. If texture is a 4-array, then this argument will be interpreted as an rgba tuple value and
+            a template png will be procedurally generated during object instantiation, with any additional
+            texture / material attributes specified. If None, no file will be linked and no rgba value will be set
+            Note, if specified, the RGBA values are expected to be floats between 0 and 1
+
+        tex_name (str): Name to reference the imported texture
+
+        mat_name (str): Name to reference the imported material
+
+        tex_attrib (dict): Any other optional mujoco texture specifications.
+
+        mat_attrib (dict): Any other optional mujoco material specifications.
+
+    Raises:
+        AssertionError: [Invalid texture]
+    """
+
+    def __init__(
+            self,
+            texture,
+            tex_name,
+            mat_name,
+            tex_attrib=None,
+            mat_attrib=None,
+    ):
+        # Check if the desired texture is an rgba value
+        if type(texture) is str:
+            default = False
+            # Verify that requested texture is valid
+            assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
+                texture, ALL_TEXTURES)
+        else:
+            default = True
+            # If specified, this is an rgba value and a default texture is desired; make sure length of rgba array is 4
+            if texture is not None:
+                assert len(texture) == 4, "Error: Requested default texture. Got array of length {}." \
+                                          "Expected rgba array of length 4.".format(len(texture))
+
+        # Setup the texture and material attributes
+        self.tex_attrib = {} if tex_attrib is None else tex_attrib.copy()
+        self.mat_attrib = {} if mat_attrib is None else mat_attrib.copy()
+
+        # Add in name values
+        self.name = mat_name
+        self.tex_attrib["name"] = tex_name
+        self.mat_attrib["name"] = mat_name
+        self.mat_attrib["texture"] = tex_name
+
+        # Loop through all attributes and convert all non-string values into strings
+        for attrib in (self.tex_attrib, self.mat_attrib):
+            for k, v in attrib.items():
+                if type(v) is not str:
+                    if isinstance(v, Iterable):
+                        attrib[k] = array_to_string(v)
+                    else:
+                        attrib[k] = str(v)
+
+        # Handle default and non-default cases separately for linking texture patch file locations
+        if not default:
+            # Add in the filepath to texture patch
+            self.tex_attrib["file"] = xml_path_completion("textures/" + TEXTURES[texture])
+        else:
+            if texture is not None:
+                # Create a texture patch
+                tex = Image.new('RGBA', (100, 100), tuple((np.array(texture)*255).astype('int')))
+                # Create temp directory if it does not exist
+                save_dir = "/tmp/robosuite_temp_tex"
+                Path(save_dir).mkdir(parents=True, exist_ok=True)
+                # Save this texture patch to the temp directory on disk (MacOS / Linux)
+                fpath = save_dir + "/{}.png".format(tex_name)
+                tex.save(fpath, "PNG")
+                # Link this texture file to the default texture dict
+                self.tex_attrib["file"] = fpath
 
 
 def xml_path_completion(xml_path):
@@ -399,8 +526,7 @@ def add_prefix(
     Find all element(s) matching the requested @tag, and appends @prefix to all @attributes if they exist.
 
     Args:
-        root (ET.Element): Root of the xml element tree to start recursively searching through. Default is None
-            (use automatic top-level root in this XML object)
+        root (ET.Element): Root of the xml element tree to start recursively searching through.
         prefix (str): Prefix to add to all specified attributes
         tags (str or list of str or set): Tag(s) to search for in this ElementTree.
         attribs (str or ): Element attribute(s) to append prefix to.
@@ -421,6 +547,56 @@ def add_prefix(
         add_prefix(root=r, prefix=prefix, tags=tags, attribs=attribs)
 
 
+def add_material(root, naming_prefix="", custom_material=None):
+    """
+    Iterates through all element(s) in @root recursively and adds a material / texture to all visual geoms that don't
+    already have a material specified.
+
+    Args:
+        root (ET.Element): Root of the xml element tree to start recursively searching through.
+        naming_prefix (str): Adds this prefix to all material and texture names
+        custom_material (None or CustomMaterial): If specified, will add this material to all visual geoms.
+            Else, will add a default "no-change" material.
+
+    Returns:
+        3-tuple: (ET.Element, ET.Element, CustomMaterial) (tex_element, mat_element, material) corresponding to the
+            added material
+    """
+    # First, make sure material is specified
+    if custom_material is None:
+        custom_material = CustomMaterial(
+            texture=None,
+            tex_name="default_tex",
+            mat_name="default_mat",
+            tex_attrib={
+                "type": "cube",
+                "builtin": "flat",
+                "width": 100,
+                "height": 100,
+                "rgb1": np.ones(3),
+                "rgb2": np.ones(3),
+            },
+        )
+    # Else, check to make sure the custom material begins with the specified prefix
+    if not custom_material.name.startswith(naming_prefix):
+        custom_material.name = naming_prefix + custom_material.name
+        custom_material.tex_attrib["name"] = naming_prefix + custom_material.tex_attrib["name"]
+        custom_material.mat_attrib["name"] = naming_prefix + custom_material.mat_attrib["name"]
+        custom_material.mat_attrib["texture"] = naming_prefix + custom_material.mat_attrib["texture"]
+
+    # Check the current element for matching conditions
+    if root.tag == "geom" and root.get("group", None) == "1" and root.get("material", None) is None:
+        # Add a new material attribute to this geom
+        root.set("material", custom_material.name)
+    # Continue recursively searching through the element tree
+    for r in root:
+        add_material(root=r, naming_prefix=naming_prefix, custom_material=custom_material)
+    # Lastly, return the new texture and material elements
+    tex_element = new_element(tag="texture", **custom_material.tex_attrib)
+    mat_element = new_element(tag="material", **custom_material.mat_attrib)
+    return tex_element, mat_element, custom_material
+
+
 def _element_filter(element, parent):
     """
     Default element filter to be used in sort_elements. This will filter for the following groups:
@@ -430,6 +606,7 @@ def _element_filter(element, parent):
         :`'joints'`: Any joint elements
         :`'actuators'`: Any actuator elements
         :`'sites'`: Any site elements
+        :`'sensors'`: Any sensor elements
         :`'contact_geoms'`: Any geoms used for collision (as specified by group 0 (default group) geoms)
         :`'visual_geoms'`: Any geoms used for visual rendering (as specified by group 1 geoms)
 
@@ -454,6 +631,8 @@ def _element_filter(element, parent):
         return "bodies"
     elif element.tag == "site":
         return "sites"
+    elif element.tag in SENSOR_TYPES:
+        return "sensors"
     elif element.tag == "geom":
         # Only get collision and visual geoms (group 0 / None, or 1, respectively)
         group = element.get("group")
@@ -464,7 +643,7 @@ def _element_filter(element, parent):
         return None
 
 
-def sort_elements(root, parent=None, element_filter=None,_elements_dict=None):
+def sort_elements(root, parent=None, element_filter=None, _elements_dict=None):
     """
     Utility method to iteratively sort all elements based on @tags. This XML ElementTree will be parsed such that
     all elements with the same key as returned by @element_filter will be grouped as a list entry in the returned
@@ -570,88 +749,3 @@ def save_sim_model(sim, fname):
     """
     with open(fname, "w") as f:
         sim.save(file=f, format="xml")
-
-
-class CustomMaterial(object):
-    """
-    Simple class to instantiate the necessary parameters to define an appropriate texture / material combo
-
-    Instantiates a nested dict holding necessary components for procedurally generating a texture / material combo
-
-    Please see http://www.mujoco.org/book/XMLreference.html#asset for specific details on
-        attributes expected for Mujoco texture / material tags, respectively
-
-    Note that the values in @tex_attrib and @mat_attrib can be in string or array / numerical form.
-
-    Args:
-        texture (str or 4-array): Name of texture file to be imported. If a string, should be part of ALL_TEXTURES
-            If texture is a 4-array, then this argument will be interpreted as an rgba tuple value and a template
-            png will be procedurally generated during object instantiation, with any additional
-            texture / material attributes specified.
-            Note the RGBA values are expected to be floats between 0 and 1
-
-        tex_name (str): Name to reference the imported texture
-
-        mat_name (str): Name to reference the imported material
-
-        tex_attrib (dict): Any other optional mujoco texture specifications.
-
-        mat_attrib (dict): Any other optional mujoco material specifications.
-
-    Raises:
-        AssertionError: [Invalid texture]
-    """
-
-    def __init__(
-            self,
-            texture,
-            tex_name,
-            mat_name,
-            tex_attrib=None,
-            mat_attrib=None,
-    ):
-        # Check if the desired texture is an rgba value
-        if type(texture) is str:
-            default = False
-            # Verify that requested texture is valid
-            assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
-                texture, ALL_TEXTURES)
-        else:
-            default = True
-            # This is an rgba value and a default texture is desired; make sure length of rgba array is 4
-            assert len(texture) == 4, "Error: Requested default texture. Got array of length {}. Expected rgba array " \
-                                      "of length 4.".format(len(texture))
-
-        # Setup the texture and material attributes
-        self.tex_attrib = {} if tex_attrib is None else tex_attrib.copy()
-        self.mat_attrib = {} if mat_attrib is None else mat_attrib.copy()
-
-        # Add in name values
-        self.tex_attrib["name"] = tex_name
-        self.mat_attrib["name"] = mat_name
-        self.mat_attrib["texture"] = tex_name
-
-        # Loop through all attributes and convert all non-string values into strings
-        for attrib in (self.tex_attrib, self.mat_attrib):
-            for k, v in attrib.items():
-                if type(v) is not str:
-                    if isinstance(v, Iterable):
-                        attrib[k] = array_to_string(v)
-                    else:
-                        attrib[k] = str(v)
-
-        # Handle default and non-default cases separately for linking texture patch file locations
-        if not default:
-            # Add in the filepath to texture patch
-            self.tex_attrib["file"] = xml_path_completion("textures/" + TEXTURES[texture])
-        else:
-            # Create a texture patch
-            tex = Image.new('RGBA', (100, 100), tuple((np.array(texture)*255).astype('int')))
-            # Create temp directory if it does not exist
-            save_dir = "/tmp/robosuite_temp_tex"
-            Path(save_dir).mkdir(parents=True, exist_ok=True)
-            # Save this texture patch to the temp directory on disk (MacOS / Linux)
-            fpath = save_dir + "/{}.png".format(tex_name)
-            tex.save(fpath, "PNG")
-            # Link this texture file to the default texture dict
-            self.tex_attrib["file"] = fpath

@@ -43,6 +43,10 @@ class Bimanual(Manipulator):
 
             :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
 
+        mount_type (str): type of mount, used to instantiate mount models from mount factory.
+            Default is "default", which is the default mount associated with this robot's corresponding model.
+            None results in no mount, and any other (valid) model overrides the default mount.
+
         gripper_type (str or list of str --> dict): type of gripper, used to instantiate
             gripper models from gripper factory. Default is "default", which is the default gripper associated
             within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
@@ -71,6 +75,7 @@ class Bimanual(Manipulator):
         controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
+        mount_type="default",
         gripper_type="default",
         gripper_visualization=False,
         robot_visualization=False,
@@ -104,6 +109,7 @@ class Bimanual(Manipulator):
             idn=idn,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
+            mount_type=mount_type,
             robot_visualization=robot_visualization,
             control_freq=control_freq,
         )
@@ -448,7 +454,7 @@ class Bimanual(Manipulator):
         """
         vals = {}
         for arm in self.arms:
-            vals[arm] = self.get_sensor_measurement(self.gripper[arm].sensors["force_ee"])
+            vals[arm] = self.get_sensor_measurement(self.gripper[arm].important_sensors["force_ee"])
         return vals
 
     @property
@@ -459,7 +465,7 @@ class Bimanual(Manipulator):
         """
         vals = {}
         for arm in self.arms:
-            vals[arm] = self.get_sensor_measurement(self.gripper[arm].sensors["torque_ee"])
+            vals[arm] = self.get_sensor_measurement(self.gripper[arm].important_sensors["torque_ee"])
         return vals
 
 

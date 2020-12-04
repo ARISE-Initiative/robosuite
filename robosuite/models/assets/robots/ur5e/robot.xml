@@ -10,7 +10,6 @@
         <motor ctrllimited="true" ctrlrange="-28.0 28.0" joint="wrist_3_joint" name="torq_j6"/>
     </actuator>
     <asset>
-        <mesh file="../common_meshes/pedestal.stl" name="pedestal"/>
         <mesh name="base" file="meshes/base.stl" />
         <mesh name="shoulder" file="meshes/shoulder.stl" />
         <mesh name="upperarm" file="meshes/upperarm.stl" />
@@ -25,68 +24,46 @@
         <mesh name="wrist1_vis" file="meshes/wrist1_vis.stl" />
         <mesh name="wrist2_vis" file="meshes/wrist2_vis.stl" />
         <mesh name="wrist3_vis" file="meshes/wrist3_vis.stl" />
-
-        <!-- Custom textures based on body names for domain randomization -->
-        <texture type="cube" name="pedestal_tex" builtin="flat" width="100" height="100" rgb1="0.2 0.2 0.2" rgb2="0.2 0.2 0.2"/>
-
-        <!-- Custom mats based on body names for domain randomization -->
-        <material name="pedestal_mat" texture="pedestal_tex"/>
     </asset>
     <worldbody>
         <body name="base" pos="0 0 0">
             <!-- robot view -->
             <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
             <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
-            <body name="controller_box" pos="0 0 0">
-                <inertial diaginertia="1.71363 1.27988 0.809981" mass="46.64" pos="-0.325 0 -0.38"/>
-                <geom pos="-0.325 0 -0.38" size="0.11 0.2 0.265" type="box" name="controller_box_col"/>
-            </body>
-            <body name="pedestal_feet" pos="0 0 0">
-                <inertial diaginertia="8.16095 9.59375 15.0785" mass="167.09" pos="-0.1225 0 -0.758"/>
-                <geom pos="-0.1225 0 -0.758" size="0.385 0.35 0.155" type="box" name="pedestal_feet_col"/>
-            </body>
-            <body name="torso" pos="0 0 0">
-                <inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
-                <geom conaffinity="0" contype="0" group="1" rgba="0.2 0.2 0.2 1" size="0.05 0.05 0.05" type="box" name="torso_col"/>
-            </body>
-            <body name="pedestal" pos="0 0 0">
-                <inertial diaginertia="6.0869 5.81635 4.20915" mass="60.864" pos="0 0 0" quat="0.659267 -0.259505 -0.260945 0.655692"/>
-                <geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_col1" material="pedestal_mat" />
-                <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col2"/>
-            </body>
+            <!-- mount attached here -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="base_vis" />
             <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="base" />
             <body name="shoulder_link" pos="0 0 0.163">
                 <inertial pos="0 0 0" mass="3.7" diaginertia="0.0102675 0.0102675 0.00666" />
                 <joint name="shoulder_pan_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="shoulder_vis" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="shoulder_vis" name="shoulder_visual" />
                 <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="shoulder" name="shoulder_col" />
                 <body name="upper_arm_link" pos="0 0.138 0" quat="0.707107 0 0.707107 0">
                     <inertial pos="0 0 0.2125" mass="8.393" diaginertia="0.133886 0.133886 0.0151074" />
                     <joint name="shoulder_lift_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.1" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="upperarm_vis" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="upperarm_vis" name="upperarm_visual" />
                     <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="upperarm" name="upperarm_col"/>
                     <body name="forearm_link" pos="0 -0.131 0.425">
                         <inertial pos="0 0 0.196" mass="2.275" diaginertia="0.0311796 0.0311796 0.004095" />
                         <joint name="elbow_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-3.14159 3.14159" damping="0.1" />
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="forearm_vis" />
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="forearm_vis" name="forearm_visual" />
                         <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="forearm" name="forearm_col"/>
                         <body name="wrist_1_link" pos="0 0 0.392" quat="0.707107 0 0.707107 0">
                             <inertial pos="0 0.127 0" mass="1.219" diaginertia="0.0025599 0.0025599 0.0021942" />
                             <joint name="wrist_1_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.1" />
-                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist1_vis" />
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist1_vis" name="wrist1_visual" />
                             <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist1" name="wrist1_col" />
                             <body name="wrist_2_link" pos="0 0.127 0">
                                 <inertial pos="0 0 0.1" mass="1.219" diaginertia="0.0025599 0.0025599 0.0021942" />
                                 <joint name="wrist_2_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.1" />
-                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist2_vis" />
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist2_vis" name="wrist2_visual" />
                                 <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist2" name="wrist2_col" />
                                 <body name="wrist_3_link" pos="0 0 0.1">
                                     <inertial pos="0 0.0771683 0" quat="0.707107 0 0 0.707107" mass="0.1889" diaginertia="0.000132134 9.90863e-05 9.90863e-05" />
                                     <joint name="wrist_3_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.1" />
-                                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist3_vis" />
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist3_vis" name="wrist3_visual" />
                                     <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist3" name="wrist3_col" />
-                                    <geom size="0.005 0.005 0.005" pos="0 0.09 0" quat="0.707107 0 0 0.707107" type="box" />
+                                    <geom size="0.005 0.005 0.005" pos="0 0.09 0" quat="0.707107 0 0 0.707107" type="box" name="wrist3_col2"/>
                                     <body name="right_hand" pos="0 0.098 0" quat="0.707 -0.707 0 0" >
                                         <!-- This sites were added for visualization. They are all standardized between models-->
                                         <!-- Position mimics the gripper attachment point (right_hand) -->

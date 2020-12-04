@@ -1,5 +1,5 @@
-from robosuite.models.base import MujocoXML, MujocoModel
-from robosuite.utils.mjcf_utils import array_to_string, ROBOT_COLLISION_COLOR, sort_elements
+from robosuite.models.base import MujocoXMLModel
+from robosuite.utils.mjcf_utils import array_to_string, ROBOT_COLLISION_COLOR, string_to_array
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 import numpy as np
@@ -49,45 +49,20 @@ class RobotModelMeta(type):
         return cls
 
 
-class RobotModel(MujocoXML, MujocoModel, metaclass=RobotModelMeta):
+class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
     """
     Base class for all robot models.
 
     Args:
         fname (str): Path to relevant xml file from which to create this robot instance
         idn (int or str): Number or some other unique identification string for this robot instance
-        bottom_offset (3-array of float): x,y,z offset desired from initial coordinates
     """
 
-    def __init__(self, fname, idn=0, bottom_offset=(0, 0, 0)):
-        super().__init__(fname)
+    def __init__(self, fname, idn=0):
+        super().__init__(fname, idn=idn)
 
-        # Set id and add prefixes to all body names to prevent naming clashes
-        self.idn = idn
-
-        # Set offset
-        self.bottom_offset = np.array(bottom_offset)
-
-        # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
-        self._elements = sort_elements(root=self.root)
-        assert len(self._elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
-                                                      "got {}".format(len(self._elements["root_body"]))
-        self._elements["root_body"] = self._elements["root_body"][0]
-        self._elements["bodies"] = [self._elements["root_body"]] + self._elements["bodies"] if \
-            "bodies" in self._elements else [self._elements["root_body"]]
-        self._root_body = self._elements["root_body"].get("name")
-        self._bodies = [e.get("name") for e in self._elements.get("bodies", [])]
-        self._joints = [e.get("name") for e in self._elements.get("joints", [])]
-        self._actuators = [e.get("name") for e in self._elements.get("actuators", [])]
-        self._sites = [e.get("name") for e in self._elements.get("sites", [])]
-        self._contact_geoms = [e.get("name") for e in self._elements.get("contact_geoms", [])]
-        self._visual_geoms = [e.get("name") for e in self._elements.get("visual_geoms", [])]
-
-        # Update all xml element prefixes
-        self.add_prefix(self.naming_prefix)
-
-        # Recolor all collision geoms appropriately
-        self.recolor_collision_geoms(ROBOT_COLLISION_COLOR)
+        # Define other variables that get filled later
+        self.mount = None
 
         # Get camera names for this robot
         self.cameras = self.get_element_names(self.worldbody, "camera")
@@ -99,8 +74,7 @@ class RobotModel(MujocoXML, MujocoModel, metaclass=RobotModelMeta):
         Args:
             pos (3-array): (x,y,z) position to place robot base
         """
-        node = self.worldbody.find("./body[@name='{}']".format(self.root_body))
-        node.set("pos", array_to_string(pos - self.bottom_offset))
+        self._elements["root_body"].set("pos", array_to_string(pos - self.bottom_offset))
 
     def set_base_ori(self, rot):
         """
@@ -109,10 +83,9 @@ class RobotModel(MujocoXML, MujocoModel, metaclass=RobotModelMeta):
         Args:
             rot (3-array): (r,p,y) euler angles specifying the orientation for the robot base
         """
-        node = self.worldbody.find("./body[@name='{}']".format(self.root_body))
         # xml quat assumes w,x,y,z so we need to convert to this format from outputted x,y,z,w format from fcn
         rot = mat2quat(euler2mat(rot))[[3,0,1,2]]
-        node.set("quat", array_to_string(rot))
+        self._elements["root_body"].set("quat", array_to_string(rot))
 
     def set_joint_attribute(self, attrib, values):
         """
@@ -130,6 +103,32 @@ class RobotModel(MujocoXML, MujocoModel, metaclass=RobotModelMeta):
         for i, joint in enumerate(self._elements["joints"]):
             joint.set(attrib, array_to_string(np.array([values[i]])))
 
+    def add_mount(self, mount):
+        """
+        Mounts @mount to arm.
+
+        Throws error if robot already has a mount or if mount type is incorrect.
+
+        Args:
+            mount (MountModel): mount MJCF model
+
+        Raises:
+            ValueError: [mount already added]
+        """
+        if self.mount is not None:
+            raise ValueError("Mount already added for this robot!")
+
+        # First adjust mount's base position
+        offset = self.base_offset - mount.top_offset
+        mount._elements["root_body"].set("pos", array_to_string(offset))
+
+        self.merge(mount, merge_body=self.root_body)
+
+        self.mount = mount
+
+        # Update cameras in this model
+        self.cameras = self.get_element_names(self.worldbody, "camera")
+
     # -------------------------------------------------------------------------------------- #
     # Public Properties: In general, these are the name-adjusted versions from the private   #
     #                    attributes pulled from their respective raw xml files               #
@@ -138,54 +137,6 @@ class RobotModel(MujocoXML, MujocoModel, metaclass=RobotModelMeta):
     @property
     def naming_prefix(self):
         return "robot{}_".format(self.idn)
-
-    @property
-    def root_body(self):
-        return self.correct_naming(self._root_body)
-
-    @property
-    def bodies(self):
-        return self.correct_naming(self._bodies)
-
-    @property
-    def joints(self):
-        return self.correct_naming(self._joints)
-
-    @property
-    def actuators(self):
-        return self.correct_naming(self._actuators)
-
-    @property
-    def sites(self):
-        return self.correct_naming(self._sites)
-
-    @property
-    def contact_geoms(self):
-        return self.correct_naming(self._contact_geoms)
-
-    @property
-    def visual_geoms(self):
-        return self.correct_naming(self._visual_geoms)
-
-    @property
-    def important_geoms(self):
-        return self.correct_naming(self._important_geoms)
-
-    @property
-    def important_sites(self):
-        """
-        Returns:
-            dict: (Default is no important sites; i.e.: empty dict)
-        """
-        return {}
-
-    @property
-    def sensors(self):
-        """
-        Returns:
-            dict: (Default is no sensors; i.e.: empty dict)
-        """
-        return {}
 
     @property
     def dof(self):
@@ -197,9 +148,46 @@ class RobotModel(MujocoXML, MujocoModel, metaclass=RobotModelMeta):
         """
         return len(self._joints)
 
+    @property
+    def bottom_offset(self):
+        """
+        Returns vector from model root body to model bottom.
+        By default, this is equivalent to this robot's mount's (bottom_offset - top_offset) + this robot's base offset
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        return (self.mount.bottom_offset - self.mount.top_offset) + self._base_offset if \
+            self.mount is not None else self._base_offset
+
+    @property
+    def horizontal_radius(self):
+        """
+        Returns maximum distance from model root body to any radial point of the model. This method takes into
+        account the mount horizontal radius as well
+
+        Returns:
+            float: radius
+        """
+        return max(self._horizontal_radius, self.mount.horizontal_radius)
+
+    @property
+    def contact_geom_rgba(self):
+        return ROBOT_COLLISION_COLOR
+
     # -------------------------------------------------------------------------------------- #
     # All subclasses must implement the following properties                                 #
     # -------------------------------------------------------------------------------------- #
+
+    @property
+    def default_mount(self):
+        """
+        Defines the default mount type for this robot that gets added to root body (base)
+
+        Returns:
+            str: Default mount name to add to this robot
+        """
+        raise NotImplementedError
 
     @property
     def default_controller_config(self):
@@ -235,9 +223,50 @@ class RobotModel(MujocoXML, MujocoModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
+    def top_offset(self):
+        """
+        Returns vector from model root body to model top.
+        Useful for, e.g. placing models on a surface.
+        Must be defined by subclass.
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        raise NotImplementedError
+
+    @property
+    def _horizontal_radius(self):
+        """
+        Returns maximum distance from model root body to any radial point of the model.
+
+        Helps us put models programmatically without them flying away due to a huge initial contact force.
+        Must be defined by subclass.
+
+        Returns:
+            float: radius
+        """
+        raise NotImplementedError
+
+    @property
+    def _important_sites(self):
+        """
+        Returns:
+            dict: (Default is no important sites; i.e.: empty dict)
+        """
+        return {}
+
+    @property
     def _important_geoms(self):
         """
         Returns:
              dict: (Default is no important geoms; i.e.: empty dict)
+        """
+        return {}
+
+    @property
+    def _important_sensors(self):
+        """
+        Returns:
+            dict: (Default is no sensors; i.e.: empty dict)
         """
         return {}
