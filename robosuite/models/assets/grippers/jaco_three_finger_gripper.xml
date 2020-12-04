@@ -4,9 +4,11 @@
         <mesh name="finger_proximal" file="meshes/jaco_three_finger_gripper/finger_proximal.stl" />
         <mesh name="finger_distal" file="meshes/jaco_three_finger_gripper/finger_distal.stl" />
         <mesh name="ring_small" file="meshes/jaco_three_finger_gripper/ring_small.stl" />
-        <!-- Materials for hand -->
-        <material name="carbon_hand" specular="1" shininess="1" reflectance="1" rgba="0.05 0.05 0.05 1" emission="1" />
-        <material name="grey_plastic_hand" specular="0.5" shininess="0" reflectance="0" rgba="0.12 0.14 0.14 1" emission="1" />
+        <!-- Materials for robot -->
+        <texture type="cube" name="carbon_tex" builtin="flat" width="100" height="100" rgb1="1 1 1" rgb2="1 1 1"/>
+        <texture type="cube" name="grey_plastic_tex" builtin="flat" width="100" height="100" rgb1="1 1 1" rgb2="1 1 1"/>
+        <material name="carbon_hand" texture="carbon_tex" rgba="0.05 0.05 0.05 1" />
+        <material name="grey_plastic_hand" texture="grey_plastic_tex" rgba="0.88 0.86 0.86 1" />
     </asset>
 
 

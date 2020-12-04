@@ -22,8 +22,10 @@
         <mesh name="wrist_spherical_2" file="meshes/wrist_spherical_2.stl" />
 
         <!-- Materials for robot -->
-        <material name="carbon_jaco" specular="1" shininess="1" reflectance="1" rgba="0.05 0.05 0.05 1" emission="1" />
-        <material name="grey_plastic_jaco" specular="0.5" shininess="0" reflectance="0" rgba="0.12 0.14 0.14 1" emission="1" />
+        <texture type="cube" name="carbon_tex" builtin="flat" width="100" height="100" rgb1="1 1 1" rgb2="1 1 1"/>
+        <texture type="cube" name="grey_plastic_tex" builtin="flat" width="100" height="100" rgb1="1 1 1" rgb2="1 1 1"/>
+        <material name="carbon_jaco" texture="carbon_tex" rgba="0.05 0.05 0.05 1" />
+        <material name="grey_plastic_jaco" texture="grey_plastic_tex" rgba="0.88 0.86 0.86 1" />
     </asset>
     <worldbody>
         <body name="base" pos="0 0 0">
