@@ -59,6 +59,7 @@ args = parser.parse_args()
 # Setup printing options for numbers
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
+
 # function to run the actual sim in order to receive summed absolute delta torques
 def step(env, action, current_torques):
     env.timestep += 1
@@ -134,9 +135,9 @@ def test_linear_interpolator():
 
                 # Keep track of state of robot eef (pos, ori (euler)) and torques
                 current_torques = np.zeros(7)
-                initial_state = [env.robots[0]._right_hand_pos, T.mat2euler(env.robots[0]._right_hand_orn)]
-                dstate = [env.robots[0]._right_hand_pos - initial_state[0],
-                          T.mat2euler(env.robots[0]._right_hand_orn) - initial_state[1]]
+                initial_state = [env.robots[0]._hand_pos, T.mat2euler(env.robots[0]._hand_orn)]
+                dstate = [env.robots[0]._hand_pos - initial_state[0],
+                          T.mat2euler(env.robots[0]._hand_orn) - initial_state[1]]
 
                 # Define the uniform trajectory action
                 if traj == "pos":
@@ -162,8 +163,8 @@ def test_linear_interpolator():
                     # Update torques, timestep count, and state
                     summed_abs_delta_torques[j] += summed_torques
                     timesteps[j] += 1
-                    dstate = [env.robots[0]._right_hand_pos - initial_state[0],
-                              T.mat2euler(env.robots[0]._right_hand_orn) - initial_state[1]]
+                    dstate = [env.robots[0]._hand_pos - initial_state[0],
+                              T.mat2euler(env.robots[0]._hand_orn) - initial_state[1]]
 
                 # When finished, print out the timestep results
                 print("Completed trajectory. Total summed absolute delta torques: {}".format(summed_abs_delta_torques[j]))

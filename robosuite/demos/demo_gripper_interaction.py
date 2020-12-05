@@ -63,10 +63,12 @@ if __name__ == "__main__":
     world.worldbody.append(mujoco_object)
 
     # add reference objects for x and y axes
-    x_ref = BoxObject(name="x_ref", size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1], obj_type="visual", joints=None).get_obj()
+    x_ref = BoxObject(name="x_ref", size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1], obj_type="visual",
+                      joints=None).get_obj()
     x_ref.set("pos", "0.2 0 0.105")
     world.worldbody.append(x_ref)
-    y_ref = BoxObject(name="y_ref", size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1], obj_type="visual", joints=None).get_obj()
+    y_ref = BoxObject(name="y_ref", size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1], obj_type="visual",
+                      joints=None).get_obj()
     y_ref.set("pos", "0 0.2 0.105")
     world.worldbody.append(y_ref)
 
