@@ -2,10 +2,13 @@
 Script to showcase domain randomization functionality.
 """
 
-import numpy as np
+import robosuite.utils.macros as macros
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 from robosuite.wrappers import DomainRandomizationWrapper
+
+# Whenever we're using Domain Randomization functionality, must set the corresponding macro to True
+macros.USING_DOMAIN_RANDOMIZATION = True
 
 if __name__ == "__main__":
 

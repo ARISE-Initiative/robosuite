@@ -5,7 +5,8 @@ from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import DoorObject
-from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.placement_samplers import UniformRandomSampler
 
 
 class Door(SingleArmEnv):
@@ -282,6 +283,7 @@ class Door(SingleArmEnv):
             self.placement_initializer.add_objects(self.door)
         else:
             self.placement_initializer = UniformRandomSampler(
+                    name="ObjectSampler",
                     mujoco_objects=self.door,
                     x_range=[0.07, 0.09],
                     y_range=[-0.01, 0.01],

@@ -349,8 +349,8 @@ class TwoArmPegInHole(TwoArmEnv):
         )
 
         # Make sure to add relevant assets from peg and hole objects
-        self.model.merge_asset(self.hole)
-        self.model.merge_asset(self.peg)
+        self.model.merge_assets(self.hole)
+        self.model.merge_assets(self.peg)
 
     def _get_reference(self):
         """

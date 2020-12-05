@@ -19,7 +19,7 @@ class Panda(ManipulatorModel):
 
     @property
     def default_mount(self):
-        return "RethinkMinimalMount"
+        return "RethinkMount"
 
     @property
     def default_gripper(self):

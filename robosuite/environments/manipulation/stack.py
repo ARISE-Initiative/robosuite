@@ -8,7 +8,8 @@ from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
-from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.placement_samplers import UniformRandomSampler
 
 
 class Stack(SingleArmEnv):
@@ -358,6 +359,7 @@ class Stack(SingleArmEnv):
             self.placement_initializer.add_objects(cubes)
         else:
             self.placement_initializer = UniformRandomSampler(
+                name="ObjectSampler",
                 mujoco_objects=cubes,
                 x_range=[-0.08, 0.08],
                 y_range=[-0.08, 0.08],

@@ -4,7 +4,7 @@ import numpy as np
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import WipeArena
-from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask
 import multiprocessing
 
 

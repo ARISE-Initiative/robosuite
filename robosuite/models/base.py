@@ -3,8 +3,10 @@ import xml.dom.minidom
 import xml.etree.ElementTree as ET
 import io
 
+import robosuite.utils.macros as macros
 from robosuite.utils import XMLError
-from robosuite.utils.mjcf_utils import array_to_string, find_elements, sort_elements, add_material, string_to_array
+from robosuite.utils.mjcf_utils import find_elements, sort_elements,\
+    add_material, string_to_array, add_prefix, recolor_collision_geoms
 
 
 class MujocoXML(object):
@@ -78,7 +80,7 @@ class MujocoXML(object):
                 merges <worldbody/>, <actuator/> and <asset/> of @others into @self
             merge_body (None or str): If set, will merge child bodies of @others. Default is "default", which
                 corresponds to the root worldbody for this XML. Otherwise, should be an existing body name
-                that exists in this XML.
+                that exists in this XML. None results in no merging of @other's bodies in its worldbody.
 
         Raises:
             XMLError: [Invalid XML instance]
@@ -93,7 +95,7 @@ class MujocoXML(object):
                     find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
                 for body in other.worldbody:
                     root.append(body)
-            self.merge_asset(other)
+            self.merge_assets(other)
             for one_actuator in other.actuator:
                 self.actuator.append(one_actuator)
             for one_sensor in other.sensor:
@@ -159,19 +161,16 @@ class MujocoXML(object):
                 xml_str = parsed_xml.toprettyxml(newl="")
             f.write(xml_str)
 
-    def merge_asset(self, other):
+    def merge_assets(self, other):
         """
-        Merges other files in a custom logic.
+        Merges @other's assets in a custom logic.
 
         Args:
             other (MujocoXML or MujocoObject): other xml file whose assets will be merged into this one
         """
         for asset in other.asset:
-            asset_name = asset.get("name")
-            asset_type = asset.tag
-            # Avoids duplication
-            pattern = "./{}[@name='{}']".format(asset_type, asset_name)
-            if self.asset.find(pattern) is None:
+            if find_elements(root=self.asset, tags=asset.tag,
+                             attribs={"name": asset.get("name")}, return_first=True) is None:
                 self.asset.append(asset)
 
     def get_element_names(self, root, element_type):
@@ -192,126 +191,6 @@ class MujocoXML(object):
                 names.append(child.get("name"))
             names += self.get_element_names(child, element_type)
         return names
-
-    def add_prefix(self,
-                   prefix,
-                   tags=("body", "joint", "sensor", "site", "geom", "camera", "actuator", "tendon", "asset", "mesh", "texture", "material")):
-        """
-        Utility method to add prefix to all body names to prevent name clashes
-
-        Args:
-            prefix (str): Prefix to be appended to all requested elements in this XML
-            tags (list or tuple or set): Tags to be searched in the XML. All elements with specified tags will have
-                "prefix" prepended to it
-        """
-        # Define tags as a set
-        tags = set(tags)
-
-        # Define equalities set to pass at the end
-        equalities = set(tags)
-
-        # Add joints to equalities if necessary
-        if "joint" in tags:
-            equalities = equalities.union(["joint1", "joint2"])
-
-        # Handle actuator elements
-        if "actuator" in tags:
-            tags.discard("actuator")
-            for actuator in self.actuator:
-                self._add_prefix_recursively(actuator, tags, prefix)
-
-        # Handle sensor elements
-        if "sensor" in tags:
-            tags.discard("sensor")
-            for sensor in self.sensor:
-                self._add_prefix_recursively(sensor, tags, prefix)
-
-        # Handle tendon elements
-        if "tendon" in tags:
-            tags.discard("tendon")
-            for tendon in self.tendon:
-                self._add_prefix_recursively(tendon, tags.union(["fixed"]), prefix)
-            # Also take care of any tendons in equality constraints
-            equalities = equalities.union(["tendon1", "tendon2"])
-
-        # Handle asset elements
-        if "asset" in tags:
-            tags.discard("asset")
-            for asset in self.asset:
-                if asset.tag in tags:
-                    self._add_prefix_recursively(asset, tags, prefix)
-
-        # Handle contacts and equality names for body elements
-        if "body" in tags:
-            for contact in self.contact:
-                if "body1" in contact.attrib:
-                    contact.set("body1", prefix + contact.attrib["body1"])
-                if "body2" in contact.attrib:
-                    contact.set("body2", prefix + contact.attrib["body2"])
-            # Also take care of any bodies in equality constraints
-            equalities = equalities.union(["body1", "body2"])
-
-        # Handle all equality elements
-        for equality in self.equality:
-            self._add_prefix_recursively(equality, equalities, prefix)
-
-        # Handle all remaining bodies in the element tree
-        for body in self.worldbody:
-            if body.tag in tags:
-                self._add_prefix_recursively(body, tags, prefix)
-
-    def _add_prefix_recursively(self, root, tags, prefix):
-        """
-        Iteratively searches through all children nodes in "root" element to append "prefix" to any named subelements
-        with a tag in "tags"
-
-        Args:
-            root (ET.Element): Root of the xml element tree to start recursively searching through
-                (e.g.: `self.worldbody`)
-            tags (list or tuple or set): Tags to be searched in the XML. All elements with specified tags will have
-                "prefix" prepended to it
-            prefix (str): Prefix to be appended to all requested elements in this XML
-        """
-        # First re-name this element
-        if "name" in root.attrib:
-            root.set("name", prefix + root.attrib["name"])
-
-        # Then loop through all tags and rename any appropriately
-        for tag in tags:
-            if tag in root.attrib:
-                root.set(tag, prefix + root.attrib[tag])
-
-        # Recursively go through child elements
-        for child in root:
-            if child.tag in tags:
-                self._add_prefix_recursively(child, tags, prefix)
-
-    def recolor_collision_geoms(self, rgba):
-        """
-        Utility method to recolor all collision geoms (where collision geoms are defined as being part of group 0).
-
-        Args:
-            rgba (4-array): (R, G, B, A) values to assign to all geoms with this group.
-        """
-        for body in self.worldbody:
-            self._recolor_collision_geoms_recursively(body, rgba)
-
-    def _recolor_collision_geoms_recursively(self, root, rgba):
-        """
-        Iteratively searches through all children nodes in "root" element to find all geoms belonging to group 0 and set
-        the corresponding rgba value to the specified @rgba argument. Note: also removes any material values for this
-        model.
-
-        Args:
-            root (ET.Element): Root of the xml element tree to start recursively searching through
-            rgba (4-array): (R, G, B, A) values to assign to all geoms with this group.
-        """
-        for child in root:
-            if child.tag == "geom" and child.get("group") in {None, "0"}:
-                child.set("rgba", array_to_string(rgba))
-                child.attrib.pop("material", None)
-
-            self._recolor_collision_geoms_recursively(child, rgba)
 
     @staticmethod
     def _get_default_classes(default):
@@ -389,9 +268,9 @@ class MujocoModel(object):
             TypeError: [Invalid input type]
         """
         if type(names) is str:
-            return self.naming_prefix + names
+            return self.naming_prefix + names if not self.exclude_from_prefixing(names) else names
         elif type(names) is list:
-            return [self.naming_prefix + name for name in names]
+            return [self.naming_prefix + name if not self.exclude_from_prefixing(name) else name for name in names]
         elif type(names) is dict:
             names = names.copy()
             for key, val in names.items():
@@ -416,6 +295,19 @@ class MujocoModel(object):
                     (not visible and sim.model.site_rgba[vis_g_id][3] > 0):
                 # We toggle the alpha value
                 sim.model.site_rgba[vis_g_id][3] = -sim.model.site_rgba[vis_g_id][3]
+
+    def exclude_from_prefixing(self, inp):
+        """
+        A function that should take in an arbitrary input and return either True or False, determining whether the
+        corresponding name to @inp should have naming_prefix added to it. Must be defined by subclass.
+
+        Args:
+            inp (any): Arbitrary input, depending on subclass. Can be str, ET.Element, etc.
+
+        Returns:
+            bool: True if we should exclude the associated name(s) with @inp from being prefixed with naming_prefix
+        """
+        raise NotImplementedError
 
     @property
     def name(self):
@@ -612,15 +504,24 @@ class MujocoXMLModel(MujocoXML, MujocoModel):
         self._base_offset = string_to_array(self._elements["root_body"].get("pos", "0 0 0"))
 
         # Update all xml element prefixes
-        self.add_prefix(self.naming_prefix)
+        add_prefix(root=self.root, prefix=self.naming_prefix, exclude=self.exclude_from_prefixing)
 
         # Recolor all collision geoms appropriately
-        self.recolor_collision_geoms(self.contact_geom_rgba)
+        recolor_collision_geoms(root=self.worldbody, rgba=self.contact_geom_rgba)
 
         # Add default materials
-        tex_element, mat_element, _ = add_material(root=self.worldbody, naming_prefix=self.naming_prefix)
-        self.asset.append(tex_element)
-        self.asset.append(mat_element)
+        if macros.USING_DOMAIN_RANDOMIZATION:
+            tex_element, mat_element, _, used = add_material(root=self.worldbody, naming_prefix=self.naming_prefix)
+            # Only add if material / texture was actually used
+            if used:
+                self.asset.append(tex_element)
+                self.asset.append(mat_element)
+
+    def exclude_from_prefixing(self, inp):
+        """
+        By default, don't exclude any from being prefixed
+        """
+        return False
 
     @property
     def base_offset(self):

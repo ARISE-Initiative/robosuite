@@ -72,6 +72,7 @@ class WipeArena(TableArena):
             mat_name="dirt_mat",
             tex_attrib=tex_attrib,
             mat_attrib=mat_attrib,
+            shared=True,
         )
 
         # Define line(s) drawn on table
@@ -89,7 +90,7 @@ class WipeArena(TableArena):
                 joints=None,
             )
             # Manually add this object to the arena xml
-            self.merge_asset(marker)
+            self.merge_assets(marker)
             table = find_elements(root=self.worldbody, tags="body", attribs={"name": "table"}, return_first=True)
             table.append(marker.get_obj())
 

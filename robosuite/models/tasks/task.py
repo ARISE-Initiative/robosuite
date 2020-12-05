@@ -74,5 +74,5 @@ class Task(MujocoWorldBase):
             assert isinstance(mujoco_obj, MujocoObject), \
                 "Tried to merge non-MujocoObject! Got type: {}".format(type(mujoco_obj))
             # Merge this object
-            self.merge_asset(mujoco_obj)
+            self.merge_assets(mujoco_obj)
             self.worldbody.append(mujoco_obj.get_obj())

@@ -2,6 +2,7 @@ import copy
 from copy import deepcopy
 import xml.etree.ElementTree as ET
 
+import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoXML, MujocoModel
 from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR,\
                                        sort_elements, new_joint, add_prefix, add_material
@@ -173,6 +174,20 @@ class MujocoObject(MujocoModel):
         """
         raise NotImplementedError
 
+    def exclude_from_prefixing(self, inp):
+        """
+        A function that should take in either an ET.Element or its attribute (str) and return either True or False,
+        determining whether the corresponding name / str to @inp should have naming_prefix added to it.
+        Must be defined by subclass.
+
+        Args:
+            inp (ET.Element or str): Element or its attribute to check for prefixing.
+
+        Returns:
+            bool: True if we should exclude the associated name(s) with @inp from being prefixed with naming_prefix
+        """
+        raise NotImplementedError
+
     def _get_object_subtree(self):
 
         """
@@ -208,13 +223,16 @@ class MujocoObject(MujocoModel):
         self._contact_geoms = [e.get("name") for e in _elements.get("contact_geoms", [])]
         self._visual_geoms = [e.get("name") for e in _elements.get("visual_geoms", [])]
 
-        # Add default materials
-        tex_element, mat_element, _ = add_material(root=self.get_obj(), naming_prefix=self.naming_prefix)
-        self.asset.append(tex_element)
-        self.asset.append(mat_element)
+        # Add default materials if we're using domain randomization
+        if macros.USING_DOMAIN_RANDOMIZATION:
+            tex_element, mat_element, _, used = add_material(root=self.get_obj(), naming_prefix=self.naming_prefix)
+            # Only add the material / texture if they were actually used
+            if used:
+                self.asset.append(tex_element)
+                self.asset.append(mat_element)
 
         # Add prefix to all elements
-        add_prefix(root=self.get_obj(), prefix=self.naming_prefix)
+        add_prefix(root=self.get_obj(), prefix=self.naming_prefix, exclude=self.exclude_from_prefixing)
 
     @staticmethod
     def get_site_attrib_template():
@@ -344,7 +362,13 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
         Extends the base class method to also add prefixes to all bodies in this object
         """
         super()._get_object_properties()
-        add_prefix(root=self.root, prefix=self.naming_prefix)
+        add_prefix(root=self.root, prefix=self.naming_prefix, exclude=self.exclude_from_prefixing)
+
+    def exclude_from_prefixing(self, inp):
+        """
+        By default, don't exclude any from being prefixed
+        """
+        return False
 
     @staticmethod
     def _duplicate_visual_from_collision(element):
@@ -411,6 +435,26 @@ class MujocoXMLObject(MujocoXML, MujocoObject):
 
 
 class MujocoGeneratedObject(MujocoObject):
+    """
+    Base class for all procedurally generated objects.
+
+    Args:
+        obj_type (str): Geom elements to generate / extract for this object. Must be one of:
+
+            :`'collision'`: Only collision geoms are returned (this corresponds to group 0 geoms)
+            :`'visual'`: Only visual geoms are returned (this corresponds to group 1 geoms)
+            :`'all'`: All geoms are returned
+
+        duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
+            visual geom copy
+    """
+
+    def __init__(self, obj_type="all", duplicate_collision_geoms=True):
+        super().__init__(obj_type=obj_type, duplicate_collision_geoms=duplicate_collision_geoms)
+
+        # Store common material names so we don't add prefixes to them
+        self.shared_materials = set()
+        self.shared_textures = set()
 
     def sanity_check(self):
         """
@@ -457,11 +501,32 @@ class MujocoGeneratedObject(MujocoObject):
         # First check if asset attribute exists; if not, define the asset attribute
         if not hasattr(self, "asset"):
             self.asset = ET.Element("asset")
-        # Add texture and material inputs to asset
-        self.asset.append(ET.Element("texture", attrib=material.tex_attrib))
-        self.asset.append(ET.Element("material", attrib=material.mat_attrib))
+        # If the material name is not in shared materials, add this to our assets
+        if material.name not in self.shared_materials:
+            self.asset.append(ET.Element("texture", attrib=material.tex_attrib))
+            self.asset.append(ET.Element("material", attrib=material.mat_attrib))
+        # Add this material name to shared materials if it should be shared
+        if material.shared:
+            self.shared_materials.add(material.name)
+            self.shared_textures.add(material.tex_attrib["name"])
         # Update prefix for assets
-        add_prefix(root=self.asset, prefix=self.naming_prefix)
+        add_prefix(root=self.asset, prefix=self.naming_prefix, exclude=self.exclude_from_prefixing)
+
+    def exclude_from_prefixing(self, inp):
+        """
+        Exclude all shared materials and their associated names from being prefixed.
+
+        Args:
+            inp (ET.Element or str): Element or its attribute to check for prefixing.
+
+        Returns:
+            bool: True if we should exclude the associated name(s) with @inp from being prefixed with naming_prefix
+        """
+        # Automatically return False if this is not of type "str"
+        if type(inp) is not str:
+            return False
+        # Only return True if the string matches the name of a common material
+        return True if inp in self.shared_materials or inp in self.shared_textures else False
 
     # Methods that still need to be defined by subclass
     def _get_object_subtree(self):

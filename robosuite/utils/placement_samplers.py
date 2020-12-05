@@ -13,6 +13,8 @@ class ObjectPositionSampler:
     Base class of object placement sampler.
 
     Args:
+        name (str): Name of this sampler.
+
         mujoco_objects (None or MujocoObject or list of MujocoObject): single model or list of MJCF object models
 
         ensure_object_boundary_in_range (bool): If True, will ensure that the object is enclosed within a given boundary
@@ -28,6 +30,7 @@ class ObjectPositionSampler:
 
     def __init__(
         self,
+        name,
         mujoco_objects=None,
         ensure_object_boundary_in_range=True,
         ensure_valid_placement=True,
@@ -35,6 +38,7 @@ class ObjectPositionSampler:
         z_offset=0.,
     ):
         # Setup attributes
+        self.name = name
         if mujoco_objects is None:
             self.mujoco_objects = []
         else:
@@ -90,6 +94,8 @@ class UniformRandomSampler(ObjectPositionSampler):
     Places all objects within the table uniformly random.
 
     Args:
+        name (str): Name of this sampler.
+
         mujoco_objects (None or MujocoObject or list of MujocoObject): single model or list of MJCF object models
 
         x_range (2-array of float): Specify the (min, max) relative x_range used to uniformly place objects
@@ -119,6 +125,7 @@ class UniformRandomSampler(ObjectPositionSampler):
 
     def __init__(
         self,
+        name,
         mujoco_objects=None,
         x_range=(0, 0),
         y_range=(0, 0),
@@ -135,6 +142,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         self.rotation_axis = rotation_axis
 
         super().__init__(
+            name=name,
             mujoco_objects=mujoco_objects,
             ensure_object_boundary_in_range=ensure_object_boundary_in_range,
             ensure_valid_placement=ensure_valid_placement,
@@ -298,13 +306,16 @@ class SequentialCompositeSampler(ObjectPositionSampler):
     Samples position for each object sequentially. Allows chaining
     multiple placement initializers together - so that object locations can
     be sampled on top of other objects or relative to other object placements.
-    """
-    def __init__(self):
-        # Samplers / args will be filled in later
-        self.samplers = []
-        self.sample_args = []
 
-        super().__init__()
+    Args:
+        name (str): Name of this sampler.
+    """
+    def __init__(self, name):
+        # Samplers / args will be filled in later
+        self.samplers = collections.OrderedDict()
+        self.sample_args = collections.OrderedDict()
+
+        super().__init__(name=name)
 
     def append_sampler(self, sampler, sample_args=None):
         """
@@ -322,8 +333,8 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         for obj in sampler.mujoco_objects:
             assert obj not in self.mujoco_objects, f"Object '{obj.name}' already has sampler associated with it!"
             self.mujoco_objects.append(obj)
-        self.samplers.append(sampler)
-        self.sample_args.append(sample_args)
+        self.samplers[sampler.name] = sampler
+        self.sample_args[sampler.name] = sample_args
 
     def hide(self, mujoco_objects):
         """
@@ -333,6 +344,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
             mujoco_objects (MujocoObject or list of MujocoObject): Object(s) to hide
         """
         sampler = UniformRandomSampler(
+            name="HideSampler",
             mujoco_objects=mujoco_objects,
             x_range=[-10, -20],
             y_range=[-10, -20],
@@ -350,12 +362,31 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         """
         raise AttributeError("add_objects() should not be called for SequentialCompsiteSamplers!")
 
+    def add_objects_to_sampler(self, sampler_name, mujoco_objects):
+        """
+        Adds specified @mujoco_objects to sub-sampler with specified @sampler_name.
+
+        Args:
+            sampler_name (str): Existing sub-sampler name
+            mujoco_objects (MujocoObject or list of MujocoObject): Object(s) to add
+        """
+        # First verify that all mujoco objects haven't already been added, and add to this sampler's objects dict
+        mujoco_objects = [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+        for obj in mujoco_objects:
+            assert obj not in self.mujoco_objects, f"Object '{obj.name}' already has sampler associated with it!"
+            self.mujoco_objects.append(obj)
+        # Make sure sampler_name exists
+        assert sampler_name in self.samplers.keys(), "Invalid sub-sampler specified, valid options are: {}, " \
+                                                     "requested: {}".format(self.samplers.keys(), sampler_name)
+        # Add the mujoco objects to the requested sub-sampler
+        self.samplers[sampler_name].add_objects(mujoco_objects)
+
     def reset(self):
         """
         Resets this sampler. In addition to base method, iterates over all sub-samplers and resets them
         """
         super().reset()
-        for sampler in self.samplers:
+        for sampler in self.samplers.values():
             sampler.reset()
 
     def sample(self, fixtures=None, reference=None, on_top=True):
@@ -389,7 +420,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         placed_objects = {} if fixtures is None else copy(fixtures)
 
         # Iterate through all samplers to sample
-        for sampler, s_args in zip(self.samplers, self.sample_args):
+        for sampler, s_args in zip(self.samplers.values(), self.sample_args.values()):
             # Pre-process sampler args
             if s_args is None:
                 s_args = {}

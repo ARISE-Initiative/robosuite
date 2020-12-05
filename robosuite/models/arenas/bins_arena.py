@@ -23,7 +23,6 @@ class BinsArena(Arena):
         self.table_half_size = self.table_full_size / 2
         self.table_friction = table_friction
 
-        self.floor = self.worldbody.find("./geom[@name='floor']")
         self.bin1_body = self.worldbody.find("./body[@name='bin1']")
         self.bin2_body = self.worldbody.find("./body[@name='bin2']")
         self.table_top_abs = np.array(bin1_pos)
@@ -32,5 +31,4 @@ class BinsArena(Arena):
 
     def configure_location(self):
         """Configures correct locations for this arena"""
-        self.bottom_pos = np.array([0, 0, 0])
         self.floor.set("pos", array_to_string(self.bottom_pos))

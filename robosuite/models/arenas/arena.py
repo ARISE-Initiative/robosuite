@@ -2,7 +2,7 @@ import numpy as np
 
 from robosuite.models.base import MujocoXML
 from robosuite.utils.mjcf_utils import array_to_string, string_to_array, \
-    new_geom, new_body, new_joint, ENVIRONMENT_COLLISION_COLOR
+    new_geom, new_body, new_joint, ENVIRONMENT_COLLISION_COLOR, recolor_collision_geoms
 
 
 class Arena(MujocoXML):
@@ -10,7 +10,13 @@ class Arena(MujocoXML):
 
     def __init__(self, fname):
         super().__init__(fname)
-        self.recolor_collision_geoms(ENVIRONMENT_COLLISION_COLOR)
+        # Get references to floor and bottom
+        self.bottom_pos = np.zeros(3)
+        self.floor = self.worldbody.find("./geom[@name='floor']")
+
+        # Recolor all geoms
+        recolor_collision_geoms(root=self.worldbody, rgba=ENVIRONMENT_COLLISION_COLOR,
+                                exclude=lambda e: True if e.get("name", None) == "floor" else False)
 
     def set_origin(self, offset):
         """
@@ -30,8 +36,9 @@ class Arena(MujocoXML):
         body = new_body(name="pos_indicator")
         body.append(
             new_geom(
-                "sphere",
-                [0.03],
+                name="indicator_obj",
+                type="sphere",
+                size=[0.03],
                 rgba=[1, 0, 0, 0.5],
                 group=1,
                 contype="0",

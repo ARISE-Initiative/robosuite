@@ -7,7 +7,8 @@ from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
-from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 
 
 class NutAssembly(SingleArmEnv):
@@ -396,13 +397,15 @@ class NutAssembly(SingleArmEnv):
 
         # define nuts
         self.nuts = []
+        nut_names = ("SquareNut", "RoundNut")
 
         # Create default (SequentialCompositeSampler) sampler if it has not already been specified
         if self.placement_initializer is None:
-            self.placement_initializer = SequentialCompositeSampler()
-            for default_y_range in ([0.11, 0.225], [-0.225, -0.11]):
+            self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+            for nut_name, default_y_range in zip(nut_names, ([0.11, 0.225], [-0.225, -0.11])):
                 self.placement_initializer.append_sampler(
                     sampler=UniformRandomSampler(
+                        name=f"{nut_name}Sampler",
                         x_range=[-0.115, -0.11],
                         y_range=default_y_range,
                         rotation=None,
@@ -418,14 +421,14 @@ class NutAssembly(SingleArmEnv):
 
         for i, (nut_cls, nut_name) in enumerate(zip(
                 (SquareNutObject, RoundNutObject),
-                ("SquareNut", "RoundNut"),
+                nut_names,
         )):
             nut = nut_cls(name=nut_name)
             self.nuts.append(nut)
             # Add this nut to the placement initializer
             if isinstance(self.placement_initializer, SequentialCompositeSampler):
                 # assumes we have two samplers so we add nuts to them
-                self.placement_initializer.samplers[i].add_objects(nut)
+                self.placement_initializer.add_objects_to_sampler(sampler_name=f"{nut_name}Sampler", mujoco_objects=nut)
             else:
                 # This is assumed to be a flat sampler, so we just add all nuts to this sampler
                 self.placement_initializer.add_objects(nut)

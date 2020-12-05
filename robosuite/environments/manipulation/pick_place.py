@@ -18,7 +18,8 @@ from robosuite.models.objects import (
     CerealVisualObject,
     CanVisualObject,
 )
-from robosuite.models.tasks import ManipulationTask, SequentialCompositeSampler, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 
 
 class PickPlace(SingleArmEnv):
@@ -405,7 +406,7 @@ class PickPlace(SingleArmEnv):
         """
         Helper function for defining placement initializer and object sampling bounds.
         """
-        self.placement_initializer = SequentialCompositeSampler()
+        self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
 
         # can sample anywhere in bin
         bin_x_half = self.model.mujoco_arena.table_full_size[0] / 2 - 0.05
@@ -414,6 +415,7 @@ class PickPlace(SingleArmEnv):
         # each object should just be sampled in the bounds of the bin (with some tolerance)
         self.placement_initializer.append_sampler(
             sampler=UniformRandomSampler(
+                name="CollisionObjectSampler",
                 mujoco_objects=self.objects,
                 x_range=[-bin_x_half, bin_x_half],
                 y_range=[-bin_y_half, bin_y_half],
@@ -449,6 +451,7 @@ class PickPlace(SingleArmEnv):
 
             self.placement_initializer.append_sampler(
                 sampler=UniformRandomSampler(
+                    name=f"{vis_obj.name}ObjectSampler",
                     mujoco_objects=vis_obj,
                     x_range=[rel_center[0], rel_center[0]],
                     y_range=[rel_center[1], rel_center[1]],

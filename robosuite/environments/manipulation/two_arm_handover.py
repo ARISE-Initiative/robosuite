@@ -5,7 +5,8 @@ from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import HammerObject
-from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
+from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.placement_samplers import UniformRandomSampler
 
 import robosuite.utils.transform_utils as T
 
@@ -352,6 +353,7 @@ class TwoArmHandover(TwoArmEnv):
             # Set rotation about y-axis if hammer starts on table else rotate about z if it starts in gripper
             rotation_axis = 'y' if self.prehensile else 'z'
             self.placement_initializer = UniformRandomSampler(
+                name="ObjectSampler",
                 mujoco_objects=self.hammer,
                 x_range=[-0.1, 0.1],
                 y_range=[-0.05, 0.05],

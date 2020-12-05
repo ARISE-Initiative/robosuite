@@ -57,6 +57,14 @@ SENSOR_TYPES = {
     "user",
 }
 
+MUJOCO_NAMED_ATTRIBUTES = {
+    "class", "childclass", "name", "objname", "material", "texture",
+    "joint", "joint1", "joint2", "jointinparent", "geom", "geom1", "geom2",
+    "mesh", "fixed", "actuator", "objname", "tendon", "tendon1", "tendon2",
+    "slidesite", "cranksite", "body", "body1", "body2", "hfield", "target",
+    "prefix", "site",
+}
+
 TEXTURES = {
     "WoodRed": "red-wood.png",
     "WoodGreen": "green-wood.png",
@@ -116,6 +124,8 @@ class CustomMaterial(object):
 
         mat_attrib (dict): Any other optional mujoco material specifications.
 
+        shared (bool): If True, this material should not have any naming prefixes added to all names
+
     Raises:
         AssertionError: [Invalid texture]
     """
@@ -127,6 +137,7 @@ class CustomMaterial(object):
             mat_name,
             tex_attrib=None,
             mat_attrib=None,
+            shared=False,
     ):
         # Check if the desired texture is an rgba value
         if type(texture) is str:
@@ -147,6 +158,7 @@ class CustomMaterial(object):
 
         # Add in name values
         self.name = mat_name
+        self.shared = shared
         self.tex_attrib["name"] = tex_name
         self.mat_attrib["name"] = mat_name
         self.mat_attrib["texture"] = tex_name
@@ -360,7 +372,7 @@ def new_geom(name, type, size, pos=(0, 0, 0), group=0, **kwargs):
         name (str): Name for this geom
         type (str): type of the geom.
             see all types here: http://mujoco.org/book/modeling.html#geom
-        size (array of float): geom size parameters.
+        size (n-array of float): geom size parameters.
         pos (3-array): (x,y,z) 3d position of the site.
         group (int): the integrer group that the geom belongs to. useful for
             separating visual and physical elements.
@@ -518,9 +530,9 @@ def add_to_dict(dic, fill_in_defaults=True, default_value=None, **kwargs):
 def add_prefix(
         root,
         prefix,
-        tags=("body", "joint", "sensor", "site", "geom", "camera",
-              "actuator", "tendon", "asset", "mesh", "texture", "material"),
-        attribs=("name", "material", "texture", "joint", "mesh")
+        tags="default",
+        attribs="default",
+        exclude=None,
 ):
     """
     Find all element(s) matching the requested @tag, and appends @prefix to all @attributes if they exist.
@@ -528,23 +540,30 @@ def add_prefix(
     Args:
         root (ET.Element): Root of the xml element tree to start recursively searching through.
         prefix (str): Prefix to add to all specified attributes
-        tags (str or list of str or set): Tag(s) to search for in this ElementTree.
-        attribs (str or ): Element attribute(s) to append prefix to.
+        tags (str or list of str or set): Tag(s) to search for in this ElementTree. "Default" corresponds to all tags
+        attribs (str or list of str or set): Element attribute(s) to append prefix to. "Default" corresponds
+            to all attributes that reference names
+        exclude (None or function): Filtering function that should take in an ET.Element or a string (attribute) and
+            return True if we should exclude the given element / attribute from having any prefixes added
     """
-    # Make sure tags is list
-    tags = [tags] if type(tags) is str else tags
-    attribs = [attribs] if type(attribs) is str else attribs
+    # Standardize tags and attributes to be a set
+    if tags != "default":
+        tags = {tags} if type(tags) is str else set(tags)
+    if attribs == "default":
+        attribs = MUJOCO_NAMED_ATTRIBUTES
+    attribs = {attribs} if type(attribs) is str else set(attribs)
 
     # Check the current element for matching conditions
-    if root.tag in tags:
+    if (tags == "default" or root.tag in tags) and (exclude is None or not exclude(root)):
         for attrib in attribs:
             v = root.get(attrib, None)
-            # Only add prefix if it doesn't exist and the current attribute doesn't already begin with prefix
-            if v is not None and not v.startswith(prefix):
+            # Only add prefix if the attribute exist, the current attribute doesn't already begin with prefix,
+            # and the @exclude filter is either None or returns False
+            if v is not None and not v.startswith(prefix) and (exclude is None or not exclude(v)):
                 root.set(attrib, prefix + v)
     # Continue recursively searching through the element tree
     for r in root:
-        add_prefix(root=r, prefix=prefix, tags=tags, attribs=attribs)
+        add_prefix(root=r, prefix=prefix, tags=tags, attribs=attribs, exclude=exclude)
 
 
 def add_material(root, naming_prefix="", custom_material=None):
@@ -559,9 +578,11 @@ def add_material(root, naming_prefix="", custom_material=None):
             Else, will add a default "no-change" material.
 
     Returns:
-        3-tuple: (ET.Element, ET.Element, CustomMaterial) (tex_element, mat_element, material) corresponding to the
-            added material
+        4-tuple: (ET.Element, ET.Element, CustomMaterial, bool) (tex_element, mat_element, material, used)
+            corresponding to the added material and whether the material was actually used or not.
     """
+    # Initialize used as False
+    used = False
     # First, make sure material is specified
     if custom_material is None:
         custom_material = CustomMaterial(
@@ -577,8 +598,8 @@ def add_material(root, naming_prefix="", custom_material=None):
                 "rgb2": np.ones(3),
             },
         )
-    # Else, check to make sure the custom material begins with the specified prefix
-    if not custom_material.name.startswith(naming_prefix):
+    # Else, check to make sure the custom material begins with the specified prefix and that it's unique
+    if not custom_material.name.startswith(naming_prefix) and not custom_material.shared:
         custom_material.name = naming_prefix + custom_material.name
         custom_material.tex_attrib["name"] = naming_prefix + custom_material.tex_attrib["name"]
         custom_material.mat_attrib["name"] = naming_prefix + custom_material.mat_attrib["name"]
@@ -588,13 +609,39 @@ def add_material(root, naming_prefix="", custom_material=None):
     if root.tag == "geom" and root.get("group", None) == "1" and root.get("material", None) is None:
         # Add a new material attribute to this geom
         root.set("material", custom_material.name)
+        # Set used to True
+        used = True
     # Continue recursively searching through the element tree
     for r in root:
-        add_material(root=r, naming_prefix=naming_prefix, custom_material=custom_material)
+        _, _, _, _used = add_material(root=r, naming_prefix=naming_prefix, custom_material=custom_material)
+        # Update used
+        used = used or _used
     # Lastly, return the new texture and material elements
     tex_element = new_element(tag="texture", **custom_material.tex_attrib)
     mat_element = new_element(tag="material", **custom_material.mat_attrib)
-    return tex_element, mat_element, custom_material
+    return tex_element, mat_element, custom_material, used
+
+
+def recolor_collision_geoms(root, rgba, exclude=None):
+    """
+    Iteratively searches through all elements starting with @root to find all geoms belonging to group 0 and set
+    the corresponding rgba value to the specified @rgba argument. Note: also removes any material values for these
+    elements.
+
+    Args:
+        root (ET.Element): Root of the xml element tree to start recursively searching through
+        rgba (4-array): (R, G, B, A) values to assign to all geoms with this group.
+        exclude (None or function): Filtering function that should take in an ET.Element and
+            return True if we should exclude the given element / attribute from having its collision geom impacted.
+    """
+    # Check this body
+    if root.tag == "geom" and root.get("group") in {None, "0"} and (exclude is None or not exclude(root)):
+        root.set("rgba", array_to_string(rgba))
+        root.attrib.pop("material", None)
+
+    # Iterate through all children elements
+    for r in root:
+        recolor_collision_geoms(root=r, rgba=rgba, exclude=exclude)
 
 
 def _element_filter(element, parent):
