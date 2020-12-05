@@ -2,7 +2,7 @@ import numpy as np
 
 from robosuite.models.base import MujocoXML
 from robosuite.utils.mjcf_utils import array_to_string, string_to_array, \
-    new_geom, new_body, new_joint, ENVIRONMENT_COLLISION_COLOR, recolor_collision_geoms
+    new_geom, new_body, new_joint, ENVIRONMENT_COLLISION_COLOR, recolor_collision_geoms, find_elements, new_element
 
 
 class Arena(MujocoXML):
@@ -47,3 +47,31 @@ class Arena(MujocoXML):
         )
         body.append(new_joint(type="free", name="pos_indicator"))
         self.worldbody.append(body)
+
+    def add_camera(self, camera_name, pos, quat, camera_attribs=None):
+        """
+        Adds a camera with @camera_name. If the camera already exists, then this overwrites its pos and quat values.
+
+        Args:
+            camera_name (str): Camera name to search for / create
+            pos (3-array): (x,y,z) coordinates of camera in world frame
+            quat (4-array): (w,x,y,z) quaternion of camera in world frame
+            camera_attribs (dict): If specified, should be additional keyword-mapped attributes for this camera.
+                See http://www.mujoco.org/book/XMLreference.html#camera for exact attribute specifications.
+        """
+        # Determine if camera already exists
+        camera = find_elements(root=self.worldbody, tags="camera", attribs={"name": camera_name}, return_first=True)
+
+        # Compose attributes
+        if camera_attribs is None:
+            camera_attribs = {}
+        camera_attribs["pos"] = array_to_string(pos)
+        camera_attribs["quat"] = array_to_string(quat)
+
+        if camera is None:
+            # If camera doesn't exist, then add a new camera with the specified attributes
+            self.worldbody.append(new_element(tag="camera", name=camera_name, **camera_attribs))
+        else:
+            # Otherwise, we edit all specified attributes in that camera
+            for attrib, value in camera_attribs.items():
+                camera.set(attrib, value)

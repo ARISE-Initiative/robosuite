@@ -269,6 +269,13 @@ class Door(SingleArmEnv):
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
 
+        # Modify default agentview camera
+        mujoco_arena.add_camera(
+            camera_name="agentview",
+            pos=[0.5354990523140117, 4.523091946421814e-09, 1.456018016356302],
+            quat=[0.6530980467796326, 0.2710406482219696, 0.271040678024292, 0.6530980467796326]
+        )
+
         # initialize objects of interest
         self.door = DoorObject(
             name="Door",

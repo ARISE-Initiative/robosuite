@@ -294,6 +294,13 @@ class TwoArmPegInHole(TwoArmEnv):
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
 
+        # Modify default agentview camera
+        mujoco_arena.add_camera(
+            camera_name="agentview",
+            pos=[1.0666432116509934, 1.4903257668114777e-08, 2.0563394967349096],
+            quat=[0.6530979871749878, 0.27104058861732483, 0.27104055881500244, 0.6530978679656982]
+        )
+
         # initialize objects of interest
         self.hole = PlateWithHoleObject(name="hole")
         tex_attrib = {

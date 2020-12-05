@@ -342,6 +342,13 @@ class TwoArmHandover(TwoArmEnv):
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
 
+        # Modify default agentview camera
+        mujoco_arena.add_camera(
+            camera_name="agentview",
+            pos=[0.8894354364730311, -3.481824231498976e-08, 1.7383813133506494],
+            quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
+        )
+
         # initialize objects of interest
         self.hammer = HammerObject(name="hammer")
 
