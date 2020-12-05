@@ -65,6 +65,11 @@ MUJOCO_NAMED_ATTRIBUTES = {
     "prefix", "site",
 }
 
+IMAGE_CONVENTION_MAPPING = {
+    "opengl": 1,
+    "opencv": -1,
+}
+
 TEXTURES = {
     "WoodRed": "red-wood.png",
     "WoodGreen": "green-wood.png",

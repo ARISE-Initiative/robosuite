@@ -9,7 +9,7 @@ import imageio
 import numpy as np
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
-
+import robosuite as suite
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

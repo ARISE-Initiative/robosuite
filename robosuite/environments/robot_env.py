@@ -1,7 +1,9 @@
 import numpy as np
 
-from robosuite.environments.base import MujocoEnv
+import robosuite.utils.macros as macros
+from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
 
+from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING
 from robosuite.controllers import reset_controllers
 
@@ -376,6 +378,7 @@ class RobotEnv(MujocoEnv):
 
         # Loop through cameras and update the observations
         if self.use_camera_obs:
+            convention = IMAGE_CONVENTION_MAPPING[macros.IMAGE_CONVENTION]
             for (cam_name, cam_w, cam_h, cam_d) in \
                     zip(self.camera_names, self.camera_widths, self.camera_heights, self.camera_depths):
 
@@ -387,9 +390,10 @@ class RobotEnv(MujocoEnv):
                     depth=cam_d,
                 )
                 if cam_d:
-                    di[cam_name + "_image"], di[cam_name + "_depth"] = camera_obs
+                    rgb, depth = camera_obs
+                    di[cam_name + "_image"], di[cam_name + "_depth"] = rgb[::convention], depth[::convention]
                 else:
-                    di[cam_name + "_image"] = camera_obs
+                    di[cam_name + "_image"] = camera_obs[::convention]
 
         return di
 

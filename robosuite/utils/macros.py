@@ -14,3 +14,10 @@ USING_DOMAIN_RANDOMIZATION = False
 # Numba settings
 ENABLE_NUMBA = True
 CACHE_NUMBA = True
+
+# Image Convention
+# Robosuite (Mujoco)-rendered images are based on the OpenGL coordinate frame convention, whereas many downstream
+# applications assume an OpenCV coordinate frame convention. For consistency, you can set the image convention
+# here; this will assure that any rendered frames will match the associated convention.
+# See the figure at the bottom of https://amytabb.com/ts/2019_06_28/ for an informative overview.
+IMAGE_CONVENTION = "opengl"     # Options are {"opengl", "opencv"}
