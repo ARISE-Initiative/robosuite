@@ -15,8 +15,8 @@ import robosuite
 import robosuite.utils.transform_utils as T
 
 # some settings
-DELTA_POS_KEY_PRESS = 0.05 # delta camera position per key press
-DELTA_ROT_KEY_PRESS = 1 # delta camera angle per key press
+DELTA_POS_KEY_PRESS = 0.05      # delta camera position per key press
+DELTA_ROT_KEY_PRESS = 1         # delta camera angle per key press
 
 
 def modify_xml_for_camera_movement(xml, camera_name):
@@ -63,6 +63,7 @@ def modify_xml_for_camera_movement(xml, camera_name):
     wb.remove(camera_elem)
 
     return ET.tostring(tree, encoding="utf8").decode("utf8")
+
 
 def move_camera(env, direction, scale, camera_id):
     """
@@ -130,7 +131,6 @@ class KeyboardHandler:
             action: [NOT USED]
             mods: [NOT USED]
         """
-
         # controls for moving position
         if key == glfw.KEY_W:
             # move forward
@@ -151,7 +151,6 @@ class KeyboardHandler:
             # move down
             move_camera(env=self.env, direction=[0., -1., 0.], scale=DELTA_POS_KEY_PRESS, camera_id=self.camera_id)
 
-
         # controls for moving rotation
         elif key == glfw.KEY_UP:
             # rotate up
@@ -171,7 +170,6 @@ class KeyboardHandler:
         elif key == glfw.KEY_SLASH:
             # rotate clockwise
             rotate_camera(env=self.env, direction=[0., 0., -1.], angle=DELTA_ROT_KEY_PRESS, camera_id=self.camera_id)
-
 
     def on_release(self, window, key, scancode, action, mods):
         """

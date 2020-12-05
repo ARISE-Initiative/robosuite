@@ -228,6 +228,8 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         gripper_visualizations=True,
+        robot_visualizations=True,
+        env_visualization=True,
         reward_shaping=True,
         control_freq=20,
     )

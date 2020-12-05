@@ -14,7 +14,7 @@ from mujoco_py import load_model_from_path
 
 
 def print_usage():
-    print("""python compile.py input_file output_file""")
+    print("""python compile_mjcf_model.py input_file output_file""")
 
 
 if __name__ == "__main__":

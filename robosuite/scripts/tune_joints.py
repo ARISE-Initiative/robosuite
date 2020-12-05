@@ -293,7 +293,6 @@ if __name__ == "__main__":
     if type(args.init_qpos) == int and args.init_qpos == 0:
         # Default to all zeros
         pass
-        #key_handler.set_joint_positions(np.zeros(key_handler.num_joints))
     else:
         key_handler.set_joint_positions(args.init_qpos)
 
