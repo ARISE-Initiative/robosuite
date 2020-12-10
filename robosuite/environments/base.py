@@ -80,6 +80,8 @@ class MujocoEnv(metaclass=EnvMeta):
         render_visual_mesh (bool): True if rendering visual meshes
             in camera. False otherwise.
 
+        render_gpu_device_id (int): corresponds to the GPU device id to use for offscreen rendering.
+
         control_freq (float): how many control signals to receive
             in every simulated second. This sets the amount of simulation time
             that passes between every action input.
@@ -104,6 +106,7 @@ class MujocoEnv(metaclass=EnvMeta):
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
+        render_gpu_device_id=-1,
         control_freq=10,
         horizon=1000,
         ignore_done=False,
@@ -119,6 +122,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
+        self.render_gpu_device_id = render_gpu_device_id
         self.viewer = None
 
         # whether to use indicator object or not
@@ -246,7 +250,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         elif self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
-                render_context = MjRenderContextOffscreen(self.sim)
+                render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
                 self.sim.add_render_context(render_context)
             self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
             self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)

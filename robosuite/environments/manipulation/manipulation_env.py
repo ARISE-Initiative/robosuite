@@ -78,6 +78,8 @@ class ManipulationEnv(RobotEnv):
 
         render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
 
+        render_gpu_device_id (int): corresponds to the GPU device id to use for offscreen rendering.
+
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
 
@@ -132,6 +134,7 @@ class ManipulationEnv(RobotEnv):
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
+        render_gpu_device_id=-1,
         control_freq=10,
         horizon=1000,
         ignore_done=False,
@@ -174,6 +177,7 @@ class ManipulationEnv(RobotEnv):
             render_camera=render_camera,
             render_collision_mesh=render_collision_mesh,
             render_visual_mesh=render_visual_mesh,
+            render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
