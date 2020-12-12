@@ -37,8 +37,6 @@ class Robot(object):
             Default is "default", which is the default mount associated with this robot's corresponding model.
             None results in no mount, and any other (valid) model overrides the default mount.
 
-        robot_visualization (bool): True if using robot visualization. Useful for teleoperation.
-
         control_freq (float): how many control signals to receive
             in every second. This sets the amount of simulation time
             that passes between every action input.
@@ -51,15 +49,13 @@ class Robot(object):
         initial_qpos=None,
         initialization_noise=None,
         mount_type="default",
-        robot_visualization=False,
-        control_freq=10,
+        control_freq=20,
     ):
         # Set relevant attributes
         self.sim = None                                     # MjSim this robot is tied to
         self.name = robot_type                              # Specific robot to instantiate
         self.idn = idn                                      # Unique ID of this robot
         self.robot_model = None                             # object holding robot model-specific info
-        self.robot_visualization = robot_visualization      # Whether to visualize robot model sites or not
         self.control_freq = control_freq                    # controller Hz
         self.mount_type = mount_type                        # Type of mount to use
 
@@ -239,11 +235,16 @@ class Robot(object):
                 return True
         return False
 
-    def visualize(self):
+    def visualize(self, vis_settings):
         """
         Do any necessary visualization for this robot
+
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "robots" keyword as well as any other robot-specific
+                options specified.
         """
-        self.robot_model.set_sites_visibility(sim=self.sim, visible=self.robot_visualization)
+        self.robot_model.set_sites_visibility(sim=self.sim, visible=vis_settings["robots"])
 
     @property
     def action_limits(self):

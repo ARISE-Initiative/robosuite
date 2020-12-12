@@ -34,10 +34,6 @@ class ManipulationEnv(RobotEnv):
             overrides the default gripper. Should either be single str if same gripper type is to be used for all
             robots or else it should be a list of the same length as "robots" param
 
-        gripper_visualizations (bool or list of bool): True if using gripper visualization.
-            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -57,13 +53,6 @@ class ManipulationEnv(RobotEnv):
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
-
-        robot_visualizations (bool or list of bool): True if using robot visualization.
-            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
-        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
-            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -121,18 +110,15 @@ class ManipulationEnv(RobotEnv):
         controller_configs=None,
         mount_types="default",
         gripper_types="default",
-        gripper_visualizations=False,
         initialization_noise=None,
         use_camera_obs=True,
         use_indicator_object=False,
-        robot_visualizations=False,
-        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
-        control_freq=10,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -147,13 +133,11 @@ class ManipulationEnv(RobotEnv):
 
         # Gripper
         gripper_types = self._input2list(gripper_types, num_robots)
-        gripper_visualizations = self._input2list(gripper_visualizations, num_robots)
 
         # Robot configurations to pass to super call
         robot_configs = [
             {
                 "gripper_type": gripper_types[idx],
-                "gripper_visualization": gripper_visualizations[idx],
             }
             for idx in range(num_robots)
         ]
@@ -167,8 +151,6 @@ class ManipulationEnv(RobotEnv):
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
-            robot_visualizations=robot_visualizations,
-            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -185,15 +167,17 @@ class ManipulationEnv(RobotEnv):
             robot_configs=robot_configs,
         )
 
-    def _visualization(self):
+    @property
+    def _visualizations(self):
         """
-        Do any needed visualization here
+        Visualization keywords for this environment
+
+        Returns:
+            set: All components that can be individually visualized for this environment
         """
-        # Run superclass method first
-        super()._visualization()
-        # Loop over robot grippers to visualize them independently
-        for robot in self.robots:
-            robot.visualize_gripper()
+        vis_set = super()._visualizations
+        vis_set.add("grippers")
+        return vis_set
 
     def _check_grasp(self, gripper, object_geoms):
         """

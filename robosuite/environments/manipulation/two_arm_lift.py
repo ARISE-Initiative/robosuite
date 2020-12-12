@@ -43,10 +43,6 @@ class TwoArmLift(TwoArmEnv):
             overrides the default gripper. Should either be single str if same gripper type is to be used for all
             robots or else it should be a list of the same length as "robots" param
 
-        gripper_visualizations (bool or list of bool): True if using gripper visualization.
-            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -83,13 +79,6 @@ class TwoArmLift(TwoArmEnv):
 
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
-
-        robot_visualizations (bool or list of bool): True if using robot visualization.
-            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
-        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
-            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -147,7 +136,6 @@ class TwoArmLift(TwoArmEnv):
         env_configuration="single-arm-opposed",
         controller_configs=None,
         gripper_types="default",
-        gripper_visualizations=False,
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1., 5e-3, 1e-4),
@@ -157,14 +145,12 @@ class TwoArmLift(TwoArmEnv):
         reward_shaping=False,
         placement_initializer=None,
         use_indicator_object=False,
-        robot_visualizations=False,
-        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
-        control_freq=10,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -194,12 +180,9 @@ class TwoArmLift(TwoArmEnv):
             controller_configs=controller_configs,
             mount_types="default",
             gripper_types=gripper_types,
-            gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
-            robot_visualizations=robot_visualizations,
-            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -444,23 +427,24 @@ class TwoArmLift(TwoArmEnv):
 
         return di
 
-    def _visualization(self):
+    def visualize(self, vis_settings):
         """
-        Visualize each gripper site proportional to the distance to their respective handles
-        """
-        # Run super call first
-        super()._visualization()
+        In addition to super call, visualize gripper site proportional to the distance to each handle.
 
-        # Color the gripper visualization site according to its distance to the cube
-        handles = [self.pot.important_sites[f"handle{i}"] for i in range(2)]
-        if self.env_configuration == "bimanual":
-            visualizations = [self.robots[0].gripper_visualization[arm] for arm in self.robots[0].arms]
-            grippers = [self.robots[0].gripper[arm] for arm in self.robots[0].arms]
-        else:
-            visualizations = [robot.gripper_visualization for robot in self.robots]
-            grippers = [robot.gripper for robot in self.robots]
-        for vis, gripper, handle in zip(visualizations, grippers, handles):
-            if vis:
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "grippers" keyword as well as any other relevant
+                options specified.
+        """
+        # Run superclass method first
+        super().visualize(vis_settings=vis_settings)
+
+        # Color the gripper visualization site according to its distance to each handle
+        if vis_settings["grippers"]:
+            handles = [self.pot.important_sites[f"handle{i}"] for i in range(2)]
+            grippers = [self.robots[0].gripper[arm] for arm in self.robots[0].arms] if \
+                self.env_configuration == "bimanual" else [robot.gripper for robot in self.robots]
+            for gripper, handle in zip(grippers, handles):
                 self._visualize_gripper_to_target(gripper=gripper, target=handle, target_type="site")
 
     def _check_success(self):

@@ -62,9 +62,6 @@ class MujocoEnv(metaclass=EnvMeta):
         use_indicator_object (bool): if True, sets up an indicator object that
             is useful for debugging.
 
-        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
-            teleoperation.
-
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -98,13 +95,12 @@ class MujocoEnv(metaclass=EnvMeta):
     def __init__(
         self,
         use_indicator_object=False,
-        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
-        control_freq=10,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True
@@ -123,9 +119,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # whether to use indicator object or not
         self.use_indicator_object = use_indicator_object
-
-        # Whether to render visual sites in this env
-        self.env_visualization = env_visualization
 
         # Simulation-specific attributes
         self.control_freq = control_freq
@@ -222,6 +215,9 @@ class MujocoEnv(metaclass=EnvMeta):
         # Reset necessary robosuite-centric variables
         self._reset_internal()
         self.sim.forward()
+        # Make sure that all sites are toggled OFF by default
+        self.visualize(vis_settings={vis: False for vis in self._visualizations})
+        # Return new observations
         return self._get_observation()
 
     def _reset_internal(self):
@@ -250,10 +246,6 @@ class MujocoEnv(metaclass=EnvMeta):
                 self.sim.add_render_context(render_context)
             self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
             self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
-
-        # Set visuals for objects
-        for obj in self.model.mujoco_objects:
-            obj.set_sites_visibility(sim=self.sim, visible=self.env_visualization)
 
         # additional housekeeping
         self.sim_state_initial = self.sim.get_state()
@@ -346,9 +338,6 @@ class MujocoEnv(metaclass=EnvMeta):
         # done if number of elapsed timesteps is greater than horizon
         self.done = (self.timestep >= self.horizon) and not self.ignore_done
 
-        # Run any necessary visualization
-        self._visualization()
-
         return reward, self.done, {}
 
     def reward(self, action):
@@ -409,11 +398,28 @@ class MujocoEnv(metaclass=EnvMeta):
             if obj.name in object_names:
                 self.sim.data.set_joint_qpos(obj.joints[0], np.array((10, 10, 10, 1, 0, 0, 0)))
 
-    def _visualization(self):
+    def visualize(self, vis_settings):
         """
         Do any needed visualization here
+
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "env" keyword as well as any other relevant
+                options specified.
         """
-        pass
+        # Set visuals for environment objects
+        for obj in self.model.mujoco_objects:
+            obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
+
+    @property
+    def _visualizations(self):
+        """
+        Visualization keywords for this environment
+
+        Returns:
+            set: All components that can be individually visualized for this environment
+        """
+        return {"env"}
 
     @property
     def action_spec(self):
@@ -429,6 +435,7 @@ class MujocoEnv(metaclass=EnvMeta):
     def action_dim(self):
         """
         Size of the action space
+
         Returns:
             int: Action space dimension
         """

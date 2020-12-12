@@ -49,10 +49,6 @@ class SingleArm(Manipulator):
             within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
             default gripper
 
-        gripper_visualization (bool): True if using gripper visualization. Useful for teleoperation.
-
-        robot_visualization (bool): True if using robot visualization. Useful for teleoperation.
-
         control_freq (float): how many control signals to receive
             in every second. This sets the amount of simulation time
             that passes between every action input.
@@ -67,16 +63,13 @@ class SingleArm(Manipulator):
         initialization_noise=None,
         mount_type="default",
         gripper_type="default",
-        gripper_visualization=False,
-        robot_visualization=False,
-        control_freq=10
+        control_freq=20
     ):
 
         self.controller = None
         self.controller_config = copy.deepcopy(controller_config)
         self.gripper_type = gripper_type
         self.has_gripper = self.gripper_type is not None
-        self.gripper_visualization = gripper_visualization
 
         self.gripper = None                                 # Gripper class
         self.gripper_joints = None                          # xml joint names for gripper
@@ -100,7 +93,6 @@ class SingleArm(Manipulator):
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
             mount_type=mount_type,
-            robot_visualization=robot_visualization,
             control_freq=control_freq,
         )
 
@@ -288,11 +280,14 @@ class SingleArm(Manipulator):
             ee_acc = np.array([np.convolve(col, np.ones(10) / 10., mode='valid')[0] for col in diffs.transpose()])
             self.recent_ee_acc.push(ee_acc)
 
-    def visualize_gripper(self):
+    def _visualize_grippers(self, visible):
         """
         Visualizes the gripper site(s) if applicable.
+
+        Args:
+            visible (bool): True if visualizing the gripper for this arm.
         """
-        self.gripper.set_sites_visibility(sim=self.sim, visible=self.gripper_visualization)
+        self.gripper.set_sites_visibility(sim=self.sim, visible=visible)
 
     def get_observations(self, di: OrderedDict):
         """
