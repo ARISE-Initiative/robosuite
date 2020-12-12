@@ -510,7 +510,7 @@ class MujocoXMLModel(MujocoXML, MujocoModel):
         recolor_collision_geoms(root=self.worldbody, rgba=self.contact_geom_rgba)
 
         # Add default materials
-        if macros.USING_DOMAIN_RANDOMIZATION:
+        if macros.USING_INSTANCE_RANDOMIZATION:
             tex_element, mat_element, _, used = add_material(root=self.worldbody, naming_prefix=self.naming_prefix)
             # Only add if material / texture was actually used
             if used:

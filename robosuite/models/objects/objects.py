@@ -224,7 +224,7 @@ class MujocoObject(MujocoModel):
         self._visual_geoms = [e.get("name") for e in _elements.get("visual_geoms", [])]
 
         # Add default materials if we're using domain randomization
-        if macros.USING_DOMAIN_RANDOMIZATION:
+        if macros.USING_INSTANCE_RANDOMIZATION:
             tex_element, mat_element, _, used = add_material(root=self.get_obj(), naming_prefix=self.naming_prefix)
             # Only add the material / texture if they were actually used
             if used:
