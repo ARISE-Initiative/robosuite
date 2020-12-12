@@ -1,4 +1,5 @@
 from .objects import MujocoObject, MujocoXMLObject, MujocoGeneratedObject
+from .generated_objects import CompositeObject, PrimitiveObject
 
 from .xml_objects import (
     BottleObject,
@@ -16,12 +17,5 @@ from .xml_objects import (
     PlateWithHoleObject,
     DoorObject,
 )
-
-from .generated_objects import (
-    HammerObject,
-    PotWithHandlesObject,
-    BoxObject,
-    CylinderObject,
-    BallObject,
-    CapsuleObject,
-)
+from .composite import *
+from .primitive import *
