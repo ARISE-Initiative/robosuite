@@ -1,10 +1,177 @@
 import numpy as np
 
-from robosuite.models.objects import MujocoGeneratedObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, array_to_string
+from robosuite.models.objects import MujocoGeneratedObject, MujocoObject
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, array_to_string, find_elements
 from robosuite.utils.mjcf_utils import OBJECT_COLLISION_COLOR, CustomMaterial
 
 from copy import deepcopy
+
+
+class CompositeBodyObject(MujocoGeneratedObject):
+    """
+    An object constructed out of multiple bodies to make more complex shapes.
+
+    Args:
+        name (str): Name of overall object
+
+        objects (MujocoObject or list of MujocoObjects): object(s) to combine to form the composite body object.
+            Note that these objects will be added sequentially, so if an object is required to be nested relative to
+            another object, that nested object should be listed after the parent object.
+
+        object_locations (list): list of body locations in the composite. Each
+            location should be a list or tuple of 3 elements and all
+            locations are taken relative to that object's parent body
+
+        object_quats (None or list): list of (w, x, y, z) quaternions for each body.
+
+        object_parents (None or list): Parent bodies to append each object to. Note that specifying "None" will
+            automatically append all objects to the root body ("root")
+
+        joints (None or list): Joints to use for the top-level composite body object. If None, no joints will be used
+            for this top-level object. If "default", a single free joint will be added to the top-level body of this
+            object. Otherwise, should be a list of dictionaries, where each dictionary should specify the specific
+            joint attributes necessary. See http://www.mujoco.org/book/XMLreference.html#joint for reference.
+
+        sites (None or list): list of sites to add to top-level composite body object. If None, only the default
+            top-level object site will be used. Otherwise, should be a list of dictionaries, where each dictionary
+            should specify the appropriate attributes for the given site.
+            See http://www.mujoco.org/book/XMLreference.html#site for reference.
+    """
+    def __init__(
+        self,
+        name,
+        objects,
+        object_locations,
+        object_quats=None,
+        object_parents=None,
+        joints="default",
+        sites=None,
+    ):
+        # Always call superclass first
+        super().__init__()
+
+        self._name = name
+
+        # Set internal variable geometric properties which will be modified later
+        self._object_absolute_positions = {"root": np.zeros(3)}     # maps body names to abs positions (rel to root)
+        self._top = 0
+        self._bottom = 0
+        self._horizontal = 0
+
+        # Standardize inputs
+        if isinstance(objects, MujocoObject):
+            self.objects = [objects]
+        elif type(objects) in {list, tuple}:
+            self.objects = list(objects)
+        else:
+            # Invalid objects received
+            raise ValueError("Invalid objects received, got type: {}".format(type(objects)))
+
+        n_objects = len(self.objects)
+        self.object_locations = np.array(object_locations)
+        self.object_quats = deepcopy(object_quats) if object_quats is not None else [None] * n_objects
+        self.object_parents = deepcopy(object_parents) if object_parents is not None else ["root"] * n_objects
+
+        # Set joints
+        if joints == "default":
+            self.joint_specs = [self.get_joint_attrib_template()]  # default free joint
+        elif joints is None:
+            self.joint_specs = []
+        else:
+            self.joint_specs = joints
+
+        # Make sure all joints are named appropriately
+        j_num = 0
+        for joint_spec in self.joint_specs:
+            if "name" not in joint_spec:
+                joint_spec["name"] = "joint{}".format(j_num)
+                j_num += 1
+
+        # Set sites
+        self.site_specs = deepcopy(sites) if sites is not None else []
+        # Add default site
+        site_element_attr = self.get_site_attrib_template()
+        site_element_attr["rgba"] = "1 0 0 0"
+        site_element_attr["name"] = "default_site"
+        self.site_specs.append(site_element_attr)
+
+        # Make sure all sites are named appropriately
+        s_num = 0
+        for site_spec in self.site_specs:
+            if "name" not in site_spec:
+                site_spec["name"] = "site{}".format(s_num)
+                s_num += 1
+
+        # Always run sanity check
+        self.sanity_check()
+
+        # Lastly, parse XML tree appropriately
+        self._obj = self._get_object_subtree()
+
+        # Extract the appropriate private attributes for this
+        self._get_object_properties()
+
+    def _get_object_subtree(self):
+        # Initialize top-level body
+        obj = new_body(name="root")
+
+        # Add all joints and sites
+        for joint_spec in self.joint_specs:
+            obj.append(new_joint(**joint_spec))
+        for site_spec in self.site_specs:
+            obj.append(new_site(**site_spec))
+
+        # Loop through all objects and associated args and append them appropriately
+        for o, o_parent, o_pos, o_quat in zip(
+                self.objects,
+                self.object_parents,
+                self.object_locations,
+                self.object_quats
+        ):
+            self._append_object(root=obj, obj=o, parent_name=o_parent, pos=o_pos, quat=o_quat)
+
+        # Return final object
+        return obj
+
+    def _append_object(self, root, obj, parent_name, pos, quat):
+        """
+        Helper function to add pre-generated object @obj to the body with name @parent_name
+
+        Args:
+            root (ET.Element): Top-level element to iteratively search through for @parent_name to add @obj to
+            obj (MujocoObject): Object to append to the body specified by @parent_name
+            parent_name (str): Body name to search for in @root to append @obj to
+            pos (3-array): (x,y,z) relative offset from parent body when appending @obj
+            quat (4-array) (w,x,y,z) relative quaternion rotation from parent body when appending @obj
+        """
+        # First, find parent body
+        parent = find_elements(root=root, tags="body", attribs={"name": parent_name}, return_first=True)
+        assert parent is not None, "Could not find parent body with name: {}".format(parent_name)
+        # Get the object xml element tree and modify its top-level pos / quat
+        child = obj.get_obj()
+        child.set("pos", array_to_string(pos))
+        child.set("quat", array_to_string(quat))
+        # Add this object and its assets to this composite object
+        self.merge_assets(other=obj)
+        parent.append(child)
+        # Update geometric properties for this composite object
+        obj_abs_pos = self._object_absolute_positions[parent_name] + np.array(pos)
+        self._object_absolute_positions[obj._root_body] = obj_abs_pos
+        self._top = max(self._top, obj_abs_pos[2] + obj.top_offset[2])
+        self._bottom = min(self._bottom, obj_abs_pos[2] + obj.bottom_offset[2])
+        self._horizontal = max(self._horizontal, max(obj_abs_pos[:2]) + obj.horizontal_radius)
+
+    @property
+    def bottom_offset(self):
+        return np.array([0., 0., self._bottom])
+
+    @property
+    def top_offset(self):
+        return np.array([0., 0., self._top])
+
+    @property
+    def horizontal_radius(self):
+        return self._horizontal
 
 
 class CompositeObject(MujocoGeneratedObject):
@@ -29,20 +196,20 @@ class CompositeObject(MujocoGeneratedObject):
 
         geom_sizes (list): list of geom sizes ordered the same as @geom_locations
 
-        geom_names (list): list of geom names ordered the same as @geom_locations. The
+        geom_quats (None or list): list of (w, x, y, z) quaternions for each geom.
+
+        geom_names (None or list): list of geom names ordered the same as @geom_locations. The
             names will get appended with an underscore to the passed name in @get_collision
             and @get_visual
 
-        geom_rgbas (list): list of geom colors ordered the same as @geom_locations. If
+        geom_rgbas (None or list): list of geom colors ordered the same as @geom_locations. If
             passed as an argument, @rgba is ignored.
 
-        geom_materials (list of CustomTexture): list of custom textures to use for this object material
+        geom_materials (None or list of CustomTexture): list of custom textures to use for this object material
 
-        geom_frictions (list): list of geom frictions to use for each geom.
+        geom_frictions (None or list): list of geom frictions to use for each geom.
 
-        geom_quats (list): list of (w, x, y, z) quaternions for each geom.
-
-        rgba (list): (r, g, b, a) default values to use if geom-specific @geom_rgbas isn't specified for a given element
+        rgba (None or list): (r, g, b, a) default values to use if geom-specific @geom_rgbas isn't specified for a given element
 
         density (float or list of float): either single value to use for all geom densities or geom-specific values
 
@@ -56,23 +223,15 @@ class CompositeObject(MujocoGeneratedObject):
             overall object bounding box defined by @total_size. Else, the corner of this bounding box is considered the
             origin.
 
-        body_mapping (None or dict): If specified, defines a multi-body object, where each entry in the dict maps a
-            geom_name to a new sub-body definition. This allows for multi-bodied objects with nested geoms. When the
-            keyword-specified geom_name is encountered during procedural generation, the corresponding body
-            specification will be used to generate a new body element, which will be appended to the current XML Tree.
-            All subsequent geoms will then be appended to this new child body. Default is None, which corresponds
-            to the single-body case
+        joints (None or list): Joints to use for this composite object. If None, no joints will be used
+            for this top-level object. If "default", a single free joint will be added to this object.
+            Otherwise, should be a list of dictionaries, where each dictionary should specify the specific
+            joint attributes necessary. See http://www.mujoco.org/book/XMLreference.html#joint for reference.
 
-        joints (None or str or list): Joints to use for each body. If None, no joints will be used for this entire
-            object. If "default", a single free joint will be added to the top-level body of this object. Otherwise,
-            should be a list equal to length to the number of entries in body_mapping + 1, where each entry should
-            either be None or its own list of dictionaries. Each dictionary should specify the specific joint
-            attributes necessary. See http://www.mujoco.org/book/XMLreference.html#joint for reference.
-
-        sites (None or list): list of sites to add to each body. If None, only the default top-level object site will
-            be used. Otherwise, should be a list equal to number of entries in body_mapping + 1, where each entry should
-            either be None or its own list of dictionaries. Each dictionary should specify the appropriate attributes
-            for the given site. See http://www.mujoco.org/book/XMLreference.html#site for reference.
+        sites (None or list): list of sites to add to this composite object. If None, only the default
+             object site will be used. Otherwise, should be a list of dictionaries, where each dictionary
+            should specify the appropriate attributes for the given site.
+            See http://www.mujoco.org/book/XMLreference.html#site for reference.
 
         obj_types (str or list of str): either single obj_type for all geoms or geom-specific type. Choices are
             {"collision", "visual", "all"}
@@ -83,19 +242,18 @@ class CompositeObject(MujocoGeneratedObject):
         name,
         total_size,
         geom_types,
-        geom_locations,
         geom_sizes,
+        geom_locations,
+        geom_quats=None,
         geom_names=None,
         geom_rgbas=None,
         geom_materials=None,
         geom_frictions=None,
-        geom_quats=None,
         rgba=None,
         density=100.,
         solref=(0.02, 1.),
         solimp=(0.9, 0.95, 0.001),
         locations_relative_to_center=False,
-        body_mapping=None,
         joints="default",
         sites=None,
         obj_types="all",
@@ -106,46 +264,42 @@ class CompositeObject(MujocoGeneratedObject):
 
         self._name = name
 
-        # Create bodies
-        self.body_mapping = {"root": {"name": "main"}}
-        if body_mapping is not None:
-            self.body_mapping.update(body_mapping)
-        n_bodies = len(self.body_mapping.keys())
-
         # Set joints
-        if joints is None:
-            self.body_joint_specs = [None] * n_bodies
-        elif joints == "default":
-            self.body_joint_specs = [[self.get_joint_attrib_template()]] + [None] * (n_bodies - 1)
+        if joints == "default":
+            self.joint_specs = [self.get_joint_attrib_template()]  # default free joint
+        elif joints is None:
+            self.joint_specs = []
         else:
-            self.body_joint_specs = joints
+            self.joint_specs = joints
 
         # Make sure all joints are named appropriately
         j_num = 0
-        for joint_spec in self.body_joint_specs:
-            if type(joint_spec) in {tuple, list}:
-                for j_spec in joint_spec:
-                    if "name" not in j_spec:
-                        j_spec["name"] = "joint{}".format(j_num)
-                        j_num += 1
+        for joint_spec in self.joint_specs:
+            if "name" not in joint_spec:
+                joint_spec["name"] = "joint{}".format(j_num)
+                j_num += 1
 
         # Set sites
-        self.body_site_specs = sites if sites is not None else [None] * n_bodies
+        self.site_specs = deepcopy(sites) if sites is not None else []
+        # Add default site
+        site_element_attr = self.get_site_attrib_template()
+        site_element_attr["rgba"] = "1 0 0 0"
+        site_element_attr["name"] = "default_site"
+        self.site_specs.append(site_element_attr)
 
         # Make sure all sites are named appropriately
         s_num = 0
-        for site_spec in self.body_site_specs:
-            if type(site_spec) in {tuple, list}:
-                for s_spec in site_spec:
-                    if "name" not in s_spec:
-                        s_spec["name"] = "site{}".format(s_num)
-                        s_num += 1
+        for site_spec in self.site_specs:
+            if "name" not in site_spec:
+                site_spec["name"] = "site{}".format(s_num)
+                s_num += 1
 
         n_geoms = len(geom_types)
         self.total_size = np.array(total_size)
         self.geom_types = np.array(geom_types)
-        self.geom_locations = np.array(geom_locations)
         self.geom_sizes = deepcopy(geom_sizes)
+        self.geom_locations = np.array(geom_locations)
+        self.geom_quats = deepcopy(geom_quats) if geom_quats is not None else [None] * n_geoms
         self.geom_names = list(geom_names) if geom_names is not None else [None] * n_geoms
         self.geom_rgbas = list(geom_rgbas) if geom_rgbas is not None else [None] * n_geoms
         self.geom_materials = list(geom_materials) if geom_materials is not None else [None] * n_geoms
@@ -155,7 +309,6 @@ class CompositeObject(MujocoGeneratedObject):
         self.solimp = [solimp] * n_geoms if obj_types is None or type(solimp[0]) in {float, int} else list(solimp)
         self.rgba = rgba        # override superclass setting of this variable
         self.locations_relative_to_center = locations_relative_to_center
-        self.geom_quats = deepcopy(geom_quats) if geom_quats is not None else [None] * n_geoms
         self.obj_types = [obj_types] * n_geoms if obj_types is None or type(obj_types) is str else list(obj_types)
 
         # Always run sanity check
@@ -190,25 +343,13 @@ class CompositeObject(MujocoGeneratedObject):
 
     def _get_object_subtree(self):
         # Initialize top-level body
-        obj = new_body(**self.body_mapping["root"])
-        cur_obj = obj
-        body_num = 0
+        obj = new_body(name="root")
 
-        # Add top level joint(s)
-        if self.body_joint_specs[0] is not None:
-            for j_spec in self.body_joint_specs[0]:
-                obj.append(new_joint(**j_spec))
-
-        # Add top level site(s)
-        if self.body_site_specs[0] is not None:
-            for s_spec in self.body_site_specs[0]:
-                obj.append(new_site(**s_spec))
-
-        # Add default object top-level site
-        site_element_attr = self.get_site_attrib_template()
-        site_element_attr["rgba"] = "1 0 0 0"
-        site_element_attr["name"] = "default_site"
-        obj.append(new_site(**site_element_attr))
+        # Add all joints and sites
+        for joint_spec in self.joint_specs:
+            obj.append(new_joint(**joint_spec))
+        for site_spec in self.site_specs:
+            obj.append(new_site(**site_spec))
 
         # Loop through all geoms and generate the composite object
         for i, (obj_type, g_type, g_size, g_loc, g_name, g_rgba, g_friction,
@@ -275,7 +416,7 @@ class CompositeObject(MujocoGeneratedObject):
                 col_geom_attr['solref'] = array_to_string(g_solref)
                 col_geom_attr['solimp'] = array_to_string(g_solimp)
                 col_geom_attr['rgba'] = OBJECT_COLLISION_COLOR
-                cur_obj.append(new_geom(**col_geom_attr))
+                obj.append(new_geom(**col_geom_attr))
 
             # Add visual geom if necessary
             if obj_type in {"visual", "all"}:
@@ -285,22 +426,7 @@ class CompositeObject(MujocoGeneratedObject):
                 if g_material is not None:
                     vis_geom_attr['material'] = g_material
                 vis_geom_attr["rgba"] = geom_rgba
-                cur_obj.append(new_geom(**vis_geom_attr))
-
-            # If the current geom is in our body_mapping, then we need to create a new nested body to append to
-            if g_name in self.body_mapping:
-                # Increment body count
-                body_num += 1
-                child_body = new_body(**self.body_mapping[g_name])
-                # Set the current body to be this new body
-                cur_obj = child_body
-                # Add appropriate joint(s) and site(s)
-                if self.body_joint_specs[body_num] is not None:
-                    for j_spec in self.body_joint_specs[body_num]:
-                        cur_obj.append(new_joint(**j_spec))
-                if self.body_site_specs[body_num] is not None:
-                    for s_spec in self.body_site_specs[body_num]:
-                        cur_obj.append(new_site(**s_spec))
+                obj.append(new_geom(**vis_geom_attr))
 
         return obj
 

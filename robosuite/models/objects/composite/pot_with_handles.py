@@ -275,7 +275,7 @@ class PotWithHandlesObject(CompositeObject):
 
         # Add back in base args and site args
         obj_args.update(base_args)
-        obj_args["sites"] = [site_attrs]        # All sites are part of main (top) body
+        obj_args["sites"] = site_attrs        # All sites are part of main (top) body
 
         # Return this dict
         return obj_args

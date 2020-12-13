@@ -1,5 +1,5 @@
 from .objects import MujocoObject, MujocoXMLObject, MujocoGeneratedObject
-from .generated_objects import CompositeObject, PrimitiveObject
+from .generated_objects import CompositeBodyObject, CompositeObject, PrimitiveObject
 
 from .xml_objects import (
     BottleObject,
