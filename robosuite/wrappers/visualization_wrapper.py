@@ -69,20 +69,6 @@ class VisualizationWrapper(Wrapper):
         self.reset()
         self.env.hard_reset = reset_mode
 
-    def _add_indicators_to_model(self, model):
-        """
-        Adds indicators to the mujoco simulation model
-
-        Args:
-            model (Task): Task instance including all mujoco models for the current simulation to be loaded
-        """
-        if self.indicator_configs is not None:
-            for indicator_config in self.indicator_configs:
-                config = deepcopy(indicator_config)
-                indicator_body = new_body(name=config["name"] + "_body", pos=config.pop("pos", (0, 0, 0)))
-                indicator_body.append(new_site(**config))
-                model.worldbody.append(indicator_body)
-
     def get_indicator_names(self):
         """
         Gets all indicator object names for this environment.
@@ -162,3 +148,17 @@ class VisualizationWrapper(Wrapper):
         self.env.visualize(vis_settings=self._vis_settings)
 
         return ret
+
+    def _add_indicators_to_model(self, model):
+        """
+        Adds indicators to the mujoco simulation model
+
+        Args:
+            model (Task): Task instance including all mujoco models for the current simulation to be loaded
+        """
+        if self.indicator_configs is not None:
+            for indicator_config in self.indicator_configs:
+                config = deepcopy(indicator_config)
+                indicator_body = new_body(name=config["name"] + "_body", pos=config.pop("pos", (0, 0, 0)))
+                indicator_body.append(new_site(**config))
+                model.worldbody.append(indicator_body)
