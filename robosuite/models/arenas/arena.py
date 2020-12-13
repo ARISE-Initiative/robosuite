@@ -31,23 +31,6 @@ class Arena(MujocoXML):
             new_pos = cur_pos + offset
             node.set("pos", array_to_string(new_pos))
 
-    def add_pos_indicator(self):
-        """Adds a new position indicator."""
-        body = new_body(name="pos_indicator")
-        body.append(
-            new_geom(
-                name="indicator_obj",
-                type="sphere",
-                size=[0.03],
-                rgba=[1, 0, 0, 0.5],
-                group=1,
-                contype="0",
-                conaffinity="0",
-            )
-        )
-        body.append(new_joint(type="free", name="pos_indicator"))
-        self.worldbody.append(body)
-
     def add_camera(self, camera_name, pos, quat, camera_attribs=None):
         """
         Adds a camera with @camera_name. If the camera already exists, then this overwrites its pos and quat values.

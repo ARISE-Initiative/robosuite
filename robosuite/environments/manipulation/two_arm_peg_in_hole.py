@@ -71,9 +71,6 @@ class TwoArmPegInHole(TwoArmEnv):
 
         peg_length (float): length of the peg
 
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -138,7 +135,6 @@ class TwoArmPegInHole(TwoArmEnv):
         reward_shaping=False,
         peg_radius=(0.015, 0.03),
         peg_length=0.13,
-        use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -175,7 +171,6 @@ class TwoArmPegInHole(TwoArmEnv):
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
-            use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -271,8 +266,6 @@ class TwoArmPegInHole(TwoArmEnv):
 
         # Add arena and robot
         mujoco_arena = EmptyArena()
-        if self.use_indicator_object:
-            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])

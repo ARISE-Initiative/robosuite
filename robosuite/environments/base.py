@@ -59,9 +59,6 @@ class MujocoEnv(metaclass=EnvMeta):
     Initializes a Mujoco Environment.
 
     Args:
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -94,7 +91,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def __init__(
         self,
-        use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -117,14 +113,12 @@ class MujocoEnv(metaclass=EnvMeta):
         self.render_visual_mesh = render_visual_mesh
         self.viewer = None
 
-        # whether to use indicator object or not
-        self.use_indicator_object = use_indicator_object
-
         # Simulation-specific attributes
         self.control_freq = control_freq
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
+        self._model_postprocessor = None            # Function to post-process model after load_model() call
         self.model = None
         self.cur_time = None
         self.model_timestep = None
@@ -133,6 +127,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Load the model
         self._load_model()
+
+        # Post-process model
+        self._postprocess_model()
 
         # Initialize the simulation
         self._initialize_sim()
@@ -158,9 +155,27 @@ class MujocoEnv(metaclass=EnvMeta):
             )
         self.control_timestep = 1. / control_freq
 
+    def set_model_postprocessor(self, postprocessor):
+        """
+        Sets the post-processor function that self.model will be passed to after load_model() is called during resets.
+
+        Args:
+            postprocessor (None or function): If set, postprocessing method should take in a Task-based instance and
+                return no arguments.
+        """
+        self._model_postprocessor = postprocessor
+
     def _load_model(self):
         """Loads an xml model, puts it in self.model"""
         pass
+
+    def _postprocess_model(self):
+        """
+        Post-processes model after load_model() call. Useful for external objects (e.g.: wrappers) to
+        be able to modify the sim model before it is actually loaded into the simulation
+        """
+        if self._model_postprocessor is not None:
+            self._model_postprocessor(self.model)
 
     def _get_reference(self):
         """
@@ -168,15 +183,7 @@ class MujocoEnv(metaclass=EnvMeta):
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        # Indicator object references
-        if self.use_indicator_object:
-            ind_qpos = self.sim.model.get_joint_qpos_addr("pos_indicator")
-            self._ref_indicator_pos_low, self._ref_indicator_pos_high = ind_qpos
-
-            ind_qvel = self.sim.model.get_joint_qvel_addr("pos_indicator")
-            self._ref_indicator_vel_low, self._ref_indicator_vel_high = ind_qvel
-
-            self.indicator_id = self.sim.model.body_name2id("pos_indicator")
+        pass
 
     def _initialize_sim(self, xml_string=None):
         """
@@ -208,6 +215,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.hard_reset and not self.deterministic_reset:
             self._destroy_viewer()
             self._load_model()
+            self._postprocess_model()
             self._initialize_sim()
         # Else, we only reset the sim internally
         else:
@@ -372,17 +380,6 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         observation = self._get_observation()
         return observation
-
-    def move_indicator(self, pos):
-        """
-        Sets 3d position of indicator object to @pos.
-
-        Args:
-            pos (3-tuple): (x,y,z) values to place the indicator within the env
-        """
-        if self.use_indicator_object:
-            index = self._ref_indicator_pos_low
-            self.sim.data.qpos[index:index + 3] = pos
 
     def clear_objects(self, object_names):
         """

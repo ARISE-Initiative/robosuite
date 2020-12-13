@@ -79,9 +79,6 @@ class TwoArmHandover(TwoArmEnv):
             be used to place objects on every reset, else a UniformRandomSampler
             is used by default.
 
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -147,7 +144,6 @@ class TwoArmHandover(TwoArmEnv):
         reward_scale=1.0,
         reward_shaping=False,
         placement_initializer=None,
-        use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -191,7 +187,6 @@ class TwoArmHandover(TwoArmEnv):
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
-            use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -319,8 +314,6 @@ class TwoArmHandover(TwoArmEnv):
             table_friction=self.table_friction,
             table_offset=self.table_offset
         )
-        if self.use_indicator_object:
-            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])

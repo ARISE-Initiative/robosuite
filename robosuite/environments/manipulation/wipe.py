@@ -91,9 +91,6 @@ class Wipe(SingleArmEnv):
 
         reward_shaping (bool): if True, use dense rewards.
 
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -159,7 +156,6 @@ class Wipe(SingleArmEnv):
         use_object_obs=True,
         reward_scale=1.0,
         reward_shaping=True,
-        use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -254,7 +250,6 @@ class Wipe(SingleArmEnv):
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
-            use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -483,8 +478,6 @@ class Wipe(SingleArmEnv):
             line_width=self.line_width,
             two_clusters=self.two_clusters
         )
-        if self.use_indicator_object:
-            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])

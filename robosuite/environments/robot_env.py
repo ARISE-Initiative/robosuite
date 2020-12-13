@@ -46,9 +46,6 @@ class RobotEnv(MujocoEnv):
 
         use_camera_obs (bool): if True, every observation includes rendered image(s)
 
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -108,7 +105,6 @@ class RobotEnv(MujocoEnv):
         controller_configs=None,
         initialization_noise=None,
         use_camera_obs=True,
-        use_indicator_object=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -181,7 +177,6 @@ class RobotEnv(MujocoEnv):
 
         # Run superclass init
         super().__init__(
-            use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
             has_offscreen_renderer=self.has_offscreen_renderer,
             render_camera=render_camera,
@@ -358,14 +353,6 @@ class RobotEnv(MujocoEnv):
             robot_action = action[cutoff:cutoff+robot.action_dim]
             robot.control(robot_action, policy_step=policy_step)
             cutoff += robot.action_dim
-
-        # Also update indicator object if necessary
-        if self.use_indicator_object:
-            # Apply gravity compensation to indicator object too
-            self.sim.data.qfrc_applied[
-                self._ref_indicator_vel_low: self._ref_indicator_vel_high
-                ] = self.sim.data.qfrc_bias[
-                    self._ref_indicator_vel_low: self._ref_indicator_vel_high]
 
     def _get_observation(self):
         """
