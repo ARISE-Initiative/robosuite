@@ -81,6 +81,8 @@ class MujocoEnv(metaclass=EnvMeta):
             in camera. False otherwise.
 
         render_gpu_device_id (int): corresponds to the GPU device id to use for offscreen rendering.
+            Defaults to -1, in which case the device will be inferred from environment variables
+            (GPUS or CUDA_VISIBLE_DEVICES).
 
         control_freq (float): how many control signals to receive
             in every simulated second. This sets the amount of simulation time

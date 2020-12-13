@@ -92,6 +92,8 @@ class Door(SingleArmEnv):
         render_visual_mesh (bool): True if rendering visual meshes in camera. False otherwise.
 
         render_gpu_device_id (int): corresponds to the GPU device id to use for offscreen rendering.
+            Defaults to -1, in which case the device will be inferred from environment variables
+            (GPUS or CUDA_VISIBLE_DEVICES).
 
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
