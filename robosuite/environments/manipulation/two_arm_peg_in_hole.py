@@ -39,10 +39,6 @@ class TwoArmPegInHole(TwoArmEnv):
             For this environment, setting a value other than the default (None) will raise an AssertionError, as
             this environment is not meant to be used with any gripper at all.
 
-        gripper_visualizations (bool or list of bool): True if using gripper visualization.
-            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -74,16 +70,6 @@ class TwoArmPegInHole(TwoArmEnv):
             radius of the peg
 
         peg_length (float): length of the peg
-
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
-        robot_visualizations (bool or list of bool): True if using robot visualization.
-            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
-        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
-            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -146,7 +132,6 @@ class TwoArmPegInHole(TwoArmEnv):
         env_configuration="single-arm-opposed",
         controller_configs=None,
         gripper_types=None,
-        gripper_visualizations=False,
         initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
@@ -154,16 +139,13 @@ class TwoArmPegInHole(TwoArmEnv):
         reward_shaping=False,
         peg_radius=(0.015, 0.03),
         peg_length=0.13,
-        use_indicator_object=False,
-        robot_visualizations=False,
-        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         render_gpu_device_id=-1,
-        control_freq=10,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -192,12 +174,8 @@ class TwoArmPegInHole(TwoArmEnv):
             controller_configs=controller_configs,
             mount_types="default",
             gripper_types=gripper_types,
-            gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
-            use_indicator_object=use_indicator_object,
-            robot_visualizations=robot_visualizations,
-            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -294,8 +272,6 @@ class TwoArmPegInHole(TwoArmEnv):
 
         # Add arena and robot
         mujoco_arena = EmptyArena()
-        if self.use_indicator_object:
-            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])

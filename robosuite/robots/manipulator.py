@@ -30,9 +30,24 @@ class Manipulator(Robot):
         applied_gripper_action = bias + weight * gripper_action_actual
         self.sim.data.ctrl[actuator_idxs] = applied_gripper_action
 
-    def visualize_gripper(self):
+    def visualize(self, vis_settings):
+        """
+        Do any necessary visualization for this manipulator
+
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "robots" and "grippers" keyword as well as any other
+                robot-specific options specified.
+        """
+        super().visualize(vis_settings=vis_settings)
+        self._visualize_grippers(visible=vis_settings["grippers"])
+
+    def _visualize_grippers(self, visible):
         """
         Visualizes the gripper site(s) if applicable.
+
+        Args:
+            visible (bool): True if visualizing grippers, else False
         """
         raise NotImplementedError
 

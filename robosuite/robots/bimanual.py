@@ -55,14 +55,6 @@ class Bimanual(Manipulator):
 
             :NOTE: In the latter case, assumes convention of [right, left]
 
-        gripper_visualization (bool or list of bool --> dict): True if using gripper visualization.
-            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for both
-            arms or else it should be a list of length 2
-
-            :NOTE: In the latter case, assumes convention of [right, left]
-
-        robot_visualization (bool): True if using robot visualization. Useful for teleoperation.
-
         control_freq (float): how many control signals to receive
             in every second. This sets the amount of simulation time
             that passes between every action input.
@@ -77,9 +69,7 @@ class Bimanual(Manipulator):
         initialization_noise=None,
         mount_type="default",
         gripper_type="default",
-        gripper_visualization=False,
-        robot_visualization=False,
-        control_freq=10
+        control_freq=20
     ):
 
         self.controller = self._input2dict(None)
@@ -87,7 +77,6 @@ class Bimanual(Manipulator):
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
         self.has_gripper = self._input2dict([gripper_type is not None for _, gripper_type in self.gripper_type.items()])
-        self.gripper_visualization = self._input2dict(gripper_visualization)
 
         self.gripper_joints = self._input2dict(None)                            # xml joint names for gripper
         self._ref_gripper_joint_pos_indexes = self._input2dict(None)            # xml gripper joint position indexes in mjsim
@@ -110,7 +99,6 @@ class Bimanual(Manipulator):
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
             mount_type=mount_type,
-            robot_visualization=robot_visualization,
             control_freq=control_freq,
         )
 
@@ -334,12 +322,15 @@ class Bimanual(Manipulator):
                 ee_acc = np.array([np.convolve(col, np.ones(10) / 10., mode='valid')[0] for col in diffs.transpose()])
                 self.recent_ee_acc[arm].push(ee_acc)
 
-    def visualize_gripper(self):
+    def _visualize_grippers(self, visible):
         """
         Visualizes the gripper site(s) if applicable.
+
+        Args:
+            visible (bool): True if visualizing the gripper for this arm.
         """
         for arm in self.arms:
-            self.gripper[arm].set_sites_visibility(sim=self.sim, visible=self.gripper_visualization[arm])
+            self.gripper[arm].set_sites_visibility(sim=self.sim, visible=visible)
 
     def get_observations(self, di: OrderedDict):
         """

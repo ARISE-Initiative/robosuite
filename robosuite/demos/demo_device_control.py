@@ -100,6 +100,7 @@ import numpy as np
 import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
+from robosuite.wrappers import VisualizationWrapper
 
 
 
@@ -152,13 +153,13 @@ if __name__ == "__main__":
         render_camera="agentview",
         ignore_done=True,
         use_camera_obs=False,
-        gripper_visualizations=True,
-        robot_visualizations=True,
-        env_visualization=True,
         reward_shaping=True,
         control_freq=20,
         hard_reset=False,
     )
+
+    # Wrap this environment in a visualization wrapper
+    env = VisualizationWrapper(env, indicator_configs=None)
 
     # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})

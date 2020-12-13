@@ -34,10 +34,6 @@ class NutAssembly(SingleArmEnv):
             overrides the default gripper. Should either be single str if same gripper type is to be used for all
             robots or else it should be a list of the same length as "robots" param
 
-        gripper_visualizations (bool or list of bool): True if using gripper visualization.
-            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -87,16 +83,6 @@ class NutAssembly(SingleArmEnv):
         nut_type (string): if provided, should be either "round" or "square". Determines
             which type of nut (round or square) will be spawned on every environment
             reset. Only used if @single_object_mode is 2.
-
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
-        robot_visualizations (bool or list of bool): True if using robot visualization.
-            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
-        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
-            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -157,7 +143,6 @@ class NutAssembly(SingleArmEnv):
         env_configuration="default",
         controller_configs=None,
         gripper_types="default",
-        gripper_visualizations=False,
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1, 0.005, 0.0001),
@@ -168,16 +153,13 @@ class NutAssembly(SingleArmEnv):
         placement_initializer=None,
         single_object_mode=0,
         nut_type=None,
-        use_indicator_object=False,
-        robot_visualizations=False,
-        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         render_gpu_device_id=-1,
-        control_freq=10,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -219,12 +201,8 @@ class NutAssembly(SingleArmEnv):
             controller_configs=controller_configs,
             mount_types="default",
             gripper_types=gripper_types,
-            gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
-            use_indicator_object=use_indicator_object,
-            robot_visualizations=robot_visualizations,
-            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -395,8 +373,6 @@ class NutAssembly(SingleArmEnv):
             table_friction=self.table_friction,
             table_offset=self.table_offset,
         )
-        if self.use_indicator_object:
-            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
@@ -592,12 +568,20 @@ class NutAssembly(SingleArmEnv):
         # returns True if all objects are on correct pegs
         return np.sum(self.objects_on_pegs) == len(self.nuts)
 
-    def _visualization(self):
+    def visualize(self, vis_settings):
         """
-        Do any needed visualization here. Overrides superclass implementations.
+        In addition to super call, visualize gripper site proportional to the distance to the closest nut.
+
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "grippers" keyword as well as any other relevant
+                options specified.
         """
-        # color the gripper site appropriately based on distance to closest nut
-        if self.robots[0].gripper_visualization:
+        # Run superclass method first
+        super().visualize(vis_settings=vis_settings)
+
+        # Color the gripper visualization site according to its distance to the closest nut
+        if vis_settings["grippers"]:
             # find closest object
             dists = [
                 self._gripper_to_target(

@@ -18,7 +18,7 @@ import json
 
 import robosuite as suite
 from robosuite import load_controller_config
-from robosuite.wrappers import DataCollectionWrapper
+from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 from robosuite.utils.input_utils import input2action
 
 
@@ -227,12 +227,12 @@ if __name__ == "__main__":
         render_camera=args.camera,
         ignore_done=True,
         use_camera_obs=False,
-        gripper_visualizations=True,
-        robot_visualizations=True,
-        env_visualization=True,
         reward_shaping=True,
         control_freq=20,
     )
+
+    # Wrap this with visualization wrapper
+    env = VisualizationWrapper(env)
 
     # Grab reference to controller config and convert it to json-encoded string
     env_info = json.dumps(config)

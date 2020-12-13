@@ -11,7 +11,7 @@ from robosuite.utils.mjcf_utils import (
     new_actuator,
     new_joint,
     array_to_string)
-from robosuite.models.objects.generated_objects import BoxObject
+from robosuite.models.objects import BoxObject
 
 
 class GripperTester:

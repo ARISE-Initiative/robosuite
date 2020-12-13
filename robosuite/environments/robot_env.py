@@ -46,16 +46,6 @@ class RobotEnv(MujocoEnv):
 
         use_camera_obs (bool): if True, every observation includes rendered image(s)
 
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
-        robot_visualizations (bool or list of bool): True if using robot visualization.
-            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
-        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
-            teleoperation.
-
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
 
@@ -119,16 +109,13 @@ class RobotEnv(MujocoEnv):
         controller_configs=None,
         initialization_noise=None,
         use_camera_obs=True,
-        use_indicator_object=False,
-        robot_visualizations=False,
-        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         render_gpu_device_id=-1,
-        control_freq=10,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -158,9 +145,6 @@ class RobotEnv(MujocoEnv):
         # Initialization Noise
         initialization_noise = self._input2list(initialization_noise, self.num_robots)
 
-        # Visualization
-        robot_visualizations = self._input2list(robot_visualizations, self.num_robots)
-
         # Observations -- Ground truth = object_obs, Image data = camera_obs
         self.use_camera_obs = use_camera_obs
 
@@ -189,7 +173,6 @@ class RobotEnv(MujocoEnv):
                     "controller_config": controller_configs[idx],
                     "mount_type": mount_types[idx],
                     "initialization_noise": initialization_noise[idx],
-                    "robot_visualization": robot_visualizations[idx],
                     "control_freq": control_freq
                 },
                 **robot_config,
@@ -199,8 +182,6 @@ class RobotEnv(MujocoEnv):
 
         # Run superclass init
         super().__init__(
-            use_indicator_object=use_indicator_object,
-            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=self.has_offscreen_renderer,
             render_camera=render_camera,
@@ -212,6 +193,33 @@ class RobotEnv(MujocoEnv):
             ignore_done=ignore_done,
             hard_reset=hard_reset,
         )
+
+    def visualize(self, vis_settings):
+        """
+        In addition to super call, visualizes robots.
+
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "robots" keyword as well as any other relevant
+                options specified.
+        """
+        # Run superclass method first
+        super().visualize(vis_settings=vis_settings)
+        # Loop over robots to visualize them independently
+        for robot in self.robots:
+            robot.visualize(vis_settings=vis_settings)
+
+    @property
+    def _visualizations(self):
+        """
+        Visualization keywords for this environment
+
+        Returns:
+            set: All components that can be individually visualized for this environment
+        """
+        vis_set = super()._visualizations
+        vis_set.add("robots")
+        return vis_set
 
     @property
     def action_spec(self):
@@ -352,14 +360,6 @@ class RobotEnv(MujocoEnv):
             robot.control(robot_action, policy_step=policy_step)
             cutoff += robot.action_dim
 
-        # Also update indicator object if necessary
-        if self.use_indicator_object:
-            # Apply gravity compensation to indicator object too
-            self.sim.data.qfrc_applied[
-                self._ref_indicator_vel_low: self._ref_indicator_vel_high
-                ] = self.sim.data.qfrc_bias[
-                    self._ref_indicator_vel_low: self._ref_indicator_vel_high]
-
     def _get_observation(self):
         """
         Returns an OrderedDict containing observations [(name_string, np.array), ...].
@@ -402,16 +402,6 @@ class RobotEnv(MujocoEnv):
                     di[cam_name + "_image"] = camera_obs[::convention]
 
         return di
-
-    def _visualization(self):
-        """
-        Do any needed visualization here
-        """
-        # Run superclass method first
-        super()._visualization()
-        # Loop over robots to visualize them independently
-        for robot in self.robots:
-            robot.visualize()
 
     def _load_robots(self):
         """

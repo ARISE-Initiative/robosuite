@@ -35,10 +35,6 @@ class Stack(SingleArmEnv):
             overrides the default gripper. Should either be single str if same gripper type is to be used for all
             robots or else it should be a list of the same length as "robots" param
 
-        gripper_visualizations (bool or list of bool): True if using gripper visualization.
-            Useful for teleoperation. Should either be single bool if gripper visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -72,16 +68,6 @@ class Stack(SingleArmEnv):
         placement_initializer (ObjectPositionSampler): if provided, will
             be used to place objects on every reset, else a UniformRandomSampler
             is used by default.
-
-        use_indicator_object (bool): if True, sets up an indicator object that
-            is useful for debugging.
-
-        robot_visualizations (bool or list of bool): True if using robot visualization.
-            Useful for teleoperation. Should either be single bool if robot visualization is to be used for all
-            robots or else it should be a list of the same length as "robots" param
-
-        env_visualization (bool): True if visualizing sites for the arena / objects in this environment. Useful for
-            teleoperation.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -141,7 +127,6 @@ class Stack(SingleArmEnv):
         env_configuration="default",
         controller_configs=None,
         gripper_types="default",
-        gripper_visualizations=False,
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1., 5e-3, 1e-4),
@@ -150,16 +135,13 @@ class Stack(SingleArmEnv):
         reward_scale=1.0,
         reward_shaping=False,
         placement_initializer=None,
-        use_indicator_object=False,
-        robot_visualizations=False,
-        env_visualization=False,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         render_gpu_device_id=-1,
-        control_freq=10,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -189,12 +171,8 @@ class Stack(SingleArmEnv):
             controller_configs=controller_configs,
             mount_types="default",
             gripper_types=gripper_types,
-            gripper_visualizations=gripper_visualizations,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
-            use_indicator_object=use_indicator_object,
-            robot_visualizations=robot_visualizations,
-            env_visualization=env_visualization,
             has_renderer=has_renderer,
             has_offscreen_renderer=has_offscreen_renderer,
             render_camera=render_camera,
@@ -315,8 +293,6 @@ class Stack(SingleArmEnv):
             table_friction=self.table_friction,
             table_offset=self.table_offset,
         )
-        if self.use_indicator_object:
-            mujoco_arena.add_pos_indicator()
 
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
@@ -482,13 +458,18 @@ class Stack(SingleArmEnv):
         _, _, r_stack = self.staged_rewards()
         return r_stack > 0
 
-    def _visualization(self):
+    def visualize(self, vis_settings):
         """
-        Do any needed visualization here. Overrides superclass implementations.
-        """
-        # Run super call first
-        super()._visualization()
+        In addition to super call, visualize gripper site proportional to the distance to the cube.
 
-        # Color the gripper visualization site according to its distance to cubeA
-        if self.robots[0].gripper_visualization:
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "grippers" keyword as well as any other relevant
+                options specified.
+        """
+        # Run superclass method first
+        super().visualize(vis_settings=vis_settings)
+
+        # Color the gripper visualization site according to its distance to the cube
+        if vis_settings["grippers"]:
             self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cubeA)

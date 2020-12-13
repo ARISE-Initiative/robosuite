@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoXML, MujocoModel
 from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR,\
-                                       sort_elements, new_joint, add_prefix, add_material
+                                       sort_elements, new_joint, add_prefix, add_material, find_elements
 
 
 # Dict mapping geom type string keywords to group number
@@ -60,6 +60,18 @@ class MujocoObject(MujocoModel):
         self._sites = None
         self._contact_geoms = None
         self._visual_geoms = None
+
+    def merge_assets(self, other):
+        """
+        Merges @other's assets in a custom logic.
+
+        Args:
+            other (MujocoXML or MujocoObject): other xml file whose assets will be merged into this one
+        """
+        for asset in other.asset:
+            if find_elements(root=self.asset, tags=asset.tag,
+                             attribs={"name": asset.get("name")}, return_first=True) is None:
+                self.asset.append(asset)
 
     @property
     def name(self):
@@ -224,7 +236,7 @@ class MujocoObject(MujocoModel):
         self._visual_geoms = [e.get("name") for e in _elements.get("visual_geoms", [])]
 
         # Add default materials if we're using domain randomization
-        if macros.USING_DOMAIN_RANDOMIZATION:
+        if macros.USING_INSTANCE_RANDOMIZATION:
             tex_element, mat_element, _, used = add_material(root=self.get_obj(), naming_prefix=self.naming_prefix)
             # Only add the material / texture if they were actually used
             if used:
