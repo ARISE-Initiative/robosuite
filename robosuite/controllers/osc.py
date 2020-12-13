@@ -342,6 +342,13 @@ class OperationalSpaceController(Controller):
 
         return self.torques
 
+    def update_initial_joints(self, initial_joints):
+        # First, update from the superclass method
+        super().update_initial_joints(initial_joints)
+
+        # We also need to reset the goal in case the old goals were set to the initial confguration
+        self.reset_goal()
+
     def reset_goal(self):
         """
         Resets the goal to the current state of the robot
