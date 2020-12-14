@@ -117,7 +117,7 @@ class VisualizationWrapper(Wrapper):
 
     def reset(self):
         """
-        Extends vanilla reset() function call to accommodate data collection
+        Extends vanilla reset() function call to accommodate visualization
 
         Returns:
             OrderedDict: Environment observation space after reset occurs
@@ -129,7 +129,7 @@ class VisualizationWrapper(Wrapper):
 
     def step(self, action):
         """
-        Extends vanilla step() function call to accommodate data collection
+        Extends vanilla step() function call to accommodate visualization
 
         Args:
             action (np.array): Action to take in environment
