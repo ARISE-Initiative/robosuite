@@ -31,9 +31,9 @@ class Arena(MujocoXML):
             new_pos = cur_pos + offset
             node.set("pos", array_to_string(new_pos))
 
-    def add_camera(self, camera_name, pos, quat, camera_attribs=None):
+    def set_camera(self, camera_name, pos, quat, camera_attribs=None):
         """
-        Adds a camera with @camera_name. If the camera already exists, then this overwrites its pos and quat values.
+        Sets a camera with @camera_name. If the camera already exists, then this overwrites its pos and quat values.
 
         Args:
             camera_name (str): Camera name to search for / create

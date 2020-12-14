@@ -37,8 +37,8 @@ class VisualizationWrapper(Wrapper):
                 If a list, should specify specific indicator object configs to use for multiple indicators (which in
                 turn can either be `'default'` or a dict)
 
-                As each indicator object is essentially a site element, each dict should map site keywords to values.
-                Note that, at the very minimum, the `'name'` attribute MUST be specified for each indicator. See
+                As each indicator object is essentially a site element, each dict should map site attribute keywords to
+                values. Note that, at the very minimum, the `'name'` attribute MUST be specified for each indicator. See
                 http://www.mujoco.org/book/XMLreference.html#site for specific site attributes that can be specified.
         """
         super().__init__(env)
@@ -63,7 +63,7 @@ class VisualizationWrapper(Wrapper):
         # Add the post-processor to make sure indicator objects get added to model before it's actually loaded in sim
         self.env.set_model_postprocessor(postprocessor=self._add_indicators_to_model)
 
-        # Conduct a (hard) result to make sure visualization changes propagate
+        # Conduct a (hard) reset to make sure visualization changes propagate
         reset_mode = self.env.hard_reset
         self.env.hard_reset = True
         self.reset()
