@@ -373,7 +373,7 @@ class Bimanual(Manipulator):
                 robot_states.extend([di[pf + "{}_".format(arm) + "gripper_qpos"],
                                      di[pf + "{}_".format(arm) + "gripper_qvel"]])
 
-        di[pf + "robot-state"] = np.concatenate([di[pf + "robot-state"]] + robot_states)
+        di[pf + "robot-state"] = np.concatenate(di[pf + "robot-state"], *robot_states)
         return di
 
     def _input2dict(self, inp):

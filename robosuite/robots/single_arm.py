@@ -327,7 +327,7 @@ class SingleArm(Manipulator):
             )
             robot_states.extend([di[pf + "gripper_qpos"], di[pf + "gripper_qvel"]])
 
-        di[pf + "robot-state"] = np.concatenate([di[pf + "robot-state"], robot_states])
+        di[pf + "robot-state"] = np.concatenate([di[pf + "robot-state"], *robot_states])
         return di
 
     @property
