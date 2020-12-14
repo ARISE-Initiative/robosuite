@@ -3,7 +3,7 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.models.mounts import mount_factory
-from robosuite.utils.control_utils import DeltaBuffer
+from robosuite.utils.buffers import DeltaBuffer
 
 from mujoco_py import MjSim
 

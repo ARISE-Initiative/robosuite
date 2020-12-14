@@ -134,7 +134,7 @@ class TwoArmLift(TwoArmEnv):
     def __init__(
         self,
         robots,
-        env_configuration="single-arm-opposed",
+        env_configuration="default",
         controller_configs=None,
         gripper_types="default",
         initialization_noise="default",

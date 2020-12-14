@@ -8,7 +8,7 @@ from robosuite.models.grippers import gripper_factory
 from robosuite.controllers import controller_factory, load_controller_config
 
 from robosuite.robots.manipulator import Manipulator
-from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
+from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 
 import os
 import copy
