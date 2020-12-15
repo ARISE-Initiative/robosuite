@@ -6,10 +6,11 @@ interface.
 
 import numpy as np
 from gym import spaces
+from gym.core import Env
 from robosuite.wrappers import Wrapper
 
 
-class GymWrapper(Wrapper):
+class GymWrapper(Wrapper, Env):
     """
     Initializes the Gym wrapper. Mimics many of the required functionalities of the Wrapper class
     found in the gym.core module
@@ -35,8 +36,13 @@ class GymWrapper(Wrapper):
         self.reward_range = (0, self.env.reward_scale)
 
         if keys is None:
-            assert self.env.use_object_obs, "Object observations need to be enabled."
-            keys = ["object-state"]
+            keys = []
+            # Add object obs if requested
+            if self.env.use_object_obs:
+                keys += ["object-state"]
+            # Add image obs if requested
+            if self.env.use_camera_obs:
+                keys += [f"{cam_name}_image" for cam_name in self.env.camera_names]
             # Iterate over all robots to add to state
             for idx in range(len(self.env.robots)):
                 keys += ["robot{}_robot-state".format(idx)]
@@ -47,7 +53,9 @@ class GymWrapper(Wrapper):
         self.metadata = None
 
         # set up observation and action spaces
-        flat_ob = self._flatten_obs(self.env.reset(), verbose=True)
+        obs = self.env.reset()
+        self.modality_dims = {key: obs[key].shape for key in self.keys}
+        flat_ob = self._flatten_obs(obs)
         self.obs_dim = flat_ob.size
         high = np.inf * np.ones(self.obs_dim)
         low = -high
@@ -67,11 +75,11 @@ class GymWrapper(Wrapper):
             np.array: observations flattened into a 1d array
         """
         ob_lst = []
-        for key in obs_dict:
-            if key in self.keys:
+        for key in self.keys:
+            if key in obs_dict:
                 if verbose:
                     print("adding key: {}".format(key))
-                ob_lst.append(obs_dict[key])
+                ob_lst.append(np.array(obs_dict[key]).flatten())
         return np.concatenate(ob_lst)
 
     def reset(self):
