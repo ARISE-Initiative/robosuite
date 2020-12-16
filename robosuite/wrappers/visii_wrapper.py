@@ -43,7 +43,7 @@ class VirtualWrapper(Wrapper):
         # Camera variables
         self.width                  = width
         self.height                 = height
-        self.samples_per_pixel      = 30
+        self.samples_per_pixel      = 50
         self.image_counter          = 0
         self.render_number          = 1
         self.entities               = []
@@ -380,11 +380,11 @@ class VirtualWrapper(Wrapper):
             if(self.render_number == 1):
 
                 # if(part_mesh == 'pedestal'):
-                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/common_meshes/{part_mesh}.obj') # change
+                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/common_meshes/{part_mesh}.stl') # change
 
                 # else:
                 #     # robots/{self.robot_names[0].lower()}
-                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/extra_meshes/{part_mesh}.obj') # change
+                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/extra_meshes/{part_mesh}.stl') # change
                 
                 link_name = part_mesh
                 
@@ -397,7 +397,7 @@ class VirtualWrapper(Wrapper):
 
                 else:
                     # robots/{self.robot_names[0].lower()}
-                    mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/extra_meshes/{part_mesh}.obj') # change
+                    mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/robots/{self.robot_names[0].lower()}/meshes/{part_mesh}.obj') # change
 
                 # mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
                 link_entity = visii.entity.create(
@@ -616,7 +616,7 @@ if __name__ == '__main__':
 
     env.printState()
 
-    for i in range(500):
+    for i in range(100):
         action = np.random.randn(8)
         obs, reward, done, info = env.step(action)
 
