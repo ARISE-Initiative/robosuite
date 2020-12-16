@@ -2,7 +2,7 @@
 This file implements a wrapper for using the ViSII imaging interface
 for robosuite. 
 """
-
+import os
 import numpy as np
 import sys
 import visii
@@ -394,44 +394,80 @@ class VirtualWrapper(Wrapper):
 
                 if(part_mesh == 'pedestal'):
                     mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/robots/common_meshes/{part_mesh}.obj') # change
+                    link_entity = visii.entity.create(
+                        name      = link_name,
+                        mesh      = mesh,
+                        transform = visii.transform.create(link_name),
+                        material  = visii.material.create(link_name)
+                    )
 
                 else:
                     # robots/{self.robot_names[0].lower()}
-                    mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/extra_meshes/{part_mesh}.obj') # change
+                    obj_file = f'../models/assets/robots/panda/meshes/{part_mesh}.obj'
+                    mtl_file = obj_file.replace('obj', 'mtl')
+                    if os.path.exists(mtl_file):
+                        entity_imported = visii.import_obj(
+                            part_mesh,
+                            obj_file,
+                            '/'.join(obj_file.split('/')[:-1]) + '/',
+                        )
+                        link_entity = entity_imported
+                    else:
+                        
+                        mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/robots/panda/meshes/{part_mesh}.obj') # change
 
-                # mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
-                link_entity = visii.entity.create(
-                    name      = link_name,
-                    mesh      = mesh,
-                    transform = visii.transform.create(link_name),
-                    material  = visii.material.create(link_name)
-                )
+                    # mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
+                        link_entity = visii.entity.create(
+                            name      = link_name,
+                            mesh      = mesh,
+                            transform = visii.transform.create(link_name),
+                            material  = visii.material.create(link_name)
+                        )
                 
                 self.entities.append(link_entity)
             
             else:
                 link_entity = self.entities[i]
 
-            # print(self.quats[i])
             part_position = self.positions[i]
-            link_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
-
             part_quaternion = self.quats[i]
-            link_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
-                                                                part_quaternion[1],
-                                                                part_quaternion[2],
-                                                                part_quaternion[3]))
-            # print(link_entity.get_transform().get_rotation())
 
-            if part_mesh in self.mesh_colors and self.mesh_colors[part_mesh] != None:
-                mesh_color_arr = self.mesh_colors[part_mesh].split(' ')
-                link_entity.get_material().set_base_color(visii.vec3(float(mesh_color_arr[0]),
-                                                                     float(mesh_color_arr[1]),
-                                                                     float(mesh_color_arr[2])))
-            link_entity.get_material().set_metallic(0)
-            link_entity.get_material().set_transmission(0)
-            link_entity.get_material().set_roughness(0.3)
+            if isinstance(link_entity, tuple):
+                for link_idx in range(len(link_entity)):
+                    link_entity[link_idx].get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
 
+                    link_entity[link_idx].get_transform().set_rotation(visii.quat(part_quaternion[0],
+                                                                        part_quaternion[1],
+                                                                        part_quaternion[2],
+                                                                        part_quaternion[3]))
+
+                    if part_mesh in self.mesh_colors and self.mesh_colors[part_mesh] != None:
+                        mesh_color_arr = self.mesh_colors[part_mesh].split(' ')
+                        link_entity[link_idx].get_material().set_base_color(visii.vec3(float(mesh_color_arr[0]),
+                                                                             float(mesh_color_arr[1]),
+                                                                             float(mesh_color_arr[2])))
+                    link_entity[link_idx].get_material().set_metallic(0)
+                    link_entity[link_idx].get_material().set_transmission(0)
+                    link_entity[link_idx].get_material().set_roughness(0.3)
+
+            else:
+               
+                link_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
+
+                link_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
+                                                                    part_quaternion[1],
+                                                                    part_quaternion[2],
+                                                                    part_quaternion[3]))
+                # print(link_entity.get_transform().get_rotation())
+
+                if part_mesh in self.mesh_colors and self.mesh_colors[part_mesh] != None:
+                    mesh_color_arr = self.mesh_colors[part_mesh].split(' ')
+                    link_entity.get_material().set_base_color(visii.vec3(float(mesh_color_arr[0]),
+                                                                         float(mesh_color_arr[1]),
+                                                                         float(mesh_color_arr[2])))
+                link_entity.get_material().set_metallic(0)
+                link_entity.get_material().set_transmission(0)
+                link_entity.get_material().set_roughness(0.3)
         # print(self.gripper_positions)
         for key in self.gripper_mesh_types:
             gripper_entity = None
@@ -608,6 +644,7 @@ if __name__ == '__main__':
                 control_freq=10, 
             ),
         use_noise=False,
+        debug_mode=True,
     )
 
     env.reset()
@@ -624,7 +661,6 @@ if __name__ == '__main__':
             env.render(render_type = "png")
 
         # env.printState() # for testing purposes
-    
     env.close()
     
     print('Done.')
