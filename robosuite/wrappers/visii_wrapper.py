@@ -43,7 +43,7 @@ class VirtualWrapper(Wrapper):
         # Camera variables
         self.width                  = width
         self.height                 = height
-        self.samples_per_pixel      = 20
+        self.samples_per_pixel      = 30
         self.image_counter          = 0
         self.render_number          = 1
         self.entities               = []
@@ -170,6 +170,7 @@ class VirtualWrapper(Wrapper):
 
         self.parts       = []
         self.meshes      = []
+        self.geom_names  = {}
         self.mesh_parts  = []
         self.mesh_colors = {}
 
@@ -180,17 +181,19 @@ class VirtualWrapper(Wrapper):
             prev_mesh = None
             for geom in body.findall('geom'):
                 geom_mesh  = geom.get('mesh')
+                geom_name  = geom.get('name')
                 mesh_color = geom.get('rgba')
                 if geom_mesh != None:
                     meshBoolean = True
                     self.meshes.append(geom_mesh)
+                    self.geom_names[geom_mesh] = geom_name
                     self.mesh_parts.append(body.get('name'))
                     self.mesh_colors[geom_mesh] = None
                     prev_mesh = geom_mesh
                 if meshBoolean:
                     self.mesh_colors[prev_mesh] = mesh_color
 
-        # print(self.meshes)
+        print(self.meshes)
         # print(self.mesh_colors)
 
         # TODO (Yifeng): Try to create a list of objects, one of which
@@ -361,27 +364,42 @@ class VirtualWrapper(Wrapper):
         # For now we are only rendering it as a png
         # stl file extension
         mesh_color_arr = None
+        # print(self.geom_names)
         for i in range(len(self.meshes)):
 
             link_entity = None
             part_mesh = self.meshes[i]
-            if 'vis' not in part_mesh and part_mesh != 'pedestal':
+            part_name = self.geom_names[part_mesh]
+
+            if 'vis' not in part_mesh and 'vis' not in part_name and part_mesh != 'pedestal':
+                self.entities.append(None)
                 continue
+
+            mesh = None
 
             if(self.render_number == 1):
 
-                if(part_mesh == 'pedestal'):
-                    mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/common_meshes/{part_mesh}.stl') # change
+                # if(part_mesh == 'pedestal'):
+                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/common_meshes/{part_mesh}.obj') # change
 
-                else:
-                    mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/{self.robot_names[0].lower()}/meshes/{part_mesh}.stl') # change
+                # else:
+                #     # robots/{self.robot_names[0].lower()}
+                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/extra_meshes/{part_mesh}.obj') # change
                 
                 link_name = part_mesh
                 
                 # print(f'Succesfully read: {part_mesh}')
-                normals  = np.array(mesh.vertex_normals).flatten().tolist()
-                vertices = np.array(mesh.vertices).flatten().tolist() 
-                mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
+                # normals  = np.array(mesh.vertex_normals).flatten().tolist()
+                # vertices = np.array(mesh.vertices).flatten().tolist() 
+
+                if(part_mesh == 'pedestal'):
+                    mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/robots/common_meshes/{part_mesh}.obj') # change
+
+                else:
+                    # robots/{self.robot_names[0].lower()}
+                    mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/extra_meshes/{part_mesh}.obj') # change
+
+                # mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
                 link_entity = visii.entity.create(
                     name      = link_name,
                     mesh      = mesh,
@@ -414,7 +432,7 @@ class VirtualWrapper(Wrapper):
             link_entity.get_material().set_transmission(0)
             link_entity.get_material().set_roughness(0.3)
 
-        print(self.gripper_positions)
+        # print(self.gripper_positions)
         for key in self.gripper_mesh_types:
             gripper_entity = None
 
@@ -422,10 +440,11 @@ class VirtualWrapper(Wrapper):
             gripper_mesh_quat = self.gripper_mesh_quats[key]
 
             for (mesh, mesh_quat) in zip(gripper_mesh_arr, gripper_mesh_quat):
-                if 'vis' not in mesh:
-                    continue
+                # if 'vis' not in mesh:
+                #     continue
+                
                 if self.render_number == 1:
-                    # print(f'rendering... {key} => {mesh}')
+                    print(f'rendering... {key} => {mesh}')
                     mesh_gripper = o3d.io.read_triangle_mesh(f'../models/assets/grippers/{self.gripper_mesh_files[mesh]}')
                     mesh_name = f'{key}_{mesh}_mesh'
 
@@ -445,7 +464,7 @@ class VirtualWrapper(Wrapper):
                     gripper_entity = self.gripper_entities[f'{key}_{mesh}']
 
                 part_position = self.gripper_positions[key]
-                print(f'{key} ==> {mesh} ==> {self.gripper_quats[key]}, {mesh_quat}')
+                # print(f'{key} ==> {mesh} ==> {self.gripper_quats[key]}, {mesh_quat}')
 
                 gripper_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
 
@@ -507,7 +526,7 @@ class VirtualWrapper(Wrapper):
             positions = {}
             for part in parts:
                 positions[part] = self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'gripper0_{part}')]
-                print(part)
+                # print(part)
 
         return positions
 
@@ -540,7 +559,7 @@ class VirtualWrapper(Wrapper):
             quat_xyzw = self.quaternion_from_matrix3(R)
             quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
             quats[part] = quat_wxyz
-            print(f'gripper0_{part}: ', R, quat_wxyz)
+            # print(f'gripper0_{part}: ', R, quat_wxyz)
 
         return quats
 
@@ -581,7 +600,7 @@ if __name__ == '__main__':
                 "Stack",
                 robots = "Panda",
                 reward_shaping=True,
-                has_renderer=True,           # no on-screen renderer
+                has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
@@ -589,7 +608,6 @@ if __name__ == '__main__':
                 control_freq=10, 
             ),
         use_noise=False,
-        debug_mode=True,
     )
 
     env.reset()
@@ -598,21 +616,15 @@ if __name__ == '__main__':
 
     env.printState()
 
-    for i in range(3):
-        action = np.zeros(8)
+    for i in range(500):
+        action = np.random.randn(8)
         obs, reward, done, info = env.step(action)
-    #     if i%100 == 0:
-    env.render(render_type = "png")
-    env.env.render()
-    print(env.sim.model.body_names)
-    for body in env.sim.model.body_names:
-        R = env.env.sim.data.body_xmat[env.env.sim.model.body_name2id(f'{body}')].reshape(3, 3)
-        quat_xyzw = env.quaternion_from_matrix3(R)
-        pos = env.env.sim.data.body_xpos[env.env.sim.model.body_name2id(f'{body}')]        
-        print(body, pos, quat_xyzw)
-    
+
+        if i%100 == 0:
+            env.render(render_type = "png")
+
         # env.printState() # for testing purposes
-    input()
+    
     env.close()
     
     print('Done.')
