@@ -1,8 +1,8 @@
 import numpy as np
 
 from robosuite.models.objects import MujocoGeneratedObject, MujocoObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, array_to_string, find_elements
-from robosuite.utils.mjcf_utils import OBJECT_COLLISION_COLOR, CustomMaterial
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, array_to_string,\
+    find_elements, add_prefix, OBJECT_COLLISION_COLOR, CustomMaterial
 
 from copy import deepcopy
 
@@ -16,13 +16,16 @@ class CompositeBodyObject(MujocoGeneratedObject):
 
         objects (MujocoObject or list of MujocoObjects): object(s) to combine to form the composite body object.
             Note that these objects will be added sequentially, so if an object is required to be nested relative to
-            another object, that nested object should be listed after the parent object.
+            another object, that nested object should be listed after the parent object. Note that all top-level joints
+            for any inputted objects are automatically stripped
 
         object_locations (list): list of body locations in the composite. Each
             location should be a list or tuple of 3 elements and all
-            locations are taken relative to that object's parent body
+            locations are taken relative to that object's parent body. Giving None for a location results in (0,0,0)
+            for that object.
 
-        object_quats (None or list): list of (w, x, y, z) quaternions for each body.
+        object_quats (None or list): list of (w, x, y, z) quaternions for each body. None results in (1,0,0,0) for
+            that object.
 
         object_parents (None or list): Parent bodies to append each object to. Note that specifying "None" will
             automatically append all objects to the root body ("root")
@@ -31,6 +34,12 @@ class CompositeBodyObject(MujocoGeneratedObject):
             for this top-level object. If "default", a single free joint will be added to the top-level body of this
             object. Otherwise, should be a list of dictionaries, where each dictionary should specify the specific
             joint attributes necessary. See http://www.mujoco.org/book/XMLreference.html#joint for reference.
+
+        body_joints (None or dict): If specified, maps body names to joint specifications to append to that
+            body. If None, no extra joints will be used. If mapped value is "default", a single free joint will be
+            added to the specified body. Otherwise, should be a list of dictionaries, where each dictionary should
+            specify the specific joint attributes necessary. See http://www.mujoco.org/book/XMLreference.html#joint
+            for reference.
 
         sites (None or list): list of sites to add to top-level composite body object. If None, only the default
             top-level object site will be used. Otherwise, should be a list of dictionaries, where each dictionary
@@ -45,6 +54,7 @@ class CompositeBodyObject(MujocoGeneratedObject):
         object_quats=None,
         object_parents=None,
         joints="default",
+        body_joints=None,
         sites=None,
     ):
         # Always call superclass first
@@ -79,6 +89,9 @@ class CompositeBodyObject(MujocoGeneratedObject):
             self.joint_specs = []
         else:
             self.joint_specs = joints
+
+        # Set body joints
+        self.body_joint_specs = body_joints
 
         # Make sure all joints are named appropriately
         j_num = 0
@@ -130,25 +143,48 @@ class CompositeBodyObject(MujocoGeneratedObject):
         ):
             self._append_object(root=obj, obj=o, parent_name=o_parent, pos=o_pos, quat=o_quat)
 
+        # Loop through all joints and append them appropriately
+        for body_name, joint_specs in self.body_joint_specs.items():
+            self._append_joints(root=obj, body_name=body_name, joint_specs=joint_specs)
+
         # Return final object
         return obj
 
-    def _append_object(self, root, obj, parent_name, pos, quat):
+    def _get_object_properties(self):
+        """
+        Extends the superclass method to add prefixes to all assets
+        """
+        super()._get_object_properties()
+        # Add prefix to all assets
+        add_prefix(root=self.asset, prefix=self.naming_prefix, exclude=self.exclude_from_prefixing)
+
+    def _append_object(self, root, obj, parent_name=None, pos=None, quat=None):
         """
         Helper function to add pre-generated object @obj to the body with name @parent_name
 
         Args:
             root (ET.Element): Top-level element to iteratively search through for @parent_name to add @obj to
             obj (MujocoObject): Object to append to the body specified by @parent_name
-            parent_name (str): Body name to search for in @root to append @obj to
-            pos (3-array): (x,y,z) relative offset from parent body when appending @obj
-            quat (4-array) (w,x,y,z) relative quaternion rotation from parent body when appending @obj
+            parent_name (None or str): Body name to search for in @root to append @obj to.
+                None defaults to "root" (top-level body)
+            pos (None or 3-array): (x,y,z) relative offset from parent body when appending @obj.
+                None defaults to (0,0,0)
+            quat (None or 4-array) (w,x,y,z) relative quaternion rotation from parent body when appending @obj.
+                None defaults to (1,0,0,0)
         """
+        # Set defaults if any are None
+        if parent_name is None:
+            parent_name = "root"
+        if pos is None:
+            pos = np.zeros(3)
+        if quat is None:
+            quat = np.array([1, 0, 0, 0])
         # First, find parent body
         parent = find_elements(root=root, tags="body", attribs={"name": parent_name}, return_first=True)
         assert parent is not None, "Could not find parent body with name: {}".format(parent_name)
-        # Get the object xml element tree and modify its top-level pos / quat
+        # Get the object xml element tree, remove its top-level joints, and modify its top-level pos / quat
         child = obj.get_obj()
+        self._remove_joints(child)
         child.set("pos", array_to_string(pos))
         child.set("quat", array_to_string(quat))
         # Add this object and its assets to this composite object
@@ -156,10 +192,51 @@ class CompositeBodyObject(MujocoGeneratedObject):
         parent.append(child)
         # Update geometric properties for this composite object
         obj_abs_pos = self._object_absolute_positions[parent_name] + np.array(pos)
-        self._object_absolute_positions[obj._root_body] = obj_abs_pos
+        self._object_absolute_positions[obj.root_body] = obj_abs_pos
         self._top = max(self._top, obj_abs_pos[2] + obj.top_offset[2])
         self._bottom = min(self._bottom, obj_abs_pos[2] + obj.bottom_offset[2])
         self._horizontal = max(self._horizontal, max(obj_abs_pos[:2]) + obj.horizontal_radius)
+
+    def _append_joints(self, root, body_name=None, joint_specs="default"):
+        """
+        Appends all joints as specified by @joint_specs to @body.
+
+        Args:
+            root (ET.Element): Top-level element to iteratively search through for @body_name
+            body_name (None or str): Name of the body to append the joints to.
+                None defaults to "root" (top-level body)
+            joint_specs (str or list): List of joint specifications to add to the specified body, or
+                "default", which results in a single free joint
+        """
+        # Standardize inputs
+        if body_name is None:
+            body_name = "root"
+        if joint_specs == "default":
+            joint_specs = [self.get_joint_attrib_template()]
+        for i, joint_spec in enumerate(joint_specs):
+            if "name" not in joint_spec:
+                joint_spec["name"] = f"{body_name}_joint{i}"
+        # Search for body and make sure it exists
+        body = find_elements(root=root, tags="body", attribs={"name": body_name}, return_first=True)
+        assert body is not None, "Could not find body with name: {}".format(body_name)
+        # Add joint(s) to this body
+        for joint_spec in joint_specs:
+            body.append(new_joint(**joint_spec))
+
+    @staticmethod
+    def _remove_joints(body):
+        """
+        Helper function to strip all joints directly appended to the specified @body.
+
+        Args:
+            body (ET.Element): Body to strip joints from
+        """
+        children_to_remove = []
+        for child in body:
+            if child.tag == "joint":
+                children_to_remove.append(child)
+        for child in children_to_remove:
+            body.remove(child)
 
     @property
     def bottom_offset(self):
