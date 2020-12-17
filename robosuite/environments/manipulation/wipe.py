@@ -5,6 +5,7 @@ from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import WipeArena
 from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.observables import Observable, sensor
 import multiprocessing
 
 
@@ -416,7 +417,7 @@ class Wipe(SingleArmEnv):
                 # If we haven't wiped all the markers yet, add a smooth reward for getting closer
                 # to the centroid of the dirt to wipe
                 if len(self.wiped_markers) < self.num_markers:
-                    _, _, mean_pos_to_things_to_wipe = self._get_wipe_information
+                    _, _, mean_pos_to_things_to_wipe = self._get_wipe_information()
                     mean_distance_to_things_to_wipe = np.linalg.norm(mean_pos_to_things_to_wipe)
                     reward += self.distance_multiplier * (
                             1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe))
@@ -497,6 +498,120 @@ class Wipe(SingleArmEnv):
             mujoco_robots=[robot.robot_model for robot in self.robots],
         )
 
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Creates object-based observables if enabled
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+
+        # Get prefix from robot model to avoid naming clashes for multiple robots
+        pf = self.robots[0].robot_model.naming_prefix
+        modality = "object"
+
+        sensors = []
+        names = []
+
+        # Add binary contact observation
+        if self.use_contact_obs:
+            @sensor(modality=f"{pf}proprio")
+            def gripper_contact(obs_cache):
+                return self._has_gripper_contact
+
+            sensors.append(gripper_contact)
+            names.append(f"{pf}contact")
+
+        # object information in the observation
+        if self.use_object_obs:
+
+            if self.use_condensed_obj_obs:
+                # use implicit representation of wiping objects
+                @sensor(modality=modality)
+                def wipe_radius(obs_cache):
+                    wipe_rad, wipe_cent, _ = self._get_wipe_information()
+                    obs_cache["wipe_centroid"] = wipe_cent
+                    return wipe_rad
+
+                @sensor(modality=modality)
+                def wipe_centroid(obs_cache):
+                    return obs_cache["wipe_centroid"] if "wipe_centroid" in obs_cache else np.zeros(3)
+
+                @sensor(modality=modality)
+                def proportion_wiped(obs_cache):
+                    return len(self.wiped_markers) / self.num_markers
+
+                sensors += [proportion_wiped, wipe_radius, wipe_centroid]
+                names += ["proportion_wiped", "wipe_radius", "wipe_centroid"]
+
+                if self.use_robot_obs:
+                    # also use ego-centric obs
+                    @sensor(modality=modality)
+                    def gripper_to_wipe_centroid(obs_cache):
+                        return obs_cache["wipe_centroid"] - obs_cache[f"{pf}eef_pos"] if \
+                            "wipe_centroid" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+
+                    sensors.append(gripper_to_wipe_centroid)
+                    names.append("gripper_to_wipe_centroid")
+
+            else:
+                # use explicit representation of wiping objects
+                for i, marker in enumerate(self.model.mujoco_arena.markers):
+                    marker_sensors, marker_sensor_names = self._create_marker_sensors(i, marker, modality)
+                    sensors += marker_sensors
+                    names += marker_sensor_names
+
+            # Create observables
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )
+
+        return observables
+
+    def _create_marker_sensors(self, i, marker, modality="object"):
+        """
+        Helper function to create sensors for a given marker. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            i (int): ID number corresponding to the marker
+            marker (MujocoObject): Marker to create sensors for
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given marker
+                names (list): array of corresponding observable names
+        """
+        pf = self.robots[0].robot_model.naming_prefix
+
+        @sensor(modality=modality)
+        def marker_pos(obs_cache):
+            return np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
+
+        @sensor(modality=modality)
+        def marker_wiped(obs_cache):
+            return [0, 1][marker in self.wiped_markers]
+
+        sensors = [marker_pos, marker_wiped]
+        names = [f"marker{i}_pos", f"marker{i}_wiped"]
+
+        if self.use_robot_obs:
+            # also use ego-centric obs
+            @sensor(modality=modality)
+            def gripper_to_marker(obs_cache):
+                return obs_cache[f"marker{i}_pos"] - obs_cache[f"{pf}eef_pos"] if \
+                    f"marker{i}_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+
+            sensors.append(gripper_to_marker)
+            names.append(f"gripper_to_marker{i}")
+
+        return sensors, names
+
     def _reset_internal(self):
         super()._reset_internal()
 
@@ -513,69 +628,6 @@ class Wipe(SingleArmEnv):
         # ee resets - bias at initial state
         self.ee_force_bias = np.zeros(3)
         self.ee_torque_bias = np.zeros(3)
-
-    def _get_observation(self):
-        """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
-
-        Returns:
-            OrderedDict: Observations from the environment
-        """
-        di = super()._get_observation()
-
-        # Get prefix from robot model to avoid naming clashes for multiple robots
-        pf = self.robots[0].robot_model.naming_prefix
-
-        # Add binary contact observation
-        if self.use_contact_obs:
-            di[pf + "contact-obs"] = self._has_gripper_contact
-            di[pf + "robot-state"] = np.concatenate((di[pf + "robot-state"], [di[pf + "contact-obs"]]))
-
-        # object information in the observation
-        if self.use_object_obs:
-            gripper_site_pos = self._eef_xpos
-
-            if self.use_condensed_obj_obs:
-                # use implicit representation of wiping objects
-                wipe_radius, wipe_centroid, gripper_to_wipe_centroid = self._get_wipe_information
-                di["proportion_wiped"] = len(self.wiped_markers) / self.num_markers
-                di["wipe_radius"] = wipe_radius
-                di["wipe_centroid"] = wipe_centroid
-                di["object-state"] = np.concatenate([
-                    [di["proportion_wiped"]], [di["wipe_radius"]], di["wipe_centroid"],
-                ])
-                if self.use_robot_obs:
-                    # also use ego-centric proprioception
-                    di["gripper_to_wipe_centroid"] = gripper_to_wipe_centroid
-                    di["object-state"] = np.concatenate([di["object-state"], di["gripper_to_wipe_centroid"]])
-
-            else:
-                # use explicit representation of wiping objects
-                acc = np.array([])
-                for i, marker in enumerate(self.model.mujoco_arena.markers):
-                    marker_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
-                    di[f'marker{i}_pos'] = marker_pos
-                    acc = np.concatenate([acc, di[f'marker{i}_pos']])
-                    di[f'marker{i}_wiped'] = [0, 1][marker in self.wiped_markers]
-                    acc = np.concatenate([acc, [di[f'marker{i}_wiped']]])
-                    if self.use_robot_obs:
-                        # also use ego-centric proprioception
-                        di[f'gripper_to_marker{i}'] = gripper_site_pos - marker_pos
-                        acc = np.concatenate([acc, di[f'gripper_to_marker{i}']])
-                di['object-state'] = acc
-
-        return di
 
     def _check_success(self):
         """
@@ -654,7 +706,6 @@ class Wipe(SingleArmEnv):
 
         return reward, done, info
 
-    @property
     def _get_wipe_information(self):
         """Returns set of wiping information"""
         mean_pos_to_things_to_wipe = np.zeros(3)

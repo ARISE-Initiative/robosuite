@@ -16,6 +16,7 @@ SIMULATION_TIMESTEP = 0.002     # Internal simulation timestep (in seconds)
 USING_INSTANCE_RANDOMIZATION = False
 
 # Numba settings
+# TODO: Numba causes BSOD for NutAssembly task when rendering offscreen (deterministically!)
 ENABLE_NUMBA = True
 CACHE_NUMBA = True
 

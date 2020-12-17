@@ -4,6 +4,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.models.mounts import mount_factory
 from robosuite.utils.buffers import DeltaBuffer
+from robosuite.utils.observables import Observable, sensor
 
 from mujoco_py import MjSim
 
@@ -175,6 +176,53 @@ class Robot(object):
             for actuator in self.robot_model.actuators
         ]
 
+    def setup_observables(self):
+        """
+        Sets up observables to be used for this robot
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        # Get prefix from robot model to avoid naming clashes for multiple robots and define observables modality
+        pf = self.robot_model.naming_prefix
+        pre_compute = f"{pf}joint_pos"
+        modality = f"{pf}proprio"
+
+        # proprioceptive features
+        @sensor(modality=modality)
+        def joint_pos(obs_cache):
+            return np.array([self.sim.data.qpos[x] for x in self._ref_joint_pos_indexes])
+
+        @sensor(modality=modality)
+        def joint_pos_cos(obs_cache):
+            return np.cos(obs_cache[pre_compute]) if pre_compute in obs_cache else np.zeros(self.robot_model.dof)
+
+        @sensor(modality=modality)
+        def joint_pos_sin(obs_cache):
+            return np.sin(obs_cache[pre_compute]) if pre_compute in obs_cache else np.zeros(self.robot_model.dof)
+
+        @sensor(modality=modality)
+        def joint_vel(obs_cache):
+            return np.array([self.sim.data.qvel[x] for x in self._ref_joint_vel_indexes])
+
+        sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
+        names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
+        # We don't want to include the direct joint pos sensor outputs
+        actives = [False, True, True, True]
+
+        # Create observables for this robot
+        observables = OrderedDict()
+        for name, s, active in zip(names, sensors, actives):
+            obs_name = pf + name
+            observables[obs_name] = Observable(
+                name=obs_name,
+                sensor=s,
+                sampling_rate=self.control_freq,
+                active=active,
+            )
+
+        return observables
+
     def control(self, action, policy_step=False):
         """
         Actuate the robot with the
@@ -187,34 +235,6 @@ class Robot(object):
             policy_step (bool): Whether a new policy step (action) is being taken
         """
         raise NotImplementedError
-
-    def get_observations(self, di: OrderedDict):
-        """
-        Returns an OrderedDict containing robot observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-        """
-        # Get prefix from robot model to avoid naming clashes for multiple robots
-        pf = self.robot_model.naming_prefix
-
-        # proprioceptive features
-        di[pf + "joint_pos"] = np.array(
-            [self.sim.data.qpos[x] for x in self._ref_joint_pos_indexes]
-        )
-        di[pf + "joint_vel"] = np.array(
-            [self.sim.data.qvel[x] for x in self._ref_joint_vel_indexes]
-        )
-
-        robot_states = [
-            np.sin(di[pf + "joint_pos"]),
-            np.cos(di[pf + "joint_pos"]),
-            di[pf + "joint_vel"],
-        ]
-
-        di[pf + "robot-state"] = np.concatenate(robot_states)
-        return di
 
     def check_q_limits(self):
         """

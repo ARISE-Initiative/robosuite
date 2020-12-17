@@ -9,6 +9,7 @@ from robosuite.controllers import controller_factory, load_controller_config
 
 from robosuite.robots.manipulator import Manipulator
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
+from robosuite.utils.observables import Observable, sensor
 
 import os
 import copy
@@ -332,49 +333,80 @@ class Bimanual(Manipulator):
         for arm in self.arms:
             self.gripper[arm].set_sites_visibility(sim=self.sim, visible=visible)
 
-    def get_observations(self, di: OrderedDict):
+    def setup_observables(self):
         """
-        Returns an OrderedDict containing robot observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-        Args:
-            di (OrderedDict): Current set of observations from the environment
+        Sets up observables to be used for this robot
 
         Returns:
-            OrderedDict: Augmented set of observations that include this robot's proprioceptive observations
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
         """
-        # Get general robot observations first
-        di = super().get_observations(di)
+        # Get general robot observables first
+        observables = super().setup_observables()
 
-        # Get prefix from robot model to avoid naming clashes for multiple robots
+        # Get prefix from robot model to avoid naming clashes for multiple robots and define observables modality
         pf = self.robot_model.naming_prefix
+        modality = f"{pf}proprio"
+        sensors = []
+        names = []
 
-        robot_states = []
         for arm in self.arms:
             # Add in eef info
-            di[pf + "{}_".format(arm) + "eef_pos"] = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-            di[pf + "{}_".format(arm) + "eef_quat"] = T.convert_quat(
-                self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw"
+            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm=arm, modality=modality)
+            sensors += arm_sensors
+            names += arm_sensor_names
+
+        # Create observables for this robot
+        for name, s in zip(names, sensors):
+            observables[name] = Observable(
+                name=name,
+                sensor=s,
+                sampling_rate=self.control_freq,
             )
-            robot_states.extend([di[pf + "{}_".format(arm) + "eef_pos"],
-                                 di[pf + "{}_".format(arm) + "eef_quat"]])
 
-            # add in gripper information
-            if self.has_gripper[arm]:
-                di[pf + "{}_".format(arm) + "gripper_qpos"] = np.array(
-                    [self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]]
-                )
-                di[pf + "{}_".format(arm) + "gripper_qvel"] = np.array(
-                    [self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]]
-                )
-                robot_states.extend([di[pf + "{}_".format(arm) + "gripper_qpos"],
-                                     di[pf + "{}_".format(arm) + "gripper_qvel"]])
+        return observables
 
-        di[pf + "robot-state"] = np.concatenate(di[pf + "robot-state"], *robot_states)
-        return di
+    def _create_arm_sensors(self, arm, modality):
+        """
+        Helper function to create sensors for a given arm. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            arm (str): Arm to create sensors for
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given arm
+                names (list): array of corresponding observable names
+        """
+        pf = self.robot_model.naming_prefix
+
+        # eef features
+        @sensor(modality=modality)
+        def eef_pos(obs_cache):
+            return np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+
+        @sensor(modality=modality)
+        def eef_quat(obs_cache):
+            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+
+        sensors = [eef_pos, eef_quat]
+        names = [f"{pf}{arm}_eef_pos", f"{pf}{arm}_eef_quat"]
+
+        # add in gripper sensors if this robot has a gripper
+        if self.has_gripper:
+            @sensor(modality=modality)
+            def gripper_qpos(obs_cache):
+                return np.array([self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]])
+
+            @sensor(modality=modality)
+            def gripper_qvel(obs_cache):
+                return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
+
+            sensors += [gripper_qpos, gripper_qvel]
+            names += [f"{pf}{arm}_gripper_qpos", f"{pf}{arm}_gripper_qvel"]
+
+        return sensors, names
 
     def _input2dict(self, inp):
         """

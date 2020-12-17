@@ -7,6 +7,7 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.objects import HammerObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.utils.observables import Observable, sensor
 
 import robosuite.utils.transform_utils as T
 
@@ -360,13 +361,13 @@ class TwoArmHandover(TwoArmEnv):
             mujoco_objects=self.hammer,
         )
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
 
         # Hammer object references from this env
         self.hammer_body_id = self.sim.model.body_name2id(self.hammer.root_body)
@@ -374,6 +375,62 @@ class TwoArmHandover(TwoArmEnv):
 
         # General env references
         self.table_top_id = self.sim.model.site_name2id("table_top")
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Creates object-based observables if enabled
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+
+        # low-level object information
+        if self.use_object_obs:
+            # Get robot prefix and define observables modality
+            if self.env_configuration == "bimanual":
+                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
+                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
+            else:
+                pf0 = self.robots[0].robot_model.naming_prefix
+                pf1 = self.robots[1].robot_model.naming_prefix
+            modality = "object"
+
+            # position and rotation of hammer
+            @sensor(modality=modality)
+            def hammer_pos(obs_cache):
+                return np.array(self._hammer_pos)
+
+            @sensor(modality=modality)
+            def hammer_quat(obs_cache):
+                return np.array(self._hammer_quat)
+
+            @sensor(modality=modality)
+            def handle_xpos(obs_cache):
+                return np.array(self._handle_xpos)
+
+            @sensor(modality=modality)
+            def gripper0_to_handle(obs_cache):
+                return obs_cache["handle_xpos"] - obs_cache[f"{pf0}eef_pos"] if \
+                    "handle_xpos" in obs_cache and f"{pf0}eef_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def gripper1_to_handle(obs_cache):
+                return obs_cache["handle_xpos"] - obs_cache[f"{pf1}eef_pos"] if \
+                    "handle_xpos" in obs_cache and f"{pf1}eef_pos" in obs_cache else np.zeros(3)
+
+            sensors = [hammer_pos, hammer_quat, handle_xpos, gripper0_to_handle, gripper1_to_handle]
+            names = [s.__name__ for s in sensors]
+
+            # Create observables
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )
+
+        return observables
 
     def _reset_internal(self):
         """
@@ -447,56 +504,6 @@ class TwoArmHandover(TwoArmEnv):
 
         # Return all relevant values
         return arm0_grasp_any, arm1_grasp_handle, hammer_height, table_height
-
-    def _get_observation(self):
-        """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
-
-        Returns:
-            OrderedDict: Observations from the environment
-        """
-        di = super()._get_observation()
-
-        # low-level object information
-        if self.use_object_obs:
-            # Get robot prefix
-            if self.env_configuration == "bimanual":
-                pr0 = self.robots[0].robot_model.naming_prefix + "right_"
-                pr1 = self.robots[0].robot_model.naming_prefix + "left_"
-            else:
-                pr0 = self.robots[0].robot_model.naming_prefix
-                pr1 = self.robots[1].robot_model.naming_prefix
-
-            # position and rotation of hammer
-            di["hammer_pos"] = np.array(self._hammer_pos)
-            di["hammer_quat"] = np.array(self._hammer_quat)
-            di["handle_xpos"] = np.array(self._handle_xpos)
-
-            di[pr0 + "gripper_to_handle"] = np.array(self._gripper_0_to_handle)
-            di[pr1 + "gripper_to_handle"] = np.array(self._gripper_1_to_handle)
-
-            di["object-state"] = np.concatenate(
-                [
-                    di["hammer_pos"],
-                    di["hammer_quat"],
-                    di["handle_xpos"],
-                    di[pr0 + "gripper_to_handle"],
-                    di[pr1 + "gripper_to_handle"],
-                ]
-            )
-
-        return di
 
     def _check_success(self):
         """

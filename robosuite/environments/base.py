@@ -121,6 +121,8 @@ class MujocoEnv(metaclass=EnvMeta):
         self.viewer = None
 
         # Simulation-specific attributes
+        self._observables = {}                      # Maps observable names to observable objects
+        self._obs_cache = {}                        # Maps observable names to pre-/partially-computed observable values
         self.control_freq = control_freq
         self.horizon = horizon
         self.ignore_done = ignore_done
@@ -143,6 +145,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Run all further internal (re-)initialization required
         self._reset_internal()
+
+        # Load observables
+        self._observables = self._setup_observables()
 
     def initialize_time(self, control_freq):
         """
@@ -182,13 +187,22 @@ class MujocoEnv(metaclass=EnvMeta):
         if self._model_postprocessor is not None:
             self._model_postprocessor(self.model)
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
         pass
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment.
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        return OrderedDict()
 
     def _initialize_sim(self, xml_string=None):
         """
@@ -228,10 +242,17 @@ class MujocoEnv(metaclass=EnvMeta):
         # Reset necessary robosuite-centric variables
         self._reset_internal()
         self.sim.forward()
+        # Setup observables, reloading if
+        self._obs_cache = {}
+        if self.hard_reset:
+            # If we're using hard reset, must re-update sensor object references
+            _observables = self._setup_observables()
+            for obs_name, obs in _observables.items():
+                self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
         # Return new observations
-        return self._get_observation()
+        return self._get_observations()
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
@@ -262,12 +283,24 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # additional housekeeping
         self.sim_state_initial = self.sim.get_state()
-        self._get_reference()
+        self._setup_references()
         self.cur_time = 0
         self.timestep = 0
         self.done = False
 
-    def _get_observation(self):
+        # Empty observation cache and reset all observables
+        self._obs_cache = {}
+        for observable in self._observables.values():
+            observable.reset()
+
+    def _update_observables(self):
+        """
+        Updates all observables in this environment
+        """
+        for observable in self._observables.values():
+            observable.update(timestep=self.model_timestep, obs_cache=self._obs_cache)
+
+    def _get_observations(self):
         """
         Grabs observations from the environment.
 
@@ -275,7 +308,26 @@ class MujocoEnv(metaclass=EnvMeta):
             OrderedDict: OrderedDict containing observations [(name_string, np.array), ...]
 
         """
-        return OrderedDict()
+        observations = OrderedDict()
+        obs_by_modality = OrderedDict()
+
+        # Loop through all observables and grab their current observation
+        for obs_name, observable in self._observables.items():
+            if observable.is_enabled() and observable.is_active():
+                obs = observable.obs
+                observations[obs_name] = obs
+                modality = observable.modality + "-state"
+                if modality not in obs_by_modality:
+                    obs_by_modality[modality] = []
+                # Make sure all observations are numpy arrays so we can concatenate them
+                array_obs = [obs] if type(obs) in {int, float} or not obs.shape else obs
+                obs_by_modality[modality].append(np.array(array_obs))
+
+        # Add in modality observations
+        for modality, obs in obs_by_modality.items():
+            observations[modality] = np.concatenate(obs, axis=-1)
+
+        return observations
 
     def step(self, action):
         """
@@ -313,13 +365,14 @@ class MujocoEnv(metaclass=EnvMeta):
             self.sim.forward()
             self._pre_action(action, policy_step)
             self.sim.step()
+            self._update_observables()
             policy_step = False
 
         # Note: this is done all at once to avoid floating point inaccuracies
         self.cur_time += self.control_timestep
 
         reward, done, info = self._post_action(action)
-        return self._get_observation(), reward, done, info
+        return self._get_observations(), reward, done, info
 
     def _pre_action(self, action, policy_step=False):
         """
@@ -383,7 +436,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns:
             OrderedDict: Observations from the environment
         """
-        observation = self._get_observation()
+        observation = self._get_observations()
         return observation
 
     def clear_objects(self, object_names):
@@ -412,36 +465,6 @@ class MujocoEnv(metaclass=EnvMeta):
         # Set visuals for environment objects
         for obj in self.model.mujoco_objects:
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
-
-    @property
-    def _visualizations(self):
-        """
-        Visualization keywords for this environment
-
-        Returns:
-            set: All components that can be individually visualized for this environment
-        """
-        return {"env"}
-
-    @property
-    def action_spec(self):
-        """
-        Action specification should be implemented in subclasses.
-
-        Action space is represented by a tuple of (low, high), which are two numpy
-        vectors that specify the min/max action limits per dimension.
-        """
-        raise NotImplementedError
-
-    @property
-    def action_dim(self):
-        """
-        Size of the action space
-
-        Returns:
-            int: Action space dimension
-        """
-        raise NotImplementedError
 
     def reset_from_xml_string(self, xml_string):
         """
@@ -527,6 +550,40 @@ class MujocoEnv(metaclass=EnvMeta):
                 contact_set.add(g1)
         return contact_set
 
+    def modify_observable(self, observable_name, attribute, modifier):
+        """
+        Modifies observable with associated name @observable_name, replacing the given @attribute with @modifier.
+
+        Args:
+             observable_name (str): Observable to modify
+             attribute (str): Observable attribute to modify.
+                Options are {`'sensor'`, `'corrupter'`, `'delayer'`, `'sampling_rate'`, `'enabled'`, `'active'`}
+             modifier (any): New function / value to replace with for observable. If a function, new signature should
+                match the function being replaced.
+        """
+        # Find the observable
+        assert observable_name in self._observables, "No valid observable with name {} found. Options are: {}".\
+            format(observable_name, self.observation_names)
+        obs = self._observables[observable_name]
+        # replace attribute accordingly
+        if attribute == "sensor":
+            obs.set_sensor(modifier)
+        elif attribute == "corrupter":
+            obs.set_corrupter(modifier)
+        elif attribute == "delayer":
+            obs.set_delayer(modifier)
+        elif attribute == "sampling_rate":
+            obs.set_sampling_rate(modifier)
+        elif attribute == "enabled":
+            obs.set_enabled(modifier)
+        elif attribute == "active":
+            obs.set_active(modifier)
+        else:
+            # Invalid attribute specified
+            raise ValueError("Invalid observable attribute specified. Requested: {}, valid options are {}".
+                             format(attribute, {"sensor", "corrupter", "delayer",
+                                                "sampling_rate", "enabled", "active"}))
+
     def _check_success(self):
         """
         Checks if the task has been completed. Should be implemented by subclasses
@@ -548,3 +605,76 @@ class MujocoEnv(metaclass=EnvMeta):
     def close(self):
         """Do any cleanup necessary here."""
         self._destroy_viewer()
+
+    @property
+    def observation_modalities(self):
+        """
+        Modalities for this environment's observations
+
+        Returns:
+            set: All observation modalities
+        """
+        return set([observable.modality for observable in self._observables.values()])
+
+    @property
+    def observation_names(self):
+        """
+        Grabs all names for this environment's observables
+
+        Returns:
+            set: All observation names
+        """
+        return set(self._observables.keys())
+
+    @property
+    def enabled_observables(self):
+        """
+        Grabs all names of enabled observables for this environment. An observable is considered enabled if its values
+        are being continually computed / updated at each simulation timestep.
+
+        Returns:
+            set: All enabled observation names
+        """
+        return set([name for name, observable in self._observables.items() if observable.is_enabled()])
+
+    @property
+    def active_observables(self):
+        """
+        Grabs all names of active observables for this environment. An observable is considered active if its value is
+        being returned in the observation dict from _get_observations() call or from the step() call (assuming this
+        observable is enabled).
+
+        Returns:
+            set: All active observation names
+        """
+        return set([name for name, observable in self._observables.items() if observable.is_active()])
+
+    @property
+    def _visualizations(self):
+        """
+        Visualization keywords for this environment
+
+        Returns:
+            set: All components that can be individually visualized for this environment
+        """
+        return {"env"}
+
+    @property
+    def action_spec(self):
+        """
+        Action specification should be implemented in subclasses.
+
+        Action space is represented by a tuple of (low, high), which are two numpy
+        vectors that specify the min/max action limits per dimension.
+        """
+        raise NotImplementedError
+
+    @property
+    def action_dim(self):
+        """
+        Size of the action space
+
+        Returns:
+            int: Action space dimension
+        """
+        raise NotImplementedError
