@@ -7,6 +7,9 @@ To make sure global reference is maintained, should import these settings as:
 `import robosuite.utils.macros as macros`
 """
 
+# Global Mujoco Simulation Parameters
+SIMULATION_TIMESTEP = 0.002     # Internal simulation timestep (in seconds)
+
 # Instance Randomization
 # Used if we want to randomize geom groups uniformly per instance -- e.g.: entire robot arm, vs. per-joint geom
 # This should get set to True in your script BEFORE an environment is created or the DR wrapper is used

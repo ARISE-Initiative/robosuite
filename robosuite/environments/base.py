@@ -3,6 +3,7 @@ from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
+import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
 
 import numpy as np
@@ -151,14 +152,12 @@ class MujocoEnv(metaclass=EnvMeta):
             control_freq (float): Hz rate to run control loop at within the simulation
         """
         self.cur_time = 0
-        self.model_timestep = self.sim.model.opt.timestep
+        self.model_timestep = macros.SIMULATION_TIMESTEP
         if self.model_timestep <= 0:
-            raise XMLError("xml model defined non-positive time step")
+            raise ValueError("Invalid simulation timestep defined!")
         self.control_freq = control_freq
         if control_freq <= 0:
-            raise SimulationError(
-                "control frequency {} is invalid".format(control_freq)
-            )
+            raise SimulationError("Control frequency {} is invalid".format(control_freq))
         self.control_timestep = 1. / control_freq
 
     def set_model_postprocessor(self, postprocessor):
