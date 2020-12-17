@@ -12,7 +12,8 @@ from robosuite.wrappers import Wrapper
 from robosuite.models.robots import Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 from robosuite.models.robots import create_robot
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import BoxObject
+from robosuite.models.objects import BoxObject, CylinderObject, BallObject, CapsuleObject
+from robosuite.models.objects import BottleObject, CanObject, LemonObject, MilkObject, BreadObject, CerealObject
 from robosuite.utils.mjcf_utils import CustomMaterial
 import open3d as o3d
 import math
@@ -37,13 +38,11 @@ class VirtualWrapper(Wrapper):
 
         super().__init__(env)
 
-        # print(env.robots[0].gripper.file)
-        # quit()
-
         # Camera variables
         self.width                  = width
         self.height                 = height
-        self.samples_per_pixel      = 50
+        self.samples_per_pixel      = 20
+
         self.image_counter          = 0
         self.render_number          = 1
         self.entities               = []
@@ -92,37 +91,22 @@ class VirtualWrapper(Wrapper):
 
         self.camera_configuration(pos_vec = visii.vec3(0, 0, 1), 
                                   at_vec  = visii.vec3(0, 0, 1), 
-                                  up_vec  = visii.vec3(0, 0, 1),
+                                  up_vec  = visii.vec3(1, 0, 1),
                                   eye_vec = visii.vec3(0.6, 0.0, 1.0))
         
         # Environment configuration
         self._dome_light_intensity = 1
         visii.set_dome_light_intensity(self._dome_light_intensity)
 
-        # visii.set_dome_light_sky(
-        #     sun_position=visii.vec3(10, 0, 10),
-        #     sky_tint=visii.vec3(1, 0.1, 0.8),
-        # )
-
         visii.set_max_bounce_depth(2)
 
         self.model = None
-        
         self.robots_names = self.env.robot_names
-
-        # idNum = 1
-        # for robot in self.robot_names:
-        #     robot_model = create_robot(robot, idn = idNum) # only taking the first robot for now
-        #     self.robots.append(robot_model)
-        #     idNum+=1
 
         # Passes the xml file based on the robot
         robot_xml_filepath   = f'../models/assets/robots/{self.env.robot_names[0].lower()}/robot.xml'
         gripper_xml_filepath = env.robots[0].gripper.file
         self.initalize_simulation(robot_xml_filepath)
-
-        # TODO (Yifeng): You should be reading these parts' names from
-        # the xml files directly
 
         tree = ET.parse(robot_xml_filepath)
         root = tree.getroot()
@@ -131,9 +115,6 @@ class VirtualWrapper(Wrapper):
         root_gripper = tree_gripper.getroot()
 
         self.dynamic_obj_init(root, root_gripper)
-
-        # initialize the static objects
-        # self.static_obj_init()
 
     def close(self):
         visii.deinitialize()
@@ -193,21 +174,15 @@ class VirtualWrapper(Wrapper):
                 if meshBoolean:
                     self.mesh_colors[prev_mesh] = mesh_color
 
-        print(self.meshes)
-        # print(self.mesh_colors)
-
-        # TODO (Yifeng): Try to create a list of objects, one of which
-        # contains: geom info, position info, orientation info
+        # print(self.meshes)
+        
         self.positions = self.get_positions(part_type = 'robot', 
                                             parts = self.mesh_parts) # position information for the robot
-        self.geoms     = self.get_geoms(root) # geometry information for the robot
-        self.quats     = self.get_quats() # orientation information for the robot
+        self.geoms     = self.get_geoms(root)                        # geometry information for the robot
+        self.quats     = self.get_quats()                            # orientation information for the robot
 
-        self.gripper_parts      = []
-        self.gripper_mesh_types = {}
+        self.gripper_parts      = {}
         self.gripper_mesh_files = {}
-        self.gripper_mesh_quats = {}
-        self.gripper_colors = {}
 
         for asset in root_gripper.iter('asset'):
 
@@ -215,8 +190,12 @@ class VirtualWrapper(Wrapper):
                 self.gripper_mesh_files[mesh.get('name')] = mesh.get('file')
 
         # getting all the meshes and other information for the grippers
+        name = None
         for body in root_gripper.iter('body'):
-            self.gripper_parts.append(body.get('name'))
+            mesh_types = []
+            mesh_quats = []
+            name = body.get('name')
+            # self.gripper_parts.append(body.get('name'))
             for geom in body.findall('geom'):
                 geom_mesh = geom.get('mesh')
                 if geom_mesh != None:
@@ -225,33 +204,25 @@ class VirtualWrapper(Wrapper):
                         geom_quat = [1, 0, 0, 0]
                     else:
                         geom_quat = [float(element) for element in geom_quat.split(' ')]
-                    if body.get('name') not in self.gripper_mesh_types:
-                        self.gripper_mesh_types[body.get('name')] = [geom_mesh]
-                        self.gripper_mesh_quats[body.get('name')] = [geom_quat]
-                    else:
-                        self.gripper_mesh_types[body.get('name')].append(geom_mesh)
-                        self.gripper_mesh_quats[body.get('name')].append(geom_quat)
+
+                    mesh_types.append(geom_mesh)
+                    mesh_quats.append(geom_quat)
+
+            self.gripper_parts[name] = (mesh_types, mesh_quats)
 
         self.gripper_positions = self.get_positions(part_type = 'gripper', 
                                                     parts = self.gripper_parts)
         self.gripper_quats = self.get_quats_gripper()
 
         print(f'Gripper Parts: {self.gripper_parts}\n')
-        print(f'Gripper Mesh Types: {self.gripper_mesh_types}\n')
-        print(f'Gripper STL Files: {self.gripper_mesh_files}\n')
-        print(f'Gripper Part Positions: {self.gripper_positions}\n')
-        print(f'Gripper Quats: {self.gripper_quats}\n')
         print('-----\n\n')
-
-        # quit()
 
     def initalize_simulation(self, xml_file = None):
         
+        # Load the model from the xml file
         self.mjpy_model = load_model_from_path(xml_file) if xml_file else self.model.get_model(mode="mujoco_py")
 
         # Creates the simulation
-        # self.sim = MjSim(self.mjpy_model)
-        # self.sim = self.env.sim
         self.env.sim.step()
 
     def str_to_class(self, str):
@@ -283,7 +254,7 @@ class VirtualWrapper(Wrapper):
         self.quats = self.get_quats()
 
         self.gripper_positions = self.get_positions(part_type = 'gripper', 
-                                                    parts = self.gripper_parts)
+                                                    parts = self.gripper_parts.keys())
         self.gripper_quats = self.get_quats_gripper()
 
     def render(self, render_type):
@@ -293,51 +264,159 @@ class VirtualWrapper(Wrapper):
             render_type: tells the method whether to save to png or save to hdr
         """
         self.image_counter += 1
-        # Creating a table/base
-        if self.render_number == 1:
 
-            table_size_x = self.mujoco_arena.table_full_size[0]/2
-            table_size_y = self.mujoco_arena.table_full_size[1]/2
-            table_size_z = self.mujoco_arena.table_full_size[2]/2
+        # # Creating a table/base
+        # if self.render_number == 1:
 
-            table = visii.entity.create(
-                name="table",
-                mesh = visii.mesh.create_box(name = "table",
-                                             size = visii.vec3(table_size_x,
-                                                               table_size_y,
-                                                               table_size_z)),
-                transform = visii.transform.create("table"),
-                material = visii.material.create("table")
-            )
+            # print(self.mujoco_arena.table_top_abs)
 
-            table.get_transform().set_position(
-                visii.vec3(self.mujoco_arena.center_pos[0], 
-                           self.mujoco_arena.center_pos[1], 
-                           self.mujoco_arena.center_pos[2]))
-            table.get_material().set_base_color(
-                visii.vec3(0.1, 0.1, 0.1))  
-            table.get_material().set_roughness(0.7)   
-            table.get_material().set_specular(1)
+            # table_size_x = self.mujoco_arena.table_full_size[0]/2
+            # table_size_y = self.mujoco_arena.table_full_size[1]/2
+            # table_size_z = self.mujoco_arena.table_full_size[2]/2
 
-        # Initialize the other static objects
+            # table = visii.entity.create(
+            #     name="table",
+            #     mesh = visii.mesh.create_box(name = "table",
+            #                                  size = visii.vec3(table_size_x,
+            #                                                    table_size_y,
+            #                                                    table_size_z)),
+            #     transform = visii.transform.create("table"),
+            #     material = visii.material.create("table")
+            # )
+
+            # print(self.mujoco_arena)
+            # # print(self.mujoco_arena.center_pos)
+
+            # center_pos = None
+
+            # try:
+            #     center_pos = self.mujoco_arena.center_pos
+            # except Exception as e:
+            #     print('creating center position')
+            #     center_pos = self.mujoco_arena.bottom_pos + np.array([0, 0, self.mujoco_arena.table_half_size[2]])
+
+            # print(center_pos)
+
+            # table.get_transform().set_position(
+            #     visii.vec3(center_pos[0], 
+            #                center_pos[1], 
+            #                center_pos[2]))
+            # table.get_material().set_base_color(
+            #     visii.vec3(0.1, 0.1, 0.1))  
+            # table.get_material().set_roughness(0.7)   
+            # table.get_material().set_specular(1)
+
+        # Initialize other static objects
         counter = 0
         for i in self.mujoco_objects:
 
             obj = None
+            obj_mesh = None
+            texture = None
+            primitive = False
 
             if self.render_number == 1:
 
+                print(self.mujoco_objects)
+
+                if isinstance(self.mujoco_objects[i], BoxObject):
+                    obj_mesh = visii.mesh.create_box(name = f"obj_{i}",
+                                                     size = visii.vec3(self.mujoco_objects[i].size[0],
+                                                                       self.mujoco_objects[i].size[1],
+                                                                       self.mujoco_objects[i].size[2]))
+                    primitive = True
+
+                elif isinstance(self.mujoco_objects[i], CylinderObject):
+                    obj_mesh = visii.mesh.create_cylinder(name   = f"obj_{i}",
+                                                          radius = self.mujoco_objects[i].size[0],
+                                                          size   = self.mujoco_objects[i].size[1])
+                    primitive = True
+
+                elif isinstance(self.mujoco_objects[i], BallObject):
+                    obj_mesh = visii.mesh.create_sphere(name   = f"obj_{i}",
+                                                        radius = self.mujoco_objects[i].size[0])
+                    primitive = True
+
+                elif isinstance(self.mujoco_objects[i], CapsuleObject):
+                    obj_mesh = visii.mesh.create_capsule(name   = f"obj_{i}",
+                                                         radius = self.mujoco_objects[i].size[0],
+                                                         size   = self.mujoco_objects[i].size[1])
+                    primitive = True
+
+                elif isinstance(self.mujoco_objects[i], BottleObject):
+                    obj_mesh = o3d.io.read_triangle_mesh(f'../models/assets/objects/meshes/bottle.stl')
+
+                    normals  = np.array(obj_mesh.vertex_normals).flatten().tolist()
+                    vertices = np.array(obj_mesh.vertices).flatten().tolist()
+
+                    obj_mesh = visii.mesh.create_from_data(f"obj_{i}", positions=vertices, normals=normals)
+
+                elif isinstance(self.mujoco_objects[i], MilkObject):
+                    obj_mesh = o3d.io.read_triangle_mesh(f'../models/assets/objects/meshes/milk.stl')
+
+                    normals  = np.array(obj_mesh.vertex_normals).flatten().tolist()
+                    vertices = np.array(obj_mesh.vertices).flatten().tolist()
+
+                    obj_mesh = visii.mesh.create_from_data(f"obj_{i}", positions=vertices, normals=normals)
+
+                    texture = visii.texture.create_from_image(name = 'milk_texture',
+                                                              path = '../models/assets/textures/ceramic.png')
+
+                elif isinstance(self.mujoco_objects[i], CanObject):
+                    obj_mesh = o3d.io.read_triangle_mesh(f'../models/assets/objects/meshes/can.stl')
+
+                    normals  = np.array(obj_mesh.vertex_normals).flatten().tolist()
+                    vertices = np.array(obj_mesh.vertices).flatten().tolist()
+
+                    obj_mesh = visii.mesh.create_from_data(f"obj_{i}", positions=vertices, normals=normals)
+
+                    texture = visii.texture.create_from_image(name = 'can_texture',
+                                                              path = '../models/assets/textures/can.png')
+
+                elif isinstance(self.mujoco_objects[i], BreadObject):
+
+                    obj_mesh = o3d.io.read_triangle_mesh(f'../models/assets/objects/meshes/bread.stl')
+
+                    normals  = np.array(obj_mesh.vertex_normals).flatten().tolist()
+                    vertices = np.array(obj_mesh.vertices).flatten().tolist()
+
+                    obj_mesh = visii.mesh.create_from_data(f"obj_{i}", positions=vertices, normals=normals)
+
+                    texture = visii.texture.create_from_image(name = 'bread_texture',
+                                                              path = '../models/assets/textures/bread.png')
+                    
+
+                elif isinstance(self.mujoco_objects[i], CerealObject):
+                    obj_mesh = o3d.io.read_triangle_mesh(f'../models/assets/objects/meshes/cereal.stl')
+
+                    normals  = np.array(obj_mesh.vertex_normals).flatten().tolist()
+                    vertices = np.array(obj_mesh.vertices).flatten().tolist()
+
+                    obj_mesh = visii.mesh.create_from_data(f"obj_{i}", positions=vertices, normals=normals)
+
+                    texture = visii.texture.create_from_image(name = 'cereal_texture',
+                                                              path = '../models/assets/textures/cereal.png')
+
+                # Handling xml objects
+                else:
+                    print('not cube -- xml object')
+                    continue
+
                 obj = visii.entity.create(
                     name=f"obj_{i}",
-                    mesh = visii.mesh.create_box(name = f"obj_{i}",
-                                                 size = visii.vec3(self.mujoco_objects[i].size[0],
-                                                                   self.mujoco_objects[i].size[1],
-                                                                   self.mujoco_objects[i].size[2])),
+                    mesh = obj_mesh,
                     transform = visii.transform.create(f"obj_{i}"),
                     material = visii.material.create(f"obj_{i}")
                 )
 
                 self.static_object_entities.append(obj)
+
+                if primitive:
+                    obj.get_material().set_base_color(visii.vec3(self.mujoco_objects[i].rgba[0], 
+                                                                 self.mujoco_objects[i].rgba[1],
+                                                                 self.mujoco_objects[i].rgba[2]))
+                else:
+                    obj.get_material().set_base_color_texture(texture)
 
             else:
 
@@ -354,9 +433,6 @@ class VirtualWrapper(Wrapper):
                                                         self.obs_dict[f'{i}_quat'][1],
                                                         self.obs_dict[f'{i}_quat'][2]))
 
-            obj.get_material().set_base_color(visii.vec3(self.mujoco_objects[i].rgba[0], 
-                                                         self.mujoco_objects[i].rgba[1],
-                                                         self.mujoco_objects[i].rgba[2]))
             obj.get_material().set_metallic(0.2)
             obj.get_material().set_transmission(0.2)
             obj.get_material().set_roughness(0.3)
@@ -378,19 +454,8 @@ class VirtualWrapper(Wrapper):
             mesh = None
 
             if(self.render_number == 1):
-
-                # if(part_mesh == 'pedestal'):
-                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/robots/common_meshes/{part_mesh}.stl') # change
-
-                # else:
-                #     # robots/{self.robot_names[0].lower()}
-                #     mesh = o3d.io.read_triangle_mesh(f'../models/assets/extra_meshes/{part_mesh}.stl') # change
                 
                 link_name = part_mesh
-                
-                # print(f'Succesfully read: {part_mesh}')
-                # normals  = np.array(mesh.vertex_normals).flatten().tolist()
-                # vertices = np.array(mesh.vertices).flatten().tolist() 
 
                 if(part_mesh == 'pedestal'):
                     mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/robots/common_meshes/{part_mesh}.obj') # change
@@ -402,9 +467,9 @@ class VirtualWrapper(Wrapper):
                     )
 
                 else:
-                    # robots/{self.robot_names[0].lower()}
-                    obj_file = f'../models/assets/robots/panda/meshes/{part_mesh}.obj'
+                    obj_file = f'../models/assets/robots/{self.robot_names[0].lower()}/meshes/{part_mesh}.obj'
                     mtl_file = obj_file.replace('obj', 'mtl')
+                    
                     if os.path.exists(mtl_file):
                         entity_imported = visii.import_obj(
                             part_mesh,
@@ -412,11 +477,11 @@ class VirtualWrapper(Wrapper):
                             '/'.join(obj_file.split('/')[:-1]) + '/',
                         )
                         link_entity = entity_imported
+                    
                     else:
                         
-                        mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/robots/panda/meshes/{part_mesh}.obj') # change
+                        mesh = visii.mesh.create_from_obj(name = part_mesh, path = f'../models/assets/robots/{self.robot_names[0].lower()}/meshes/{part_mesh}.obj') # change
 
-                    # mesh = visii.mesh.create_from_data(f'{link_name}_mesh', positions=vertices, normals=normals)
                         link_entity = visii.entity.create(
                             name      = link_name,
                             mesh      = mesh,
@@ -437,15 +502,15 @@ class VirtualWrapper(Wrapper):
                     link_entity[link_idx].get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
 
                     link_entity[link_idx].get_transform().set_rotation(visii.quat(part_quaternion[0],
-                                                                        part_quaternion[1],
-                                                                        part_quaternion[2],
-                                                                        part_quaternion[3]))
+                                                                                  part_quaternion[1],
+                                                                                  part_quaternion[2],
+                                                                                  part_quaternion[3]))
 
                     if part_mesh in self.mesh_colors and self.mesh_colors[part_mesh] != None:
                         mesh_color_arr = self.mesh_colors[part_mesh].split(' ')
                         link_entity[link_idx].get_material().set_base_color(visii.vec3(float(mesh_color_arr[0]),
-                                                                             float(mesh_color_arr[1]),
-                                                                             float(mesh_color_arr[2])))
+                                                                                       float(mesh_color_arr[1]),
+                                                                                       float(mesh_color_arr[2])))
                     link_entity[link_idx].get_material().set_metallic(0)
                     link_entity[link_idx].get_material().set_transmission(0)
                     link_entity[link_idx].get_material().set_roughness(0.3)
@@ -458,7 +523,6 @@ class VirtualWrapper(Wrapper):
                                                                     part_quaternion[1],
                                                                     part_quaternion[2],
                                                                     part_quaternion[3]))
-                # print(link_entity.get_transform().get_rotation())
 
                 if part_mesh in self.mesh_colors and self.mesh_colors[part_mesh] != None:
                     mesh_color_arr = self.mesh_colors[part_mesh].split(' ')
@@ -468,19 +532,17 @@ class VirtualWrapper(Wrapper):
                 link_entity.get_material().set_metallic(0)
                 link_entity.get_material().set_transmission(0)
                 link_entity.get_material().set_roughness(0.3)
-        # print(self.gripper_positions)
-        for key in self.gripper_mesh_types:
+
+        for key in self.gripper_parts.keys():
             gripper_entity = None
 
-            gripper_mesh_arr = self.gripper_mesh_types[key]
-            gripper_mesh_quat = self.gripper_mesh_quats[key]
+            gripper_mesh_arr = self.gripper_parts[key][0]
+            gripper_mesh_quat = self.gripper_parts[key][1]
 
             for (mesh, mesh_quat) in zip(gripper_mesh_arr, gripper_mesh_quat):
-                # if 'vis' not in mesh:
-                #     continue
                 
                 if self.render_number == 1:
-                    print(f'rendering... {key} => {mesh}')
+                    print(f'Rendering... {key} => {mesh}')
                     mesh_gripper = o3d.io.read_triangle_mesh(f'../models/assets/grippers/{self.gripper_mesh_files[mesh]}')
                     mesh_name = f'{key}_{mesh}_mesh'
 
@@ -500,17 +562,12 @@ class VirtualWrapper(Wrapper):
                     gripper_entity = self.gripper_entities[f'{key}_{mesh}']
 
                 part_position = self.gripper_positions[key]
-                # print(f'{key} ==> {mesh} ==> {self.gripper_quats[key]}, {mesh_quat}')
 
                 gripper_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
 
                 part_quaternion = self.gripper_quats[key]
                 visii_part_quat = visii.quat(*part_quaternion) * visii.quat(*mesh_quat)
                 gripper_entity.get_transform().set_rotation(visii_part_quat)
-                # gripper_entity.get_transform().set_rotation(visii.quat(part_quaternion[0],
-                #                                                        part_quaternion[1],
-                #                                                        part_quaternion[2],
-                #                                                        part_quaternion[3]))
 
                 if mesh == 'finger_vis':
                     gripper_entity.get_material().set_base_color(visii.vec3(0.5, 0.5, 0.5))
@@ -562,7 +619,6 @@ class VirtualWrapper(Wrapper):
             positions = {}
             for part in parts:
                 positions[part] = self.env.sim.data.body_xpos[self.env.sim.model.body_name2id(f'gripper0_{part}')]
-                # print(part)
 
         return positions
 
@@ -581,7 +637,6 @@ class VirtualWrapper(Wrapper):
         quats = []
         for part in self.mesh_parts:
             R = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(f'robot0_{part}')].reshape(3, 3)
-            # print(part, R)
             quat_xyzw = self.quaternion_from_matrix3(R)
             quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
             quats.append(quat_wxyz)
@@ -595,7 +650,6 @@ class VirtualWrapper(Wrapper):
             quat_xyzw = self.quaternion_from_matrix3(R)
             quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
             quats[part] = quat_wxyz
-            # print(f'gripper0_{part}: ', R, quat_wxyz)
 
         return quats
 
@@ -633,8 +687,8 @@ if __name__ == '__main__':
 
     env = VirtualWrapper(
         env = suite.make(
-                "Stack",
-                robots = "Panda",
+                "PickPlace",
+                robots = "Sawyer",
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
@@ -644,16 +698,16 @@ if __name__ == '__main__':
                 control_freq=10, 
             ),
         use_noise=False,
-        debug_mode=True,
+        debug_mode=False,
     )
 
     env.reset()
 
     # env.render(render_type = "png") # initial rendering of the robot
 
-    env.printState()
+    # env.printState()
 
-    for i in range(100):
+    for i in range(300):
         action = np.random.randn(8)
         obs, reward, done, info = env.step(action)
 
