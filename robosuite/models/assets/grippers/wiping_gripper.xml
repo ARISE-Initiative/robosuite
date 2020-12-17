@@ -2,7 +2,7 @@
     <worldbody>
         <body name="wiping_gripper" pos="0 0 0.015" quat="0.707107 0 0 -0.707107" >
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
-            <inertial pos="0 0 0" mass="3e-1" diaginertia="1e-2 1e-2 1e-2"/>
+            <inertial pos="0 0 0" mass="3e-2" diaginertia="1e-2 1e-2 1e-2"/>
 
             <geom type="box" pos="0 0 0.0" size="0.06 0.025 0.015" name="wiping_surface_vis" contype="0" conaffinity="0" group="1" rgba="0.25 0.25 0.25 1" />
 
