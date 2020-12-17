@@ -18,9 +18,6 @@ class HingedBoxObject(CompositeBodyObject):
         box2_size (3-array): (L, W, H) half-sizes for the second box
 
         use_texture (bool): set True if using wood textures for the blocks
-
-    Raises:
-        ValueError: [Invalid handle size]
     """
 
     def __init__(
