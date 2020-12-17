@@ -741,7 +741,7 @@ def sort_elements(root, parent=None, element_filter=None, _elements_dict=None):
     return _elements_dict
 
 
-def find_elements(root, tags, attribs, return_first=True):
+def find_elements(root, tags, attribs=None, return_first=True):
     """
     Find all element(s) matching the requested @tag and @attributes. If @return_first is True, then will return the
     first element found matching the criteria specified. Otherwise, will return a list of elements that match the
@@ -751,7 +751,7 @@ def find_elements(root, tags, attribs, return_first=True):
         root (ET.Element): Root of the xml element tree to start recursively searching through. Default is None
             (use automatic top-level root in this XML object)
         tags (str or list of str or set): Tag(s) to search for in this ElementTree.
-        attribs (dict of str): Element attribute(s) to check against for a filtered element. A match is
+        attribs (None or dict of str): Element attribute(s) to check against for a filtered element. A match is
             considered found only if all attributes match. Each attribute key should have a corresponding value with
             which to compare against.
         return_first (bool): Whether to immediately return once the first matching element is found.
@@ -768,10 +768,11 @@ def find_elements(root, tags, attribs, return_first=True):
     # Check the current element for matching conditions
     if root.tag in tags:
         matching = True
-        for k, v in attribs.items():
-            if root.get(k) != v:
-                matching = False
-                break
+        if attribs is not None:
+            for k, v in attribs.items():
+                if root.get(k) != v:
+                    matching = False
+                    break
         # If all criteria were matched, add this to the solution (or return immediately if specified)
         if matching:
             if return_first:
