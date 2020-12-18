@@ -1,8 +1,8 @@
 import numpy as np
 
 from robosuite.models.objects import MujocoGeneratedObject, MujocoObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, array_to_string,\
-    find_elements, add_prefix, OBJECT_COLLISION_COLOR, CustomMaterial
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, new_inertial,\
+    array_to_string, find_elements, add_prefix, OBJECT_COLLISION_COLOR, CustomMaterial
 
 from copy import deepcopy
 
@@ -127,6 +127,9 @@ class CompositeBodyObject(MujocoGeneratedObject):
     def _get_object_subtree(self):
         # Initialize top-level body
         obj = new_body(name="root")
+
+        # Give main body a small mass in order to have a free joint (only needed for mujoco 1.5)
+        obj.append(new_inertial(pos=(0, 0, 0), mass=0.0001, diaginertia=(0.0001, 0.0001, 0.0001)))
 
         # Add all joints and sites
         for joint_spec in self.joint_specs:
