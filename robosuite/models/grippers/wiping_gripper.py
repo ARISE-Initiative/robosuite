@@ -20,29 +20,15 @@ class WipingGripper(GripperModel):
         return action
 
     @property
-    def dof(self):
-        return 0
-
-    @property
     def init_qpos(self):
         return None
-
-    @property
-    def _joints(self):
-        return []
-
-    @property
-    def _actuators(self):
-        return []
-
-    @property
-    def _contact_geoms(self):
-        return ["wiping_surface", "wiper_col1", "wiper_col2"]
 
     @property
     def _important_geoms(self):
         return {
             "left_finger": [],
             "right_finger": [],
+            "left_fingerpad": [],
+            "right_fingerpad": [],
             "corners": ["wiping_corner1", "wiping_corner2", "wiping_corner3", "wiping_corner4"]
         }

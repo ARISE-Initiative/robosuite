@@ -1,12 +1,22 @@
 import numpy as np
 
 from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import array_to_string, string_to_array
-from robosuite.utils.mjcf_utils import new_geom, new_body, new_joint
+from robosuite.utils.mjcf_utils import array_to_string, string_to_array, \
+    new_geom, new_body, new_joint, ENVIRONMENT_COLLISION_COLOR, recolor_collision_geoms, find_elements, new_element
 
 
 class Arena(MujocoXML):
     """Base arena class."""
+
+    def __init__(self, fname):
+        super().__init__(fname)
+        # Get references to floor and bottom
+        self.bottom_pos = np.zeros(3)
+        self.floor = self.worldbody.find("./geom[@name='floor']")
+
+        # Recolor all geoms
+        recolor_collision_geoms(root=self.worldbody, rgba=ENVIRONMENT_COLLISION_COLOR,
+                                exclude=lambda e: True if e.get("name", None) == "floor" else False)
 
     def set_origin(self, offset):
         """
@@ -21,18 +31,30 @@ class Arena(MujocoXML):
             new_pos = cur_pos + offset
             node.set("pos", array_to_string(new_pos))
 
-    def add_pos_indicator(self):
-        """Adds a new position indicator."""
-        body = new_body(name="pos_indicator")
-        body.append(
-            new_geom(
-                "sphere",
-                [0.03],
-                rgba=[1, 0, 0, 0.5],
-                group=1,
-                contype="0",
-                conaffinity="0",
-            )
-        )
-        body.append(new_joint(type="free", name="pos_indicator"))
-        self.worldbody.append(body)
+    def set_camera(self, camera_name, pos, quat, camera_attribs=None):
+        """
+        Sets a camera with @camera_name. If the camera already exists, then this overwrites its pos and quat values.
+
+        Args:
+            camera_name (str): Camera name to search for / create
+            pos (3-array): (x,y,z) coordinates of camera in world frame
+            quat (4-array): (w,x,y,z) quaternion of camera in world frame
+            camera_attribs (dict): If specified, should be additional keyword-mapped attributes for this camera.
+                See http://www.mujoco.org/book/XMLreference.html#camera for exact attribute specifications.
+        """
+        # Determine if camera already exists
+        camera = find_elements(root=self.worldbody, tags="camera", attribs={"name": camera_name}, return_first=True)
+
+        # Compose attributes
+        if camera_attribs is None:
+            camera_attribs = {}
+        camera_attribs["pos"] = array_to_string(pos)
+        camera_attribs["quat"] = array_to_string(quat)
+
+        if camera is None:
+            # If camera doesn't exist, then add a new camera with the specified attributes
+            self.worldbody.append(new_element(tag="camera", name=camera_name, **camera_attribs))
+        else:
+            # Otherwise, we edit all specified attributes in that camera
+            for attrib, value in camera_attribs.items():
+                camera.set(attrib, value)

@@ -21,37 +21,16 @@ class RethinkGripperBase(GripperModel):
         return action
 
     @property
-    def dof(self):
-        return 2
-
-    @property
     def init_qpos(self):
         return np.array([0.020833, -0.020833])
 
     @property
-    def _joints(self):
-        return ["r_finger_joint", "l_finger_joint"]
-
-    @property
-    def _actuators(self):
-        return ["gripper_r_finger_joint", "gripper_l_finger_joint"]
-
-    @property
-    def _contact_geoms(self):
-        return [
-            "r_finger_g0",
-            "r_finger_g1",
-            "l_finger_g0",
-            "l_finger_g1",
-            "r_fingertip_g0",
-            "l_fingertip_g0",
-        ]
-
-    @property
     def _important_geoms(self):
         return {
-            "left_finger": ["l_finger_g0", "l_finger_g1", "l_fingertip_g0"],
-            "right_finger": ["r_finger_g0", "r_finger_g1", "r_fingertip_g0"],
+            "left_finger": ["l_finger_g0", "l_finger_g1", "l_fingertip_g0", "l_fingerpad_g0"],
+            "right_finger": ["r_finger_g0", "r_finger_g1", "r_fingertip_g0", "r_fingerpad_g0"],
+            "left_fingerpad": ["l_fingerpad_g0"],
+            "right_fingerpad": ["r_fingerpad_g0"],
         }
 
 

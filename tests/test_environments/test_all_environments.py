@@ -1,5 +1,12 @@
 """
 Test all environments with random policies.
+
+This runs some basic sanity checks on the environment, namely, checking that:
+    - robot-state exists in the obs, and is a flat array
+    - agentview_image exists and is of the correct shape
+    - no object-obs in state, because we are only using image observations
+
+Obviously, if an environment crashes during runtime, that is considered a failure as well.
 """
 import numpy as np
 

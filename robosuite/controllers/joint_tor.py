@@ -87,7 +87,7 @@ class JointTorqueController(Controller):
         self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits (if not specified, set them to actuator limits by default)
-        self.torque_limits = torque_limits if torque_limits is not None else self.actuator_limits
+        self.torque_limits = np.array(torque_limits) if torque_limits is not None else self.actuator_limits
 
         # control frequency
         self.control_freq = policy_freq

@@ -1,11 +1,12 @@
 """
 Defines the base class of all grippers
 """
-from robosuite.models.base import MujocoXML
+from robosuite.models.base import MujocoXMLModel
+from robosuite.utils.mjcf_utils import GRIPPER_COLLISION_COLOR
 import numpy as np
 
 
-class GripperModel(MujocoXML):
+class GripperModel(MujocoXMLModel):
     """
     Base class for grippers
 
@@ -15,43 +16,14 @@ class GripperModel(MujocoXML):
     """
 
     def __init__(self, fname, idn=0):
-        super().__init__(fname)
-
-        # Set id number and add prefixes to all body names to prevent naming clashes
-        self.idn = idn
+        super().__init__(fname, idn=idn)
 
         # Set variable to hold current action being outputted
         self.current_action = np.zeros(self.dof)
 
-        # Update all xml element prefixes
-        self.add_prefix(self.naming_prefix)
-
-        # Set public attributes with prefixes appended to values
-        self.joints = [self.naming_prefix + joint for joint in self._joints]
-        self.actuators = [self.naming_prefix + actuator for actuator in self._actuators]
-        self.contact_geoms = [self.naming_prefix + geom for geom in self._contact_geoms]
-        self.visualization_geoms = [self.naming_prefix + geom for geom in self._visualization_geoms]
-
         # Grab gripper offset (string -> np.array -> elements [1, 2, 3, 0] (x, y, z, w))
         self.rotation_offset = np.fromstring(self.worldbody[0].attrib.get("quat", "1 0 0 0"),
                                              dtype=np.float64, sep=" ")[[1, 2, 3, 0]]
-
-        # Loop through dict of remaining miscellaneous geoms
-        self.important_geoms = {}
-        for k, v in self._important_geoms.items():
-            self.important_geoms[k] = [self.naming_prefix + vv for vv in v]
-
-    def hide_visualization(self):
-        """
-        Hides all visualization geoms and sites.
-        This should be called before rendering to agents
-        """
-        for site_name in self.visualization_sites.values():
-            site = self.worldbody.find(".//site[@name='{}']".format(site_name))
-            site.set("rgba", "0 0 0 0")
-        for geom_name in self.visualization_geoms:
-            geom = self.worldbody.find(".//geom[@name='{}']".format(geom_name))
-            geom.set("rgba", "0 0 0 0")
 
     def format_action(self, action):
         """
@@ -65,45 +37,10 @@ class GripperModel(MujocoXML):
     # Properties: In general, these are the name-adjusted versions from the private          #
     #             subclass implementations pulled from their respective raw xml files        #
     # -------------------------------------------------------------------------------------- #
+
     @property
     def naming_prefix(self):
-        """
-        Generates a standardized prefix to append to all xml names to prevent naming collisions
-
-        Returns:
-            str: Prefix unique to this gripper based on its ID
-        """
         return "gripper{}_".format(self.idn)
-
-    @property
-    def visualization_sites(self):
-        """
-        Grabs a dict of sites corresponding to the geoms
-        used to aid visualization by human. (usually "site" and "cylinder")
-        (and should be hidden from robots)
-
-        Returns:
-            dict:
-
-                :`'grip_site' (str)`: Name of grip actuation intersection location site
-                :`'grip_cylinder' (str)`: Name of grip actuation z-axis location site
-        """
-        return {"grip_site": self.naming_prefix + "grip_site",
-                "grip_cylinder": self.naming_prefix + "grip_site_cylinder"}
-
-    @property
-    def sensors(self):
-        """
-        Grabs a dict of sensor names for each gripper (usually "force_ee" and "torque_ee")
-
-        Returns:
-            dict:
-
-                :`'force_ee' (str)`: Name of force eef sensor for this gripper
-                :`'torque_ee' (str)`: Name of torque eef sensor for this gripper
-        """
-        return {"force_ee": self.naming_prefix + "force_ee",
-                "torque_ee": self.naming_prefix + "torque_ee"}
 
     @property
     def speed(self):
@@ -115,11 +52,6 @@ class GripperModel(MujocoXML):
         """
         return 0.0
 
-    # -------------------------------------------------------------------------------------- #
-    # All subclasses must implement the following properties based on their respective xml's #
-    # (note: only if they exist)                                                             #
-    # -------------------------------------------------------------------------------------- #
-
     @property
     def dof(self):
         """
@@ -128,7 +60,27 @@ class GripperModel(MujocoXML):
         Returns:
             int: gripper DOF
         """
-        raise NotImplementedError
+        return len(self._actuators)
+
+    @property
+    def bottom_offset(self):
+        return np.zeros(3)
+
+    @property
+    def top_offset(self):
+        return np.zeros(3)
+
+    @property
+    def horizontal_radius(self):
+        return 0
+
+    @property
+    def contact_geom_rgba(self):
+        return GRIPPER_COLLISION_COLOR
+
+    # -------------------------------------------------------------------------------------- #
+    # All subclasses must implement the following properties                                 #
+    # -------------------------------------------------------------------------------------- #
 
     @property
     def init_qpos(self):
@@ -141,55 +93,27 @@ class GripperModel(MujocoXML):
         raise NotImplementedError
 
     @property
-    def _joints(self):
+    def _important_sites(self):
         """
-        List of joint names of the gripper. Note that these are the raw string names directly pulled from
-        a gripper's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
+        Sites used to aid visualization by human. (usually "grip_site" and "grip_cylinder")
+        (and should be hidden from robots)
 
         Returns:
-            list: Raw XML joint names for this gripper
-        """
-        raise NotImplementedError
+            dict:
 
-    @property
-    def _actuators(self):
+                :`'grip_site'`: Name of grip actuation intersection location site
+                :`'grip_cylinder'`: Name of grip actuation z-axis location site
         """
-        List of actuator names of the gripper. Note that these are the raw string names directly pulled from
-        a gripper's corresponding XML file, NOT the adjusted name with an auto-generated naming prefix
-
-        Returns:
-            list: Raw XML actuator names for this gripper
-        """
-        raise NotImplementedError
-
-    @property
-    def _contact_geoms(self):
-        """
-        List of names corresponding to the geoms used to determine contact with the gripper. Note that these
-        are the raw string names directly pulled from a gripper's corresponding XML file, NOT the adjusted name with
-        an auto-generated naming prefix
-
-        Returns:
-            list: Raw XML relevant contact geoms for this gripper
-        """
-        return []
-
-    @property
-    def _visualization_geoms(self):
-        """
-        List of sites corresponding to the geoms used to aid visualization by human (and should be
-        hidden from robots). Note that these are the raw string names directly pulled from a gripper's corresponding
-        XML file, NOT the adjusted name with an auto-generated naming prefix
-
-        Returns:
-            list: Raw XML relevant visualization geoms for this gripper
-        """
-        return []
+        return {
+            "grip_site": "grip_site",
+            "grip_cylinder": "grip_site_cylinder",
+        }
 
     @property
     def _important_geoms(self):
         """
-        Geoms corresponding to important components of the gripper (by default, left_finger and right_finger).
+        Geoms corresponding to important components of the gripper (by default, left_finger, right_finger,
+        left_fingerpad, right_fingerpad).
         Note that these are the raw string names directly pulled from a gripper's corresponding XML file,
         NOT the adjusted name with an auto-generated naming prefix
 
@@ -201,6 +125,20 @@ class GripperModel(MujocoXML):
         """
         return {
             "left_finger": [],
-            "right_finger": []
+            "right_finger": [],
+            "left_fingerpad": [],
+            "right_fingerpad": [],
         }
 
+    @property
+    def _important_sensors(self):
+        """
+        Sensor names for each gripper (usually "force_ee" and "torque_ee")
+
+        Returns:
+            dict:
+
+                :`'force_ee'`: Name of force eef sensor for this gripper
+                :`'torque_ee'`: Name of torque eef sensor for this gripper
+        """
+        return {sensor: sensor for sensor in ["force_ee", "torque_ee"]}

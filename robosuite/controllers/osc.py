@@ -176,8 +176,8 @@ class OperationalSpaceController(Controller):
             self.control_dim += 6
 
         # limits
-        self.position_limits = position_limits
-        self.orientation_limits = orientation_limits
+        self.position_limits = np.array(position_limits) if position_limits is not None else position_limits
+        self.orientation_limits = np.array(orientation_limits) if orientation_limits is not None else orientation_limits
 
         # control frequency
         self.control_freq = policy_freq
@@ -344,6 +344,13 @@ class OperationalSpaceController(Controller):
         super().run_controller()
 
         return self.torques
+
+    def update_initial_joints(self, initial_joints):
+        # First, update from the superclass method
+        super().update_initial_joints(initial_joints)
+
+        # We also need to reset the goal in case the old goals were set to the initial confguration
+        self.reset_goal()
 
     def reset_goal(self):
         """

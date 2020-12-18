@@ -10,8 +10,12 @@ import argparse
 import imageio
 import numpy as np
 
+import robosuite.utils.macros as macros
 from robosuite import make
 
+# Set the image convention to opencv so that the images are automatically rendered "right side up" when using imageio
+# (which uses opencv convention)
+macros.IMAGE_CONVENTION = "opencv"
 
 if __name__ == "__main__":
 
@@ -54,7 +58,7 @@ if __name__ == "__main__":
 
         # dump a frame from every K frames
         if i % args.skip_frame == 0:
-            frame = obs[args.camera + "_image"][::-1]
+            frame = obs[args.camera + "_image"]
             writer.append_data(frame)
             print("Saving frame #{}".format(i))
 
