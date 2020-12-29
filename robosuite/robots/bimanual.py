@@ -394,7 +394,7 @@ class Bimanual(Manipulator):
         names = [f"{pf}{arm}_eef_pos", f"{pf}{arm}_eef_quat"]
 
         # add in gripper sensors if this robot has a gripper
-        if self.has_gripper:
+        if self.has_gripper[arm]:
             @sensor(modality=modality)
             def gripper_qpos(obs_cache):
                 return np.array([self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]])

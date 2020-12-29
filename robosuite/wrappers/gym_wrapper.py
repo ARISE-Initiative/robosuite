@@ -19,7 +19,7 @@ class GymWrapper(Wrapper, Env):
         env (MujocoEnv): The environment to wrap.
         keys (None or list of str): If provided, each observation will
             consist of concatenated keys from the wrapped environment's
-            observation dictionary. Defaults to robot-state and object-state.
+            observation dictionary. Defaults to proprio-state and object-state.
 
     Raises:
         AssertionError: [Object observations must be enabled if no keys]
@@ -45,7 +45,7 @@ class GymWrapper(Wrapper, Env):
                 keys += [f"{cam_name}_image" for cam_name in self.env.camera_names]
             # Iterate over all robots to add to state
             for idx in range(len(self.env.robots)):
-                keys += ["robot{}_robot-state".format(idx)]
+                keys += ["robot{}_proprio-state".format(idx)]
         self.keys = keys
 
         # Gym specific attributes
