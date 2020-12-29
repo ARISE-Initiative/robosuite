@@ -90,7 +90,7 @@ def create_uniform_sampled_delayer(min_delay, max_delay):
         max_delay (float): Maxmimum possible delay
     """
     assert min(min_delay, max_delay) >= 0, "Inputted delay must be non-negative!"
-    return lambda: np.random.randint(low=min_delay, high=max_delay+1)
+    return lambda: min_delay + (max_delay - min_delay) * np.random.random()
 
 
 def create_gaussian_sampled_delayer(mean, std):
@@ -106,9 +106,9 @@ def create_gaussian_sampled_delayer(mean, std):
 
 
 # Common defaults to use
-NO_CORRUPTION = create_deterministic_corrupter(corruption=0)
+NO_CORRUPTION = lambda inp: inp
 NO_FILTER = lambda inp: inp
-NO_DELAY = create_deterministic_delayer(delay=0)
+NO_DELAY = lambda: 0.0
 
 
 class Observable:
