@@ -1,4 +1,4 @@
-"""sensor corruption demo.
+"""Sensor Corruption Demo.
 
 This script provides an example of using the Observables functionality to implement a corrupted sensor
 (corruption + delay).
@@ -18,7 +18,7 @@ import argparse
 import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
-from robosuite.utils.observables import create_uniform_sampled_delayer, create_gaussian_noise_corrupter
+from robosuite.utils.observables import create_uniform_sampled_delayer, create_gaussian_noise_corrupter, Observable
 from robosuite.wrappers import VisualizationWrapper
 
 if __name__ == "__main__":
@@ -87,33 +87,91 @@ if __name__ == "__main__":
     # Wrap this environment in a visualization wrapper
     env = VisualizationWrapper(env, indicator_configs=None)
 
-    # Add delay
-    corrupter = create_gaussian_noise_corrupter(mean=0.0, std=args.corruption, low=0, high=255)
-    delayer = create_uniform_sampled_delayer(min_delay=max(0, args.delay - 0.025), max_delay=args.delay + 0.025)
-    sampling_rate = 10.
+    # Set shared settings
     attributes = ["corrupter", "delayer", "sampling_rate"]
-    modifiers = [corrupter, delayer, sampling_rate]
+    corruption_mode = 1     # 1 is corruption = ON, 0 is corruption = OFF
+    obs_settings = {}
 
-    def modify_image_obs(attrs, mods):
+    # Function to easily modify observable on the fly
+    def modify_obs(obs_name, attrs, mods):
         for attr, mod in zip(attrs, mods):
             env.modify_observable(
-                observable_name=f"{args.camera}_image",
+                observable_name=obs_name,
                 attribute=attr,
                 modifier=mod,
             )
 
-    # Modify image observable
-    modify_image_obs(attrs=attributes, mods=modifiers)
+    # Add image corruption and delay
+    image_sampling_rate = 10.
+    image_obs_name = f"{args.camera}_image"
+    image_corrupter = create_gaussian_noise_corrupter(mean=0.0, std=args.corruption, low=0, high=255)
+    image_delayer = create_uniform_sampled_delayer(min_delay=max(0, args.delay - 0.025), max_delay=args.delay + 0.025)
+    image_modifiers = [image_corrupter, image_delayer, image_sampling_rate]
 
-    # Setup corruption mapping for toggling ON / OFF
-    corrupter_mappings = [
-        [None, None],           # 0 maps to no corruption / delay
-        modifiers[:2],          # 1 maps to corruption + delay
-    ]
-    corrupter_names = attributes[:2]
+    # Initialize settings
+    modify_obs(obs_name=image_obs_name, attrs=attributes, mods=image_modifiers)
+
+    # Add entry for the corruption / delay settings in dict
+    obs_settings[image_obs_name] = {
+        "attrs": attributes[:2],
+        "mods": lambda: image_modifiers[:2] if corruption_mode else [None, None]
+    }
+
+    # Add proprioception corruption and delay
+    proprio_sampling_rate = 20.
+    proprio_obs_name = f"{env.robots[0].robot_model.naming_prefix}joint_pos"
+    joint_limits = env.sim.model.jnt_range[env.robots[0]._ref_joint_indexes]
+    joint_range = joint_limits[:, 1] - joint_limits[:, 0]
+    proprio_corrupter = create_gaussian_noise_corrupter(mean=0.0, std=joint_range / 50.)
+    curr_proprio_delay = 0.0
+    tmp_delayer = create_uniform_sampled_delayer(min_delay=max(0, (args.delay - 0.025) / 2),
+                                                 max_delay=(args.delay + 0.025) / 2)
+
+    # Define delayer to synchronize delay between ground truth and corrupted sensors
+    def proprio_delayer():
+        global curr_proprio_delay
+        curr_proprio_delay = tmp_delayer()
+        return curr_proprio_delay
+
+    # Define function to convert raw delay time to actual sampling delay (in discrete timesteps)
+    def calculate_proprio_delay():
+        base = env.model_timestep
+        return base * round(curr_proprio_delay / base) if corruption_mode else 0.0
+
+    proprio_modifiers = [proprio_corrupter, proprio_delayer, proprio_sampling_rate]
+
+    # We will create a separate "ground truth" delayed proprio observable to track exactly
+    # how much corruption we're getting in real time
+    proprio_sensor = env._observables[proprio_obs_name]._sensor
+    proprio_ground_truth_obs_name = f"{proprio_obs_name}_ground_truth"
+    observable = Observable(
+        name=proprio_ground_truth_obs_name,
+        sensor=proprio_sensor,
+        delayer=lambda: curr_proprio_delay,
+        sampling_rate=proprio_sampling_rate,
+    )
+
+    # Add this observable
+    env.add_observable(observable)
+
+    # We also need to set the normal joint pos observable to be active (not active by default)
+    env.modify_observable(observable_name=proprio_obs_name, attribute="active", modifier=True)
+
+    # Initialize settings
+    modify_obs(obs_name=proprio_obs_name, attrs=attributes, mods=proprio_modifiers)
+
+    # Add entry for the corruption / delay settings in dict
+    obs_settings[proprio_obs_name] = {
+        "attrs": attributes[:2],
+        "mods": lambda: proprio_modifiers[:2] if corruption_mode else [None, None]
+    }
+    obs_settings[proprio_ground_truth_obs_name] = {
+        "attrs": [attributes[1]],
+        "mods": lambda: [lambda: curr_proprio_delay] if corruption_mode else [None]
+    }
 
     # Setup printing options for numbers
-    np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+    np.set_printoptions(precision=3, suppress=True, floatmode='fixed')
 
     # initialize device
     if args.device == "keyboard":
@@ -138,7 +196,7 @@ if __name__ == "__main__":
         # Reset the environment
         obs = env.reset()
 
-        # Setup corruption toggling (1 is ON, 0 is OFF)
+        # Reset corruption mode
         corruption_mode = 1
 
         # Initialize variables that should the maintained between resets
@@ -171,7 +229,8 @@ if __name__ == "__main__":
                 if args.toggle_corruption_on_grasp:
                     # Toggle corruption and update observable
                     corruption_mode = 1 - corruption_mode
-                    modify_image_obs(attrs=corrupter_names, mods=corrupter_mappings[corruption_mode])
+                    for obs_name, settings in obs_settings.items():
+                        modify_obs(obs_name=obs_name, attrs=settings["attrs"], mods=settings["mods"]())
             # Update last grasp
             last_grasp = grasp
 
@@ -196,6 +255,14 @@ if __name__ == "__main__":
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
 
+            # Calculate and print out stats for proprio observation
+            observed_value = obs[proprio_obs_name]
+            ground_truth_delayed_value = obs[proprio_ground_truth_obs_name]
+            print(f"Observed joint pos: {observed_value}, "
+                  f"Corruption: {observed_value - ground_truth_delayed_value}, "
+                  f"Delay: {calculate_proprio_delay():.3f} sec")
+
+            # Handle display callbacks
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()

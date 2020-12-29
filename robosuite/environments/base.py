@@ -550,6 +550,18 @@ class MujocoEnv(metaclass=EnvMeta):
                 contact_set.add(g1)
         return contact_set
 
+    def add_observable(self, observable):
+        """
+        Adds an observable to this environment.
+
+        Args:
+            observable (Observable): Observable instance.
+        """
+        assert observable.name not in self._observables,\
+            "Observable name {} is already associated with an existing observable! Use modify_observable(...) " \
+            "to modify a pre-existing observable.".format(observable.name)
+        self._observables[observable.name] = observable
+
     def modify_observable(self, observable_name, attribute, modifier):
         """
         Modifies observable with associated name @observable_name, replacing the given @attribute with @modifier.
