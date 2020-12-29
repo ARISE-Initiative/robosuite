@@ -17,5 +17,6 @@ from .xml_objects import (
     PlateWithHoleObject,
     DoorObject,
 )
-from .composite import *
 from .primitive import *
+from .composite import *
+from .composite_body import *

@@ -91,6 +91,9 @@ class OperationalSpaceController(Controller):
             to the goal orientation during each timestep between inputted actions
 
         control_ori (bool): Whether inputted actions will control both pos and ori or exclusively pos
+        
+        control_delta (bool): Whether to control the robot using delta or absolute commands (where absolute commands
+            are taken in the world coordinate frame)
 
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
 
@@ -236,10 +239,10 @@ class OperationalSpaceController(Controller):
                 scaled_delta = []
         # Else, interpret actions as absolute values
         else:
-            set_pos = self.initial_ee_pos + delta[:3]
+            set_pos = delta[:3]
             # Set default control for ori if we're only using position control
-            set_ori = self.initial_ee_ori_mat.T.dot(T.quat2mat(T.axisangle2quat(delta[3:6]))) \
-                if self.use_ori else np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
+            set_ori = T.quat2mat(T.axisangle2quat(delta[3:6])) if self.use_ori else \
+                np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
             scaled_delta = []
 
         # We only want to update goal orientation if there is a valid delta ori value
