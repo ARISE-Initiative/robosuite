@@ -7,7 +7,7 @@ Images will be rendered in a delayed fashion, such that the user will have seemi
 This is a modified version of the demo_device_control teleoperation script.
 
 Example:
-    $ python demo_sensor_corruption.py --environment Stack --robots Panda --delay 0.05 --corruption 5.0 --toggle-corruption-on-click
+    $ python demo_sensor_corruption.py --environment Stack --robots Panda --delay 0.05 --corruption 5.0 --toggle-corruption-on-grasp
 """
 
 import sys
@@ -29,8 +29,8 @@ if __name__ == "__main__":
                         help="Specified environment configuration if necessary")
     parser.add_argument("--arm", type=str, default="right",
                         help="Which arm to control (eg bimanual) 'right' or 'left'")
-    parser.add_argument("--switch-on-click", action="store_true", help="Switch gripper control on gripper click")
-    parser.add_argument("--toggle-corruption-on-click", action="store_true",
+    parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
+    parser.add_argument("--toggle-corruption-on-grasp", action="store_true",
                         help="Toggle corruption ON / OFF on gripper action")
     parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="keyboard")
@@ -166,9 +166,9 @@ if __name__ == "__main__":
             # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
             # toggle arm control and / or corruption if requested
             if last_grasp < 0 < grasp:
-                if args.switch_on_click:
+                if args.switch_on_grasp:
                     args.arm = "left" if args.arm == "right" else "right"
-                if args.toggle_corruption_on_click:
+                if args.toggle_corruption_on_grasp:
                     # Toggle corruption and update observable
                     corruption_mode = 1 - corruption_mode
                     modify_image_obs(attrs=corrupter_names, mods=corrupter_mappings[corruption_mode])
