@@ -43,8 +43,8 @@ class RingBuffer(Buffer):
         # Variable so that initial average values are accurate
         self._size = 0
 
-        # Save pointer to current place in the buffer
-        self.ptr = 0
+        # Save pointer to end of buffer
+        self.ptr = self.length - 1
 
         # Construct ring buffer
         self.buf = np.zeros((length, dim))
@@ -56,9 +56,9 @@ class RingBuffer(Buffer):
         Args:
             value (int or float or array): Value(s) to push into the array (taken as a single new element)
         """
-        # Add value, then increment pointer (and size if necessary)
-        self.buf[self.ptr] = np.array(value)
+        # Increment pointer, then add value (also increment size if necessary)
         self.ptr = (self.ptr + 1) % self.length
+        self.buf[self.ptr] = np.array(value)
         if self._size < self.length:
             self._size += 1
 
@@ -67,8 +67,18 @@ class RingBuffer(Buffer):
         Clears buffer and reset pointer
         """
         self.buf = np.zeros((self.length, self.dim))
-        self.ptr = 0
+        self.ptr = self.length - 1
         self._size = 0
+
+    @property
+    def current(self):
+        """
+        Gets the most recent value pushed to the buffer
+
+        Returns:
+            float or np.array: Most recent value in buffer
+        """
+        return self.buf[self.ptr]
 
     @property
     def average(self):
