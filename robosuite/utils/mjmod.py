@@ -1419,7 +1419,7 @@ class DynamicsModder(BaseModder):
     NOTE: A full list of supported randomizable parameters can be seen by calling modder.dynamics_parameters
 
     NOTE: When modifying parameters belonging to MjModel.opt (e.g.: density, viscosity), no name should
-        be specified (don't specify this arg, or set it as None). This is because opt does not have a name attribute
+        be specified (set it as None in mod(...)). This is because opt does not have a name attribute
         associated with it
 
     Args:
@@ -1692,7 +1692,8 @@ class DynamicsModder(BaseModder):
                 argument should match the expected type for the given parameter.
         """
         # Make sure specified parameter is valid, and then modify it
-        assert attr in self.dynamics_parameters, "Invalid dynamics parameter specified! Supported parameters are: {}; requested: {}".format(self.dynamics_parameters, attr)
+        assert attr in self.dynamics_parameters, "Invalid dynamics parameter specified! Supported parameters are: {};" \
+                                                 " requested: {}".format(self.dynamics_parameters, attr)
         getattr(self, f"mod_{attr}")(name, val)
 
     def mod_density(self, name=None, val=0.0):
