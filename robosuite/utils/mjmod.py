@@ -1548,34 +1548,34 @@ class DynamicsModder(BaseModder):
             "density": {"randomize": randomize_density, "perturbation": density_perturbation_ratio,
                         "type": "ratio", "clip": (0.0, np.inf)},
             "viscosity": {"randomize": randomize_viscosity, "perturbation": viscosity_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, np.inf)},
+                          "type": "ratio", "clip": (0.0, np.inf)},
         }
 
         self.body_randomizations = {
             "position": {"randomize": randomize_position, "perturbation": position_perturbation_size,
-                        "type": "size", "clip": (-np.inf, np.inf)},
+                         "type": "size", "clip": (-np.inf, np.inf)},
             "quaternion": {"randomize": randomize_quaternion, "perturbation": quaternion_perturbation_size,
-                        "type": "size", "clip": (-np.inf, np.inf)},
+                           "type": "size", "clip": (-np.inf, np.inf)},
             "inertia": {"randomize": randomize_inertia, "perturbation": inertia_perturbation_ratio,
                         "type": "ratio", "clip": (0.0, np.inf)},
             "mass": {"randomize": randomize_mass, "perturbation": mass_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, np.inf)},
+                     "type": "ratio", "clip": (0.0, np.inf)},
         }
 
         self.geom_randomizations = {
             "friction": {"randomize": randomize_friction, "perturbation": friction_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, np.inf)},
+                         "type": "ratio", "clip": (0.0, np.inf)},
             "solref": {"randomize": randomize_solref, "perturbation": solref_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, 1.0)},
+                       "type": "ratio", "clip": (0.0, 1.0)},
             "solimp": {"randomize": randomize_solimp, "perturbation": solimp_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, np.inf)},
+                       "type": "ratio", "clip": (0.0, np.inf)},
         }
 
         self.joint_randomizations = {
             "stiffness": {"randomize": randomize_stiffness, "perturbation": stiffness_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, np.inf)},
+                          "type": "ratio", "clip": (0.0, np.inf)},
             "frictionloss": {"randomize": randomize_frictionloss, "perturbation": frictionloss_perturbation_size,
-                        "type": "size", "clip": (0.0, np.inf)},
+                             "type": "size", "clip": (0.0, np.inf)},
             "damping": {"randomize": randomize_damping, "perturbation": damping_perturbation_size,
                         "type": "size", "clip": (0.0, np.inf)},
         }
@@ -1638,6 +1638,9 @@ class DynamicsModder(BaseModder):
                 for attr, default_val in defaults.items():
                     self.mod(name=name, attr=attr, val=default_val)
 
+        # Make sure changes propagate in sim
+        self.update()
+
     def randomize(self):
         """
         Randomizes all enabled dynamics parameters in the simulation
@@ -1661,7 +1664,7 @@ class DynamicsModder(BaseModder):
                     # Modify this value
                     self.mod(name=name, attr=attr, val=val)
 
-        # Make sure to update sim
+        # Make sure changes propagate in sim
         self.update()
 
     def update_sim(self, sim):
