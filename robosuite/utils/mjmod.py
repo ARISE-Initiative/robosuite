@@ -1818,7 +1818,7 @@ class DynamicsModder(BaseModder):
 
         Args:
             name (str): Name for this element.
-            val (2-array): New (dmin, dmax, width, midpoint, power) solimp values.
+            val (5-array): New (dmin, dmax, width, midpoint, power) solimp values.
         """
         # Modify this value
         geom_id = self.sim.model.geom_name2id(name)
