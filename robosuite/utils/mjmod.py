@@ -1660,8 +1660,6 @@ class DynamicsModder(BaseModder):
                         val = np.clip(val, *settings["clip"])
                     # Modify this value
                     self.mod(name=name, attr=attr, val=val)
-                    if attr in {"position", "quaternion"}:
-                        print(f"Randomizing {name}, {attr}, {val}")
 
         # Make sure to update sim
         self.update()
