@@ -9,6 +9,18 @@ def sensor(modality):
 
         any = func(obs_cache)
 
+    An example use case is shown below:
+
+        @sensor(modality="proprio")
+        def joint_pos(obs_cache):
+            # Always handle case if obs_cache is empty
+            if not obs_cache:
+                return np.zeros(7)
+            # Otherwise, run necessary calculations and return output
+            ...
+            out = ...
+            return out
+
     Args:
         modality (str): Modality for this sensor
     """
