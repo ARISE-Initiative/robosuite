@@ -325,6 +325,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Add in modality observations
         for modality, obs in obs_by_modality.items():
+            # To save memory, we only concatenate the image observations if explicitly requested
+            if modality == "image-state" and not macros.CONCATENATE_IMAGES:
+                continue
             observations[modality] = np.concatenate(obs, axis=-1)
 
         return observations

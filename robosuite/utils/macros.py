@@ -26,3 +26,8 @@ CACHE_NUMBA = True
 # here; this will assure that any rendered frames will match the associated convention.
 # See the figure at the bottom of https://amytabb.com/ts/2019_06_28/ for an informative overview.
 IMAGE_CONVENTION = "opengl"     # Options are {"opengl", "opencv"}
+
+# Image concatenation
+# In general, observations are concatenated together by modality. However, image observations are expensive memory-wise,
+# so we skip concatenating all images together by default, unless this flag is set to True
+CONCATENATE_IMAGES = True
