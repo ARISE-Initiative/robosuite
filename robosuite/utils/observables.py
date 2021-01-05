@@ -9,6 +9,9 @@ def sensor(modality):
 
         any = func(obs_cache)
 
+    Where @obs_cache is a dictionary mapping observable keys to pre-computed values, and @any is either a scalar
+    or array. This function should also handle the case if obs_cache is either None or an empty dict.
+
     An example use case is shown below:
 
         @sensor(modality="proprio")
