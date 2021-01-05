@@ -8,7 +8,8 @@ from robosuite.models.grippers import gripper_factory
 from robosuite.controllers import controller_factory, load_controller_config
 
 from robosuite.robots.manipulator import Manipulator
-from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
+from robosuite.utils.buffers import DeltaBuffer, RingBuffer
+from robosuite.utils.observables import Observable, sensor
 
 import os
 import copy
@@ -289,46 +290,54 @@ class SingleArm(Manipulator):
         """
         self.gripper.set_sites_visibility(sim=self.sim, visible=visible)
 
-    def get_observations(self, di: OrderedDict):
+    def setup_observables(self):
         """
-        Returns an OrderedDict containing robot observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-        Args:
-            di (OrderedDict): Current set of observations from the environment
+        Sets up observables to be used for this robot
 
         Returns:
-            OrderedDict: Augmented set of observations that include this robot's proprioceptive observations
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
         """
-        # Get general robot observations first
-        di = super().get_observations(di)
+        # Get general robot observables first
+        observables = super().setup_observables()
 
-        # Get prefix from robot model to avoid naming clashes for multiple robots
+        # Get prefix from robot model to avoid naming clashes for multiple robots and define observables modality
         pf = self.robot_model.naming_prefix
+        modality = f"{pf}proprio"
 
-        robot_states = []
-        # Add in eef pos / qpos
-        di[pf + "eef_pos"] = np.array(self.sim.data.site_xpos[self.eef_site_id])
-        di[pf + "eef_quat"] = T.convert_quat(
-            self.sim.data.get_body_xquat(self.robot_model.eef_name), to="xyzw"
-        )
-        robot_states.extend([di[pf + "eef_pos"], di[pf + "eef_quat"]])
+        # eef features
+        @sensor(modality=modality)
+        def eef_pos(obs_cache):
+            return np.array(self.sim.data.site_xpos[self.eef_site_id])
 
-        # add in gripper information
+        @sensor(modality=modality)
+        def eef_quat(obs_cache):
+            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name), to="xyzw")
+
+        sensors = [eef_pos, eef_quat]
+        names = [f"{pf}eef_pos", f"{pf}eef_quat"]
+
+        # add in gripper sensors if this robot has a gripper
         if self.has_gripper:
-            di[pf + "gripper_qpos"] = np.array(
-                [self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes]
-            )
-            di[pf + "gripper_qvel"] = np.array(
-                [self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes]
-            )
-            robot_states.extend([di[pf + "gripper_qpos"], di[pf + "gripper_qvel"]])
+            @sensor(modality=modality)
+            def gripper_qpos(obs_cache):
+                return np.array([self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes])
 
-        di[pf + "robot-state"] = np.concatenate([di[pf + "robot-state"], *robot_states])
-        return di
+            @sensor(modality=modality)
+            def gripper_qvel(obs_cache):
+                return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes])
+
+            sensors += [gripper_qpos, gripper_qvel]
+            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
+
+        # Create observables for this robot
+        for name, s in zip(names, sensors):
+            observables[name] = Observable(
+                name=name,
+                sensor=s,
+                sampling_rate=self.control_freq,
+            )
+
+        return observables
 
     @property
     def action_limits(self):

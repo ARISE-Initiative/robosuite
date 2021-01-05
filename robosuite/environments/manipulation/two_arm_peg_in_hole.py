@@ -3,6 +3,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string, find_elements
+from robosuite.utils.observables import Observable, sensor
 
 from robosuite.models.objects import CylinderObject, PlateWithHoleObject
 from robosuite.models.arenas import EmptyArena
@@ -129,7 +130,7 @@ class TwoArmPegInHole(TwoArmEnv):
     def __init__(
         self,
         robots,
-        env_configuration="single-arm-opposed",
+        env_configuration="default",
         controller_configs=None,
         gripper_types=None,
         initialization_noise="default",
@@ -341,88 +342,90 @@ class TwoArmPegInHole(TwoArmEnv):
         self.model.merge_assets(self.hole)
         self.model.merge_assets(self.peg)
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
 
         # Additional object references from this env
         self.hole_body_id = self.sim.model.body_name2id(self.hole.root_body)
         self.peg_body_id = self.sim.model.body_name2id(self.peg.root_body)
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Creates object-based observables if enabled
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+
+        # low-level object information
+        if self.use_object_obs:
+            # Get robot prefix and define observables modality
+            if self.env_configuration == "bimanual":
+                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
+                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
+            else:
+                pf0 = self.robots[0].robot_model.naming_prefix
+                pf1 = self.robots[1].robot_model.naming_prefix
+            modality = "object"
+
+            # position and rotation of peg and hole
+            @sensor(modality=modality)
+            def hole_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.hole_body_id])
+
+            @sensor(modality=modality)
+            def hole_quat(obs_cache):
+                return T.convert_quat(self.sim.data.body_xquat[self.hole_body_id], to="xyzw")
+
+            @sensor(modality=modality)
+            def peg_to_hole(obs_cache):
+                return obs_cache["hole_pos"] - np.array(self.sim.data.body_xpos[self.peg_body_id]) if \
+                    "hole_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def peg_quat(obs_cache):
+                return T.convert_quat(self.sim.data.body_xquat[self.peg_body_id], to="xyzw")
+
+            # Relative orientation parameters
+            @sensor(modality=modality)
+            def angle(obs_cache):
+                t, d, cos = self._compute_orientation()
+                obs_cache["t"] = t
+                obs_cache["d"] = d
+                return cos
+
+            @sensor(modality=modality)
+            def t(obs_cache):
+                return obs_cache["t"] if "t" in obs_cache else 0.0
+
+            @sensor(modality=modality)
+            def d(obs_cache):
+                return obs_cache["d"] if "d" in obs_cache else 0.0
+
+            sensors = [hole_pos, hole_quat, peg_to_hole, peg_quat, angle, t, d]
+            names = [s.__name__ for s in sensors]
+
+            # Create observables
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )
+
+        return observables
 
     def _reset_internal(self):
         """
         Resets simulation internal configurations.
         """
         super()._reset_internal()
-
-    def _get_observation(self):
-        """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
-
-        Returns:
-            OrderedDict: Observations from the environment
-        """
-        di = super()._get_observation()
-
-        # low-level object information
-        if self.use_object_obs:
-            # Get robot prefix
-            if self.env_configuration == "bimanual":
-                pr0 = self.robots[0].robot_model.naming_prefix + "left_"
-                pr1 = self.robots[0].robot_model.naming_prefix + "right_"
-            else:
-                pr0 = self.robots[0].robot_model.naming_prefix
-                pr1 = self.robots[1].robot_model.naming_prefix
-
-            # position and rotation of peg and hole
-            hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
-            hole_quat = T.convert_quat(
-                self.sim.data.body_xquat[self.hole_body_id], to="xyzw"
-            )
-            di["hole_pos"] = hole_pos
-            di["hole_quat"] = hole_quat
-
-            peg_pos = np.array(self.sim.data.body_xpos[self.peg_body_id])
-            peg_quat = T.convert_quat(
-                self.sim.data.body_xquat[self.peg_body_id], to="xyzw"
-            )
-            di["peg_to_hole"] = peg_pos - hole_pos
-            di["peg_quat"] = peg_quat
-
-            # Relative orientation parameters
-            t, d, cos = self._compute_orientation()
-            di["angle"] = cos
-            di["t"] = t
-            di["d"] = d
-
-            di["object-state"] = np.concatenate(
-                [
-                    di["hole_pos"],
-                    di["hole_quat"],
-                    di["peg_to_hole"],
-                    di["peg_quat"],
-                    [di["angle"]],
-                    [di["t"]],
-                    [di["d"]],
-                ]
-            )
-
-        return di
 
     def _check_success(self):
         """

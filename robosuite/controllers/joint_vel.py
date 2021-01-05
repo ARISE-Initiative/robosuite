@@ -1,5 +1,5 @@
 from robosuite.controllers.base_controller import Controller
-from robosuite.utils.control_utils import RingBuffer
+from robosuite.utils.buffers import RingBuffer
 import numpy as np
 
 
