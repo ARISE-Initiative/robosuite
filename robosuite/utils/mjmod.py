@@ -1697,6 +1697,7 @@ class DynamicsModder(BaseModder):
         # Make sure specified parameter is valid, and then modify it
         assert attr in self.dynamics_parameters, "Invalid dynamics parameter specified! Supported parameters are: {};" \
                                                  " requested: {}".format(self.dynamics_parameters, attr)
+        # Modify the requested parameter (uses a clean way to programmatically call the appropriate method)
         getattr(self, f"mod_{attr}")(name, val)
 
     def mod_density(self, name=None, val=0.0):
