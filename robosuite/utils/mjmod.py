@@ -1669,7 +1669,8 @@ class DynamicsModder(BaseModder):
 
     def update_sim(self, sim):
         """
-        In addition to super method, reset all internal values
+        In addition to super method, update internal default values to match the current values from
+        (the presumably new) @sim.
 
         Args:
             sim (MjSim): MjSim object
