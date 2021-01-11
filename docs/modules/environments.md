@@ -1,6 +1,6 @@
 # Environments
 
-Environments are the main **robosuite** API objects that external code will interact with. Each environment corresponds to a robot manipulation task and provides a standard interface for an agent to interact with the environment. 
+Environments are the main **robosuite** API objects that external code will interact with. Each environment corresponds to a robot manipulation task and provides a standard interface for an agent to interact with the environment. While **robosuite** can support environments from different robotic domains, the current release focuses is on manipulation environments.
 
 Next, we will describe how to create an environment, how to interact with an environment, and how each environment creates a simulated task in the MuJoCo physics engine. We will use the `TwoArmLift` environment as a running example for each section.
 
@@ -74,7 +74,8 @@ We provide a few additional details on a few keyword arguments below to highligh
 - `robots` : this argument can be used to easily instantiate tasks with different robot arms. For example, we could change the task to use two "Jaco" robots by passing `robots=["Jaco", "Jaco"]`. Once the environment is initialized, these robots (as captured by the [Robot](robots) class) can be accessed via the `robots` array attribute within the environment, i.e.: `env.robots[i]` for the `ith` robot arm in the environment.
 - `gripper_types` : this argument can be used to easily swap out different grippers for each robot arm. For example, suppose we want to swap the default grippers for the arms in the example above. We could just pass `gripper_types=["PandaGripper", "RethinkGripper"]` to achieve this. Note that a single type can also be used to automatically broadcast the same gripper type across all arms.
 - `controller_configs` : this argument can be used to easily replace the action space for each robot arm. For example, if we would like to control the arm using joint velocities instead of OSC, we could use `load_controller_config(default_controller="JOINT_VELOCITY")` in the example above. Similar to `gripper_types` this value can either be per-arm specific or a single configuration to broadcast to all robot arms.
-- `env_configuration` : this argument is used for two-arm tasks to easily configure how the robots are oriented with respect to one another. For example, in the `TwoArmLift` environment, we could pass `env_configuration="single-arm-parallel"` instead so that the robot arms are located next to each other, instead of opposite each other
+- `env_configuration` : this argument is mainly used for two-arm tasks to easily configure how the robots are oriented with respect to one another. For example, in the `TwoArmLift` environment, we could pass `env_configuration="single-arm-parallel"` instead so that the robot arms are located next to each other, instead of opposite each other
+- `placement_initializer` : this argument is optional, but can be used to specify a custom `ObjectPositionSampler` to override the default start state distribution for Mujoco objects. Samplers are responsible for sampling a set of valid, non-colliding placements for all of the objects in the scene at the start of each episode (e.g. when `env.reset()` is called).
 
 ## Interacting with an Environment
 
@@ -103,7 +104,7 @@ print("rollout completed with return {}".format(ret))
 
 ### Observations
 
-**robosuite** observations are dictionaries that include key-value pairs per modality. This makes it easy for agents to work with modalities of different shapes (for example, flat proprioception observations, and pixel observations). Below, we list commonly used observation keys.
+**robosuite** observations are dictionaries that include key-value pairs per modality. This makes it easy for agents to work with modalities of different shapes (for example, flat proprioception observations, and pixel observations). Note that any observation entry ending with `*-state` represents a concatenation of all individual observations that belong to `*` modality. Below, we list commonly used observation keys.
 
 - `robot0_proprio-state`, `robot1_proprio-state` : proprioception observations for each robot arm. This includes the arm joint positions (encoded using `sin` and `cos`), arm joint velocities, end effector pose, gripper finger positions, and gripper finger velocities. The shape for this modality is flat (e.g. `(N,)`).
 - `object-state` : task-specific object observations. For example, the `TwoArmLift` environment provides the pose of the pot, the position of each handle, and the relative position of each robot gripper with respect to each handle. The shape for this modality is flat (e.g. `(N,)`).
@@ -149,26 +150,24 @@ Otherwise, we'll only provide partial rewards if we're using reward shaping, and
 ```python
     elif self.reward_shaping:
         
-        # lifting reward (smooth value between [0, 2])
+        # lifting reward (smooth value between [0, 1.5])
         pot_height = get_pot_height()
-        r_lift = min(max(pot_height - 0.05, 0), 0.2)
+        r_lift = min(max(pot_height - 0.05, 0), 0.15)
         reward += 10. * direction_coef * r_lift
         
-        # reaching / grasping reward (smooth value between [0, 1])
-        left_hand_handle_contact = is_left_contact()
-        right_hand_handle_contact = is_right_contact()
+        # reaching reward (smooth value between [0, 1])
         left_hand_handle_distance = get_left_distance()
         right_hand_handle_distance = get_right_distance()
+        reward += 0.5 * (1 - np.tanh(10.0 * left_hand_handle_distance))
+        reward += 0.5 * (1 - np.tanh(10.0 * right_hand_handle_distance))
         
-        # Half of reward for each hand converging to the correct handle
+        # grasping reward (discrete values between [0, 0.5])
+        left_hand_handle_contact = is_left_contact()
+        right_hand_handle_contact = is_right_contact()
         if left_hand_handle_contact:
-            reward += 0.5
-        else:
-            reward += 0.5 * (1 - np.tanh(10.0 * left_hand_handle_distance))
+            reward += 0.25
         if right_hand_handle_contact:
             reward += 0.5
-        else:
-            reward += 0.5 * (1 - np.tanh(10.0 * right_hand_handle_distance))
 ```
 
 Lastly, we need to normalize our reward and then re-scale its value to `reward_scale` if it is specified before finally returning the calculated reward.
@@ -183,13 +182,11 @@ Lastly, we need to normalize our reward and then re-scale its value to `reward_s
 
 Every environment owns its own `MJCF` model that sets up the MuJoCo physics simulation by loading the robots, the workspace, and the objects into the simulator appropriately. This MuJoCo simulation model is programmatically instantiated in the `_load_model` function of each environment, by creating an instance of the `Task` class.
 
-Each `Task` class instance owns an `Arena` model, a list of `Robot` model instances, and a list of `Object` model instances. These are **robosuite** classes that introduce a useful abstraction in order to make designing scenes in MuJoCo easy. Every `Arena` is based off of an xml that defines the workspace (for example, table or bins) and camera locations. Every `Robot` is a MuJoCo model of each type of robot arm (e.g. Sawyer, Panda, etc.). Every `Object` model corresponds to a physical object loaded into the simulation (e.g. cube, pot with handles, etc.).
-
-Each `Task` class instance also takes a `placement_initializer` as input. The `placement_initializer` determines the start state distribution for the environment by sampling a set of valid, non-colliding placements for all of the objects in the scene at the start of each episode (e.g. when `env.reset()` is called).
+Each `Task` class instance owns an `Arena` model, a list of `RobotModel` instances, and a list of `ObjectModel` instances. These are **robosuite** classes that introduce a useful abstraction in order to make designing scenes in MuJoCo easy. Every `Arena` is based off of an xml that defines the workspace (for example, table or bins) and camera locations. Every `RobotModel` is a MuJoCo model of representing an arbitrary robot (for `ManipulationModel`s, this represent armed robots, e.g. Sawyer, Panda, etc.). Every `ObjectModel` corresponds to a physical object loaded into the simulation (e.g. cube, pot with handles, etc.).
 
 ## Task Descriptions
 
-We provide a brief description of each environment below. For benchmarking results on these standardized environments, please check out the [Benchmarking](../algorithms/benchmarking) page.
+While **robosuite** can support environments from different robotic domains, the current release focuses is on manipulation environments (`ManipulationEnv`), We provide a brief description of each environment below. For benchmarking results on these standardized environments, please check out the [Benchmarking](../algorithms/benchmarking) page.
 
 ### Single-Arm Tasks
 

@@ -124,27 +124,35 @@ This will sample the `self.cube`'s object location uniformly at random in a box 
 Another common sampler is the `SequentialCompositeSampler`, which is useful for composing multiple arbitrary placement samplers together. As an example, consider the following code snippet from the `__init__` method of the `NutAssembly` environment class. 
 
 ```python
-self.placement_initializer = SequentialCompositeSampler()
-self.placement_initializer.sample_on_top(
-    "SquareNut0",
-    surface_name="table",
-    x_range=[-0.115, -0.11],
-    y_range=[0.11, 0.225],
-    rotation=None,
-    rotation_axis='z',
-    z_offset=0.02,
-    ensure_object_boundary_in_range=False,
-)
-self.placement_initializer.sample_on_top(
-    "RoundNut0",
-    surface_name="table",
-    x_range=[-0.115, -0.11],
-    y_range=[-0.225, -0.11],
-    rotation=None,
-    rotation_axis='z',
-    z_offset=0.02,
-    ensure_object_boundary_in_range=False,
-)
+# Establish named references to each nut object
+nut_names = ("SquareNut", "RoundNut")
+
+# Initialize the top-level sampler
+self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+
+# Create individual samplers per nut
+for nut_name, default_y_range in zip(nut_names, ([0.11, 0.225], [-0.225, -0.11])):
+    self.placement_initializer.append_sampler(
+        sampler=UniformRandomSampler(
+            name=f"{nut_name}Sampler",
+            x_range=[-0.115, -0.11],
+            y_range=default_y_range,
+            rotation=None,
+            rotation_axis='z',
+            ensure_object_boundary_in_range=False,
+            ensure_valid_placement=True,
+            reference_pos=self.table_offset,
+            z_offset=0.02,
+        )
+    )
+   
+# No objects have been assigned to any samplers yet, so we do that now
+for i, (nut_cls, nut_name) in enumerate(zip(
+        (SquareNutObject, RoundNutObject),
+        nut_names,
+)):
+    nut = nut_cls(name=nut_name)
+    self.placement_initializer.add_objects_to_sampler(sampler_name=f"{nut_name}Sampler", mujoco_objects=nut)
 ```
 
-The code snippet above results in two `UniformRandomSampler` instances being used to place the nuts onto the table surface - one for each type of nut. Notice this also allows the nuts to be initialized in separate regions of the table. The `SequentialCompositeSampler` makes it easy to compose multiple placement initializers together in order to specify how different objects should be initialized in an environment.
+The code snippet above results in two `UniformRandomSampler` instances being used to place the nuts onto the table surface - one for each type of nut. Notice this also allows the nuts to be initialized in separate regions of the table, and with arbitrary sampling settings. The `SequentialCompositeSampler` makes it easy to compose multiple placement initializers together and assign objects to each sub-sampler in a modular way.
