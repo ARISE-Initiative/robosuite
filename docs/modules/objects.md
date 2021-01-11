@@ -8,16 +8,32 @@ Objects, such as boxes and cans, are essential to building manipulation environm
 
 ## The MujocoObject class
 ```python
-class MujocoObject:
+class MujocoObject(MujocoModel):
     def __init__(...):
-        pass
+        
+        ...
+
+        # Attributes that should be filled in within the subclass
+        self._name = None
+        self._obj = None
+
+        # Attributes that are auto-filled by _get_object_properties call
+        self._root_body = None
+        self._bodies = None
+        self._joints = None
+        self._actuators = None
+        self._sites = None
+        self._contact_geoms = None
+        self._visual_geoms = None
 ```
-`MujocoObject` is the base class of all objects. One must note that it is not a subclass of `MujocoXML`. The XML of an object is generated through the call to `get_collision` and `get_visual`. Both calls take a boolean argument `site`, which adds a site to the center of the object if set. A site is helpful for locating the object in simulation.
+`MujocoObject` is the base class of all objects. One must note that it is not a subclass of `MujocoXML`, but does extend from the unifying `MujocoModel` class from which all simulation models (including robots, grippers, etc.) should extend from. All of the attributes shown above prepended with a `_` are intended to be private variables and not accessed by external objects. Instead, any of these properties can be accessed via its public version, without the `_` (e.g.: to access all the object's joints, call `obj.joints` instead of `obj._joints`). This is because all public attributes are automatically post-processed from their private counterparts and have naming prefixes appended to it.
+
+The XML of an object is generated once during initialization via the `_get_object_subtree` call, after which any external object can extract a reference to this XML via the `get_obj` call.
 ```python
-    def get_collision(self, name=None, site=False):
+    def _get_object_subtree(self):
         pass
 
-    def get_visual(self, name=None, site=False):
+    def get_obj(self):
         pass
 ```
 
@@ -36,19 +52,21 @@ This allows us to do things like the following.
 ```python
 table_top = np.array([0, 1, 0])
 bottom_offset = obj.get_bottom_offset()
-pos = table_top - bottom_offset # pos + bottom_offset = table_top
-obj_xml = obj.get_visual().set("pos", array_to_string(pos))
+pos = table_top - bottom_offset                             # pos + bottom_offset = table_top
+obj_xml = obj.get_obj().set("pos", array_to_string(pos))    # Set the top-level body of this object
 ```
 
 ## Creating a XMLObject
-One can use MuJoCo MJCF XML to generate an object, either as a composition of primitive [geoms](http://mujoco.org/book/modeling.html#geom) or imported from STL files of triangulated [meshes](http://www.mujoco.org/book/modeling.html#mesh). An example is `robosuite.models.objects.xml_objects.BreadObject`. Its [python definition](../../../robosuite/models/objects/xml_objects.py#L41) is short. Note that all `MujocoXMLOBject` classes require both a `name` and `joints` argument, the former which specifies the in-sim name of the object instantiated and the latter which specifies the joint parameters for that object.
+One can use MuJoCo MJCF XML to generate an object, either as a composition of primitive [geoms](http://mujoco.org/book/modeling.html#geom) or imported from STL files of triangulated [meshes](http://www.mujoco.org/book/modeling.html#mesh). An example is `robosuite.models.objects.xml_objects.BreadObject`. Its [python definition](../../../robosuite/models/objects/xml_objects.py#L41) is short. Note that all `MujocoXMLObject` classes require both a `fname` and `name` argument, the former which specifies the filepath to the raw XML file and the latter which specifies the in-sim name of the object instantiated. The optional `joints` argument can also specify a custom set of joints to apply to the given object (defaults to "default", which is a single free joint). Generally, the normal use case is to define a single class corresponding to a specific XML file, as shown below:
 ```python
 class BreadObject(MujocoXMLObject):
-    def __init__(self, name=None, joints=None):
-        super().__init__(xml_path_completion("objects/bread.xml"), name=name, joints=name)
+    def __init__(self, name):
+        super().__init__(xml_path_completion("objects/bread.xml"),
+                         name=name, joints=[dict(type="free", damping="0.0005")],
+                         obj_type="all", duplicate_collision_geoms=True)
 ```
 
-So all the important definitions are in the [bread.xml](../robosuite/models/assets/objects/bread.xml) file.
+In the corresponding XML file, a few key definitions must be present. The top-level, un-named body must contain as immediate children tags (a) the actual object bodie(s) (the top-level **must** be named `object`) and (b) three site tags named `bottom_site`, `top_site`, and `horizontal_radius_site` and whose `pos` values must be specified. The example for the `BreadObject`, [bread.xml](../robosuite/models/assets/objects/bread.xml), is shown below:
 ```xml
 <mujoco model="bread">
   <asset>
@@ -58,12 +76,8 @@ So all the important definitions are in the [bread.xml](../robosuite/models/asse
   </asset>
   <worldbody>
     <body>
-      <body name="collision">
-        <geom pos="0 0 0" mesh="bread_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1"  material="bread" group="1" condim="4"/>
-      </body>
-      <body name="visual">
-        <geom pos="0 0 0" mesh="bread_mesh" type="mesh" material="bread"  conaffinity="0" contype="0"  group="0" mass="0.0001"/>
-        <geom pos="0 0 0" mesh="bread_mesh" type="mesh" material="bread"  conaffinity="0" contype="0"  group="1" mass="0.0001"/>
+      <body name="object">
+        <geom pos="0 0 0" mesh="bread_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1"  material="bread" group="0" condim="4"/>
       </body>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.045" name="bottom_site"/>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 0.03" name="top_site"/>
@@ -72,15 +86,19 @@ So all the important definitions are in the [bread.xml](../robosuite/models/asse
   </worldbody>
 </mujoco>
 ```
-* `get_collision` of `MujocoXmlObject` would look for the `<body>` tag with name `collision`. 
-* `get_visual` of `MujocoXmlObject` would look for the `<body>` tag with name `visual`.
+Concretely,
+* `_get_object_subtree` looks for the object bodie(s) as defined by all nested bodie(s) beginning with the `object`-named body tag.
 * `bottom_site` should be the bottom of the object, i.e. contact point with the surface it is placed on.
 * `top_site` should be the top of the object, i.e. contact point if something is placed on it.
 * `horizontal_radius_site` can be any point on a circle in the x-y plane that does not intersect the object. This allows us to place multiple objects without having them collide into one another.
-* These attributes will be parsed by the `MujocoXMLObject` class and conform to the `MujocoObject` interface.
 
 ## Creating a procedurally generated object
-Procedurally generated objects have been used in [several](https://arxiv.org/abs/1802.09564) [recent](https://arxiv.org/abs/1806.09266) [works](https://arxiv.org/abs/1709.07857) to train control policies with improved robustness and generalization. Here you can programmatically generate an MJCF XML of an object from scratch using `xml.etree.ElementTree`, and compose an object of multiple geom primitives. The implementation is straightforward and interested readers should refer to `_get_collision` and `get_visual` method of `MujocoGeneratedObject`, defined [here](../../../robosuite/models/objects/generated_objects.py). Additionally, custom texture definitions are supported on a per-geom level, where specific texture images can be mapped to individual geoms. Our showcase example that incorporates all of these aspects is the `HammerObject` class which is composed of multiple texture-enabled geoms and utilized within the `TwoArmHandover` environment; its definition can be found [here](../../../robosuite/models/objects/generated_objects.py#L13).
+Procedurally generated objects have been used in [several](https://arxiv.org/abs/1802.09564) [recent](https://arxiv.org/abs/1806.09266) [works](https://arxiv.org/abs/1709.07857) to train control policies with improved robustness and generalization. Here you can programmatically generate an MJCF XML of an object from scratch using `xml.etree.ElementTree`, and compose an object of multiple geom primitives. The base class for this type of object is `MujocoGeneratedObject`.
+**robosuite** natively supports all Mujoco primitive objects with procedurally-generated `PrimitiveObject` classes (`BoxObject`, `BallObject`, `CapsuleObject`, and `CylinderObject`).
+
+Additionally, **robosuite** supports custom, complex objects that can be defined by collections of primitive geoms (the [`CompositeObject`](../../../robosuite/models/objects/generated_objects.py#L257) class) or even other objects (the [`CompositeBodyObject`](../../../robosuite/models/objects/generated_objects.py#L10) class). The APIs for each of these classes have been standardized for ease of usage, and interested readers should consult the docstrings for each of these classes, as well as provided examples of each class ([`HammerObject`](../../../robosuite/models/objects/composite/hammer.py), [`HingedBoxObject`](../../../robosuite/models/objects/composite_body/hinged_box.py)).
+
+It should also be noted that all of the above classes extending from the `MujocoGenereatedObject` class automatically supports custom texture definitions on a per-geom level, where specific texture images can be mapped to individual geoms. The above `HammerObject` showcases an example applying custom textures to different geoms of the resulting object.
 
 ## Placing Objects
 
@@ -88,17 +106,22 @@ Object locations are initialized on every environment reset using instances of t
 
 ```python
 self.placement_initializer = UniformRandomSampler(
+    name="ObjectSampler",
+    mujoco_objects=self.cube,
     x_range=[-0.03, 0.03],
     y_range=[-0.03, 0.03],
-    ensure_object_boundary_in_range=False,
+    rotation_axis='z',
     rotation=None,
+    ensure_object_boundary_in_range=False,
+    ensure_valid_placement=True,
+    reference_pos=self.table_offset,
     z_offset=0.01,
 )
 ```
 
-This will sample the cube location uniformly at random in a box of size `0.03` with random z-rotation, and with an offset of `0.01` above the table surface. 
+This will sample the `self.cube`'s object location uniformly at random in a box of size `0.03` (`x_range`, `y_range`) with random (`rotation`) z-rotation (`rotation_axis`), and with an offset of `0.01` (`z_offset`) above the table surface location (`reference_pos`). The sampler will also make sure that the entire object boundary falls within the sampling box size (`ensure_object_boundary_in_range`) and does not collide with any placed objects (`ensure_valid_placement`).
 
-Another common sampler is the `SequentialCompositeSampler`, which is useful for composing multiple uniform random placement samplers together. As an example, consider the following code snippet from the `__init__` method of the `NutAssembly` environment class. 
+Another common sampler is the `SequentialCompositeSampler`, which is useful for composing multiple arbitrary placement samplers together. As an example, consider the following code snippet from the `__init__` method of the `NutAssembly` environment class. 
 
 ```python
 self.placement_initializer = SequentialCompositeSampler()

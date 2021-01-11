@@ -107,8 +107,9 @@ print("rollout completed with return {}".format(ret))
 
 - `robot0_proprio-state`, `robot1_proprio-state` : proprioception observations for each robot arm. This includes the arm joint positions (encoded using `sin` and `cos`), arm joint velocities, end effector pose, gripper finger positions, and gripper finger velocities. The shape for this modality is flat (e.g. `(N,)`).
 - `object-state` : task-specific object observations. For example, the `TwoArmLift` environment provides the pose of the pot, the position of each handle, and the relative position of each robot gripper with respect to each handle. The shape for this modality is flat (e.g. `(N,)`).
-- `{camera_name}_image` : image observations for camera with name `camera_name`. The shape for this modality is `(H, W, 3)` where `H` and `W` are the height and width of the image respectively. The image is **flipped** across the height dimension due to issues with `mujoco-py` - so we recommend applying an operation like `im = im[::-1]` to fix this.
-- `{camera_name}_depth` : depth image observations for camera with name `camera_name`. The shape for this modality is `(H, W)` where `H` and `W` are the height and width of the image respectively. The image is **flipped** across the height dimension due to issues with `mujoco-py` - so we recommend applying an operation like `im = im[::-1]` to fix this.
+- `{camera_name}_image` : image observations for camera with name `camera_name`. The shape for this modality is `(H, W, 3)` where `H` and `W` are the height and width of the image respectively. By default, the returned image convention is mujoco's native `opengl` ("flipped"). This can alternatively be set to `opencv` convention (unflipped) via the `IMAGE_CONVENTION` macro in `macros.py`.
+- `{camera_name}_depth` : depth image observations for camera with name `camera_name`. The shape for this modality is `(H, W)` where `H` and `W` are the height and width of the image respectively. By default, the returned image convention is mujoco's native `opengl` ("flipped"). This can alternatively be set to `opencv` convention (unflipped) via the `IMAGE_CONVENTION` macro in `macros.py`.
+- `image-state` : (optional) stacked image observations. Note that this is disabled by default, and can be toggled via the `CONCATENATE_IMAGES` macro in `macros.py`.
 
 ### Rewards and Termination
 
