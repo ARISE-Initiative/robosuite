@@ -316,29 +316,33 @@ class RobotEnv(MujocoEnv):
                 rgb_sensor_name = f"{cam_name}_image"
                 depth_sensor_name = f"{cam_name}_depth"
 
-                @sensor(modality="image")
-                def camera_rgb(obs_cache):
-                    img = self.sim.render(
-                        camera_name=cam_name,
-                        width=cam_w,
-                        height=cam_h,
-                        depth=cam_d,
-                    )
-                    if cam_d:
-                        rgb, depth = img
-                        obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
-                        return rgb[::convention]
-                    else:
-                        return img[::convention]
-                sensors.append(camera_rgb)
+                def camera_rgb_fn(cam_name):
+                    @sensor(modality="image")
+                    def camera_rgb(obs_cache):
+                        img = self.sim.render(
+                            camera_name=cam_name,
+                            width=cam_w,
+                            height=cam_h,
+                            depth=cam_d,
+                        )
+                        if cam_d:
+                            rgb, depth = img
+                            obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
+                            return rgb[::convention]
+                        else:
+                            return img[::convention]
+                    return camera_rgb
+                sensors.append(camera_rgb_fn(cam_name))
                 names.append(rgb_sensor_name)
 
                 if cam_d:
-                    @sensor(modality="image")
-                    def camera_depth(obs_cache):
-                        return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
-                            np.zeros((cam_h, cam_w, 1))
-                    sensors.append(camera_depth)
+                    def camera_depth_fn(depth_sensor_name):
+                        @sensor(modality="image")
+                        def camera_depth(obs_cache):
+                            return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
+                                np.zeros((cam_h, cam_w, 1))
+                        return camera_depth
+                    sensors.append(camera_depth(depth_sensor_name))
                     names.append(depth_sensor_name)
 
             # Create observables for these cameras
