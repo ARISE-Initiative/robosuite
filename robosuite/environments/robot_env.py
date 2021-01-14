@@ -303,47 +303,17 @@ class RobotEnv(MujocoEnv):
 
         # Loop through cameras and update the observations if using camera obs
         if self.use_camera_obs:
-            # Make sure we get correct convention
-            convention = IMAGE_CONVENTION_MAPPING[macros.IMAGE_CONVENTION]
-
             # Create sensor information
             sensors = []
             names = []
             for (cam_name, cam_w, cam_h, cam_d) in \
                     zip(self.camera_names, self.camera_widths, self.camera_heights, self.camera_depths):
 
-                # Add camera observables to the dict
-                rgb_sensor_name = f"{cam_name}_image"
-                depth_sensor_name = f"{cam_name}_depth"
-
-                def camera_rgb_fn(cam_name):
-                    @sensor(modality="image")
-                    def camera_rgb(obs_cache):
-                        img = self.sim.render(
-                            camera_name=cam_name,
-                            width=cam_w,
-                            height=cam_h,
-                            depth=cam_d,
-                        )
-                        if cam_d:
-                            rgb, depth = img
-                            obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
-                            return rgb[::convention]
-                        else:
-                            return img[::convention]
-                    return camera_rgb
-                sensors.append(camera_rgb_fn(cam_name))
-                names.append(rgb_sensor_name)
-
-                if cam_d:
-                    def camera_depth_fn(depth_sensor_name):
-                        @sensor(modality="image")
-                        def camera_depth(obs_cache):
-                            return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
-                                np.zeros((cam_h, cam_w, 1))
-                        return camera_depth
-                    sensors.append(camera_depth(depth_sensor_name))
-                    names.append(depth_sensor_name)
+                # Add cameras associated to our arrays
+                cam_sensors, cam_sensor_names = self._create_camera_sensors(
+                    cam_name, cam_w=cam_w, cam_h=cam_h, cam_d=cam_d, modality="image")
+                sensors += cam_sensors
+                names += cam_sensor_names
 
             # Create observables for these cameras
             for name, s in zip(names, sensors):
@@ -354,6 +324,63 @@ class RobotEnv(MujocoEnv):
                 )
 
         return observables
+
+    def _create_camera_sensors(self, cam_name, cam_w, cam_h, cam_d, modality="image"):
+        """
+        Helper function to create sensors for a given camera. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            cam_name (str): Name of camera to create sensors for
+            cam_w (int): Width of camera
+            cam_h (int): Height of camera
+            cam_d (bool): Whether to create a depth sensor as well
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given camera
+                names (list): array of corresponding observable names
+        """
+        # Make sure we get correct convention
+        convention = IMAGE_CONVENTION_MAPPING[macros.IMAGE_CONVENTION]
+
+        # Create sensor information
+        sensors = []
+        names = []
+
+        # Add camera observables to the dict
+        rgb_sensor_name = f"{cam_name}_image"
+        depth_sensor_name = f"{cam_name}_depth"
+
+        @sensor(modality=modality)
+        def camera_rgb(obs_cache):
+            img = self.sim.render(
+                camera_name=cam_name,
+                width=cam_w,
+                height=cam_h,
+                depth=cam_d,
+            )
+            if cam_d:
+                rgb, depth = img
+                obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
+                return rgb[::convention]
+            else:
+                return img[::convention]
+
+        sensors.append(camera_rgb)
+        names.append(rgb_sensor_name)
+
+        if cam_d:
+            @sensor(modality=modality)
+            def camera_depth(obs_cache):
+                return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))
+
+            sensors.append(camera_depth)
+            names.append(depth_sensor_name)
+
+        return sensors, names
 
     def _reset_internal(self):
         """
