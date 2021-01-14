@@ -50,7 +50,7 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
-        control_freq=100,
+        control_freq=20,
     )
 
     # list of all demonstrations episodes
@@ -72,16 +72,16 @@ if __name__ == "__main__":
         env.viewer.set_camera(0)
 
         # load the flattened mujoco states
-        states = f["data/{}/states".format(ep)].value
+        states = f["data/{}/states".format(ep)][()]
 
         if args.use_actions:
 
             # load the initial state
             env.sim.set_state_from_flattened(states[0])
+            env.sim.forward()
 
             # load the actions and play them back open-loop
-            joint_torques = f["data/{}/joint_torques".format(ep)].value
-            actions = np.array(f["data/{}/actions".format(ep)].value)
+            actions = np.array(f["data/{}/actions".format(ep)][()])
             num_actions = actions.shape[0]
 
             for j, action in enumerate(actions):
