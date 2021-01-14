@@ -91,7 +91,8 @@ if __name__ == "__main__":
                 if j < num_actions - 1:
                     # ensure that the actions deterministically lead to the same recorded states
                     state_playback = env.sim.get_state().flatten()
-                    assert(np.all(np.equal(states[j + 1], state_playback)))
+                    if not np.all(np.equal(states[j + 1], state_playback)):
+                        print("warning! playback diverged for ep {} at step {}".format(ep, j))
 
         else:
 
