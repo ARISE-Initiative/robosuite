@@ -50,7 +50,7 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
-        control_freq=100,
+        control_freq=20,
     )
 
     # list of all demonstrations episodes
@@ -72,16 +72,16 @@ if __name__ == "__main__":
         env.viewer.set_camera(0)
 
         # load the flattened mujoco states
-        states = f["data/{}/states".format(ep)].value
+        states = f["data/{}/states".format(ep)][()]
 
         if args.use_actions:
 
             # load the initial state
             env.sim.set_state_from_flattened(states[0])
+            env.sim.forward()
 
             # load the actions and play them back open-loop
-            joint_torques = f["data/{}/joint_torques".format(ep)].value
-            actions = np.array(f["data/{}/actions".format(ep)].value)
+            actions = np.array(f["data/{}/actions".format(ep)][()])
             num_actions = actions.shape[0]
 
             for j, action in enumerate(actions):
@@ -91,7 +91,9 @@ if __name__ == "__main__":
                 if j < num_actions - 1:
                     # ensure that the actions deterministically lead to the same recorded states
                     state_playback = env.sim.get_state().flatten()
-                    assert(np.all(np.equal(states[j + 1], state_playback)))
+                    if not np.all(np.equal(states[j + 1], state_playback)):
+                        err = np.linalg.norm(states[j + 1] - state_playback)
+                        print(f"[warning] playback diverged by {err:.2f} for ep {ep} at step {j}")
 
         else:
 
