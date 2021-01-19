@@ -67,6 +67,10 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         # Get camera names for this robot
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
+        # By default, set small frictionloss and armature values
+        self.set_joint_attribute(attrib="frictionloss", values=0.01 * np.ones(self.dof), force=False)
+        self.set_joint_attribute(attrib="armature", values=0.01 * np.ones(self.dof), force=False)
+
     def set_base_xpos(self, pos):
         """
         Places the robot on position @pos.
@@ -87,13 +91,15 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         rot = mat2quat(euler2mat(rot))[[3,0,1,2]]
         self._elements["root_body"].set("quat", array_to_string(rot))
 
-    def set_joint_attribute(self, attrib, values):
+    def set_joint_attribute(self, attrib, values, force=True):
         """
         Sets joint attributes, e.g.: friction loss, damping, etc.
 
         Args:
             attrib (str): Attribute to set for all joints
             values (n-array): Values to set for each joint
+            force (bool): If True, will automatically override any pre-existing value. Otherwise, if a value already
+                exists for this value, it will be skipped
 
         Raises:
             AssertionError: [Inconsistent dimension sizes]
@@ -101,7 +107,8 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         assert values.size == len(self._elements["joints"]), "Error setting joint attributes: " + \
             "Values must be same size as joint dimension. Got {}, expected {}!".format(values.size, self.dof)
         for i, joint in enumerate(self._elements["joints"]):
-            joint.set(attrib, array_to_string(np.array([values[i]])))
+            if force or joint.get(attrib, None) is None:
+                joint.set(attrib, array_to_string(np.array([values[i]])))
 
     def add_mount(self, mount):
         """
