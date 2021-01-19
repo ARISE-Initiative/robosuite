@@ -244,8 +244,6 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Scale rotation for teleoperation (tuned for OSC)
         drotation *= 75
         dpos *= 200
-        # Interpret euler angles as (mirrored) scaled axis angle values
-        drotation = -drotation
     else:
         # No other controllers currently supported
         print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")
