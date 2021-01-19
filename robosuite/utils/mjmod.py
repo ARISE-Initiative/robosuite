@@ -1478,11 +1478,15 @@ class DynamicsModder(BaseModder):
 
         randomize_damping (bool): If True, randomizes joint dampings
 
+        randomize_armature (bool): If True, randomizes joint armatures
+
         stiffness_perturbation_ratio (float): Relative (fraction) magnitude of joint stiffness randomization
 
         frictionloss_perturbation_size (float): Magnitude of joint frictionloss randomization
 
         damping_perturbation_size (float): Magnitude of joint damping randomization
+
+        armature_perturbation_size (float): Magnitude of joint armature randomization
     """
     def __init__(
             self,
@@ -1520,9 +1524,11 @@ class DynamicsModder(BaseModder):
             randomize_stiffness=True,
             randomize_frictionloss=True,
             randomize_damping=True,
+            randomize_armature=True,
             stiffness_perturbation_ratio=0.1,
             frictionloss_perturbation_size=0.05,
             damping_perturbation_size=0.01,
+            armature_perturbation_size=0.01,
     ):
         super().__init__(sim=sim, random_state=random_state)
 
@@ -1578,6 +1584,8 @@ class DynamicsModder(BaseModder):
                              "type": "size", "clip": (0.0, np.inf)},
             "damping": {"randomize": randomize_damping, "perturbation": damping_perturbation_size,
                         "type": "size", "clip": (0.0, np.inf)},
+            "armature": {"randomize": randomize_armature, "perturbation": armature_perturbation_size,
+                         "type": "size", "clip": (0.0, np.inf)},
         }
 
         # Store defaults so we don't loss track of the original (non-perturbed) values
@@ -1626,6 +1634,7 @@ class DynamicsModder(BaseModder):
                 "stiffness": self.sim.model.jnt_stiffness[joint_id],
                 "frictionloss": np.array(self.sim.model.dof_frictionloss[dof_idx]),
                 "damping": np.array(self.sim.model.dof_damping[dof_idx]),
+                "armature": np.array(self.sim.model.dof_armature[dof_idx]),
             }
 
     def restore_defaults(self):
@@ -1875,13 +1884,28 @@ class DynamicsModder(BaseModder):
 
         Args:
             name (str): Name for this element.
-            val (float): New friction loss.
+            val (float): New damping.
         """
         # Modify this value (only if it's not a free joint)
         jnt_id = self.sim.model.joint_name2id(name)
         if self.sim.model.jnt_type[jnt_id] != 0:
             dof_idx = [i for i, v in enumerate(self.sim.model.dof_jntid) if v == jnt_id]
             self.sim.model.dof_damping[dof_idx] = val
+
+    def mod_armature(self, name, val):
+        """
+        Modifies the @name's joint armature within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#joint for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (float): New armature.
+        """
+        # Modify this value (only if it's not a free joint)
+        jnt_id = self.sim.model.joint_name2id(name)
+        if self.sim.model.jnt_type[jnt_id] != 0:
+            dof_idx = [i for i, v in enumerate(self.sim.model.dof_jntid) if v == jnt_id]
+            self.sim.model.dof_armature[dof_idx] = val
 
     @property
     def dynamics_parameters(self):
@@ -1909,6 +1933,7 @@ class DynamicsModder(BaseModder):
             "stiffness",
             "frictionloss",
             "damping",
+            "armature",
         }
 
     @property
