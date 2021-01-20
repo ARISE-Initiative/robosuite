@@ -181,7 +181,7 @@ class Observable:
         self._current_observed_value = 0 if self._is_number else np.zeros(self._data_shape)
         self._sampled = False
 
-    def update(self, timestep, obs_cache):
+    def update(self, timestep, obs_cache, force=False):
         """
         Updates internal values for this observable, if enabled.
 
@@ -189,6 +189,7 @@ class Observable:
             timestep (float): Amount of simulation time (in sec) that has passed since last call.
             obs_cache (dict): Observation cache mapping observable names to pre-computed values to pass to sensor. This
                 will be updated in-place during this call.
+            force (bool): If True, will force the observable to update its internal value to the newest value.
         """
         if self._enabled:
             # Increment internal time counter
@@ -196,7 +197,8 @@ class Observable:
 
             # If the delayed sampling time has been passed and we haven't sampled yet for this sampling period,
             # we should grab a new measurement
-            if not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample:
+            if (not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample) or\
+                    force:
                 # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                 obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
                 self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs

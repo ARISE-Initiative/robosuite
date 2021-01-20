@@ -293,16 +293,26 @@ class MujocoEnv(metaclass=EnvMeta):
         for observable in self._observables.values():
             observable.reset()
 
-    def _update_observables(self):
+    def _update_observables(self, force=False):
         """
         Updates all observables in this environment
+
+        Args:
+            force (bool): If True, will force all the observables to update their internal values to the newest
+                value. This is useful if, e.g., you want to grab observations when directly setting simulation states
+                without actually stepping the simulation.
         """
         for observable in self._observables.values():
-            observable.update(timestep=self.model_timestep, obs_cache=self._obs_cache)
+            observable.update(timestep=self.model_timestep, obs_cache=self._obs_cache, force=force)
 
-    def _get_observations(self):
+    def _get_observations(self, force_update=False):
         """
         Grabs observations from the environment.
+
+        Args:
+            force_update (bool): If True, will force all the observables to update their internal values to the newest
+                value. This is useful if, e.g., you want to grab observations when directly setting simulation states
+                without actually stepping the simulation.
 
         Returns:
             OrderedDict: OrderedDict containing observations [(name_string, np.array), ...]
@@ -310,6 +320,10 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         observations = OrderedDict()
         obs_by_modality = OrderedDict()
+
+        # Force an update if requested
+        if force_update:
+            self._update_observables(force=True)
 
         # Loop through all observables and grab their current observation
         for obs_name, observable in self._observables.items():
