@@ -1597,19 +1597,33 @@ class VirtualWrapper(Wrapper):
     def get_camera_intrinsics(self):
         """Get camera intrinsics matrix
         """
-        raise NotImplementedError
+        return self.camera.get_transform.get_world_to_local_matrix()
 
     def get_camera_extrinsics(self):
         """Get camera extrinsics matrix
         """
-        raise NotImplementedError
+        return self.camera.get_transform.get_local_to_world_matrix()
 
-    def set_camera_intrinsics(self):
+    def set_camera_intrinsics(self, fov, width, height):
         """Set camera intrinsics matrix
         """
-        raise NotImplementedError
+        self.width = width
+        self.height = height
 
-    def set_camera_extrinsics(self):
+        self.camera.set_camera(
+            visii.camera.create_from_fov(
+                name = "camera_camera", 
+                field_of_view = fov, 
+                aspect = float(width)/float(height)
+            )
+        )
+
+    def set_camera_extrinsics(self, at_vec, up_vec, eye_vec):
         """Set camera extrinsics matrix
         """
-        raise NotImplementedError
+        self.camera.get_transform().look_at(
+            at  = at_vec, # look at (world coordinate)
+            up  = up_vec, # up vector
+            eye = eye_vec,
+            previous = False
+        )
