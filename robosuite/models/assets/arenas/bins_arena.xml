@@ -26,15 +26,15 @@
     <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
     <!-- bins -->
     <body name="bin1" pos="0.1 -0.25 0.8">
-      <geom pos="0 0 0" size="0.2 0.25 0.02" type="box" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.2 0.25 0.02" type="box" group="0" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" material="light-wood" size="0.2 0.25 0.02" type="box" conaffinity="0" contype="0" group="1"/>
-        <geom pos="0 0.25 0.05" size="0.21 0.01 0.05" type="box" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="0 0.25 0.05" size="0.21 0.01 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
         <geom pos="0 0.25 0.05" size="0.21 0.01 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
-        <geom pos="0 -0.25 0.05" size="0.21 0.01 0.05" type="box" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="0 -0.25 0.05" size="0.21 0.01 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
         <geom pos="0 -0.25 0.05" size="0.21 0.01 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
-        <geom pos="0.2 0 0.05" size="0.01 0.25 0.05" type="box" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="0.2 0 0.05" size="0.01 0.25 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
         <geom pos="0.2 0 0.05" size="0.01 0.25 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
-        <geom pos="-0.2 0 0.05" size="0.01 0.25 0.05" type="box" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="-0.2 0 0.05" size="0.01 0.25 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
         <geom pos="-0.2 0 0.05" size="0.01 0.25 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
         <!-- Legs (visual only) -->
         <geom pos="0.15 0.2 -0.4" size="0.01 0.4" type="cylinder" conaffinity="0" contype="0" group="1" name="bin1_leg1_visual" material="table_legs_metal"/>
@@ -43,19 +43,19 @@
         <geom pos="0.15 -0.2 -0.4" size="0.01 0.4" type="cylinder" conaffinity="0" contype="0" group="1" name="bin1_leg4_visual" material="table_legs_metal"/>
     </body>
     <body name="bin2" pos="0.1 0.28 0.8">
-      <geom pos="0 0 0" size="0.2 0.25 0.02" type="box" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.2 0.25 0.02" type="box" group="0" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" size="0.2 0.25 0.02" type="box" conaffinity="0" contype="0" group="1" material="dark-wood"/>
-        <geom pos="0 0.25 0.05" size="0.21 0.01 0.05" type="box" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
+        <geom pos="0 0.25 0.05" size="0.21 0.01 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
         <geom pos="0 0.25 0.05" size="0.21 0.01 0.05" type="box" conaffinity="0" contype="0" group="1" material="dark-wood"/>
-        <geom pos="0 0 0.05" size="0.2 0.01 0.05" type="box" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
+        <geom pos="0 0 0.05" size="0.2 0.01 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
         <geom pos="0 0 0.05" size="0.2 0.01 0.05" type="box" conaffinity="0" contype="0" group="1" material="dark-wood"/>
-        <geom pos="0 -0.25 0.05" size="0.21 0.01 0.05" type="box" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
+        <geom pos="0 -0.25 0.05" size="0.21 0.01 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
         <geom pos="0 -0.25 0.05" size="0.21 0.01 0.05" type="box" conaffinity="0" contype="0" group="1" material="dark-wood"/>
-        <geom pos="0.2 0 0.05" size="0.01 0.25 0.05" type="box" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
+        <geom pos="0.2 0 0.05" size="0.01 0.25 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
         <geom pos="0.2 0 0.05" size="0.01 0.25 0.05" type="box" conaffinity="0" contype="0" group="1" material="dark-wood"/>
-        <geom pos="0 0 0.05" size="0.01 0.25 0.05" type="box" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
+        <geom pos="0 0 0.05" size="0.01 0.25 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
         <geom pos="0 0 0.05" size="0.01 0.25 0.05" type="box" conaffinity="0" contype="0" group="1" material="dark-wood"/>
-        <geom pos="-0.2 0 0.05" size="0.01 0.25 0.05" type="box" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
+        <geom pos="-0.2 0 0.05" size="0.01 0.25 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="1 0 0 1"/>
         <geom pos="-0.2 0 0.05" size="0.01 0.25 0.05" type="box" conaffinity="0" contype="0" group="1" material="dark-wood"/>
         <!-- Legs (visual only) -->
         <geom pos="0.15 0.2 -0.4" size="0.01 0.4" type="cylinder" conaffinity="0" contype="0" group="1" name="bin2_leg1_visual" material="table_legs_metal"/>

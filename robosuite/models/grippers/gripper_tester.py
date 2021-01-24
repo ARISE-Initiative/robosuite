@@ -11,7 +11,7 @@ from robosuite.utils.mjcf_utils import (
     new_actuator,
     new_joint,
     array_to_string)
-from robosuite.models.objects.generated_objects import BoxObject
+from robosuite.models.objects import BoxObject
 
 
 class GripperTester:
@@ -50,25 +50,22 @@ class GripperTester:
 
         # Add a gripper
         self.gripper = gripper
+        # Create another body with a slider joint to which we'll add this gripper
         gripper_body = ET.Element("body")
-        for body in gripper.worldbody:
-            gripper_body.append(body)
         gripper_body.set("pos", pos)
         gripper_body.set("quat", quat)  # flip z
-        gripper_body.append(
-            new_joint(name="gripper_z_joint",
-                      type="slide",
-                      axis="0 0 -1",
-                      damping="50")
-        )
-        world.merge(gripper, merge_body=False)
+        gripper_body.append(new_joint(name="gripper_z_joint", type="slide", axis="0 0 -1", damping="50"))
+        # Add all gripper bodies to this higher level body
+        for body in gripper.worldbody:
+            gripper_body.append(body)
+        # Merge the all of the gripper tags except its bodies
+        world.merge(gripper, merge_body=None)
+        # Manually add the higher level body we created
         world.worldbody.append(gripper_body)
+        # Create a new actuator to control our slider joint
         world.actuator.append(
             new_actuator(
-                joint="gripper_z_joint",
-                act_type="position",
-                name="gripper_z",
-                kp="500"
+                joint="gripper_z_joint", act_type="position", name="gripper_z", kp="500"
             )
         )
 
@@ -78,34 +75,28 @@ class GripperTester:
         if box_size is None:
             box_size = [0.02, 0.02, 0.02]
         box_size = np.array(box_size)
-        mujoco_object = BoxObject(
-            name="box",
+        self.cube = BoxObject(
+            name="object",
             size=box_size,
             rgba=[1, 0, 0, 1],
             friction=[1, 0.005, 0.0001],
-            density=box_density).get_collision()
-        mujoco_object.append(new_joint(name='object_free_joint', type='free'))
-        mujoco_object.set('name', "object")
+            density=box_density
+        )
         object_pos = np.array(TABLE_TOP + box_size * [0, 0, 1])
+        mujoco_object = self.cube.get_obj()
+        # Set the position of this object
         mujoco_object.set('pos', array_to_string(object_pos))
-        geoms = mujoco_object.findall('./geom')
-        for geom in geoms:
-            if geom.get('contype'):
-                pass
+        # Add our object to the world body
         world.worldbody.append(mujoco_object)
 
-        # Adding reference object for x and y axis
-        x_ref = BoxObject(
-            name="x_ref",
-            size=[0.01, 0.01, 0.01],
-            rgba=[0, 1, 0, 1]).get_visual()
-        x_ref.set('pos', '0.2 0 0.105')
+        # add reference objects for x and y axes
+        x_ref = BoxObject(name="x_ref", size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1], obj_type="visual",
+                          joints=None).get_obj()
+        x_ref.set("pos", "0.2 0 0.105")
         world.worldbody.append(x_ref)
-        y_ref = BoxObject(
-            name="y_ref",
-            size=[0.01, 0.01, 0.01],
-            rgba=[0, 0, 1, 1]).get_visual()
-        y_ref.set('pos', '0 0.2 0.105')
+        y_ref = BoxObject(name="y_ref", size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1], obj_type="visual",
+                          joints=None).get_obj()
+        y_ref.set("pos", "0 0.2 0.105")
         world.worldbody.append(y_ref)
 
         self.world = world
@@ -148,7 +139,7 @@ class GripperTester:
 
         self.gripper_is_closed = True
 
-        self.object_id = self.sim.model.body_name2id("object")
+        self.object_id = self.sim.model.body_name2id(self.cube.root_body)
         object_default_pos = self.sim.data.body_xpos[self.object_id]
         self.object_default_pos = np.array(object_default_pos,
                                            copy=True)

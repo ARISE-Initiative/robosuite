@@ -33,7 +33,7 @@
     <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
     <!-- Table body -->
     <body name="table" pos="0 0 0.4">
-      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" name="table_collision" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" group="0" name="table_collision" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="table_ceramic"/>
       <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
       <!-- Legs (visual only) -->
@@ -43,11 +43,11 @@
       <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg4_visual" material="table_legs_metal"/>
     </body>
     <body name="peg1" pos="0.23 0.1 0.85">
-      <geom pos="0 0 0" size="0.016 0.016 0.1" type="box" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.016 0.016 0.1" type="box" group="0" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" size="0.016 0.016 0.1" type="box" conaffinity="0" contype="0" group="1" material="bmetal" />
     </body>
     <body name="peg2" pos="0.23 -0.1 0.85">
-      <geom pos="0 0 0" size="0.02 0.1" type="cylinder" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.02 0.1" type="cylinder" group="0" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" size="0.02 0.1" type="cylinder" conaffinity="0" contype="0" group="1" material="smetal" />
     </body>
 

@@ -2,9 +2,11 @@ import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 import io
-import numpy as np
 
+import robosuite.utils.macros as macros
 from robosuite.utils import XMLError
+from robosuite.utils.mjcf_utils import find_elements, sort_elements,\
+    add_material, string_to_array, add_prefix, recolor_collision_geoms
 
 
 class MujocoXML(object):
@@ -24,7 +26,6 @@ class MujocoXML(object):
         self.folder = os.path.dirname(fname)
         self.tree = ET.parse(fname)
         self.root = self.tree.getroot()
-        self.name = self.root.get("model")
         self.worldbody = self.create_default_element("worldbody")
         self.actuator = self.create_default_element("actuator")
         self.sensor = self.create_default_element("sensor")
@@ -32,7 +33,12 @@ class MujocoXML(object):
         self.tendon = self.create_default_element("tendon")
         self.equality = self.create_default_element("equality")
         self.contact = self.create_default_element("contact")
-        self.default = self.create_default_element("default")
+
+        # Parse any default classes and replace them inline
+        default = self.create_default_element("default")
+        default_classes = self._get_default_classes(default)
+        self._replace_defaults_inline(default_dic=default_classes)
+
         self.resolve_asset_dependency()
 
     def resolve_asset_dependency(self):
@@ -64,7 +70,7 @@ class MujocoXML(object):
         self.root.append(ele)
         return ele
 
-    def merge(self, others, merge_body=True):
+    def merge(self, others, merge_body="default"):
         """
         Default merge method.
 
@@ -72,7 +78,9 @@ class MujocoXML(object):
             others (MujocoXML or list of MujocoXML): other xmls to merge into this one
                 raises XML error if @others is not a MujocoXML instance.
                 merges <worldbody/>, <actuator/> and <asset/> of @others into @self
-            merge_body (bool): True if merging child bodies of @others
+            merge_body (None or str): If set, will merge child bodies of @others. Default is "default", which
+                corresponds to the root worldbody for this XML. Otherwise, should be an existing body name
+                that exists in this XML. None results in no merging of @other's bodies in its worldbody.
 
         Raises:
             XMLError: [Invalid XML instance]
@@ -82,10 +90,12 @@ class MujocoXML(object):
         for idx, other in enumerate(others):
             if not isinstance(other, MujocoXML):
                 raise XMLError("{} is not a MujocoXML instance.".format(type(other)))
-            if merge_body:
+            if merge_body is not None:
+                root = self.worldbody if merge_body == "default" else \
+                    find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
                 for body in other.worldbody:
-                    self.worldbody.append(body)
-            self.merge_asset(other)
+                    root.append(body)
+            self.merge_assets(other)
             for one_actuator in other.actuator:
                 self.actuator.append(one_actuator)
             for one_sensor in other.sensor:
@@ -96,8 +106,6 @@ class MujocoXML(object):
                 self.equality.append(one_equality)
             for one_contact in other.contact:
                 self.contact.append(one_contact)
-            for one_default in other.default:
-                self.default.append(one_default)
 
     def get_model(self, mode="mujoco_py"):
         """
@@ -153,19 +161,16 @@ class MujocoXML(object):
                 xml_str = parsed_xml.toprettyxml(newl="")
             f.write(xml_str)
 
-    def merge_asset(self, other):
+    def merge_assets(self, other):
         """
-        Merges other files in a custom logic.
+        Merges @other's assets in a custom logic.
 
         Args:
-            other (MujocoXML): other xml file whose assets will be merged into this one
+            other (MujocoXML or MujocoObject): other xml file whose assets will be merged into this one
         """
         for asset in other.asset:
-            asset_name = asset.get("name")
-            asset_type = asset.tag
-            # Avoids duplication
-            pattern = "./{}[@name='{}']".format(asset_type, asset_name)
-            if self.asset.find(pattern) is None:
+            if find_elements(root=self.asset, tags=asset.tag,
+                             attribs={"name": asset.get("name")}, return_first=True) is None:
                 self.asset.append(asset)
 
     def get_element_names(self, root, element_type):
@@ -187,95 +192,463 @@ class MujocoXML(object):
             names += self.get_element_names(child, element_type)
         return names
 
-    def add_prefix(self,
-                   prefix,
-                   tags=("body", "joint", "sensor", "site", "geom", "camera", "actuator", "tendon", "asset", "mesh", "texture", "material")):
+    @staticmethod
+    def _get_default_classes(default):
         """
-        Utility method to add prefix to all body names to prevent name clashes
+        Utility method to convert all default tags into a nested dictionary of values -- this will be used to replace
+        all elements' class tags inline with the appropriate defaults if not specified.
 
         Args:
-            prefix (str): Prefix to be appended to all requested elements in this XML
-            tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
-                prepended to it
+            default (ET.Element): Nested default tag XML root.
+
+        Returns:
+            dict: Nested dictionary, where each default class name is mapped to its own dict mapping element tag names
+                (e.g.: geom, site, etc.) to the set of default attributes for that tag type
         """
-        # Define tags as a set
-        tags = set(tags)
+        # Create nested dict to return
+        default_dic = {}
+        # Parse the default tag accordingly
+        for cls in default:
+            default_dic[cls.get("class")] = {child.tag: child for child in cls}
+        return default_dic
 
-        # Define equalities set to pass at the end
-        equalities = set(tags)
-
-        # Add joints to equalities if necessary
-        if "joint" in tags:
-            equalities = equalities.union(["joint1", "joint2"])
-
-        # Handle actuator elements
-        if "actuator" in tags:
-            tags.discard("actuator")
-            for actuator in self.actuator:
-                self._add_prefix_recursively(actuator, tags, prefix)
-
-        # Handle sensor elements
-        if "sensor" in tags:
-            tags.discard("sensor")
-            for sensor in self.sensor:
-                self._add_prefix_recursively(sensor, tags, prefix)
-
-        # Handle tendon elements
-        if "tendon" in tags:
-            tags.discard("tendon")
-            for tendon in self.tendon:
-                self._add_prefix_recursively(tendon, tags.union(["fixed"]), prefix)
-            # Also take care of any tendons in equality constraints
-            equalities = equalities.union(["tendon1", "tendon2"])
-
-        # Handle asset elements
-        if "asset" in tags:
-            tags.discard("asset")
-            for asset in self.asset:
-                if asset.tag in tags:
-                    self._add_prefix_recursively(asset, tags, prefix)
-
-        # Handle contacts and equality names for body elements
-        if "body" in tags:
-            for contact in self.contact:
-                if "body1" in contact.attrib:
-                    contact.set("body1", prefix + contact.attrib["body1"])
-                if "body2" in contact.attrib:
-                    contact.set("body2", prefix + contact.attrib["body2"])
-            # Also take care of any bodies in equality constraints
-            equalities = equalities.union(["body1", "body2"])
-
-        # Handle all equality elements
-        for equality in self.equality:
-            self._add_prefix_recursively(equality, equalities, prefix)
-
-        # Handle all remaining bodies in the element tree
-        for body in self.worldbody:
-            if body.tag in tags:
-                self._add_prefix_recursively(body, tags, prefix)
-
-    def _add_prefix_recursively(self, root, tags, prefix):
+    def _replace_defaults_inline(self, default_dic, root=None):
         """
-        Iteratively searches through all children nodes in "root" element to append "prefix" to any named subelements
-        with a tag in "tags"
+        Utility method to replace all default class attributes recursively in the XML tree starting from @root
+        with the corresponding defaults in @default_dic if they are not explicitly specified for ta given element.
 
         Args:
-            root (ET.Element): Root of the xml element tree to start recursively searching through
-                (e.g.: `self.worldbody`)
-            tags (list or tuple): Tags to be searched in the XML. All elements with specified tags will have "prefix"
-                prepended to it
-            prefix (str): Prefix to be appended to all requested elements in this XML
+            root (ET.Element): Root of the xml element tree to start recursively replacing defaults. Only is used by
+                recursive calls
+            default_dic (dict): Nested dictionary, where each default class name is mapped to its own dict mapping
+                element tag names (e.g.: geom, site, etc.) to the set of default attributes for that tag type
         """
-        # First re-name this element
-        if "name" in root.attrib:
-            root.set("name", prefix + root.attrib["name"])
-
-        # Then loop through all tags and rename any appropriately
-        for tag in tags:
-            if tag in root.attrib:
-                root.set(tag, prefix + root.attrib[tag])
-
-        # Recursively go through child elements
+        # If root is None, this is the top level call -- replace root with self.root
+        if root is None:
+            root = self.root
+        # Check this current element if it contains any class elements
+        cls_name = root.attrib.pop("class", None)
+        if cls_name is not None:
+            # If the tag for this element is contained in our default dic, we add any defaults that are not
+            # explicitly specified in this
+            tag_attrs = default_dic[cls_name].get(root.tag, None)
+            if tag_attrs is not None:
+                for k, v in tag_attrs.items():
+                    if root.get(k, None) is None:
+                        root.set(k, v)
+        # Loop through all child elements
         for child in root:
-            if child.tag in tags:
-                self._add_prefix_recursively(child, tags, prefix)
+            self._replace_defaults_inline(default_dic=default_dic, root=child)
+
+    @property
+    def name(self):
+        """
+        Returns name of this MujocoXML
+
+        Returns:
+            str: Name of this MujocoXML
+        """
+        return self.root.get("model")
+
+
+class MujocoModel(object):
+    """
+    Base class for all simulation models used in mujoco.
+
+    Standardizes core API for accessing models' relevant geoms, names, etc.
+    """
+    def correct_naming(self, names):
+        """
+        Corrects all strings in @names by adding the naming prefix to it and returns the name-corrected values
+
+        Args:
+            names (str, list, or dict): Name(s) to be corrected
+
+        Raises:
+            TypeError: [Invalid input type]
+        """
+        if type(names) is str:
+            return self.naming_prefix + names if not self.exclude_from_prefixing(names) else names
+        elif type(names) is list:
+            return [self.naming_prefix + name if not self.exclude_from_prefixing(name) else name for name in names]
+        elif type(names) is dict:
+            names = names.copy()
+            for key, val in names.items():
+                names[key] = self.correct_naming(val)
+            return names
+        else:
+            # Assumed to be type error
+            raise TypeError("Error: type of 'names' must be str, list, or dict!")
+
+    def set_sites_visibility(self, sim, visible):
+        """
+        Set all site visual states for this model.
+
+        Args:
+            sim (MjSim): Current active mujoco simulation instance
+            visible (bool): If True, will visualize model sites. Else, will hide the sites.
+        """
+        # Loop through all visualization geoms and set their alpha values appropriately
+        for vis_g in self.sites:
+            vis_g_id = sim.model.site_name2id(vis_g)
+            if (visible and sim.model.site_rgba[vis_g_id][3] < 0) or \
+                    (not visible and sim.model.site_rgba[vis_g_id][3] > 0):
+                # We toggle the alpha value
+                sim.model.site_rgba[vis_g_id][3] = -sim.model.site_rgba[vis_g_id][3]
+
+    def exclude_from_prefixing(self, inp):
+        """
+        A function that should take in an arbitrary input and return either True or False, determining whether the
+        corresponding name to @inp should have naming_prefix added to it. Must be defined by subclass.
+
+        Args:
+            inp (any): Arbitrary input, depending on subclass. Can be str, ET.Element, etc.
+
+        Returns:
+            bool: True if we should exclude the associated name(s) with @inp from being prefixed with naming_prefix
+        """
+        raise NotImplementedError
+
+    @property
+    def name(self):
+        """
+        Name for this model. Should be unique.
+
+        Returns:
+            str: Unique name for this model.
+        """
+        raise NotImplementedError
+
+    @property
+    def naming_prefix(self):
+        """
+        Generates a standardized prefix to prevent naming collisions
+
+        Returns:
+            str: Prefix unique to this model.
+        """
+        raise NotImplementedError
+
+    @property
+    def root_body(self):
+        """
+        Root body name for this model. This should correspond to the top-level body element in the equivalent mujoco xml
+        tree for this object.
+        """
+        raise NotImplementedError
+
+    @property
+    def bodies(self):
+        """
+        Returns:
+            list: Body names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def joints(self):
+        """
+        Returns:
+            list: Joint names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def actuators(self):
+        """
+        Returns:
+            list: Actuator names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def sites(self):
+        """
+        Returns:
+             list: Site names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def sensors(self):
+        """
+        Returns:
+             list: Sensor names for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def contact_geoms(self):
+        """
+        List of names corresponding to the geoms used to determine contact with this model.
+
+        Returns:
+            list: relevant contact geoms for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def visual_geoms(self):
+        """
+        List of names corresponding to the geoms used for visual rendering of this model.
+
+        Returns:
+            list: relevant visual geoms for this model
+        """
+        raise NotImplementedError
+
+    @property
+    def important_geoms(self):
+        """
+        Geoms corresponding to important components of this model. String keywords should be mapped to lists of geoms.
+
+        Returns:
+            dict of list: Important set of geoms, where each set of geoms are grouped as a list and are
+            organized by keyword string entries into a dict
+        """
+        raise NotImplementedError
+
+    @property
+    def important_sites(self):
+        """
+        Dict of sites corresponding to the important site geoms (e.g.: used to aid visualization during sim).
+
+        Returns:
+            dict: Important site geoms, where each specific geom name is mapped from keyword string entries
+                in the dict
+        """
+        raise NotImplementedError
+
+    @property
+    def important_sensors(self):
+        """
+        Dict of important sensors enabled for this model.
+
+        Returns:
+            dict: Important sensors for this model, where each specific sensor name is mapped from keyword string
+                entries in the dict
+        """
+        raise NotImplementedError
+
+    @property
+    def bottom_offset(self):
+        """
+        Returns vector from model root body to model bottom.
+        Useful for, e.g. placing models on a surface.
+        Must be defined by subclass.
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        raise NotImplementedError
+
+    @property
+    def top_offset(self):
+        """
+        Returns vector from model root body to model top.
+        Useful for, e.g. placing models on a surface.
+        Must be defined by subclass.
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        raise NotImplementedError
+
+    @property
+    def horizontal_radius(self):
+        """
+        Returns maximum distance from model root body to any radial point of the model.
+
+        Helps us put models programmatically without them flying away due to a huge initial contact force.
+        Must be defined by subclass.
+
+        Returns:
+            float: radius
+        """
+        raise NotImplementedError
+
+
+class MujocoXMLModel(MujocoXML, MujocoModel):
+    """
+    Base class for all MujocoModels that are based on a raw XML file.
+
+    Args:
+        fname (str): Path to relevant xml file from which to create this robot instance
+        idn (int or str): Number or some other unique identification string for this model instance
+    """
+
+    def __init__(self, fname, idn=0):
+        super().__init__(fname)
+
+        # Set id and add prefixes to all body names to prevent naming clashes
+        self.idn = idn
+
+        # Define other variables that get filled later
+        self.mount = None
+
+        # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
+        self._elements = sort_elements(root=self.root)
+        assert len(self._elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
+                                                      "got {}".format(len(self._elements["root_body"]))
+        self._elements["root_body"] = self._elements["root_body"][0]
+        self._elements["bodies"] = [self._elements["root_body"]] + self._elements["bodies"] if \
+            "bodies" in self._elements else [self._elements["root_body"]]
+        self._root_body = self._elements["root_body"].get("name")
+        self._bodies = [e.get("name") for e in self._elements.get("bodies", [])]
+        self._joints = [e.get("name") for e in self._elements.get("joints", [])]
+        self._actuators = [e.get("name") for e in self._elements.get("actuators", [])]
+        self._sites = [e.get("name") for e in self._elements.get("sites", [])]
+        self._sensors = [e.get("name") for e in self._elements.get("sensors", [])]
+        self._contact_geoms = [e.get("name") for e in self._elements.get("contact_geoms", [])]
+        self._visual_geoms = [e.get("name") for e in self._elements.get("visual_geoms", [])]
+        self._base_offset = string_to_array(self._elements["root_body"].get("pos", "0 0 0"))
+
+        # Update all xml element prefixes
+        add_prefix(root=self.root, prefix=self.naming_prefix, exclude=self.exclude_from_prefixing)
+
+        # Recolor all collision geoms appropriately
+        recolor_collision_geoms(root=self.worldbody, rgba=self.contact_geom_rgba)
+
+        # Add default materials
+        if macros.USING_INSTANCE_RANDOMIZATION:
+            tex_element, mat_element, _, used = add_material(root=self.worldbody, naming_prefix=self.naming_prefix)
+            # Only add if material / texture was actually used
+            if used:
+                self.asset.append(tex_element)
+                self.asset.append(mat_element)
+
+    def exclude_from_prefixing(self, inp):
+        """
+        By default, don't exclude any from being prefixed
+        """
+        return False
+
+    @property
+    def base_offset(self):
+        """
+        Provides position offset of root body.
+
+        Returns:
+            3-array: (x,y,z) pos value of root_body body element. If no pos in element, returns all zeros.
+        """
+        return self._base_offset
+
+    @property
+    def name(self):
+        return "{}{}".format(type(self).__name__, self.idn)
+
+    @property
+    def naming_prefix(self):
+        return "{}_".format(self.idn)
+
+    @property
+    def root_body(self):
+        return self.correct_naming(self._root_body)
+
+    @property
+    def bodies(self):
+        return self.correct_naming(self._bodies)
+
+    @property
+    def joints(self):
+        return self.correct_naming(self._joints)
+
+    @property
+    def actuators(self):
+        return self.correct_naming(self._actuators)
+
+    @property
+    def sites(self):
+        return self.correct_naming(self._sites)
+
+    @property
+    def sensors(self):
+        return self.correct_naming(self._sensors)
+
+    @property
+    def contact_geoms(self):
+        return self.correct_naming(self._contact_geoms)
+
+    @property
+    def visual_geoms(self):
+        return self.correct_naming(self._visual_geoms)
+
+    @property
+    def important_sites(self):
+        return self.correct_naming(self._important_sites)
+
+    @property
+    def important_geoms(self):
+        return self.correct_naming(self._important_geoms)
+
+    @property
+    def important_sensors(self):
+        return self.correct_naming(self._important_sensors)
+
+    @property
+    def _important_sites(self):
+        """
+        Dict of sites corresponding to the important site geoms (e.g.: used to aid visualization during sim).
+
+        Returns:
+            dict: Important site geoms, where each specific geom name is mapped from keyword string entries
+                in the dict. Note that the mapped sites should be the RAW site names found directly in the XML file --
+                the naming prefix will be automatically added in the public method call
+        """
+        raise NotImplementedError
+
+    @property
+    def _important_geoms(self):
+        """
+        Geoms corresponding to important components of this model. String keywords should be mapped to lists of geoms.
+
+        Returns:
+            dict of list: Important set of geoms, where each set of geoms are grouped as a list and are
+                organized by keyword string entries into a dict. Note that the mapped geoms should be the RAW geom
+                names found directly in the XML file -- the naming prefix will be automatically added in the
+                public method call
+        """
+        raise NotImplementedError
+
+    @property
+    def _important_sensors(self):
+        """
+        Dict of important sensors enabled for this model.
+
+        Returns:
+            dict: Important sensors for this model, where each specific sensor name is mapped from keyword string
+                entries in the dict. Note that the mapped geoms should be the RAW sensor names found directly in the
+                XML file -- the naming prefix will be automatically added in the public method call
+        """
+        raise NotImplementedError
+
+    @property
+    def contact_geom_rgba(self):
+        """
+        RGBA color to assign to all contact geoms for this model
+
+        Returns:
+            4-array: (r,g,b,a) values from 0 to 1 for this model's set of contact geoms
+        """
+        raise NotImplementedError
+
+    @property
+    def bottom_offset(self):
+        """
+        Returns vector from model root body to model bottom.
+        Useful for, e.g. placing models on a surface.
+        By default, this corresponds to the root_body's base offset.
+
+        Returns:
+            np.array: (dx, dy, dz) offset vector
+        """
+        return self.base_offset
+
+    @property
+    def top_offset(self):
+        raise NotImplementedError
+
+    @property
+    def horizontal_radius(self):
+        raise NotImplementedError
+

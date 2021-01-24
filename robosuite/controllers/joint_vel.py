@@ -104,7 +104,7 @@ class JointVelocityController(Controller):
         self.last_joint_vel = np.zeros(self.joint_dim)
 
         # limits
-        self.velocity_limits = velocity_limits
+        self.velocity_limits = np.array(velocity_limits) if velocity_limits is not None else None
 
         # control frequency
         self.control_freq = policy_freq

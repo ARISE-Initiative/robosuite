@@ -1,5 +1,10 @@
 """
-    Tests the basic interface of all grippers
+Tests the basic interface of all grippers.
+
+This runs some basic sanity checks on the environment, namely, checking that:
+    - Verifies that the gripper's action, init_qpos exist and are valid
+
+Obviously, if an environment crashes during runtime, that is considered a failure as well.
 """
 from robosuite.models.grippers import GRIPPER_MAPPING
 
@@ -17,16 +22,6 @@ def _test_gripper(gripper):
     assert action is not None
 
     assert gripper.init_qpos is not None
-
-    assert gripper.dof > 0
-
-    assert gripper.joints is not None
-
-    assert gripper.contact_geoms is not None
-
-    assert gripper.visualization_sites is not None
-
-    assert gripper.visualization_geoms is not None
 
 
 if __name__ == "__main__":

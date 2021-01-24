@@ -1,13 +1,10 @@
-<mujoco model="milk">
+<mujoco model="milk-visual">
   <asset>
     <mesh file="meshes/milk.stl" name="milk_mesh" scale="0.9 0.9 0.9"/>
-    <texture file="../textures/ceramic.png" name="tex-ceramic"/>
-    <material name="ceramic" reflectance="0.5" texrepeat="1 1" texture="tex-ceramic" texuniform="true"/>
   </asset>
   <worldbody>
     <body>
-      <body name="visual">
-        <geom pos="0 0 0" mesh="milk_mesh" type="mesh" rgba="0.8 0.8 0.8 0.3" conaffinity="0" contype="0" group="0" mass="0.0001"/>
+      <body name="object">
         <geom pos="0 0 0" mesh="milk_mesh" type="mesh" rgba="0.8 0.8 0.8 0.3" conaffinity="0" contype="0" group="1" mass="0.0001"/>
       </body>
       <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.085" name="bottom_site"/>

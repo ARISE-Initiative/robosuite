@@ -18,7 +18,7 @@ import json
 
 import robosuite as suite
 from robosuite import load_controller_config
-from robosuite.wrappers import DataCollectionWrapper
+from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 from robosuite.utils.input_utils import input2action
 
 
@@ -75,7 +75,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             # applied because the data collector wrapper only starts recording
             # after the first action has been played.
             initial_mjstate = env.sim.get_state().flatten()
-            xml_str = env.model.get_xml()
+            xml_str = env.sim.model.get_xml()
             env.reset_from_xml_string(xml_str)
             env.sim.reset()
             env.sim.set_state_from_flattened(initial_mjstate)
@@ -227,10 +227,12 @@ if __name__ == "__main__":
         render_camera=args.camera,
         ignore_done=True,
         use_camera_obs=False,
-        gripper_visualizations=True,
         reward_shaping=True,
         control_freq=20,
     )
+
+    # Wrap this with visualization wrapper
+    env = VisualizationWrapper(env)
 
     # Grab reference to controller config and convert it to json-encoded string
     env_info = json.dumps(config)

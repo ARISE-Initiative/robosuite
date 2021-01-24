@@ -4,9 +4,11 @@
         <mesh name="finger_proximal" file="meshes/jaco_three_finger_gripper/finger_proximal.stl" />
         <mesh name="finger_distal" file="meshes/jaco_three_finger_gripper/finger_distal.stl" />
         <mesh name="ring_small" file="meshes/jaco_three_finger_gripper/ring_small.stl" />
-        <!-- Materials for hand -->
-        <material name="carbon_hand" specular="1" shininess="1" reflectance="1" rgba="0.05 0.05 0.05 1" emission="1" />
-        <material name="grey_plastic_hand" specular="0.5" shininess="0" reflectance="0" rgba="0.12 0.14 0.14 1" emission="1" />
+        <!-- Materials for robot -->
+        <texture type="cube" name="carbon_tex" builtin="flat" width="100" height="100" rgb1="1 1 1" rgb2="1 1 1"/>
+        <texture type="cube" name="grey_plastic_tex" builtin="flat" width="100" height="100" rgb1="1 1 1" rgb2="1 1 1"/>
+        <material name="carbon_hand" texture="carbon_tex" rgba="0.05 0.05 0.05 1" />
+        <material name="grey_plastic_hand" texture="grey_plastic_tex" rgba="0.88 0.86 0.86 1" />
     </asset>
 
 
@@ -51,14 +53,14 @@
             <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-08 1e-08 1e-08" />
             <body name="palm" pos="0 0 0" quat="0 -1 0 0">
                 <inertial pos="0 0 -0.06" quat="0.5 0.5 -0.5 0.5" mass="0.99" diaginertia="0.0005816 0.000345324 0.000345324" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_hand" mesh="hand_3finger" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_hand" mesh="ring_small" />
-                <geom type="mesh" material="carbon_hand" mesh="hand_3finger" name="hand_collision"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_hand" name="hand_visual" mesh="hand_3finger" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_hand" name="hand_ring_visual" mesh="ring_small" />
+                <geom type="mesh" group="0" material="carbon_hand" mesh="hand_3finger" name="hand_collision" />
 
                 <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
 
                 <!-- This site was added for visualization. -->
-                <site name="grip_site" pos="0 0 -0.1775" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+                <site name="grip_site" pos="0 0 -0.1775" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
                 <!-- This site was added for visualization. -->
                 <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
             </body>
@@ -66,45 +68,48 @@
             <body name="thumb_proximal" pos="0.002786 -0.03126 0.114668" quat="0.95922726  0.262085 0.02762996 -0.10213274">
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                 <joint name="joint_thumb" pos="0 0 0" axis="1 0 0" ref="1.1" limited="true" range="0 1.51" damping="0.15"/>
-                <geom type="mesh" contype="0" conaffinity="0" group="1" euler="0 -1.5707 0" material="grey_plastic_hand" mesh="finger_proximal" />
-                <geom name="thumb_proximal_collision" type="mesh" mesh="finger_proximal" euler="0 -1.5707 0" friction="1 0.5 0.01" />
+                <geom name="thumb_proximal_visual" type="mesh" contype="0" conaffinity="0" group="1" euler="0 -1.5707 0" material="grey_plastic_hand" mesh="finger_proximal" />
+                <geom name="thumb_proximal_collision" type="mesh" group="0" mesh="finger_proximal" euler="0 -1.5707 0" friction="1 0.5 0.01" />
 
                 <body name="thumb_distal" pos="0 -0.003 0.044">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                     <joint name="joint_thumb_distal" pos="0 0 0" axis="-1 0 0" ref="-0.5" limited="true" range="0 2" damping="0.1" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" euler="0 -1.5707 0" material="grey_plastic_hand" mesh="finger_distal" />
-                    <geom name="thumb_distal_collision" type="mesh" mesh="finger_distal" euler="0 -1.5707 0" friction="1 0.5 0.01" />
-                    <geom type="box" pos="0 -0.003 0.021" quat="0.9914449 0.1305262 0 0" size="0.01 0.005 0.02" name="thumb_pad_collision" solref="0.01 0.25" friction="2 0.05 0.001" />
+                    <geom name="thumb_distal_visual" type="mesh" contype="0" conaffinity="0" group="1" euler="0 -1.5707 0" material="grey_plastic_hand" mesh="finger_distal" />
+                    <geom name="thumb_distal_collision" type="mesh" group="0" mesh="finger_distal" euler="0 -1.5707 0" friction="1 0.5 0.01" />
+                    <geom type="box" group="0" pos="0 -0.003 0.021" quat="0.9914449 0.1305262 0 0" size="0.01 0.005 0.02" name="thumb_tip_collision" solref="0.01 0.25" friction="2 0.05 0.001" />
+                    <geom type="box" group="0" pos="0 0.0015 0.023" quat="0.9914449 0.1305262 0 0" size="0.008 0.001 0.018" name="thumb_pad_collision" />
                 </body>
             </body>
 
             <body name="index_proximal" pos="0.022256 0.027073 0.114668" quat="0.96181018 -0.25771638 0.0238668 -0.08907205">
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                 <joint name="joint_index" pos="0 0 0" axis="-1 0 0" ref="1.1" limited="true" range="0 1.51" damping="0.15"/>
-                <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_proximal" />
-                <geom name="index_proximal_collision" type="mesh" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
+                <geom name="index_proximal_visual" type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_proximal" />
+                <geom name="index_proximal_collision" type="mesh" group="0" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
 
                 <body name="index_distal" pos="0 0.003 0.044">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                     <joint name="joint_index_distal" pos="0 0 0" axis="1 0 0" ref="-0.5" limited="true" range="0 2" damping="0.1" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_distal" />
-                    <geom name="index_distal_collision" type="mesh" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
-                    <geom type="box" pos="0 0.003 0.021" quat="0.9914449 -0.1305262 0 0" size="0.01 0.005 0.02" name="index_pad_collision" solref="0.01 0.25" friction="2 0.05 0.001" />
+                    <geom name="index_distal_visual" type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_distal" />
+                    <geom name="index_distal_collision" type="mesh" group="0" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
+                    <geom type="box" group="0" pos="0 0.003 0.021" quat="0.9914449 -0.1305262 0 0" size="0.01 0.005 0.02" name="index_tip_collision" solref="0.01 0.25" friction="2 0.05 0.001" />
+                    <geom type="box" group="0" pos="0 -0.0015 0.023" quat="0.9914449 -0.1305262 0 0" size="0.008 0.001 0.018" name="index_pad_collision" />
                 </body>
             </body>
 
             <body name="pinky_proximal" pos="-0.022256 0.027073 0.114816" quat="0.96181018 -0.25771638 -0.0238668 0.08907205">
                 <joint name="joint_pinky" pos="0 0 0" axis="-1 0 0" ref="1.1" limited="true" range="0 1.51" damping="0.15"/>
                 <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_proximal" />
-                <geom name="pinky_proximal_collision" type="mesh" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
+                <geom name="pinky_proximal_visual" type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_proximal" />
+                <geom name="pinky_proximal_collision" type="mesh" group="0" mesh="finger_proximal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
 
                 <body name="pinky_distal" pos="0 0.003 0.044">
                     <inertial pos="0.022 0 0" mass="0.01" diaginertia="7.89997e-07 7.89997e-07 8e-08" />
                     <joint name="joint_pinky_distal" pos="0 0 0" axis="1 0 0" ref="-0.5" limited="true" range="0 2" damping="0.1" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_distal" />
-                    <geom name="pinky_distal_collision" type="mesh" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
-                    <geom type="box" pos="0 0.003 0.021" quat="0.9914449 -0.1305262 0 0" size="0.01 0.005 0.02" name="pinky_pad_collision" solref="0.01 0.25" friction="2 0.05 0.001" />
+                    <geom name="pinky_distal_visual" type="mesh" contype="0" conaffinity="0" group="1" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" material="grey_plastic_hand" mesh="finger_distal" />
+                    <geom name="pinky_distal_collision" type="mesh" group="0" mesh="finger_distal" quat="5.63312174e-04  7.06824957e-01 -5.62863772e-04  7.07388045e-01" friction="1 0.5 0.01" />
+                    <geom type="box" group="0" pos="0 0.003 0.021" quat="0.9914449 -0.1305262 0 0" size="0.01 0.005 0.02" name="pinky_tip_collision" solref="0.01 0.25" friction="2 0.05 0.001" />
+                    <geom type="box" group="0" pos="0 -0.0015 0.023" quat="0.9914449 -0.1305262 0 0" size="0.008 0.001 0.018" name="pinky_pad_collision" />
                 </body>
             </body>
         </body>

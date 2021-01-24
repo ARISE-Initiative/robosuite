@@ -66,9 +66,6 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         np.dot(J_full, mass_matrix_inv),
         J_full.transpose())
 
-    # (J M^-1 J^T)^-1
-    lambda_full = np.linalg.inv(lambda_full_inv)
-
     # Jx M^-1 Jx^T
     lambda_pos_inv = np.dot(
         np.dot(J_pos, mass_matrix_inv),
@@ -79,15 +76,10 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         np.dot(J_ori, mass_matrix_inv),
         J_ori.transpose())
 
-    # take the inverse, but zero out elements in cases of a singularity
-    svd_u, svd_s, svd_v = np.linalg.svd(lambda_pos_inv)
-    singularity_threshold = 0.00025
-    svd_s_inv = np.array([0 if x < singularity_threshold else 1. / x for x in svd_s])
-    lambda_pos = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
-
-    svd_u, svd_s, svd_v = np.linalg.svd(lambda_ori_inv)
-    svd_s_inv = np.array([0 if x < singularity_threshold else 1. / x for x in svd_s])
-    lambda_ori = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
+    # take the inverses, but zero out small singular values for stability
+    lambda_full = np.linalg.pinv(lambda_full_inv)
+    lambda_pos = np.linalg.pinv(lambda_pos_inv)
+    lambda_ori = np.linalg.pinv(lambda_ori_inv)
 
     # nullspace
     Jbar = np.dot(mass_matrix_inv, J_full.transpose()).dot(lambda_full)
@@ -290,6 +282,9 @@ class RingBuffer(Buffer):
         self.dim = dim
         self.length = length
 
+        # Variable so that initial average values are accurate
+        self._size = 0
+
         # Save pointer to current place in the buffer
         self.ptr = 0
 
@@ -303,9 +298,11 @@ class RingBuffer(Buffer):
         Args:
             value (int or float or array): Value(s) to push into the array (taken as a single new element)
         """
-        # Add value, then increment pointer
+        # Add value, then increment pointer (and size if necessary)
         self.buf[self.ptr] = np.array(value)
         self.ptr = (self.ptr + 1) % self.length
+        if self._size < self.length:
+            self._size += 1
 
     def clear(self):
         """
@@ -313,6 +310,7 @@ class RingBuffer(Buffer):
         """
         self.buf = np.zeros((self.length, self.dim))
         self.ptr = 0
+        self._size = 0
 
     @property
     def average(self):
@@ -322,7 +320,7 @@ class RingBuffer(Buffer):
         Returns:
             float or np.array: Averaged value of all elements in buffer
         """
-        return np.mean(self.buf, axis=0)
+        return np.mean(self.buf[:self._size], axis=0)
 
 
 class DeltaBuffer(Buffer):

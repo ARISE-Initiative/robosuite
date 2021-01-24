@@ -3,6 +3,9 @@ from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
 
 from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
+from robosuite.models.base import MujocoModel
+
+import numpy as np
 
 REGISTERED_ENVS = {}
 
@@ -44,7 +47,7 @@ class EnvMeta(type):
         cls = super().__new__(meta, name, bases, class_dict)
 
         # List all environments that should not be registered here.
-        _unregistered_envs = ["MujocoEnv", "RobotEnv"]
+        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "SingleArmEnv", "TwoArmEnv"]
 
         if cls.__name__ not in _unregistered_envs:
             register_env(cls)
@@ -71,6 +74,10 @@ class MujocoEnv(metaclass=EnvMeta):
         render_visual_mesh (bool): True if rendering visual meshes
             in camera. False otherwise.
 
+        render_gpu_device_id (int): corresponds to the GPU device id to use for offscreen rendering.
+            Defaults to -1, in which case the device will be inferred from environment variables
+            (GPUS or CUDA_VISIBLE_DEVICES).
+
         control_freq (float): how many control signals to receive
             in every simulated second. This sets the amount of simulation time
             that passes between every action input.
@@ -93,7 +100,8 @@ class MujocoEnv(metaclass=EnvMeta):
         render_camera="frontview",
         render_collision_mesh=False,
         render_visual_mesh=True,
-        control_freq=10,
+        render_gpu_device_id=-1,
+        control_freq=20,
         horizon=1000,
         ignore_done=False,
         hard_reset=True
@@ -108,6 +116,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
+        self.render_gpu_device_id = render_gpu_device_id
         self.viewer = None
 
         # Simulation-specific attributes
@@ -115,6 +124,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
+        self._model_postprocessor = None            # Function to post-process model after load_model() call
         self.model = None
         self.cur_time = None
         self.model_timestep = None
@@ -123,6 +133,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Load the model
         self._load_model()
+
+        # Post-process model
+        self._postprocess_model()
 
         # Initialize the simulation
         self._initialize_sim()
@@ -148,9 +161,27 @@ class MujocoEnv(metaclass=EnvMeta):
             )
         self.control_timestep = 1. / control_freq
 
+    def set_model_postprocessor(self, postprocessor):
+        """
+        Sets the post-processor function that self.model will be passed to after load_model() is called during resets.
+
+        Args:
+            postprocessor (None or function): If set, postprocessing method should take in a Task-based instance and
+                return no arguments.
+        """
+        self._model_postprocessor = postprocessor
+
     def _load_model(self):
         """Loads an xml model, puts it in self.model"""
         pass
+
+    def _postprocess_model(self):
+        """
+        Post-processes model after load_model() call. Useful for external objects (e.g.: wrappers) to
+        be able to modify the sim model before it is actually loaded into the simulation
+        """
+        if self._model_postprocessor is not None:
+            self._model_postprocessor(self.model)
 
     def _get_reference(self):
         """
@@ -173,7 +204,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Create the simulation instance and run a single step to make sure changes have propagated through sim state
         self.sim = MjSim(self.mjpy_model)
-        self.sim.step()
+        self.sim.forward()
 
         # Setup sim time based on control frequency
         self.initialize_time(self.control_freq)
@@ -190,6 +221,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.hard_reset and not self.deterministic_reset:
             self._destroy_viewer()
             self._load_model()
+            self._postprocess_model()
             self._initialize_sim()
         # Else, we only reset the sim internally
         else:
@@ -197,6 +229,9 @@ class MujocoEnv(metaclass=EnvMeta):
         # Reset necessary robosuite-centric variables
         self._reset_internal()
         self.sim.forward()
+        # Make sure that all sites are toggled OFF by default
+        self.visualize(vis_settings={vis: False for vis in self._visualizations})
+        # Return new observations
         return self._get_observation()
 
     def _reset_internal(self):
@@ -221,7 +256,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         elif self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
-                render_context = MjRenderContextOffscreen(self.sim)
+                render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
                 self.sim.add_render_context(render_context)
             self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
             self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
@@ -316,6 +351,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # done if number of elapsed timesteps is greater than horizon
         self.done = (self.timestep >= self.horizon) and not self.ignore_done
+
         return reward, self.done, {}
 
     def reward(self, action):
@@ -351,6 +387,43 @@ class MujocoEnv(metaclass=EnvMeta):
         observation = self._get_observation()
         return observation
 
+    def clear_objects(self, object_names):
+        """
+        Clears objects with the name @object_names out of the task space. This is useful
+        for supporting task modes with single types of objects, as in
+        @self.single_object_mode without changing the model definition.
+
+        Args:
+            object_names (str or list of str): Name of object(s) to remove from the task workspace
+        """
+        object_names = {object_names} if type(object_names) is str else set(object_names)
+        for obj in self.model.mujoco_objects:
+            if obj.name in object_names:
+                self.sim.data.set_joint_qpos(obj.joints[0], np.array((10, 10, 10, 1, 0, 0, 0)))
+
+    def visualize(self, vis_settings):
+        """
+        Do any needed visualization here
+
+        Args:
+            vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
+                component should be visualized. Should have "env" keyword as well as any other relevant
+                options specified.
+        """
+        # Set visuals for environment objects
+        for obj in self.model.mujoco_objects:
+            obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
+
+    @property
+    def _visualizations(self):
+        """
+        Visualization keywords for this environment
+
+        Returns:
+            set: All components that can be individually visualized for this environment
+        """
+        return {"env"}
+
     @property
     def action_spec(self):
         """
@@ -365,6 +438,7 @@ class MujocoEnv(metaclass=EnvMeta):
     def action_dim(self):
         """
         Size of the action space
+
         Returns:
             int: Action space dimension
         """
@@ -393,26 +467,66 @@ class MujocoEnv(metaclass=EnvMeta):
         # Turn off deterministic reset
         self.deterministic_reset = False
 
-    def find_contacts(self, geoms_1, geoms_2):
+    def check_contact(self, geoms_1, geoms_2=None):
         """
         Finds contact between two geom groups.
 
         Args:
-            geoms_1 (list of str): a list of geom names
-            geoms_2 (list of str): another list of geom names
+            geoms_1 (str or list of str or MujocoModel): an individual geom name or list of geom names or a model. If
+                a MujocoModel is specified, the geoms checked will be its contact_geoms
+            geoms_2 (str or list of str or MujocoModel or None): another individual geom name or list of geom names.
+                If a MujocoModel is specified, the geoms checked will be its contact_geoms. If None, will check
+                any collision with @geoms_1 to any other geom in the environment
 
         Returns:
-            generator: iterator of all contacts between @geoms_1 and @geoms_2
+            bool: True if any geom in @geoms_1 is in contact with any geom in @geoms_2.
         """
-        for contact in self.sim.data.contact[0 : self.sim.data.ncon]:
+        # Check if either geoms_1 or geoms_2 is a string, convert to list if so
+        if type(geoms_1) is str:
+            geoms_1 = [geoms_1]
+        elif isinstance(geoms_1, MujocoModel):
+            geoms_1 = geoms_1.contact_geoms
+        if type(geoms_2) is str:
+            geoms_2 = [geoms_2]
+        elif isinstance(geoms_2, MujocoModel):
+            geoms_2 = geoms_2.contact_geoms
+        for contact in self.sim.data.contact[: self.sim.data.ncon]:
             # check contact geom in geoms
             c1_in_g1 = self.sim.model.geom_id2name(contact.geom1) in geoms_1
-            c2_in_g2 = self.sim.model.geom_id2name(contact.geom2) in geoms_2
+            c2_in_g2 = self.sim.model.geom_id2name(contact.geom2) in geoms_2 if geoms_2 is not None else True
             # check contact geom in geoms (flipped)
             c2_in_g1 = self.sim.model.geom_id2name(contact.geom2) in geoms_1
-            c1_in_g2 = self.sim.model.geom_id2name(contact.geom1) in geoms_2
+            c1_in_g2 = self.sim.model.geom_id2name(contact.geom1) in geoms_2 if geoms_2 is not None else True
             if (c1_in_g1 and c2_in_g2) or (c1_in_g2 and c2_in_g1):
-                yield contact
+                return True
+        return False
+
+    def get_contacts(self, model):
+        """
+        Checks for any contacts with @model (as defined by @model's contact_geoms) and returns the set of
+        geom names currently in contact with that model (excluding the geoms that are part of the model itself).
+
+        Args:
+            model (MujocoModel): Model to check contacts for.
+
+        Returns:
+            set: Unique geoms that are actively in contact with this model.
+
+        Raises:
+            AssertionError: [Invalid input type]
+        """
+        # Make sure model is MujocoModel type
+        assert isinstance(model, MujocoModel), \
+            "Inputted model must be of type MujocoModel; got type {} instead!".format(type(model))
+        contact_set = set()
+        for contact in self.sim.data.contact[: self.sim.data.ncon]:
+            # check contact geom in geoms; add to contact set if match is found
+            g1, g2 = self.sim.model.geom_id2name(contact.geom1), self.sim.model.geom_id2name(contact.geom2)
+            if g1 in model.contact_geoms and g2 not in model.contact_geoms:
+                contact_set.add(g2)
+            elif g2 in model.contact_geoms and g1 not in model.contact_geoms:
+                contact_set.add(g1)
+        return contact_set
 
     def _check_success(self):
         """

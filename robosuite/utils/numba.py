@@ -2,11 +2,10 @@
 Numba utils.
 """
 import numba
+import robosuite.utils.macros as macros
 
-ENABLE_NUMBA = True
-CACHE_NUMBA = True
 
 def jit_decorator(func):
-    if ENABLE_NUMBA:
-        return numba.jit(nopython=True, cache=CACHE_NUMBA)(func)
+    if macros.ENABLE_NUMBA:
+        return numba.jit(nopython=True, cache=macros.CACHE_NUMBA)(func)
     return func
