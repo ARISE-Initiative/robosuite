@@ -1,7 +1,3 @@
-"""
-This file implements a wrapper for using the ViSII imaging interface
-for robosuite. 
-"""
 import os
 import numpy as np
 import sys
@@ -12,10 +8,10 @@ from robosuite.wrappers import Wrapper
 from robosuite.models.robots import Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 from robosuite.models.robots import create_robot
 from robosuite.models.arenas import TableArena, BinsArena, PegsArena, EmptyArena, WipeArena
-from robosuite.models.objects import BoxObject, CylinderObject, BallObject, CapsuleObject, DoorObject, SquareNutObject, RoundNutObject, PotWithHandlesObject
+from robosuite.models.objects import BoxObject, CylinderObject, BallObject, CapsuleObject, DoorObject, SquareNutObject, RoundNutObject
 from robosuite.models.objects import CanVisualObject, MilkVisualObject, BreadVisualObject, CerealVisualObject
 from robosuite.models.objects import CanObject, MilkObject, BreadObject, CerealObject
-from robosuite.models.objects import HammerObject
+from robosuite.models.objects import PotWithHandlesObject, HammerObject
 from robosuite.environments.manipulation.pick_place import PickPlace
 from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
 from robosuite.utils.mjcf_utils import CustomMaterial
@@ -24,57 +20,65 @@ import math
 import xml.etree.ElementTree as ET
 
 class VirtualWrapper(Wrapper):
-    """
-    Initializes the ViSII wrapper.
+    """Initializes the ViSII wrapper.
     Args:
         env (MujocoEnv instance): The environment to wrap.
         width (int, optional)
         height (int, optional)
         use_noise (bool, optional): Use noise or denoise
         debug_mode (bool, optional): Use debug mode for visii
+        spp (int, optional): sample-per-pixel for each image
     """
+
     def __init__(self,
                  env,
                  width=1000,
                  height=1000,
+                 spp=50,
                  use_noise=True,
                  debug_mode=False):
 
         super().__init__(env)
 
-        # Camera variables
-        self.width                  = width
-        self.height                 = height
-        self.samples_per_pixel      = 50
+        if not os.path.exists('images'):
+            os.makedirs('images')
 
-        self.image_counter          = 0
-        self.render_number          = 1
+        # Camera variables
+        self.width             = width
+        self.height            = height
+        self.samples_per_pixel = spp
+
+        # Image variables
+        self.image_counter = 0
+
+        # Entity variables
         self.entities               = []
         self.gripper_entities       = {}
-        self.static_objects         = []
         self.static_object_entities = {}
 
-        self.parts       = []
+        # Mesh and entity variables for robot
         self.meshes      = []
-        self.geom_names  = {}
         self.mesh_parts  = []
+        self.geom_names  = {}
         self.mesh_colors = {}
 
+        # Mesh parts for the gripper
         self.gripper_parts      = {}
         self.gripper_mesh_files = {}
 
-        self.extra_entities = {}
-
-        self.robot_num_meshes = []
+        # Extra variables
+        self.extra_entities   = {}
+        self.num_meshes_per_robot = []
 
         if debug_mode:
             visii.initialize_interactive()
         else:
-            visii.initialize_headless()
+            visii.initialize(headless = True)
 
         if not use_noise: 
             visii.enable_denoiser()
 
+        # Intiailizes the lighting
         light_1 = visii.entity.create(
             name      = "light_1",
             mesh      = visii.mesh.create_sphere("light_1"),
@@ -89,17 +93,66 @@ class VirtualWrapper(Wrapper):
         light_1.get_transform().set_scale(visii.vec3(0.3))
         light_1.get_transform().set_position(visii.vec3(3, 3, 4))
         
+        # Intiailizes the floor
+        floor_mesh = visii.mesh.create_plane(name = "plane",
+                                             size = visii.vec2(3, 3))
+
         floor = visii.entity.create(
             name      = "floor",
-            mesh      = visii.mesh.create_plane("plane"),
+            mesh      = floor_mesh,
             material  = visii.material.create("plane"),
             transform = visii.transform.create("plane")
         )
-        floor.get_transform().set_scale(visii.vec3(20))
-        floor.get_transform().set_position(visii.vec3(0, 0, -5))
-        floor.get_material().set_base_color(visii.vec3(0.8, 1, 0.8))
+        floor.get_transform().set_scale(visii.vec3(1))
+        floor.get_transform().set_position(visii.vec3(0, 0, 0))
         floor.get_material().set_roughness(0.4)
         floor.get_material().set_specular(0)
+
+        image = '../models/assets/textures/kitchen_wood_diff_4k.jpg'
+        texture = visii.texture.create_from_file(name = 'flooring_texture',
+                                                 path = image)
+
+        floor.get_material().set_base_color_texture(texture)
+
+        image = '../models/assets/textures/grey_plaster_rough_4k.jpg'
+        texture = visii.texture.create_from_file(name = 'walls_texture',
+                                                 path = image)
+        
+        # Intiailizes the walls
+        wall_count = 0
+        for wall in self.env.model.mujoco_arena.worldbody.findall("./geom[@material='walls_mat']"):
+
+            name = wall.get('name')
+            size = [float(x) for x in wall.get('size').split(' ')]
+
+            pos = self.env.sim.data.geom_xpos[self.env.sim.model.geom_name2id(name)]
+            R = self.env.sim.data.geom_xmat[self.env.sim.model.geom_name2id(name)].reshape(3, 3)
+
+            quat_xyzw = self.quaternion_from_matrix3(R)
+            quat = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
+
+            wall_entity = visii.entity.create(
+                        name = name,
+                        mesh = visii.mesh.create_box(name = name,
+                                                     size = visii.vec3(size[0],
+                                                                       size[1],
+                                                                       size[2])),
+                        transform = visii.transform.create(name),
+                        material = visii.material.create(name)
+                    )
+
+            wall_entity.get_transform().set_position(visii.vec3(pos[0],
+                                                                pos[1],
+                                                                pos[2]))
+
+            wall_entity.get_transform().set_rotation(visii.quat(quat[0],
+                                                                quat[1],
+                                                                quat[2],
+                                                                quat[3]))
+            wall_entity.get_material().set_base_color_texture(texture)
+
+            wall_count+=1
+
 
         self.camera_init()
 
@@ -109,21 +162,13 @@ class VirtualWrapper(Wrapper):
         self.camera_configuration(pos_vec = visii.vec3(0, 0, 1), 
                                   at_vec  = visii.vec3(0, 0, 1), 
                                   up_vec  = visii.vec3(0, 0, 1),
-                                  eye_vec = visii.vec3(1.6, 0, 1.25))
+                                  eye_vec = visii.vec3(1.8, 0, 1.25))
         
         # Environment configuration
         self._dome_light_intensity = 1
         visii.set_dome_light_intensity(self._dome_light_intensity)
 
         visii.set_max_bounce_depth(2)
-
-        self.model = None
-        self.robots_names = self.env.robot_names
-
-        # for robot in self.env.robots:
-        #     print(robot.name)
-
-        # Passes the xml file based on the robot
 
         robot_count = 0
         for robot in self.env.robots:
@@ -133,10 +178,7 @@ class VirtualWrapper(Wrapper):
             robot_xml_filepath   = f'../models/assets/robots/{name.lower()}/robot.xml'
             gripper_xml_filepath = robot.gripper.file
 
-            print(robot_xml_filepath)
-            print(gripper_xml_filepath)
-
-            self.initalize_simulation(robot_xml_filepath) #####
+            self.initalize_simulation(robot_xml_filepath)
 
             tree = ET.parse(robot_xml_filepath)
             root = tree.getroot()
@@ -148,40 +190,7 @@ class VirtualWrapper(Wrapper):
 
             robot_count += 1
 
-        print(self.robot_num_meshes)
-
         self.init_objects()
-
-    def close(self):
-        visii.deinitialize()
-
-    def camera_init(self):
-
-        # intializes the camera
-        self.camera = visii.entity.create(
-            name = "camera",
-            transform = visii.transform.create("camera_transform"),
-        )
-
-        self.camera.set_camera(
-            visii.camera.create_perspective_from_fov(
-                name = "camera_camera", 
-                field_of_view = 1, 
-                aspect = float(self.width)/float(self.height)
-            )
-        )
-
-    def camera_configuration(self, pos_vec, at_vec, up_vec, eye_vec):
-
-        # configures the camera
-        self.camera.get_transform().set_position(pos_vec)
-
-        self.camera.get_transform().look_at(
-            at  = at_vec, # look at (world coordinate)
-            up  = up_vec, # up vector
-            eye = eye_vec,
-            previous = False
-        )
 
     def dynamic_obj_init(self, root, root_gripper, robot_num):
 
@@ -189,7 +198,6 @@ class VirtualWrapper(Wrapper):
         # Stores all the meshes and their colors required for the robot
         for body in root.iter('body'):
             body_name = body.get('name')
-            self.parts.append(body_name)
             meshBoolean = False
             prev_mesh = None
             for geom in body.findall('geom'):
@@ -207,25 +215,13 @@ class VirtualWrapper(Wrapper):
                 if meshBoolean:
                     self.mesh_colors[prev_mesh] = mesh_color
 
-        self.robot_num_meshes.append(count)
-
-        # print(f'Meshes: {self.meshes}\n')
-        # print(f'Parts: {self.parts}\n')
-        # print(f'geom_names: {self.geom_names}\n')
-        # print(f'mesh_parts: {self.mesh_parts}\n')
-        # print(f'mesh_colors: {self.mesh_colors}\n')
-
-        # if robot_num == 1:
-        #     print('Exitting...')
-        #     sys.exit()
-        # else:
-        #     return
+        self.num_meshes_per_robot.append(count)
 
         self.positions = self.get_positions(part_type = 'robot', 
                                             parts = self.mesh_parts,
                                             robot_count = robot_num) # position information for the robot
-        self.geoms     = self.get_geoms(root)                          # geometry information for the robot
-        self.quats     = self.get_quats()                              # orientation information for the robot
+        self.geoms     = self.get_geoms(root)                        # geometry information for the robot
+        self.quats     = self.get_quats(part_type = 'robot')         # orientation information for the robot
 
         for asset in root_gripper.iter('asset'):
 
@@ -238,7 +234,7 @@ class VirtualWrapper(Wrapper):
             mesh_types = []
             mesh_quats = []
             name = body.get('name')
-            # self.gripper_parts.append(body.get('name'))
+
             for geom in body.findall('geom'):
                 geom_mesh = geom.get('mesh')
                 if geom_mesh != None:
@@ -251,15 +247,12 @@ class VirtualWrapper(Wrapper):
                     mesh_types.append(geom_mesh)
                     mesh_quats.append(geom_quat)
 
-            print(f'gripper{robot_num}_{name}')
             self.gripper_parts[f'gripper{robot_num}_{name}'] = (mesh_types, mesh_quats)
-
-        print(self.gripper_parts)
 
         self.gripper_positions = self.get_positions(part_type = 'gripper', 
                                                     parts = self.gripper_parts,
                                                     robot_count = robot_num)
-        self.gripper_quats = self.get_quats_gripper()
+        self.gripper_quats = self.get_quats(part_type = 'gripper')
 
     def get_positions(self, part_type, parts, robot_count):
 
@@ -287,23 +280,25 @@ class VirtualWrapper(Wrapper):
 
         return geoms
 
-    def get_quats(self):
-        quats = []
-        for part in self.mesh_parts:
+    def get_quats(self, part_type):
+
+        quats = None
+        parts = None
+        if part_type == 'robot':
+            quats = []
+            parts = self.mesh_parts
+        elif part_type == 'gripper':
+            quats = {}
+            parts = self.gripper_parts
+
+        for part in parts:
             R = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(part)].reshape(3, 3)
             quat_xyzw = self.quaternion_from_matrix3(R)
             quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
-            quats.append(quat_wxyz)
-
-        return quats
-
-    def get_quats_gripper(self):
-        quats = {}
-        for part in self.gripper_parts:
-            R = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(part)].reshape(3, 3)
-            quat_xyzw = self.quaternion_from_matrix3(R)
-            quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
-            quats[part] = quat_wxyz
+            if part_type == 'robot':
+                quats.append(quat_wxyz)
+            elif part_type == 'gripper':
+                quats[part] = quat_wxyz
 
         return quats
 
@@ -315,13 +310,42 @@ class VirtualWrapper(Wrapper):
         # Creates the simulation
         self.env.sim.step()
 
-    def str_to_class(self, str):
-        return getattr(sys.modules[__name__], str)
+    def camera_init(self):
 
-    def reset(self):
-        self.obs_dict = self.env.reset()
+        # intializes the camera
+        self.camera = visii.entity.create(
+            name = "camera",
+            transform = visii.transform.create("camera_transform"),
+        )
+
+        self.camera.set_camera(
+            visii.camera.create_from_fov(
+                name = "camera_camera", 
+                field_of_view = 1, 
+                aspect = float(self.width)/float(self.height)
+            )
+        )
+
+    def camera_configuration(self, pos_vec, at_vec, up_vec, eye_vec):
+
+        # configures the camera
+        self.camera.get_transform().set_position(pos_vec)
+
+        self.camera.get_transform().look_at(
+            at  = at_vec, # look at (world coordinate)
+            up  = up_vec, # up vector
+            eye = eye_vec,
+            previous = False
+        )
 
     def init_objects(self):
+
+        self.init_arena()
+        self.init_static_objects()
+        self.init_robot_parts()
+        self.init_gripper_parts()
+
+    def init_arena(self):
 
         table = None
 
@@ -346,34 +370,27 @@ class VirtualWrapper(Wrapper):
                     )
 
             image = '../models/assets/textures/ceramic.png'
-            texture = visii.texture.create_from_image(name = 'ceramic_table_texture',
-                                                      path = image)
+            texture = visii.texture.create_from_file(name = 'ceramic_table_texture',
+                                                     path = image)
 
             table.get_material().set_base_color_texture(texture)
-
-            # print(f'Table size: {self.mujoco_arena.table_half_size}')
-            # print(f'Table pos: {table_pos}')
 
             table.get_transform().set_position(visii.vec3(float(table_pos[0]),
                                                           float(table_pos[1]),
                                                           float(table_pos[2])))
-            table.get_material().set_metallic(0)
-            table.get_material().set_transmission(0)
-            table.get_material().set_roughness(0.3)
+            
+            self.set_entity_material(table)
 
             # iterate through the legs of the table
             leg_count = 1
             image = '../models/assets/textures/steel-brushed.png'
-            texture = visii.texture.create_from_image(name = 'steel_legs_texture',
-                                                      path = image)
+            texture = visii.texture.create_from_file(name = 'steel_legs_texture',
+                                                     path = image)
 
             for leg in self.mujoco_arena.table_legs_visual:
 
                 size = leg.get('size').split(' ')
                 relative_pos = leg.get('pos').split(' ')
-
-                # print(f'leg size: {size}')
-                # print(f'leg pos:  {pos}')
 
                 leg_entity = visii.entity.create(
                         name = f"table_leg_{leg_count}",
@@ -394,18 +411,14 @@ class VirtualWrapper(Wrapper):
                                                                    pos[1],
                                                                    pos[2]))
 
-                leg_entity.get_material().set_metallic(0)
-                leg_entity.get_material().set_transmission(0)
-                leg_entity.get_material().set_roughness(0.3)
+                self.set_entity_material(leg_entity)
 
                 leg_count += 1
 
             if isinstance(self.mujoco_arena, WipeArena):
 
-                print('WipeArena')
-
                 image = '../models/assets/textures/dirt.png'
-                texture_dirt = visii.texture.create_from_image(name = 'dirt_texture',
+                texture_dirt = visii.texture.create_from_file(name = 'dirt_texture',
                                                                path = image)
 
                 for sensor in range(self.mujoco_arena.num_markers):
@@ -437,19 +450,16 @@ class VirtualWrapper(Wrapper):
 
                         dirt_entity.get_material().set_base_color_texture(texture_dirt)
 
-                        dirt_entity.get_material().set_metallic(0)
-                        dirt_entity.get_material().set_transmission(0)
-                        dirt_entity.get_material().set_roughness(0.3) 
+                        self.set_entity_material(dirt_entity)
 
             if isinstance(self.mujoco_arena, PegsArena):
-                print('PegsArena')
 
                 geom_count = 0
 
                 image = '../models/assets/textures/brass-ambra.png'
                 texture = visii.texture.get(image)
 
-                texture = visii.texture.create_from_image(name = 'peg1_texture',
+                texture = visii.texture.create_from_file(name = 'peg1_texture',
                                                           path = image)
 
                 pos = [float(x) for x in self.mujoco_arena.peg1_body.get('pos').split(' ')]
@@ -474,10 +484,12 @@ class VirtualWrapper(Wrapper):
                                                                    pos[2]))
                 obj_entity.get_material().set_base_color_texture(texture)
 
+                self.set_entity_material(obj_entity)
+
                 image = '../models/assets/textures/steel-scratched.png'
                 texture = visii.texture.get(image)
 
-                texture = visii.texture.create_from_image(name = 'peg2_texture',
+                texture = visii.texture.create_from_file(name = 'peg2_texture',
                                                           path = image)
 
                 pos = [float(x) for x in self.mujoco_arena.peg2_body.get('pos').split(' ')]
@@ -491,7 +503,7 @@ class VirtualWrapper(Wrapper):
                                                                    size[2]))
 
                 obj_entity = visii.entity.create(
-                    name=name,
+                    name = name,
                     mesh = obj_mesh,
                     transform = visii.transform.create(name),
                     material = visii.material.create(name)
@@ -503,17 +515,17 @@ class VirtualWrapper(Wrapper):
 
                 obj_entity.get_material().set_base_color_texture(texture)
 
+                self.set_entity_material(obj_entity)
+
         elif isinstance(self.mujoco_arena, BinsArena):
-            print('BinsArena')
 
             base_pos = self.mujoco_arena.bin1_body.get('pos').split(' ')
 
             wall_count = 1
             image = '../models/assets/textures/light-wood.png'
-            texture_light_table = visii.texture.create_from_image(name = 'light-wood_table_texture',
-                                                      path = image)
+            texture_light_table = visii.texture.create_from_file(name = 'light-wood_table_texture',
+                                                                 path = image)
             for wall in self.mujoco_arena.bin1_body.findall("./geom[@material='light-wood']"):
-                #print(wall.get('pos'))
 
                 size = wall.get('size').split(' ')
 
@@ -533,6 +545,8 @@ class VirtualWrapper(Wrapper):
 
                 table.get_material().set_base_color_texture(texture_light_table)
 
+                self.set_entity_material(table)
+
                 relative_pos = wall.get('pos').split(' ')
                 table_pos = []
                 for i in range(len(relative_pos)):
@@ -547,16 +561,13 @@ class VirtualWrapper(Wrapper):
             # iterate through the legs of the table
             leg_count = 1
             image = '../models/assets/textures/steel-brushed.png'
-            texture_legs = visii.texture.create_from_image(name = 'steel_legs_texture',
+            texture_legs = visii.texture.create_from_file(name = 'steel_legs_texture',
                                                       path = image)
 
             for leg in self.mujoco_arena.bin1_body.findall("./geom[@material='table_legs_metal']"):
 
                 size = leg.get('size').split(' ')
                 pos  = leg.get('pos').split(' ')
-
-                # print(f'leg size: {size}')
-                # print(f'leg pos:  {pos}')
 
                 leg_entity = visii.entity.create(
                         name = f"table_light_leg_{leg_count}",
@@ -569,6 +580,8 @@ class VirtualWrapper(Wrapper):
 
                 leg_entity.get_material().set_base_color_texture(texture_legs)
 
+                self.set_entity_material(leg_entity)
+
                 leg_pos = []
                 for i in range(len(pos)):
                     leg_pos.append(float(base_pos[i]) + float(pos[i]))
@@ -577,20 +590,15 @@ class VirtualWrapper(Wrapper):
                                                                    leg_pos[1], 
                                                                    leg_pos[2]))
 
-                leg_entity.get_material().set_metallic(0)
-                leg_entity.get_material().set_transmission(0)
-                leg_entity.get_material().set_roughness(0.3)
-
                 leg_count += 1
 
             base_pos = self.mujoco_arena.bin2_body.get('pos').split(' ')
 
             wall_count = 1
             image = '../models/assets/textures/dark-wood.png'
-            texture_dark_table = visii.texture.create_from_image(name = 'dark-wood_table_texture',
-                                                      path = image)
+            texture_dark_table = visii.texture.create_from_file(name = 'dark-wood_table_texture',
+                                                                path = image)
             for wall in self.mujoco_arena.bin2_body.findall("./geom[@material='dark-wood']"):
-                #print(wall.get('pos'))
 
                 size = wall.get('size').split(' ')
 
@@ -619,6 +627,8 @@ class VirtualWrapper(Wrapper):
                                                               table_pos[1],
                                                               table_pos[2]))
 
+                self.set_entity_material(table)
+
                 wall_count+=1
 
             # iterate through the legs of the table
@@ -629,9 +639,6 @@ class VirtualWrapper(Wrapper):
 
                 size = leg.get('size').split(' ')
                 pos  = leg.get('pos').split(' ')
-
-                # print(f'leg size: {size}')
-                # print(f'leg pos:  {pos}')
 
                 leg_entity = visii.entity.create(
                         name = f"table_dark_leg_{leg_count}",
@@ -656,22 +663,18 @@ class VirtualWrapper(Wrapper):
                 leg_entity.get_material().set_transmission(0)
                 leg_entity.get_material().set_roughness(0.3)
 
+                self.set_entity_material(leg_entity)
+
                 leg_count += 1
 
-
-        elif isinstance(self.mujoco_arena, EmptyArena):
-            print('EmptyArena')
+    def init_static_objects(self):
 
         self.mujoco_objects = self.env.model.mujoco_objects
-
-        print(self.mujoco_objects)
 
         # initializing the objects
         for static_object in self.mujoco_objects:
 
             static_object_name = static_object.name
-
-            #static_object = self.mujoco_objects[static_object_name]
 
             # first check if the environment is in single object mode
             single_obj_env = False
@@ -687,7 +690,7 @@ class VirtualWrapper(Wrapper):
                 static_object = self.mujoco_objects[static_object_name]
 
             tuple_obj = True
-            obj_entities = None # for the most part, this is only going to be a singluar mesh
+            obj_entities = None # for the most part, obj_entities is only going to be a singluar mesh
 
             if isinstance(static_object, BoxObject):
 
@@ -696,21 +699,18 @@ class VirtualWrapper(Wrapper):
                                                                    static_object.size[1],
                                                                    static_object.size[2]))
 
-                obj_entity = visii.entity.create(
-                    name=static_object_name,
-                    mesh = obj_mesh,
-                    transform = visii.transform.create(static_object_name),
-                    material = visii.material.create(static_object_name)
-                )
+                obj_entity = self.create_entity(static_object_name, obj_mesh)
 
                 image = static_object.material.tex_attrib["file"]
                 texture = visii.texture.get(static_object.material.tex_attrib["name"])
 
                 if texture == None:
-                    texture = visii.texture.create_from_image(name = static_object.material.tex_attrib["name"],
+                    texture = visii.texture.create_from_file(name = static_object.material.tex_attrib["name"],
                                                               path = image)
 
                 obj_entity.get_material().set_base_color_texture(texture)
+
+                self.set_entity_material(obj_entity)
 
                 self.static_object_entities[static_object_name] = [obj_entity]
 
@@ -719,21 +719,18 @@ class VirtualWrapper(Wrapper):
                                                       radius = static_object.size[0],
                                                       size   = static_object.size[1])
 
-                obj_entity = visii.entity.create(
-                    name=static_object_name,
-                    mesh = obj_mesh,
-                    transform = visii.transform.create(static_object_name),
-                    material = visii.material.create(static_object_name)
-                )
+                obj_entity = self.create_entity(static_object_name, obj_mesh)
 
                 image = static_object.material.tex_attrib["file"]
                 texture = visii.texture.get(static_object.material.tex_attrib["name"])
 
                 if texture == None:
-                    texture = visii.texture.create_from_image(name = static_object.material.tex_attrib["name"],
+                    texture = visii.texture.create_from_file(name = static_object.material.tex_attrib["name"],
                                                               path = image)
 
                 obj_entity.get_material().set_base_color_texture(texture)
+
+                self.set_entity_material(obj_entity)
 
                 self.static_object_entities[static_object_name] = [obj_entity]
 
@@ -741,21 +738,18 @@ class VirtualWrapper(Wrapper):
                 obj_mesh = visii.mesh.create_sphere(name   = static_object_name,
                                                     radius = static_object.size[0])
 
-                obj_entity = visii.entity.create(
-                    name=static_object_name,
-                    mesh = obj_mesh,
-                    transform = visii.transform.create(static_object_name),
-                    material = visii.material.create(static_object_name)
-                )
+                obj_entity = self.create_entity(static_object_name, obj_mesh)
 
                 image = static_object.material.tex_attrib["file"]
                 texture = visii.texture.get(static_object.material.tex_attrib["name"])
 
                 if texture == None:
-                    texture = visii.texture.create_from_image(name = static_object.material.tex_attrib["name"],
+                    texture = visii.texture.create_from_file(name = static_object.material.tex_attrib["name"],
                                                               path = image)
 
                 obj_entity.get_material().set_base_color_texture(texture)
+
+                self.set_entity_material(obj_entity)
 
                 self.static_object_entities[static_object_name] = [obj_entity]
 
@@ -764,18 +758,13 @@ class VirtualWrapper(Wrapper):
                                                      radius = static_object.size[0],
                                                      size   = static_object.size[1])
 
-                obj_entity = visii.entity.create(
-                    name=static_object_name,
-                    mesh = obj_mesh,
-                    transform = visii.transform.create(static_object_name),
-                    material = visii.material.create(static_object_name)
-                )
+                obj_entity = self.create_entity(static_object_name, obj_mesh)
 
                 image = static_object.material.tex_attrib["file"]
                 texture = visii.texture.get(static_object.material.tex_attrib["name"])
 
                 if texture == None:
-                    texture = visii.texture.create_from_image(name = static_object.material.tex_attrib["name"],
+                    texture = visii.texture.create_from_file(name = static_object.material.tex_attrib["name"],
                                                               path = image)
 
                 obj_entity.get_material().set_base_color_texture(texture)
@@ -785,72 +774,52 @@ class VirtualWrapper(Wrapper):
             elif isinstance(static_object, MilkObject):
                 obj_file = '../models/assets/objects/meshes/milk.obj'
 
-                imported_entity = visii.import_obj(
+                obj_entity = visii.import_obj(
                             static_object_name,
                             obj_file,
                             '../models/assets/objects/meshes/'
                         )
 
-                obj_entity = imported_entity
                 self.static_object_entities[static_object_name] = [obj_entity]
 
             elif isinstance(static_object, CanObject):
                 obj_file = '../models/assets/objects/meshes/can.obj'
 
-                imported_entity = visii.import_obj(
+                obj_entity = visii.import_obj(
                             static_object_name,
                             obj_file,
                             '../models/assets/objects/meshes/'
                         )
 
-                obj_entity = imported_entity
                 self.static_object_entities[static_object_name] = [obj_entity]
 
             elif isinstance(static_object, BreadObject):
                 obj_file = '../models/assets/objects/meshes/bread.obj'
 
-                imported_entity = visii.import_obj(
+                obj_entity = visii.import_obj(
                             static_object_name,
                             obj_file,
                             '../models/assets/objects/meshes/'
                         )
 
-                obj_entity = imported_entity
                 self.static_object_entities[static_object_name] = [obj_entity]
 
             elif isinstance(static_object, CerealObject):
                 obj_file = '../models/assets/objects/meshes/cereal.obj'
 
-                imported_entity = visii.import_obj(
+                obj_entity = visii.import_obj(
                             static_object_name,
                             obj_file,
                             '../models/assets/objects/meshes/'
                         )
 
-                obj_entity = imported_entity
                 self.static_object_entities[static_object_name] = [obj_entity]
-
-            # elif isinstance(static_object, LemonVisualObject):
-            #     obj_file = '../models/assets/objects/meshes/lemon.obj'
-
-            #     imported_entity = visii.import_obj(
-            #                 'Visual'+static_object_name,
-            #                 obj_file,
-            #                 '../models/assets/objects/meshes/'
-            #             )
-
-            #     obj_entity = imported_entity
-            #     self.static_object_entities[static_object_name] = [obj_entity]
 
             elif isinstance(static_object, DoorObject):
 
                 static_object_list = []
 
-                print(static_object.file)
-
                 frame = static_object.worldbody.find("./body/body/body[@name='Door_frame']")
-
-                print(frame.get('name'))
 
                 door = frame.find("./body[@name='Door_door']")  
                 door_geom = door.find("./geom[@name='Door_panel']")
@@ -862,12 +831,7 @@ class VirtualWrapper(Wrapper):
                                                                    door_size[1],
                                                                    door_size[2]))
 
-                obj_entity = visii.entity.create(
-                        name=door_geom.get('name'),
-                        mesh = obj_mesh,
-                        transform = visii.transform.create(door_geom.get('name')),
-                        material = visii.material.create(door_geom.get('name'))
-                    )
+                obj_entity = self.create_entity(door_geom.get('name'), obj_mesh)
 
                 static_object_list.append((door_geom.get('name'), obj_entity))
 
@@ -875,7 +839,7 @@ class VirtualWrapper(Wrapper):
                 texture = visii.texture.get(image)
 
                 if texture == None:
-                    texture = visii.texture.create_from_image(name = 'door_texture',
+                    texture = visii.texture.create_from_file(name = 'door_texture',
                                                               path = image)
 
                 obj_entity.get_material().set_base_color_texture(texture)
@@ -889,12 +853,7 @@ class VirtualWrapper(Wrapper):
                                                           radius = frame_size[0],
                                                           size   = frame_size[1])
 
-                    obj_entity = visii.entity.create(
-                        name=f.get('name'),
-                        mesh = obj_mesh,
-                        transform = visii.transform.create(f.get('name')),
-                        material = visii.material.create(f.get('name'))
-                    )
+                    obj_entity = self.create_entity(f.get('name'), obj_mesh)
 
                     static_object_list.append((f.get('name'), obj_entity))
 
@@ -904,7 +863,7 @@ class VirtualWrapper(Wrapper):
                 texture = visii.texture.get(image)
 
                 if texture == None:
-                    texture = visii.texture.create_from_image(name = 'handle_texture',
+                    texture = visii.texture.create_from_file(name = 'handle_texture',
                                                               path = image)
 
                 for f in latch.findall("geom"):
@@ -935,12 +894,7 @@ class VirtualWrapper(Wrapper):
                                                                            size[1],
                                                                            size[2]))
 
-                    obj_entity = visii.entity.create(
-                        name=f.get('name'),
-                        mesh = obj_mesh,
-                        transform = visii.transform.create(f.get('name')),
-                        material = visii.material.create(f.get('name'))
-                    )
+                    obj_entity = self.create_entity(f.get('name'), obj_mesh)
 
                     obj_entity.get_material().set_base_color_texture(texture)
 
@@ -951,8 +905,6 @@ class VirtualWrapper(Wrapper):
             elif isinstance(static_object, SquareNutObject):
 
                 collision = static_object.worldbody.find("./body/body")
-                print(static_object.file)
-                #print(collision.find("./body").get('name'))
 
                 static_object_list = []
 
@@ -961,7 +913,7 @@ class VirtualWrapper(Wrapper):
                 image = '../models/assets/textures/brass-ambra.png'
                 texture = visii.texture.get(image)
 
-                texture = visii.texture.create_from_image(name = 'square_nut_texture',
+                texture = visii.texture.create_from_file(name = 'square_nut_texture',
                                                           path = image)
 
                 for geom in collision.findall('geom'):
@@ -974,12 +926,7 @@ class VirtualWrapper(Wrapper):
                                                                        size[1],
                                                                        size[2]))
 
-                    obj_entity = visii.entity.create(
-                        name=name,
-                        mesh = obj_mesh,
-                        transform = visii.transform.create(name),
-                        material = visii.material.create(name)
-                    )
+                    obj_entity = self.create_entity(name, obj_mesh)
 
                     obj_entity.get_material().set_base_color_texture(texture)
 
@@ -998,7 +945,7 @@ class VirtualWrapper(Wrapper):
                 image = '../models/assets/textures/steel-scratched.png'
                 texture = visii.texture.get(image)
 
-                texture = visii.texture.create_from_image(name = 'round_nut_texture',
+                texture = visii.texture.create_from_file(name = 'round_nut_texture',
                                                           path = image)
 
                 for geom in collision.findall('geom'):
@@ -1011,12 +958,7 @@ class VirtualWrapper(Wrapper):
                                                                        size[1],
                                                                        size[2]))
 
-                    obj_entity = visii.entity.create(
-                        name=name,
-                        mesh = obj_mesh,
-                        transform = visii.transform.create(name),
-                        material = visii.material.create(name)
-                    )
+                    obj_entity = self.create_entity(name, obj_mesh)
 
                     obj_entity.get_material().set_base_color_texture(texture)
 
@@ -1027,18 +969,13 @@ class VirtualWrapper(Wrapper):
 
             elif isinstance(static_object, PotWithHandlesObject) or isinstance(static_object, HammerObject):
 
-                print('Pot of Hammer Object...')
-
                 obj_dict = static_object._get_geom_attrs()
                 static_object_list = []
 
                 # getting all the geoms for the main body
                 geom_count = 0
             
-                #print(obj_dict)
                 num_objects = len(obj_dict['geom_names'])
-
-                #print(num_objects)
 
                 for i in range(num_objects):
 
@@ -1063,7 +1000,7 @@ class VirtualWrapper(Wrapper):
                     texture = visii.texture.get(texture_name)
 
                     if texture == None:
-                        texture = visii.texture.create_from_image(name = texture_name,
+                        texture = visii.texture.create_from_file(name = texture_name,
                                                                   path = image)
 
                     if geom_type == 'box':
@@ -1073,12 +1010,7 @@ class VirtualWrapper(Wrapper):
                                                                            size[1],
                                                                            size[2]))
 
-                        obj_entity = visii.entity.create(
-                            name=name,
-                            mesh = obj_mesh,
-                            transform = visii.transform.create(name),
-                            material = visii.material.create(name)
-                        )
+                        obj_entity = self.create_entity(name, obj_mesh)
 
                         obj_entity.get_material().set_base_color_texture(texture)
 
@@ -1088,12 +1020,7 @@ class VirtualWrapper(Wrapper):
                                                               radius = size[0],
                                                               size = size[1])
 
-                        obj_entity = visii.entity.create(
-                            name=name,
-                            mesh = obj_mesh,
-                            transform = visii.transform.create(name),
-                            material = visii.material.create(name)
-                        )
+                        obj_entity = self.create_entity(name, obj_mesh)
 
                         obj_entity.get_material().set_base_color_texture(texture)
 
@@ -1101,32 +1028,15 @@ class VirtualWrapper(Wrapper):
                     geom_count += 1
 
                 self.static_object_entities[static_object_name] = static_object_list
-
-            # elif isinstance(static_object, HammerObject):
-                
-            #     print('Hammer Object...')
-
-            #     obj_dict = static_object._get_geom_attrs()
-            #     static_object_list = []
-
             
             else:
-                print(f'not an object: {type(static_object)}')
+                print(f'Not an object: {type(static_object)}')
                 continue
 
             if single_obj_env:
                 break
 
-        # mesh = visii.mesh.create_from_obj(name = 'pedestal', path = f'../models/assets/mounts/meshes/rethink_mount/pedestal.obj') # change
-        # link_entity = visii.entity.create(
-        #     name      = 'pedestal',
-        #     mesh      = mesh,
-        #     transform = visii.transform.create('pedestal'),
-        #     material  = visii.material.create('pedestal')
-        # )
-
-        
-        #print(link_entity)
+    def init_robot_parts(self):
 
         for i in range(len(self.env.robots)):
 
@@ -1135,6 +1045,7 @@ class VirtualWrapper(Wrapper):
                                 f'../models/assets/mounts/meshes/rethink_mount/pedestal.obj',
                                 f'../models/assets/mounts/meshes/rethink_mount/',
                             )
+            self.set_entity_material(link_entity)
 
             for link_idx in range(len(link_entity)):
 
@@ -1154,13 +1065,13 @@ class VirtualWrapper(Wrapper):
                                                                quat[1],
                                                                quat[2],
                                                                quat[3]))
+                self.set_entity_material(entity)
 
-        #print(f'Meshes 2 : {self.meshes}')
         mesh_count = 1
         current_robot_num = 0
         for i in range(len(self.meshes)):
 
-            if mesh_count > self.robot_num_meshes[current_robot_num]:
+            if mesh_count > self.num_meshes_per_robot[current_robot_num]:
                 mesh_count = 1
                 current_robot_num+=1
 
@@ -1211,11 +1122,13 @@ class VirtualWrapper(Wrapper):
                         material  = visii.material.create(link_name)
                     )
 
+            self.set_entity_material(link_entity)
+
             self.entities.append(link_entity)
             mesh_count += 1
 
+    def init_gripper_parts(self):
 
-        print(f'Gripper Parts: {self.gripper_parts}')
         for key in self.gripper_parts.keys():
 
             gripper_entity = None
@@ -1254,22 +1167,37 @@ class VirtualWrapper(Wrapper):
 
                     self.gripper_entities[wipe_geom.get('name')] = obj_entity
 
-
-
             for (mesh, mesh_quat) in zip(gripper_mesh_arr, gripper_mesh_quat):
 
-                mesh_gripper = o3d.io.read_triangle_mesh(f'../models/assets/grippers/{self.gripper_mesh_files[mesh]}')
+                gripper_entity = None
+
+                stl_file = f'../models/assets/grippers/{self.gripper_mesh_files[mesh]}'
+                obj_file = stl_file.replace('stl', 'obj')
+                mtl_file = stl_file.replace('stl', 'mtl')
+
                 mesh_name = f'{key}_{mesh}_mesh'
 
-                normals  = np.array(mesh_gripper.vertex_normals).flatten().tolist()
-                vertices = np.array(mesh_gripper.vertices).flatten().tolist()
-                mesh_gripper = visii.mesh.create_from_data(mesh_name, positions=vertices, normals=normals)
-                gripper_entity = visii.entity.create(
-                    name      = mesh_name,
-                    mesh      = mesh_gripper,
-                    transform = visii.transform.create(mesh_name),
-                    material  = visii.material.create(mesh_name)
-                )
+                if os.path.exists(mtl_file):
+                    
+                    gripper_entity = visii.import_obj(
+                                        mesh_name,
+                                        obj_file,
+                                        '/'.join(obj_file.split('/')[:-1]) + '/',
+                                    )
+
+                else:
+
+                    mesh_gripper = o3d.io.read_triangle_mesh(stl_file)
+
+                    normals  = np.array(mesh_gripper.vertex_normals).flatten().tolist()
+                    vertices = np.array(mesh_gripper.vertices).flatten().tolist()
+                    mesh_gripper = visii.mesh.create_from_data(mesh_name, positions=vertices, normals=normals)
+                    gripper_entity = visii.entity.create(
+                        name      = mesh_name,
+                        mesh      = mesh_gripper,
+                        transform = visii.transform.create(mesh_name),
+                        material  = visii.material.create(mesh_name)
+                    )
 
                 self.gripper_entities[f'{key}_{mesh}'] = gripper_entity
 
@@ -1284,7 +1212,7 @@ class VirtualWrapper(Wrapper):
             texture = visii.texture.get(texture_name)
 
             if texture == None:
-                texture = visii.texture.create_from_image(name = texture_name,
+                texture = visii.texture.create_from_file(name = texture_name,
                                                           path = image)
             for geom in object_tag.findall('geom'):
 
@@ -1328,16 +1256,23 @@ class VirtualWrapper(Wrapper):
             texture = visii.texture.get(texture_file)
 
             if texture == None:
-                texture = visii.texture.create_from_image(name = self.env.peg.material.tex_attrib["name"],
+                texture = visii.texture.create_from_file(name = self.env.peg.material.tex_attrib["name"],
                                                           path = image)
 
             obj_entity.get_material().set_base_color_texture(texture)
 
             self.extra_entities[peg_name] = obj_entity
 
-            # print(self.gripper_entities)
+    def create_entity(self, name, mesh):
+        return visii.entity.create(
+                        name=name,
+                        mesh = mesh,
+                        transform = visii.transform.create(name),
+                        material = visii.material.create(name)
+                    )
 
-        #quit()
+    def reset(self):
+        self.obs_dict = self.env.reset()
 
     def step(self, action):
 
@@ -1360,27 +1295,24 @@ class VirtualWrapper(Wrapper):
         self.positions = self.get_positions(part_type = 'robot', 
                                             parts = self.mesh_parts,
                                             robot_count = 0)
-        self.quats = self.get_quats()
+        self.quats = self.get_quats(part_type = 'robot')
 
         self.gripper_positions = self.get_positions(part_type = 'gripper', 
                                                     parts = self.gripper_parts.keys(),
                                                     robot_count = 0)
-        self.gripper_quats = self.get_quats_gripper()
+        self.gripper_quats = self.get_quats(part_type = 'gripper')
 
-    def render(self, render_type):
-        """
-        Renders the scene
+    def render(self, render_type = 'png'):
+
+        """Renders the scene
         Arg:
             render_type: tells the method whether to save to png or save to hdr
         """
         self.image_counter += 1
             
         # iterate through all the mujoco objects
-
-        #print(np.array(self.env.sim.data.body_xpos[self.env.sim.model.body_name2id('aa')]))
         
         for static_object in self.mujoco_objects:
-            # print(self.static_object_entities)
 
             static_object_name = static_object.name
 
@@ -1388,10 +1320,6 @@ class VirtualWrapper(Wrapper):
                 obj_entities = self.static_object_entities[static_object_name]
             else:
                 continue 
-
-            #print(obj_entities)
-            # static_object_name = obj_entities[0][1].get_name()
-            # print(static_object_name)
 
             for i in range(len(obj_entities)):
 
@@ -1423,9 +1351,7 @@ class VirtualWrapper(Wrapper):
                                                                        quat[2],
                                                                        quat[3]))
 
-                        entity.get_material().set_metallic(0)
-                        entity.get_material().set_transmission(0)
-                        entity.get_material().set_roughness(0.3)
+                        self.set_entity_material(entity)
 
                 elif isinstance(curr_obj_entity, tuple) and len(curr_obj_entity) == 3:
 
@@ -1433,16 +1359,6 @@ class VirtualWrapper(Wrapper):
                     name = entity.get_name()
 
                     pos = np.array(self.env.sim.data.geom_xpos[self.env.sim.model.geom_name2id(name)])
-
-                    # geoms = static_object.get_collision().findall('geom')
-                    
-                    # rel_pos = [float(x) for x in geoms[i].get('pos').split(' ')]
-
-                    # pos[0] += rel_pos[0]
-                    # pos[1] += rel_pos[1]
-                    # pos[2] += rel_pos[2]
-
-                    print(name, pos)
 
                     R = self.env.sim.data.geom_xmat[self.env.sim.model.geom_name2id(name)].reshape(3, 3)
                     quat_xyzw = self.quaternion_from_matrix3(R)
@@ -1456,9 +1372,7 @@ class VirtualWrapper(Wrapper):
                                                                    quat[2],
                                                                    quat[3]))
 
-                    entity.get_material().set_metallic(0)
-                    entity.get_material().set_transmission(0)
-                    entity.get_material().set_roughness(0.3)
+                    self.set_entity_material(entity)
 
                 elif isinstance(static_object, DoorObject):
 
@@ -1478,9 +1392,7 @@ class VirtualWrapper(Wrapper):
                                                                    quat[2],
                                                                    quat[3]))
 
-                    entity.get_material().set_metallic(0)
-                    entity.get_material().set_transmission(0)
-                    entity.get_material().set_roughness(0.3)
+                    self.set_entity_material(entity)
 
                 else:
                     name = static_object_name + '_main'
@@ -1504,14 +1416,11 @@ class VirtualWrapper(Wrapper):
                                                                    quat[2],
                                                                    quat[3]))
 
-                    entity.get_material().set_metallic(0)
-                    entity.get_material().set_transmission(0)
-                    entity.get_material().set_roughness(0.3)
+                    self.set_entity_material(entity)
 
         # For now we are only rendering it as a png
         # stl file extension
         mesh_color_arr = None
-        # print(self.geom_names)
 
         for i in range(len(self.meshes)):
 
@@ -1535,9 +1444,7 @@ class VirtualWrapper(Wrapper):
                                                                                   part_quaternion[2],
                                                                                   part_quaternion[3]))
 
-                    link_entity[link_idx].get_material().set_metallic(0)
-                    link_entity[link_idx].get_material().set_transmission(0)
-                    link_entity[link_idx].get_material().set_roughness(0.3)
+                    self.set_entity_material(link_entity[link_idx])
 
             else:
             
@@ -1553,11 +1460,8 @@ class VirtualWrapper(Wrapper):
                     link_entity.get_material().set_base_color(visii.vec3(float(mesh_color_arr[0]),
                                                                          float(mesh_color_arr[1]),
                                                                          float(mesh_color_arr[2])))
-                link_entity.get_material().set_metallic(0)
-                link_entity.get_material().set_transmission(0)
-                link_entity.get_material().set_roughness(0.3)
 
-        
+                self.set_entity_material(link_entity)
             
         for key in self.gripper_parts.keys():
             
@@ -1591,24 +1495,36 @@ class VirtualWrapper(Wrapper):
                                                                        gripper_quat[2],
                                                                        gripper_quat[3]))
 
+                    self.set_entity_material(obj_entity)
+
             for (mesh, mesh_quat) in zip(gripper_mesh_arr, gripper_mesh_quat):
-                
+
                 gripper_entity = self.gripper_entities[f'{key}_{mesh}']
-
                 part_position = self.gripper_positions[key]
-
-                gripper_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
-
                 part_quaternion = self.gripper_quats[key]
-                visii_part_quat = visii.quat(*part_quaternion) * visii.quat(*mesh_quat)
-                gripper_entity.get_transform().set_rotation(visii_part_quat)
-
-                if mesh == 'finger_vis':
-                    gripper_entity.get_material().set_base_color(visii.vec3(0.5, 0.5, 0.5))
                 
-                gripper_entity.get_material().set_metallic(0)
-                gripper_entity.get_material().set_transmission(0)
-                gripper_entity.get_material().set_roughness(0.3)
+                if isinstance(gripper_entity, tuple):
+
+                    visii_part_quat = visii.quat(*part_quaternion) * visii.quat(*mesh_quat)
+
+                    for link_idx in range(len(gripper_entity)):
+                        gripper_entity[link_idx].get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
+
+                        gripper_entity[link_idx].get_transform().set_rotation(visii_part_quat)
+
+                        self.set_entity_material(gripper_entity[link_idx])
+
+                else:
+
+                    gripper_entity.get_transform().set_position(visii.vec3(part_position[0], part_position[1], part_position[2]))
+
+                    visii_part_quat = visii.quat(*part_quaternion) * visii.quat(*mesh_quat)
+                    gripper_entity.get_transform().set_rotation(visii_part_quat)
+
+                    if mesh == 'finger_vis':
+                        gripper_entity.get_material().set_base_color(visii.vec3(0.5, 0.5, 0.5))
+                    
+                    self.set_entity_material(gripper_entity)
 
         for key in self.extra_entities.keys():
 
@@ -1628,77 +1544,102 @@ class VirtualWrapper(Wrapper):
                                                                  quat[2],
                                                                  quat[3]))
 
-            extra_entity.get_material().set_metallic(0)
-            extra_entity.get_material().set_transmission(0)
-            extra_entity.get_material().set_roughness(0.3)
+            self.set_entity_material(extra_entity)
 
-        visii.render_to_png(
+        visii.render_to_file(
             width             = self.width,
             height            = self.height, 
             samples_per_pixel = self.samples_per_pixel,   
-            image_path        = f'images/temp_{self.image_counter}.png'
+            file_path        = f'images/image_{self.image_counter}.png'
         )
 
-        self.render_number += 1
-        
     def quaternion_from_matrix3(self, matrix3):
-            """Return quaternion from 3x3 rotation matrix.
-            >>> R = rotation_matrix4(0.123, (1, 2, 3))
-            >>> q = quaternion_from_matrix4(R)
-            >>> numpy.allclose(q, [0.0164262, 0.0328524, 0.0492786, 0.9981095])
-            True
-            """
-            EPS = 1e-6
-            q = np.empty((4, ), dtype=np.float64)
-            M = np.array(matrix3, dtype=np.float64, copy=False)[:3, :3]
-            t = np.trace(M) + 1
-            if t <= -EPS:
-                warnings.warn('Numerical warning of [t = np.trace(M) + 1 = {}]'\
-                        .format(t))
-            t = max(t, EPS)
-            q[3] = t
-            q[2] = M[1, 0] - M[0, 1]
-            q[1] = M[0, 2] - M[2, 0]
-            q[0] = M[2, 1] - M[1, 2]
-            q *= 0.5 / math.sqrt(t)
-            return q
+        """Return quaternion from 3x3 rotation matrix.
+        >>> R = rotation_matrix4(0.123, (1, 2, 3))
+        >>> q = quaternion_from_matrix4(R)
+        >>> numpy.allclose(q, [0.0164262, 0.0328524, 0.0492786, 0.9981095])
+        True
+        """
+        EPS = 1e-6
+        q = np.empty((4, ), dtype=np.float64)
+        M = np.array(matrix3, dtype=np.float64, copy=False)[:3, :3]
+        t = np.trace(M) + 1
+        if t <= -EPS:
+            warnings.warn('Numerical warning of [t = np.trace(M) + 1 = {}]'\
+                    .format(t))
+        t = max(t, EPS)
+        q[3] = t
+        q[2] = M[1, 0] - M[0, 1]
+        q[1] = M[0, 2] - M[2, 0]
+        q[0] = M[2, 1] - M[1, 2]
+        q *= 0.5 / math.sqrt(t)
+        return q
+
+    def set_entity_material(self, entity):
+
+        if isinstance(entity, tuple):
+            for link_idx in range(len(entity)):
+                entity[link_idx].get_material().set_metallic(0)
+                entity[link_idx].get_material().set_transmission(0)
+                entity[link_idx].get_material().set_roughness(0.3)
+
+        else:
+            entity.get_material().set_metallic(0)
+            entity.get_material().set_transmission(0)
+            entity.get_material().set_roughness(0.3)
 
     def printState(self): # For testing purposes
         print(self.obs_dict)
 
+    def close(self):
+        visii.deinitialize()
+
     def get_camera_intrinsics(self):
         """Get camera intrinsics matrix
         """
-        raise NotImplementedError
+        return self.camera.get_transform.get_world_to_local_matrix()
 
     def get_camera_extrinsics(self):
         """Get camera extrinsics matrix
         """
-        raise NotImplementedError
+        return self.camera.get_transform.get_local_to_world_matrix()
 
-    def set_camera_intrinsics(self):
+    def set_camera_intrinsics(self, fov, width, height):
         """Set camera intrinsics matrix
         """
-        raise NotImplementedError
+        self.width = width
+        self.height = height
 
-    def set_camera_extrinsics(self):
+        self.camera.set_camera(
+            visii.camera.create_from_fov(
+                name = "camera_camera", 
+                field_of_view = fov, 
+                aspect = float(width)/float(height)
+            )
+        )
+
+    def set_camera_extrinsics(self, at_vec, up_vec, eye_vec):
         """Set camera extrinsics matrix
         """
-        raise NotImplementedError
-        
-        
+        self.camera.get_transform().look_at(
+            at  = at_vec, # look at (world coordinate)
+            up  = up_vec, # up vector
+            eye = eye_vec,
+            previous = False
+        )
+
 if __name__ == '__main__':
 
-    # Registered environments: Lift :), Stack :), NutAssembly :), NutAssemblySingle, NutAssemblySquare, NutAssemblyRound,
-    #                          PickPlace :), PickPlaceSingle, PickPlaceMilk , PickPlaceBread, PickPlaceCereal, 
-    #                          PickPlaceCan, Door:), Wipe:), TwoArmLift:), TwoArmPegInHole, TwoArmHandover
+    # Registered environments: Lift, Stack, NutAssembly, NutAssemblySingle, NutAssemblySquare, NutAssemblyRound,
+    #                          PickPlace, PickPlaceSingle, PickPlaceMilk , PickPlaceBread, PickPlaceCereal, 
+    #                          PickPlaceCan, Door, Wipe, TwoArmLift, TwoArmPegInHole, TwoArmHandover
 
     # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 
     env = VirtualWrapper(
         env = suite.make(
                 "TwoArmHandover",
-                robots =["Panda","Sawyer"],
+                robots =["Sawyer", "Panda"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
@@ -1707,24 +1648,20 @@ if __name__ == '__main__':
                 use_camera_obs=False,         # no camera observations
                 control_freq=10, 
             ),
+        spp=5,
         use_noise=False,
         debug_mode=False,
     )
 
     env.reset()
 
-    # env.render(render_type = "png") # initial rendering of the robot
-
-    # env.printState()
-
-    for i in range(200):
+    for i in range(300):
         action = np.random.randn(16)
         obs, reward, done, info = env.step(action)
 
         if i%100 == 0:
             env.render(render_type = "png")
 
-        # env.printState() # for testing purposes
     env.close()
     
     print('Done.')
