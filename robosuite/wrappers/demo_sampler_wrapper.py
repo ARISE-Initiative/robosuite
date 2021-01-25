@@ -212,7 +212,7 @@ class DemoSamplerWrapper(Wrapper):
         ep_ind = random.choice(self.demo_list)
 
         # select a flattened mujoco state uniformly from this episode
-        states = self.demo_file["data/{}/states".format(ep_ind)].value
+        states = self.demo_file["data/{}/states".format(ep_ind)][()]
         state = random.choice(states)
 
         if self.need_xml:
@@ -239,7 +239,7 @@ class DemoSamplerWrapper(Wrapper):
         ep_ind = random.choice(self.demo_list)
 
         # sample uniformly in a window that grows backwards from the end of the demos
-        states = self.demo_file["data/{}/states".format(ep_ind)].value
+        states = self.demo_file["data/{}/states".format(ep_ind)][()]
         eps_len = states.shape[0]
         index = np.random.randint(max(eps_len - self.open_loop_window_size, 0), eps_len)
         state = states[index]
@@ -276,7 +276,7 @@ class DemoSamplerWrapper(Wrapper):
         ep_ind = random.choice(self.demo_list)
 
         # sample uniformly in a window that grows forwards from the beginning of the demos
-        states = self.demo_file["data/{}/states".format(ep_ind)].value
+        states = self.demo_file["data/{}/states".format(ep_ind)][()]
         eps_len = states.shape[0]
         index = np.random.randint(0, min(self.open_loop_window_size, eps_len))
         state = states[index]

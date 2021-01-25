@@ -10,6 +10,7 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.utils.observables import Observable, sensor
 
 
 class Stack(SingleArmEnv):
@@ -359,13 +360,13 @@ class Stack(SingleArmEnv):
             mujoco_objects=cubes,
         )
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
 
         # Additional object references from this env
         self.cubeA_body_id = self.sim.model.body_name2id(self.cubeA.root_body)
@@ -387,66 +388,65 @@ class Stack(SingleArmEnv):
             for obj_pos, obj_quat, obj in object_placements.values():
                 self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
 
-    def _get_observation(self):
+    def _setup_observables(self):
         """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
+        Sets up observables to be used for this environment. Creates object-based observables if enabled
 
         Returns:
-            OrderedDict: Observations from the environment
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
         """
-        di = super()._get_observation()
+        observables = super()._setup_observables()
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix
-            pr = self.robots[0].robot_model.naming_prefix
+            # Get robot prefix and define observables modality
+            pf = self.robots[0].robot_model.naming_prefix
+            modality = "object"
 
             # position and rotation of the first cube
-            cubeA_pos = np.array(self.sim.data.body_xpos[self.cubeA_body_id])
-            cubeA_quat = convert_quat(
-                np.array(self.sim.data.body_xquat[self.cubeA_body_id]), to="xyzw"
-            )
-            di["cubeA_pos"] = cubeA_pos
-            di["cubeA_quat"] = cubeA_quat
+            @sensor(modality=modality)
+            def cubeA_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.cubeA_body_id])
 
-            # position and rotation of the second cube
-            cubeB_pos = np.array(self.sim.data.body_xpos[self.cubeB_body_id])
-            cubeB_quat = convert_quat(
-                np.array(self.sim.data.body_xquat[self.cubeB_body_id]), to="xyzw"
-            )
-            di["cubeB_pos"] = cubeB_pos
-            di["cubeB_quat"] = cubeB_quat
+            @sensor(modality=modality)
+            def cubeA_quat(obs_cache):
+                return convert_quat(np.array(self.sim.data.body_xquat[self.cubeA_body_id]), to="xyzw")
 
-            # relative positions between gripper and cubes
-            gripper_site_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
-            di[pr + "gripper_to_cubeA"] = gripper_site_pos - cubeA_pos
-            di[pr + "gripper_to_cubeB"] = gripper_site_pos - cubeB_pos
-            di["cubeA_to_cubeB"] = cubeA_pos - cubeB_pos
+            @sensor(modality=modality)
+            def cubeB_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.cubeB_body_id])
 
-            di["object-state"] = np.concatenate(
-                [
-                    cubeA_pos,
-                    cubeA_quat,
-                    cubeB_pos,
-                    cubeB_quat,
-                    di[pr + "gripper_to_cubeA"],
-                    di[pr + "gripper_to_cubeB"],
-                    di["cubeA_to_cubeB"],
-                ]
-            )
+            @sensor(modality=modality)
+            def cubeB_quat(obs_cache):
+                return convert_quat(np.array(self.sim.data.body_xquat[self.cubeB_body_id]), to="xyzw")
 
-        return di
+            @sensor(modality=modality)
+            def gripper_to_cubeA(obs_cache):
+                return obs_cache["cubeA_pos"] - obs_cache[f"{pf}eef_pos"] if \
+                    "cubeA_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def gripper_to_cubeB(obs_cache):
+                return obs_cache["cubeB_pos"] - obs_cache[f"{pf}eef_pos"] if \
+                    "cubeB_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def cubeA_to_cubeB(obs_cache):
+                return obs_cache["cubeB_pos"] - obs_cache["cubeA_pos"] if \
+                    "cubeA_pos" in obs_cache and "cubeB_pos" in obs_cache else np.zeros(3)
+
+            sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, gripper_to_cubeA, gripper_to_cubeB, cubeA_to_cubeB]
+            names = [s.__name__ for s in sensors]
+
+            # Create observables
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )
+
+        return observables
 
     def _check_success(self):
         """

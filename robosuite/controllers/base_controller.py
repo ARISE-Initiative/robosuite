@@ -2,6 +2,7 @@ import abc
 from collections.abc import Iterable
 import numpy as np
 import mujoco_py
+import robosuite.utils.macros as macros
 
 
 class Controller(object, metaclass=abc.ABCMeta):
@@ -49,7 +50,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         # mujoco simulator state
         self.sim = sim
-        self.model_timestep = self.sim.model.opt.timestep
+        self.model_timestep = macros.SIMULATION_TIMESTEP
         self.eef_name = eef_name
         self.joint_index = joint_indexes["joints"]
         self.qpos_index = joint_indexes["qpos"]

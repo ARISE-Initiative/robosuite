@@ -9,6 +9,7 @@ from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import SquareNutObject, RoundNutObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
+from robosuite.utils.observables import Observable, sensor
 
 
 class NutAssembly(SingleArmEnv):
@@ -171,10 +172,9 @@ class NutAssembly(SingleArmEnv):
         # task settings
         self.single_object_mode = single_object_mode
         self.nut_to_id = {"square": 0, "round": 1}
+        self.nut_id_to_sensors = {}                    # Maps nut id to sensor names for that nut
         if nut_type is not None:
-            assert (
-                    nut_type in self.nut_to_id.keys()
-            ), "invalid @nut_type argument - choose one of {}".format(
+            assert nut_type in self.nut_to_id.keys(), "invalid @nut_type argument - choose one of {}".format(
                 list(self.nut_to_id.keys())
             )
             self.nut_id = self.nut_to_id[nut_type]  # use for convenient indexing
@@ -422,13 +422,13 @@ class NutAssembly(SingleArmEnv):
             mujoco_objects=self.nuts,
         )
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
 
         # Additional object references from this env
         self.obj_body_id = {}
@@ -447,6 +447,114 @@ class NutAssembly(SingleArmEnv):
 
         # keep track of which objects are on their corresponding pegs
         self.objects_on_pegs = np.zeros(len(self.nuts))
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Creates object-based observables if enabled
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+
+        # low-level object information
+        if self.use_object_obs:
+            # Get robot prefix and define observables modality
+            pf = self.robots[0].robot_model.naming_prefix
+            modality = "object"
+
+            # Reset nut sensor mappings
+            self.nut_id_to_sensors = {}
+
+            # for conversion to relative gripper frame
+            @sensor(modality=modality)
+            def world_pose_in_gripper(obs_cache):
+                return T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"]))) if\
+                    f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache else np.eye(4)
+            sensors = [world_pose_in_gripper]
+            names = ["world_pose_in_gripper"]
+            enableds = [True]
+            actives = [False]
+
+            # Define nut related sensors
+            for i, nut in enumerate(self.nuts):
+                # Create sensors for this nut
+                using_nut = (self.single_object_mode == 0 or self.nut_id == i)
+                nut_sensors, nut_sensor_names = self._create_nut_sensors(nut_name=nut.name, modality=modality)
+                sensors += nut_sensors
+                names += nut_sensor_names
+                enableds += [using_nut] * 4
+                actives += [using_nut] * 4
+                self.nut_id_to_sensors[i] = nut_sensor_names
+
+            if self.single_object_mode == 1:
+                # This is randomly sampled object, so we need to include object id as observation
+                @sensor(modality=modality)
+                def nut_id(obs_cache):
+                    return self.nut_id
+
+                sensors.append(nut_id)
+                names.append("nut_id")
+                enableds.append(True)
+                actives.append(True)
+
+            # Create observables
+            for name, s, enabled, active in zip(names, sensors, enableds, actives):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                    enabled=enabled,
+                    active=active,
+                )
+
+        return observables
+
+    def _create_nut_sensors(self, nut_name, modality="object"):
+        """
+        Helper function to create sensors for a given nut. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            nut_name (str): Name of nut to create sensors for
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given nut
+                names (list): array of corresponding observable names
+        """
+        pf = self.robots[0].robot_model.naming_prefix
+
+        @sensor(modality=modality)
+        def nut_pos(obs_cache):
+            return np.array(self.sim.data.body_xpos[self.obj_body_id[nut_name]])
+
+        @sensor(modality=modality)
+        def nut_quat(obs_cache):
+            return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut_name]], to="xyzw")
+
+        @sensor(modality=modality)
+        def nut_to_eef_pos(obs_cache):
+            # Immediately return default value if cache is empty
+            if any([name not in obs_cache for name in
+                    [f"{nut_name}_pos", f"{nut_name}_quat", "world_pose_in_gripper"]]):
+                return np.zeros(3)
+            obj_pose = T.pose2mat((obs_cache[f"{nut_name}_pos"], obs_cache[f"{nut_name}_quat"]))
+            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
+            rel_pos, rel_quat = T.mat2pose(rel_pose)
+            obs_cache[f"{nut_name}_to_{pf}eef_quat"] = rel_quat
+            return rel_pos
+
+        @sensor(modality=modality)
+        def nut_to_eef_quat(obs_cache):
+            return obs_cache[f"{nut_name}_to_{pf}eef_quat"] if \
+                f"{nut_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
+
+        sensors = [nut_pos, nut_quat, nut_to_eef_pos, nut_to_eef_quat]
+        names = [f"{nut_name}_pos", f"{nut_name}_quat", f"{nut_name}_to_{pf}eef_pos", f"{nut_name}_to_{pf}eef_quat"]
+
+        return sensors, names
 
     def _reset_internal(self):
         """
@@ -468,83 +576,23 @@ class NutAssembly(SingleArmEnv):
         nut_names = {nut.name for nut in self.nuts}
         if self.single_object_mode == 1:
             self.obj_to_use = random.choice(list(nut_names))
+            for nut_type, i in self.nut_to_id.items():
+                if nut_type.lower() in self.obj_to_use.lower():
+                    self.nut_id = i
+                    break
         elif self.single_object_mode == 2:
             self.obj_to_use = self.nuts[self.nut_id].name
         if self.single_object_mode in {1, 2}:
             nut_names.remove(self.obj_to_use)
             self.clear_objects(list(nut_names))
 
-    def _get_observation(self):
-        """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
-
-        Returns:
-            OrderedDict: Observations from the environment
-        """
-        di = super()._get_observation()
-
-        # low-level object information
-        if self.use_object_obs:
-            # Get robot prefix
-            pr = self.robots[0].robot_model.naming_prefix
-
-            # remember the keys to collect into object info
-            object_state_keys = []
-
-            # for conversion to relative gripper frame
-            gripper_pose = T.pose2mat((di[pr + "eef_pos"], di[pr + "eef_quat"]))
-            world_pose_in_gripper = T.pose_inv(gripper_pose)
-
-            for i, nut in enumerate(self.nuts):
-
-                if self.single_object_mode == 2 and self.nut_id != i:
-                    # skip observations
-                    continue
-
-                obj_str = nut.name
-                obj_pos = np.array(self.sim.data.body_xpos[self.obj_body_id[obj_str]])
-                obj_quat = T.convert_quat(
-                    self.sim.data.body_xquat[self.obj_body_id[obj_str]], to="xyzw"
-                )
-                di["{}_pos".format(obj_str)] = obj_pos
-                di["{}_quat".format(obj_str)] = obj_quat
-
-                object_pose = T.pose2mat((obj_pos, obj_quat))
-                rel_pose = T.pose_in_A_to_pose_in_B(object_pose, world_pose_in_gripper)
-                rel_pos, rel_quat = T.mat2pose(rel_pose)
-                di["{}_to_{}eef_pos".format(obj_str, pr)] = rel_pos
-                di["{}_to_{}eef_quat".format(obj_str, pr)] = rel_quat
-
-                object_state_keys.append("{}_pos".format(obj_str))
-                object_state_keys.append("{}_quat".format(obj_str))
-                object_state_keys.append("{}_to_{}eef_pos".format(obj_str, pr))
-                object_state_keys.append("{}_to_{}eef_quat".format(obj_str, pr))
-
-            if self.single_object_mode == 1:
-                # zero out other objs
-                for obj in self.model.mujoco_objects:
-                    if obj.name == self.obj_to_use:
-                        continue
-                    else:
-                        di["{}_pos".format(obj.name)] *= 0.0
-                        di["{}_quat".format(obj.name)] *= 0.0
-                        di["{}_to_{}eef_pos".format(obj.name, pr)] *= 0.0
-                        di["{}_to_{}eef_quat".format(obj.name, pr)] *= 0.0
-
-            di["object-state"] = np.concatenate([di[k] for k in object_state_keys])
-
-        return di
+        # Make sure to update sensors' active and enabled states
+        if self.single_object_mode != 0:
+            for i, sensor_names in self.nut_id_to_sensors.items():
+                for name in sensor_names:
+                    # Set all of these sensors to be enabled and active if this is the active nut, else False
+                    self._observables[name].set_enabled(i == self.nut_id)
+                    self._observables[name].set_active(i == self.nut_id)
 
     def _check_success(self):
         """

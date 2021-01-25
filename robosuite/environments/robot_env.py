@@ -1,7 +1,9 @@
 import numpy as np
+from collections import OrderedDict
 
 import robosuite.utils.macros as macros
 from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
+from robosuite.utils.observables import Observable, sensor
 
 from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING
@@ -272,18 +274,113 @@ class RobotEnv(MujocoEnv):
         # Load robots
         self._load_robots()
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
 
         # Setup robot-specific references as well (note: requires resetting of sim for robot first)
         for robot in self.robots:
             robot.reset_sim(self.sim)
             robot.setup_references()
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Loops through all robots and grabs their corresponding
+        observables to add to the procedurally generated dict of observables
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+        # Loop through all robots and grab their observables, adding it to the proprioception modality
+        for robot in self.robots:
+            robot_obs = robot.setup_observables()
+            observables.update(robot_obs)
+
+        # Loop through cameras and update the observations if using camera obs
+        if self.use_camera_obs:
+            # Create sensor information
+            sensors = []
+            names = []
+            for (cam_name, cam_w, cam_h, cam_d) in \
+                    zip(self.camera_names, self.camera_widths, self.camera_heights, self.camera_depths):
+
+                # Add cameras associated to our arrays
+                cam_sensors, cam_sensor_names = self._create_camera_sensors(
+                    cam_name, cam_w=cam_w, cam_h=cam_h, cam_d=cam_d, modality="image")
+                sensors += cam_sensors
+                names += cam_sensor_names
+
+            # Create observables for these cameras
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )
+
+        return observables
+
+    def _create_camera_sensors(self, cam_name, cam_w, cam_h, cam_d, modality="image"):
+        """
+        Helper function to create sensors for a given camera. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            cam_name (str): Name of camera to create sensors for
+            cam_w (int): Width of camera
+            cam_h (int): Height of camera
+            cam_d (bool): Whether to create a depth sensor as well
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given camera
+                names (list): array of corresponding observable names
+        """
+        # Make sure we get correct convention
+        convention = IMAGE_CONVENTION_MAPPING[macros.IMAGE_CONVENTION]
+
+        # Create sensor information
+        sensors = []
+        names = []
+
+        # Add camera observables to the dict
+        rgb_sensor_name = f"{cam_name}_image"
+        depth_sensor_name = f"{cam_name}_depth"
+
+        @sensor(modality=modality)
+        def camera_rgb(obs_cache):
+            img = self.sim.render(
+                camera_name=cam_name,
+                width=cam_w,
+                height=cam_h,
+                depth=cam_d,
+            )
+            if cam_d:
+                rgb, depth = img
+                obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
+                return rgb[::convention]
+            else:
+                return img[::convention]
+
+        sensors.append(camera_rgb)
+        names.append(rgb_sensor_name)
+
+        if cam_d:
+            @sensor(modality=modality)
+            def camera_depth(obs_cache):
+                return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))
+
+            sensors.append(camera_depth)
+            names.append(depth_sensor_name)
+
+        return sensors, names
 
     def _reset_internal(self):
         """
@@ -359,49 +456,6 @@ class RobotEnv(MujocoEnv):
             robot_action = action[cutoff:cutoff+robot.action_dim]
             robot.control(robot_action, policy_step=policy_step)
             cutoff += robot.action_dim
-
-    def _get_observation(self):
-        """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
-
-        Returns:
-            OrderedDict: Observations from the environment
-        """
-        di = super()._get_observation()
-
-        # Loop through robots and update the observations
-        for robot in self.robots:
-            di = robot.get_observations(di)
-
-        # Loop through cameras and update the observations
-        if self.use_camera_obs:
-            convention = IMAGE_CONVENTION_MAPPING[macros.IMAGE_CONVENTION]
-            for (cam_name, cam_w, cam_h, cam_d) in \
-                    zip(self.camera_names, self.camera_widths, self.camera_heights, self.camera_depths):
-
-                # Add camera observations to the dict
-                camera_obs = self.sim.render(
-                    camera_name=cam_name,
-                    width=cam_w,
-                    height=cam_h,
-                    depth=cam_d,
-                )
-                if cam_d:
-                    rgb, depth = camera_obs
-                    di[cam_name + "_image"], di[cam_name + "_depth"] = rgb[::convention], depth[::convention]
-                else:
-                    di[cam_name + "_image"] = camera_obs[::convention]
-
-        return di
 
     def _load_robots(self):
         """

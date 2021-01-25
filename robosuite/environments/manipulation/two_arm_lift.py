@@ -7,6 +7,7 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.objects import PotWithHandlesObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.utils.observables import Observable, sensor
 
 import robosuite.utils.transform_utils as T
 
@@ -134,7 +135,7 @@ class TwoArmLift(TwoArmEnv):
     def __init__(
         self,
         robots,
-        env_configuration="single-arm-opposed",
+        env_configuration="default",
         controller_configs=None,
         gripper_types="default",
         initialization_noise="default",
@@ -339,13 +340,13 @@ class TwoArmLift(TwoArmEnv):
             mujoco_objects=self.pot,
         )
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
 
         # Additional object references from this env
         self.pot_body_id = self.sim.model.body_name2id(self.pot.root_body)
@@ -353,6 +354,67 @@ class TwoArmLift(TwoArmEnv):
         self.handle1_site_id = self.sim.model.site_name2id(self.pot.important_sites["handle1"])
         self.table_top_id = self.sim.model.site_name2id("table_top")
         self.pot_center_id = self.sim.model.site_name2id(self.pot.important_sites["center"])
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Creates object-based observables if enabled
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+
+        # low-level object information
+        if self.use_object_obs:
+            # Get robot prefix and define observables modality
+            if self.env_configuration == "bimanual":
+                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
+                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
+            else:
+                pf0 = self.robots[0].robot_model.naming_prefix
+                pf1 = self.robots[1].robot_model.naming_prefix
+            modality = "object"
+
+            # position and rotation of object
+
+            @sensor(modality=modality)
+            def pot_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.pot_body_id])
+
+            @sensor(modality=modality)
+            def pot_quat(obs_cache):
+                return T.convert_quat(self.sim.data.body_xquat[self.pot_body_id], to="xyzw")
+
+            @sensor(modality=modality)
+            def handle0_xpos(obs_cache):
+                return np.array(self._handle0_xpos)
+
+            @sensor(modality=modality)
+            def handle1_xpos(obs_cache):
+                return np.array(self._handle1_xpos)
+
+            @sensor(modality=modality)
+            def gripper0_to_handle0(obs_cache):
+                return obs_cache["handle0_xpos"] - obs_cache[f"{pf0}eef_pos"] if \
+                    "handle0_xpos" in obs_cache and f"{pf0}eef_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def gripper1_to_handle1(obs_cache):
+                return obs_cache["handle1_xpos"] - obs_cache[f"{pf1}eef_pos"] if \
+                    "handle1_xpos" in obs_cache and f"{pf1}eef_pos" in obs_cache else np.zeros(3)
+
+            sensors = [pot_pos, pot_quat, handle0_xpos, handle1_xpos, gripper0_to_handle0, gripper1_to_handle1]
+            names = [s.__name__ for s in sensors]
+
+            # Create observables
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )
+
+        return observables
 
     def _reset_internal(self):
         """
@@ -369,62 +431,6 @@ class TwoArmLift(TwoArmEnv):
             # Loop through all objects and reset their positions
             for obj_pos, obj_quat, obj in object_placements.values():
                 self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
-
-    def _get_observation(self):
-        """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
-
-        Returns:
-            OrderedDict: Observations from the environment
-        """
-        di = super()._get_observation()
-
-        # low-level object information
-        if self.use_object_obs:
-            # Get robot prefix
-            if self.env_configuration == "bimanual":
-                pr0 = self.robots[0].robot_model.naming_prefix + "left_"
-                pr1 = self.robots[0].robot_model.naming_prefix + "right_"
-            else:
-                pr0 = self.robots[0].robot_model.naming_prefix
-                pr1 = self.robots[1].robot_model.naming_prefix
-
-            # position and rotation of object
-            cube_pos = np.array(self.sim.data.body_xpos[self.pot_body_id])
-            cube_quat = T.convert_quat(
-                self.sim.data.body_xquat[self.pot_body_id], to="xyzw"
-            )
-            di["cube_pos"] = cube_pos
-            di["cube_quat"] = cube_quat
-
-            di["handle0_xpos"] = np.array(self._handle0_xpos)
-            di["handle1_xpos"] = np.array(self._handle1_xpos)
-            di[pr0 + "gripper_to_handle0"] = np.array(self._gripper0_to_handle0)
-            di[pr1 + "gripper_to_handle1"] = np.array(self._gripper1_to_handle1)
-
-            di["object-state"] = np.concatenate(
-                [
-                    di["cube_pos"],
-                    di["cube_quat"],
-                    di["handle0_xpos"],
-                    di["handle1_xpos"],
-                    di[pr0 + "gripper_to_handle0"],
-                    di[pr1 + "gripper_to_handle1"],
-                ]
-            )
-
-        return di
 
     def visualize(self, vis_settings):
         """

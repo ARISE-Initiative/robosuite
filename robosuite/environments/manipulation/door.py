@@ -7,6 +7,7 @@ from robosuite.models.arenas import TableArena
 from robosuite.models.objects import DoorObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.utils.observables import Observable, sensor
 
 
 class Door(SingleArmEnv):
@@ -290,13 +291,13 @@ class Door(SingleArmEnv):
             mujoco_objects=self.door,
         )
 
-    def _get_reference(self):
+    def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        super()._get_reference()
+        super()._setup_references()
 
         # Additional object references from this env
         self.object_body_ids = dict()
@@ -307,6 +308,65 @@ class Door(SingleArmEnv):
         self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr(self.door.joints[0])
         if self.use_latch:
             self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr(self.door.joints[1])
+
+    def _setup_observables(self):
+        """
+        Sets up observables to be used for this environment. Creates object-based observables if enabled
+
+        Returns:
+            OrderedDict: Dictionary mapping observable names to its corresponding Observable object
+        """
+        observables = super()._setup_observables()
+
+        # low-level object information
+        if self.use_object_obs:
+            # Get robot prefix and define observables modality
+            pf = self.robots[0].robot_model.naming_prefix
+            modality = "object"
+
+            # Define sensor callbacks
+            @sensor(modality=modality)
+            def door_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.object_body_ids["door"]])
+
+            @sensor(modality=modality)
+            def handle_pos(obs_cache):
+                return self._handle_xpos
+
+            @sensor(modality=modality)
+            def door_to_eef_pos(obs_cache):
+                return obs_cache["door_pos"] - obs_cache[f"{pf}eef_pos"] if\
+                    "door_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def handle_to_eef_pos(obs_cache):
+                return obs_cache["handle_pos"] - obs_cache[f"{pf}eef_pos"] if\
+                    "handle_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def hinge_qpos(obs_cache):
+                return np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
+
+            sensors = [door_pos, handle_pos, door_to_eef_pos, handle_to_eef_pos, hinge_qpos]
+            names = [s.__name__ for s in sensors]
+
+            # Also append handle qpos if we're using a locked door version with rotatable handle
+            if self.use_latch:
+                @sensor(modality=modality)
+                def handle_qpos(obs_cache):
+                    return np.array([self.sim.data.qpos[self.handle_qpos_addr]])
+                sensors.append(handle_qpos)
+                names.append("handle_qpos")
+
+            # Create observables
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )
+
+        return observables
 
     def _reset_internal(self):
         """
@@ -325,58 +385,6 @@ class Door(SingleArmEnv):
             door_body_id = self.sim.model.body_name2id(self.door.root_body)
             self.sim.model.body_pos[door_body_id] = door_pos
             self.sim.model.body_quat[door_body_id] = door_quat
-
-    def _get_observation(self):
-        """
-        Returns an OrderedDict containing observations [(name_string, np.array), ...].
-
-        Important keys:
-
-            `'robot-state'`: contains robot-centric information.
-
-            `'object-state'`: requires @self.use_object_obs to be True. Contains object-centric information.
-
-            `'image'`: requires @self.use_camera_obs to be True. Contains a rendered frame from the simulation.
-
-            `'depth'`: requires @self.use_camera_obs and @self.camera_depth to be True.
-            Contains a rendered depth map from the simulation
-
-        Returns:
-            OrderedDict: Observations from the environment
-        """
-        di = super()._get_observation()
-
-        # low-level object information
-        if self.use_object_obs:
-            # Get robot prefix
-            pr = self.robots[0].robot_model.naming_prefix
-
-            eef_pos = self._eef_xpos
-            door_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["door"]])
-            handle_pos = self._handle_xpos
-            hinge_qpos = np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
-
-            di["door_pos"] = door_pos
-            di["handle_pos"] = handle_pos
-            di[pr + "door_to_eef_pos"] = door_pos - eef_pos
-            di[pr + "handle_to_eef_pos"] = handle_pos - eef_pos
-            di["hinge_qpos"] = hinge_qpos
-        
-            di['object-state'] = np.concatenate([
-                di["door_pos"],
-                di["handle_pos"],
-                di[pr + "door_to_eef_pos"],
-                di[pr + "handle_to_eef_pos"],
-                di["hinge_qpos"]
-            ])
-
-            # Also append handle qpos if we're using a locked door version with rotatable handle
-            if self.use_latch:
-                handle_qpos = np.array([self.sim.data.qpos[self.handle_qpos_addr]])
-                di["handle_qpos"] = handle_qpos
-                di['object-state'] = np.concatenate([di["object-state"], di["handle_qpos"]])
-
-        return di
 
     def _check_success(self):
         """

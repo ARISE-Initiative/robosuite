@@ -2,7 +2,7 @@
 Test all environments with random policies.
 
 This runs some basic sanity checks on the environment, namely, checking that:
-    - robot-state exists in the obs, and is a flat array
+    - proprio-state exists in the obs, and is a flat array
     - agentview_image exists and is of the correct shape
     - no object-obs in state, because we are only using image observations
 
@@ -66,8 +66,8 @@ def test_all_environments():
             # run 10 random actions
             for _ in range(10):
 
-                assert pr + "robot-state" in obs
-                assert obs[pr + "robot-state"].ndim == 1
+                assert pr + "proprio-state" in obs
+                assert obs[pr + "proprio-state"].ndim == 1
 
                 assert "agentview_image" in obs
                 assert obs["agentview_image"].shape == (84, 84, 3)
