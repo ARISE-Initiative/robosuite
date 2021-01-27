@@ -36,7 +36,6 @@ class LinearInterpolator(Interpolator):
                  ori_interpolate=None,
                  ):
 
-        self.dim = ndim                                            # Number of dimensions to interpolate
         self.order = 1                                             # Order of the interpolator (1 = linear)
         self.step = 0                                              # Current step of the interpolator
         self.total_steps = \
@@ -44,6 +43,10 @@ class LinearInterpolator(Interpolator):
         self.use_delta_goal = use_delta_goal                       # Whether to use delta or absolute goals (currently
                                                                    # not implemented yet- TODO)
         self.ori_interpolate = ori_interpolate                     # Whether this is interpolating orientation or not
+        self.set_dim(ndim)                                         # Number of dimensions to interpolate
+
+    def set_dim(self, dim):
+        self.dim = dim
 
         # Set start and goal states
         if self.ori_interpolate is not None:
@@ -52,7 +55,7 @@ class LinearInterpolator(Interpolator):
             else:   # quaternions
                 self.start = np.array((0, 0, 0, 1))
         else:
-            self.start = np.zeros(ndim)
+            self.start = np.zeros(self.dim)
         self.goal = np.array(self.start)
 
     def set_goal(self, goal):

@@ -116,7 +116,7 @@ def controller_factory(name, params):
     if name == "OSC_POSE":
         ori_interpolator = None
         if interpolator is not None:
-            interpolator.dim = 3                # EE control uses dim 3 for pos and ori each
+            interpolator.set_dim(3)                # EE control uses dim 3 for pos and ori each
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.ori_interpolate = "euler"
         params["control_ori"] = True
@@ -125,20 +125,16 @@ def controller_factory(name, params):
 
     if name == "OSC_POSITION":
         if interpolator is not None:
-            interpolator.dim = 3                # EE control uses dim 3 for pos
+            interpolator.set_dim(3)                # EE control uses dim 3 for pos
         params["control_ori"] = False
         return OperationalSpaceController(interpolator_pos=interpolator, **params)
 
     if name == "IK_POSE":
         ori_interpolator = None
         if interpolator is not None:
-            interpolator.dim = 3                # EE IK control uses dim 3 for pos and dim 4 for ori
-            interpolator.start = np.zeros(3)
-            interpolator.goal = np.zeros(3)
+            interpolator.set_dim(3)                # EE IK control uses dim 3 for pos and dim 4 for ori
             ori_interpolator = deepcopy(interpolator)
-            ori_interpolator.dim = 4
-            ori_interpolator.start = np.array((0, 0, 0, 1))
-            ori_interpolator.goal = np.array((0, 0, 0, 1))
+            ori_interpolator.set_dim(4)
             ori_interpolator.ori_interpolate = "quat"
 
         # Import pybullet server if necessary
