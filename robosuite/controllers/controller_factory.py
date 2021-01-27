@@ -116,27 +116,26 @@ def controller_factory(name, params):
     if name == "OSC_POSE":
         ori_interpolator = None
         if interpolator is not None:
-            interpolator.set_dim(3)                # EE control uses dim 3 for pos and ori each
+            interpolator.set_states(dim=3)                # EE control uses dim 3 for pos and ori each
             ori_interpolator = deepcopy(interpolator)
-            ori_interpolator.ori_interpolate = "euler"
+            ori_interpolator.set_states(ori="euler")
         params["control_ori"] = True
         return OperationalSpaceController(interpolator_pos=interpolator,
                                           interpolator_ori=ori_interpolator, **params)
 
     if name == "OSC_POSITION":
         if interpolator is not None:
-            interpolator.set_dim(3)                # EE control uses dim 3 for pos
+            interpolator.set_states(dim=3)                # EE control uses dim 3 for pos
         params["control_ori"] = False
         return OperationalSpaceController(interpolator_pos=interpolator, **params)
 
     if name == "IK_POSE":
         ori_interpolator = None
         if interpolator is not None:
-            interpolator.set_dim(3)                # EE IK control uses dim 3 for pos and dim 4 for ori
+            interpolator.set_states(dim=3)                # EE IK control uses dim 3 for pos and dim 4 for ori
             ori_interpolator = deepcopy(interpolator)
-            ori_interpolator.set_dim(4)
-            ori_interpolator.ori_interpolate = "quat"
-
+            ori_interpolator.set_states(dim=4, ori="quat")
+            
         # Import pybullet server if necessary
         global pybullet_server
         from .ik import InverseKinematicsController
