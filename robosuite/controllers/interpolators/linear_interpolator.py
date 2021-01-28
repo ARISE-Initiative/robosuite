@@ -46,6 +46,21 @@ class LinearInterpolator(Interpolator):
         self.set_states(dim=ndim, ori=ori_interpolate) 
                                                 
     def set_states(self, dim=None, ori=None):
+        """
+        Updates self.dim and self.ori_interpolate. 
+
+        Initializes self.start and self.goal with correct dimensions. 
+
+        Args:
+            ndim (None or int): Number of dimensions to interpolate
+
+            ori_interpolate (None or str): If set, assumes that we are interpolating angles (orientation)
+                Specified string determines assumed type of input:
+
+                    `'euler'`: Euler orientation inputs
+                    `'quat'`: Quaternion inputs
+        """
+        # Update self.dim and self.ori_interpolate
         self.dim = dim if dim is not None else self.dim
         self.ori_interpolate = ori if ori is not None else self.ori_interpolate
 
