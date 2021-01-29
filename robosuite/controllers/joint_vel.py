@@ -161,7 +161,7 @@ class JointVelocityController(Controller):
         if self.interpolator is not None:
             if self.interpolator.order == 1:
                 # Linear case
-                self.current_vel = self.interpolator.get_interpolated_goal(self.current_vel)
+                self.current_vel = self.interpolator.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass
