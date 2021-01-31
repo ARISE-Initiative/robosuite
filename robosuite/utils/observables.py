@@ -139,7 +139,8 @@ class Observable:
         corrupter (None or function): Method to corrupt the raw sensor data for this observable. Should take in
             the output of @sensor and return the same type (corrupted data). If None, results in default no corruption
         filter (None or function): Method to filter the outputted reading for this observable. Should take in the output
-            of @corrupter and return the same type (filtered data). If None, results in default no filter
+            of @corrupter and return the same type (filtered data). If None, results in default no filter. Note that
+            this function can also double as an observer, where sampled data is recorded by this function.
         delayer (None or function): Method to delay the raw sensor data when polling this observable. Should take in
             no arguments and return a float, for the number of seconds to delay the measurement by. If None, results in
             default no delayer
@@ -213,7 +214,8 @@ class Observable:
             if self._time_since_last_sample >= self._sampling_timestep:
                 if not self._sampled:
                     # If we still haven't sampled yet, sample immediately and warn user that sampling rate is too low
-                    print("Warning: sampling rate is either too low or delay is too high. Please adjust one (or both)")
+                    print(f"Warning: sampling rate for observable {self.name} is either too low or delay is too high. "
+                          f"Please adjust one (or both)")
                     # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                     obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
                     self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
@@ -300,7 +302,8 @@ class Observable:
 
     def set_filter(self, filter):
         """
-        Sets the filter for this observable.
+        Sets the filter for this observable. Note that this function can also double as an observer, where sampled
+        data is recorded by this function.
 
         Args:
              filter (None or function): Method to filter the outputted reading for this observable. Should take in

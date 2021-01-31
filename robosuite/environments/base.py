@@ -586,7 +586,8 @@ class MujocoEnv(metaclass=EnvMeta):
         Args:
              observable_name (str): Observable to modify
              attribute (str): Observable attribute to modify.
-                Options are {`'sensor'`, `'corrupter'`, `'delayer'`, `'sampling_rate'`, `'enabled'`, `'active'`}
+                Options are {`'sensor'`, `'corrupter'`,`'filter'`,  `'delayer'`, `'sampling_rate'`,
+                `'enabled'`, `'active'`}
              modifier (any): New function / value to replace with for observable. If a function, new signature should
                 match the function being replaced.
         """
@@ -599,6 +600,8 @@ class MujocoEnv(metaclass=EnvMeta):
             obs.set_sensor(modifier)
         elif attribute == "corrupter":
             obs.set_corrupter(modifier)
+        elif attribute == "filter":
+            obs.set_filter(modifier)
         elif attribute == "delayer":
             obs.set_delayer(modifier)
         elif attribute == "sampling_rate":
@@ -610,7 +613,7 @@ class MujocoEnv(metaclass=EnvMeta):
         else:
             # Invalid attribute specified
             raise ValueError("Invalid observable attribute specified. Requested: {}, valid options are {}".
-                             format(attribute, {"sensor", "corrupter", "delayer",
+                             format(attribute, {"sensor", "corrupter", "filter", "delayer",
                                                 "sampling_rate", "enabled", "active"}))
 
     def _check_success(self):
