@@ -74,9 +74,11 @@ DEFAULT_DYNAMICS_ARGS = {
     'randomize_stiffness': True,
     'randomize_frictionloss': True,
     'randomize_damping': True,
+    'randomize_armature': True,
     'stiffness_perturbation_ratio': 0.1,
     'frictionloss_perturbation_size': 0.05,
     'damping_perturbation_size': 0.01,
+    'armature_perturbation_size': 0.01,
 }
 
 
