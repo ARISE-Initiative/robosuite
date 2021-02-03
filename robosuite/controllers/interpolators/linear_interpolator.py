@@ -35,15 +35,34 @@ class LinearInterpolator(Interpolator):
                  use_delta_goal=False,
                  ori_interpolate=None,
                  ):
-
-        self.dim = ndim                                            # Number of dimensions to interpolate
-        self.order = 1                                             # Order of the interpolator (1 = linear)
-        self.step = 0                                              # Current step of the interpolator
+        self.dim = ndim                                             # Number of dimensions to interpolate
+        self.ori_interpolate = ori_interpolate                      # Whether this is interpolating orientation or not
+        self.order = 1                                              # Order of the interpolator (1 = linear)
+        self.step = 0                                               # Current step of the interpolator
         self.total_steps = \
-            np.ceil(ramp_ratio * controller_freq / policy_freq)    # Total num steps per interpolator action
-        self.use_delta_goal = use_delta_goal                       # Whether to use delta or absolute goals (currently
-                                                                   # not implemented yet- TODO)
-        self.ori_interpolate = ori_interpolate                     # Whether this is interpolating orientation or not
+            np.ceil(ramp_ratio * controller_freq / policy_freq)     # Total num steps per interpolator action
+        self.use_delta_goal = use_delta_goal                        # Whether to use delta or absolute goals (currently
+                                                                    # not implemented yet- TODO)
+        self.set_states(dim=ndim, ori=ori_interpolate) 
+                                                
+    def set_states(self, dim=None, ori=None):
+        """
+        Updates self.dim and self.ori_interpolate. 
+
+        Initializes self.start and self.goal with correct dimensions. 
+
+        Args:
+            ndim (None or int): Number of dimensions to interpolate
+
+            ori_interpolate (None or str): If set, assumes that we are interpolating angles (orientation)
+                Specified string determines assumed type of input:
+
+                    `'euler'`: Euler orientation inputs
+                    `'quat'`: Quaternion inputs
+        """
+        # Update self.dim and self.ori_interpolate
+        self.dim = dim if dim is not None else self.dim
+        self.ori_interpolate = ori if ori is not None else self.ori_interpolate
 
         # Set start and goal states
         if self.ori_interpolate is not None:
@@ -52,7 +71,7 @@ class LinearInterpolator(Interpolator):
             else:   # quaternions
                 self.start = np.array((0, 0, 0, 1))
         else:
-            self.start = np.zeros(ndim)
+            self.start = np.zeros(self.dim)
         self.goal = np.array(self.start)
 
     def set_goal(self, goal):
