@@ -27,7 +27,7 @@ At any given time, each robot has a set of `properties` whose real-time values c
 
 
 ## Models
-**robosuite** is designed to be generalizable to multiple robotic domains. The current release focuses on manipulator robots.
+**robosuite** is designed to be generalizable to multiple robotic domains. The current release focuses on manipulator robots. For adding new robots, we provide a [rudimentary guide](https://docs.google.com/document/d/1bSUKkpjmbKqWyV5Oc7_4VL4FGKAQZx8aWm_nvlmTVmE/edit?usp=sharing) on how to import raw Robot and Gripper models (based on a URDF source file) into robosuite.
 
 ### Manipulators
 **robosuite** currently supports seven commercially-available manipulator robot models. We briefly describe each individual model along with its features below:
