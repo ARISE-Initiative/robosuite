@@ -252,7 +252,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
         # Return new observations
-        return self._get_observations()
+        return self._get_observations(force_update=True)
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
