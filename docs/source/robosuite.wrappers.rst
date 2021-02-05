@@ -1,5 +1,8 @@
-robosuite.wrappers
+robosuite.wrappers package
 ==========================
+
+Submodules
+----------
 
 robosuite.wrappers.data\_collection\_wrapper module
 ---------------------------------------------------
@@ -33,10 +36,26 @@ robosuite.wrappers.gym\_wrapper module
    :undoc-members:
    :show-inheritance:
 
+robosuite.wrappers.visualization\_wrapper module
+------------------------------------------------
+
+.. automodule:: robosuite.wrappers.visualization_wrapper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.wrappers.wrapper module
 ---------------------------------
 
 .. automodule:: robosuite.wrappers.wrapper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.wrappers
    :members:
    :undoc-members:
    :show-inheritance:

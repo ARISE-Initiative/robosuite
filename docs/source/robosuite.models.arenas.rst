@@ -1,7 +1,10 @@
-robosuite.models.arenas
+robosuite.models.arenas package
 ===============================
 
-robosuite.models.arenas.arena
+Submodules
+----------
+
+robosuite.models.arenas.arena module
 ------------------------------------
 
 .. automodule:: robosuite.models.arenas.arena
@@ -9,7 +12,7 @@ robosuite.models.arenas.arena
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.arenas.bins\_arena
+robosuite.models.arenas.bins\_arena module
 ------------------------------------------
 
 .. automodule:: robosuite.models.arenas.bins_arena
@@ -17,7 +20,7 @@ robosuite.models.arenas.bins\_arena
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.arenas.empty\_arena
+robosuite.models.arenas.empty\_arena module
 -------------------------------------------
 
 .. automodule:: robosuite.models.arenas.empty_arena
@@ -25,7 +28,7 @@ robosuite.models.arenas.empty\_arena
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.arenas.pegs\_arena
+robosuite.models.arenas.pegs\_arena module
 ------------------------------------------
 
 .. automodule:: robosuite.models.arenas.pegs_arena
@@ -33,7 +36,7 @@ robosuite.models.arenas.pegs\_arena
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.arenas.table\_arena
+robosuite.models.arenas.table\_arena module
 -------------------------------------------
 
 .. automodule:: robosuite.models.arenas.table_arena
@@ -41,10 +44,18 @@ robosuite.models.arenas.table\_arena
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.arenas.wipe\_arena
+robosuite.models.arenas.wipe\_arena module
 ------------------------------------------
 
 .. automodule:: robosuite.models.arenas.wipe_arena
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.models.arenas
    :members:
    :undoc-members:
    :show-inheritance:

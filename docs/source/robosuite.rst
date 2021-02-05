@@ -1,5 +1,5 @@
 robosuite
-=================
+=========
 
 .. toctree::
    :maxdepth: 4

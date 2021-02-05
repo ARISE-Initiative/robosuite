@@ -9,7 +9,7 @@ Base Mujoco Model
 .. autoclass:: robosuite.models.base.MujocoModel
 
   .. automethod:: correct_naming
-  .. automethod:: set_site_visibility
+  .. automethod:: set_sites_visibility
   .. automethod:: exclude_from_prefixing
   .. autoproperty:: name
   .. autoproperty:: naming_prefix

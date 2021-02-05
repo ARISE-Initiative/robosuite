@@ -1,7 +1,20 @@
-robosuite.models.objects
+robosuite.models.objects package
 ================================
 
-robosuite.models.objects.generated\_objects
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   robosuite.models.objects.composite
+   robosuite.models.objects.composite_body
+   robosuite.models.objects.primitive
+
+Submodules
+----------
+
+robosuite.models.objects.generated\_objects module
 --------------------------------------------------
 
 .. automodule:: robosuite.models.objects.generated_objects
@@ -9,7 +22,7 @@ robosuite.models.objects.generated\_objects
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.objects.objects
+robosuite.models.objects.objects module
 ---------------------------------------
 
 .. automodule:: robosuite.models.objects.objects
@@ -17,10 +30,18 @@ robosuite.models.objects.objects
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.objects.xml\_objects
+robosuite.models.objects.xml\_objects module
 --------------------------------------------
 
 .. automodule:: robosuite.models.objects.xml_objects
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.models.objects
    :members:
    :undoc-members:
    :show-inheritance:
