@@ -1,7 +1,7 @@
 Controller
 ==========
 
-Every Robot is equipped with a controller, which determines both the action space as well as how its
+Every ``Robot`` is equipped with a controller, which determines both the action space as well as how its
 values are mapped into command torques. By default, all controllers have a pre-defined set of methods and
 properities, though specific controllers may extend and / or override the default functionality found in
 the base class.

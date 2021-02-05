@@ -1,7 +1,7 @@
 Mujoco Model
 ============
 
-The `MujocoModel` class is the foundational class from which all other model classes extend from in robosuite. This class represents a standardized API for all models used in simulation and is the core modeling component that other model classes build upon. The `MujocoXMLModel` is an extension of this class that represents models based on an XML file.
+The ``MujocoModel`` class is the foundational class from which all other model classes extend from in robosuite. This class represents a standardized API for all models used in simulation and is the core modeling component that other model classes build upon. The ``MujocoXMLModel`` is an extension of this class that represents models based on an XML file.
 
 Base Mujoco Model
 -----------------

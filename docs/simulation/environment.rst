@@ -1,9 +1,9 @@
 Environment
 ===========
 
-The MujocoEnv class defines a top-level simulation object encapsulating a MjSim object. Robosuite uses
-class extensions of this base class, namely, RobotEnv which additionally encompasses Robot objects and the top-level
-task environments which capture specific ManipulationTask instances and additional objects.
+The ``MujocoEnv`` class defines a top-level simulation object encapsulating a ``MjSim`` object. Robosuite uses
+class extensions of this base class, namely, ``RobotEnv`` which additionally encompasses ``Robot`` objects and the top-level
+task environments which capture specific ``ManipulationTask`` instances and additional objects.
 
 Base Environment
 ----------------

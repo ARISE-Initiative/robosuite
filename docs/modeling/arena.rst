@@ -1,9 +1,9 @@
 Arena
 =====
 
-The `Arena` class serves as a base model for building the simulation environment.
+The ``Arena`` class serves as a base model for building the simulation environment.
 By default, this includes a ground plane and visual walls, and child classes extend this
-to additionally include other objects, e.g.: a table or bins.
+to additionally include other objects, e.g., a table or bins.
 
 Base Arena
 ----------

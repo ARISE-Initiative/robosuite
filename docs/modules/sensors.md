@@ -4,7 +4,7 @@ Sensors are an important aspect of **robosuite**, and encompass an agent's feedb
 
 #### Mujoco-Native Sensors
 
-The simulator generates virtual physical signals as response to a robot's interactions. Virtual signals include images, force-torque measurements (from a force-torque sensor like the one included by default in the wrist of all [Gripper models](../modeling/gripper_model)), pressure signals (e.g. from a sensor on the robot's finger or on the environment), etc. Raw sensor information (except cameras and joint sensors) can be accessed via the function `get_sensor_measurement` provided the name of the sensor.
+The simulator generates virtual physical signals as response to a robot's interactions. Virtual signals include images, force-torque measurements (from a force-torque sensor like the one included by default in the wrist of all [Gripper models](../modeling/robot_model.html#gripper-model)), pressure signals (e.g. from a sensor on the robot's finger or on the environment), etc. Raw sensor information (except cameras and joint sensors) can be accessed via the function `get_sensor_measurement` provided the name of the sensor.
 
 Joint sensors provide information about the state of each robot's joint including position and velocity. In MuJoCo these are not measured by sensors, but resolved and set by the simulator as the result of the actuation forces. Therefore, they are not accessed through the common `get_sensor_measurement` function but as properties of the [Robot simulation API](../simulation/robot), i.e., `_joint_positions` and `_joint_velocities`.
 
@@ -12,7 +12,7 @@ Cameras bundle a name to a set of properties to render images of the environment
 
 #### Observables
 
-**robosuite** provides a realistic, customizable interface via the [Observable](../../../robosuite/utils/observables.py) class API. Observables model realistic sensor sampling, in which ground truth data is sampled (`sensor`), passed through a corrupting function (`corrupter`), and then finally passed through a filtering function (`filter`). Moreover, each observable has its own `sampling_rate` and `delayer` function which simulates sensor delay. While default values are used to instantiate each observable during environment creation, each of these components can be modified by the user at runtime using `env.modify_observable(...)` . Moreover, each observable is assigned a modality, and are grouped together in the returned observation dictionary during the `env.step()` call. For example, if an environment consists of camera observations and a single robot's proprioceptive observations, the observation dict structure might look as follows:
+**robosuite** provides a realistic, customizable interface via the [Observable](../source/robosuite.utils.html#module-robosuite.utils.observables) class API. Observables model realistic sensor sampling, in which ground truth data is sampled (`sensor`), passed through a corrupting function (`corrupter`), and then finally passed through a filtering function (`filter`). Moreover, each observable has its own `sampling_rate` and `delayer` function which simulates sensor delay. While default values are used to instantiate each observable during environment creation, each of these components can be modified by the user at runtime using `env.modify_observable(...)` . Moreover, each observable is assigned a modality, and are grouped together in the returned observation dictionary during the `env.step()` call. For example, if an environment consists of camera observations and a single robot's proprioceptive observations, the observation dict structure might look as follows:
 
 ```python
 {
@@ -27,7 +27,7 @@ Cameras bundle a name to a set of properties to render images of the environment
 
 Note that for memory efficiency the `image-state` is not returned by default (this can be toggled in `robosuite/utils/macros.py`).
 
-We showcase how the `Observable` functionality can be used to model sensor corruption and delay via [demo_sensor_corruption.py](../../../robosuite/demos/demo_sensor_corruption.py). We also highlight that each of the `sensor`, `corrupter`, and `filter` functions can be arbitrarily specified to suit the end-user's usage. For example, a common use case for these observables is to keep track of sampled values from a sensor operating at a higher frequency than the environment step (control) frequency. In this case, the `filter` function can be leveraged to keep track of the real-time sensor values as they're being sampled. We provide a minimal script showcasing this ability below:
+We showcase how the `Observable` functionality can be used to model sensor corruption and delay via [demo_sensor_corruption.py](../demos.html#sensor-realism). We also highlight that each of the `sensor`, `corrupter`, and `filter` functions can be arbitrarily specified to suit the end-user's usage. For example, a common use case for these observables is to keep track of sampled values from a sensor operating at a higher frequency than the environment step (control) frequency. In this case, the `filter` function can be leveraged to keep track of the real-time sensor values as they're being sampled. We provide a minimal script showcasing this ability below:
 
 ```python
 import robosuite as suite

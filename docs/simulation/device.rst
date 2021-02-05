@@ -1,7 +1,7 @@
 Device
 ======
 
-Devices allow for direct real-time interfacing with the MuJoCo simulation. The current support devices are Keyboard and Spacemouse.
+Devices allow for direct real-time interfacing with the MuJoCo simulation. The current support devices are ``Keyboard`` and ``SpaceMouse``.
 
 Base Device
 -----------
@@ -23,7 +23,7 @@ Keyboard Device
   .. automethod:: _display_controls
 
 
-Spacemouse Device
+SpaceMouse Device
 -----------------
 
 .. autoclass:: robosuite.devices.spacemouse.SpaceMouse
