@@ -25,7 +25,7 @@ try:
 except ModuleNotFoundError as exc:
     raise ImportError("Unable to load module hid, required to interface with SpaceMouse. "
                       "Only Mac OS X is officially supported. Install the additional "
-                      "requirements with `pip install -r requirements-ik.txt`") from exc
+                      "requirements with `pip install -r requirements-extra.txt`") from exc
 
 from robosuite.utils.transform_utils import rotation_matrix
 from robosuite.devices import Device
