@@ -63,6 +63,14 @@ Welcome to robosuite's documentation!
 
 .. toctree::
    :maxdepth: 1
+   :caption: Sim2Real
+
+   sim2real/sensor_randomization
+   sim2real/visual_randomization
+   sim2real/dynamics_randomization
+
+.. toctree::
+   :maxdepth: 1
    :caption: Miscellaneous
 
    references
