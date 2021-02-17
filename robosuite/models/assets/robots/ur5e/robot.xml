@@ -32,7 +32,7 @@
             <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
             <!-- mount attached here -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="base_vis" />
-            <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="base" />
+            <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="base" name="base_col"/>
             <body name="shoulder_link" pos="0 0 0.163">
                 <inertial pos="0 0 0" mass="3.7" diaginertia="0.0102675 0.0102675 0.00666" />
                 <joint name="shoulder_pan_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />

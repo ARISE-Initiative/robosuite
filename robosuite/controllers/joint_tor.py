@@ -139,7 +139,7 @@ class JointTorqueController(Controller):
         if self.interpolator is not None:
             # Linear case
             if self.interpolator.order == 1:
-                self.current_torque = self.interpolator.get_interpolated_goal(self.current_torque)
+                self.current_torque = self.interpolator.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass
