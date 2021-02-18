@@ -1,7 +1,7 @@
 # Objects
 
 ## How to create a custom object
-Objects, such as boxes and cans, are essential to building manipulation environments. We designed the [MujocoObject](../../../robosuite/models/objects/objects.py) interfaces to standardize and simplify the procedure for importing 3D models into the scene or procedurally generate new objects. MuJoCo defines models via the [MJCF](http://www.mujoco.org/book/modeling.html) XML format. These MJCF files can either be stored as XML files on disk and loaded into simulator, or be created on-the-fly by code prior to simulation. Based on these two mechanisms of how MJCF models are created, we offer two main ways of creating your own object:
+Objects, such as boxes and cans, are essential to building manipulation environments. We designed the [MujocoObject](../source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoObject) interfaces to standardize and simplify the procedure for importing 3D models into the scene or procedurally generate new objects. MuJoCo defines models via the [MJCF](http://www.mujoco.org/book/modeling.html) XML format. These MJCF files can either be stored as XML files on disk and loaded into simulator, or be created on-the-fly by code prior to simulation. Based on these two mechanisms of how MJCF models are created, we offer two main ways of creating your own object:
 
 * Define an object in an MJCF XML file;
 * Use procedural generation APIs to dynamically create an MJCF model.
@@ -57,7 +57,7 @@ obj_xml = obj.get_obj().set("pos", array_to_string(pos))    # Set the top-level 
 ```
 
 ## Creating a XMLObject
-One can use MuJoCo MJCF XML to generate an object, either as a composition of primitive [geoms](http://mujoco.org/book/modeling.html#geom) or imported from STL files of triangulated [meshes](http://www.mujoco.org/book/modeling.html#mesh). An example is `robosuite.models.objects.xml_objects.BreadObject`. Its [python definition](../../../robosuite/models/objects/xml_objects.py#L41) is short. Note that all `MujocoXMLObject` classes require both a `fname` and `name` argument, the former which specifies the filepath to the raw XML file and the latter which specifies the in-sim name of the object instantiated. The optional `joints` argument can also specify a custom set of joints to apply to the given object (defaults to "default", which is a single free joint). Generally, the normal use case is to define a single class corresponding to a specific XML file, as shown below:
+One can use MuJoCo MJCF XML to generate an object, either as a composition of primitive [geoms](http://mujoco.org/book/modeling.html#geom) or imported from STL files of triangulated [meshes](http://www.mujoco.org/book/modeling.html#mesh). An example is `robosuite.models.objects.xml_objects.BreadObject`. Its [python definition](https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/objects/xml_objects.py#L49) is short. Note that all `MujocoXMLObject` classes require both a `fname` and `name` argument, the former which specifies the filepath to the raw XML file and the latter which specifies the in-sim name of the object instantiated. The optional `joints` argument can also specify a custom set of joints to apply to the given object (defaults to "default", which is a single free joint). Additionally, the type of object created can be specified via the `obj_type` argument, and must be one of (`'collision'`, `'visual'`, or `'all'`). Lastly, setting `duplicate_collision_geoms` makes sure that all collision geoms automatically have an associated visual geom as well. Generally, the normal use case is to define a single class corresponding to a specific XML file, as shown below:
 ```python
 class BreadObject(MujocoXMLObject):
     def __init__(self, name):
@@ -66,7 +66,7 @@ class BreadObject(MujocoXMLObject):
                          obj_type="all", duplicate_collision_geoms=True)
 ```
 
-In the corresponding XML file, a few key definitions must be present. The top-level, un-named body must contain as immediate children tags (a) the actual object bodie(s) (the top-level **must** be named `object`) and (b) three site tags named `bottom_site`, `top_site`, and `horizontal_radius_site` and whose `pos` values must be specified. The example for the `BreadObject`, [bread.xml](../robosuite/models/assets/objects/bread.xml), is shown below:
+In the corresponding XML file, a few key definitions must be present. The top-level, un-named body must contain as immediate children tags (a) the actual object bodie(s) (the top-level **must** be named `object`) and (b) three site tags named `bottom_site`, `top_site`, and `horizontal_radius_site` and whose `pos` values must be specified. The example for the `BreadObject`, [bread.xml](https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/assets/objects/bread.xml), is shown below:
 ```xml
 <mujoco model="bread">
   <asset>
@@ -96,13 +96,13 @@ Concretely,
 Procedurally generated objects have been used in [several](https://arxiv.org/abs/1802.09564) [recent](https://arxiv.org/abs/1806.09266) [works](https://arxiv.org/abs/1709.07857) to train control policies with improved robustness and generalization. Here you can programmatically generate an MJCF XML of an object from scratch using `xml.etree.ElementTree`, and compose an object of multiple geom primitives. The base class for this type of object is `MujocoGeneratedObject`.
 **robosuite** natively supports all Mujoco primitive objects with procedurally-generated `PrimitiveObject` classes (`BoxObject`, `BallObject`, `CapsuleObject`, and `CylinderObject`).
 
-Additionally, **robosuite** supports custom, complex objects that can be defined by collections of primitive geoms (the [`CompositeObject`](../../../robosuite/models/objects/generated_objects.py#L257) class) or even other objects (the [`CompositeBodyObject`](../../../robosuite/models/objects/generated_objects.py#L10) class). The APIs for each of these classes have been standardized for ease of usage, and interested readers should consult the docstrings for each of these classes, as well as provided examples of each class ([`HammerObject`](../../../robosuite/models/objects/composite/hammer.py), [`HingedBoxObject`](../../../robosuite/models/objects/composite_body/hinged_box.py)).
+Additionally, **robosuite** supports custom, complex objects that can be defined by collections of primitive geoms (the [CompositeObject](../source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject) class) or even other objects (the [CompositeBodyObject](../source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeBodyObject) class). The APIs for each of these classes have been standardized for ease of usage, and interested readers should consult the docstrings for each of these classes, as well as provided examples of each class ([HammerObject](https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/objects/composite/hammer.py#L10), [HingedBoxObject](https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/objects/composite_body/hinged_box.py#L8)).
 
 It should also be noted that all of the above classes extending from the `MujocoGenereatedObject` class automatically supports custom texture definitions on a per-geom level, where specific texture images can be mapped to individual geoms. The above `HammerObject` showcases an example applying custom textures to different geoms of the resulting object.
 
 ## Placing Objects
 
-Object locations are initialized on every environment reset using instances of the `ObjectPositionSampler` class. Object samplers use the `bottom_site` and `top_site` sites of each object in order to place objects on top of other objects, and the `horizontal_radius_site` site in order to ensure that objects do not collide with one another. The most basic sampler is the `UniformRandomSampler` class - this just uses rejection sampling to place objects randomly. As an example, consider the following code snippet from the `__init__` method of the `Lift` environment class.
+Object locations are initialized on every environment reset using instances of the [ObjectPositionSampler](../source/robosuite.utils.html#robosuite.utils.placement_samplers.ObjectPositionSampler) class. Object samplers use the `bottom_site` and `top_site` sites of each object in order to place objects on top of other objects, and the `horizontal_radius_site` site in order to ensure that objects do not collide with one another. The most basic sampler is the [UniformRandomSampler](../source/robosuite.utils.html#robosuite.utils.placement_samplers.UniformRandomSampler) class - this just uses rejection sampling to place objects randomly. As an example, consider the following code snippet from the `__init__` method of the `Lift` environment class.
 
 ```python
 self.placement_initializer = UniformRandomSampler(
@@ -121,7 +121,7 @@ self.placement_initializer = UniformRandomSampler(
 
 This will sample the `self.cube`'s object location uniformly at random in a box of size `0.03` (`x_range`, `y_range`) with random (`rotation`) z-rotation (`rotation_axis`), and with an offset of `0.01` (`z_offset`) above the table surface location (`reference_pos`). The sampler will also make sure that the entire object boundary falls within the sampling box size (`ensure_object_boundary_in_range`) and does not collide with any placed objects (`ensure_valid_placement`).
 
-Another common sampler is the `SequentialCompositeSampler`, which is useful for composing multiple arbitrary placement samplers together. As an example, consider the following code snippet from the `__init__` method of the `NutAssembly` environment class. 
+Another common sampler is the [SequentialCompositeSampler](../source/robosuite.utils.html#robosuite.utils.placement_samplers.SequentialCompositeSampler), which is useful for composing multiple arbitrary placement samplers together. As an example, consider the following code snippet from the `__init__` method of the `NutAssembly` environment class. 
 
 ```python
 # Establish named references to each nut object
