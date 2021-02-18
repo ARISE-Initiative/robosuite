@@ -82,3 +82,8 @@ The reason for storing mujoco states instead of raw observations is to make it e
 ## Using Demonstrations for Learning
 
 [Several](https://arxiv.org/abs/1802.09564) [prior](https://arxiv.org/abs/1807.06919) [works](https://arxiv.org/abs/1804.02717) have demonstrated the effectiveness of altering the start state distribution of training episodes for learning RL policies. We provide a generic utility for setting various types of learning curriculums which dictate how to sample from demonstration episodes when doing an environment reset. For more information see the `DemoSamplerWrapper` class.
+
+## Warnings
+We have verified that deterministic action playback works specifically when playing back demonstrations on the *same machine* that the demonstrations were originally collected upon. However, this means that deterministic action playback is NOT guaranteed (in fact, very unlikely) to work across platforms or even across different machines using the same OS.
+
+While action playback trajectories are quite similar even if not completely identical to the original collected state trajectories, they do tend to drift over time, and should not be relied upon to accurately replicate demonstrations. Instead, we recommend directly setting states to reproduce the collected trajectories, as shown in [playback_demonstrations_from_hdf5](https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/playback_demonstrations_from_hdf5.py).

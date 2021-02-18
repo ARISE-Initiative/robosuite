@@ -38,6 +38,7 @@ To better compensate for this, **robosuite** provides the `DynamicsModder` class
 - `stiffness`: Stiffness for this joint
 - `frictionloss`: Friction loss associated with this joint
 - `damping`: Damping value for this joint
+- `armature`: Gear inertia for this joint
 
 This `DynamicsModder` follows the same basic API as the other `Modder` classes, and allows per-parameter and per-group randomization enabling. Apart from randomization, this modder can also be instantiated to selectively modify values at runtime. A brief example is given below:
 
