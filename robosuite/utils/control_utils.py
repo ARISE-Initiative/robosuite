@@ -185,7 +185,7 @@ def set_goal_orientation(delta,
         # convert axis-angle value to rotation matrix
         quat_error = trans.axisangle2quat(delta)
         rotation_mat_error = trans.quat2mat(quat_error)
-        goal_orientation = np.dot(rotation_mat_error.T, current_orientation)
+        goal_orientation = np.dot(rotation_mat_error, current_orientation)
 
     # check for orientation limits
     if np.array(orientation_limit).any():

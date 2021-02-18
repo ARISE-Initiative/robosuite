@@ -6,8 +6,8 @@
         <mesh name="connector_plate" file="meshes/rethink_gripper/connector_plate.stl" />
     </asset>
     <actuator>
-        <position ctrllimited="true" ctrlrange="-0.0115 0.020833" joint="r_finger_joint" kp="10000" name="gripper_r_finger_joint" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.020833 0.0115" joint="l_finger_joint" kp="10000" name="gripper_l_finger_joint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-0.0115 0.020833" joint="r_finger_joint" kp="1000" name="gripper_r_finger_joint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-0.020833 0.0115" joint="l_finger_joint" kp="1000" name="gripper_l_finger_joint" forcelimited="true" forcerange="-20 20"/>
     </actuator>
     
     <worldbody>
@@ -23,7 +23,7 @@
             <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
             <body name="l_finger" pos="0 0.01 0.0444">
                 <inertial pos="0 0 0" quat="0 0 0 -1" mass="0.02" diaginertia="0.01 0.01 0.01" />
-                <joint name="l_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.0115 0.020833" damping="100"/>
+                <joint name="l_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.0115 0.020833" damping="100" armature="1.0" frictionloss="1.0"/>
                 <geom name="l_finger" quat="0 0 0 -1" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" rgba="0.499 0.499 0.499 1"/>
                 <geom size="0.005 0.00675 0.0375" pos="0 0.01725 0.04" quat="0 0 0 -1" type="box" group="0" conaffinity="1" contype="0" name="l_finger_g0" friction="0 0 0"/>
                 <geom size="0.005 0.025 0.0085" pos="-0.005 -0.003 0.0083" quat="0 0 0 -1" type="box" group="0" conaffinity="1" contype="0" name="l_finger_g1" friction="0 0 0"/>
@@ -36,7 +36,7 @@
             </body>
             <body name="r_finger" pos="0 -0.01 0.0444">
                 <inertial pos="0 0 0" mass="0.02" diaginertia="0.01 0.01 0.01" />
-                <joint name="r_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.020833 0.0115" damping="100"/>
+                <joint name="r_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.020833 0.0115" damping="100" armature="1.0" frictionloss="1.0"/>
                 <geom name="r_finger" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" rgba="0.499 0.499 0.499 1"/>
                 <geom size="0.005 0.00675 0.0375" pos="0 -0.01725 0.04" type="box" group="0" conaffinity="1" contype="0" name="r_finger_g0" friction="0 0 0"/>
                 <geom size="0.005 0.025 0.0085" pos="0.005 0.003 0.0083" type="box" group="0" conaffinity="1" contype="0" name="r_finger_g1" friction="0 0 0"/>

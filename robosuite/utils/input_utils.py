@@ -7,6 +7,7 @@ import numpy as np
 import robosuite as suite
 from robosuite.models.robots import *
 from robosuite.robots import *
+from robosuite.devices import *
 import robosuite.utils.transform_utils as T
 
 
@@ -241,11 +242,9 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     elif controller.name == 'OSC_POSE':
         # Flip z
         drotation[2] = -drotation[2]
-        # Scale rotation for teleoperation (tuned for OSC)
-        drotation *= 75
-        dpos *= 200
-        # Interpret euler angles as (mirrored) scaled axis angle values
-        drotation = -drotation
+        # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
+        drotation = drotation * 50 if isinstance(device, SpaceMouse) else drotation * 1.5
+        dpos = dpos * 125 if isinstance(device, SpaceMouse) else dpos * 75
     else:
         # No other controllers currently supported
         print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")
