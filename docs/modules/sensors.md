@@ -27,4 +27,4 @@ Cameras bundle a name to a set of properties to render images of the environment
 
 Note that for memory efficiency the `image-state` is not returned by default (this can be toggled in `robosuite/utils/macros.py`).
 
-Observables can also be used to model sensor corruption and delay, and refer the reader to the [Sensor Randomization](../sim2real/sensor_randomization.md) section for additional information.
+Observables can also be used to model sensor corruption and delay, and refer the reader to the [Sensor Randomization](../algorithms/sim2real.html#sensors) section for additional information.

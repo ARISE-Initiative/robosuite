@@ -14,18 +14,21 @@ def sensor(modality):
 
     An example use case is shown below:
 
-        @sensor(modality="proprio")
-        def joint_pos(obs_cache):
-            # Always handle case if obs_cache is empty
-            if not obs_cache:
-                return np.zeros(7)
-            # Otherwise, run necessary calculations and return output
-            ...
-            out = ...
-            return out
+        >>> @sensor(modality="proprio")
+        >>> def joint_pos(obs_cache):
+                # Always handle case if obs_cache is empty
+                if not obs_cache:
+                    return np.zeros(7)
+                # Otherwise, run necessary calculations and return output
+                ...
+                out = ...
+                return out
 
     Args:
         modality (str): Modality for this sensor
+
+    Returns:
+        function: decorator function
     """
     # Define standard decorator (with no args)
     def decorator(func):
@@ -44,6 +47,9 @@ def create_deterministic_corrupter(corruption, low=-np.inf, high=np.inf):
         corruption (float): Corruption to apply
         low (float): Minimum value for output for clipping
         high (float): Maximum value for output for clipping
+
+    Returns:
+        function: corrupter
     """
     def corrupter(inp):
         inp = np.array(inp)
@@ -60,6 +66,9 @@ def create_uniform_noise_corrupter(min_noise, max_noise, low=-np.inf, high=np.in
         max_noise (float): Maximum noise to apply
         low (float): Minimum value for output for clipping
         high (float): Maxmimum value for output for clipping
+
+    Returns:
+        function: corrupter
     """
     def corrupter(inp):
         inp = np.array(inp)
@@ -77,6 +86,9 @@ def create_gaussian_noise_corrupter(mean, std, low=-np.inf, high=np.inf):
         std (float): Standard deviation of the noise to apply
         low (float): Minimum value for output for clipping
         high (float): Maxmimum value for output for clipping
+
+    Returns:
+        function: corrupter
     """
     def corrupter(inp):
         inp = np.array(inp)
@@ -91,6 +103,9 @@ def create_deterministic_delayer(delay):
 
     Args:
         delay (float): Delay value to return
+
+    Returns:
+        function: delayer
     """
     assert delay >= 0, "Inputted delay must be non-negative!"
     return lambda: delay
@@ -103,6 +118,9 @@ def create_uniform_sampled_delayer(min_delay, max_delay):
     Args:
         min_delay (float): Minimum possible delay
         max_delay (float): Maxmimum possible delay
+
+    Returns:
+        function: delayer
     """
     assert min(min_delay, max_delay) >= 0, "Inputted delay must be non-negative!"
     return lambda: min_delay + (max_delay - min_delay) * np.random.random()
@@ -115,6 +133,9 @@ def create_gaussian_sampled_delayer(mean, std):
     Args:
         mean (float): Average delay
         std (float): Standard deviation of the delay variation
+
+    Returns:
+        function: delayer
     """
     assert mean >= 0, "Inputted mean delay must be non-negative!"
     return lambda: max(0.0, int(np.round(mean + std * np.random.randn())))
@@ -132,7 +153,7 @@ class Observable:
 
     Args:
         name (str): Name for this observable
-        sensor (function with sensor decorator): Method to grab raw sensor data for this observable. Should take in a
+        sensor (function with `sensor` decorator): Method to grab raw sensor data for this observable. Should take in a
             single dict argument (observation cache if a pre-computed value is required) and return the raw sensor data
             for the current timestep. Must handle case if inputted argument is empty ({}), and should have `sensor`
             decorator when defined
@@ -247,7 +268,7 @@ class Observable:
     def is_active(self):
         """
         Determines whether observable is active or not. This observable is considered active if its current observation
-            value is being returned in self.obs.
+        value is being returned in self.obs.
 
         Returns:
             bool: True if this observable is active
@@ -269,7 +290,7 @@ class Observable:
     def set_active(self, active):
         """
         Sets whether this observable is active or not. If active, this observable's current
-            observed value is returned from self.obs, otherwise self.obs returns None.
+        observed value is returned from self.obs, otherwise self.obs returns None.
 
         Args:
             active (bool): True if this observable should be active
