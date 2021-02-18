@@ -1,7 +1,18 @@
-robosuite.environments
+robosuite.environments package
 ==============================
 
-robosuite.environments.base
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   robosuite.environments.manipulation
+
+Submodules
+----------
+
+robosuite.environments.base module
 ----------------------------------
 
 .. automodule:: robosuite.environments.base
@@ -9,39 +20,7 @@ robosuite.environments.base
    :undoc-members:
    :show-inheritance:
 
-robosuite.environments.door
-----------------------------------
-
-.. automodule:: robosuite.environments.door
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.lift
-----------------------------------
-
-.. automodule:: robosuite.environments.lift
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.nut\_assembly
--------------------------------------------
-
-.. automodule:: robosuite.environments.nut_assembly
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.pick\_place
------------------------------------------
-
-.. automodule:: robosuite.environments.pick_place
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.robot\_env
+robosuite.environments.robot\_env module
 ----------------------------------------
 
 .. automodule:: robosuite.environments.robot_env
@@ -49,42 +28,10 @@ robosuite.environments.robot\_env
    :undoc-members:
    :show-inheritance:
 
-robosuite.environments.stack
------------------------------------
+Module contents
+---------------
 
-.. automodule:: robosuite.environments.stack
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.two\_arm\_handover
------------------------------------------------
-
-.. automodule:: robosuite.environments.two_arm_handover
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.two\_arm\_lift
---------------------------------------------
-
-.. automodule:: robosuite.environments.two_arm_lift
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.two\_arm\_peg\_in\_hole
------------------------------------------------------
-
-.. automodule:: robosuite.environments.two_arm_peg_in_hole
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.environments.wipe
-----------------------------------
-
-.. automodule:: robosuite.environments.wipe
+.. automodule:: robosuite.environments
    :members:
    :undoc-members:
    :show-inheritance:

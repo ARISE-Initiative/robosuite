@@ -46,6 +46,11 @@ The `demo_domain_randomization.py` script showcases our domain randomization fun
 
 ![collection of grippers](images/domain_randomization.png)
 
+
+### Sensor Realism
+The `demo_sensor_corruption.py` script shows how the [Observable](modules/sensors) functionality can be used to model sensor corruption and delay. The [Observable](modules/sensors) class provides easy-to-use interface for simulating real-world sensor noises, variable sensor delays, and sampling frequencies of realistic sensors. These techniques are useful for improving the generalization and robustness of the policies trained on robosuite, facilitating sim2real transfer to the real hardware. For example, see Appendix B of [Zhu et al. RSS'2018](https://arxiv.org/abs/1802.09564) and Section V of [Tan et al. RSS'2018](https://arxiv.org/abs/1804.10332).
+
+
 ### Gripper Selection
 The `demo_gripper_selection.py` script shows you how to select gripper for an environment. This is controlled by `gripper_type` keyword argument. The set of all grippers is defined by the global variable `robosuite.ALL_GRIPPERS`.
 

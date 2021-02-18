@@ -6,6 +6,8 @@
 
 -------
 ## Latest Updates
+[02/17/2021] **v1.2.0**: Added observable sensor models :eyes: and dynamics randomization :game_die:
+
 [12/17/2020] **v1.1.0**: Refactored infrastructure and standardized model classes for much easier environment prototyping :wrench:
 
 -------

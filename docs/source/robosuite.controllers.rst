@@ -1,7 +1,18 @@
-robosuite.controllers
+robosuite.controllers package
 =============================
 
-robosuite.controllers.base\_controller
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   robosuite.controllers.interpolators
+
+Submodules
+----------
+
+robosuite.controllers.base\_controller module
 ---------------------------------------------
 
 .. automodule:: robosuite.controllers.base_controller
@@ -9,7 +20,7 @@ robosuite.controllers.base\_controller
    :undoc-members:
    :show-inheritance:
 
-robosuite.controllers.controller\_factory
+robosuite.controllers.controller\_factory module
 ------------------------------------------------
 
 .. automodule:: robosuite.controllers.controller_factory
@@ -17,7 +28,7 @@ robosuite.controllers.controller\_factory
    :undoc-members:
    :show-inheritance:
 
-robosuite.controllers.ik
+robosuite.controllers.ik module
 -------------------------------
 
 .. automodule:: robosuite.controllers.ik
@@ -25,7 +36,7 @@ robosuite.controllers.ik
    :undoc-members:
    :show-inheritance:
 
-robosuite.controllers.joint\_pos
+robosuite.controllers.joint\_pos module
 ---------------------------------------
 
 .. automodule:: robosuite.controllers.joint_pos
@@ -33,7 +44,7 @@ robosuite.controllers.joint\_pos
    :undoc-members:
    :show-inheritance:
 
-robosuite.controllers.joint\_tor
+robosuite.controllers.joint\_tor module
 ---------------------------------------
 
 .. automodule:: robosuite.controllers.joint_tor
@@ -41,7 +52,7 @@ robosuite.controllers.joint\_tor
    :undoc-members:
    :show-inheritance:
 
-robosuite.controllers.joint\_vel
+robosuite.controllers.joint\_vel module
 ---------------------------------------
 
 .. automodule:: robosuite.controllers.joint_vel
@@ -49,10 +60,18 @@ robosuite.controllers.joint\_vel
    :undoc-members:
    :show-inheritance:
 
-robosuite.controllers.osc
+robosuite.controllers.osc module
 --------------------------------
 
 .. automodule:: robosuite.controllers.osc
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.controllers
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,47 +1,18 @@
-robosuite.models.robots
+robosuite.models.robots package
 ===============================
 
-robosuite.models.robots.baxter\_robot
---------------------------------------------
+Subpackages
+-----------
 
-.. automodule:: robosuite.models.robots.baxter_robot
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 4
 
-robosuite.models.robots.iiwa\_robot
-------------------------------------------
+   robosuite.models.robots.manipulators
 
-.. automodule:: robosuite.models.robots.iiwa_robot
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Submodules
+----------
 
-robosuite.models.robots.jaco\_robot
-------------------------------------------
-
-.. automodule:: robosuite.models.robots.jaco_robot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.models.robots.kinova3\_robot
----------------------------------------------
-
-.. automodule:: robosuite.models.robots.kinova3_robot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.models.robots.panda\_robot
--------------------------------------------
-
-.. automodule:: robosuite.models.robots.panda_robot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.models.robots.robot\_model
+robosuite.models.robots.robot\_model module
 -------------------------------------------
 
 .. automodule:: robosuite.models.robots.robot_model
@@ -49,18 +20,10 @@ robosuite.models.robots.robot\_model
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.robots.sawyer\_robot
---------------------------------------------
+Module contents
+---------------
 
-.. automodule:: robosuite.models.robots.sawyer_robot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.models.robots.ur5e\_robot
-------------------------------------------
-
-.. automodule:: robosuite.models.robots.ur5e_robot
+.. automodule:: robosuite.models.robots
    :members:
    :undoc-members:
    :show-inheritance:
