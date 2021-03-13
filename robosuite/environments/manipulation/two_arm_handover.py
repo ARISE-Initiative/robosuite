@@ -332,6 +332,19 @@ class TwoArmHandover(TwoArmEnv):
             quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
         )
 
+        # TODO: Add built-in method into TwoArmEnv so we have an elegant way of automatically adding extra cameras to all these envs
+        # Add shoulder cameras
+        mujoco_arena.set_camera(
+            camera_name="shouldercamera0",
+            pos=[0.4430096057365183, -0.9697399743660143, 1.3639950119362048],
+            quat=[0.804057240486145, 0.5531665086746216, 0.11286306381225586, 0.18644218146800995],
+        )
+        mujoco_arena.set_camera(
+            camera_name="shouldercamera1",
+            pos=[-0.40900713993039983, 0.8613722572245062, 1.3084072951772754],
+            quat=[0.15484197437763214, 0.12077208608388901, -0.5476858019828796, -0.8133130073547363],
+        )
+
         # initialize objects of interest
         self.hammer = HammerObject(name="hammer")
 
