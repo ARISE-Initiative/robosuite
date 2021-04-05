@@ -42,8 +42,8 @@ def get_camera_extrinsic_matrix(sim, camera_name):
         R (np.array): 4x4 camera extrinsic matrix
     """
     cam_id = sim.model.camera_name2id(camera_name)
-    camera_pos = sim.model.cam_pos[cam_id]
-    camera_rot = sim.model.cam_mat0[cam_id].reshape(3, 3)
+    camera_pos = sim.data.cam_xpos[cam_id]
+    camera_rot = sim.data.cam_xmat[cam_id].reshape(3, 3)
     R = make_pose(camera_pos, camera_rot)
 
     # IMPORTANT! This is a correction so that the camera axis is set up along the viewpoint correctly.
@@ -76,6 +76,22 @@ def get_camera_transform_matrix(sim, camera_name, camera_height, camera_width):
 
     # Takes a point in world, transforms to camera frame, and then projects onto image plane.
     return K_exp @ pose_inv(R)
+
+
+def get_camera_segmentation(sim, camera_name, camera_height, camera_width):
+    """
+    Obtains camera segmentation matrix.
+
+    Args:
+        sim (MjSim): simulator instance
+        camera_name (str): name of camera
+        camera_height (int): height of camera images in pixels
+        camera_width (int): width of camera images in pixels
+    Return:
+        im (np.array): 2-channel segmented image where the first contains the
+            geom types and the second contains the geom IDs
+    """
+    return sim.render(camera_name=camera_name, height=camera_height, width=camera_width, segmentation=True)[::-1]
 
 
 def get_real_depth_map(sim, depth_map):
