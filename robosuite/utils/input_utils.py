@@ -245,7 +245,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
         drotation = drotation * 50 if isinstance(device, SpaceMouse) else drotation * 1.5
         dpos = dpos * 125 if isinstance(device, SpaceMouse) else dpos * 75
-    elif controller.name== "OSC_POSITION":
+    elif controller.name == "OSC_POSITION":
         dpos = dpos * 125 if isinstance(device, SpaceMouse) else dpos * 75
     else:
         # No other controllers currently supported
