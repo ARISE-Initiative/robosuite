@@ -324,7 +324,14 @@ class TwoArmTransport(TwoArmEnv):
         )
 
         # initialize objects of interest
-        payload = HammerObject(name="payload")
+        payload = HammerObject(
+            name="payload",
+            handle_radius=0.015,
+            handle_length=0.20,
+            handle_density=150.,
+            handle_friction=4.0,
+            head_density_ratio=1.5,
+        )
         trash = BoxObject(name="trash", size=[0.02, 0.02, 0.02], material=redwood)
         self.transport = TransportGroup(
             name="transport",
