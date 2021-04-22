@@ -23,9 +23,9 @@ class TransportGroup(ObjectGroup):
         self.bin_size = bin_size
 
         # Create bins and lid
-        self.start_bin = Bin(name=f"{name}_start_bin", bin_size=bin_size)
-        self.target_bin = Bin(name=f"{name}_target_bin", bin_size=bin_size)
-        self.trash_bin = Bin(name=f"{name}_trash_bin", bin_size=bin_size)
+        self.start_bin = Bin(name=f"{name}_start_bin", bin_size=bin_size, density=10000.)
+        self.target_bin = Bin(name=f"{name}_target_bin", bin_size=bin_size, density=10000.)
+        self.trash_bin = Bin(name=f"{name}_trash_bin", bin_size=bin_size, density=10000.)
         self.lid = Lid(name=f"{name}_start_bin_lid", lid_size=(*bin_size[:2], 0.01))
 
         # Relevant geom ids

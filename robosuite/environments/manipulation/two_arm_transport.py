@@ -296,12 +296,12 @@ class TwoArmTransport(TwoArmEnv):
         # Add shoulder cameras
         mujoco_arena.set_camera(
             camera_name="shouldercamera0",
-            pos=[0.4430096057365183, -0.9697399743660143, 1.3639950119362048],
+            pos=[0.4430096057365183, -1.0697399743660143, 1.3639950119362048],
             quat=[0.804057240486145, 0.5531665086746216, 0.11286306381225586, 0.18644218146800995],
         )
         mujoco_arena.set_camera(
             camera_name="shouldercamera1",
-            pos=[-0.40900713993039983, 0.8613722572245062, 1.3084072951772754],
+            pos=[-0.40900713993039983, 0.9613722572245062, 1.3084072951772754],
             quat=[0.15484197437763214, 0.12077208608388901, -0.5476858019828796, -0.8133130073547363],
         )
 
@@ -362,8 +362,8 @@ class TwoArmTransport(TwoArmEnv):
             self.table_full_size[0] * 0.25
         ]
         pos_tol = 0.005
-        rot_centers = [0] * 6
-        rot_tols = [0, 0, 0.3 * np.pi, 0, 0.3 * np.pi, 0]
+        rot_centers = [0, 0, np.pi / 2, 0, 0, 0]
+        rot_tols = [0, 0, np.pi / 6, 0, 0.3 * np.pi, 0]
         rot_axes = ['z', 'z', 'y', 'z', 'z', 'z']
         for obj_name, x, r, r_tol, r_axis, table_num in zip(
                 object_names, x_centers, rot_centers, rot_tols, rot_axes, table_nums
