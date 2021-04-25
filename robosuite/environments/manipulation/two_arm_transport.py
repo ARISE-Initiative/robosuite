@@ -548,9 +548,9 @@ class TwoArmTransport(TwoArmEnv):
 
     def _check_success(self):
         """
-        Check if payload is in target in and trash is in trash bin
+        Check if trash is in trash bin
 
         Returns:
             bool: True if transport has been completed
         """
-        return True if self.transport.payload_in_target_bin and self.transport.trash_in_trash_bin else False
+        return self.transport.trash_in_trash_bin
