@@ -85,14 +85,9 @@ class ManipulatorModel(RobotModel):
     def _important_sites(self):
         """
         Returns:
-            dict:
-
-                :`'ee'`: Name of end effector site
-                :`'ee_x'`: Name of end effector site (x-axis)
-                :`'ee_y'`: Name of end effector site (y-axis)
-                :`'ee_z'`: Name of end effector site (z-axis)
+            dict: (Default is no important sites; i.e.: empty dict)
         """
-        return {site: site for site in ("ee", "ee_x", "ee_y", "ee_z")}
+        return {}
 
     @property
     def _eef_name(self):

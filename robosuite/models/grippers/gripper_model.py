@@ -103,10 +103,18 @@ class GripperModel(MujocoXMLModel):
 
                 :`'grip_site'`: Name of grip actuation intersection location site
                 :`'grip_cylinder'`: Name of grip actuation z-axis location site
+                :`'ee'`: Name of end effector site
+                :`'ee_x'`: Name of end effector site (x-axis)
+                :`'ee_y'`: Name of end effector site (y-axis)
+                :`'ee_z'`: Name of end effector site (z-axis)
         """
         return {
             "grip_site": "grip_site",
             "grip_cylinder": "grip_site_cylinder",
+            "ee": "ee",
+            "ee_x": "ee_x",
+            "ee_y": "ee_y",
+            "ee_z": "ee_z",
         }
 
     @property

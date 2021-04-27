@@ -1,7 +1,7 @@
 import numpy as np
 
 from robosuite.utils.mjcf_utils import get_size
-from robosuite.models.objects import PrimitiveObject
+from robosuite.models.objects import PrimitiveObject, MujocoGeneratedObject
 
 
 class CylinderObject(PrimitiveObject):
@@ -33,6 +33,15 @@ class CylinderObject(PrimitiveObject):
                         size_min,
                         [0.07, 0.07],
                         [0.03, 0.03])
+
+        # We override solref, solimp, and joint default values for better stability
+        if friction is None:
+            friction = [1, 0.01, 0.001]
+        if solref is None:
+            solref = [0.01, 0.5]
+        if joints == "default":
+            joints = [{"type": "free", "damping": "0.0001"}]
+
         super().__init__(
             name=name,
             size=size,
@@ -58,6 +67,21 @@ class CylinderObject(PrimitiveObject):
 
     def _get_object_subtree(self):
         return self._get_object_subtree_(ob_type="cylinder")
+
+    @staticmethod
+    def get_collision_attrib_template():
+        """
+        Generates template with collision attributes for a given geom
+
+        Extends super method for better stability for contacts
+
+        Returns:
+            dict: Initial template with `'pos'` and `'group'` already specified
+        """
+        template = MujocoGeneratedObject.get_collision_attrib_template()
+        # Add condim value
+        template["margin"] = "0.001"
+        return template
 
     @property
     def bottom_offset(self):
