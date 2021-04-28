@@ -35,14 +35,16 @@
 
     <worldbody>
         <body name="robotiq_85_adapter_link" pos="0.0 0 0" >
-
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
-
             <!-- This site was added for visualization. -->
-            <site name="grip_site" pos="0 0 0.145" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
-            <!-- This site was added for visualization. -->
-            <site name="grip_site_cylinder" pos="0 0 0.145" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
-
+            <body name="eef" pos="0 0 0.145" quat="0.707105 0 0 -0.707105">
+                <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
+                <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+                <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+                <!-- This site was added for visualization. -->
+                <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            </body>
             <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 0.1 0.1 1" name="hand_visual" mesh="robotiq_arg2f_base_link" />
             <geom type="mesh" group="0" rgba="0.1 0.1 0.1 1" mesh="robotiq_arg2f_base_link" name="hand_collision" />

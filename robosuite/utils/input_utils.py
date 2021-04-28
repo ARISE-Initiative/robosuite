@@ -243,10 +243,10 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
-        drotation = drotation * 50 if isinstance(device, SpaceMouse) else drotation * 1.5
-        dpos = dpos * 125 if isinstance(device, SpaceMouse) else dpos * 75
-    elif controller.name == "OSC_POSITION":
-        dpos = dpos * 125 if isinstance(device, SpaceMouse) else dpos * 75
+        drotation = drotation * 1.5 if isinstance(device, Keyboard) else drotation * 50
+        dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
+    elif controller.name == 'OSC_POSITION':
+        dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
     else:
         # No other controllers currently supported
         print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")
