@@ -69,6 +69,16 @@ class OperationalSpaceController(Controller):
             for the varying kp values. Can be either be a 2-list (same min / max for all kp action dims), or a 2-list
             of list (specific min / max for each kp dim)
 
+       kp_input_max (float or Iterable of float): Only applicable if @impedance_mode is set to either "variable" or "variable_kp". 
+            Maximum above which an inputted kp will be clipped. Can be either be
+            a scalar (same value for all kp gains), or a list (specific values for each dimension). If the
+            latter, dimension should be the same as the control dimension for this controller
+
+        kp_input_min (float or Iterable of float): Only applicable if @impedance_mode is set to either "variable" or "variable_kp". 
+            Minimum below which an inputted kp will be clipped. Can be either be
+            a scalar (same value for all kp gains), or a list (specific values for each dimension). If the
+            latter, dimension should be the same as the control dimension for this controller
+
         damping_ratio_limits (2-list of float or 2-list of Iterable of floats): Only applicable if @impedance_mode is
             set to "variable". This sets the corresponding min / max ranges of the controller action space for the
             varying damping_ratio values. Can be either be a 2-list (same min / max for all damping_ratio action dims),
@@ -117,6 +127,8 @@ class OperationalSpaceController(Controller):
                  damping_ratio=1,
                  impedance_mode="fixed",
                  kp_limits=(0, 300),
+                 kp_input_max=1,
+                 kp_input_min=0,
                  damping_ratio_limits=(0, 100),
                  policy_freq=20,
                  position_limits=None,
@@ -158,6 +170,8 @@ class OperationalSpaceController(Controller):
         # kp and kd limits
         self.kp_min = self.nums2array(kp_limits[0], 6)
         self.kp_max = self.nums2array(kp_limits[1], 6)
+        self.kp_input_min = self.nums2array(kp_input_min, 6)
+        self.kp_input_max = self.nums2array(kp_input_max, 6)
         self.damping_ratio_min = self.nums2array(damping_ratio_limits[0], 6)
         self.damping_ratio_max = self.nums2array(damping_ratio_limits[1], 6)
 
@@ -219,11 +233,11 @@ class OperationalSpaceController(Controller):
         # Parse action based on the impedance mode, and update kp / kd as necessary
         if self.impedance_mode == "variable":
             damping_ratio, kp, delta = action[:6], action[6:12], action[12:]
-            self.kp = np.clip(kp, self.kp_min, self.kp_max)
+            self.kp = self.scale_kp(kp)
             self.kd = 2 * np.sqrt(self.kp) * np.clip(damping_ratio, self.damping_ratio_min, self.damping_ratio_max)
         elif self.impedance_mode == "variable_kp":
             kp, delta = action[:6], action[6:]
-            self.kp = np.clip(kp, self.kp_min, self.kp_max)
+            self.kp = self.scale_kp(kp)
             self.kd = 2 * np.sqrt(self.kp)  # critically damped
         else:   # This is case "fixed"
             delta = action
@@ -372,6 +386,23 @@ class OperationalSpaceController(Controller):
             self.interpolator_ori.set_goal(orientation_error(self.goal_ori, self.ori_ref))  # goal is the total orientation error
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
+    def scale_kp(self, kp):
+        """
+        Clips @kp to be within self.kp_input_min and self.kp_input_max, and then re-scale the values to be within
+        the range self.kp_min and self.kp_max
+        Args:
+            action (Iterable): kp to scale
+        Returns:
+            np.array: Re-scaled kp
+        """
+        self.kp_scale = abs(self.kp_max - self.kp_min) / abs(self.kp_input_max - self.kp_input_min)
+        self.kp_output_transform = (self.kp_max + self.kp_min) / 2.0
+        self.kp_input_transform = (self.kp_input_max + self.kp_input_min) / 2.0
+        kp_clipped = np.clip(kp, self.kp_input_min, self.kp_input_max)
+        scaled_kp = (kp_clipped - self.kp_input_transform) * self.kp_scale + self.kp_output_transform
+
+return scaled_kp
+
     @property
     def control_limits(self):
         """
@@ -389,11 +420,11 @@ class OperationalSpaceController(Controller):
                 - (np.array) maximum action values
         """
         if self.impedance_mode == "variable":
-            low = np.concatenate([self.damping_ratio_min, self.kp_min, self.input_min])
-            high = np.concatenate([self.damping_ratio_max, self.kp_max, self.input_max])
+            low = np.concatenate([self.damping_ratio_min, self.kp_input_min, self.input_min])
+            high = np.concatenate([self.damping_ratio_max, self.kp_input_max, self.input_max])
         elif self.impedance_mode == "variable_kp":
-            low = np.concatenate([self.kp_min, self.input_min])
-            high = np.concatenate([self.kp_max, self.input_max])
+            low = np.concatenate([self.kp_input_min, self.input_min])
+            high = np.concatenate([self.kp_input_max, self.input_max])
         else:  # This is case "fixed"
             low, high = self.input_min, self.input_max
         return low, high
