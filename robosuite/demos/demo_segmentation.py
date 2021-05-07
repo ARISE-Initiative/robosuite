@@ -85,9 +85,17 @@ if __name__ == "__main__":
         obs, reward, done, _ = env.step(action)
 
         if i % 5 == 0:
-            video_img = env.sim.render(camera_name="agentview", height=500, width=500, segmentation=True)[::-1]
+            video_img = env.sim.render(camera_name="agentview", height=512, width=512, segmentation=True)[::-1]
+            np.savetxt("/tmp/seg_{}.txt".format(i), video_img[..., -1], fmt="%.2f")
             video_img = segmentation_to_rgb(video_img)
             video_writer.append_data(video_img)
+            import json
+            print("geom_id2name")
+            print(json.dumps(env.sim.model._geom_id2name, indent=4))
+            from PIL import Image
+            image = Image.fromarray(video_img)
+            image.save("/tmp/seg_{}.png".format(i))
+            break
 
     video_writer.close()
 
