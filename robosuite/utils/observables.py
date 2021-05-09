@@ -14,18 +14,21 @@ def sensor(modality):
 
     An example use case is shown below:
 
-        @sensor(modality="proprio")
-        def joint_pos(obs_cache):
-            # Always handle case if obs_cache is empty
-            if not obs_cache:
-                return np.zeros(7)
-            # Otherwise, run necessary calculations and return output
-            ...
-            out = ...
-            return out
+        >>> @sensor(modality="proprio")
+        >>> def joint_pos(obs_cache):
+                # Always handle case if obs_cache is empty
+                if not obs_cache:
+                    return np.zeros(7)
+                # Otherwise, run necessary calculations and return output
+                ...
+                out = ...
+                return out
 
     Args:
         modality (str): Modality for this sensor
+
+    Returns:
+        function: decorator function
     """
     # Define standard decorator (with no args)
     def decorator(func):
@@ -44,6 +47,9 @@ def create_deterministic_corrupter(corruption, low=-np.inf, high=np.inf):
         corruption (float): Corruption to apply
         low (float): Minimum value for output for clipping
         high (float): Maximum value for output for clipping
+
+    Returns:
+        function: corrupter
     """
     def corrupter(inp):
         inp = np.array(inp)
@@ -60,6 +66,9 @@ def create_uniform_noise_corrupter(min_noise, max_noise, low=-np.inf, high=np.in
         max_noise (float): Maximum noise to apply
         low (float): Minimum value for output for clipping
         high (float): Maxmimum value for output for clipping
+
+    Returns:
+        function: corrupter
     """
     def corrupter(inp):
         inp = np.array(inp)
@@ -77,6 +86,9 @@ def create_gaussian_noise_corrupter(mean, std, low=-np.inf, high=np.inf):
         std (float): Standard deviation of the noise to apply
         low (float): Minimum value for output for clipping
         high (float): Maxmimum value for output for clipping
+
+    Returns:
+        function: corrupter
     """
     def corrupter(inp):
         inp = np.array(inp)
@@ -91,6 +103,9 @@ def create_deterministic_delayer(delay):
 
     Args:
         delay (float): Delay value to return
+
+    Returns:
+        function: delayer
     """
     assert delay >= 0, "Inputted delay must be non-negative!"
     return lambda: delay
@@ -103,6 +118,9 @@ def create_uniform_sampled_delayer(min_delay, max_delay):
     Args:
         min_delay (float): Minimum possible delay
         max_delay (float): Maxmimum possible delay
+
+    Returns:
+        function: delayer
     """
     assert min(min_delay, max_delay) >= 0, "Inputted delay must be non-negative!"
     return lambda: min_delay + (max_delay - min_delay) * np.random.random()
@@ -115,6 +133,9 @@ def create_gaussian_sampled_delayer(mean, std):
     Args:
         mean (float): Average delay
         std (float): Standard deviation of the delay variation
+
+    Returns:
+        function: delayer
     """
     assert mean >= 0, "Inputted mean delay must be non-negative!"
     return lambda: max(0.0, int(np.round(mean + std * np.random.randn())))
@@ -132,14 +153,15 @@ class Observable:
 
     Args:
         name (str): Name for this observable
-        sensor (function with sensor decorator): Method to grab raw sensor data for this observable. Should take in a
+        sensor (function with `sensor` decorator): Method to grab raw sensor data for this observable. Should take in a
             single dict argument (observation cache if a pre-computed value is required) and return the raw sensor data
             for the current timestep. Must handle case if inputted argument is empty ({}), and should have `sensor`
             decorator when defined
         corrupter (None or function): Method to corrupt the raw sensor data for this observable. Should take in
             the output of @sensor and return the same type (corrupted data). If None, results in default no corruption
         filter (None or function): Method to filter the outputted reading for this observable. Should take in the output
-            of @corrupter and return the same type (filtered data). If None, results in default no filter
+            of @corrupter and return the same type (filtered data). If None, results in default no filter. Note that
+            this function can also double as an observer, where sampled data is recorded by this function.
         delayer (None or function): Method to delay the raw sensor data when polling this observable. Should take in
             no arguments and return a float, for the number of seconds to delay the measurement by. If None, results in
             default no delayer
@@ -181,7 +203,7 @@ class Observable:
         self._current_observed_value = 0 if self._is_number else np.zeros(self._data_shape)
         self._sampled = False
 
-    def update(self, timestep, obs_cache):
+    def update(self, timestep, obs_cache, force=False):
         """
         Updates internal values for this observable, if enabled.
 
@@ -189,6 +211,7 @@ class Observable:
             timestep (float): Amount of simulation time (in sec) that has passed since last call.
             obs_cache (dict): Observation cache mapping observable names to pre-computed values to pass to sensor. This
                 will be updated in-place during this call.
+            force (bool): If True, will force the observable to update its internal value to the newest value.
         """
         if self._enabled:
             # Increment internal time counter
@@ -196,7 +219,8 @@ class Observable:
 
             # If the delayed sampling time has been passed and we haven't sampled yet for this sampling period,
             # we should grab a new measurement
-            if not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample:
+            if (not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample) or\
+                    force:
                 # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                 obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
                 self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
@@ -211,7 +235,8 @@ class Observable:
             if self._time_since_last_sample >= self._sampling_timestep:
                 if not self._sampled:
                     # If we still haven't sampled yet, sample immediately and warn user that sampling rate is too low
-                    print("Warning: sampling rate is either too low or delay is too high. Please adjust one (or both)")
+                    print(f"Warning: sampling rate for observable {self.name} is either too low or delay is too high. "
+                          f"Please adjust one (or both)")
                     # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                     obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
                     self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
@@ -243,7 +268,7 @@ class Observable:
     def is_active(self):
         """
         Determines whether observable is active or not. This observable is considered active if its current observation
-            value is being returned in self.obs.
+        value is being returned in self.obs.
 
         Returns:
             bool: True if this observable is active
@@ -265,7 +290,7 @@ class Observable:
     def set_active(self, active):
         """
         Sets whether this observable is active or not. If active, this observable's current
-            observed value is returned from self.obs, otherwise self.obs returns None.
+        observed value is returned from self.obs, otherwise self.obs returns None.
 
         Args:
             active (bool): True if this observable should be active
@@ -298,7 +323,8 @@ class Observable:
 
     def set_filter(self, filter):
         """
-        Sets the filter for this observable.
+        Sets the filter for this observable. Note that this function can also double as an observer, where sampled
+        data is recorded by this function.
 
         Args:
              filter (None or function): Method to filter the outputted reading for this observable. Should take in

@@ -1,7 +1,10 @@
-robosuite.models.tasks
+robosuite.models.tasks package
 ==============================
 
-robosuite.models.tasks.manipulation\_task
+Submodules
+----------
+
+robosuite.models.tasks.manipulation\_task module
 ------------------------------------------------
 
 .. automodule:: robosuite.models.tasks.manipulation_task
@@ -9,10 +12,18 @@ robosuite.models.tasks.manipulation\_task
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.tasks.placement\_sampler
-------------------------------------------------
+robosuite.models.tasks.task module
+----------------------------------
 
-.. automodule:: robosuite.models.tasks.placement_sampler
+.. automodule:: robosuite.models.tasks.task
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.models.tasks
    :members:
    :undoc-members:
    :show-inheritance:

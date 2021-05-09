@@ -2,9 +2,9 @@
 
 [RoboTurk](https://roboturk.stanford.edu/) is a crowdsourcing platform developed in order to enabled collecting large-scale manipulation datasets. Below, we describe RoboTurk datasets that are compatible with robosuite.
 
-## Updated Datasets compatible with v1.0
+## Updated Datasets compatible with v1.0+
 
-We are currently in the process of reformatting the demonstrations. These datasets will be made available soon.
+We are currently in the process of organizing a standardized dataset for our benchmarking tasks, which will be made available soon and compatible with v1.2.0+. In the meantime, we have provided a [small-scale dataset](https://drive.google.com/drive/folders/1LLkuFnRdqQ6xn1cYzkbJUs_DreaAvN7i?usp=sharing) of expert demonstrations on two of our tasks.
 
 ## Original Datasets compatible with v0.3
 

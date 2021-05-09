@@ -1,7 +1,10 @@
-robosuite.models.grippers
+robosuite.models.grippers package
 =================================
 
-robosuite.models.grippers.gripper\_factory
+Submodules
+----------
+
+robosuite.models.grippers.gripper\_factory module
 -------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.gripper_factory
@@ -9,7 +12,7 @@ robosuite.models.grippers.gripper\_factory
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.gripper\_model
+robosuite.models.grippers.gripper\_model module
 -----------------------------------------------
 
 .. automodule:: robosuite.models.grippers.gripper_model
@@ -17,7 +20,7 @@ robosuite.models.grippers.gripper\_model
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.gripper\_tester
+robosuite.models.grippers.gripper\_tester module
 ------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.gripper_tester
@@ -25,7 +28,7 @@ robosuite.models.grippers.gripper\_tester
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.jaco\_three\_finger\_gripper
+robosuite.models.grippers.jaco\_three\_finger\_gripper module
 -------------------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.jaco_three_finger_gripper
@@ -33,7 +36,7 @@ robosuite.models.grippers.jaco\_three\_finger\_gripper
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.null\_gripper
+robosuite.models.grippers.null\_gripper module
 ----------------------------------------------
 
 .. automodule:: robosuite.models.grippers.null_gripper
@@ -41,7 +44,7 @@ robosuite.models.grippers.null\_gripper
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.panda\_gripper
+robosuite.models.grippers.panda\_gripper module
 -----------------------------------------------
 
 .. automodule:: robosuite.models.grippers.panda_gripper
@@ -49,7 +52,7 @@ robosuite.models.grippers.panda\_gripper
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.rethink\_gripper
+robosuite.models.grippers.rethink\_gripper module
 -------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.rethink_gripper
@@ -57,7 +60,7 @@ robosuite.models.grippers.rethink\_gripper
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.robotiq\_140\_gripper
+robosuite.models.grippers.robotiq\_140\_gripper module
 ------------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.robotiq_140_gripper
@@ -65,7 +68,7 @@ robosuite.models.grippers.robotiq\_140\_gripper
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.robotiq\_85\_gripper
+robosuite.models.grippers.robotiq\_85\_gripper module
 -----------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.robotiq_85_gripper
@@ -73,7 +76,7 @@ robosuite.models.grippers.robotiq\_85\_gripper
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.robotiq\_three\_finger\_gripper
+robosuite.models.grippers.robotiq\_three\_finger\_gripper module
 ----------------------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.robotiq_three_finger_gripper
@@ -81,10 +84,18 @@ robosuite.models.grippers.robotiq\_three\_finger\_gripper
    :undoc-members:
    :show-inheritance:
 
-robosuite.models.grippers.wiping\_gripper
+robosuite.models.grippers.wiping\_gripper module
 ------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.wiping_gripper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.models.grippers
    :members:
    :undoc-members:
    :show-inheritance:

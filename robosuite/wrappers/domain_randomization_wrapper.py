@@ -5,7 +5,7 @@ robosuite environments.
 import numpy as np
 
 from robosuite.wrappers import Wrapper
-from robosuite.utils.mjmod import TextureModder, LightingModder, CameraModder
+from robosuite.utils.mjmod import TextureModder, LightingModder, CameraModder, DynamicsModder
 
 DEFAULT_COLOR_ARGS = {
     'geom_names' : None, # all geoms are randomized
@@ -42,6 +42,45 @@ DEFAULT_LIGHTING_ARGS = {
     'diffuse_perturbation_size' : 0.1,
 }
 
+DEFAULT_DYNAMICS_ARGS = {
+    # Opt parameters
+    'randomize_density': True,
+    'randomize_viscosity': True,
+    'density_perturbation_ratio': 0.1,
+    'viscosity_perturbation_ratio': 0.1,
+
+    # Body parameters
+    'body_names': None,     # all bodies randomized
+    'randomize_position': True,
+    'randomize_quaternion': True,
+    'randomize_inertia': True,
+    'randomize_mass': True,
+    'position_perturbation_size': 0.0015,
+    'quaternion_perturbation_size': 0.003,
+    'inertia_perturbation_ratio': 0.02,
+    'mass_perturbation_ratio': 0.02,
+
+    # Geom parameters
+    'geom_names': None,     # all geoms randomized
+    'randomize_friction': True,
+    'randomize_solref': True,
+    'randomize_solimp': True,
+    'friction_perturbation_ratio': 0.1,
+    'solref_perturbation_ratio': 0.1,
+    'solimp_perturbation_ratio': 0.1,
+
+    # Joint parameters
+    'joint_names': None,    # all joints randomized
+    'randomize_stiffness': True,
+    'randomize_frictionloss': True,
+    'randomize_damping': True,
+    'randomize_armature': True,
+    'stiffness_perturbation_ratio': 0.1,
+    'frictionloss_perturbation_size': 0.05,
+    'damping_perturbation_size': 0.01,
+    'armature_perturbation_size': 0.01,
+}
+
 
 class DomainRandomizationWrapper(Wrapper):
     """
@@ -61,11 +100,15 @@ class DomainRandomizationWrapper(Wrapper):
 
         randomize_lighting (bool): if True, randomize light locations and properties
 
+        randomize_dyanmics (bool): if True, randomize dynamics parameters
+
         color_randomization_args (dict): Color-specific randomization arguments
 
         camera_randomization_args (dict): Camera-specific randomization arguments
 
         lighting_randomization_args (dict): Lighting-specific randomization arguments
+
+        dynamics_randomization_args (dict): Dyanmics-specific randomization arguments
 
         randomize_on_reset (bool): if True, randomize on every call to @reset. This, in
             conjunction with setting @randomize_every_n_steps to 0, is useful to
@@ -82,9 +125,11 @@ class DomainRandomizationWrapper(Wrapper):
         randomize_color=True,
         randomize_camera=True,
         randomize_lighting=True,
+        randomize_dynamics=True,
         color_randomization_args=DEFAULT_COLOR_ARGS,
         camera_randomization_args=DEFAULT_CAMERA_ARGS,
         lighting_randomization_args=DEFAULT_LIGHTING_ARGS,
+        dynamics_randomization_args=DEFAULT_DYNAMICS_ARGS,
         randomize_on_reset=True,
         randomize_every_n_steps=1,
     ):
@@ -98,9 +143,11 @@ class DomainRandomizationWrapper(Wrapper):
         self.randomize_color = randomize_color
         self.randomize_camera = randomize_camera
         self.randomize_lighting = randomize_lighting
+        self.randomize_dynamics = randomize_dynamics
         self.color_randomization_args = color_randomization_args
         self.camera_randomization_args = camera_randomization_args
         self.lighting_randomization_args = lighting_randomization_args
+        self.dynamics_randomization_args = dynamics_randomization_args
         self.randomize_on_reset = randomize_on_reset
         self.randomize_every_n_steps = randomize_every_n_steps
 
@@ -132,6 +179,14 @@ class DomainRandomizationWrapper(Wrapper):
             )
             self.modders.append(self.light_modder)
 
+        if self.randomize_dynamics:
+            self.dynamics_modder = DynamicsModder(
+                sim=self.env.sim,
+                random_state=self.random_state,
+                **self.dynamics_randomization_args,
+            )
+            self.modders.append(self.dynamics_modder)
+
         self.save_default_domain()
 
     def reset(self):
@@ -160,7 +215,7 @@ class DomainRandomizationWrapper(Wrapper):
         if self.randomize_on_reset:
             # domain randomize + regenerate observation
             self.randomize_domain()
-            ret = self.env._get_observation()
+            ret = self.env._get_observations()
 
         return ret
 

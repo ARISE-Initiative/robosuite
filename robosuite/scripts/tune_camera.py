@@ -279,10 +279,16 @@ if __name__ == "__main__":
     if from_tag:
         initial_file_camera_pos = np.array(cam_tree.get("pos").split(" ")).astype(float)
         initial_file_camera_quat = T.convert_quat(np.array(cam_tree.get("quat").split(" ")).astype(float), to='xyzw')
+        cam_fov = cam_tree.get("fovy", None)
     else:
         initial_file_camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
         initial_file_camera_quat = T.convert_quat(np.array(env.sim.model.body_quat[cam_body_id]), to='xyzw')
+        cam_fov = env.sim.model.cam_fovy[camera_id]
     initial_file_camera_pose = T.make_pose(initial_file_camera_pos, T.quat2mat(initial_file_camera_quat))
+
+    # Modify fov if specified
+    if cam_fov is not None:
+        env.sim.model.cam_fovy[camera_id] = float(cam_fov)
 
     # remember difference between camera pose in initial tag
     # and absolute camera pose in world

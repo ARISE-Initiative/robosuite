@@ -28,7 +28,7 @@ class Sawyer(ManipulatorModel):
 
     @property
     def init_qpos(self):
-        return np.array([0, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161])
+        return np.array([0, -1.18, 0.00, 2.18, 0.00, 0.57, -1.57])
 
     @property
     def base_xpos_offset(self):

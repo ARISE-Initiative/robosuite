@@ -28,7 +28,7 @@ class Jaco(ManipulatorModel):
 
     @property
     def init_qpos(self):
-        return np.array([3.192, 3.680, -0.000, 1.170, 0.050, 3.760, -1.510])
+        return np.array([3.192, 3.680, -0.000, 1.170, 0.050, 3.760, 3.142])
 
     @property
     def base_xpos_offset(self):
