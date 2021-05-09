@@ -13,5 +13,5 @@ h5py
 # required for pygame renderer
 pygame
 
-# required for visii renderer
+# required for nvisii renderer
 open3d
