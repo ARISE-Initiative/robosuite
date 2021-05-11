@@ -232,8 +232,9 @@ class TwoArmTransport(TwoArmEnv):
 
         # use a shaping reward if specified
         if self.reward_shaping:
-            # TODO! So we raise an error for now
-            raise NotImplementedError("No dense reward implemented currently for this task!")
+            # TODO! So we print a warning and force sparse rewards
+            print(f"\n\nWarning! No dense reward current implemented for this task. Forcing sparse rewards\n\n")
+            self.reward_shaping = False
 
         # Else this is the sparse reward setting
         else:
