@@ -251,6 +251,7 @@ class Threading(SingleArmEnv):
                 rotation_axis='z',
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
+                reference_pos=self.table_offset,
                 z_offset=0.,
             )
         )
@@ -264,6 +265,7 @@ class Threading(SingleArmEnv):
                 rotation_axis='z',
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
+                reference_pos=self.table_offset,
                 z_offset=0.001,
             )
         )

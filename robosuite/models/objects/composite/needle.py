@@ -1,8 +1,7 @@
 import numpy as np
 
 from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import add_to_dict
-from robosuite.utils.mjcf_utils import CustomMaterial
+from robosuite.utils.mjcf_utils import add_to_dict, CustomMaterial
 import robosuite.utils.transform_utils as T
 
 
