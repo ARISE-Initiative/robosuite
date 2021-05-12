@@ -120,12 +120,27 @@ class RingTripodObject(CompositeObject):
             (0., 2. * total_size[1] - 2. * tripod_capsule_r, 0.),
             (2. * total_size[0] - 2. * tripod_capsule_r, total_size[1] - tripod_capsule_r, 0.),
         ]
+        # rotate the legs to resemble a tripod
+        tripod_center = np.array([total_size[0], total_size[1], 0.])
+        xy_offset = np.array([tripod_capsule_r, tripod_capsule_r, 0.])
+        rotation_angle = -np.pi / 6. # 30 degrees
+        tripod_geom_quats = []
+        for i in range(3):
+            capsule_loc = np.array(tripod_geom_locations[i]) + xy_offset
+            capsule_loc[2] = 0. # only care about location in x-y plane
+            vec_to_center = tripod_center - capsule_loc
+            vec_to_center = vec_to_center / np.linalg.norm(vec_to_center)
+            # cross-product with z unit vector to get vector to rotate about 
+            rot_vec = np.cross(vec_to_center, np.array([0., 0., 1.]))
+            rot_quat = T.mat2quat(T.rotation_matrix(angle=rotation_angle, direction=rot_vec))
+            tripod_geom_quats.append(T.convert_quat(rot_quat, to="wxyz"))
+        
         for i in range(3):
             add_to_dict(
                 dic=obj_args,
                 geom_types="capsule",
                 geom_locations=tripod_geom_locations[i],
-                geom_quats=(1, 0, 0, 0),
+                geom_quats=tripod_geom_quats[i],
                 geom_sizes=(tripod_capsule_r, tripod_capsule_h),
                 geom_names="tripod_{}".format(i),
                 geom_rgbas=None,
