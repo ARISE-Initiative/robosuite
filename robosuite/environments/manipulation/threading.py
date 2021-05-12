@@ -326,33 +326,9 @@ class Threading(SingleArmEnv):
             sensors = []
             names = []
             for obj_name in self.obj_body_id:
-                @sensor(modality=modality)
-                def obj_pos(obs_cache):
-                    return np.array(self.sim.data.body_xpos[self.obj_body_id[obj_name]])
-
-                @sensor(modality=modality)
-                def obj_quat(obs_cache):
-                    return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[obj_name]], to="xyzw")
-
-                @sensor(modality=modality)
-                def obj_to_eef_pos(obs_cache):
-                    # Immediately return default value if cache is empty
-                    if any([name not in obs_cache for name in
-                            [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]):
-                        return np.zeros(3)
-                    obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
-                    rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
-                    rel_pos, rel_quat = T.mat2pose(rel_pose)
-                    obs_cache[f"{obj_name}_to_{pf}eef_quat"] = rel_quat
-                    return rel_pos
-
-                @sensor(modality=modality)
-                def obj_to_eef_quat(obs_cache):
-                    return obs_cache[f"{obj_name}_to_{pf}eef_quat"] if \
-                        f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
-
-                sensors += [obj_pos, obj_quat, obj_to_eef_pos, obj_to_eef_quat]
-                names += [f"{obj_name}_pos", f"{obj_name}_quat", f"{obj_name}_to_{pf}eef_pos", f"{obj_name}_to_{pf}eef_quat"]
+                obj_sensors, obj_sensor_names = self._create_obj_sensors(obj_name=obj_name, modality=modality)
+                sensors += obj_sensors
+                names += obj_sensor_names
 
             # Create observables
             for name, s in zip(names, sensors):
@@ -363,6 +339,54 @@ class Threading(SingleArmEnv):
                 )
 
         return observables
+
+    def _create_obj_sensors(self, obj_name, modality="object"):
+        """
+        Helper function to create sensors for a given object. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            obj_name (str): Name of object to create sensors for
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given obj
+                names (list): array of corresponding observable names
+        """
+
+        ### TODO: this was stolen from pick-place - do we want to move this into utils to share it? ###
+        pf = self.robots[0].robot_model.naming_prefix
+
+        @sensor(modality=modality)
+        def obj_pos(obs_cache):
+            return np.array(self.sim.data.body_xpos[self.obj_body_id[obj_name]])
+
+        @sensor(modality=modality)
+        def obj_quat(obs_cache):
+            return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[obj_name]], to="xyzw")
+
+        @sensor(modality=modality)
+        def obj_to_eef_pos(obs_cache):
+            # Immediately return default value if cache is empty
+            if any([name not in obs_cache for name in
+                    [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]):
+                return np.zeros(3)
+            obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
+            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
+            rel_pos, rel_quat = T.mat2pose(rel_pose)
+            obs_cache[f"{obj_name}_to_{pf}eef_quat"] = rel_quat
+            return rel_pos
+
+        @sensor(modality=modality)
+        def obj_to_eef_quat(obs_cache):
+            return obs_cache[f"{obj_name}_to_{pf}eef_quat"] if \
+                f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
+
+        sensors = [obj_pos, obj_quat, obj_to_eef_pos, obj_to_eef_quat]
+        names = [f"{obj_name}_pos", f"{obj_name}_quat", f"{obj_name}_to_{pf}eef_pos", f"{obj_name}_to_{pf}eef_quat"]
+
+        return sensors, names
 
     def _check_success(self):
         """
