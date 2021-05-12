@@ -23,7 +23,7 @@ class NeedleObject(CompositeObject):
 
         # Set object attributes
         self._name = name
-        self.needle_mat_name = "dark_wood_mat"
+        self.needle_mat_name = "darkwood_mat"
 
         # Other private attributes
         self._important_sites = {}
@@ -90,7 +90,7 @@ class NeedleObject(CompositeObject):
             dic=obj_args,
             geom_types="box",
             # handle geom needs to be offset in y
-            geom_locations=(0., 2. * thread_size[1], 0.),,
+            geom_locations=(0., 2. * needle_size[1], 0.),
             geom_quats=(1, 0, 0, 0),
             geom_sizes=tuple(handle_size),
             geom_names="handle",

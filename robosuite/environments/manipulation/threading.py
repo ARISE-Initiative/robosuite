@@ -1,15 +1,15 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.utils.transform_utils import convert_quat
 from robosuite.utils.mjcf_utils import CustomMaterial
 
+import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import NeedleObject, RingTripodObject
 from robosuite.models.tasks import ManipulationTask
-from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -65,10 +65,6 @@ class Threading(SingleArmEnv):
             If None, environment reward remains unnormalized
 
         reward_shaping (bool): if True, use dense rewards.
-
-        placement_initializer (ObjectPositionSampler): if provided, will
-            be used to place objects on every reset, else a UniformRandomSampler
-            is used by default.
 
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
@@ -135,7 +131,6 @@ class Threading(SingleArmEnv):
         use_object_obs=True,
         reward_scale=1.0,
         reward_shaping=False,
-        placement_initializer=None,
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
@@ -162,9 +157,6 @@ class Threading(SingleArmEnv):
 
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
-
-        # object placement initializer
-        self.placement_initializer = placement_initializer
 
         super().__init__(
             robots=robots,
@@ -248,21 +240,33 @@ class Threading(SingleArmEnv):
         objects = [self.needle, self.tripod]
 
         # Create placement initializer
-        if self.placement_initializer is not None:
-            self.placement_initializer.reset()
-            self.placement_initializer.add_objects(objects)
-        else:
-            self.placement_initializer = UniformRandomSampler(
-                name="ObjectSampler",
-                mujoco_objects=objects,
-                x_range=[-0.08, 0.08],
-                y_range=[-0.08, 0.08],
-                rotation=None,
+        self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+        self.placement_initializer.append_sampler(
+            sampler=UniformRandomSampler(
+                name="NeedleSampler",
+                mujoco_objects=self.needle,
+                x_range=(-0.2, -0.05),
+                y_range=(0.15, 0.25),
+                rotation=(-2. * np.pi / 3., -np.pi / 3.),
+                rotation_axis='z',
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
-                reference_pos=self.table_offset,
-                z_offset=0.01,
+                z_offset=0.,
             )
+        )
+        self.placement_initializer.append_sampler(
+            sampler=UniformRandomSampler(
+                name="TripodSampler",
+                mujoco_objects=self.tripod,
+                x_range=(-0.1, 0.15),
+                y_range=(-0.2, -0.1),
+                rotation=(np.pi / 6., np.pi / 2.),
+                rotation_axis='z',
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                z_offset=0.001,
+            )
+        )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(

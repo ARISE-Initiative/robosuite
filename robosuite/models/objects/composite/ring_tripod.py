@@ -23,7 +23,7 @@ class RingTripodObject(CompositeObject):
 
         # Set object attributes
         self._name = name
-        self.tripod_mat_name = "dark_wood_mat"
+        self.tripod_mat_name = "lightwood_mat"
 
         # Other private attributes
         self._important_sites = {}
@@ -104,7 +104,7 @@ class RingTripodObject(CompositeObject):
                                 (k * 2. * unit_size[2]) + ring_offset[2],),
                             geom_quats=(1, 0, 0, 0),
                             geom_sizes=tuple(unit_size),
-                            geom_names="ring_{}_{}_{}".format(k, i, j),
+                            geom_names="ring_{}".format(self.num_ring_geoms),
                             geom_rgbas=None,
                             geom_materials=self.tripod_mat_name,
                              # make the ring low friction to ensure easy insertion
@@ -117,8 +117,8 @@ class RingTripodObject(CompositeObject):
         tripod_capsule_h = 0.03
         tripod_geom_locations = [
             (0., 0., 0.),
-            (0., 2. * total_size[1] - 2. * capsule_r, 0.),
-            (2. * total_size[0] - 2. * capsule_r, total_size[1] - capsule_r, 0.),
+            (0., 2. * total_size[1] - 2. * tripod_capsule_r, 0.),
+            (2. * total_size[0] - 2. * tripod_capsule_r, total_size[1] - tripod_capsule_r, 0.),
         ]
         for i in range(3):
             add_to_dict(
@@ -138,11 +138,11 @@ class RingTripodObject(CompositeObject):
         post_size = 0.005
         post_geom_sizes = [
             (total_size[0], total_size[1], base_thickness),
-            (post_size, post_size, total_size[2] - ring_size[2] - base_thickness - capsule_r - capsule_h),
+            (post_size, post_size, total_size[2] - ring_size[2] - base_thickness - tripod_capsule_r - tripod_capsule_h),
         ]
         post_geom_locations = [
-            (0., 0., 2. * (capsule_r + capsule_h)),
-            (total_size[0] - post_size, total_size[1] - post_size, 2. * (capsule_r + capsule_h + base_thickness)),
+            (0., 0., 2. * (tripod_capsule_r + tripod_capsule_h)),
+            (total_size[0] - post_size, total_size[1] - post_size, 2. * (tripod_capsule_r + tripod_capsule_h + base_thickness)),
         ]
         for i in range(2):
             add_to_dict(
