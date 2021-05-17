@@ -1,7 +1,7 @@
 import os
 import numpy as np
-import visii
-import visii_utils as vutils
+import nvisii
+import nvisii_rendering_utils as vutils
 
 from robosuite.models.objects import MujocoXMLObject, PrimitiveObject, CompositeObject
 from robosuite.models.objects import BoxObject, CylinderObject, BallObject, CapsuleObject
@@ -11,7 +11,7 @@ from robosuite.models.arenas import TableArena, BinsArena, PegsArena, EmptyArena
 
 import xml.etree.ElementTree as ET
 
-def init_arena_visii(env):
+def init_arena_nvisii(env):
 
     mujoco_arena = env.model.mujoco_arena
 
@@ -180,7 +180,7 @@ def _split_pos(body):
 def _split_size(body):
     return _split(body.get('size').split(' ')) 
 
-def init_objects_visii(env):
+def init_objects_nvisii(env):
 
     mujoco_objects = env.model.mujoco_objects
 
@@ -362,30 +362,15 @@ def _stl_to_obj(stl_file):
 
 def init_pedestals(env):
 
-    obj_file = f'../../models/assets/mounts/meshes/rethink_mount/pedestal.obj'
+    obj_file = f'../../models/assets/robots/common_meshes/pedestal.obj'
 
     robot_count = 0
     for robot in range(len(env.robots)):
 
         name = f'mount{robot_count}_base'
 
-        entity = visii.import_obj(name,
-                                  obj_file,
-                                  obj_file[:obj_file.rfind('/')] + '/')
-
-
-        pos = vutils.get_position_body(env, name)
-        quat = vutils.get_quaternion_body(env, name)
-
-        for link_idx in range(len(entity)):
-
-            entity[link_idx].get_transform().set_position(visii.vec3(pos[0],
-                                                                     pos[1],
-                                                                     pos[2]))
-            
-            entity[link_idx].get_transform().set_rotation(visii.quat(quat[0],
-                                                                     quat[1],
-                                                                     quat[2],
-                                                                     quat[3]))
+        scene = vutils.import_obj(env,
+                                  name,
+                                  obj_file)
 
         robot_count += 1

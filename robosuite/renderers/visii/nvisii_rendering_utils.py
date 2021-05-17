@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import visii
+import nvisii
 
 def create_entity(entity_type, entity_name, size, pos, texture_name, texture_file, rgba=None):
 
@@ -8,53 +8,59 @@ def create_entity(entity_type, entity_name, size, pos, texture_name, texture_fil
 
     if entity_type == 'box':
 
-        entity = visii.entity.create(
+        entity = nvisii.entity.create(
                     name = entity_name,
-                    mesh = visii.mesh.create_box(name = entity_name,
-                                                 size = visii.vec3(size[0],
+                    mesh = nvisii.mesh.create_box(name = entity_name,
+                                                 size = nvisii.vec3(size[0],
                                                                    size[1],
                                                                    size[2])),
-                    transform = visii.transform.create(entity_name),
-                    material = visii.material.create(entity_name)
+                    transform = nvisii.transform.create(entity_name),
+                    material = nvisii.material.create(entity_name)
                 )
 
     elif entity_type == 'cylinder':
 
-        entity = visii.entity.create(
+        entity = nvisii.entity.create(
                     name = entity_name,
-                    mesh = visii.mesh.create_capped_cylinder(name   = entity_name,
+                    mesh = nvisii.mesh.create_capped_cylinder(name   = entity_name,
                                                              radius = float(size[0]),
                                                              size   = float(size[1])),
-                    transform = visii.transform.create(entity_name),
-                    material = visii.material.create(entity_name)
+                    transform = nvisii.transform.create(entity_name),
+                    material = nvisii.material.create(entity_name)
                 )
 
     elif entity_type == 'sphere':
 
-        entity = visii.entity.create(
+        entity = nvisii.entity.create(
                     name = entity_name,
-                    mesh = visii.mesh.create_sphere(name   = entity_name,
+                    mesh = nvisii.mesh.create_sphere(name = entity_name,
                                                     radius = float(size[0])),
-                    transform = visii.transform.create(entity_name),
-                    material = visii.material.create(entity_name)
+                    transform = nvisii.transform.create(entity_name),
+                    material = nvisii.material.create(entity_name)
                 )
 
     if texture_name != None:
-        texture = visii.texture.get(texture_name)
+        texture = nvisii.texture.get(texture_name)
 
         if texture == None:
-            texture = visii.texture.create_from_file(name = texture_name,
-                                                     path = texture_file)
+            texture = nvisii.texture.create_from_file(name = texture_name,
+                                                      path = texture_file)
+
+            # texture = nvisii.texture.create_hsv(name = texture_name + '_darker',
+            #                                     tex = texture,
+            #                                     hue = 0,
+            #                                     saturation = 0,
+            #                                     value = -0.5)
 
         entity.get_material().set_base_color_texture(texture)
 
     else:
-        entity.get_material().set_base_color(visii.vec3(rgba[0], rgba[1], rgba[2]))
+        entity.get_material().set_base_color(nvisii.vec3(rgba[0], rgba[1], rgba[2]))
 
 
-    entity.get_transform().set_position(visii.vec3(float(pos[0]),
-                                                   float(pos[1]),
-                                                   float(pos[2])))
+    entity.get_transform().set_position(nvisii.vec3(float(pos[0]),
+                                                    float(pos[1]),
+                                                    float(pos[2])))
 
     return entity
 
@@ -62,35 +68,42 @@ def set_entity_rotation_geom(env, entity_name, entity):
 
     quat = get_quaternion_geom(env, entity_name)
 
-    entity.get_transform().set_rotation(visii.quat(quat[0],
-                                                   quat[1],
-                                                   quat[2],
-                                                   quat[3]))
+    entity.get_transform().set_rotation(nvisii.quat(quat[0],
+                                                    quat[1],
+                                                    quat[2],
+                                                    quat[3]))
 
 def set_entity_rotation_body(env, entity_name, entity):
 
     quat = get_quaternion_body(env, entity_name)
 
-    entity.get_transform().set_rotation(visii.quat(quat[0],
-                                                   quat[1],
-                                                   quat[2],
-                                                   quat[3]))
+    entity.get_transform().set_rotation(nvisii.quat(quat[0],
+                                                    quat[1],
+                                                    quat[2],
+                                                    quat[3]))
 
-def import_obj(env, name, obj_file):
+def import_obj(env, name, obj_file, part_type='body'):
 
-    pos = get_position_body(env, name)
-    quat = get_quaternion_body(env, name)
+    pos = None
+    quat = None
 
-    scene = visii.import_scene(
+    if part_type == 'body':
+        pos = get_position_body(env, name)
+        quat = get_quaternion_body(env, name)
+    elif part_type == 'geom':
+        pos = get_position_geom(env, name)
+        quat = get_quaternion_geom(env, name)
+
+    scene = nvisii.import_scene(
                     file_path=obj_file,
-                    position=visii.vec3(pos[0],
-                                        pos[1],
-                                        pos[2]),
+                    position=nvisii.vec3(pos[0],
+                                         pos[1],
+                                         pos[2]),
                     scale=(1.0, 1.0, 1.0),
-                    rotation=visii.quat(quat[0],
-                                        quat[1],
-                                        quat[2],
-                                        quat[3])
+                    rotation=nvisii.quat(quat[0],
+                                         quat[1],
+                                         quat[2],
+                                         quat[3])
                 )
 
     return scene

@@ -1,7 +1,7 @@
 import os
 import numpy as np
-import visii_utils as vutils
-import visii
+import nvisii_rendering_utils as vutils
+import nvisii
 import open3d as o3d
 from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
 
@@ -33,11 +33,13 @@ def dynamic_robot_init(env, root, robot_num, robot_name):
 
         obj_file = f'../../models/assets/robots/{robot_name.lower()}/meshes/{meshes[mesh]}.obj'
 
-        entity = visii.import_obj(meshes[mesh],
-                                  obj_file,
-                                  obj_file[:obj_file.rfind('/')] + '/')
-
         key = f'robot{robot_num}_{mesh}'
+
+        entity = vutils.import_obj(env,
+                                   key,
+                                   obj_file)
+
+        
         robot_entities[key] = entity
 
     return meshes, positions, quats, count, robot_entities
@@ -170,15 +172,19 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
 
             mesh_name = f'{key}-{mesh_n}'
 
+            object_name = f'gripper{robot_num}_{key}'
+            key_g = f'gripper{robot_num}_{mesh_name}'
+
             obj_file = f'../../models/assets/grippers/meshes/{gripper_name}/{mesh_n}.obj'
 
             entity = None
 
             if os.path.exists(obj_file):
 
-                entity = visii.import_obj(mesh_name,
-                                          obj_file,
-                                          obj_file[:obj_file.rfind('/')] + '/')
+                entity = vutils.import_obj(env,
+                                           object_name,
+                                           obj_file,
+                                           part_type='body')
 
             else:
 
@@ -187,24 +193,27 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
 
                 normals  = np.array(mesh_gripper.vertex_normals).flatten().tolist()
                 vertices = np.array(mesh_gripper.vertices).flatten().tolist()
-                mesh = visii.mesh.create_from_data(mesh_name, positions=vertices, normals=normals)
-                entity = visii.entity.create(
+
+                mesh_name += f'_{robot_num}'
+
+                mesh = nvisii.mesh.create_from_data(mesh_name, positions=vertices, normals=normals)
+                entity = nvisii.entity.create(
                     name      = mesh_name,
                     mesh      = mesh,
-                    transform = visii.transform.create(mesh_name),
-                    material  = visii.material.create(mesh_name)
+                    transform = nvisii.transform.create(mesh_name),
+                    material  = nvisii.material.create(mesh_name)
                 )
-            if mesh_n == 'finger_vis':
 
-                if isinstance(entity, tuple):
+            # if mesh_n == 'finger_vis':
+
+            #     if isinstance(entity, tuple):
                     
-                    for link_idx in range(len(entity)):
-                        entity[link_idx].get_material().set_base_color(visii.vec3(0.5, 0.5, 0.5))
+            #         for link_idx in range(len(entity)):
+            #             entity[link_idx].get_material().set_base_color(nvisii.vec3(0.5, 0.5, 0.5))
 
-                else:
-                    entity.get_material().set_base_color(visii.vec3(0.5, 0.5, 0.5))
+            #     else:
+            #         entity.get_material().set_base_color(nvisii.vec3(0.5, 0.5, 0.5))
 
-            key_g = f'gripper{robot_num}_{mesh_name}'
             gripper_entities[key_g] = entity
 
     return meshes, positions, quats, geom_quats, count, gripper_entities

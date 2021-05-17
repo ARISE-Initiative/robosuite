@@ -1,7 +1,7 @@
 import os
 import numpy as np
-import visii
-import visii_utils as vutils
+import nvisii
+import nvisii_rendering_utils as vutils
 from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
 from robosuite.environments.manipulation.wipe import Wipe
 
@@ -23,44 +23,44 @@ def render_robots(env, robot_info):
 
 def render_grippers(env, gripper_info):
 
-        for gripper in gripper_info.keys():
+    for gripper in gripper_info.keys():
 
-            gripper_entities = gripper_info[gripper][4]
-            gripper_positions = gripper_info[gripper][1]
-            gripper_quats = gripper_info[gripper][2]
-            geom_quats = gripper_info[gripper][5]
+        gripper_entities = gripper_info[gripper][4]
+        gripper_positions = gripper_info[gripper][1]
+        gripper_quats = gripper_info[gripper][2]
+        geom_quats = gripper_info[gripper][5]
 
-            for key in gripper_entities.keys():
+        for key in gripper_entities.keys():
 
-                entity = gripper_entities[key]
+            entity = gripper_entities[key]
 
-                if isinstance(env, TwoArmPegInHole) or isinstance(env, Wipe):
+            if isinstance(env, TwoArmPegInHole) or isinstance(env, Wipe):
 
-                    entity_pos = vutils.get_position_geom(env, key)
-                    entity_quat = vutils.get_quaternion_geom(env, key)
+                entity_pos = vutils.get_position_geom(env, key)
+                entity_quat = vutils.get_quaternion_geom(env, key)
 
-                    set_position_rotation(entity, entity_pos, entity_quat, False)
+                set_position_rotation(entity, entity_pos, entity_quat, False)
 
-                    continue
+                continue
 
-                if '-' in key:
-                    pq_key = key[:key.find('-')]
-                else:
-                    pq_key = key
-                mesh = key[key.find('-')+1:]
-                gq_key = key[key.find('_')+1:]
+            if '-' in key:
+                pq_key = key[:key.find('-')]
+            else:
+                pq_key = key
+            mesh = key[key.find('-')+1:]
+            gq_key = key[key.find('_')+1:]
 
-                if pq_key in gripper_positions:
-                    entity_pos = gripper_positions[pq_key]
-                else:
-                    continue
+            if pq_key in gripper_positions:
+                entity_pos = gripper_positions[pq_key]
+            else:
+                continue
 
-                entity_quat = gripper_quats[pq_key]
-                geom_quat = geom_quats[gq_key]
+            entity_quat = gripper_quats[pq_key]
+            geom_quat = geom_quats[gq_key]
 
-                visii_quat = visii.quat(*entity_quat) * visii.quat(*geom_quat)
+            nvisii_quat = nvisii.quat(*entity_quat) * nvisii.quat(*geom_quat)
 
-                set_position_rotation(entity, entity_pos, visii_quat, True)
+            set_position_rotation(entity, entity_pos, nvisii_quat, True)
 
 def render_objects(env, obj_entities):
 
@@ -70,7 +70,7 @@ def render_objects(env, obj_entities):
 
         if isinstance(env, Wipe):
             if entity_name in env.wiped_markers:
-                visii.remove(entity_name)
+                nvisii.remove(entity_name)
                 continue
 
         entity = obj_entities[entity_name][0]
@@ -85,19 +85,19 @@ def render_objects(env, obj_entities):
 
         set_position_rotation(entity, pos, quat)
         
-def set_position_rotation(entity, entity_pos, entity_quat, visii_quat = False):
+def set_position_rotation(entity, entity_pos, entity_quat, nvisii_quat = False, ):
 
     if isinstance(entity, tuple):
 
         for link_idx in range(len(entity)):
 
-            entity[link_idx].get_transform().set_position(visii.vec3(entity_pos[0],
+            entity[link_idx].get_transform().set_position(nvisii.vec3(entity_pos[0],
                                                                      entity_pos[1],
                                                                      entity_pos[2]))
 
-            if not visii_quat:
+            if not nvisii_quat:
 
-                entity[link_idx].get_transform().set_rotation(visii.quat(entity_quat[0],
+                entity[link_idx].get_transform().set_rotation(nvisii.quat(entity_quat[0],
                                                                          entity_quat[1],
                                                                          entity_quat[2],
                                                                          entity_quat[3]))
@@ -105,25 +105,29 @@ def set_position_rotation(entity, entity_pos, entity_quat, visii_quat = False):
             else:
                 entity[link_idx].get_transform().set_rotation(entity_quat)
 
-    elif isinstance(entity, visii.scene):
+    elif isinstance(entity, nvisii.scene):
         
-        entity.transforms[0].set_position(visii.vec3(entity_pos[0],
+        entity.transforms[0].set_position(nvisii.vec3(entity_pos[0],
                                                      entity_pos[1],
                                                      entity_pos[2]))
 
-        entity.transforms[0].set_rotation(visii.quat(entity_quat[0],
-                                                     entity_quat[1],
-                                                     entity_quat[2],
-                                                     entity_quat[3]))
+        if not nvisii_quat:
+            entity.transforms[0].set_rotation(nvisii.quat(entity_quat[0],
+                                                           entity_quat[1],
+                                                           entity_quat[2],
+                                                           entity_quat[3]))
+        
+        else:
+            entity.transforms[0].set_rotation(entity_quat)
 
     else:
 
-        entity.get_transform().set_position(visii.vec3(entity_pos[0],
+        entity.get_transform().set_position(nvisii.vec3(entity_pos[0],
                                                        entity_pos[1],
                                                        entity_pos[2]))
 
-        if not visii_quat:
-            entity.get_transform().set_rotation(visii.quat(entity_quat[0],
+        if not nvisii_quat:
+            entity.get_transform().set_rotation(nvisii.quat(entity_quat[0],
                                                            entity_quat[1],
                                                            entity_quat[2],
                                                            entity_quat[3]))
