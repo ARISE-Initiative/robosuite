@@ -217,6 +217,20 @@ class PictureHanging(SingleArmEnv):
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
 
+        # Modify default agentview camera
+        # mujoco_arena.set_camera(
+        #     camera_name="agentview",
+        #     pos=[0.6, 0.0, 1.45],
+        #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
+        # )
+        # default is below:
+        #
+        # mujoco_arena.set_camera(
+        #     camera_name="agentview",
+        #     pos=[0.5, 0.0, 1.35],
+        #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
+        # )
+
         # Create stand, frame, and picture
         self.stand = StandWithMount(
             name="stand",
@@ -225,20 +239,33 @@ class PictureHanging(SingleArmEnv):
             mount_width=0.04,
             wall_thickness=0.005,
             base_thickness=0.01,
-            initialize_on_side=True,
+            # initialize_on_side=True,
+            initialize_on_side=False,
         )
         self.frame = HookFrame(
             name="frame",
             frame_length=0.3,
-            frame_height=0.2,
-            frame_thickness=0.027,
+            frame_height=0.1,
+            # frame_thickness=0.027,
+            frame_thickness=0.02,
         )
+        # old-params
+        # self.picture = PictureFrame(
+        #     name="picture",
+        #     frame_size=(0.10, 0.15),
+        #     frame_thickness=0.02,
+        #     mount_hole_offset=0.05,
+        #     mount_hole_size=0.03,
+        #     mount_hole_thickness=0.01,
+        # )
         self.picture = PictureFrame(
             name="picture",
             frame_size=(0.10, 0.15),
-            frame_thickness=0.02,
+            frame_thickness=0.04,
+            border_size=(0.02, 0.02),
+            border_thickness=0.03,
             mount_hole_offset=0.05,
-            mount_hole_size=0.03,
+            mount_hole_size=0.04,
             mount_hole_thickness=0.01,
         )
 
@@ -261,10 +288,15 @@ class PictureHanging(SingleArmEnv):
 
         # Pre-define settings for each object's placement
         objects = [self.stand, self.frame, self.picture]
-        x_centers = [0, self.table_full_size[0] * 0.25, -self.table_full_size[0] * 0.25]
-        y_centers = [self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.25]
+        # edit: move hook closer to robot
+        x_centers = [0, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.25]
+        # x_centers = [0, self.table_full_size[0] * 0.25, -self.table_full_size[0] * 0.25]
+        # edit: move base to the right, move hook to the right
+        y_centers = [self.table_full_size[1] * 0.3, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
+        # y_centers = [self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.25]
         pos_tol = 0.005
-        rot_centers = [0, 0, 0]
+        # edit: rotate hook to make grasping easier
+        rot_centers = [0, np.pi / 3, 0]
         rot_tols = [0, np.pi / 6, np.pi / 6]
         rot_axes = ['x', 'y', 'x']
         for obj, x, y, r, r_tol, r_axis in zip(
