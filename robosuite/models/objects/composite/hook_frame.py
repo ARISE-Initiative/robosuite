@@ -2,7 +2,7 @@ import numpy as np
 
 from robosuite.models.objects import CompositeObject
 from robosuite.utils.mjcf_utils import add_to_dict
-from robosuite.utils.mjcf_utils import CustomMaterial, RED
+from robosuite.utils.mjcf_utils import CustomMaterial, RED, GREEN, BLUE
 import robosuite.utils.transform_utils as T
 
 
@@ -43,6 +43,7 @@ class HookFrame(CompositeObject):
         self._name = name
 
         # Set object attributes
+        self.size = None                      # Filled in automatically
         self.frame_length = frame_length
         self.frame_height = frame_height
         self.frame_thickness = frame_thickness
@@ -84,8 +85,9 @@ class HookFrame(CompositeObject):
             dict: args to be used by CompositeObject to generate geoms
         """
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
+        self.size = np.array((self.frame_length, self.frame_thickness, self.frame_height))
         base_args = {
-            "total_size": np.array((self.frame_length, self.frame_thickness, self.frame_height)) / 2.0,
+            "total_size": self.size / 2,
             "name": self.name,
             "locations_relative_to_center": True,
             "obj_types": "all",
@@ -110,9 +112,9 @@ class HookFrame(CompositeObject):
         add_to_dict(
             dic=obj_args,
             geom_types="box",
-            geom_locations=(self.frame_thickness / 2, 0, (self.frame_height - self.frame_thickness) / 2),
+            geom_locations=(0, 0, (self.frame_height - self.frame_thickness) / 2),
             geom_quats=(1, 0, 0, 0),
-            geom_sizes=np.array((self.frame_length - self.frame_thickness, self.frame_thickness, self.frame_thickness)) / 2,
+            geom_sizes=np.array((self.frame_length, self.frame_thickness, self.frame_thickness)) / 2,
             geom_names="horizontal_frame",
             geom_rgbas=None if self.use_texture else self.rgba,
             geom_materials=self.mat_name if self.use_texture else None,
@@ -123,11 +125,25 @@ class HookFrame(CompositeObject):
         obj_args["sites"] = [
             {
                 "name": f"hang_site",
-                "pos": (self.frame_length / 2, 0, (self.frame_height - self.frame_thickness) / 2),
+                "pos": (-self.size[0] / 2, 0, (self.size[2] - self.frame_thickness) / 2),
                 "size": "0.002",
                 "rgba": RED,
                 "type": "sphere",
-            }
+            },
+            {
+                "name": f"mount_site",
+                "pos": ((self.size[0] - self.frame_thickness) / 2, 0, -self.size[2] / 2),
+                "size": "0.002",
+                "rgba": GREEN,
+                "type": "sphere",
+            },
+            {
+                "name": f"intersection_site",
+                "pos": ((self.size[0] - self.frame_thickness) / 2, 0, (self.size[2] - self.frame_thickness) / 2),
+                "size": "0.002",
+                "rgba": BLUE,
+                "type": "sphere",
+            },
         ]
 
         # Add back in base args and site args

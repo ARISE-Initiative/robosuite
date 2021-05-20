@@ -241,13 +241,15 @@ class PictureHanging(SingleArmEnv):
             base_thickness=0.01,
             # initialize_on_side=True,
             initialize_on_side=False,
+            density=1000.,
         )
         self.frame = HookFrame(
             name="frame",
-            frame_length=0.3,
-            frame_height=0.1,
+            frame_length=0.12,
+            frame_height=0.28,
             # frame_thickness=0.027,
             frame_thickness=0.02,
+            density=500.,
         )
         # old-params
         # self.picture = PictureFrame(
@@ -267,6 +269,7 @@ class PictureHanging(SingleArmEnv):
             mount_hole_offset=0.05,
             mount_hole_size=0.04,
             mount_hole_thickness=0.01,
+            density=250.,
         )
 
         # Create placement initializer

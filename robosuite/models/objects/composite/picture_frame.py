@@ -68,7 +68,9 @@ class PictureFrame(CompositeObject):
         self.density = density
         self.use_texture = use_texture
         self.rgba = rgba
-        self.mat_name = "darkwood_mat"
+        self.mount_hole_mat_name = "steel_mat"
+        self.frame_mat_name = "darkwood_mat"
+        self.picture_mat_name = "lightwood_mat"
 
         # Other private attributes
         self._important_sites = {}
@@ -85,14 +87,30 @@ class PictureFrame(CompositeObject):
             "specular": "0.4",
             "shininess": "0.1",
         }
-        bin_mat = CustomMaterial(
+        frame_mat = CustomMaterial(
             texture="WoodDark",
             tex_name="darkwood",
-            mat_name=self.mat_name,
+            mat_name=self.frame_mat_name,
             tex_attrib=tex_attrib,
             mat_attrib=mat_attrib,
         )
-        self.append_material(bin_mat)
+        mount_hole_mat = CustomMaterial(
+            texture="SteelScratched",
+            tex_name="steel",
+            mat_name=self.mount_hole_mat_name,
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        picture_mat = CustomMaterial(
+            texture="WoodLight",
+            tex_name="lightwood",
+            mat_name=self.picture_mat_name,
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
+        self.append_material(mount_hole_mat)
+        self.append_material(frame_mat)
+        self.append_material(picture_mat)
 
     def _get_geom_attrs(self):
         """
@@ -124,10 +142,14 @@ class PictureFrame(CompositeObject):
             # geom_locations=(0, 0, (-total_size[2] + self.frame_size[1]) / 2),
             geom_locations=(-self.border_thickness / 2., 0, (-total_size[2] + self.frame_size[1]) / 2),
             geom_quats=(1, 0, 0, 0),
-            geom_sizes=np.array((self.frame_thickness - self.border_thickness, self.frame_size[0], self.frame_size[1])) / 2,
+            geom_sizes=np.array(
+                (self.frame_thickness - self.border_thickness,
+                 self.frame_size[0] - self.border_size[0],
+                 self.frame_size[1] - self.border_size[1])
+            ) / 2,
             geom_names="picture_frame",
             geom_rgbas=None if self.use_texture else self.rgba,
-            geom_materials=self.mat_name if self.use_texture else None,
+            geom_materials=self.picture_mat_name if self.use_texture else None,
             geom_frictions=self.friction,
         )
 
@@ -152,9 +174,9 @@ class PictureFrame(CompositeObject):
                 geom_locations=(0, border_offsets[i][0], ((-total_size[2] + self.frame_size[1]) / 2) + border_offsets[i][1]),
                 geom_quats=(1, 0, 0, 0),
                 geom_sizes=np.array((self.frame_thickness, border_sizes[i][0], border_sizes[i][1])) / 2,
-                geom_names="border_{}".format(i),
+                geom_names=f"border{i}",
                 geom_rgbas=None if self.use_texture else self.rgba,
-                geom_materials=self.mat_name if self.use_texture else None,
+                geom_materials=self.frame_mat_name if self.use_texture else None,
                 geom_frictions=self.friction,
             )
 
@@ -168,7 +190,7 @@ class PictureFrame(CompositeObject):
             geom_sizes=np.array((self.mount_hole_thickness, self.mount_hole_thickness, connector_height)) / 2,
             geom_names="mount_hole_connector",
             geom_rgbas=None if self.use_texture else self.rgba,
-            geom_materials=self.mat_name if self.use_texture else None,
+            geom_materials=self.mount_hole_mat_name if self.use_texture else None,
             geom_frictions=self.friction,
         )
 
@@ -187,7 +209,7 @@ class PictureFrame(CompositeObject):
                 geom_sizes=np.array((self.mount_hole_thickness / 2, mount_center_to_edge, self.mount_hole_thickness / 2)),
                 geom_names=f"mount_hole{i}",
                 geom_rgbas=None if self.use_texture else self.rgba,
-                geom_materials=self.mat_name if self.use_texture else None,
+                geom_materials=self.mount_hole_mat_name if self.use_texture else None,
                 geom_frictions=self.friction,
             )
 
