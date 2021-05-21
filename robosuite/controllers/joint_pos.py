@@ -120,7 +120,7 @@ class JointPositionController(Controller):
         self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits
-        self.position_limits = qpos_limits
+        self.position_limits = np.array(qpos_limits) if qpos_limits is not None else qpos_limits
 
         # kp kd
         self.kp = self.nums2array(kp, self.control_dim)
@@ -226,7 +226,7 @@ class JointPositionController(Controller):
         if self.interpolator is not None:
             # Linear case
             if self.interpolator.order == 1:
-                desired_qpos = self.interpolator.get_interpolated_goal(self.joint_pos)
+                desired_qpos = self.interpolator.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass

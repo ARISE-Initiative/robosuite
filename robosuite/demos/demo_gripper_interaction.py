@@ -29,16 +29,18 @@ if __name__ == "__main__":
 
     # add a gripper
     gripper = RethinkGripper()
-    gripper_body = ET.Element("body")
-    for body in gripper.worldbody:
-        gripper_body.append(body)
+    # Create another body with a slider joint to which we'll add this gripper
+    gripper_body = ET.Element("body", name="gripper_base")
     gripper_body.set("pos", "0 0 0.3")
     gripper_body.set("quat", "0 0 1 0")  # flip z
     gripper_body.append(
         new_joint(name="gripper_z_joint", type="slide", axis="0 0 1", damping="50")
     )
-    world.merge(gripper, merge_body=False)
+    # Add the dummy body with the joint to the global worldbody
     world.worldbody.append(gripper_body)
+    # Merge the actual gripper as a child of the dummy body
+    world.merge(gripper, merge_body="gripper_base")
+    # Create a new actuator to control our slider joint
     world.actuator.append(
         new_actuator(
             joint="gripper_z_joint", act_type="position", name="gripper_z", kp="500"
@@ -51,22 +53,19 @@ if __name__ == "__main__":
         size=[0.02, 0.02, 0.02],
         rgba=[1, 0, 0, 1],
         friction=[1, 0.005, 0.0001]
-    ).get_collision()
-    mujoco_object.append(new_joint(name="object_free_joint", type="free"))
+    ).get_obj()
+    # Set the position of this object
     mujoco_object.set("pos", "0 0 0.11")
-    geoms = mujoco_object.findall("./geom")
-    for geom in geoms:
-        if geom.get("contype"):
-            pass
-        geom.set("name", "object")
-        geom.set("density", "10000")  # 1000 for water
+    # Add our object to the world body
     world.worldbody.append(mujoco_object)
 
     # add reference objects for x and y axes
-    x_ref = BoxObject(name="x_ref", size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1]).get_visual()
+    x_ref = BoxObject(name="x_ref", size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1], obj_type="visual",
+                      joints=None).get_obj()
     x_ref.set("pos", "0.2 0 0.105")
     world.worldbody.append(x_ref)
-    y_ref = BoxObject(name="y_ref", size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1]).get_visual()
+    y_ref = BoxObject(name="y_ref", size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1], obj_type="visual",
+                      joints=None).get_obj()
     y_ref.set("pos", "0 0.2 0.105")
     world.worldbody.append(y_ref)
 
@@ -83,6 +82,7 @@ if __name__ == "__main__":
         sim.model.get_joint_qvel_addr(x) for x in gravity_corrected
     ]
 
+    # Set gripper parameters
     gripper_z_id = sim.model.actuator_name2id("gripper_z")
     gripper_z_low = 0.07
     gripper_z_high = -0.02
@@ -102,11 +102,10 @@ if __name__ == "__main__":
     step = 0
     T = 500
     while True:
-
         if step % 100 == 0:
             print("step: {}".format(step))
 
-        if step % 100 == 0:
+            # Get contact information
             for contact in sim.data.contact[0 : sim.data.ncon]:
 
                 geom_name1 = sim.model.geom_id2name(contact.geom1)
@@ -119,6 +118,7 @@ if __name__ == "__main__":
                 print("friction: {}".format(contact.friction))
                 print("normal: {}".format(contact.frame[0:3]))
 
+        # Iterate through gripping trajectory
         if step % T == 0:
             plan = seq[int(step / T) % len(seq)]
             gripper_z_is_low, gripper_is_closed = plan
@@ -128,6 +128,7 @@ if __name__ == "__main__":
                 )
             )
 
+        # Control gripper
         if gripper_z_is_low:
             sim.data.ctrl[gripper_z_id] = gripper_z_low
         else:
@@ -137,6 +138,7 @@ if __name__ == "__main__":
         else:
             sim.data.ctrl[gripper_jaw_ids] = gripper_open
 
+        # Step through sim
         sim.step()
         sim.data.qfrc_applied[_ref_joint_vel_indexes] = sim.data.qfrc_bias[
             _ref_joint_vel_indexes

@@ -1,0 +1,6 @@
+<mujoco model="null_mount">
+    <worldbody>
+        <body name="base" pos="0 0 0">
+        </body>
+    </worldbody>
+</mujoco>

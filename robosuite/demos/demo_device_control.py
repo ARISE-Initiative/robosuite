@@ -75,10 +75,10 @@ Main difference is that user inputs with ik's rotations are always taken relativ
         multiple arm eef's to control. The other (passive) arm will remain stationary. Options are {"right", "left"}
         (from the point of view of the robot(s) facing against the viewer direction)
 
-    --switch-on-click: Exclusively applicable and only should be specified for "TwoArm..." environments. If enabled,
+    --switch-on-grasp: Exclusively applicable and only should be specified for "TwoArm..." environments. If enabled,
         will switch the current arm being controlled every time the gripper input is pressed
 
-    --toggle-camera-on-click: If enabled, gripper input presses will cycle through the available camera angles
+    --toggle-camera-on-grasp: If enabled, gripper input presses will cycle through the available camera angles
 
 Examples:
 
@@ -100,6 +100,7 @@ import numpy as np
 import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
+from robosuite.wrappers import VisualizationWrapper
 
 
 
@@ -111,12 +112,12 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default="single-arm-opposed",
                         help="Specified environment configuration if necessary")
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
-    parser.add_argument("--switch-on-click", action="store_true", help="Switch gripper control on gripper click")
-    parser.add_argument("--toggle-camera-on-click", action="store_true", help="Switch camera angle on gripper click")
+    parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
+    parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
     parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="keyboard")
-    parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
-    parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")
+    parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
+    parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
     args = parser.parse_args()
 
     # Import controller config for EE IK or OSC (pos/ori)
@@ -152,11 +153,13 @@ if __name__ == "__main__":
         render_camera="agentview",
         ignore_done=True,
         use_camera_obs=False,
-        gripper_visualizations=True,
         reward_shaping=True,
         control_freq=20,
         hard_reset=False,
     )
+
+    # Wrap this environment in a visualization wrapper
+    env = VisualizationWrapper(env, indicator_configs=None)
 
     # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
@@ -212,9 +215,9 @@ if __name__ == "__main__":
             # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
             # toggle arm control and / or camera viewing angle if requested
             if last_grasp < 0 < grasp:
-                if args.switch_on_click:
+                if args.switch_on_grasp:
                     args.arm = "left" if args.arm == "right" else "right"
-                if args.toggle_camera_on_click:
+                if args.toggle_camera_on_grasp:
                     cam_id = (cam_id + 1) % num_cam
                     env.viewer.set_camera(camera_id=cam_id)
             # Update last grasp

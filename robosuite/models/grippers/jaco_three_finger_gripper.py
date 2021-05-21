@@ -21,44 +21,19 @@ class JacoThreeFingerGripperBase(GripperModel):
         return action
 
     @property
-    def dof(self):
-        return 3
-
-    @property
     def init_qpos(self):
         return np.array([0.5, 0, 0.5, 0, 0.5, 0])
 
     @property
-    def _joints(self):
-        return [
-            "joint_thumb", "joint_thumb_distal",
-            "joint_index", "joint_index_distal",
-            "joint_pinky", "joint_pinky_distal",
-        ]
-
-    @property
-    def _actuators(self):
-        return [
-            "thumb",
-            "index",
-            "pinky",
-        ]
-
-    @property
-    def _contact_geoms(self):
-        return [
-            "hand_collision",
-            "thumb_proximal_collision", "thumb_distal_collision", "thumb_pad_collision",
-            "index_proximal_collision", "index_distal_collision", "index_pad_collision",
-            "pinky_proximal_collision", "pinky_distal_collision", "pinky_pad_collision",
-        ]
-
-    @property
     def _important_geoms(self):
         return {
-            "left_finger": ["index_proximal_collision", "index_distal_collision", "index_pad_collision",
-                            "pinky_proximal_collision", "pinky_distal_collision", "pinky_pad_collision"],
-            "right_finger": ["thumb_proximal_collision", "thumb_distal_collision", "thumb_pad_collision"]
+            "left_finger": ["index_proximal_collision", "index_distal_collision", "index_tip_collision",
+                            "pinky_proximal_collision", "pinky_distal_collision", "pinky_tip_collision",
+                            "index_tip_collision", "pinky_pad_collision"],
+            "right_finger": ["thumb_proximal_collision", "thumb_distal_collision", "thumb_tip_collision",
+                             "thumb_pad_collision"],
+            "left_fingerpad": ["index_pad_collision", "pinky_pad_collision"],
+            "right_fingerpad": ["thumb_pad_collision"]
         }
 
 

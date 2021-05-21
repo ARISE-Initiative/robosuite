@@ -11,6 +11,7 @@ import numpy as np
 from collections import defaultdict
 from PIL import Image
 from mujoco_py import cymj
+import copy
 
 import robosuite
 import robosuite.utils.transform_utils as trans
@@ -1397,85 +1398,548 @@ class Texture:
         return data.reshape((self.height, self.width, 3))
 
 
-class PhysicalParameterModder(BaseModder):
+class DynamicsModder(BaseModder):
     """
-    Modder for various physical parameters of the mujoco model
-    can use to modify parameters stored in MjModel (ie friction, damping, etc.) as
-    well as optimizer parameters like global friction multipliers (eg solimp, solref, etc)
-    To modify a parameteter, use the parameter to be changed as a keyword argument to
-    self.mod and the new value as the value for that argument. Supports arbitray many
-    modifications in a single step.
+    Modder for various dynamics properties of the mujoco model, such as friction, damping, etc.
+    This can be used to modify parameters stored in MjModel (ie friction, damping, etc.) as
+    well as optimizer parameters stored in PyMjOption (i.e.: medium density, viscosity, etc.)
+    To modify a parameter, use the parameter to be changed as a keyword argument to
+    self.mod and the new value as the value for that argument. Supports arbitrary many
+    modifications in a single step. Example use:
+        sim = MjSim(...)
+        modder = DynamicsModder(sim)
+        modder.mod("element1_name", "attr1", new_value1)
+        modder.mod("element2_name", "attr2", new_value2)
+        ...
+        modder.update()
 
-    :NOTE: It is necesary to perform sim.forward after performing the modification.
-    :NOTE: Some parameters might not be able to be changed. users are to verify that
-          after the call to forward that the parameter is indeed changed.
+    NOTE: It is necessary to perform modder.update() after performing all modifications to make sure
+        the changes are propagated
+
+    NOTE: A full list of supported randomizable parameters can be seen by calling modder.dynamics_parameters
+
+    NOTE: When modifying parameters belonging to MjModel.opt (e.g.: density, viscosity), no name should
+        be specified (set it as None in mod(...)). This is because opt does not have a name attribute
+        associated with it
 
     Args:
         sim (MjSim): Mujoco sim instance
 
-        random_state (RandomState): instance of np.random.RandomState, specific
-            seed used to randomize these modifications without impacting other
-            numpy seeds / randomizations
+        random_state (RandomState): instance of np.random.RandomState
+
+        randomize_density (bool): If True, randomizes global medium density
+
+        randomize_viscosity (bool): If True, randomizes global medium viscosity
+
+        density_perturbation_ratio (float): Relative (fraction) magnitude of default density randomization
+
+        viscosity_perturbation_ratio:  Relative (fraction) magnitude of default viscosity randomization
+
+        body_names (None or list of str): list of bodies to use for randomization. If not provided, all
+            bodies in the model are randomized.
+
+        randomize_position (bool): If True, randomizes body positions
+
+        randomize_quaternion (bool): If True, randomizes body quaternions
+
+        randomize_inertia (bool): If True, randomizes body inertias (only applicable for non-zero mass bodies)
+
+        randomize_mass (bool): If True, randomizes body masses (only applicable for non-zero mass bodies)
+
+        position_perturbation_size (float): Magnitude of body position randomization
+
+        quaternion_perturbation_size (float): Magnitude of body quaternion randomization (angle in radians)
+
+        inertia_perturbation_ratio (float): Relative (fraction) magnitude of body inertia randomization
+
+        mass_perturbation_ratio (float): Relative (fraction) magnitude of body mass randomization
+
+        geom_names (None or list of str): list of geoms to use for randomization. If not provided, all
+            geoms in the model are randomized.
+
+        randomize_friction (bool): If True, randomizes geom frictions
+
+        randomize_solref (bool): If True, randomizes geom solrefs
+
+        randomize_solimp (bool): If True, randomizes geom solimps
+
+        friction_perturbation_ratio (float): Relative (fraction) magnitude of geom friction randomization
+
+        solref_perturbation_ratio (float): Relative (fraction) magnitude of geom solref randomization
+
+        solimp_perturbation_ratio (float): Relative (fraction) magnitude of geom solimp randomization
+
+        joint_names (None or list of str): list of joints to use for randomization. If not provided, all
+            joints in the model are randomized.
+
+        randomize_stiffness (bool): If True, randomizes joint stiffnesses
+
+        randomize_frictionloss (bool): If True, randomizes joint frictionlosses
+
+        randomize_damping (bool): If True, randomizes joint dampings
+
+        randomize_armature (bool): If True, randomizes joint armatures
+
+        stiffness_perturbation_ratio (float): Relative (fraction) magnitude of joint stiffness randomization
+
+        frictionloss_perturbation_size (float): Magnitude of joint frictionloss randomization
+
+        damping_perturbation_size (float): Magnitude of joint damping randomization
+
+        armature_perturbation_size (float): Magnitude of joint armature randomization
     """
-    def __init__(self, sim, random_state=None):
+    def __init__(
+            self,
+            sim,
+            random_state=None,
+
+            # Opt parameters
+            randomize_density=True,
+            randomize_viscosity=True,
+            density_perturbation_ratio=0.1,
+            viscosity_perturbation_ratio=0.1,
+
+            # Body parameters
+            body_names=None,
+            randomize_position=True,
+            randomize_quaternion=True,
+            randomize_inertia=True,
+            randomize_mass=True,
+            position_perturbation_size=0.02,
+            quaternion_perturbation_size=0.02,
+            inertia_perturbation_ratio=0.02,
+            mass_perturbation_ratio=0.02,
+
+            # Geom parameters
+            geom_names=None,
+            randomize_friction=True,
+            randomize_solref=True,
+            randomize_solimp=True,
+            friction_perturbation_ratio=0.1,
+            solref_perturbation_ratio=0.1,
+            solimp_perturbation_ratio=0.1,
+
+            # Joint parameters
+            joint_names=None,
+            randomize_stiffness=True,
+            randomize_frictionloss=True,
+            randomize_damping=True,
+            randomize_armature=True,
+            stiffness_perturbation_ratio=0.1,
+            frictionloss_perturbation_size=0.05,
+            damping_perturbation_size=0.01,
+            armature_perturbation_size=0.01,
+    ):
         super().__init__(sim=sim, random_state=random_state)
+
+        # Setup relevant values
+        self.dummy_bodies = set()
+        # Find all bodies that don't have any mass associated with them
+        for body_name in self.sim.model.body_names:
+            body_id = self.sim.model.body_name2id(body_name)
+            if self.sim.model.body_mass[body_id] == 0:
+                self.dummy_bodies.add(body_name)
+
+        # Get all values to randomize
+        self.body_names = list(self.sim.model.body_names) if body_names is None else body_names
+        self.geom_names = list(self.sim.model.geom_names) if geom_names is None else geom_names
+        self.joint_names = list(self.sim.model.joint_names) if joint_names is None else joint_names
+
+        # Setup randomization settings
+        # Each dynamics randomization group has its set of randomizable parameters, each of which has
+        # its own settings ["randomize": whether its actively being randomized, "perturbation": the (potentially)
+        # relative magnitude of the randomization to use, "type": either "ratio" or "size" (relative or absolute
+        # perturbations), and "clip": (low, high) values to clip the final perturbed value by]
+        self.opt_randomizations = {
+            "density": {"randomize": randomize_density, "perturbation": density_perturbation_ratio,
+                        "type": "ratio", "clip": (0.0, np.inf)},
+            "viscosity": {"randomize": randomize_viscosity, "perturbation": viscosity_perturbation_ratio,
+                          "type": "ratio", "clip": (0.0, np.inf)},
+        }
+
+        self.body_randomizations = {
+            "position": {"randomize": randomize_position, "perturbation": position_perturbation_size,
+                         "type": "size", "clip": (-np.inf, np.inf)},
+            "quaternion": {"randomize": randomize_quaternion, "perturbation": quaternion_perturbation_size,
+                           "type": "size", "clip": (-np.inf, np.inf)},
+            "inertia": {"randomize": randomize_inertia, "perturbation": inertia_perturbation_ratio,
+                        "type": "ratio", "clip": (0.0, np.inf)},
+            "mass": {"randomize": randomize_mass, "perturbation": mass_perturbation_ratio,
+                     "type": "ratio", "clip": (0.0, np.inf)},
+        }
+
+        self.geom_randomizations = {
+            "friction": {"randomize": randomize_friction, "perturbation": friction_perturbation_ratio,
+                         "type": "ratio", "clip": (0.0, np.inf)},
+            "solref": {"randomize": randomize_solref, "perturbation": solref_perturbation_ratio,
+                       "type": "ratio", "clip": (0.0, 1.0)},
+            "solimp": {"randomize": randomize_solimp, "perturbation": solimp_perturbation_ratio,
+                       "type": "ratio", "clip": (0.0, np.inf)},
+        }
+
+        self.joint_randomizations = {
+            "stiffness": {"randomize": randomize_stiffness, "perturbation": stiffness_perturbation_ratio,
+                          "type": "ratio", "clip": (0.0, np.inf)},
+            "frictionloss": {"randomize": randomize_frictionloss, "perturbation": frictionloss_perturbation_size,
+                             "type": "size", "clip": (0.0, np.inf)},
+            "damping": {"randomize": randomize_damping, "perturbation": damping_perturbation_size,
+                        "type": "size", "clip": (0.0, np.inf)},
+            "armature": {"randomize": randomize_armature, "perturbation": armature_perturbation_size,
+                         "type": "size", "clip": (0.0, np.inf)},
+        }
+
+        # Store defaults so we don't loss track of the original (non-perturbed) values
+        self.opt_defaults = None
+        self.body_defaults = None
+        self.geom_defaults = None
+        self.joint_defaults = None
+        self.save_defaults()
+
+    def save_defaults(self):
+        """
+        Grabs the current values for all parameters in sim and stores them as default values
+        """
+        self.opt_defaults = {
+            None:           # no name associated with the opt parameters
+                {
+                "density": self.sim.model.opt.density,
+                "viscosity": self.sim.model.opt.viscosity,
+                }
+        }
+
+        self.body_defaults = {}
+        for body_name in self.sim.model.body_names:
+            body_id = self.sim.model.body_name2id(body_name)
+            self.body_defaults[body_name] = {
+                "position": np.array(self.sim.model.body_pos[body_id]),
+                "quaternion": np.array(self.sim.model.body_quat[body_id]),
+                "inertia": np.array(self.sim.model.body_inertia[body_id]),
+                "mass": self.sim.model.body_mass[body_id],
+            }
+
+        self.geom_defaults = {}
+        for geom_name in self.sim.model.geom_names:
+            geom_id = self.sim.model.geom_name2id(geom_name)
+            self.geom_defaults[geom_name] = {
+                "friction": np.array(self.sim.model.geom_friction[geom_id]),
+                "solref": np.array(self.sim.model.geom_solref[geom_id]),
+                "solimp": np.array(self.sim.model.geom_solimp[geom_id]),
+            }
+
+        self.joint_defaults = {}
+        for joint_name in self.sim.model.joint_names:
+            joint_id = self.sim.model.joint_name2id(joint_name)
+            dof_idx = [i for i, v in enumerate(self.sim.model.dof_jntid) if v == joint_id]
+            self.joint_defaults[joint_name] = {
+                "stiffness": self.sim.model.jnt_stiffness[joint_id],
+                "frictionloss": np.array(self.sim.model.dof_frictionloss[dof_idx]),
+                "damping": np.array(self.sim.model.dof_damping[dof_idx]),
+                "armature": np.array(self.sim.model.dof_armature[dof_idx]),
+            }
+
+    def restore_defaults(self):
+        """
+        Restores the default values curently saved in this modder
+        """
+        # Loop through all defaults and set the default value in sim
+        for group_defaults in (self.opt_defaults, self.body_defaults, self.geom_defaults, self.joint_defaults):
+            for name, defaults in group_defaults.items():
+                for attr, default_val in defaults.items():
+                    self.mod(name=name, attr=attr, val=default_val)
+
+        # Make sure changes propagate in sim
+        self.update()
+
+    def randomize(self):
+        """
+        Randomizes all enabled dynamics parameters in the simulation
+        """
+        for group_defaults, group_randomizations, group_randomize_names in zip(
+                (self.opt_defaults, self.body_defaults, self.geom_defaults, self.joint_defaults),
+                (self.opt_randomizations, self.body_randomizations, self.geom_randomizations, self.joint_randomizations),
+                ([None], self.body_names, self.geom_names, self.joint_names)
+        ):
+            for name in group_randomize_names:
+                # Randomize all parameters associated with this element
+                for attr, default_val in group_defaults[name].items():
+                    val = copy.copy(default_val)
+                    settings = group_randomizations[attr]
+                    if settings["randomize"]:
+                        # Randomize accordingly, and clip the final perturbed value
+                        perturbation = np.random.rand() if type(val) in {int, float} else np.random.rand(*val.shape)
+                        perturbation = settings["perturbation"] * (-1 + 2 * perturbation)
+                        val = val + perturbation if settings["type"] == "size" else val * (1.0 + perturbation)
+                        val = np.clip(val, *settings["clip"])
+                    # Modify this value
+                    self.mod(name=name, attr=attr, val=val)
+
+        # Make sure changes propagate in sim
+        self.update()
+
+    def update_sim(self, sim):
+        """
+        In addition to super method, update internal default values to match the current values from
+        (the presumably new) @sim.
+
+        Args:
+            sim (MjSim): MjSim object
+        """
+        super().update_sim(sim=sim)
+        self.save_defaults()
+
+    def update(self):
+        """
+        Propagates the changes made up to this point through the simulation
+        """
+        self.sim.forward()
+
+    def mod(self, name, attr, val):
+        """
+        General method to modify dynamics parameter @attr to be new value @val, associated with element @name.
+
+        Args:
+            name (str): Name of element to modify parameter. This can be a body, geom, or joint name. If modifying
+                an opt parameter, this should be set to None
+            attr (str): Name of the dynamics parameter to modify. Valid options are self.dynamics_parameters
+            val (int or float or n-array): New value(s) to set for the given dynamics parameter. The type of this
+                argument should match the expected type for the given parameter.
+        """
+        # Make sure specified parameter is valid, and then modify it
+        assert attr in self.dynamics_parameters, "Invalid dynamics parameter specified! Supported parameters are: {};" \
+                                                 " requested: {}".format(self.dynamics_parameters, attr)
+        # Modify the requested parameter (uses a clean way to programmatically call the appropriate method)
+        getattr(self, f"mod_{attr}")(name, val)
+
+    def mod_density(self, name=None, val=0.0):
+        """
+        Modifies the global medium density of the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#option for more details.
+
+        Args:
+            name (str): Name for this element. Should be left as None (opt has no name attribute)
+            val (float): New density value.
+        """
+        # Make sure inputs are of correct form
+        assert name is None, "No name should be specified if modding density!"
+
+        # Modify this value
+        self.sim.model.opt.density = val
+
+    def mod_viscosity(self, name=None, val=0.0):
+        """
+        Modifies the global medium viscosity of the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#option for more details.
+
+        Args:
+            name (str): Name for this element. Should be left as None (opt has no name attribute)
+            val (float): New viscosity value.
+        """
+        # Make sure inputs are of correct form
+        assert name is None, "No name should be specified if modding density!"
+
+        # Modify this value
+        self.sim.model.opt.viscosity = val
+
+    def mod_position(self, name, val=(0, 0, 0)):
+        """
+        Modifies the @name's relative body position within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#body for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (3-array): New (x, y, z) relative position.
+        """
+        # Modify this value
+        body_id = self.sim.model.body_name2id(name)
+        self.sim.model.body_pos[body_id] = np.array(val)
+
+    def mod_quaternion(self, name, val=(1, 0, 0, 0)):
+        """
+        Modifies the @name's relative body orientation (quaternion) within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#body for more details.
+
+        Note: This method automatically normalizes the inputted value.
+
+        Args:
+            name (str): Name for this element.
+            val (4-array): New (w, x, y, z) relative quaternion.
+        """
+        # Normalize the inputted value
+        val = np.array(val) / np.linalg.norm(val)
+        # Modify this value
+        body_id = self.sim.model.body_name2id(name)
+        self.sim.model.body_quat[body_id] = val
+
+    def mod_inertia(self, name, val):
+        """
+        Modifies the @name's relative body inertia within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#body for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (3-array): New (ixx, iyy, izz) diagonal values in the inertia matrix.
+        """
+        # Modify this value if it's not a dummy body
+        if name not in self.dummy_bodies:
+            body_id = self.sim.model.body_name2id(name)
+            self.sim.model.body_inertia[body_id] = np.array(val)
+
+    def mod_mass(self, name, val):
+        """
+        Modifies the @name's mass within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#body for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (float): New mass.
+        """
+        # Modify this value if it's not a dummy body
+        if name not in self.dummy_bodies:
+            body_id = self.sim.model.body_name2id(name)
+            self.sim.model.body_mass[body_id] = val
+
+    def mod_friction(self, name, val):
+        """
+        Modifies the @name's geom friction within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#geom for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (3-array): New (sliding, torsional, rolling) friction values.
+        """
+        # Modify this value
+        geom_id = self.sim.model.geom_name2id(name)
+        self.sim.model.geom_friction[geom_id] = np.array(val)
+
+    def mod_solref(self, name, val):
+        """
+        Modifies the @name's geom contact solver parameters within the simulation.
+        See http://www.mujoco.org/book/modeling.html#CSolver for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (2-array): New (timeconst, dampratio) solref values.
+        """
+        # Modify this value
+        geom_id = self.sim.model.geom_name2id(name)
+        self.sim.model.geom_solref[geom_id] = np.array(val)
+
+    def mod_solimp(self, name, val):
+        """
+        Modifies the @name's geom contact solver impedance parameters within the simulation.
+        See http://www.mujoco.org/book/modeling.html#CSolver for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (5-array): New (dmin, dmax, width, midpoint, power) solimp values.
+        """
+        # Modify this value
+        geom_id = self.sim.model.geom_name2id(name)
+        self.sim.model.geom_solimp[geom_id] = np.array(val)
+
+    def mod_stiffness(self, name, val):
+        """
+        Modifies the @name's joint stiffness within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#joint for more details.
+
+        NOTE: If the stiffness is already at 0, we IGNORE this value since a non-stiff joint (i.e.: free-turning)
+            joint is fundamentally different than a stiffened joint)
+
+        Args:
+            name (str): Name for this element.
+            val (float): New stiffness.
+        """
+        # Modify this value (only if there is stiffness to begin with)
+        jnt_id = self.sim.model.joint_name2id(name)
+        if self.sim.model.jnt_stiffness[jnt_id] != 0:
+            self.sim.model.jnt_stiffness[jnt_id] = val
+
+    def mod_frictionloss(self, name, val):
+        """
+        Modifies the @name's joint frictionloss within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#joint for more details.
+
+        NOTE: If the requested joint is a free joint, it will be ignored since it does not
+            make physical sense to have friction loss associated with this joint (air drag / damping
+            is already captured implicitly by the medium density / viscosity values)
+
+        Args:
+            name (str): Name for this element.
+            val (float): New friction loss.
+        """
+        # Modify this value (only if it's not a free joint)
+        jnt_id = self.sim.model.joint_name2id(name)
+        if self.sim.model.jnt_type[jnt_id] != 0:
+            dof_idx = [i for i, v in enumerate(self.sim.model.dof_jntid) if v == jnt_id]
+            self.sim.model.dof_frictionloss[dof_idx] = val
+
+    def mod_damping(self, name, val):
+        """
+        Modifies the @name's joint damping within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#joint for more details.
+
+        NOTE: If the requested joint is a free joint, it will be ignored since it does not
+            make physical sense to have damping associated with this joint (air drag / damping
+            is already captured implicitly by the medium density / viscosity values)
+
+        Args:
+            name (str): Name for this element.
+            val (float): New damping.
+        """
+        # Modify this value (only if it's not a free joint)
+        jnt_id = self.sim.model.joint_name2id(name)
+        if self.sim.model.jnt_type[jnt_id] != 0:
+            dof_idx = [i for i, v in enumerate(self.sim.model.dof_jntid) if v == jnt_id]
+            self.sim.model.dof_damping[dof_idx] = val
+
+    def mod_armature(self, name, val):
+        """
+        Modifies the @name's joint armature within the simulation.
+        See http://www.mujoco.org/book/XMLreference.html#joint for more details.
+
+        Args:
+            name (str): Name for this element.
+            val (float): New armature.
+        """
+        # Modify this value (only if it's not a free joint)
+        jnt_id = self.sim.model.joint_name2id(name)
+        if self.sim.model.jnt_type[jnt_id] != 0:
+            dof_idx = [i for i, v in enumerate(self.sim.model.dof_jntid) if v == jnt_id]
+            self.sim.model.dof_armature[dof_idx] = val
+
+    @property
+    def dynamics_parameters(self):
+        """
+        Returns:
+            set: All dynamics parameters that can be randomized using this modder.
+        """
+        return {
+            # Opt parameters
+            "density",
+            "viscosity",
+
+            # Body parameters
+            "position",
+            "quaternion",
+            "inertia",
+            "mass",
+
+            # Geom parameters
+            "friction",
+            "solref",
+            "solimp",
+
+            # Joint parameters
+            "stiffness",
+            "frictionloss",
+            "damping",
+            "armature",
+        }
 
     @property
     def opt(self):
         """
         Returns:
-             ?: MjModel sim options
+             PyMjOption: MjModel sim options
         """
         return self.sim.model.opt
-
-    def __getattr__(self, name):
-        try:
-            opt_attr = getattr(self.opt, name)
-        except AttributeError:
-            opt_attr = None
-
-        try:
-            model_attr = getattr(self.model, name)
-        except AttributeError:
-            model_attr = None
-
-        ret = opt_attr if opt_attr is not None else model_attr
-        if callable(ret):
-            def r(*args):
-                return ret(*args)
-            return r
-
-        return ret
-
-    def mod(self, **kwargs):
-        """
-        Method to actually mod. Assumes passing in keyword arguments with key being the parameter to
-        modify and the value being the value to set
-        Feel free to add more as we see fit.
-
-        Args:
-            **kwargs (dict): Physical parameters to actually modify mid-sim
-        """
-        for to_mod in kwargs:
-            val = kwargs[to_mod]
-
-            param = to_mod
-            ind = None
-            if 'geom_friction' in param:
-                joint = param.replace('_geom_friction', '')
-                ind = self.geom_name2id(joint)
-                param = 'geom_friction'
-            elif 'dof_damping' in param:
-                joint = param.replace('_dof_damping', '')
-                param = 'dof_damping'
-                joint = self.joint_name2id(joint)
-                ind = np.zeros(self.nv)
-
-                for i in range(self.model.nv):
-                    if self.dof_jntid[i] == joint:
-                        ind[i] = 1
-
-            if ind is None:
-                setattr(self, param, val)
-            else:
-                self.__getattr__(param)[ind] = val

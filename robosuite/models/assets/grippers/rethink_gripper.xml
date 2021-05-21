@@ -4,57 +4,52 @@
         <mesh name="standard_narrow" file="meshes/rethink_gripper/standard_narrow.stl" />
         <mesh name="half_round_tip" file="meshes/rethink_gripper/half_round_tip.stl" />
         <mesh name="connector_plate" file="meshes/rethink_gripper/connector_plate.stl" />
-
-        <!-- Custom textures based on body names for domain randomization -->
-        <texture type="cube" name="connector_plate_tex" builtin="flat" width="100" height="100" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
-        <texture type="cube" name="electric_gripper_base_tex" builtin="flat" width="100" height="100" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
-        <texture type="cube" name="finger_tex" builtin="flat" width="100" height="100" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
-        <texture type="cube" name="tip_tex" builtin="flat" width="100" height="100" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
-
-        <!-- Custom mats based on body names for domain randomization -->
-        <material name="connector_plate_mat" texture="connector_plate_tex"/>
-        <material name="electric_gripper_base_mat" texture="electric_gripper_base_tex"/>
-        <material name="finger_mat" texture="finger_tex"/>
-        <material name="tip_mat" texture="tip_tex"/>
     </asset>
     <actuator>
-        <position ctrllimited="true" ctrlrange="-0.0115 0.020833" joint="r_finger_joint" kp="10000" name="gripper_r_finger_joint" forcelimited="true" forcerange="-20 20"/>
-        <position ctrllimited="true" ctrlrange="-0.020833 0.0115" joint="l_finger_joint" kp="10000" name="gripper_l_finger_joint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-0.0115 0.020833" joint="r_finger_joint" kp="1000" name="gripper_r_finger_joint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-0.020833 0.0115" joint="l_finger_joint" kp="1000" name="gripper_l_finger_joint" forcelimited="true" forcerange="-20 20"/>
     </actuator>
     
     <worldbody>
         <body name="gripper_base" pos="0 0 0">
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0 0 0" quat="-0.5 0.5 0.5 0.5" mass="0.3" diaginertia="3e-08 2e-08 2e-08" />
-            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="connector_plate" name="connector_plate" pos="0 0 0.0018" material="connector_plate_mat"/>
-            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="electric_gripper_base" name="electric_gripper_base" pos="0 0 0.0194" material="electric_gripper_base_mat"/>
-            <geom size="0.029 0.05" quat="0 0 0.707107 0.707107" type="cylinder" pos="0.004 0.0 0.04"/>
+            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="connector_plate" name="connector_plate" pos="0 0 0.0018" rgba="0.499 0.499 0.499 1"/>
+            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="electric_gripper_base" name="electric_gripper_base" pos="0 0 0.0194" rgba="0.499 0.499 0.499 1"/>
+            <geom size="0.029 0.05" quat="0 0 0.707107 0.707107" type="cylinder" group="0" name="gripper_base_col" pos="0.004 0.0 0.04"/>
             <!-- This site was added for visualization. -->
-            <site name="grip_site" pos="0 0 0.109" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
-            <!-- This site was added for visualization. -->
-            <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            <body name="eef" pos="0 0 0.109" quat="0.707105 0 0 -0.707105">
+                <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
+                <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+                <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+                <!-- This site was added for visualization. -->
+                <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            </body>
             <body name="l_finger" pos="0 0.01 0.0444">
                 <inertial pos="0 0 0" quat="0 0 0 -1" mass="0.02" diaginertia="0.01 0.01 0.01" />
-                <joint name="l_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.0115 0.020833" damping="100"/>
-                <geom name="l_finger" quat="0 0 0 -1" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" material="finger_mat"/>
-                <geom size="0.005 0.00675 0.0375" pos="0 0.01725 0.04" quat="0 0 0 -1" type="box" conaffinity="1" contype="0" name="l_finger_g0" friction="0 0 0"/>
-                <geom size="0.005 0.025 0.0085" pos="-0.005 -0.003 0.0083" quat="0 0 0 -1" type="box" conaffinity="1" contype="0" name="l_finger_g1" friction="0 0 0"/>
+                <joint name="l_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.0115 0.020833" damping="100" armature="1.0" frictionloss="1.0"/>
+                <geom name="l_finger" quat="0 0 0 -1" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" rgba="0.499 0.499 0.499 1"/>
+                <geom size="0.005 0.00675 0.0375" pos="0 0.01725 0.04" quat="0 0 0 -1" type="box" group="0" conaffinity="1" contype="0" name="l_finger_g0" friction="0 0 0"/>
+                <geom size="0.005 0.025 0.0085" pos="-0.005 -0.003 0.0083" quat="0 0 0 -1" type="box" group="0" conaffinity="1" contype="0" name="l_finger_g1" friction="0 0 0"/>
                 <body name="l_finger_tip" pos="0 0.01725 0.075">
                     <inertial pos="0 0 0" quat="0 0 0 1" mass="0.01" diaginertia="0.01 0.01 0.01" />
-                    <geom name="l_fingertip_g0_vis" quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" material="tip_mat"/>
-                    <geom size="0.004 0.004 0.0185" pos="0 -0.0045 -0.015" quat="0 0 0 -1" type="box"  conaffinity="1" contype="0" name="l_fingertip_g0" friction="0 0 0"/>
+                    <geom name="l_fingertip_g0_vis" quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" rgba="0.499 0.499 0.499 1"/>
+                    <geom size="0.004 0.004 0.0185" pos="0 -0.0045 -0.015" quat="0 0 0 -1" type="box" group="0"  conaffinity="1" contype="0" name="l_fingertip_g0" friction="0 0 0"/>
+                    <geom size="0.0035 0.004 0.0165" pos="0 -0.0047 -0.017" type="box"  conaffinity="1" contype="0" name="l_fingerpad_g0" friction="0 0 0"/>
                 </body>
             </body>
             <body name="r_finger" pos="0 -0.01 0.0444">
                 <inertial pos="0 0 0" mass="0.02" diaginertia="0.01 0.01 0.01" />
-                <joint name="r_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.020833 0.0115" damping="100"/>
-                <geom name="r_finger" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" material="finger_mat"/>
-                <geom size="0.005 0.00675 0.0375" pos="0 -0.01725 0.04" type="box" conaffinity="1" contype="0" name="r_finger_g0" friction="0 0 0"/>
-                <geom size="0.005 0.025 0.0085" pos="0.005 0.003 0.0083" type="box" conaffinity="1" contype="0" name="r_finger_g1" friction="0 0 0"/>
+                <joint name="r_finger_joint" pos="0 0 0" axis="0 1 0" type="slide" limited="true" range="-0.020833 0.0115" damping="100" armature="1.0" frictionloss="1.0"/>
+                <geom name="r_finger" type="mesh" contype="0" conaffinity="0" group="1" mesh="standard_narrow" rgba="0.499 0.499 0.499 1"/>
+                <geom size="0.005 0.00675 0.0375" pos="0 -0.01725 0.04" type="box" group="0" conaffinity="1" contype="0" name="r_finger_g0" friction="0 0 0"/>
+                <geom size="0.005 0.025 0.0085" pos="0.005 0.003 0.0083" type="box" group="0" conaffinity="1" contype="0" name="r_finger_g1" friction="0 0 0"/>
                 <body name="r_finger_tip" pos="0 -0.01725 0.075">
                     <inertial pos="0 0 0" mass="0.01" diaginertia="0.01 0.01 0.01" />
-                    <geom name="r_fingertip_g0_vis" type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" material="tip_mat"/>
-                    <geom size="0.004 0.004 0.0185" pos="0 0.0045 -0.015" type="box"  conaffinity="1" contype="0" name="r_fingertip_g0" friction="0 0 0"/>
+                    <geom name="r_fingertip_g0_vis" type="mesh" contype="0" conaffinity="0" group="1" mesh="half_round_tip" rgba="0.499 0.499 0.499 1"/>
+                    <geom size="0.004 0.004 0.0185" pos="0 0.0045 -0.015" type="box" group="0" conaffinity="1" contype="0" name="r_fingertip_g0" friction="0 0 0"/>
+                    <geom size="0.0035 0.004 0.0165" pos="0 0.0047 -0.017" type="box"  conaffinity="1" contype="0" name="r_fingerpad_g0" friction="0 0 0"/>
                 </body>
             </body>
         </body>

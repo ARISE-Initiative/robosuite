@@ -18,7 +18,7 @@ import json
 
 import robosuite as suite
 from robosuite import load_controller_config
-from robosuite.wrappers import DataCollectionWrapper
+from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 from robosuite.utils.input_utils import input2action
 
 
@@ -64,23 +64,6 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
         # Run environment step
         env.step(action)
-
-        if is_first:
-            is_first = False
-
-            # We grab the initial model xml and state and reload from those so that
-            # we can support deterministic playback of actions from our demonstrations.
-            # This is necessary due to rounding issues with the model xml and with
-            # env.sim.forward(). We also have to do this after the first action is 
-            # applied because the data collector wrapper only starts recording
-            # after the first action has been played.
-            initial_mjstate = env.sim.get_state().flatten()
-            xml_str = env.model.get_xml()
-            env.reset_from_xml_string(xml_str)
-            env.sim.reset()
-            env.sim.set_state_from_flattened(initial_mjstate)
-            env.sim.forward()
-
         env.render()
 
         # Also break if we complete the task
@@ -154,10 +137,11 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
         if len(states) == 0:
             continue
 
-        # Delete the first actions and the last state. This is because when the DataCollector wrapper
-        # recorded the states and actions, the states were recorded AFTER playing that action.
+        # Delete the last state. This is because when the DataCollector wrapper
+        # recorded the states and actions, the states were recorded AFTER playing that action,
+        # so we end up with an extra state at the end.
         del states[-1]
-        del actions[0]
+        assert len(states) == len(actions)
 
         num_eps += 1
         ep_data_grp = grp.create_group("demo_{}".format(num_eps))
@@ -200,8 +184,8 @@ if __name__ == "__main__":
     parser.add_argument("--controller", type=str, default="OSC_POSE",
                         help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'")
     parser.add_argument("--device", type=str, default="keyboard")
-    parser.add_argument("--pos-sensitivity", type=float, default=1.5, help="How much to scale position user inputs")
-    parser.add_argument("--rot-sensitivity", type=float, default=1.5, help="How much to scale rotation user inputs")
+    parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
+    parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
     args = parser.parse_args()
 
 
@@ -227,10 +211,12 @@ if __name__ == "__main__":
         render_camera=args.camera,
         ignore_done=True,
         use_camera_obs=False,
-        gripper_visualizations=True,
         reward_shaping=True,
         control_freq=20,
     )
+
+    # Wrap this with visualization wrapper
+    env = VisualizationWrapper(env)
 
     # Grab reference to controller config and convert it to json-encoded string
     env_info = json.dumps(config)

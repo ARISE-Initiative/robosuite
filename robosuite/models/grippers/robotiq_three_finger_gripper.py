@@ -21,65 +21,19 @@ class RobotiqThreeFingerGripperBase(GripperModel):
         return action
 
     @property
-    def dof(self):
-        return 4
-
-    @property
     def init_qpos(self):
         return np.zeros(11)
-
-    @property
-    def _joints(self):
-        return [
-            "palm_finger_1_joint",
-            "finger_1_joint_1",
-            "finger_1_joint_2",
-            "finger_1_joint_3",
-            "palm_finger_2_joint",
-            "finger_2_joint_1",
-            "finger_2_joint_2",
-            "finger_2_joint_3",
-            "finger_middle_joint_1",
-            "finger_middle_joint_2",
-            "finger_middle_joint_3"
-        ]
-
-    @property
-    def _actuators(self):
-        return [
-            "finger_1",
-            "finger_2",
-            "middle_finger",
-            "finger_scissor"
-        ]
-
-    @property
-    def _contact_geoms(self):
-        return [
-            "f1_l0",
-            "f1_l1",
-            "f1_l2",
-            "f1_l3",
-            "f2_l0",
-            "f2_l1",
-            "f2_l2",
-            "f2_l3",
-            "f3_l0",
-            "f3_l1",
-            "f3_l2",
-            "f3_l3",
-            "f1_pad_collision",
-            "f2_pad_collision",
-            "finger_middle_pad_collision"
-        ]
 
     @property
     def _important_geoms(self):
         return {
             "left_finger": ["f1_l0", "f1_l1", "f1_l2", "f1_l3",
                             "f2_l0", "f2_l1", "f2_l2", "f2_l3",
-                            "f1_pad_collision", "f2_pad_collision"],
-            "right_finger": ["f3_l0", "f3_l1", "f3_l2", "f3_l3", "finger_middle_pad_collision"]
+                            "f1_tip_collision", "f2_tip_collision", "f1_pad_collision", "f2_pad_collision"],
+            "right_finger": ["f3_l0", "f3_l1", "f3_l2", "f3_l3",
+                             "finger_middle_tip_collision", "finger_middle_pad_collision"],
+            "left_fingerpad": ["f1_pad_collision", "f2_pad_collision"],
+            "right_fingerpad": ["finger_middle_pad_collision"],
         }
 
 

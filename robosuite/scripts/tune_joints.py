@@ -269,7 +269,7 @@ if __name__ == "__main__":
     controller_config = robosuite.load_controller_config(default_controller="JOINT_POSITION")
 
     # make the environment
-    roboenv = robosuite.make(
+    env = robosuite.make(
         args.env,
         robots=args.robots,
         has_renderer=True,
@@ -281,24 +281,23 @@ if __name__ == "__main__":
         controller_configs=controller_config,
         initialization_noise=None
     )
-    roboenv.reset()
+    env.reset()
 
     # register callbacks to handle key presses in the viewer
-    key_handler = KeyboardHandler(env=roboenv)
-    roboenv.viewer.add_keypress_callback("any", key_handler.on_press)
-    roboenv.viewer.add_keyup_callback("any", key_handler.on_release)
-    roboenv.viewer.add_keyrepeat_callback("any", key_handler.on_press)
+    key_handler = KeyboardHandler(env=env)
+    env.viewer.add_keypress_callback("any", key_handler.on_press)
+    env.viewer.add_keyup_callback("any", key_handler.on_release)
+    env.viewer.add_keyrepeat_callback("any", key_handler.on_press)
 
     # Set initial state
     if type(args.init_qpos) == int and args.init_qpos == 0:
         # Default to all zeros
         pass
-        #key_handler.set_joint_positions(np.zeros(key_handler.num_joints))
     else:
         key_handler.set_joint_positions(args.init_qpos)
 
     # just spin to let user interact with glfw window
     while True:
-        action = np.zeros(roboenv.action_dim)
-        obs, reward, done, _ = roboenv.step(action)
-        roboenv.render()
+        action = np.zeros(env.action_dim)
+        obs, reward, done, _ = env.step(action)
+        env.render()

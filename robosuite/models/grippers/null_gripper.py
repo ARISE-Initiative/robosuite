@@ -20,21 +20,5 @@ class NullGripper(GripperModel):
         return action
 
     @property
-    def dof(self):
-        return 0
-
-    @property
     def init_qpos(self):
         return None
-
-    @property
-    def _joints(self):
-        return []
-
-    @property
-    def _actuators(self):
-        return []
-
-    @property
-    def _contact_geoms(self):
-        return []

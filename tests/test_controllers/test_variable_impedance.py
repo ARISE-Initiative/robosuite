@@ -50,7 +50,7 @@ args = parser.parse_args()
 
 
 # Running the actual test #
-def test_linear_interpolator():
+def test_variable_impedance():
 
     for controller_name in ["OSC_POSE", "OSC_POSITION", "JOINT_POSITION"]:
 
@@ -127,7 +127,7 @@ def test_linear_interpolator():
                 env.viewer.set_camera(camera_id=0)
 
             # Keep track of relative changes in robot eef position
-            last_pos = env.robots[0]._right_hand_pos
+            last_pos = env.robots[0]._hand_pos
 
             # Initialize gains
             if gain == "kp":
@@ -156,7 +156,7 @@ def test_linear_interpolator():
                     env.render()
 
                 # Update the current change in state
-                cur_pos = env.robots[0]._right_hand_pos
+                cur_pos = env.robots[0]._hand_pos
 
                 # If we're at the end of the increase, switch direction of traj and gain changes
                 if i == int(num_timesteps_per_change / percent_increase):
@@ -189,4 +189,4 @@ def test_linear_interpolator():
 
 
 if __name__ == "__main__":
-    test_linear_interpolator()
+    test_variable_impedance()

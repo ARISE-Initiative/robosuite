@@ -29,7 +29,7 @@
     <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
     <!-- Table body -->
     <body name="table" pos="0 0 0.4">
-      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" name="table_collision" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" group="0" name="table_collision" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="table_ceramic"/>
       <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
       <!-- Legs (visual only) -->

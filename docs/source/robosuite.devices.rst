@@ -1,7 +1,10 @@
-robosuite.devices
+robosuite.devices package
 =========================
 
-robosuite.devices.device
+Submodules
+----------
+
+robosuite.devices.device module
 -------------------------------
 
 .. automodule:: robosuite.devices.device
@@ -9,7 +12,7 @@ robosuite.devices.device
    :undoc-members:
    :show-inheritance:
 
-robosuite.devices.keyboard
+robosuite.devices.keyboard module
 ---------------------------------
 
 .. automodule:: robosuite.devices.keyboard
@@ -17,10 +20,18 @@ robosuite.devices.keyboard
    :undoc-members:
    :show-inheritance:
 
-robosuite.devices.spacemouse
+robosuite.devices.spacemouse module
 -----------------------------------
 
 .. automodule:: robosuite.devices.spacemouse
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.devices
    :members:
    :undoc-members:
    :show-inheritance:

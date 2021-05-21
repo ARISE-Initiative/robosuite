@@ -8,6 +8,7 @@ import time
 import numpy as np
 
 from robosuite.wrappers import Wrapper
+from robosuite.utils.mjcf_utils import save_sim_model
 
 
 class DataCollectionWrapper(Wrapper):
@@ -46,6 +47,10 @@ class DataCollectionWrapper(Wrapper):
         # remember whether any environment interaction has occurred
         self.has_interaction = False
 
+        # some variables for remembering the current episode's initial state and model xml
+        self._current_task_instance_state = None
+        self._current_task_instance_xml = None
+
     def _start_new_episode(self):
         """
         Bookkeeping to do at the start of each new episode.
@@ -58,6 +63,18 @@ class DataCollectionWrapper(Wrapper):
         # timesteps in current episode
         self.t = 0
         self.has_interaction = False
+
+        # save the task instance (will be saved on the first env interaction)
+        self._current_task_instance_xml = self.env.sim.model.get_xml()
+        self._current_task_instance_state = np.array(self.env.sim.get_state().flatten())
+
+        # trick for ensuring that we can play MuJoCo demonstrations back
+        # deterministically by using the recorded actions open loop
+        self.env.reset_from_xml_string(self._current_task_instance_xml)
+        self.env.sim.reset()
+        self.env.sim.set_state_from_flattened(self._current_task_instance_state)
+        self.env.sim.forward()
+
 
     def _on_first_interaction(self):
         """
@@ -81,7 +98,12 @@ class DataCollectionWrapper(Wrapper):
 
         # save the model xml
         xml_path = os.path.join(self.ep_directory, "model.xml")
-        self.env.model.save_model(xml_path)
+        with open(xml_path, "w") as f:
+            f.write(self._current_task_instance_xml)
+
+        # save initial state and action
+        assert len(self.states) == 0
+        self.states.append(self._current_task_instance_state)
 
     def _flush(self):
         """
@@ -154,5 +176,6 @@ class DataCollectionWrapper(Wrapper):
         """
         Override close method in order to flush left over data
         """
-        self._start_new_episode()
+        if self.has_interaction:
+            self._flush()
         self.env.close()

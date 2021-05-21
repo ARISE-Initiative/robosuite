@@ -1,7 +1,18 @@
-robosuite.utils
+robosuite.utils package
 =======================
 
-robosuite.utils.control\_utils
+Submodules
+----------
+
+robosuite.utils.buffers module
+------------------------------
+
+.. automodule:: robosuite.utils.buffers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.control\_utils module
 -------------------------------------
 
 .. automodule:: robosuite.utils.control_utils
@@ -9,7 +20,7 @@ robosuite.utils.control\_utils
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.errors
+robosuite.utils.errors module
 -----------------------------
 
 .. automodule:: robosuite.utils.errors
@@ -17,7 +28,7 @@ robosuite.utils.errors
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.input\_utils
+robosuite.utils.input\_utils module
 -----------------------------------
 
 .. automodule:: robosuite.utils.input_utils
@@ -25,7 +36,15 @@ robosuite.utils.input\_utils
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.mjcf\_utils
+robosuite.utils.macros module
+-----------------------------
+
+.. automodule:: robosuite.utils.macros
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.mjcf\_utils module
 ----------------------------------
 
 .. automodule:: robosuite.utils.mjcf_utils
@@ -33,7 +52,7 @@ robosuite.utils.mjcf\_utils
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.mjmod
+robosuite.utils.mjmod module
 ----------------------------
 
 .. automodule:: robosuite.utils.mjmod
@@ -41,7 +60,7 @@ robosuite.utils.mjmod
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.mujoco\_py\_renderer
+robosuite.utils.mujoco\_py\_renderer module
 -------------------------------------------
 
 .. automodule:: robosuite.utils.mujoco_py_renderer
@@ -49,7 +68,7 @@ robosuite.utils.mujoco\_py\_renderer
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.numba
+robosuite.utils.numba module
 ----------------------------
 
 .. automodule:: robosuite.utils.numba
@@ -57,10 +76,42 @@ robosuite.utils.numba
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.transform\_utils
+robosuite.utils.observables module
+----------------------------------
+
+.. automodule:: robosuite.utils.observables
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.placement\_samplers module
+------------------------------------------
+
+.. automodule:: robosuite.utils.placement_samplers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.robot\_utils module
+-----------------------------------
+
+.. automodule:: robosuite.utils.robot_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.transform\_utils module
 ---------------------------------------
 
 .. automodule:: robosuite.utils.transform_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: robosuite.utils
    :members:
    :undoc-members:
    :show-inheritance:

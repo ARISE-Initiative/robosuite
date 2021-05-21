@@ -26,6 +26,7 @@ Welcome to robosuite's documentation!
    modules/environments
    modules/sensors
    modules/devices
+   modules/renderers
 
 .. toctree::
    :maxdepth: 1
@@ -40,8 +41,8 @@ Welcome to robosuite's documentation!
    :maxdepth: 1
    :caption: Modeling API
 
+   modeling/mujoco_model
    modeling/robot_model
-   modeling/gripper_model
    modeling/object_model
    modeling/arena
    modeling/task
@@ -58,6 +59,7 @@ Welcome to robosuite's documentation!
 
    algorithms/benchmarking
    algorithms/demonstrations
+   algorithms/sim2real
    algorithms/roboturk
 
 .. toctree::

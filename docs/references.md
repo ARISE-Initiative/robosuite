@@ -13,6 +13,9 @@ A list of references of projects and papers that use **robosuite**. If you would
 - [Long-Horizon Visual Planning with Goal-Conditioned Hierarchical Predictors](https://arxiv.org/abs/2006.13205). Karl Pertsch, Oleh Rybkin, Frederik Ebert, Chelsea Finn, Dinesh Jayaraman, Sergey Levine
 - [Balance Between Efficient and Effective Learning: Dense2Sparse Reward Shaping for Robot Manipulation with Environment Uncertainty](https://arxiv.org/abs/2003.02740). Yongle Luo, Kun Dong, Lili Zhao, Zhiyong Sun, Chao Zhou, Bo Song
 - [Hierarchical 6-DoF Grasping with Approaching Direction Selection](http://rllab.snu.ac.kr/publications/papers/2020_icra_gads.pdf). Yunho Choi, Hogun Kee, Kyungjae Lee, JaeGoo Choy, Junhong Min, Sohee Lee, and Songhwai Oh
+- [Conservative Safety Critics for Exploration](https://arxiv.org/abs/2010.14497). Homanga Bharadhwaj, Aviral Kumar, Nicholas Rhinehart, Sergey Levine, Florian Shkurti, Animesh Garg
+- [Deep Reinforcement Learning for Contact-Rich Skills Using Compliant Movement Primitives](https://arxiv.org/abs/2008.13223). Oren Spector, Miriam Zacksenhouse
+- [Continual Model-Based Reinforcement Learning with Hypernetworks](https://arxiv.org/abs/2009.11997). Yizhou Huang, Kevin Xie, Homanga Bharadhwaj, Florian Shkurti
 
 ## Imitation Learning and Batch (Offline) Reinforcement Learning
 
@@ -21,6 +24,10 @@ A list of references of projects and papers that use **robosuite**. If you would
 - [To Follow or not to Follow: Selective Imitation Learning from Observations](https://arxiv.org/abs/1912.07670). Youngwoon Lee, Edward S. Hu, Zhengyu Yang, Joseph J. Lim
 - [Learning Robot Skills with Temporal Variational Inference](https://arxiv.org/abs/2006.16232). Tanmay Shankar, Abhinav Gupta
 - [Residual Learning from Demonstration](https://arxiv.org/abs/2008.07682). Todor Davchev, Kevin Sebastian Luck, Michael Burke, Franziska Meier, Stefan Schaal, Subramanian Ramamoorthy
+- [Variational Imitation Learning with Diverse-quality Demonstrations](https://proceedings.icml.cc/static/paper_files/icml/2020/577-Paper.pdf). Voot Tangkaratt, Bo Han, Mohammad Emtiyaz Khan, Masashi Sugiyama
+- [Transformers for One-Shot Visual Imitation](https://corlconf.github.io/paper_463/). Sudeep Dasari, Abhinav Gupta
+- [Learning Multi-Arm Manipulation Through Collaborative Teleoperation](https://arxiv.org/abs/2012.06738) Albert Tung, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín, Yuke Zhu, Li Fei-Fei, Silvio Savarese
+- [Human-in-the-Loop Imitation Learning using Remote Teleoperation](https://arxiv.org/abs/2012.06733) Ajay Mandlekar, Danfei Xu, Roberto Martín-Martín, Yuke Zhu, Li Fei-Fei, Silvio Savarese
 
 ## Benchmarks
 

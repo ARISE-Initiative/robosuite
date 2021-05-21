@@ -87,7 +87,7 @@ class JointTorqueController(Controller):
         self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits (if not specified, set them to actuator limits by default)
-        self.torque_limits = torque_limits if torque_limits is not None else self.actuator_limits
+        self.torque_limits = np.array(torque_limits) if torque_limits is not None else self.actuator_limits
 
         # control frequency
         self.control_freq = policy_freq
@@ -139,7 +139,7 @@ class JointTorqueController(Controller):
         if self.interpolator is not None:
             # Linear case
             if self.interpolator.order == 1:
-                self.current_torque = self.interpolator.get_interpolated_goal(self.current_torque)
+                self.current_torque = self.interpolator.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass

@@ -66,9 +66,6 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         np.dot(J_full, mass_matrix_inv),
         J_full.transpose())
 
-    # (J M^-1 J^T)^-1
-    lambda_full = np.linalg.inv(lambda_full_inv)
-
     # Jx M^-1 Jx^T
     lambda_pos_inv = np.dot(
         np.dot(J_pos, mass_matrix_inv),
@@ -79,15 +76,10 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
         np.dot(J_ori, mass_matrix_inv),
         J_ori.transpose())
 
-    # take the inverse, but zero out elements in cases of a singularity
-    svd_u, svd_s, svd_v = np.linalg.svd(lambda_pos_inv)
-    singularity_threshold = 0.00025
-    svd_s_inv = np.array([0 if x < singularity_threshold else 1. / x for x in svd_s])
-    lambda_pos = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
-
-    svd_u, svd_s, svd_v = np.linalg.svd(lambda_ori_inv)
-    svd_s_inv = np.array([0 if x < singularity_threshold else 1. / x for x in svd_s])
-    lambda_ori = svd_v.T.dot(np.diag(svd_s_inv)).dot(svd_u.T)
+    # take the inverses, but zero out small singular values for stability
+    lambda_full = np.linalg.pinv(lambda_full_inv)
+    lambda_pos = np.linalg.pinv(lambda_pos_inv)
+    lambda_ori = np.linalg.pinv(lambda_ori_inv)
 
     # nullspace
     Jbar = np.dot(mass_matrix_inv, J_full.transpose()).dot(lambda_full)
@@ -193,7 +185,7 @@ def set_goal_orientation(delta,
         # convert axis-angle value to rotation matrix
         quat_error = trans.axisangle2quat(delta)
         rotation_mat_error = trans.quat2mat(quat_error)
-        goal_orientation = np.dot(rotation_mat_error.T, current_orientation)
+        goal_orientation = np.dot(rotation_mat_error, current_orientation)
 
     # check for orientation limits
     if np.array(orientation_limit).any():
@@ -253,131 +245,3 @@ def set_goal_orientation(delta,
         if limited:
             goal_orientation = trans.euler2mat(np.array([euler[1], euler[0], euler[2]]))
     return goal_orientation
-
-
-class Buffer(object):
-    """
-    Abstract class for different kinds of data buffers. Minimum API should have a "push" and "clear" method
-    """
-
-    def push(self, value):
-        """
-        Pushes a new @value to the buffer
-
-        Args:
-            value: Value to push to the buffer
-        """
-        raise NotImplementedError
-
-    def clear(self):
-        raise NotImplementedError
-
-
-class RingBuffer(Buffer):
-    """
-    Simple RingBuffer object to hold values to average (useful for, e.g.: filtering D component in PID control)
-
-    Note that the buffer object is a 2D numpy array, where each row corresponds to
-    individual entries into the buffer
-
-    Args:
-        dim (int): Size of entries being added. This is, e.g.: the size of a state vector that is to be stored
-        length (int): Size of the ring buffer
-    """
-
-    def __init__(self, dim, length):
-        # Store input args
-        self.dim = dim
-        self.length = length
-
-        # Save pointer to current place in the buffer
-        self.ptr = 0
-
-        # Construct ring buffer
-        self.buf = np.zeros((length, dim))
-
-    def push(self, value):
-        """
-        Pushes a new value into the buffer
-
-        Args:
-            value (int or float or array): Value(s) to push into the array (taken as a single new element)
-        """
-        # Add value, then increment pointer
-        self.buf[self.ptr] = np.array(value)
-        self.ptr = (self.ptr + 1) % self.length
-
-    def clear(self):
-        """
-        Clears buffer and reset pointer
-        """
-        self.buf = np.zeros((self.length, self.dim))
-        self.ptr = 0
-
-    @property
-    def average(self):
-        """
-        Gets the average of components in buffer
-
-        Returns:
-            float or np.array: Averaged value of all elements in buffer
-        """
-        return np.mean(self.buf, axis=0)
-
-
-class DeltaBuffer(Buffer):
-    """
-    Simple 2-length buffer object to streamline grabbing delta values between "current" and "last" values
-
-    Constructs delta object.
-
-    Args:
-        dim (int): Size of numerical arrays being inputted
-        init_value (None or Iterable): Initial value to fill "last" value with initially.
-            If None (default), last array will be filled with zeros
-    """
-    def __init__(self, dim, init_value=None):
-        # Setup delta object
-        self.dim = dim
-        self.last = np.zeros(self.dim) if init_value is None else np.array(init_value)
-        self.current = np.zeros(self.dim)
-
-    def push(self, value):
-        """
-        Pushes a new value into the buffer; current becomes last and @value becomes current
-
-        Args:
-            value (int or float or array): Value(s) to push into the array (taken as a single new element)
-        """
-        self.last = self.current
-        self.current = np.array(value)
-
-    def clear(self):
-        """
-        Clears last and current value
-        """
-        self.last, self.current = np.zeros(self.dim), np.zeros(self.dim)
-
-    @property
-    def delta(self, abs_value=False):
-        """
-        Returns the delta between last value and current value. If abs_value is set to True, then returns
-        the absolute value between the values
-
-        Args:
-            abs_value (bool): Whether to return absolute value or not
-
-        Returns:
-            float or np.array: difference between current and last value
-        """
-        return self.current - self.last if not abs_value else np.abs(self.current - self.last)
-
-    @property
-    def average(self):
-        """
-        Returns the average between the current and last value
-
-        Returns:
-            float or np.array: Averaged value of all elements in buffer
-        """
-        return (self.current + self.last) / 2.0

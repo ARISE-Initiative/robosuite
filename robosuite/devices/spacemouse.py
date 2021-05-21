@@ -25,7 +25,7 @@ try:
 except ModuleNotFoundError as exc:
     raise ImportError("Unable to load module hid, required to interface with SpaceMouse. "
                       "Only Mac OS X is officially supported. Install the additional "
-                      "requirements with `pip install -r requirements-ik.txt`") from exc
+                      "requirements with `pip install -r requirements-extra.txt`") from exc
 
 from robosuite.utils.transform_utils import rotation_matrix
 from robosuite.devices import Device
@@ -123,6 +123,10 @@ class SpaceMouse(Device):
         print("Manufacturer: %s" % self.device.get_manufacturer_string())
         print("Product: %s" % self.device.get_product_string())
 
+        # 6-DOF variables
+        self.x, self.y, self.z = 0, 0, 0
+        self.roll, self.pitch, self.yaw = 0, 0, 0
+
         self._display_controls()
 
         self.single_click_and_hold = False
@@ -164,6 +168,13 @@ class SpaceMouse(Device):
         Resets internal state of controller, except for the reset signal.
         """
         self.rotation = np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
+        # Reset 6-DOF variables
+        self.x, self.y, self.z = 0, 0, 0
+        self.roll, self.pitch, self.yaw = 0, 0, 0
+        # Reset control
+        self._control = np.zeros(6)
+        # Reset grasp
+        self.single_click_and_hold = False
 
     def start_control(self):
         """
@@ -183,7 +194,6 @@ class SpaceMouse(Device):
         """
         dpos = self.control[:3] * 0.005 * self.pos_sensitivity
         roll, pitch, yaw = self.control[3:] * 0.005 * self.rot_sensitivity
-        self.grasp = self.control_gripper
 
         # convert RPY to an absolute orientation
         drot1 = rotation_matrix(angle=-pitch, direction=[1., 0, 0], point=None)[:3, :3]
@@ -196,7 +206,7 @@ class SpaceMouse(Device):
             dpos=dpos,
             rotation=self.rotation,
             raw_drotation=np.array([roll, pitch, yaw]),
-            grasp=self.grasp,
+            grasp=self.control_gripper,
             reset=self._reset_state
         )
 

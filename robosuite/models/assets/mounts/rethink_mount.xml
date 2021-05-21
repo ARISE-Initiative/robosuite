@@ -1,0 +1,26 @@
+<mujoco model="rethink_mount">
+    <asset>
+        <mesh name="pedestal" file="meshes/rethink_mount/pedestal.stl" />
+    </asset>
+    <worldbody>
+        <body name="base" pos="0 0 -0.922">
+            <body name="controller_box" pos="0 0 0">
+                <inertial diaginertia="1.71363 1.27988 0.809981" mass="46.64" pos="-0.325 0 -0.38"/>
+                <geom pos="-0.325 0 -0.38" size="0.11 0.2 0.265" type="box" name="controller_box_col"/>
+            </body>
+            <body name="pedestal_feet" pos="0 0 0">
+                <inertial diaginertia="8.16095 9.59375 15.0785" mass="167.09" pos="-0.1225 0 -0.758"/>
+                <geom pos="-0.1225 0 -0.758" size="0.385 0.35 0.155" type="box" name="pedestal_feet_col"/>
+            </body>
+            <body name="torso" pos="0 0 0">
+                <inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
+                <geom conaffinity="0" contype="0" group="1" pos="0 0 -0.05" size="0.05 0.05 0.05" type="box" name="torso_vis" rgba="0.2 0.2 0.2 1" />
+            </body>
+            <body name="pedestal" pos="0 0 0">
+                <inertial diaginertia="6.0869 5.81635 4.20915" mass="60.864" pos="0 0 0" quat="0.659267 -0.259505 -0.260945 0.655692"/>
+                <geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_vis" rgba="0.2 0.2 0.2 1" />
+                <geom pos="-0.02 0 -0.29" rgba="0.2 0.2 0.2 1" size="0.18 0.31" type="cylinder" name="pedestal_col"/>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>

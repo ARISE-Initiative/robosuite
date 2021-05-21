@@ -21,36 +21,16 @@ class PandaGripperBase(GripperModel):
         return action
 
     @property
-    def dof(self):
-        return 2
-
-    @property
     def init_qpos(self):
         return np.array([0.020833, -0.020833])
 
     @property
-    def _joints(self):
-        return ["finger_joint1", "finger_joint2"]
-
-    @property
-    def _actuators(self):
-        return ["gripper_finger_joint1", "gripper_finger_joint2"]
-
-    @property
-    def _contact_geoms(self):
-        return [
-            "hand_collision",
-            "finger1_collision",
-            "finger2_collision",
-            "finger1_tip_collision",
-            "finger2_tip_collision",
-        ]
-
-    @property
     def _important_geoms(self):
         return {
-            "left_finger": ["finger1_tip_collision"],
-            "right_finger": ["finger2_tip_collision"],
+            "left_finger": ["finger1_collision", "finger1_pad_collision"],
+            "right_finger": ["finger2_collision", "finger2_pad_collision"],
+            "left_fingerpad": ["finger1_pad_collision"],
+            "right_fingerpad": ["finger2_pad_collision"],
         }
 
 

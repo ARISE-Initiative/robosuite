@@ -1,5 +1,5 @@
 from robosuite.controllers.base_controller import Controller
-from robosuite.utils.control_utils import RingBuffer
+from robosuite.utils.buffers import RingBuffer
 import numpy as np
 
 
@@ -104,7 +104,7 @@ class JointVelocityController(Controller):
         self.last_joint_vel = np.zeros(self.joint_dim)
 
         # limits
-        self.velocity_limits = velocity_limits
+        self.velocity_limits = np.array(velocity_limits) if velocity_limits is not None else None
 
         # control frequency
         self.control_freq = policy_freq
@@ -161,7 +161,7 @@ class JointVelocityController(Controller):
         if self.interpolator is not None:
             if self.interpolator.order == 1:
                 # Linear case
-                self.current_vel = self.interpolator.get_interpolated_goal(self.current_vel)
+                self.current_vel = self.interpolator.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass

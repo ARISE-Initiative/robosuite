@@ -91,6 +91,9 @@ class OperationalSpaceController(Controller):
             to the goal orientation during each timestep between inputted actions
 
         control_ori (bool): Whether inputted actions will control both pos and ori or exclusively pos
+        
+        control_delta (bool): Whether to control the robot using delta or absolute commands (where absolute commands
+            are taken in the world coordinate frame)
 
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
 
@@ -173,8 +176,8 @@ class OperationalSpaceController(Controller):
             self.control_dim += 6
 
         # limits
-        self.position_limits = position_limits
-        self.orientation_limits = orientation_limits
+        self.position_limits = np.array(position_limits) if position_limits is not None else position_limits
+        self.orientation_limits = np.array(orientation_limits) if orientation_limits is not None else orientation_limits
 
         # control frequency
         self.control_freq = policy_freq
@@ -229,23 +232,26 @@ class OperationalSpaceController(Controller):
         if self.use_delta:
             if delta is not None:
                 scaled_delta = self.scale_action(delta)
-                if not self.use_ori:
+                if not self.use_ori and set_ori is None:
                     # Set default control for ori since user isn't actively controlling ori
-                    set_ori = np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
+                    set_ori = np.array([[0, -1., 0.], [-1., 0., 0.], [0., 0., 1.]])
             else:
                 scaled_delta = []
         # Else, interpret actions as absolute values
         else:
-            set_pos = self.initial_ee_pos + delta[:3]
+            if set_pos is None:
+                set_pos = delta[:3]
             # Set default control for ori if we're only using position control
-            set_ori = self.initial_ee_ori_mat.T.dot(T.quat2mat(T.axisangle2quat(delta[3:6]))) \
-                if self.use_ori else np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
-            scaled_delta = []
+            if set_ori is None:
+                set_ori = T.quat2mat(T.axisangle2quat(delta[3:6])) if self.use_ori else \
+                    np.array([[0, -1., 0.], [-1., 0., 0.], [0., 0., 1.]])
+            # No scaling of values since these are absolute values
+            scaled_delta = delta
 
-        # We only want to update goal orientation if there is a valid delta ori value
+        # We only want to update goal orientation if there is a valid delta ori value OR if we're using absolute ori
         # use math.isclose instead of numpy because numpy is slow
         bools = [0. if math.isclose(elem, 0.) else 1. for elem in scaled_delta[3:]]
-        if sum(bools) > 0.:
+        if sum(bools) > 0. or set_ori is not None:
             self.goal_ori = set_goal_orientation(scaled_delta[3:],
                                                  self.ee_ori_mat,
                                                  orientation_limit=self.orientation_limits,
@@ -341,6 +347,13 @@ class OperationalSpaceController(Controller):
         super().run_controller()
 
         return self.torques
+
+    def update_initial_joints(self, initial_joints):
+        # First, update from the superclass method
+        super().update_initial_joints(initial_joints)
+
+        # We also need to reset the goal in case the old goals were set to the initial confguration
+        self.reset_goal()
 
     def reset_goal(self):
         """

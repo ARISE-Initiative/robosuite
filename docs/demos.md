@@ -1,6 +1,6 @@
 # Demo Showcases
 
-We provide a collection of [demo scripts](https://github.com/Unknown-Initiative/robosuite-dev/tree/v1.0/robosuite/demos) to showcase the functionalities in **robosuite**.
+We provide a collection of [demo scripts](https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/demos) to showcase the functionalities in **robosuite**.
 
 ### Environment Configuration
 The `demo_random_action.py` sciprt is the starter demo script that you should try first. It highlights the modular design of our simulated environments. It enables users to create new simulation instances by choosing one [environment](modules/environments), one or more [robots](modules/robots), and their [controllers](modules/controllers) from the command line. The script creates an environment instance and controls the robots with uniform random actions drawn from the controller-specific action space. The list of all environments, robots, controllers, and gripper types supported in the current version of **robosuite** are defined by `suite.ALL_ENVIRONMENTS`, `suite.ALL_ROBOTS`, `suite.ALL_CONTROLLERS`, and `suite.ALL_GRIPPERS` respectively.
@@ -45,6 +45,11 @@ Thus the `OSC_POSE` controller should be expected to sequentially move linearly 
 The `demo_domain_randomization.py` script showcases our domain randomization functionality. Domain randomization can be easily enabled by wrapping an environment with the [DomainRandomizationWrapper](source/robosuite.wrappers). At this moment, the randomization functionality focuses on visual variations, including colors, textures, and camera viewpoints.
 
 ![collection of grippers](images/domain_randomization.png)
+
+
+### Sensor Realism
+The `demo_sensor_corruption.py` script shows how the [Observable](modules/sensors) functionality can be used to model sensor corruption and delay. The [Observable](modules/sensors) class provides easy-to-use interface for simulating real-world sensor noises, variable sensor delays, and sampling frequencies of realistic sensors. These techniques are useful for improving the generalization and robustness of the policies trained on robosuite, facilitating sim2real transfer to the real hardware. For example, see Appendix B of [Zhu et al. RSS'2018](https://arxiv.org/abs/1802.09564) and Section V of [Tan et al. RSS'2018](https://arxiv.org/abs/1804.10332).
+
 
 ### Gripper Selection
 The `demo_gripper_selection.py` script shows you how to select gripper for an environment. This is controlled by `gripper_type` keyword argument. The set of all grippers is defined by the global variable `robosuite.ALL_GRIPPERS`.
