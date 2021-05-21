@@ -7,7 +7,7 @@ from robosuite.utils.mjcf_utils import CustomMaterial
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import StandWithMount, HookFrame, PictureFrame
+from robosuite.models.objects import StandWithMount, HookFrame, PictureFrame, RatchetingWrenchObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialCompositeSampler
 from robosuite.utils.observables import Observable, sensor
@@ -252,23 +252,36 @@ class PictureHanging(SingleArmEnv):
             density=500.,
         )
         # old-params
-        # self.picture = PictureFrame(
-        #     name="picture",
+        # self.tool = PictureFrame(
+        #     name="tool",
         #     frame_size=(0.10, 0.15),
         #     frame_thickness=0.02,
         #     mount_hole_offset=0.05,
         #     mount_hole_size=0.03,
         #     mount_hole_thickness=0.01,
         # )
-        self.picture = PictureFrame(
-            name="picture",
-            frame_size=(0.10, 0.15),
-            frame_thickness=0.04,
-            border_size=(0.02, 0.02),
-            border_thickness=0.03,
-            mount_hole_offset=0.05,
-            mount_hole_size=0.04,
-            mount_hole_thickness=0.01,
+        # self.tool = PictureFrame(
+        #     name="tool",
+        #     frame_size=(0.10, 0.15),
+        #     frame_thickness=0.04,
+        #     border_size=(0.02, 0.02),
+        #     border_thickness=0.03,
+        #     mount_hole_offset=0.05,
+        #     mount_hole_size=0.04,
+        #     mount_hole_thickness=0.01,
+        #     density=250.,
+        # )
+        self.tool = RatchetingWrenchObject(
+            name="tool",
+            handle_size=(0.05, 0.015, 0.01),
+            outer_radius_1=0.0425,
+            inner_radius_1=0.025,
+            height_1=0.01,
+            outer_radius_2=0.0425,
+            inner_radius_2=0.025,
+            height_2=0.01,
+            ngeoms=8,
+            # rgba=None,
             density=250.,
         )
 
@@ -279,7 +292,7 @@ class PictureHanging(SingleArmEnv):
         self.model = ManipulationTask(
             mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots], 
-            mujoco_objects=[self.stand, self.frame, self.picture],
+            mujoco_objects=[self.stand, self.frame, self.tool],
         )
 
     def _get_placement_initializer(self):
@@ -290,7 +303,7 @@ class PictureHanging(SingleArmEnv):
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
 
         # Pre-define settings for each object's placement
-        objects = [self.stand, self.frame, self.picture]
+        objects = [self.stand, self.frame, self.tool]
         # edit: move hook closer to robot
         x_centers = [0, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.25]
         # x_centers = [0, self.table_full_size[0] * 0.25, -self.table_full_size[0] * 0.25]
@@ -301,7 +314,7 @@ class PictureHanging(SingleArmEnv):
         # edit: rotate hook to make grasping easier
         rot_centers = [0, np.pi / 3, 0]
         rot_tols = [0, np.pi / 6, np.pi / 6]
-        rot_axes = ['x', 'y', 'x']
+        rot_axes = ['x', 'y', 'z']
         for obj, x, y, r, r_tol, r_axis in zip(
                 objects, x_centers, y_centers, rot_centers, rot_tols, rot_axes
         ):
@@ -381,7 +394,7 @@ class PictureHanging(SingleArmEnv):
 
         # Color the gripper visualization site according to its distance to the cube
         if vis_settings["grippers"]:
-            self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.picture)
+            self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.tool)
 
     def _check_success(self):
         """

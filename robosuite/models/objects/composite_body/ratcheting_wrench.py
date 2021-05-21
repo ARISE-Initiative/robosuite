@@ -97,8 +97,8 @@ class RatchetingWrenchObject(CompositeBodyObject):
         # Define positions (top-level body is centered at handle)
         positions = [
             np.array([-handle_size[0] - self.outer_radii[0], 0, 0]),
+            np.array([handle_size[0] + self.outer_radii[1], 0, 0]),
             np.zeros(3),
-            np.array([handle_size[1] + self.outer_radii[1], 0, 0]),
         ]
         quats = [None, None, None]
         parents = [None, None, None]

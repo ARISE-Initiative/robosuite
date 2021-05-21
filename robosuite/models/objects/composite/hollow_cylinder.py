@@ -45,6 +45,11 @@ class HollowCylinderObject(CompositeObject):
         self.friction = friction if friction is None else np.array(friction)
         self.make_half = make_half # if True, will only make half the hollow cylinder
 
+        self.has_material = (material is not None)
+        if self.has_material:
+            assert isinstance(material, CustomMaterial)
+            self.material = material
+
         # Other private attributes
         self._important_sites = {}
 
@@ -75,11 +80,8 @@ class HollowCylinderObject(CompositeObject):
         super().__init__(**self._get_geom_attrs())
 
         # Optionally add material
-        self.has_material = (material is not None)
         if self.has_material:
-            assert isinstance(material, CustomMaterial)
-            self.material = material
-            self.append_material(material)
+            self.append_material(self.material)
 
     def _get_geom_attrs(self):
         """

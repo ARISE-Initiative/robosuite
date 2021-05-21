@@ -91,6 +91,8 @@ class CompositeBodyObject(MujocoGeneratedObject):
             self.joint_specs = joints
 
         # Set body joints
+        if body_joints is None:
+            body_joints = {}
         self.body_joint_specs = body_joints
 
         # Make sure all joints are named appropriately
