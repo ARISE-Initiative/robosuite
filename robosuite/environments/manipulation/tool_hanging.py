@@ -403,7 +403,7 @@ class ToolHanging(SingleArmEnv):
             obj_names = ["base", "frame", "tool"]
             query_names = ["stand_base", "frame_intersection_site", "tool"]
             query_types = ["geom", "site", "body"]
-            for i in range(len(obj_name)):
+            for i in range(len(obj_names)):
                 obj_sensors, obj_sensor_names = self._create_obj_sensors(
                     obj_name=obj_names[i], modality=modality, query_name=query_names[i], query_type=query_types[i])
                 sensors += obj_sensors
@@ -476,7 +476,7 @@ class ToolHanging(SingleArmEnv):
 
         @sensor(modality=modality)
         def obj_quat(obs_cache):
-            return T.mat2quat(mat_lookup[id_lookup[query_name]])
+            return T.mat2quat(np.array(mat_lookup[id_lookup[query_name]]).reshape(3, 3))
 
         @sensor(modality=modality)
         def obj_to_eef_pos(obs_cache):
