@@ -14,9 +14,9 @@ from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialC
 from robosuite.utils.observables import Observable, sensor
 
 
-class PictureHanging(SingleArmEnv):
+class ToolHanging(SingleArmEnv):
     """
-    This class corresponds to the picture hanging task for a single robot arm.
+    This class corresponds to the tool hanging task for a single robot arm.
 
     Args:
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
@@ -232,7 +232,7 @@ class PictureHanging(SingleArmEnv):
         #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
         # )
 
-        # Create stand, frame, and picture
+        # Create stand, frame, and tool
         self.stand_args = dict(
             name="stand",
             size=(0.15, 0.15, 0.15),
