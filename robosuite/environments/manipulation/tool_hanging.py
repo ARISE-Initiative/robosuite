@@ -413,11 +413,11 @@ class ToolHanging(SingleArmEnv):
             # Key boolean checks
             @sensor(modality=modality)
             def frame_is_assembled(obs_cache):
-                return self._check_frame_assembled()
+                return [float(self._check_frame_assembled())]
 
             @sensor(modality=modality)
             def tool_on_frame(obs_cache):
-                return self._check_tool_on_frame()
+                return [float(self._check_tool_on_frame())]
 
             sensors += [frame_is_assembled, tool_on_frame]
             names += [frame_is_assembled.__name__, tool_on_frame.__name__]
@@ -638,7 +638,7 @@ class ToolHanging(SingleArmEnv):
         # check (5): check if tool insertion is far enough - check this by computing normalized distance of projection along frame hook line.
         #            We ensure that it's at least 20% inserted along the length of the frame hook.
         normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
-        tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2)
+        tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2) and (normalized_dist_along_frame_hook_line < 1.0)
 
         return all([
             (not robot_and_tool_contact),
