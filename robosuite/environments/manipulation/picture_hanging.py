@@ -1,8 +1,9 @@
 from collections import OrderedDict
 import numpy as np
 
-from robosuite.utils.transform_utils import convert_quat
+import robosuite.utils.transform_utils as T
 from robosuite.utils.mjcf_utils import CustomMaterial
+from robosuite.utils.sim_utils import check_contact
 
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
@@ -232,7 +233,7 @@ class PictureHanging(SingleArmEnv):
         # )
 
         # Create stand, frame, and picture
-        self.stand = StandWithMount(
+        self.stand_args = dict(
             name="stand",
             size=(0.15, 0.15, 0.15),
             mount_location=(0., 0.),
@@ -243,7 +244,8 @@ class PictureHanging(SingleArmEnv):
             initialize_on_side=False,
             density=1000.,
         )
-        self.frame = HookFrame(
+        self.stand = StandWithMount(**self.stand_args)
+        self.frame_args = dict(
             name="frame",
             frame_length=0.12,
             frame_height=0.28,
@@ -251,6 +253,7 @@ class PictureHanging(SingleArmEnv):
             frame_thickness=0.02,
             density=500.,
         )
+        self.frame = HookFrame(**self.frame_args)
         # old-params
         # self.tool = PictureFrame(
         #     name="tool",
@@ -271,7 +274,7 @@ class PictureHanging(SingleArmEnv):
         #     mount_hole_thickness=0.01,
         #     density=250.,
         # )
-        self.tool = RatchetingWrenchObject(
+        self.tool_args = dict(
             name="tool",
             handle_size=(0.05, 0.015, 0.01),
             outer_radius_1=0.0425,
@@ -284,6 +287,7 @@ class PictureHanging(SingleArmEnv):
             # rgba=None,
             density=250.,
         )
+        self.tool = RatchetingWrenchObject(**self.tool_args)
 
         # Create placement initializer
         self._get_placement_initializer()
@@ -343,7 +347,33 @@ class PictureHanging(SingleArmEnv):
         super()._setup_references()
 
         # Additional object references from this env
-        # TODO!
+        self.obj_body_id = dict(
+            stand=self.sim.model.body_name2id(self.stand.root_body),
+            frame=self.sim.model.body_name2id(self.frame.root_body),
+            tool=self.sim.model.body_name2id(self.tool.root_body),
+        )
+
+        # Important sites: 
+        #   tool_hole1_center, tool_hole2_center - for checking hanging
+        #   frame_hang_site, frame_mount_site, frame_intersection_site - for orienting the hook, and checking hanging
+        #   stand_mount_site - for checking that stand base is upright
+        self.obj_site_id = dict(
+            tool_hole1_center=self.sim.model.site_name2id("tool_hole1_center"), # center of one end of wrench
+            tool_hole2_center=self.sim.model.site_name2id("tool_hole2_center"), # center of other end of wrench
+            frame_hang_site=self.sim.model.site_name2id("frame_hang_site"), # end of frame where hanging takes place
+            frame_mount_site=self.sim.model.site_name2id("frame_mount_site"), # bottom of frame that needs to be inserted into base
+            frame_intersection_site=self.sim.model.site_name2id("frame_intersection_site"), # corner of frame
+            stand_mount_site=self.sim.model.site_name2id("stand_mount_site"), # where frame needs to be inserted into stand
+        )
+
+        # Important geoms: 
+        #   stand_base - for checking that stand base is upright
+        #   tool hole geoms - for checking insertion
+        self.obj_geom_id = dict(
+            stand_base=self.sim.model.geom_name2id("stand_base"), # bottom of stand
+        )
+        for i in range(self.tool_args["ngeoms"]):
+            self.obj_geom_id["tool_hole1_hc_{}".format(i)] = self.sim.model.geom_name2id("tool_hole1_hc_{}".format(i))
 
     def _setup_observables(self):
         """
@@ -360,9 +390,115 @@ class PictureHanging(SingleArmEnv):
             pf = self.robots[0].robot_model.naming_prefix
             modality = "object"
 
-            # TODO!
+            # for conversion to relative gripper frame
+            @sensor(modality=modality)
+            def world_pose_in_gripper(obs_cache):
+                return T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"]))) if\
+                    f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache else np.eye(4)
+            sensors = [world_pose_in_gripper]
+            names = ["world_pose_in_gripper"]
+            actives = [False]
+
+            # Add absolute and relative pose for each object
+            obj_names = ["base", "frame", "tool"]
+            query_names = ["stand_base", "frame_intersection_site", "tool"]
+            query_types = ["geom", "site", "body"]
+            for i in range(len(obj_name)):
+                obj_sensors, obj_sensor_names = self._create_obj_sensors(
+                    obj_name=obj_names[i], modality=modality, query_name=query_names[i], query_type=query_types[i])
+                sensors += obj_sensors
+                names += obj_sensor_names
+                actives += [True] * len(obj_sensors)
+
+            # Key boolean checks
+            @sensor(modality=modality)
+            def frame_is_assembled(obs_cache):
+                return self._check_frame_assembled()
+
+            @sensor(modality=modality)
+            def tool_on_frame(obs_cache):
+                return self._check_tool_on_frame()
+
+            sensors += [frame_is_assembled, tool_on_frame]
+            names += [frame_is_assembled.__name__, tool_on_frame.__name__]
+            actives += [True, True]
+
+            # Create observables
+            for name, s, active in zip(names, sensors, actives):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                    active=active,
+                )
 
         return observables
+
+    def _create_obj_sensors(self, obj_name, modality="object", query_name=None, query_type="body"):
+        """
+        Helper function to create sensors for a given object. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            obj_name (str): Name of object to create sensors for (used for naming observations)
+            modality (str): Modality to assign to all sensors
+            query_name (str): Name to query mujoco for the pose attributes of this object - if None, use @obj_name
+            query_type (str): Either "body", "geom", or "site" - type of mujoco sensor that will be queried for pose
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given obj
+                names (list): array of corresponding observable names
+        """
+        if query_name is None:
+            query_name = obj_name
+
+        assert query_type in ["body", "geom", "site"]
+        if query_type == "body":
+            id_lookup = self.obj_body_id
+            pos_lookup = self.sim.data.body_xpos
+            mat_lookup = self.sim.data.body_xmat
+        elif query_type == "geom":
+            id_lookup = self.obj_geom_id
+            pos_lookup = self.sim.data.geom_xpos
+            mat_lookup = self.sim.data.geom_xmat
+        else:
+            id_lookup = self.obj_site_id
+            pos_lookup = self.sim.data.site_xpos
+            mat_lookup = self.sim.data.site_xmat
+
+        ### TODO: this was slightly modified from pick-place - do we want to move this into utils to share it? ###
+        pf = self.robots[0].robot_model.naming_prefix
+
+        @sensor(modality=modality)
+        def obj_pos(obs_cache):
+            return np.array(pos_lookup[id_lookup[query_name]])
+
+        @sensor(modality=modality)
+        def obj_quat(obs_cache):
+            return T.mat2quat(mat_lookup[id_lookup[query_name]])
+
+        @sensor(modality=modality)
+        def obj_to_eef_pos(obs_cache):
+            # Immediately return default value if cache is empty
+            if any([name not in obs_cache for name in
+                    [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]):
+                return np.zeros(3)
+            obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
+            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
+            rel_pos, rel_quat = T.mat2pose(rel_pose)
+            obs_cache[f"{obj_name}_to_{pf}eef_quat"] = rel_quat
+            return rel_pos
+
+        @sensor(modality=modality)
+        def obj_to_eef_quat(obs_cache):
+            return obs_cache[f"{obj_name}_to_{pf}eef_quat"] if \
+                f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
+
+        sensors = [obj_pos, obj_quat, obj_to_eef_pos, obj_to_eef_quat]
+        names = [f"{obj_name}_pos", f"{obj_name}_quat", f"{obj_name}_to_{pf}eef_pos", f"{obj_name}_to_{pf}eef_quat"]
+
+        return sensors, names
 
     def _reset_internal(self):
         """
@@ -398,11 +534,116 @@ class PictureHanging(SingleArmEnv):
 
     def _check_success(self):
         """
-        Check if picture is hung on frame correctly.
+        Check if tool is hung on frame correctly and frame is assembled coorectly as well.
 
         Returns:
-            bool: True if cube has been lifted
+            bool: True if tool is hung on frame correctly 
         """
-        # TODO!
+        return self._check_frame_assembled() and self._check_tool_on_frame()
 
-        return False
+    def _check_frame_assembled(self):
+        """
+        Check if the frame has been assembled correctly. This checks the following things:
+            (1) the base is upright
+            (2) the end of the hook frame has been inserted into the base
+        """
+
+        # NOTE: for checking hook assembly, first check distance to vertical mount line is within tolerance, and
+        #       second that the bottom hook site is close to stand base geom
+
+        ### TODO: tune tolerance for closeness to stand base geom (and ensure we can distinguish between insertion and being outside) ###
+
+
+        # position of base
+        base_pos = self.sim.data.geom_xpos[self.obj_geom_id["stand_base"]]
+
+        # check (1): the base is upright. Just take the vector between two locations on the base shaft, and check
+        #            that the angle to the z-axis is small, by computing the angle between that unit vector and
+        #            the z-axis. Recall that for two unit vectors, the arccosine of the dot product gives the angle.
+        vec_along_base_shaft = self.sim.data.site_xpos[self.obj_site_id["stand_mount_site"]] - base_pos
+        vec_along_base_shaft = vec_along_base_shaft / np.linalg.norm(vec_along_base_shaft)
+        angle_to_z_axis = np.abs(np.arccos(vec_along_base_shaft[2]))
+        base_shaft_is_vertical = (angle_to_z_axis < np.pi / 18.) # less than 10 degrees
+
+
+        # check (2): hook frame has been inserted into the base. For this we can just check the distance
+        #            between the bottom of the frame hook and the base is small enough.
+        bottom_hook_pos = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
+        insertion_dist = np.linalg.norm(bottom_hook_pos - base_pos)
+        is_inserted = (insertion_dist < (self.frame_args["frame_thickness"] / 2.))
+
+        return base_shaft_is_vertical and is_inserted
+
+    def _check_tool_on_frame(self):
+        """
+        Check if the tool has been hung on the frame correctly. This checks the following things:
+            (1) the robot is not touching the tool (it is hanging on its own)
+            (2) the tool hole is making contact with the frame hook
+            (3) the tool hole is close to the line defined by the frame hook
+            (4) either end of the tool hole are on opposite sides of the frame hook
+            (5) the tool hole is inserted far enough into the frame hook
+        """
+
+
+        # check (1): robot is not touching the tool
+        robot_grasp_geoms = [self.robots[0].gripper.important_geoms["left_fingerpad"], self.robots[0].gripper.important_geoms["right_fingerpad"]]
+        robot_and_tool_contact = False
+        for g_group in robot_grasp_geoms:
+            if check_contact(self.sim, g_group, self.tool.contact_geoms):
+                robot_and_tool_contact = True
+                break
+
+
+        # check (2): the tool hole is making contact with the frame hook
+        all_tool_hole_geoms = ["tool_hole1_hc_{}".format(i) for i in range(self.tool_args["ngeoms"])]
+        frame_hook_geom = "frame_horizontal_frame"
+        frame_and_tool_hole_contact = check_contact(self.sim, all_tool_hole_geoms, frame_hook_geom)
+
+
+        # check (3): compute distance from tool hole center to the line defined by the frame hook
+
+        # normalized vector that points along the frame hook 
+        hook_endpoint = self.sim.data.site_xpos[self.obj_site_id["frame_hang_site"]]
+        frame_hook_vec = self.sim.data.site_xpos[self.obj_site_id["frame_intersection_site"]] - hook_endpoint
+        frame_hook_length = np.linalg.norm(frame_hook_vec)
+        frame_hook_vec = frame_hook_vec / frame_hook_length
+
+        # compute orthogonal projection of tool hole point to get distance to frame hook line
+        # (see https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Vector_formulation)
+        tool_hole_center = self.sim.data.site_xpos[self.obj_site_id["tool_hole1_center"]]
+        tool_hole_vec = tool_hole_center - hook_endpoint
+        tool_hole_dot = np.dot(tool_hole_vec, frame_hook_vec)
+        tool_hole_proj = tool_hole_dot * frame_hook_vec
+        tool_hole_ortho_proj = tool_hole_vec - tool_hole_proj
+        dist_to_frame_hook_line = np.linalg.norm(tool_hole_ortho_proj)
+
+        # distance needs to be less than the difference between the inner tool hole radius and the half-length of the frame hook box geom
+        tool_hole_is_close_enough = dist_to_frame_hook_line < (self.tool_args["inner_radius_1"] - (self.frame_args["frame_thickness"] / 2.))
+
+
+        # check (4): take two opposite geoms around the tool hole, and check that they are on opposite sides of the frame hook line
+        #            to guarantee that insertion has taken place
+        g2_id = self.tool_args["ngeoms"] // 2 # get geom opposite geom 0
+        g1_pos = self.sim.data.geom_xpos[self.obj_geom_id["tool_hole1_hc_0"]]
+        g2_pos = self.sim.data.geom_xpos[self.obj_geom_id["tool_hole1_hc_{}".format(g2_id)]]
+
+        # take cross product of each point against the line, and then dot the result to see if
+        # the sign is positive or negative. If it is positive, then they are on the same side 
+        # (visualize with right-hand-rule to see this)
+        g1_vec = g1_pos - hook_endpoint
+        g2_vec = g2_pos - hook_endpoint
+        tool_is_between_hook = np.dot(np.cross(g1_vec, frame_hook_vec), np.cross(g2_vec, frame_hook_vec)) < 0
+
+
+        # check (5): check if tool insertion is far enough - check this by computing normalized distance of projection along frame hook line.
+        #            We ensure that it's at least 20% inserted along the length of the frame hook.
+        normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
+        tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2)
+
+        return all([
+            (not robot_and_tool_contact),
+            frame_and_tool_hole_contact,
+            tool_hole_is_close_enough,
+            tool_is_between_hook,
+            tool_is_inserted_far_enough,
+        ])

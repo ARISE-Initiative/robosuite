@@ -322,20 +322,29 @@ class Threading(SingleArmEnv):
             pf = self.robots[0].robot_model.naming_prefix
             modality = "object"
 
+            # for conversion to relative gripper frame
+            @sensor(modality=modality)
+            def world_pose_in_gripper(obs_cache):
+                return T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"]))) if\
+                    f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache else np.eye(4)
+            sensors = [world_pose_in_gripper]
+            names = ["world_pose_in_gripper"]
+            actives = [False]
+
             # add ground-truth poses (absolute and relative to eef) for all objects
-            sensors = []
-            names = []
             for obj_name in self.obj_body_id:
                 obj_sensors, obj_sensor_names = self._create_obj_sensors(obj_name=obj_name, modality=modality)
                 sensors += obj_sensors
                 names += obj_sensor_names
+                actives += [True] * len(obj_sensors)
 
             # Create observables
-            for name, s in zip(names, sensors):
+            for name, s, active in zip(names, sensors, actives):
                 observables[name] = Observable(
                     name=name,
                     sensor=s,
                     sampling_rate=self.control_freq,
+                    active=active,
                 )
 
         return observables
