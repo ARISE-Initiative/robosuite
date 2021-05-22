@@ -34,6 +34,8 @@ class HollowCylinderObject(CompositeObject):
         rgba=None,
         material=None,
         density=1000.,
+        solref=(0.02, 1.),
+        solimp=(0.9, 0.95, 0.001),
         friction=None,
         make_half=False,
     ):
@@ -43,6 +45,8 @@ class HollowCylinderObject(CompositeObject):
         self.rgba = rgba
         self.density = density
         self.friction = friction if friction is None else np.array(friction)
+        self.solref = solref
+        self.solimp = solimp
         self.make_half = make_half # if True, will only make half the hollow cylinder
 
         self.has_material = (material is not None)
@@ -97,6 +101,8 @@ class HollowCylinderObject(CompositeObject):
             "locations_relative_to_center": True,
             "obj_types": "all",
             "density": self.density,
+            "solref": self.solref,
+            "solimp": self.solimp,
         }
         obj_args = {}
 
@@ -121,15 +127,14 @@ class HollowCylinderObject(CompositeObject):
             add_to_dict(
                 dic=obj_args,
                 geom_types="box",
-                # needle geom needs to be offset from boundary in (x, z)
                 geom_locations=tuple(geom_center),
                 geom_quats=tuple(geom_quat),
                 geom_sizes=tuple(geom_size),
                 geom_names="hc_{}".format(i),
                 geom_rgbas=None if self.has_material else self.rgba,
                 geom_materials=self.material.mat_attrib["name"] if self.has_material else None,
-                 # make the needle low friction to ensure easy insertion
                 geom_frictions=self.friction,
+                geom_condims=4,
             )
 
         # Sites

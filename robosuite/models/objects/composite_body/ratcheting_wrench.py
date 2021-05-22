@@ -42,6 +42,8 @@ class RatchetingWrenchObject(CompositeBodyObject):
         ngeoms=8,
         # rgba=None,
         density=1000.,
+        solref=(0.02, 1.),
+        solimp=(0.9, 0.95, 0.001),
         friction=None,
     ):
         # Object properties
@@ -82,6 +84,8 @@ class RatchetingWrenchObject(CompositeBodyObject):
                 rgba=None,
                 material=wrench_mat,
                 density=density,
+                solref=solref,
+                solimp=solimp,
                 friction=friction,
                 make_half=False,
             ))
@@ -92,6 +96,10 @@ class RatchetingWrenchObject(CompositeBodyObject):
             size=handle_size,
             rgba=None,
             material=wrench_mat,
+            density=density,
+            solref=solref,
+            solimp=solimp,
+            friction=friction,
         ))
 
         # Define positions (top-level body is centered at handle)
@@ -103,6 +111,11 @@ class RatchetingWrenchObject(CompositeBodyObject):
         quats = [None, None, None]
         parents = [None, None, None]
 
+        objects = [objects[0]]
+        positions = [positions[0]]
+        quats = [quats[0]]
+        parents = [parents[0]]
+
         # Run super init
         super().__init__(
             name=name,
@@ -110,4 +123,5 @@ class RatchetingWrenchObject(CompositeBodyObject):
             object_locations=positions,
             object_quats=quats,
             object_parents=parents,
+            joints=[dict(type="free", damping="0.0005")],
         )

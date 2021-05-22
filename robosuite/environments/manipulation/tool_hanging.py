@@ -274,18 +274,33 @@ class ToolHanging(SingleArmEnv):
         #     mount_hole_thickness=0.01,
         #     density=250.,
         # )
+
         self.tool_args = dict(
             name="tool",
-            handle_size=(0.05, 0.015, 0.01),
-            outer_radius_1=0.0425,
-            inner_radius_1=0.025,
+            # handle_size=(0.05, 0.015, 0.01),
+            handle_size=(0.05, 0.015, 0.005),
+            # outer_radius_1=0.0425,
+            # inner_radius_1=0.025,
+            # height_1=0.015,
+            outer_radius_1=0.06,
+            inner_radius_1=0.03,
             height_1=0.01,
-            outer_radius_2=0.0425,
-            inner_radius_2=0.025,
+            # outer_radius_2=0.0425,
+            # inner_radius_2=0.025,
+            # height_2=0.015,
+            outer_radius_2=0.06,
+            inner_radius_2=0.03,
             height_2=0.01,
             ngeoms=8,
             # rgba=None,
-            density=250.,
+            density=100.,
+            # density=1000.,
+            solref=(0.02, 1.),
+            solimp=(0.998, 0.998, 0.001),
+            friction=(0.95, 0.3, 0.1),
+            # solref=(0.01, 0.5),
+            # solimp=(0.998, 0.998, 0.001),
+            # friction=(1.0, 0.01, 0.001),
         )
         self.tool = RatchetingWrenchObject(**self.tool_args)
 
@@ -354,12 +369,12 @@ class ToolHanging(SingleArmEnv):
         )
 
         # Important sites: 
-        #   tool_hole1_center, tool_hole2_center - for checking hanging
+        #   tool_hole1_center - for checking hanging
         #   frame_hang_site, frame_mount_site, frame_intersection_site - for orienting the hook, and checking hanging
         #   stand_mount_site - for checking that stand base is upright
         self.obj_site_id = dict(
             tool_hole1_center=self.sim.model.site_name2id("tool_hole1_center"), # center of one end of wrench
-            tool_hole2_center=self.sim.model.site_name2id("tool_hole2_center"), # center of other end of wrench
+            # tool_hole2_center=self.sim.model.site_name2id("tool_hole2_center"), # center of other end of wrench
             frame_hang_site=self.sim.model.site_name2id("frame_hang_site"), # end of frame where hanging takes place
             frame_mount_site=self.sim.model.site_name2id("frame_mount_site"), # bottom of frame that needs to be inserted into base
             frame_intersection_site=self.sim.model.site_name2id("frame_intersection_site"), # corner of frame
@@ -548,12 +563,6 @@ class ToolHanging(SingleArmEnv):
             (2) the end of the hook frame has been inserted into the base
         """
 
-        # NOTE: for checking hook assembly, first check distance to vertical mount line is within tolerance, and
-        #       second that the bottom hook site is close to stand base geom
-
-        ### TODO: tune tolerance for closeness to stand base geom (and ensure we can distinguish between insertion and being outside) ###
-
-
         # position of base
         base_pos = self.sim.data.geom_xpos[self.obj_geom_id["stand_base"]]
 
@@ -639,6 +648,12 @@ class ToolHanging(SingleArmEnv):
         #            We ensure that it's at least 20% inserted along the length of the frame hook.
         normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
         tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2) and (normalized_dist_along_frame_hook_line < 1.0)
+
+        # print("robot_and_tool_contact: {}".format(robot_and_tool_contact))
+        # print("frame_and_tool_hole_contact: {}".format(frame_and_tool_hole_contact))
+        # print("tool_hole_is_close_enough: {}".format(tool_hole_is_close_enough))
+        # print("tool_is_between_hook: {}".format(tool_is_between_hook))
+        # print("tool_is_inserted_far_enough: {}".format(tool_is_inserted_far_enough))
 
         return all([
             (not robot_and_tool_contact),

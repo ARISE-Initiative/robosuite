@@ -331,6 +331,7 @@ class CompositeObject(MujocoGeneratedObject):
         geom_rgbas=None,
         geom_materials=None,
         geom_frictions=None,
+        geom_condims=None,
         rgba=None,
         density=100.,
         solref=(0.02, 1.),
@@ -386,6 +387,7 @@ class CompositeObject(MujocoGeneratedObject):
         self.geom_rgbas = list(geom_rgbas) if geom_rgbas is not None else [None] * n_geoms
         self.geom_materials = list(geom_materials) if geom_materials is not None else [None] * n_geoms
         self.geom_frictions = list(geom_frictions) if geom_frictions is not None else [None] * n_geoms
+        self.geom_condims = list(geom_condims) if geom_condims is not None else [None] * n_geoms
         self.density = [density] * n_geoms if density is None or type(density) in {float, int} else list(density)
         self.solref = [solref] * n_geoms if solref is None or type(solref[0]) in {float, int} else list(solref)
         self.solimp = [solimp] * n_geoms if obj_types is None or type(solimp[0]) in {float, int} else list(solimp)
@@ -434,7 +436,7 @@ class CompositeObject(MujocoGeneratedObject):
             obj.append(new_site(**site_spec))
 
         # Loop through all geoms and generate the composite object
-        for i, (obj_type, g_type, g_size, g_loc, g_name, g_rgba, g_friction,
+        for i, (obj_type, g_type, g_size, g_loc, g_name, g_rgba, g_friction, g_condim,
                 g_quat, g_material, g_density, g_solref, g_solimp) in enumerate(zip(
                 self.obj_types,
                 self.geom_types,
@@ -443,6 +445,7 @@ class CompositeObject(MujocoGeneratedObject):
                 self.geom_names,
                 self.geom_rgbas,
                 self.geom_frictions,
+                self.geom_condims,
                 self.geom_quats,
                 self.geom_materials,
                 self.density,
@@ -498,6 +501,8 @@ class CompositeObject(MujocoGeneratedObject):
                 col_geom_attr['solref'] = array_to_string(g_solref)
                 col_geom_attr['solimp'] = array_to_string(g_solimp)
                 col_geom_attr['rgba'] = OBJECT_COLLISION_COLOR
+                if g_condim is not None:
+                    col_geom_attr['condim'] = str(g_condim)
                 obj.append(new_geom(**col_geom_attr))
 
             # Add visual geom if necessary
