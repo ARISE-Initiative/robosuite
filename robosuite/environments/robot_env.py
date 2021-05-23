@@ -163,8 +163,8 @@ class RobotEnv(MujocoEnv):
         self.camera_depths = self._input2list(camera_depths, self.num_cameras)
 
         # sanity checks for camera rendering
-        if self.use_camera_obs and not self.has_offscreen_renderer:pass
-            # raise ValueError("Error: Camera observations require an offscreen renderer!")
+        if self.use_camera_obs and not self.has_offscreen_renderer:
+            raise ValueError("Error: Camera observations require an offscreen renderer!")
         if self.use_camera_obs and self.camera_names is None:
             raise ValueError("Must specify at least one camera name when using camera obs")
 
