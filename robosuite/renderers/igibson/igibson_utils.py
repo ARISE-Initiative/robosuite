@@ -6,6 +6,7 @@ import tempfile
 import numpy as np
 import matplotlib.pyplot as plt
 import gibson2
+from transforms3d import quaternions
 
 def load_object(renderer,
                 geom,
@@ -48,7 +49,7 @@ def load_object(renderer,
         elif geom_type in ['box', 'sphere']:
             scale = geom_size * 2
         elif geom_type == 'cylinder':
-            scale = [1, 1, 1]
+            scale = [geom_size[0], geom_size[0], geom_size[1]]
         elif geom_type == 'plane':
             scale = [geom_size[0]*2 , geom_size[1]*2, 0.01]
         

@@ -108,17 +108,20 @@ class Parser():
 
     def parse_geometries(self):
         self.parse_meshes()
-        for instance_id, geom in enumerate(self.xml_root.iter('geom')):
+        instance_id = 0
+        for geom in self.xml_root.iter('geom'):
             geom_name = geom.get('name')
             geom_type = geom.get('type')
 
-            if geom.get('group') != '1': #  and geom_type != 'plane':
+            if geom.get('group') != '1' and geom_type != 'plane':
                 continue
-
+            
+            instance_id += 1
             parent_body = self.parent_map.get(geom)
             # [1, 0, 0, 0] is wxyz, we convert it back to xyzw.
             # The imported function performs the same function
-            geom_orn = xyzw2wxyz(string_to_array(geom.get('quat', '1 0 0 0')))
+            geom_orn = string_to_array(geom.get('quat', '1 0 0 0'))
+            geom_orn = [geom_orn[1],geom_orn[2],geom_orn[3],geom_orn[0]]
             geom_pos = string_to_array(geom.get('pos', "0 0 0"))
             geom_scale = string_to_array(geom.get('scale', "1 1 1"))
             geom_size = string_to_array(geom.get('size', "1 1 1"))

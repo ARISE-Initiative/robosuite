@@ -39,7 +39,16 @@ class iGibsonWrapper(Wrapper):
         super().__init__(env)
 
         self.env = env
+        self.env.viewer = self
         self.render2tensor = render2tensor
+        self.width = width
+        self.height = height
+        self.enable_pbr = enable_pbr
+        self.enable_shadow = enable_shadow
+        self.msaa = msaa
+        self.optimized = optimized
+        self.light_dimming_factor = light_dimming_factor
+        self.device_idx = device_idx
 
         if self.env.use_camera_obs:
             self.mode = 'headless'
@@ -67,14 +76,13 @@ class iGibsonWrapper(Wrapper):
         #TODO: Check this setting of camera
         camera_position = np.array([1.6,  0.,   1.45])
         view_direction = -np.array([0.9632, 0, 0.2574])
-        self.renderer.set_camera(camera_position, camera_position + view_direction, [0, 0, 1])
+        # self.renderer.set_camera(camera_position, camera_position + view_direction, [0, 0, 1])
 
         # add viewer
         self.add_viewer(initial_pos=camera_position, 
                         initial_view_direction=view_direction)
 
         self.load()
-
 
 
     def add_viewer(self, 
@@ -92,6 +100,8 @@ class iGibsonWrapper(Wrapper):
             self.viewer = Viewer(initial_pos = initial_pos,
                                 initial_view_direction=initial_view_direction,
                                 initial_up=initial_up)    
+
+            self.viewer.renderer = self.renderer
         else:
             self.viewer = None
 
@@ -107,8 +117,6 @@ class iGibsonWrapper(Wrapper):
         """
         Update positions in renderer without stepping the simulation. Usually used in the reset() function
         """
-        # print(kwargs)
-        # import pdb; pdb.set_trace();
         for instance in self.renderer.instances:
             if instance.dynamic:
                 self.update_position(instance, self.env)
@@ -123,7 +131,6 @@ class iGibsonWrapper(Wrapper):
 
         :param instance: Instance in the renderer
         """
-        
         if isinstance(instance, Instance):
             if instance.parent_body != 'worldbody':
                 pos_body_in_world = env.sim.data.get_body_xpos(instance.parent_body)
@@ -138,6 +145,19 @@ class iGibsonWrapper(Wrapper):
             instance.set_position(pos)
             instance.set_rotation(quat2rotmat(xyzw2wxyz(orn)))
 
+    def reset(self):
+        self.renderer.release()
+        self.__init__(env=self.env,
+                 width=self.width,
+                 height=self.height,
+                 enable_pbr=self.enable_pbr,
+                 enable_shadow=self.enable_shadow,
+                 msaa=self.msaa,
+                 render2tensor=self.render2tensor,
+                 optimized=self.optimized,
+                 light_dimming_factor=self.light_dimming_factor,
+                 device_idx=self.device_idx)
+                
     def close(self):
         self.renderer.release()
 
@@ -151,26 +171,27 @@ if __name__ == '__main__':
 
     env = iGibsonWrapper(
         env = suite.make(
-                "NutAssembly",
-                robots = ["Panda"],
+                "Door",
+                robots = ["IIWA"],
                 reward_shaping=True,
-                has_renderer=False,           # no on-screen renderer
+                has_renderer=True,           
                 has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
                 use_camera_obs=False,         # no camera observations
-                control_freq=10, 
-            )
+                control_freq=20, 
+                render_with_igibson=True
+            ),
+            enable_pbr=True,
+            enable_shadow=True
     )
 
-    env.reset()
+    # env.reset()
 
-    for i in range(500):
+    for i in range(10000):
         action = np.random.randn(8)
-        obs, reward, done, info = env.step(action)
-
-        if i%100 == 0:
-            env.render(render_type = "png")
+        obs, reward, done, _ = env.step(action)
+        env.render()
 
     env.close()
     
