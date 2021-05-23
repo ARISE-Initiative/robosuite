@@ -150,6 +150,7 @@ class Stack(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
+        render_with_igibson=False,
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -188,6 +189,7 @@ class Stack(SingleArmEnv):
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
+            render_with_igibson=render_with_igibson,
         )
 
     def reward(self, action):

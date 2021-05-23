@@ -1,3 +1,4 @@
+import pdb
 import numpy as np
 import robosuite as suite
 
@@ -22,7 +23,8 @@ class iGibsonWrapper(Wrapper):
                  render2tensor=False,
                  optimized=False,
                  light_dimming_factor=1.0,
-                 device_idx=0):
+                 device_idx=0,
+                 modes=('rgb')):
         """[summary]
 
         Args:
@@ -39,7 +41,6 @@ class iGibsonWrapper(Wrapper):
         super().__init__(env)
 
         self.env = env
-        self.env.viewer = self
         self.render2tensor = render2tensor
         self.width = width
         self.height = height
@@ -49,8 +50,9 @@ class iGibsonWrapper(Wrapper):
         self.optimized = optimized
         self.light_dimming_factor = light_dimming_factor
         self.device_idx = device_idx
+        self.modes = modes
 
-        if self.env.use_camera_obs:
+        if not self.env.has_renderer:
             self.mode = 'headless'
         else:
             self.mode = 'gui'
@@ -76,12 +78,14 @@ class iGibsonWrapper(Wrapper):
         #TODO: Check this setting of camera
         camera_position = np.array([1.6,  0.,   1.45])
         view_direction = -np.array([0.9632, 0, 0.2574])
-        # self.renderer.set_camera(camera_position, camera_position + view_direction, [0, 0, 1])
+        self.renderer.set_camera(camera_position, camera_position + view_direction, [0, 0, 1])
 
         # add viewer
         self.add_viewer(initial_pos=camera_position, 
                         initial_view_direction=view_direction)
 
+        self.env.ig_renderer_params = {'renderer':self.renderer,
+                                       'modes': modes}
         self.load()
 
 
@@ -174,11 +178,11 @@ if __name__ == '__main__':
                 "Door",
                 robots = ["IIWA"],
                 reward_shaping=True,
-                has_renderer=True,           
-                has_offscreen_renderer=False, # no off-screen renderer
+                has_renderer=False,           
+                has_offscreen_renderer=True, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
-                use_camera_obs=False,         # no camera observations
+                use_camera_obs=True,         # no camera observations
                 control_freq=20, 
                 render_with_igibson=True
             ),

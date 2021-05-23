@@ -7,6 +7,7 @@ import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
 
 import numpy as np
+import torch
 
 REGISTERED_ENVS = {}
 
@@ -105,7 +106,8 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq=20,
         horizon=1000,
         ignore_done=False,
-        hard_reset=True
+        hard_reset=True,
+        render_with_igibson=False
     ):
         # First, verify that both the on- and off-screen renderers are not being used simultaneously
         if has_renderer is True and has_offscreen_renderer is True:
@@ -133,6 +135,8 @@ class MujocoEnv(metaclass=EnvMeta):
         self.model_timestep = None
         self.control_timestep = None
         self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
+        self.render_with_igibson = render_with_igibson # If true, it will not intialize the default MuJoCo Viewer.
+        self.ig_renderer_params = {}
 
         # Load the model
         self._load_model()
@@ -257,29 +261,30 @@ class MujocoEnv(metaclass=EnvMeta):
     def _reset_internal(self):
         """Resets simulation internal configurations."""
 
-        # create visualization screen or renderer
-        if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+        if not self.render_with_igibson:
+            # create visualization screen or renderer
+            if self.has_renderer and self.viewer is None:
+                self.viewer = MujocoPyRenderer(self.sim)
+                self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
+                self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
 
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
+                # hiding the overlay speeds up rendering significantly
+                self.viewer.viewer._hide_overlay = True
 
-            # make sure mujoco-py doesn't block rendering frames
-            # (see https://github.com/StanfordVL/robosuite/issues/39)
-            self.viewer.viewer._render_every_frame = True
+                # make sure mujoco-py doesn't block rendering frames
+                # (see https://github.com/StanfordVL/robosuite/issues/39)
+                self.viewer.viewer._render_every_frame = True
 
-            # Set the camera angle for viewing
-            if self.render_camera is not None:
-                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
+                # Set the camera angle for viewing
+                if self.render_camera is not None:
+                    self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
 
-        elif self.has_offscreen_renderer:
-            if self.sim._render_context_offscreen is None:
-                render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
-                self.sim.add_render_context(render_context)
-            self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+            elif self.has_offscreen_renderer:
+                if self.sim._render_context_offscreen is None:
+                    render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
+                    self.sim.add_render_context(render_context)
+                self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
+                self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
 
         # additional housekeeping
         self.sim_state_initial = self.sim.get_state()
@@ -335,14 +340,20 @@ class MujocoEnv(metaclass=EnvMeta):
                     obs_by_modality[modality] = []
                 # Make sure all observations are numpy arrays so we can concatenate them
                 array_obs = [obs] if type(obs) in {int, float} or not obs.shape else obs
-                obs_by_modality[modality].append(np.array(array_obs))
+                if isinstance(array_obs, torch.Tensor):
+                    obs_by_modality[modality].append(array_obs)
+                else:
+                    obs_by_modality[modality].append(np.array(array_obs))
 
         # Add in modality observations
         for modality, obs in obs_by_modality.items():
             # To save memory, we only concatenate the image observations if explicitly requested
             if modality == "image-state" and not macros.CONCATENATE_IMAGES:
                 continue
-            observations[modality] = np.concatenate(obs, axis=-1)
+            if isinstance(array_obs, torch.Tensor):
+                obs_by_modality[modality].append(array_obs)
+            else:
+                obs_by_modality[modality].append(np.array(array_obs))
 
         return observations
 

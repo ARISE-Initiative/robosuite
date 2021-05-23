@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from collections import OrderedDict
 
 import robosuite.utils.macros as macros
@@ -126,6 +127,7 @@ class RobotEnv(MujocoEnv):
         camera_widths=256,
         camera_depths=False,
         robot_configs=None,
+        render_with_igibson=False,
     ):
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
@@ -161,8 +163,8 @@ class RobotEnv(MujocoEnv):
         self.camera_depths = self._input2list(camera_depths, self.num_cameras)
 
         # sanity checks for camera rendering
-        if self.use_camera_obs and not self.has_offscreen_renderer:
-            raise ValueError("Error: Camera observations require an offscreen renderer!")
+        if self.use_camera_obs and not self.has_offscreen_renderer:pass
+            # raise ValueError("Error: Camera observations require an offscreen renderer!")
         if self.use_camera_obs and self.camera_names is None:
             raise ValueError("Must specify at least one camera name when using camera obs")
 
@@ -194,6 +196,7 @@ class RobotEnv(MujocoEnv):
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
+            render_with_igibson=render_with_igibson,
         )
 
     def visualize(self, vis_settings):
@@ -355,12 +358,28 @@ class RobotEnv(MujocoEnv):
 
         @sensor(modality=modality)
         def camera_rgb(obs_cache):
-            img = self.sim.render(
-                camera_name=cam_name,
-                width=cam_w,
-                height=cam_h,
-                depth=cam_d,
-            )
+            # import pdb; pdb.set_trace();
+            if self.render_with_igibson:
+                # iGibson renderer
+                if self.ig_renderer_params == {}:
+                    # This function is called once before
+                    img = np.zeros((256, 256), np.uint8)
+                else:
+                    img = self.ig_renderer_params['renderer'].render(modes=self.ig_renderer_params['modes'])
+
+                    if isinstance(img[0], np.ndarray):
+                        # np array is in range 0-1
+                        img = (np.concatenate(img, axis=1) * 255).astype(np.uint8)[:,:,:3]
+                    else:
+                        # torch tensor is in range 0-255
+                        img = torch.cat(img, dim=1)[:,:,:3] 
+            else:
+                img = self.sim.render(
+                    camera_name=cam_name,
+                    width=cam_w,
+                    height=cam_h,
+                    depth=cam_d,
+                )
             if cam_d:
                 rgb, depth = img
                 obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)

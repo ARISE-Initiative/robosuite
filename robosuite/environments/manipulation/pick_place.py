@@ -180,6 +180,7 @@ class PickPlace(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
+        render_with_igibson=False,
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -234,6 +235,7 @@ class PickPlace(SingleArmEnv):
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
+            render_with_igibson=render_with_igibson,
         )
 
     def reward(self, action=None):
