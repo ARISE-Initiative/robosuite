@@ -175,19 +175,19 @@ if __name__ == '__main__':
 
     env = iGibsonWrapper(
         env = suite.make(
-                "Door",
-                robots = ["IIWA"],
+                "PickPlace",
+                robots = ["Panda"],
                 reward_shaping=True,
-                has_renderer=False,           
-                has_offscreen_renderer=True, # no off-screen renderer
+                has_renderer=True,           
+                has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
-                use_camera_obs=True,         # no camera observations
+                use_camera_obs=False,         # no camera observations
                 control_freq=20, 
                 render_with_igibson=True
             ),
             enable_pbr=True,
-            enable_shadow=True
+            enable_shadow=True,
     )
 
     # env.reset()
