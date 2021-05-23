@@ -3,7 +3,11 @@ import numpy as np
 import nvisii_rendering_utils as vutils
 import nvisii
 import open3d as o3d
+
 from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
+
+path = str(os.path.realpath(__file__))
+file_path = path[:path.rfind('/') + 1]
 
 def dynamic_robot_init(env, root, robot_num, robot_name):
 
@@ -31,7 +35,7 @@ def dynamic_robot_init(env, root, robot_num, robot_name):
 
     for mesh in meshes:
 
-        obj_file = f'../../models/assets/robots/{robot_name.lower()}/meshes/{meshes[mesh]}.obj'
+        obj_file = file_path + f'../../models/assets/robots/{robot_name.lower()}/meshes/{meshes[mesh]}.obj'
 
         key = f'robot{robot_num}_{mesh}'
 
@@ -89,7 +93,7 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
 
             geom_count = 0
             texture_name = 'hole_texture'
-            texture_file = '../../models/assets/textures/red-wood.png'
+            texture_file = file_path + '../../models/assets/textures/red-wood.png'
 
             for geom in object_tag.findall('geom'):
 
@@ -175,7 +179,7 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
             object_name = f'gripper{robot_num}_{key}'
             key_g = f'gripper{robot_num}_{mesh_name}'
 
-            obj_file = f'../../models/assets/grippers/meshes/{gripper_name}/{mesh_n}.obj'
+            obj_file = file_path + f'../../models/assets/grippers/meshes/{gripper_name}/{mesh_n}.obj'
 
             entity = None
 

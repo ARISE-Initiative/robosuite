@@ -11,6 +11,9 @@ from robosuite.models.arenas import TableArena, BinsArena, PegsArena, EmptyArena
 
 import xml.etree.ElementTree as ET
 
+path = str(os.path.realpath(__file__))
+file_path = path[:path.rfind('/') + 1]
+
 def init_arena_nvisii(env):
 
     mujoco_arena = env.model.mujoco_arena
@@ -36,7 +39,7 @@ def init_table_arena(mujoco_arena):
                          size=mujoco_arena.table_half_size, 
                          pos=_split_pos(mujoco_arena.table_body), 
                          texture_name='ceramic_table_texture', 
-                         texture_file='../../models/assets/textures/ceramic.png')
+                         texture_file=file_path + '../../models/assets/textures/ceramic.png')
 
     leg_count = 1
     for leg in mujoco_arena.table_legs_visual:
@@ -54,7 +57,7 @@ def init_table_arena(mujoco_arena):
                              size=_split_size(leg), 
                              pos=pos, 
                              texture_name='steel_legs_texture', 
-                             texture_file='../../models/assets/textures/steel-brushed.png')
+                             texture_file=file_path + '../../models/assets/textures/steel-brushed.png')
 
         leg_count+=1
 
@@ -73,7 +76,7 @@ def init_wipe_arena(env, mujoco_arena):
                              size=size, 
                              pos=pos, 
                              texture_name='dirt_texture', 
-                             texture_file='../../models/assets/textures/dirt.png')
+                             texture_file=file_path + '../../models/assets/textures/dirt.png')
 
 def init_pegs_arena(mujoco_arena):
 
@@ -82,14 +85,14 @@ def init_pegs_arena(mujoco_arena):
                          size=_split_size(mujoco_arena.peg1_body.find("./geom[@group='1']")),
                          pos=_split_pos(mujoco_arena.peg1_body), 
                          texture_name='peg1_texture', 
-                         texture_file='../../models/assets/textures/brass-ambra.png')
+                         texture_file=file_path + '../../models/assets/textures/brass-ambra.png')
 
     vutils.create_entity(entity_type='cylinder', 
                          entity_name='peg2', 
                          size=_split_size(mujoco_arena.peg2_body.find("./geom[@group='1']")),
                          pos=_split_pos(mujoco_arena.peg2_body), 
                          texture_name='peg2_texture', 
-                         texture_file='../../models/assets/textures/steel-scratched.png')
+                         texture_file=file_path + '../../models/assets/textures/steel-scratched.png')
 
 def init_bins_arena(mujoco_arena):
 
@@ -110,7 +113,7 @@ def init_bins_arena(mujoco_arena):
                              size=_split_size(wall),
                              pos=pos, 
                              texture_name='light-wood_table_texture', 
-                             texture_file='../../models/assets/textures/light-wood.png')
+                             texture_file=file_path + '../../models/assets/textures/light-wood.png')
         wall_count+=1
 
     leg_count = 1
@@ -128,7 +131,7 @@ def init_bins_arena(mujoco_arena):
                              size=_split_size(leg), 
                              pos=pos, 
                              texture_name='steel_legs_texture', 
-                             texture_file='../../models/assets/textures/steel-brushed.png')
+                             texture_file=file_path + '../../models/assets/textures/steel-brushed.png')
 
         leg_count+=1
 
@@ -149,7 +152,7 @@ def init_bins_arena(mujoco_arena):
                              size=_split_size(wall),
                              pos=pos, 
                              texture_name='dark-wood_table_texture', 
-                             texture_file='../../models/assets/textures/dark-wood.png')
+                             texture_file=file_path + '../../models/assets/textures/dark-wood.png')
         wall_count+=1
 
     leg_count = 1
@@ -167,7 +170,7 @@ def init_bins_arena(mujoco_arena):
                              size=_split_size(leg), 
                              pos=pos, 
                              texture_name='steel_legs_texture', 
-                             texture_file='../../models/assets/textures/steel-brushed.png')
+                             texture_file=file_path + '../../models/assets/textures/steel-brushed.png')
 
         leg_count+=1
 
@@ -207,7 +210,8 @@ def init_objects_nvisii(env):
                 stl_file = mesh_tag.get('file')
 
                 if stl_file != None:
-                    obj_file = os.path.join(curr_dir, _stl_to_obj(stl_file))
+
+                    obj_file = os.path.join(file_path + '../../models/assets/objects/', _stl_to_obj(stl_file))
 
                     entity = vutils.import_obj(env, name, obj_file)
                     obj_entity_dict[reg_name] = [entity, bq_type]
@@ -362,7 +366,7 @@ def _stl_to_obj(stl_file):
 
 def init_pedestals(env):
 
-    obj_file = f'../../models/assets/robots/common_meshes/pedestal.obj'
+    obj_file = file_path + f'../../models/assets/mounts/meshes/rethink_mount/pedestal.obj'
 
     robot_count = 0
     for robot in range(len(env.robots)):

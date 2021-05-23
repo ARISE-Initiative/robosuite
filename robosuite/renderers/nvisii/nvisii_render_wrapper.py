@@ -1,19 +1,21 @@
 import os
 import numpy as np
 import sys
+import pathlib
 import nvisii
 import robosuite as suite
 import dynamic_object_initialization as dyn_init
 import static_object_initialization as static_init
 import rendering_objects as ren
 import nvisii_rendering_utils as vutils
+import open3d as o3d
+import math
+import xml.etree.ElementTree as ET
+
 from mujoco_py import MjSim, load_model_from_path
 from robosuite.wrappers import Wrapper
 from robosuite.models.robots import Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
-import open3d as o3d
-import math
-import xml.etree.ElementTree as ET
 
 class NViSIIWrapper(Wrapper):
     """Initializes the nvisii wrapper.
@@ -28,6 +30,7 @@ class NViSIIWrapper(Wrapper):
 
     def __init__(self,
                  env,
+                 img_path,
                  width=500,
                  height=500,
                  spp=50,
@@ -36,8 +39,8 @@ class NViSIIWrapper(Wrapper):
 
         super().__init__(env)
 
-        if not os.path.exists('images'):
-            os.makedirs('images')
+        if not os.path.exists(img_path):
+            os.makedirs(img_path)
 
         # Camera variables
         self.width             = width
@@ -66,6 +69,7 @@ class NViSIIWrapper(Wrapper):
         if not use_noise: 
             nvisii.configure_denoiser()
             nvisii.enable_denoiser()
+            nvisii.configure_denoiser(True,True,False)
 
         # Intiailizes the lighting
         self.light_1 = nvisii.entity.create(
@@ -100,16 +104,19 @@ class NViSIIWrapper(Wrapper):
         floor_entity.get_transform().set_scale(nvisii.vec3(1))
         floor_entity.get_transform().set_position(nvisii.vec3(0, 0, 0))
 
-        wood_floor_image = '../../models/assets/textures/wood-floor-4k.jpg'
+        path = str(os.path.realpath(__file__))
+        file_path = path[:path.rfind('/') + 1]
+
+        wood_floor_image = file_path + '../../models/assets/textures/wood-floor-4k.jpg'
         wood_floor_texture = nvisii.texture.create_from_file(name = 'flooring_texture',
-                                                            path = wood_floor_image)
+                                                             path = wood_floor_image)
 
         floor_entity.get_material().set_base_color_texture(wood_floor_texture)
 
         floor_entity.get_material().set_roughness(0.4)
         floor_entity.get_material().set_specular(0)
 
-        gray_plaster_image = '../../models/assets/textures/gray-plaster-rough-4k.jpg'
+        gray_plaster_image = file_path +  '../../models/assets/textures/gray-plaster-rough-4k.jpg'
         gray_plaster_texture = nvisii.texture.create_from_file(name = 'walls_texture',
                                                               path = gray_plaster_image)
         
@@ -363,7 +370,7 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "NutAssembly",
+                "Door",
                 robots = ["Panda"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
@@ -373,6 +380,7 @@ if __name__ == '__main__':
                 use_camera_obs=False,         # no camera observations
                 control_freq=10, 
             ),
+        img_path='images',
         spp=256,
         use_noise=False,
         debug_mode=False,
@@ -386,6 +394,7 @@ if __name__ == '__main__':
 
         if i%100 == 0:
             env.render(render_type = "png")
+            print('Rendering image... ' + str(i/100))
 
     env.close()
     
