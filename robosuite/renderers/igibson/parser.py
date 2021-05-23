@@ -123,7 +123,10 @@ class Parser():
             geom_orn = string_to_array(geom.get('quat', '1 0 0 0'))
             geom_orn = [geom_orn[1],geom_orn[2],geom_orn[3],geom_orn[0]]
             geom_pos = string_to_array(geom.get('pos', "0 0 0"))
-            geom_scale = string_to_array(geom.get('scale', "1 1 1"))
+            if geom_type == 'mesh':
+                geom_scale = string_to_array(self.meshes[geom.get('mesh')].get('scale', '1 1 1') )
+            else:
+                geom_scale = [1, 1, 1]
             geom_size = string_to_array(geom.get('size', "1 1 1"))
             geom_rgba = string_to_array(geom.get('rgba', "1 1 1 1"))
             geom_material = self.material_mapping.get(geom.get('material'))

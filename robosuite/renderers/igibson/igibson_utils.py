@@ -55,10 +55,6 @@ def load_object(renderer,
             scale = [geom_size[0], geom_size[0], geom_size[1]]
         elif geom_type == 'plane':
             scale = [geom_size[0]*2 , geom_size[1]*2, 0.01]
-        
-
-        #TODO: Try uncommenting the line below
-        # scale = geom_scale if geom_type == 'mesh' else geom_size
 
         material = None if geom_type == 'mesh' else geom_material
 
