@@ -43,7 +43,10 @@ def load_object(renderer,
         # place holder meshes for which we do not textures loaded
         if geom_name in ['VisualBread_g0', 'VisualCan_g0', 'VisualCereal_g0', 'VisualMilk_g0']:
             load_texture = False
-        
+
+        if geom_name in ['Milk_g0_visual', 'Can_g0_visual', 'Cereal_g0_visual', 'Bread_g0_visual']:
+            load_texture = True
+    
         if geom_type == 'mesh':
             scale = geom_scale
         elif geom_type in ['box', 'sphere']:
