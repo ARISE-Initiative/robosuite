@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import gibson2
 from transforms3d import quaternions
+import robosuite.utils.transform_utils as T
 
 def load_object(renderer,
                 geom,
