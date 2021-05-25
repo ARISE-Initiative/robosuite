@@ -74,11 +74,11 @@ class iGibsonWrapper(Wrapper):
                                             vertical_fov=45,
                                             device_idx=device_idx,
                                             rendering_settings=self.mrs)
+        
+        # load all the textures, materials, geoms, cameras
+        self.load()
 
         # set camera for renderer
-        # TODO: Maybe refactor this part.
-        self.parser = Parser(self.renderer, self.env)
-        self.parser.parse_cameras()
         camera_position, view_direction = self.get_camera_pose(self.env.render_camera)
         self.renderer.set_camera(camera_position, camera_position + view_direction, [0, 0, 1])
 
@@ -90,7 +90,6 @@ class iGibsonWrapper(Wrapper):
         # when use_camera_obs=True
         self.env.ig_renderer_params = {'renderer':self.renderer,
                                        'modes': modes}
-        self.load()
 
     def get_camera_pose(self, camera_name):
         for instance in self.renderer.instances:
@@ -128,10 +127,12 @@ class iGibsonWrapper(Wrapper):
             self.viewer = None
 
     def load(self):        
-        self.parser.parse_textures()
-        self.parser.parse_materials()
-        self.parser.parse_geometries()
-        self.visual_objects = self.parser.visual_objects
+        parser = Parser(self.renderer, self.env)
+        parser.parse_cameras()        
+        parser.parse_textures()
+        parser.parse_materials()
+        parser.parse_geometries()
+        self.visual_objects = parser.visual_objects
 
     def render(self, **kwargs):
         """
