@@ -110,12 +110,12 @@ class iGibsonWrapper(Wrapper):
             self.viewer = None
 
     def load(self):
-        parser = Parser(self.renderer, self.env)
-        parser.parse_textures()
-        parser.parse_materials()
-        parser.parse_cameras()
-        parser.parse_geometries()
-        self.visual_objects = parser.visual_objects
+        self.parser = Parser(self.renderer, self.env)
+        self.parser.parse_cameras()        
+        self.parser.parse_textures()
+        self.parser.parse_materials()
+        self.parser.parse_geometries()
+        self.visual_objects = self.parser.visual_objects
 
     def render(self, **kwargs):
         """
@@ -175,8 +175,8 @@ if __name__ == '__main__':
 
     env = iGibsonWrapper(
         env = suite.make(
-                "PickPlace",
-                robots = ["Panda"],
+                "Door",
+                robots = ["Sawyer"],
                 reward_shaping=True,
                 has_renderer=True,           
                 has_offscreen_renderer=False, # no off-screen renderer
