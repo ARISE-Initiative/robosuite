@@ -83,9 +83,12 @@ class Parser():
             camera_name = cam.get('name')
             # get parent body name.
             parent_body_name = self.parent_map[cam].get('name', 'worldbody')
+            pos = string_to_array(cam.get('pos', "0 0 0"))
+            quat = string_to_array(cam.get('quat', "1 0 0 0"))
+            quat = np.array([quat[1],quat[2],quat[3],quat[0]])
             camera = MujocoCamera(parent_body_name, 
-                                  string_to_array(cam.get('pos', "0 0 0")),
-                                  xyzw2wxyz(string_to_array(cam.get('quat', "1 0 0 0"))),
+                                  pos,
+                                  quat,
                                 #   modes='seg',
                                   active=False, #True if self.camera_name == camm.get("name") else False, , 
                                   mujoco_env=self.env, 

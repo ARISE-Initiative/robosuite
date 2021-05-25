@@ -8,7 +8,7 @@ from parser import Parser
 
 from gibson2.render.mesh_renderer.mesh_renderer_settings import MeshRendererSettings
 from gibson2.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
-from gibson2.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer, Instance
+from gibson2.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer, Instance, Robot
 from gibson2.utils.mesh_util import xyzw2wxyz, quat2rotmat
 from gibson2.render.viewer import Viewer
 
@@ -74,19 +74,37 @@ class iGibsonWrapper(Wrapper):
                                             vertical_fov=45,
                                             device_idx=device_idx,
                                             rendering_settings=self.mrs)
-        
-        #TODO: Check this setting of camera
-        camera_position = np.array([1.6,  0.,   1.45])
-        view_direction = -np.array([0.9632, 0, 0.2574])
+
+        # set camera for renderer
+        # TODO: Maybe refactor this part.
+        self.parser = Parser(self.renderer, self.env)
+        self.parser.parse_cameras()
+        camera_position, view_direction = self.get_camera_pose(self.env.render_camera)
         self.renderer.set_camera(camera_position, camera_position + view_direction, [0, 0, 1])
 
         # add viewer
         self.add_viewer(initial_pos=camera_position, 
                         initial_view_direction=view_direction)
 
+        # set parameters which will be used inside rovobosuite
+        # when use_camera_obs=True
         self.env.ig_renderer_params = {'renderer':self.renderer,
                                        'modes': modes}
         self.load()
+
+    def get_camera_pose(self, camera_name):
+        for instance in self.renderer.instances:
+            if isinstance(instance, Robot):
+                for cam in instance.robot.cameras:
+                    if cam.camera_name == camera_name:
+                        camera_pose = cam.get_pose()
+                        camera_pos = camera_pose[:3]
+                        camera_ori = camera_pose[3:]
+                        camera_ori_mat = quat2rotmat([camera_ori[-1], camera_ori[0], camera_ori[1], camera_ori[2]])[:3, :3]
+                        # Mujoco camera points in -z
+                        camera_view_dir = camera_ori_mat.dot(np.array([0, 0, -1])) 
+                        return camera_pos, camera_view_dir
+
 
 
     def add_viewer(self, 
@@ -109,9 +127,7 @@ class iGibsonWrapper(Wrapper):
         else:
             self.viewer = None
 
-    def load(self):
-        self.parser = Parser(self.renderer, self.env)
-        self.parser.parse_cameras()        
+    def load(self):        
         self.parser.parse_textures()
         self.parser.parse_materials()
         self.parser.parse_geometries()
@@ -182,7 +198,8 @@ if __name__ == '__main__':
                 has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
-                use_camera_obs=False,         # no camera observations
+                use_camera_obs=False,  
+                render_camera='agentview',       # no camera observations
                 control_freq=20, 
                 render_with_igibson=True
             ),
