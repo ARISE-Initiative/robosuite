@@ -59,6 +59,10 @@ def load_object(renderer,
 
         material = None if geom_type == 'mesh' else geom_material
 
+        if "rethink_mount/pedestal.obj" in filename:
+            filename = filename[:-4]
+            filename += '_ig.obj'
+
         renderer.load_object(filename,
                              scale=scale,
                              transform_orn=geom_orn,
