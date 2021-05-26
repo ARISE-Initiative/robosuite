@@ -57,7 +57,8 @@ def load_object(renderer,
         elif geom_type == 'plane':
             scale = [geom_size[0]*2 , geom_size[1]*2, 0.01]
 
-        material = None if geom_type == 'mesh' else geom_material
+        material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser) \
+                   else geom_material
 
         if "rethink_mount/pedestal.obj" in filename:
             filename = filename[:-4]

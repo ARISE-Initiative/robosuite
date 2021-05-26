@@ -104,6 +104,8 @@ class iGibsonWrapper(Wrapper):
                         camera_view_dir = camera_ori_mat.dot(np.array([0, 0, -1])) 
                         return camera_pos, camera_view_dir
 
+        raise Exception("Camera {self.env.render_camera} not present")
+
 
 
     def add_viewer(self, 
@@ -193,14 +195,14 @@ if __name__ == '__main__':
     env = iGibsonWrapper(
         env = suite.make(
                 "Door",
-                robots = ["Sawyer"],
+                robots = ["Jaco"],
                 reward_shaping=True,
                 has_renderer=True,           
                 has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
                 use_camera_obs=False,  
-                render_camera='agentview',       # no camera observations
+                render_camera='frontview',       # no camera observations
                 control_freq=20, 
                 render_with_igibson=True
             ),

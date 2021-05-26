@@ -67,8 +67,14 @@ class Parser():
                                                                     texture_type=texture_type)
                 else:
                     # texture id in this case will be a numpy array of rgb values
-                    self.material_mapping[material_name] = Material('color',
-                                                                    kd=texture_id)
+                    # If color are present both in material and texture, prioritize material color.
+                    if material.get('rgba') is None:
+                        self.material_mapping[material_name] = Material('color',
+                                                                        kd=texture_id)
+                    else:
+                        self.material_mapping[material_name] = Material('color',
+                                                                        kd=rgba[:3])                        
+
             else:
                 # color can either come from texture, or could be defined in the material itself.
                 self.material_mapping[material_name] = Material('color',
@@ -143,6 +149,10 @@ class Parser():
                                          roughness_texture_id=-1,
                                          normal_texture_id=self.normal_id,
                                          texuniform=False)
+                # Flag to check if default material is used
+                geom_material._is_set_by_parser = True
+            else:
+                geom_material._is_set_by_parser = False
             
             load_object(renderer=self.renderer,
                         geom=geom,
