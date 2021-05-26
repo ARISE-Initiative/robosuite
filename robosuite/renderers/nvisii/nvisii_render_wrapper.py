@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import sys
+import cv2
 import pathlib
 import nvisii
 import robosuite as suite
@@ -35,7 +36,11 @@ class NViSIIWrapper(Wrapper):
                  height=500,
                  spp=50,
                  use_noise=False,
-                 debug_mode=False):
+                 debug_mode=False,
+                 video_mode=False,
+                 video_directory='videos/',
+                 video_name='robosuite_video_0.mp4',
+                 video_fps=60):
 
         super().__init__(env)
 
@@ -46,6 +51,15 @@ class NViSIIWrapper(Wrapper):
         self.width             = width
         self.height            = height
         self.samples_per_pixel = spp
+        self.img_path          = img_path
+        self.video_mode        = video_mode
+
+        if video_mode:
+
+            if not os.path.exists(video_directory):
+                os.makedirs(video_directory)
+
+            self.video = cv2.VideoWriter(video_directory + video_name, cv2.VideoWriter_fourcc(*'MP4V'), video_fps, (self.width, self.height))
 
         # Counter for images
         self.image_counter = 0
@@ -314,12 +328,30 @@ class NViSIIWrapper(Wrapper):
         ren.render_grippers(self.env, self.gripper_info)
         ren.render_objects(self.env, self.obj_entity_dict)
 
-        nvisii.render_to_file(
-            width             = self.width,
-            height            = self.height, 
-            samples_per_pixel = self.samples_per_pixel,   
-            file_path         = f'images/image_{self.image_counter}.png'
-        )
+        if self.video_mode:
+
+            nvisii.render_to_file(
+                width             = self.width,
+                height            = self.height, 
+                samples_per_pixel = self.samples_per_pixel,
+                file_path         = f'{self.img_path}/image_0.{render_type}'
+            )
+
+            self.video.write(cv2.imread(f'{self.img_path}/image_0.png'))
+
+        else:
+
+            nvisii.render_to_file(
+                width             = self.width,
+                height            = self.height, 
+                samples_per_pixel = self.samples_per_pixel,   
+                file_path         = f'{self.img_path}/image_{self.image_counter}.{render_type}'
+            )
+
+    def release_video(self):
+        print('releasing video')
+        cv2.destroyAllWindows()
+        self.video.release()
 
     def close(self):
         """Deinitializes the nvisii rendering environment
@@ -370,7 +402,7 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "Door",
+                "NutAssembly",
                 robots = ["Panda"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
@@ -394,7 +426,7 @@ if __name__ == '__main__':
 
         if i%100 == 0:
             env.render(render_type = "png")
-            print('Rendering image... ' + str(i/100))
+            print('Rendering image... ' + str(i + 1))
 
     env.close()
     
