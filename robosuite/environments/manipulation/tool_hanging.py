@@ -193,8 +193,15 @@ class ToolHanging(SingleArmEnv):
         Returns:
             float: reward value
         """
-        # TODO
-        reward = 0
+        reward = 0.
+
+        # sparse completion reward
+        if self._check_success():
+            reward = 1.0
+
+        # Scale reward if requested
+        if self.reward_scale is not None:
+            reward *= self.reward_scale
 
         return reward
 
