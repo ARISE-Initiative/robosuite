@@ -124,6 +124,7 @@ class HollowCylinderObject(CompositeObject):
             geom_quat = np.array([np.cos(geom_angle / 2.), 0., 0., np.sin(geom_angle / 2.)])
             geom_size = np.array([self.unit_box_height, self.unit_box_width, self.unit_box_depth])
 
+            # note: set geom condim to 4 for consistency with round-nut.xml
             add_to_dict(
                 dic=obj_args,
                 geom_types="box",

@@ -130,8 +130,8 @@ class CompositeBodyObject(MujocoGeneratedObject):
         # Initialize top-level body
         obj = new_body(name="root")
 
-        # Give main body a small mass in order to have a free joint (only needed for mujoco 1.5)
-        obj.append(new_inertial(pos=(0, 0, 0), mass=0.0001, diaginertia=(0.0001, 0.0001, 0.0001)))
+        # # Give main body a small mass in order to have a free joint (only needed for mujoco 1.5)
+        # obj.append(new_inertial(pos=(0, 0, 0), mass=0.0001, diaginertia=(0.0001, 0.0001, 0.0001)))
 
         # Add all joints and sites
         for joint_spec in self.joint_specs:

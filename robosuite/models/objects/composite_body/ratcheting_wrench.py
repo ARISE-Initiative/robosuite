@@ -103,18 +103,16 @@ class RatchetingWrenchObject(CompositeBodyObject):
         ))
 
         # Define positions (top-level body is centered at handle)
+        hole_1_box_geom_height = 2. * objects[0].unit_box_height
+        hole_2_box_geom_height = 2. * objects[1].unit_box_height
         positions = [
-            np.array([-handle_size[0] - self.outer_radii[0], 0, 0]),
-            np.array([handle_size[0] + self.outer_radii[1], 0, 0]),
+            # this computation ensures no gaps between the center bar geom and the two wrench holes at the end
+            np.array([-handle_size[0] - self.outer_radii[0] + hole_1_box_geom_height, 0, 0]),
+            np.array([handle_size[0] + self.outer_radii[1] - hole_2_box_geom_height, 0, 0]),
             np.zeros(3),
         ]
         quats = [None, None, None]
         parents = [None, None, None]
-
-        objects = [objects[0]]
-        positions = [positions[0]]
-        quats = [quats[0]]
-        parents = [parents[0]]
 
         # Run super init
         super().__init__(
@@ -123,5 +121,5 @@ class RatchetingWrenchObject(CompositeBodyObject):
             object_locations=positions,
             object_quats=quats,
             object_parents=parents,
-            joints=[dict(type="free", damping="0.0005")],
+            joints=[dict(type="free", damping="0.0005")], # be consistent with round-nut.xml
         )

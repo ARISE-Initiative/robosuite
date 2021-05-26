@@ -160,6 +160,9 @@ class HookFrame(CompositeObject):
         Returns:
             np.array: (x, y, z, w) quaternion orientation for this object
         """
-        # Rotate 90 deg about Y and X axes
-        return np.array([0.5, -0.5, 0.5, -0.5])
+        # Rotate 90 degrees about two consecutive axes to make the hook lie on the table instead of being upright.
+        return T.quat_multiply(
+                np.array([0, 0., np.sqrt(2) / 2., np.sqrt(2) / 2.]),
+                np.array([-np.sqrt(2) / 2., 0., 0., np.sqrt(2) / 2.]),
+            )
 

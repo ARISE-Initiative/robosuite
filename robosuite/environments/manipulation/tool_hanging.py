@@ -8,7 +8,7 @@ from robosuite.utils.sim_utils import check_contact
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import StandWithMount, HookFrame, PictureFrame, RatchetingWrenchObject
+from robosuite.models.objects import StandWithMount, HookFrame, PictureFrame, RatchetingWrenchObject, HollowCylinderObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialCompositeSampler
 from robosuite.utils.observables import Observable, sensor
@@ -245,6 +245,7 @@ class ToolHanging(SingleArmEnv):
             density=1000.,
         )
         self.stand = StandWithMount(**self.stand_args)
+
         self.frame_args = dict(
             name="frame",
             frame_length=0.12,
@@ -254,42 +255,19 @@ class ToolHanging(SingleArmEnv):
             density=500.,
         )
         self.frame = HookFrame(**self.frame_args)
-        # old-params
-        # self.tool = PictureFrame(
-        #     name="tool",
-        #     frame_size=(0.10, 0.15),
-        #     frame_thickness=0.02,
-        #     mount_hole_offset=0.05,
-        #     mount_hole_size=0.03,
-        #     mount_hole_thickness=0.01,
-        # )
-        # self.tool = PictureFrame(
-        #     name="tool",
-        #     frame_size=(0.10, 0.15),
-        #     frame_thickness=0.04,
-        #     border_size=(0.02, 0.02),
-        #     border_thickness=0.03,
-        #     mount_hole_offset=0.05,
-        #     mount_hole_size=0.04,
-        #     mount_hole_thickness=0.01,
-        #     density=250.,
-        # )
 
         self.tool_args = dict(
             name="tool",
             # handle_size=(0.05, 0.015, 0.01),
-            handle_size=(0.05, 0.015, 0.005),
+            handle_size=(0.05, 0.0075, 0.0075),
             # outer_radius_1=0.0425,
             # inner_radius_1=0.025,
             # height_1=0.015,
-            outer_radius_1=0.06,
-            inner_radius_1=0.03,
+            outer_radius_1=0.0425,
+            inner_radius_1=0.025,
             height_1=0.01,
-            # outer_radius_2=0.0425,
-            # inner_radius_2=0.025,
-            # height_2=0.015,
-            outer_radius_2=0.06,
-            inner_radius_2=0.03,
+            outer_radius_2=0.025,
+            inner_radius_2=0.013,
             height_2=0.01,
             ngeoms=8,
             # rgba=None,
@@ -298,9 +276,6 @@ class ToolHanging(SingleArmEnv):
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
             friction=(0.95, 0.3, 0.1),
-            # solref=(0.01, 0.5),
-            # solimp=(0.998, 0.998, 0.001),
-            # friction=(1.0, 0.01, 0.001),
         )
         self.tool = RatchetingWrenchObject(**self.tool_args)
 
@@ -323,33 +298,34 @@ class ToolHanging(SingleArmEnv):
 
         # Pre-define settings for each object's placement
         objects = [self.stand, self.frame, self.tool]
-        # edit: move hook closer to robot
-        x_centers = [0, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.25]
-        # x_centers = [0, self.table_full_size[0] * 0.25, -self.table_full_size[0] * 0.25]
-        # edit: move base to the right, move hook to the right
-        y_centers = [self.table_full_size[1] * 0.3, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
-        # y_centers = [self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.25]
-        pos_tol = 0.005
-        # edit: rotate hook to make grasping easier
-        rot_centers = [0, np.pi / 3, 0]
-        rot_tols = [0, np.pi / 6, np.pi / 6]
-        rot_axes = ['x', 'y', 'z']
-        for obj, x, y, r, r_tol, r_axis in zip(
-                objects, x_centers, y_centers, rot_centers, rot_tols, rot_axes
+        x_centers = [0, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
+        y_centers = [self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
+        x_tols = [0.02, 0.02, 0.02]
+        y_tols = [0.02, 0.02, 0.02]
+        rot_centers = [np.pi / 12, 0, 0]
+        rot_tols = [np.pi / 24, np.pi / 6, np.pi / 6]
+        rot_axes = ['z', 'y', 'z']
+        z_offsets = [
+            0.001, 
+            (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2. + 0.001,
+            0.001,
+        ]
+        for obj, x, y, x_tol, y_tol, r, r_tol, r_axis, z_offset in zip(
+                objects, x_centers, y_centers, x_tols, y_tols, rot_centers, rot_tols, rot_axes, z_offsets
         ):
             # Create sampler for this object and add it to the sequential sampler
             self.placement_initializer.append_sampler(
                 sampler=UniformRandomSampler(
                     name=f"{obj.name}ObjectSampler",
                     mujoco_objects=obj,
-                    x_range=[x - pos_tol, x + pos_tol],
-                    y_range=[y - pos_tol, y + pos_tol],
+                    x_range=[x - x_tol, x + x_tol],
+                    y_range=[y - y_tol, y + y_tol],
                     rotation=[r - r_tol, r + r_tol],
                     rotation_axis=r_axis,
                     ensure_object_boundary_in_range=False,
                     ensure_valid_placement=False,
                     reference_pos=self.table_offset,
-                    z_offset=0.001,
+                    z_offset=z_offset,
                 )
             )
 
@@ -649,11 +625,6 @@ class ToolHanging(SingleArmEnv):
         normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
         tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2) and (normalized_dist_along_frame_hook_line < 1.0)
 
-        # print("robot_and_tool_contact: {}".format(robot_and_tool_contact))
-        # print("frame_and_tool_hole_contact: {}".format(frame_and_tool_hole_contact))
-        # print("tool_hole_is_close_enough: {}".format(tool_hole_is_close_enough))
-        # print("tool_is_between_hook: {}".format(tool_is_between_hook))
-        # print("tool_is_inserted_far_enough: {}".format(tool_is_inserted_far_enough))
 
         return all([
             (not robot_and_tool_contact),
