@@ -82,7 +82,6 @@ if __name__ == '__main__':
     xml = postprocess_model_xml(model_xml)
     env.reset_from_xml_string(xml)
     env.sim.reset()
-    # env.viewer.set_camera(0)
 
     env.step([0, 0, 0, 0, 0, 0, 0])
 
@@ -102,7 +101,6 @@ if __name__ == '__main__':
         for j, action in enumerate(actions):
             env.step(action)
 
-            # if i % inc == 0:
             env.render()
             print('rendered image... ' + str(image_count))
             image_count += 1
@@ -124,14 +122,9 @@ if __name__ == '__main__':
             env.sim.forward()
             env.step([0, 0, 0, 0, 0, 0, 0])
             
-            # if i % inc == 0:
             env.render()
             print('rendered image... ' + str(image_count))
             image_count += 1
-            
-            # img_arr = env.sim.render(height=512, width=512, camera_name="agentview")[::-1]
-            # data = im.fromarray(img_arr)
-            # data.save("images/image_" + str(image_count) + ".png")
                 
             i+=1
 
