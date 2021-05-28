@@ -19,6 +19,8 @@ class HookFrame(CompositeObject):
 
         frame_thickness (float): How thick the frame is
 
+        hook_height (float): if not None, add a box geom at the edge of the hook with this height (not half-height)
+
         friction (3-array or None): If specified, sets friction values for this object. None results in default values
 
         density (float): Density value to use for all geoms. Defaults to 1000
@@ -34,6 +36,7 @@ class HookFrame(CompositeObject):
         frame_length=0.3,
         frame_height=0.2,
         frame_thickness=0.025,
+        hook_height=None,
         friction=None,
         density=1000.,
         use_texture=True,
@@ -47,6 +50,7 @@ class HookFrame(CompositeObject):
         self.frame_length = frame_length
         self.frame_height = frame_height
         self.frame_thickness = frame_thickness
+        self.hook_height = hook_height
         self.friction = friction if friction is None else np.array(friction)
         self.density = density
         self.use_texture = use_texture
@@ -120,6 +124,20 @@ class HookFrame(CompositeObject):
             geom_materials=self.mat_name if self.use_texture else None,
             geom_frictions=self.friction,
         )
+
+        # optionally add hook at the end of the horizontal frame
+        if self.hook_height is not None:
+            add_to_dict(
+                dic=obj_args,
+                geom_types="box",
+                geom_locations=((-self.frame_length + self.frame_thickness) / 2, 0, (self.frame_height + self.hook_height) / 2),
+                geom_quats=(1, 0, 0, 0),
+                geom_sizes=np.array((self.frame_thickness, self.frame_thickness, self.hook_height)) / 2,
+                geom_names="horizontal_frame",
+                geom_rgbas=None if self.use_texture else self.rgba,
+                geom_materials=self.mat_name if self.use_texture else None,
+                geom_frictions=self.friction,
+            )
 
         # Sites
         obj_args["sites"] = [
