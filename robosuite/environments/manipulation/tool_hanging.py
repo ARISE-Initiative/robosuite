@@ -640,3 +640,140 @@ class ToolHanging(SingleArmEnv):
             tool_is_between_hook,
             tool_is_inserted_far_enough,
         ])
+
+
+class ToolHanging_v2(ToolHanging):
+    """
+    Second version of task - developed to try and match measurements to real world items.
+    """
+
+    def _load_model(self):
+        """
+        Loads an xml model, puts it in self.model
+        """
+        super()._load_model()
+
+        # Adjust base pose accordingly
+        xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
+        self.robots[0].robot_model.set_base_xpos(xpos)
+
+        # load model for table top workspace
+        mujoco_arena = TableArena(
+            table_full_size=self.table_full_size,
+            table_friction=self.table_friction,
+            table_offset=self.table_offset,
+        )
+
+        # Arena always gets set to zero origin
+        mujoco_arena.set_origin([0, 0, 0])
+
+        # Modify default agentview camera
+        # mujoco_arena.set_camera(
+        #     camera_name="agentview",
+        #     pos=[0.6, 0.0, 1.45],
+        #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
+        # )
+        # default is below:
+        #
+        # mujoco_arena.set_camera(
+        #     camera_name="agentview",
+        #     pos=[0.5, 0.0, 1.35],
+        #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
+        # )
+
+        # Create stand, frame, and tool
+        self.stand_args = dict(
+            name="stand",
+            size=(0.15, 0.15, 0.15),
+            mount_location=(0., 0.),
+            mount_width=0.04,
+            wall_thickness=0.005,
+            base_thickness=0.01,
+            # initialize_on_side=True,
+            initialize_on_side=False,
+            density=1000.,
+        )
+        self.stand = StandWithMount(**self.stand_args)
+
+        self.frame_args = dict(
+            name="frame",
+            frame_length=0.12,
+            frame_height=0.28,
+            # frame_thickness=0.027,
+            frame_thickness=0.02,
+            density=500.,
+        )
+        self.frame = HookFrame(**self.frame_args)
+
+        self.tool_args = dict(
+            name="tool",
+            # handle_size=(0.05, 0.015, 0.01),
+            handle_size=(0.05, 0.0075, 0.0075),
+            # outer_radius_1=0.0425,
+            # inner_radius_1=0.025,
+            # height_1=0.015,
+            outer_radius_1=0.0425,
+            inner_radius_1=0.025,
+            height_1=0.01,
+            outer_radius_2=0.025,
+            inner_radius_2=0.013,
+            height_2=0.01,
+            ngeoms=8,
+            # rgba=None,
+            density=100.,
+            # density=1000.,
+            solref=(0.02, 1.),
+            solimp=(0.998, 0.998, 0.001),
+            friction=(0.95, 0.3, 0.1),
+        )
+        self.tool = RatchetingWrenchObject(**self.tool_args)
+
+        # Create placement initializer
+        self._get_placement_initializer()
+
+        # task includes arena, robot, and objects of interest
+        self.model = ManipulationTask(
+            mujoco_arena=mujoco_arena,
+            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_objects=[self.stand, self.frame, self.tool],
+        )
+
+    def _get_placement_initializer(self):
+        """
+        Helper function for defining placement initializer and object sampling bounds
+        """
+        # Create placement initializer
+        self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+
+        # Pre-define settings for each object's placement
+        objects = [self.stand, self.frame, self.tool]
+        x_centers = [0, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
+        y_centers = [self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
+        x_tols = [0.02, 0.02, 0.02]
+        y_tols = [0.02, 0.02, 0.02]
+        rot_centers = [np.pi / 12, 0, 0]
+        rot_tols = [np.pi / 24, np.pi / 6, np.pi / 6]
+        rot_axes = ['z', 'y', 'z']
+        z_offsets = [
+            0.001, 
+            (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2. + 0.001,
+            0.001,
+        ]
+        for obj, x, y, x_tol, y_tol, r, r_tol, r_axis, z_offset in zip(
+                objects, x_centers, y_centers, x_tols, y_tols, rot_centers, rot_tols, rot_axes, z_offsets
+        ):
+            # Create sampler for this object and add it to the sequential sampler
+            self.placement_initializer.append_sampler(
+                sampler=UniformRandomSampler(
+                    name=f"{obj.name}ObjectSampler",
+                    mujoco_objects=obj,
+                    x_range=[x - x_tol, x + x_tol],
+                    y_range=[y - y_tol, y + y_tol],
+                    rotation=[r - r_tol, r + r_tol],
+                    rotation_axis=r_axis,
+                    ensure_object_boundary_in_range=False,
+                    ensure_valid_placement=False,
+                    reference_pos=self.table_offset,
+                    z_offset=z_offset,
+                )
+            )
