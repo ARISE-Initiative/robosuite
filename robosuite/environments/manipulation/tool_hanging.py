@@ -668,11 +668,11 @@ class ToolHanging_v2(ToolHanging):
         mujoco_arena.set_origin([0, 0, 0])
 
         # Modify default agentview camera
-        # mujoco_arena.set_camera(
-        #     camera_name="agentview",
-        #     pos=[0.6, 0.0, 1.45],
-        #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
-        # )
+        mujoco_arena.set_camera(
+            camera_name="agentview",
+            pos=[0.5, 0.0, 1.40],
+            quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878]
+        )
         # default is below:
         #
         # mujoco_arena.set_camera(
