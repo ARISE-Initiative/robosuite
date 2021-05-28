@@ -684,11 +684,11 @@ class ToolHanging_v2(ToolHanging):
         # Create stand, frame, and tool
         self.stand_args = dict(
             name="stand",
-            size=(0.15, 0.15, 0.15),
-            mount_location=(0., 0.),
-            mount_width=0.04,
-            wall_thickness=0.005,
-            base_thickness=0.01,
+            size=((12. / 100.), (14. / 100.), (32. / 100.)), # 14 cm x 12 cm base, with 32 cm height
+            mount_location=(0., (4.5 / 100.)), # 2.5 cm from right edge, so 4.5 cm to the right
+            mount_width=(1. / 100.), # 1 cm thickness for rod cavity
+            wall_thickness=(0.1 / 100.), # about 0.1-0.2 cm thickness for walls
+            base_thickness=(2. / 100.), # about 2 cm thick
             # initialize_on_side=True,
             initialize_on_side=False,
             density=1000.,
@@ -697,35 +697,46 @@ class ToolHanging_v2(ToolHanging):
 
         self.frame_args = dict(
             name="frame",
-            frame_length=0.12,
-            frame_height=0.28,
-            # frame_thickness=0.027,
-            frame_thickness=0.02,
+            frame_length=(9.5 / 100.), # 9.5 cm wide
+            frame_height=(36. / 100.), # 36 cm tall
+            frame_thickness=(0.75 / 100.), # 0.75 cm thick
             density=500.,
         )
         self.frame = HookFrame(**self.frame_args)
 
-        self.tool_args = dict(
+        self.toy_tool_args = dict(
             name="tool",
-            # handle_size=(0.05, 0.015, 0.01),
-            handle_size=(0.05, 0.0075, 0.0075),
-            # outer_radius_1=0.0425,
-            # inner_radius_1=0.025,
-            # height_1=0.015,
-            outer_radius_1=0.0425,
-            inner_radius_1=0.025,
-            height_1=0.01,
-            outer_radius_2=0.025,
-            inner_radius_2=0.013,
-            height_2=0.01,
+            handle_size=((10. / 200.), (1.25 / 200.), (0.75 / 200.)), # 10 cm length, 1.25 cm width, 0.75 cm thick (2 cm with foam)
+            outer_radius_1=(2.54 / 200.), # 2.54 cm outer diameter
+            inner_radius_1=(2.3 / 200.), # 2.3 cm inner diameter
+            height_1=(1. / 200.), # 1 cm height
+            outer_radius_2=(2.54 / 200.),
+            inner_radius_2=(2.3 / 200.),
+            height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
-            # rgba=None,
             density=100.,
-            # density=1000.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
             friction=(0.95, 0.3, 0.1),
         )
+
+        self.real_tool_args = dict(
+            name="tool",
+            handle_size=((16.5 / 200.), (1.75 / 200.), (0.25 / 200.)), # 16.5 cm length, 1.75 cm width, 0.25 cm thick (1.5 cm with foam)
+            outer_radius_1=(3.5 / 200.), # larger hole 3.5 cm outer diameter
+            inner_radius_1=(2.3 / 200.), # larger hole 2.3 cm inner diameter
+            height_1=(1. / 200.), # 1 cm height
+            outer_radius_2=(3. / 200.), # smaller hole 3 cm outer diameter
+            inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
+            height_2=(1. / 200.), # 1 cm height
+            ngeoms=8,
+            density=100.,
+            solref=(0.02, 1.),
+            solimp=(0.998, 0.998, 0.001),
+            friction=(0.95, 0.3, 0.1),
+        )
+
+        self.tool_args = self.toy_tool_args
         self.tool = RatchetingWrenchObject(**self.tool_args)
 
         # Create placement initializer
@@ -740,7 +751,9 @@ class ToolHanging_v2(ToolHanging):
 
     def _get_placement_initializer(self):
         """
-        Helper function for defining placement initializer and object sampling bounds
+        Update from base class to do the following:
+
+        - move stand a little more to the left
         """
         # Create placement initializer
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
@@ -748,7 +761,7 @@ class ToolHanging_v2(ToolHanging):
         # Pre-define settings for each object's placement
         objects = [self.stand, self.frame, self.tool]
         x_centers = [0, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
-        y_centers = [self.table_full_size[1] * 0.25, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
+        y_centers = [self.table_full_size[1] * 0.2, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
         x_tols = [0.02, 0.02, 0.02]
         y_tols = [0.02, 0.02, 0.02]
         rot_centers = [np.pi / 12, 0, 0]
