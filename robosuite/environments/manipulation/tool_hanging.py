@@ -688,7 +688,7 @@ class ToolHanging_v2(ToolHanging):
             mount_location=(0., (4.5 / 100.)), # 2.5 cm from right edge, so 4.5 cm to the right
             mount_width=(1. / 100.), # 1 cm thickness for rod cavity
             wall_thickness=(0.1 / 100.), # about 0.1-0.2 cm thickness for walls
-            base_thickness=(0.2. / 100.), # about 0.2 cm thick
+            base_thickness=(0.2 / 100.), # about 0.2 cm thick
             # initialize_on_side=True,
             initialize_on_side=False,
             density=1000.,

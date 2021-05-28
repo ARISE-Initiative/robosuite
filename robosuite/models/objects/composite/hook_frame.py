@@ -133,7 +133,7 @@ class HookFrame(CompositeObject):
                 geom_locations=((-self.frame_length + self.frame_thickness) / 2, 0, (self.frame_height + self.hook_height) / 2),
                 geom_quats=(1, 0, 0, 0),
                 geom_sizes=np.array((self.frame_thickness, self.frame_thickness, self.hook_height)) / 2,
-                geom_names="horizontal_frame",
+                geom_names="hook_frame",
                 geom_rgbas=None if self.use_texture else self.rgba,
                 geom_materials=self.mat_name if self.use_texture else None,
                 geom_frictions=self.friction,
