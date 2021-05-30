@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import gibson2
 from transforms3d import quaternions
 import robosuite.utils.transform_utils as T
+import robosuite
 
 def load_object(renderer,
                 geom,
@@ -27,7 +28,7 @@ def load_object(renderer,
 
         primitive_shapes_path = {
             'box': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj'),
-            'cylinder': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cylinder.obj'),
+            'cylinder': os.path.join(robosuite.models.assets_root, 'objects/meshes/cylinder.obj'),
             'sphere': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/sphere8.obj'),
             'plane': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj')
         }
@@ -89,14 +90,16 @@ def random_string():
                         string.digits, k=10))
     return res
 
-def get_id(intensity, name, self):
+def get_id(intensity, name, self, resolution=20):
     #TODO: Fix the directory creation in optimized and non optimized case
     if isinstance(intensity, np.ndarray):
+        # import pdb; pdb.set_trace();
         im = intensity
+        im = np.tile(im, (resolution, resolution, 1))
     else:
         # im = np.array([intensity] * 3).reshape(1,1,3) * 255
         # im = im.astype(np.uint8)
-        im = np.array([intensity]).reshape(1,1)
+        im = np.array([intensity] * (resolution ** 2)).reshape(resolution, resolution)
         
     tmpdirname = os.path.join(tempfile.gettempdir(), f'igibson_{random_string()}')
     os.makedirs(tmpdirname, exist_ok=True)

@@ -1,3 +1,4 @@
+from os import fwalk
 import numpy as np
 import robosuite as suite
 
@@ -236,6 +237,7 @@ if __name__ == '__main__':
             enable_shadow=True,
             modes=('rgb', 'seg', '3d', 'normal'),
             render2tensor=False,
+            optimized=False,
     )
 
     # env.reset()

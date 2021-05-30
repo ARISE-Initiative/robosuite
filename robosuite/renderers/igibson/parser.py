@@ -128,7 +128,6 @@ class Parser():
             
             parent_body = self.parent_map.get(geom)
             # [1, 0, 0, 0] is wxyz, we convert it back to xyzw.
-            # The imported function performs the same function
             geom_orn = string_to_array(geom.get('quat', '1 0 0 0'))
             geom_orn = [geom_orn[1],geom_orn[2],geom_orn[3],geom_orn[0]]
             geom_pos = string_to_array(geom.get('pos', "0 0 0"))
