@@ -118,10 +118,11 @@ class MujocoCamera(object):
                  camera_link_name, 
                  offset_pos = np.array([0,0,0]), 
                  offset_ori = np.array([0,0,0,1]), #xyzw -> Pybullet convention (to be consistent)
+                 fov=45,
                  active=True, 
-                 modes = None, 
-                 camera_name = None,
-                 mujoco_env = None
+                 modes=None, 
+                 camera_name=None,
+                 mujoco_env=None,
                  ):
         """
         :param link_name: string, name of the link the camera is attached to
@@ -137,8 +138,7 @@ class MujocoCamera(object):
         self.modes = modes
         self.camera_name = [camera_name, camera_link_name + '_cam'][camera_name is None]
         self.mujoco_env = mujoco_env
-        ## added by dj
-        # self.activate()
+        self.fov = fov
 
     def is_active(self):
         return self.active

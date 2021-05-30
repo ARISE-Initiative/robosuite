@@ -5,7 +5,6 @@ from robosuite.utils.mjcf_utils import string_to_array
 import numpy as np
 
 from gibson2.render.mesh_renderer.mesh_renderer_cpu import Material
-from gibson2.utils.mesh_util import xyzw2wxyz #xyz2mat, quat2rotmat,
 
 class Parser():
 
@@ -125,7 +124,6 @@ class Parser():
             if geom.get('group') != '1' and geom_type != 'plane':
                 continue
             
-            instance_id += 1
             parent_body = self.parent_map.get(geom)
             # [1, 0, 0, 0] is wxyz, we convert it back to xyzw.
             # The imported function performs the same function
@@ -169,6 +167,10 @@ class Parser():
                         visual_objects=self.visual_objects,
                         meshes=self.meshes
                         )
+
+            instance_id += 1
+
+        self.max_instances = instance_id
 
             
 

@@ -355,24 +355,70 @@ class RobotEnv(MujocoEnv):
         # Add camera observables to the dict
         rgb_sensor_name = f"{cam_name}_image"
         depth_sensor_name = f"{cam_name}_depth"
+        seg_sensor_name = f"{cam_name}_seg"
+        normal_sensor_name = f"{cam_name}_normal"
+
+        # get ig params
+        modes = self.ig_renderer_params.get('modes', [])
+        renderer = self.ig_renderer_params.get('renderer')
+        ig_wrapper = self.ig_renderer_params.get('ig_wrapper_obj')      
 
         @sensor(modality=modality)
         def camera_rgb(obs_cache):
-            # import pdb; pdb.set_trace();
             if self.render_with_igibson:
                 # iGibson renderer
                 if self.ig_renderer_params == {}:
                     # This function is called once before
+                    # the actual rendering
                     img = np.zeros((256, 256), np.uint8)
                 else:
-                    img = self.ig_renderer_params['renderer'].render(modes=self.ig_renderer_params['modes'])
 
-                    if isinstance(img[0], np.ndarray):
-                        # np array is in range 0-1
-                        img = (np.concatenate(img, axis=1) * 255).astype(np.uint8)[:,:,:3]
+                    # Switch to correct camera
+                    if ig_wrapper is not None and ig_wrapper.camera_name != cam_name:
+                        ig_wrapper.switch_camera(cam_name)
+
+                    rendered_imgs = renderer.render(modes=modes)
+                    rendered_mapping = {k: val for k, val in zip(modes, rendered_imgs)}
+                    
+                    if 'rgb' in modes:
+                        img = rendered_mapping['rgb'][:,:,:3]
+                        if isinstance(img, np.ndarray):
+                            # np array is in range 0-1
+                            img = (img * 255).astype(np.uint8)
+                        else:
+                            img = torch.flipud(img)
                     else:
-                        # torch tensor is in range 0-255
-                        img = torch.cat(img, dim=1)[:,:,:3] 
+                        img = np.zeros((256, 256), np.uint8)
+
+                    if 'seg' in modes:
+                        # 0th channel contains segmentation
+                        seg_map = rendered_mapping['seg'][:,:,0]
+                        if isinstance(seg_map, np.ndarray):
+                            # np array is in range 0-1
+                            seg_map = (seg_map * 255).astype(np.uint8)
+                        else:
+                            # flip in Y direction if torch tensor
+                            seg_map = torch.flipud(seg_map)  
+                        obs_cache[seg_sensor_name] = seg_map
+
+                    if '3d' in modes:
+                        # 2nd channel contains correct depth map
+                        depth_map = rendered_mapping['3d'][:,:,2]
+                        if not isinstance(depth_map, np.ndarray):
+                            # flip in Y direction if torch tensor
+                            depth_map = torch.flipud(depth_map) 
+                        obs_cache[depth_sensor_name] = depth_map
+                        
+
+                    if 'normal' in modes:
+                        normal_map = rendered_mapping['normal'][:,:,:3]
+                        if isinstance(normal_map, np.ndarray):
+                            # np array is in range 0-1
+                            normal_map = (normal_map * 255).astype(np.uint8)
+                        else:
+                            normal_map = torch.flipud(normal_map)                                                  
+                        obs_cache[normal_sensor_name] = normal_map
+
             else:
                 img = self.sim.render(
                     camera_name=cam_name,
@@ -380,17 +426,20 @@ class RobotEnv(MujocoEnv):
                     height=cam_h,
                     depth=cam_d,
                 )
-            if cam_d:
-                rgb, depth = img
-                obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
-                return rgb[::convention]
-            else:
-                return img[::convention]
+                if cam_d:
+                    rgb, depth = img
+                    obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
+                    return rgb[::convention]
+ 
+            return img[::convention]
 
         sensors.append(camera_rgb)
         names.append(rgb_sensor_name)
 
-        if cam_d:
+        # camd is parameter only for mujoco rendering
+        # for depth in iG use '3d' in modes while intiliazing 
+        # the iGibsonWrapper.
+        if cam_d and not self.render_with_igibson:
             @sensor(modality=modality)
             def camera_depth(obs_cache):
                 return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
@@ -398,6 +447,34 @@ class RobotEnv(MujocoEnv):
 
             sensors.append(camera_depth)
             names.append(depth_sensor_name)
+
+        # Below modes are only applicable for iG renderer.
+        if 'seg' in modes:
+            @sensor(modality=modality)
+            def camera_seg(obs_cache):
+                return obs_cache[seg_sensor_name] if seg_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))
+
+            sensors.append(camera_seg)
+            names.append(seg_sensor_name)
+
+        if '3d' in modes or cam_d:
+            @sensor(modality=modality)
+            def camera_depth(obs_cache):
+                return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))  
+
+            sensors.append(camera_depth)
+            names.append(depth_sensor_name)                     
+
+        if 'normal' in modes:
+            @sensor(modality=modality)
+            def camera_normal(obs_cache):
+                return obs_cache[normal_sensor_name] if normal_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))  
+
+            sensors.append(camera_normal)
+            names.append(normal_sensor_name)               
 
         return sensors, names
 
