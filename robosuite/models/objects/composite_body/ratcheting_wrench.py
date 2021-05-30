@@ -11,7 +11,7 @@ class RatchetingWrenchObject(CompositeBodyObject):
     Args:
         name (str): Name of this object
 
-        handle_size (float): (L, W, H) half-sizes for the handle (center part of wrench)
+        handle_size ([float]): (L, W, H) half-sizes for the handle (center part of wrench)
 
         outer_radius_1 (float): Outer radius of first end of wrench
 
@@ -27,6 +27,9 @@ class RatchetingWrenchObject(CompositeBodyObject):
 
         ngeoms (int): Number of box geoms used to approximate the ends of the wrench. Use
             more geoms to make the approximation better.
+
+        grip_size ([float]): (R, H) radius and half-height for the cylindrical grip. Set to None
+            to not add a grip.
     """
 
     def __init__(
@@ -40,6 +43,7 @@ class RatchetingWrenchObject(CompositeBodyObject):
         inner_radius_2=0.03,
         height_2=0.05,
         ngeoms=8,
+        grip_size=None,
         # rgba=None,
         density=1000.,
         solref=(0.02, 1.),
@@ -52,6 +56,7 @@ class RatchetingWrenchObject(CompositeBodyObject):
         self.inner_radii = (inner_radius_1, inner_radius_2)
         self.heights = (height_1, height_2)
         self.ngeoms = ngeoms
+        self.grip_size = tuple(grip_size) if grip_size is not None else None
 
         # Define materials we want to use for this object
         tex_attrib = {
@@ -69,6 +74,16 @@ class RatchetingWrenchObject(CompositeBodyObject):
             tex_attrib=tex_attrib,
             mat_attrib=mat_attrib,
         )
+
+        if self.grip_size is not None:
+            grip_mat = CustomMaterial(
+                texture="PlasterYellow",
+                # texture="WoodRed",
+                tex_name="plaster",
+                mat_name="plaster_mat",
+                tex_attrib=tex_attrib,
+                mat_attrib=mat_attrib,
+            )
 
         # Create objects
         objects = []
@@ -113,6 +128,22 @@ class RatchetingWrenchObject(CompositeBodyObject):
         ]
         quats = [None, None, None]
         parents = [None, None, None]
+
+        # maybe add cylindrical grip
+        if self.grip_size is not None:
+            objects.append(BoxObject(
+                name="grip",
+                size=self.grip_size,
+                rgba=None,
+                material=grip_mat,
+                density=density,
+                solref=solref,
+                solimp=solimp,
+                friction=friction,
+            ))
+            positions.append(np.zeros(3))
+            quats.append(None)
+            parents.append(None)
 
         # Run super init
         super().__init__(

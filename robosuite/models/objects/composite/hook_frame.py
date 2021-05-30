@@ -21,6 +21,11 @@ class HookFrame(CompositeObject):
 
         hook_height (float): if not None, add a box geom at the edge of the hook with this height (not half-height)
 
+        grip_location (float): if not None, adds a grip to passed location, relative to center of the rod corresponding to @frame_height.
+
+        grip_size ([float]): (R, H) radius and half-height for the cylindrical grip. Set to None
+            to not add a grip.
+
         friction (3-array or None): If specified, sets friction values for this object. None results in default values
 
         density (float): Density value to use for all geoms. Defaults to 1000
@@ -37,6 +42,8 @@ class HookFrame(CompositeObject):
         frame_height=0.2,
         frame_thickness=0.025,
         hook_height=None,
+        grip_location=None,
+        grip_size=None,
         friction=None,
         density=1000.,
         use_texture=True,
@@ -51,6 +58,8 @@ class HookFrame(CompositeObject):
         self.frame_height = frame_height
         self.frame_thickness = frame_thickness
         self.hook_height = hook_height
+        self.grip_location = grip_location
+        self.grip_size = tuple(grip_size) if grip_size is not None else None
         self.friction = friction if friction is None else np.array(friction)
         self.density = density
         self.use_texture = use_texture
@@ -80,6 +89,18 @@ class HookFrame(CompositeObject):
             mat_attrib=mat_attrib,
         )
         self.append_material(bin_mat)
+        # optionally add material for grip
+        if (self.grip_location is not None) and (self.grip_size is not None):
+            self.grip_mat_name = "plaster_mat"
+            grip_mat = CustomMaterial(
+                texture="PlasterYellow",
+                # texture="WoodRed",
+                tex_name="plaster",
+                mat_name=self.grip_mat_name,
+                tex_attrib=tex_attrib,
+                mat_attrib=mat_attrib,
+            )
+            self.append_material(grip_mat)
 
     def _get_geom_attrs(self):
         """
@@ -136,6 +157,20 @@ class HookFrame(CompositeObject):
                 geom_names="hook_frame",
                 geom_rgbas=None if self.use_texture else self.rgba,
                 geom_materials=self.mat_name if self.use_texture else None,
+                geom_frictions=self.friction,
+            )
+
+        # optionally add a grip
+        if (self.grip_location is not None) and (self.grip_size is not None):
+            add_to_dict(
+                dic=obj_args,
+                geom_types="cylinder",
+                geom_locations=((self.frame_length - self.frame_thickness) / 2 + self.grip_location, 0, -self.frame_thickness / 2),
+                geom_quats=(1, 0, 0, 0),
+                geom_sizes=self.grip_size,
+                geom_names="grip_frame",
+                geom_rgbas=None if self.use_texture else self.rgba,
+                geom_materials=self.grip_mat_name if self.use_texture else None,
                 geom_frictions=self.friction,
             )
 

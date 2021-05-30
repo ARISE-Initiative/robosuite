@@ -701,6 +701,8 @@ class ToolHanging_v2(ToolHanging):
             frame_height=(36. / 100.), # 36 cm tall
             frame_thickness=(0.75 / 100.), # 0.75 cm thick
             hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
+            grip_location=0.,
+            grip_size=((8. / 200.), (2. / 200.)), # 8 cm length, 2 cm thick
             density=500.,
         )
         self.frame = HookFrame(**self.frame_args)
@@ -715,6 +717,7 @@ class ToolHanging_v2(ToolHanging):
             inner_radius_2=(2.3 / 200.),
             height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
+            grip_size=((8. / 200.), (2. / 200.)), # 8 cm length, 2 cm thick
             density=100.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -731,13 +734,15 @@ class ToolHanging_v2(ToolHanging):
             inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
             height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
+            grip_size=((12. / 200.), (1.5 / 200.)), # 12 cm length, 1.5 cm thick
             density=100.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
             friction=(0.95, 0.3, 0.1),
         )
 
-        self.tool_args = self.toy_tool_args
+        # self.tool_args = self.toy_tool_args
+        self.tool_args = self.real_tool_args
         self.tool = RatchetingWrenchObject(**self.tool_args)
 
         # Create placement initializer
@@ -755,13 +760,14 @@ class ToolHanging_v2(ToolHanging):
         Update from base class to do the following:
 
         - move stand a little more to the left
+        - move stand further back towards robot
         """
         # Create placement initializer
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
 
         # Pre-define settings for each object's placement
         objects = [self.stand, self.frame, self.tool]
-        x_centers = [0, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
+        x_centers = [-self.table_full_size[0] * 0.1, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
         y_centers = [self.table_full_size[1] * 0.2, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
         x_tols = [0.02, 0.02, 0.02]
         y_tols = [0.02, 0.02, 0.02]
