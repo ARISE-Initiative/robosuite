@@ -65,6 +65,7 @@ class HookFrame(CompositeObject):
         self.use_texture = use_texture
         self.rgba = rgba
         self.mat_name = "brass_mat"
+        self.grip_mat_name = "woodred_mat"
 
         # Other private attributes
         self._important_sites = {}
@@ -91,11 +92,9 @@ class HookFrame(CompositeObject):
         self.append_material(bin_mat)
         # optionally add material for grip
         if (self.grip_location is not None) and (self.grip_size is not None):
-            self.grip_mat_name = "plaster_mat"
             grip_mat = CustomMaterial(
-                texture="PlasterYellow",
-                # texture="WoodRed",
-                tex_name="plaster",
+                texture="WoodRed",
+                tex_name="woodred",
                 mat_name=self.grip_mat_name,
                 tex_attrib=tex_attrib,
                 mat_attrib=mat_attrib,

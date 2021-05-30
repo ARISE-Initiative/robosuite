@@ -702,7 +702,7 @@ class ToolHanging_v2(ToolHanging):
             frame_thickness=(0.75 / 100.), # 0.75 cm thick
             hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
             grip_location=0.,
-            grip_size=((8. / 200.), (2. / 200.)), # 8 cm length, 2 cm thick
+            grip_size=((2. / 200.), (8. / 200.)), # 8 cm length, 2 cm thick
             density=500.,
         )
         self.frame = HookFrame(**self.frame_args)
@@ -717,7 +717,7 @@ class ToolHanging_v2(ToolHanging):
             inner_radius_2=(2.3 / 200.),
             height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
-            grip_size=((8. / 200.), (2. / 200.)), # 8 cm length, 2 cm thick
+            grip_size=((2. / 200.), (8. / 200.)), # 8 cm length, 2 cm thick
             density=100.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -734,7 +734,7 @@ class ToolHanging_v2(ToolHanging):
             inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
             height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
-            grip_size=((12. / 200.), (1.5 / 200.)), # 12 cm length, 1.5 cm thick
+            grip_size=((3. / 200.), (12. / 200.)), # 12 cm length, 3 cm thick
             density=100.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),

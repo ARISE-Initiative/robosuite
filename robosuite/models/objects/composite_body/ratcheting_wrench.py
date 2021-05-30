@@ -77,10 +77,9 @@ class RatchetingWrenchObject(CompositeBodyObject):
 
         if self.grip_size is not None:
             grip_mat = CustomMaterial(
-                texture="PlasterYellow",
-                # texture="WoodRed",
-                tex_name="plaster",
-                mat_name="plaster_mat",
+                texture="WoodRed",
+                tex_name="woodred",
+                mat_name="woodred_mat",
                 tex_attrib=tex_attrib,
                 mat_attrib=mat_attrib,
             )
@@ -131,18 +130,32 @@ class RatchetingWrenchObject(CompositeBodyObject):
 
         # maybe add cylindrical grip
         if self.grip_size is not None:
-            objects.append(BoxObject(
+            # objects.append(CylinderObject(
+            #     name="grip",
+            #     size=self.grip_size,
+            #     rgba=None,
+            #     material=grip_mat,
+            #     density=density,
+            #     solref=solref,
+            #     solimp=solimp,
+            #     friction=friction,
+            # ))
+            objects.append(HollowCylinderObject(
                 name="grip",
-                size=self.grip_size,
+                outer_radius=self.grip_size[0],
+                inner_radius=max(self.handle_size[1:]),
+                height=self.grip_size[1],
+                ngeoms=50,
                 rgba=None,
                 material=grip_mat,
                 density=density,
                 solref=solref,
                 solimp=solimp,
                 friction=friction,
+                make_half=False,
             ))
             positions.append(np.zeros(3))
-            quats.append(None)
+            quats.append((np.sqrt(2) / 2., 0., np.sqrt(2) / 2., 0.)) # rotate 90 degrees about y-axis
             parents.append(None)
 
         # Run super init
