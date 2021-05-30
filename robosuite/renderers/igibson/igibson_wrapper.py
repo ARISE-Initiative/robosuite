@@ -84,7 +84,6 @@ class iGibsonWrapper(Wrapper):
 
         self.renderer = self.renderer_class(width=width,
                                             height=height,
-                                            #TODO: fix vertical fov
                                             vertical_fov=45,
                                             device_idx=device_idx,
                                             rendering_settings=self.mrs)
@@ -111,10 +110,11 @@ class iGibsonWrapper(Wrapper):
 
     def switch_camera(self, camera_name):
         self.camera_name = camera_name
-        self.camera_position, self.view_direction = self.get_camera_pose(camera_name)
+        self.camera_position, self.view_direction, fov = self.get_camera_pose(camera_name)
         self.renderer.set_camera(self.camera_position,
                                  self.camera_position + self.view_direction,
                                  [0, 0, 1])
+        self.renderer.set_fov(fov)
 
     def get_camera_pose(self, camera_name):
         for instance in self.renderer.instances:
@@ -127,7 +127,7 @@ class iGibsonWrapper(Wrapper):
                         camera_ori_mat = quat2rotmat([camera_ori[-1], camera_ori[0], camera_ori[1], camera_ori[2]])[:3, :3]
                         # Mujoco camera points in -z
                         camera_view_dir = camera_ori_mat.dot(np.array([0, 0, -1])) 
-                        return camera_pos, camera_view_dir
+                        return camera_pos, camera_view_dir, cam.fov
 
         raise Exception("Camera {self.env.render_camera} not present")
 
@@ -222,11 +222,11 @@ if __name__ == '__main__':
                 "Door",
                 robots = ["Jaco"],
                 reward_shaping=True,
-                has_renderer=False,           
-                has_offscreen_renderer=True,
+                has_renderer=True,           
+                has_offscreen_renderer=False,
                 ignore_done=True,
                 use_object_obs=True,
-                use_camera_obs=True,  
+                use_camera_obs=False,  
                 render_camera='frontview',
                 control_freq=20, 
                 camera_names=['frontview', 'agentview'],
@@ -235,7 +235,7 @@ if __name__ == '__main__':
             enable_pbr=True,
             enable_shadow=True,
             modes=('rgb', 'seg', '3d', 'normal'),
-            render2tensor=True,
+            render2tensor=False,
     )
 
     # env.reset()

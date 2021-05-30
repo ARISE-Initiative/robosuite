@@ -90,14 +90,16 @@ class Parser():
             parent_body_name = self.parent_map[cam].get('name', 'worldbody')
             pos = string_to_array(cam.get('pos', "0 0 0"))
             quat = string_to_array(cam.get('quat', "1 0 0 0"))
+            fov = float(cam.get('fovy', "45"))
             quat = np.array([quat[1],quat[2],quat[3],quat[0]])
             camera = MujocoCamera(parent_body_name, 
                                   pos,
                                   quat,
-                                #   modes='seg',
-                                  active=False, #True if self.camera_name == camm.get("name") else False, , 
+                                  active=False,
                                   mujoco_env=self.env, 
-                                  camera_name=camera_name)
+                                  camera_name=camera_name,
+                                  fov=fov
+                                  )
             robot.cameras.append(camera)    
 
         self.renderer.add_robot([],
