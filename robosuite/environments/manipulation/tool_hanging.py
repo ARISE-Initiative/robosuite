@@ -371,7 +371,7 @@ class ToolHanging(SingleArmEnv):
         self.obj_geom_id = dict(
             stand_base=self.sim.model.geom_name2id("stand_base"), # bottom of stand
         )
-        for i.in range(4):
+        for i in range(4):
             self.obj_geom_id["stand_wall_{}".format(i)] = self.sim.model.geom_name2id("stand_wall{}".format(i))
         for i in range(self.tool_args["ngeoms"]):
             self.obj_geom_id["tool_hole1_hc_{}".format(i)] = self.sim.model.geom_name2id("tool_hole1_hc_{}".format(i))
