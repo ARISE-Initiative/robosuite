@@ -43,6 +43,8 @@ class StandWithMount(CompositeObject):
         initialize_on_side=True,
         friction=None,
         density=1000.,
+        solref=(0.02, 1.),
+        solimp=(0.9, 0.95, 0.001),
         use_texture=True,
         rgba=(0.2, 0.1, 0.0, 1.0),
     ):
@@ -57,6 +59,8 @@ class StandWithMount(CompositeObject):
         self.base_thickness = base_thickness
         self.initialize_on_side = initialize_on_side
         self.friction = friction if friction is None else np.array(friction)
+        self.solref = solref
+        self.solimp = solimp
         self.density = density
         self.use_texture = use_texture
         self.rgba = rgba
@@ -103,6 +107,8 @@ class StandWithMount(CompositeObject):
             "locations_relative_to_center": True,
             "obj_types": "all",
             "density": self.density,
+            "solref": self.solref,
+            "solimp": self.solimp,
         }
         obj_args = {}
 
