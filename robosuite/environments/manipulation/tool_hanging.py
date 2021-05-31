@@ -366,10 +366,13 @@ class ToolHanging(SingleArmEnv):
 
         # Important geoms: 
         #   stand_base - for checking that stand base is upright
+        #   stand wall geoms - for checking rod insertion into stand
         #   tool hole geoms - for checking insertion
         self.obj_geom_id = dict(
             stand_base=self.sim.model.geom_name2id("stand_base"), # bottom of stand
         )
+        for i.in range(4):
+            self.obj_geom_id["stand_wall_{}".format(i)] = self.sim.model.geom_name2id("stand_wall{}".format(i))
         for i in range(self.tool_args["ngeoms"]):
             self.obj_geom_id["tool_hole1_hc_{}".format(i)] = self.sim.model.geom_name2id("tool_hole1_hc_{}".format(i))
 
@@ -558,13 +561,27 @@ class ToolHanging(SingleArmEnv):
         base_shaft_is_vertical = (angle_to_z_axis < np.pi / 18.) # less than 10 degrees
 
 
-        # check (2): hook frame has been inserted into the base. For this we can just check the distance
-        #            between the bottom of the frame hook and the base is small enough.
+        # check (2): hook frame has been inserted into the base. For this we can check that the distance
+        #            between the bottom of the frame hook and the base is small enough, and also check that
+        #            the bottom of the hook is between the 4 walls of the stand cavity.
         bottom_hook_pos = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
         insertion_dist = np.linalg.norm(bottom_hook_pos - base_pos)
-        is_inserted = (insertion_dist < (self.frame_args["frame_thickness"] / 2.))
+        # insertion_tolerance = (self.frame_args["frame_thickness"] / 2.)
+        insertion_tolerance = 0.05 # NOTE: this was manually tuned
+        bottom_is_close_enough = (insertion_dist < insertion_tolerance)
 
-        return base_shaft_is_vertical and is_inserted
+        # geom wall position vectors relative to base position
+        geom_positions = [self.sim.data.geom_xpos[self.obj_geom_id["stand_wall_{}".format(i)]] - base_pos for i in range(4)]
+
+        # take cross product of each point against the line, and then dot the result to see if
+        # the sign is positive or negative. If it is positive, then they are on the same side 
+        # (visualize with right-hand-rule to see this)
+        rod_is_between_stand_walls = all([
+            np.dot(np.cross(geom_positions[0], vec_along_base_shaft), np.cross(geom_positions[2], vec_along_base_shaft)) < 0,
+            np.dot(np.cross(geom_positions[1], vec_along_base_shaft), np.cross(geom_positions[2], vec_along_base_shaft)) < 0,
+        ])
+
+        return base_shaft_is_vertical and (bottom_is_close_enough and rod_is_between_stand_walls)
 
     def _check_tool_on_frame(self):
         """
