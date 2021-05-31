@@ -46,6 +46,8 @@ class HookFrame(CompositeObject):
         grip_size=None,
         friction=None,
         density=1000.,
+        solref=(0.02, 1.),
+        solimp=(0.9, 0.95, 0.001),
         use_texture=True,
         rgba=(0.2, 0.1, 0.0, 1.0),
     ):
@@ -61,6 +63,8 @@ class HookFrame(CompositeObject):
         self.grip_location = grip_location
         self.grip_size = tuple(grip_size) if grip_size is not None else None
         self.friction = friction if friction is None else np.array(friction)
+        self.solref = solref
+        self.solimp = solimp
         self.density = density
         self.use_texture = use_texture
         self.rgba = rgba
@@ -116,6 +120,8 @@ class HookFrame(CompositeObject):
             "locations_relative_to_center": True,
             "obj_types": "all",
             "density": self.density,
+            "solref": self.solref,
+            "solimp": self.solimp,
         }
         obj_args = {}
 
@@ -161,12 +167,25 @@ class HookFrame(CompositeObject):
 
         # optionally add a grip
         if (self.grip_location is not None) and (self.grip_size is not None):
+            # add_to_dict(
+            #     dic=obj_args,
+            #     geom_types="cylinder",
+            #     geom_locations=((self.frame_length - self.frame_thickness) / 2 + self.grip_location, 0, -self.frame_thickness / 2),
+            #     geom_quats=(1, 0, 0, 0),
+            #     geom_sizes=self.grip_size,
+            #     geom_names="grip_frame",
+            #     geom_rgbas=None if self.use_texture else self.rgba,
+            #     geom_materials=self.grip_mat_name if self.use_texture else None,
+            #     geom_frictions=self.friction,
+            # )
+
+            # note: try box grip instead of cylindrical grip for stability
             add_to_dict(
                 dic=obj_args,
-                geom_types="cylinder",
+                geom_types="box",
                 geom_locations=((self.frame_length - self.frame_thickness) / 2 + self.grip_location, 0, -self.frame_thickness / 2),
                 geom_quats=(1, 0, 0, 0),
-                geom_sizes=self.grip_size,
+                geom_sizes=(self.grip_size[0], self.grip_size[0], self.grip_size[1]),
                 geom_names="grip_frame",
                 geom_rgbas=None if self.use_texture else self.rgba,
                 geom_materials=self.grip_mat_name if self.use_texture else None,

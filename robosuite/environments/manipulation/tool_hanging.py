@@ -564,6 +564,10 @@ class ToolHanging(SingleArmEnv):
         insertion_dist = np.linalg.norm(bottom_hook_pos - base_pos)
         is_inserted = (insertion_dist < (self.frame_args["frame_thickness"] / 2.))
 
+        print("insertion dist: {}".format(insertion_dist))
+        print("is inserted: {}".format(is_inserted))
+        print("base shaft is vertical: {}".format(base_shaft_is_vertical))
+
         return base_shaft_is_vertical and is_inserted
 
     def _check_tool_on_frame(self):
@@ -632,6 +636,11 @@ class ToolHanging(SingleArmEnv):
         normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
         tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2) and (normalized_dist_along_frame_hook_line < 1.0)
 
+        print("robot_and_tool_contact: {}".format(robot_and_tool_contact))
+        print("frame_and_tool_hole_contact: {}".format(frame_and_tool_hole_contact))
+        print("tool_hole_is_close_enough: {}".format(tool_hole_is_close_enough))
+        print("tool_is_between_hook: {}".format(tool_is_between_hook))
+        print("tool_is_inserted_far_enough: {}".format(tool_is_inserted_far_enough))
 
         return all([
             (not robot_and_tool_contact),
@@ -684,14 +693,18 @@ class ToolHanging_v2(ToolHanging):
         # Create stand, frame, and tool
         self.stand_args = dict(
             name="stand",
-            size=((12. / 100.), (14. / 100.), (32. / 100.)), # 14 cm x 12 cm base, with 32 cm height
+            # size=((12. / 100.), (14. / 100.), (32. / 100.)), # 14 cm x 12 cm base, with 32 cm height
+            size=((12. / 100.), (14. / 100.), (16. / 100.)), # reduced height by 50%
             mount_location=(0., (4.5 / 100.)), # 2.5 cm from right edge, so 4.5 cm to the right
             mount_width=(1. / 100.), # 1 cm thickness for rod cavity
             wall_thickness=(0.1 / 100.), # about 0.1-0.2 cm thickness for walls
-            base_thickness=(0.2 / 100.), # about 0.2 cm thick
+            # base_thickness=(0.2 / 100.), # about 0.2 cm thick
+            base_thickness=(1 / 100.), # increased thickness to 1 cm
             # initialize_on_side=True,
             initialize_on_side=False,
             density=1000.,
+            solref=(0.02, 1.),
+            solimp=(0.998, 0.998, 0.001),
         )
         self.stand = StandWithMount(**self.stand_args)
 
@@ -702,8 +715,10 @@ class ToolHanging_v2(ToolHanging):
             frame_thickness=(0.75 / 100.), # 0.75 cm thick
             hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
             grip_location=0.,
-            grip_size=((2. / 200.), (8. / 200.)), # 8 cm length, 2 cm thick
+            grip_size=((3. / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
             density=500.,
+            solref=(0.02, 1.),
+            solimp=(0.998, 0.998, 0.001),
         )
         self.frame = HookFrame(**self.frame_args)
 
