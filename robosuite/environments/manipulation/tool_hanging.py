@@ -546,7 +546,8 @@ class ToolHanging(SingleArmEnv):
         """
         Check if the frame has been assembled correctly. This checks the following things:
             (1) the base is upright
-            (2) the end of the hook frame has been inserted into the base
+            (2) the end of the hook frame is close enough to the base
+            (3) the hook frame is between the walls of the base
         """
 
         # position of base
@@ -561,30 +562,32 @@ class ToolHanging(SingleArmEnv):
         base_shaft_is_vertical = (angle_to_z_axis < np.pi / 18.) # less than 10 degrees
 
 
-        # check (2): hook frame has been inserted into the base. For this we can check that the distance
-        #            between the bottom of the frame hook and the base is small enough, and also check that
-        #            the bottom of the hook is between the 4 walls of the stand cavity.
+        # check (2): the end of the hook frame is close enough to the base. Just check the distance
         bottom_hook_pos = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
         insertion_dist = np.linalg.norm(bottom_hook_pos - base_pos)
         # insertion_tolerance = (self.frame_args["frame_thickness"] / 2.)
         insertion_tolerance = 0.05 # NOTE: this was manually tuned
         bottom_is_close_enough = (insertion_dist < insertion_tolerance)
 
+        # check (3): the hook frame is in between the walls of the base. Take the geom positions of opposing base walls
+        #            and check that they are on opposite sides of the line defined by the hook frame.
+
+        # normalized vector that points along the frame hook 
+        hook_endpoint = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
+        frame_hook_vec = self.sim.data.site_xpos[self.obj_site_id["frame_intersection_site"]] - hook_endpoint
+        frame_hook_length = np.linalg.norm(frame_hook_vec)
+        frame_hook_vec = frame_hook_vec / frame_hook_length
+        
         # geom wall position vectors relative to base position
-        geom_positions = [self.sim.data.geom_xpos[self.obj_geom_id["stand_wall_{}".format(i)]] - base_pos for i in range(4)]
+        geom_positions = [self.sim.data.geom_xpos[self.obj_geom_id["stand_wall_{}".format(i)]] - hook_endpoint for i in range(4)]
 
         # take cross product of each point against the line, and then dot the result to see if
         # the sign is positive or negative. If it is positive, then they are on the same side 
         # (visualize with right-hand-rule to see this)
         rod_is_between_stand_walls = all([
-            np.dot(np.cross(geom_positions[0], vec_along_base_shaft), np.cross(geom_positions[2], vec_along_base_shaft)) < 0,
-            np.dot(np.cross(geom_positions[1], vec_along_base_shaft), np.cross(geom_positions[2], vec_along_base_shaft)) < 0,
+            np.dot(np.cross(geom_positions[0], frame_hook_vec), np.cross(geom_positions[2], frame_hook_vec)) < 0,
+            np.dot(np.cross(geom_positions[1], frame_hook_vec), np.cross(geom_positions[3], frame_hook_vec)) < 0,
         ])
-
-        print("insertion dist: {}".format(insertion_dist))
-        print("bottom is close enough: {}".format(bottom_is_close_enough))
-        print("rod is between stand walls: {}".format(rod_is_between_stand_walls))
-        print("base shaft is vertical: {}".format(base_shaft_is_vertical))
 
         return base_shaft_is_vertical and (bottom_is_close_enough and rod_is_between_stand_walls)
 
@@ -653,12 +656,6 @@ class ToolHanging(SingleArmEnv):
         #            We ensure that it's at least 20% inserted along the length of the frame hook.
         normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
         tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2) and (normalized_dist_along_frame_hook_line < 1.0)
-
-        print("robot_and_tool_contact: {}".format(robot_and_tool_contact))
-        print("frame_and_tool_hole_contact: {}".format(frame_and_tool_hole_contact))
-        print("tool_hole_is_close_enough: {}".format(tool_hole_is_close_enough))
-        print("tool_is_between_hook: {}".format(tool_is_between_hook))
-        print("tool_is_inserted_far_enough: {}".format(tool_is_inserted_far_enough))
 
         return all([
             (not robot_and_tool_contact),

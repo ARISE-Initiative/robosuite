@@ -189,7 +189,8 @@ class HookFrame(CompositeObject):
                 geom_names="grip_frame",
                 geom_rgbas=None if self.use_texture else self.rgba,
                 geom_materials=self.grip_mat_name if self.use_texture else None,
-                geom_frictions=self.friction,
+                # geom_frictions=self.friction,
+                geom_frictions=(1., 0.005, 0.0001), # use default friction
             )
 
         # Sites

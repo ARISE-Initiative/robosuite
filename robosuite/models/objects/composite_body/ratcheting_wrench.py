@@ -151,7 +151,8 @@ class RatchetingWrenchObject(CompositeBodyObject):
                 density=density,
                 solref=solref,
                 solimp=solimp,
-                friction=friction,
+                # friction=friction,
+                friction=(1., 0.005, 0.0001), # use default friction
                 make_half=False,
             ))
             positions.append(np.zeros(3))
