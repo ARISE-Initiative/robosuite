@@ -711,7 +711,8 @@ class ToolHanging_v2(ToolHanging):
             # size=((12. / 100.), (14. / 100.), (32. / 100.)), # 14 cm x 12 cm base, with 32 cm height
             size=((12. / 100.), (14. / 100.), (16. / 100.)), # reduced height by 50%
             mount_location=(0., (4.5 / 100.)), # 2.5 cm from right edge, so 4.5 cm to the right
-            mount_width=(1. / 100.), # 1 cm thickness for rod cavity
+            # mount_width=(1. / 100.), # 1 cm thickness for rod cavity
+            mount_width=(1.25 / 100.), # try increasing tolerance a little
             wall_thickness=(0.1 / 100.), # about 0.1-0.2 cm thickness for walls
             # base_thickness=(0.2 / 100.), # about 0.2 cm thick
             base_thickness=(1 / 100.), # increased thickness to 1 cm
@@ -726,7 +727,8 @@ class ToolHanging_v2(ToolHanging):
         self.frame_args = dict(
             name="frame",
             frame_length=(9.5 / 100.), # 9.5 cm wide
-            frame_height=(36. / 100.), # 36 cm tall
+            # frame_height=(36. / 100.), # 36 cm tall
+            frame_height=(24. / 100.), # try reduced height
             frame_thickness=(0.75 / 100.), # 0.75 cm thick
             hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
             grip_location=0.,
