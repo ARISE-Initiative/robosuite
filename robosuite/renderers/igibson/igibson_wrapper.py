@@ -4,7 +4,7 @@ import robosuite as suite
 
 from robosuite.wrappers import Wrapper
 from robosuite.utils import transform_utils as T
-from parser import Parser
+from robosuite.renderers.igibson.parser import Parser
 
 from gibson2.render.mesh_renderer.mesh_renderer_settings import MeshRendererSettings
 from gibson2.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
@@ -76,7 +76,8 @@ class iGibsonWrapper(Wrapper):
                                         enable_pbr=enable_pbr, 
                                         enable_shadow=enable_shadow,
                                         optimized=optimized,
-                                        light_dimming_factor=light_dimming_factor)
+                                        light_dimming_factor=light_dimming_factor,
+                                        is_robosuite=True)
 
         if render2tensor:
             self.renderer_class = MeshRendererG2G
@@ -145,11 +146,13 @@ class iGibsonWrapper(Wrapper):
             initial_up (list, optional): [description]. Defaults to [0,0,1].
         """
         if self.mode == 'gui' and not self.render2tensor:
+            # in case of robosuite viewer, we open only one window.
+            # Later use the numpad to activate additional cameras            
             self.viewer = Viewer(initial_pos = initial_pos,
                                 initial_view_direction=initial_view_direction,
-                                initial_up=initial_up)    
-
-            self.viewer.renderer = self.renderer
+                                initial_up=initial_up,
+                                renderer=self.renderer)
+                        
         else:
             self.viewer = None
 
@@ -220,7 +223,7 @@ if __name__ == '__main__':
 
     env = iGibsonWrapper(
         env = suite.make(
-                "Door",
+                "Wipe",
                 robots = ["Jaco"],
                 reward_shaping=True,
                 has_renderer=True,           
@@ -243,7 +246,7 @@ if __name__ == '__main__':
     # env.reset()
 
     for i in range(10000):
-        action = np.random.randn(8)
+        action = np.random.randn(7)
         obs, reward, done, _ = env.step(action)
         env.render()
 

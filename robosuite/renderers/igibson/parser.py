@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from igibson_utils import get_id, MujocoCamera, MujocoRobot, load_object
+from robosuite.renderers.igibson.igibson_utils import get_id, MujocoCamera, MujocoRobot, load_object
 from robosuite.utils.mjcf_utils import string_to_array
 import numpy as np
 
@@ -81,8 +81,6 @@ class Parser():
 
     def parse_cameras(self):
 
-        #TODO: Fix the logic here and figure out the need for MuJoCo camera class
-        #TODO: Fix camera modes
         robot = MujocoRobot()
         for cam in self.xml_root.iter('camera'):
             camera_name = cam.get('name')
@@ -120,10 +118,10 @@ class Parser():
         self.parse_meshes()
         instance_id = 0
         for geom in self.xml_root.iter('geom'):
-            geom_name = geom.get('name')
+            geom_name = geom.get('name', 'NONAME')
             geom_type = geom.get('type')
 
-            if geom.get('group') != '1' and geom_type != 'plane':
+            if (geom.get('group') != '1' and geom_type != 'plane') or ('collision' in geom_name):
                 continue
             
             parent_body = self.parent_map.get(geom)

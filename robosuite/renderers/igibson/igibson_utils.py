@@ -71,8 +71,7 @@ def load_object(renderer,
                              transform_pos=geom_pos,
                              input_kd=geom_rgba,
                              load_texture=load_texture,
-                             input_material=material,  
-                             geom_type=geom_type)
+                             input_material=material)
 
         if geom_type == 'mesh':
             visual_objects[filename] = len(renderer.visual_objects) - 1
@@ -90,7 +89,7 @@ def random_string():
                         string.digits, k=10))
     return res
 
-def get_id(intensity, name, self, resolution=20):
+def get_id(intensity, name, self, resolution=1):
     #TODO: Fix the directory creation in optimized and non optimized case
     if isinstance(intensity, np.ndarray):
         # import pdb; pdb.set_trace();

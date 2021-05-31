@@ -391,7 +391,7 @@ class Observable:
         try:
             _ = self.modality
             img = self._sensor({})
-            if isinstance(img, (np.ndarray, list)):
+            if isinstance(img, (np.ndarray, list, int, float)):
                 self._data_shape = np.array(img).shape
                 self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
             else:
