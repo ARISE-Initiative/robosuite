@@ -9,7 +9,7 @@ from robosuite.renderers.igibson.parser import Parser
 from gibson2.render.mesh_renderer.mesh_renderer_settings import MeshRendererSettings
 from gibson2.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
 from gibson2.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer, Instance, Robot
-from gibson2.utils.mesh_util import xyzw2wxyz, quat2rotmat
+from gibson2.utils.mesh_util import xyzw2wxyz, quat2rotmat, ortho
 from gibson2.render.viewer import Viewer
 
 AVAILABLE_MODALITIES = ['rgb', 'seg', 'normal', '3d']
@@ -50,6 +50,12 @@ class iGibsonWrapper(Wrapper):
         super().__init__(env)
 
         check_modes(modes)
+
+        # expose all params
+        
+        if not self.env.render_with_igibson:
+            raise Exception("Set `render_with_igibson=True` while initializing the environment.")
+
 
         self.env = env
         self.render2tensor = render2tensor
@@ -116,6 +122,7 @@ class iGibsonWrapper(Wrapper):
         self.renderer.set_camera(self.camera_position,
                                  self.camera_position + self.view_direction,
                                  [0, 0, 1])
+        self.renderer.lightP = ortho(-2, 2, -2, 2, -10, 25.0)
         self.renderer.set_fov(fov)
 
     def get_camera_pose(self, camera_name):
@@ -223,7 +230,7 @@ if __name__ == '__main__':
 
     env = iGibsonWrapper(
         env = suite.make(
-                "Wipe",
+                "Door",
                 robots = ["Jaco"],
                 reward_shaping=True,
                 has_renderer=True,           
@@ -246,7 +253,7 @@ if __name__ == '__main__':
     # env.reset()
 
     for i in range(10000):
-        action = np.random.randn(7)
+        action = np.random.randn(8)
         obs, reward, done, _ = env.step(action)
         env.render()
 
