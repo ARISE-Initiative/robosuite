@@ -176,12 +176,15 @@ class iGibsonWrapper(Wrapper):
         """
         Update positions in renderer without stepping the simulation. Usually used in the reset() function
         """
-        for instance in self.renderer.instances:
-            if instance.dynamic:
-                self.update_position(instance, self.env)
         if self.mode == 'gui' and self.viewer is not None:
             self.viewer.update()
 
+    def step(self, action):
+        ret_val = super().step(action)
+        for instance in self.renderer.instances:
+            if instance.dynamic:
+                self.update_position(instance, self.env)
+        return ret_val
 
     @staticmethod
     def update_position(instance, env):

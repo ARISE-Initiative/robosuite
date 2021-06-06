@@ -92,19 +92,15 @@ def random_string():
 def get_id(intensity, name, self, resolution=1):
     #TODO: Fix the directory creation in optimized and non optimized case
     if isinstance(intensity, np.ndarray):
-        # import pdb; pdb.set_trace();
         im = intensity
         im = np.tile(im, (resolution, resolution, 1))
     else:
-        # im = np.array([intensity] * 3).reshape(1,1,3) * 255
-        # im = im.astype(np.uint8)
         im = np.array([intensity] * (resolution ** 2)).reshape(resolution, resolution)
         
     tmpdirname = os.path.join(tempfile.gettempdir(), f'igibson_{random_string()}')
     os.makedirs(tmpdirname, exist_ok=True)
     fname = os.path.join(tmpdirname, f'{name}.png')
     plt.imsave(fname, im)
-    print(fname)
     return self.renderer.load_texture_file(str(fname))
 
 

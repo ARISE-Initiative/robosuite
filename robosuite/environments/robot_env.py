@@ -361,7 +361,15 @@ class RobotEnv(MujocoEnv):
         # get ig params
         modes = self.ig_renderer_params.get('modes', [])
         renderer = self.ig_renderer_params.get('renderer')
-        ig_wrapper = self.ig_renderer_params.get('ig_wrapper_obj')      
+        ig_wrapper = self.ig_renderer_params.get('ig_wrapper_obj')
+
+        def adjust_convention(img, convention):
+            if convention == 1:
+                img = img[::-1]
+            else:
+                img = img[::convention]
+            
+            return img
 
         @sensor(modality=modality)
         def camera_rgb(obs_cache):
@@ -379,13 +387,19 @@ class RobotEnv(MujocoEnv):
 
                     rendered_imgs = renderer.render(modes=modes)
                     rendered_mapping = {k: val for k, val in zip(modes, rendered_imgs)}
-                    
+
+                    # in np array image received is of correct orientation
+                    # in torch tensor image is flipped upside down
+                    # adjusting the np image in a way so that return statement stays same
+                    # flipping torch tensor when opencv coordinate system is required.
+
                     if 'rgb' in modes:
                         img = rendered_mapping['rgb'][:,:,:3]
                         if isinstance(img, np.ndarray):
                             # np array is in range 0-1
                             img = (img * 255).astype(np.uint8)
-                        else:
+                            img = adjust_convention(img, convention)
+                        elif convention == -1:
                             img = torch.flipud(img)
                     else:
                         img = np.zeros((256, 256), np.uint8)
@@ -396,7 +410,8 @@ class RobotEnv(MujocoEnv):
                         if isinstance(seg_map, np.ndarray):
                             # np array is in range 0-1
                             seg_map = (seg_map * 255).astype(np.uint8)
-                        else:
+                            seg_map = adjust_convention(seg_map, convention)
+                        elif convention == -1:
                             # flip in Y direction if torch tensor
                             seg_map = torch.flipud(seg_map)  
                         obs_cache[seg_sensor_name] = seg_map
@@ -404,18 +419,21 @@ class RobotEnv(MujocoEnv):
                     if '3d' in modes:
                         # 2nd channel contains correct depth map
                         depth_map = rendered_mapping['3d'][:,:,2]
-                        if not isinstance(depth_map, np.ndarray):
+                        if isinstance(depth_map, np.ndarray):
+                            depth_map = adjust_convention(depth_map, convention)
+                        elif convention == -1:
                             # flip in Y direction if torch tensor
-                            depth_map = torch.flipud(depth_map) 
-                        obs_cache[depth_sensor_name] = depth_map
+                            depth_map = torch.flipud(depth_map)
                         
+                        obs_cache[depth_sensor_name] = depth_map
 
                     if 'normal' in modes:
                         normal_map = rendered_mapping['normal'][:,:,:3]
                         if isinstance(normal_map, np.ndarray):
                             # np array is in range 0-1
                             normal_map = (normal_map * 255).astype(np.uint8)
-                        else:
+                            normal_map = adjust_convention(normal_map, convention)
+                        elif convention == -1:
                             normal_map = torch.flipud(normal_map)                                                  
                         obs_cache[normal_sensor_name] = normal_map
 
@@ -430,8 +448,12 @@ class RobotEnv(MujocoEnv):
                     rgb, depth = img
                     obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
                     return rgb[::convention]
- 
-            return img[::convention]
+            
+            if isinstance(img, np.ndarray):
+                return img[::convention]
+            else:
+                # negative strides are not possible in torch.
+                return img
 
         sensors.append(camera_rgb)
         names.append(rgb_sensor_name)

@@ -5,6 +5,12 @@ This is controlled by gripper_type keyword argument.
 import numpy as np
 import robosuite as suite
 from robosuite import ALL_GRIPPERS
+from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--ig", action="store_true", help="Use iGibson renderer for rendering")
+args = parser.parse_args()
 
 
 if __name__ == "__main__":
@@ -12,19 +18,36 @@ if __name__ == "__main__":
     for gripper in ALL_GRIPPERS:
 
         # create environment with selected grippers
-        env = suite.make(
-            "Lift",
-            robots="Panda",
-            gripper_types=gripper,
-            has_renderer=True,            # make sure we can render to the screen
-            has_offscreen_renderer=False, # not needed since not using pixel obs
-            use_camera_obs=False,         # do not use pixel observations
-            control_freq=50,              # control should happen fast enough so that simulation looks smoother
-            camera_names='frontview',
-        )
+        if args.ig:
+            env = iGibsonWrapper(
+                env = suite.make(
+                    "Lift",
+                    robots="Panda",
+                    gripper_types=gripper,
+                    has_renderer=True,            # make sure we can render to the screen
+                    has_offscreen_renderer=False, # not needed since not using pixel obs
+                    use_camera_obs=False,         # do not use pixel observations
+                    control_freq=50,              # control should happen fast enough so that simulation looks smoother
+                    camera_names='frontview',
+                    render_with_igibson=True,
+                ),
+                enable_pbr=True,
+                enable_shadow=True
+            )
+        else:         
+            env = suite.make(
+                "Lift",
+                robots="Panda",
+                gripper_types=gripper,
+                has_renderer=True,            # make sure we can render to the screen
+                has_offscreen_renderer=False, # not needed since not using pixel obs
+                use_camera_obs=False,         # do not use pixel observations
+                control_freq=50,              # control should happen fast enough so that simulation looks smoother
+                camera_names='frontview',
+            )
 
-        # Reset the env
-        env.reset()
+            # Reset the env
+            env.reset()
 
         # Get action limits
         low, high = env.action_spec
