@@ -71,7 +71,7 @@ def load_object(renderer,
                              transform_pos=geom_pos,
                              input_kd=geom_rgba,
                              load_texture=load_texture,
-                             input_material=material)
+                             overwrite_material=material)
 
         if geom_type == 'mesh':
             visual_objects[filename] = len(renderer.visual_objects) - 1

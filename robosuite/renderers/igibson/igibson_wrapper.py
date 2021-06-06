@@ -230,7 +230,7 @@ if __name__ == '__main__':
 
     env = iGibsonWrapper(
         env = suite.make(
-                "Door",
+                "PickPlace",
                 robots = ["Jaco"],
                 reward_shaping=True,
                 has_renderer=True,           

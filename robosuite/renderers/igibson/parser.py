@@ -12,7 +12,7 @@ class Parser():
 
         self.renderer = renderer
         self.env = env
-        self.xml_root = ET.fromstring(self.env.mjpy_model.get_xml())
+        self.xml_root = ET.fromstring(self.env.mjpy_model.get_xml())      
         self.parent_map = {c:p for p in self.xml_root.iter() for c in p}
         self.visual_objects = {}
     
@@ -57,8 +57,7 @@ class Parser():
                     texuniform = material.get('texuniform', 'false') == 'true'
                     self.material_mapping[material_name] = Material('texture',
                                                                     texture_id=texture_id,
-                                                                    repeat_x=repeat[0], 
-                                                                    repeat_y=repeat[1], 
+                                                                    transform_param=[repeat[0], repeat[1], 0],
                                                                     metallic_texture_id=metallic_id,
                                                                     roughness_texture_id=roughness_id,
                                                                     normal_texture_id=self.normal_id,
@@ -151,6 +150,12 @@ class Parser():
             else:
                 geom_material._is_set_by_parser = False
             
+            # saving original params because transform param will be overwritten
+            if not hasattr(geom_material, '_orig_transform_param'):
+                geom_material._orig_transform_param = geom_material.transform_param
+
+            # setting material_ids so that randomized material works
+            geom_material.material_ids = 0
             load_object(renderer=self.renderer,
                         geom=geom,
                         geom_name=geom_name,
