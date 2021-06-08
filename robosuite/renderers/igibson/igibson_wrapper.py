@@ -32,27 +32,53 @@ class iGibsonWrapper(Wrapper):
                  light_dimming_factor=1.0,
                  device_idx=0,
                  modes=['rgb']):
-        """[summary]
+        """
+        Initializes the iGibson wrapper. Wrapping any MuJoCo environment in this 
+        wrapper will use the iGibson wrapper for rendering.
 
         Args:
-            env ([type]): [description]
-            width (int, optional): [description]. Defaults to 1280.
-            height (int, optional): [description]. Defaults to 720.
-            enable_pbr (bool, optional): [description]. Defaults to True.
-            enable_shadow (bool, optional): [description]. Defaults to True.
-            msaa (bool, optional): [description]. Defaults to True.
-            render2tensor (bool, optional): [description]. Defaults to False.
-            optimized (bool, optional): [description]. Defaults to False.
-            light_dimming_factor (float, optional): [description]. Defaults to 1.0.
-            device_idx (int, optional): [description]. Defaults to 0.
-            modes (list, optional): [description]. Defaults to ['rgb'].
+            env (MujocoEnv instance): The environment to wrap.
+
+            width (int, optional): Width of the rendered image. Defaults to 1280.
+                                   All the cameras will be rendered at same resolution.
+                                   This width will be given preference over `camera_widths`
+                                   specified at the initialization of the environment.
+
+            height (int, optional): Height of the rendered image. Defaults to 720.
+                                    All the cameras will be rendered at same resolution.
+                                    This width will be given preference over `camera_heights`
+                                    specified at the initialization of the environment.
+
+            enable_pbr (bool, optional): Whether to enable physically-based rendering. Defaults to True.
+
+            enable_shadow (bool, optional): Whether to render shadows. Defaults to True.
+
+            msaa (bool, optional): Whether to use multisample anti-aliasing. Defaults to True.
+                                   If using `seg` in modes, please turn off msaa because of
+                                   segmentation artefacts.
+
+            render2tensor (bool, optional): Whether to render images as torch cuda tensors. Defaults to False.
+                                            Images are rendered as numpy arrays by default. If `render2tensor`
+                                            is True, it will render as torch tensors on gpu.
+
+            optimized (bool, optional): Whether to use optimized renderer, which will be faster. Defaults to False.
+                                        Turning this will speed up the rendering at the cost of slight loss in
+                                        visuals of the renderered image.
+
+            light_dimming_factor (float, optional): Controls the intensity of light. Defaults to 1.0.
+                                                    Increasing this will increase the intensity of the light.
+
+            device_idx (int, optional): GPU index to render on. Defaults to 0.
+
+            modes (list, optional): Types of modality to render. Defaults to ['rgb'].
+                                    Available modalities are `['rgb', 'seg', '3d', 'normal']`
+                                    If `camd` is set to True while initializing the environment
+                                    `3d` mode is automatically added in the list of modes.
+        
         """
         super().__init__(env)
 
-        check_modes(modes)
-
-        # expose all params
-        
+        check_modes(modes)        
         if not self.env.render_with_igibson:
             raise Exception("Set `render_with_igibson=True` while initializing the environment.")
 
@@ -97,13 +123,13 @@ class iGibsonWrapper(Wrapper):
                                             rendering_settings=self.mrs)
         
         # load all the textures, materials, geoms, cameras
-        self.load()
+        self._load()
 
         # set camera for renderer
-        self.switch_camera(camera_name=self.env.render_camera)
+        self._switch_camera(camera_name=self.env.render_camera)
 
         # add viewer
-        self.add_viewer(initial_pos=self.camera_position, 
+        self._add_viewer(initial_pos=self.camera_position, 
                         initial_view_direction=self.view_direction)
 
         # set parameters which will be used inside rovobosuite
@@ -116,16 +142,29 @@ class iGibsonWrapper(Wrapper):
         # Setup observables again after setting the iG parameters
         self.env._observables = self.env._setup_observables()
 
-    def switch_camera(self, camera_name):
+    def _switch_camera(self, camera_name):
+        """
+        Change renderer camera to one of the available cameras of the environment
+        using its name.
+
+        Args:
+            camera_name (string): name of the camera
+        """
         self.camera_name = camera_name
-        self.camera_position, self.view_direction, fov = self.get_camera_pose(camera_name)
+        self.camera_position, self.view_direction, fov = self._get_camera_pose(camera_name)
         self.renderer.set_camera(self.camera_position,
                                  self.camera_position + self.view_direction,
                                  [0, 0, 1])
         self.renderer.lightP = ortho(-2, 2, -2, 2, -10, 25.0)
         self.renderer.set_fov(fov)
 
-    def get_camera_pose(self, camera_name):
+    def _get_camera_pose(self, camera_name):
+        """
+        Get position and orientation of the camera given the name
+
+        Args:
+            camera_name (string): name of the camera
+        """
         for instance in self.renderer.instances:
             if isinstance(instance, Robot):
                 for cam in instance.robot.cameras:
@@ -141,16 +180,17 @@ class iGibsonWrapper(Wrapper):
         raise Exception("Camera {self.env.render_camera} not present")
 
 
-    def add_viewer(self, 
+    def _add_viewer(self, 
                  initial_pos = [0,0,1], 
                  initial_view_direction = [1,0,0], 
                  initial_up = [0,0,1]):
-        """[summary]
+        """
+        Initialize iGibson viewer.
 
         Args:
-            initial_pos (list, optional): [description]. Defaults to [0,0,1].
-            initial_view_direction (list, optional): [description]. Defaults to [1,0,0].
-            initial_up (list, optional): [description]. Defaults to [0,0,1].
+            initial_pos (list, optional): Initial position of the viewer camera. Defaults to [0,0,1].
+            initial_view_direction (list, optional): Initial direction of the camera. Defaults to [1,0,0].
+            initial_up (list, optional): Vertical direction. Defaults to [0,0,1].
         """
         if self.mode == 'gui' and not self.render2tensor:
             # in case of robosuite viewer, we open only one window.
@@ -163,7 +203,7 @@ class iGibsonWrapper(Wrapper):
         else:
             self.viewer = None
 
-    def load(self):        
+    def _load(self):        
         parser = Parser(self.renderer, self.env)
         parser.parse_cameras()        
         parser.parse_textures()
@@ -172,22 +212,27 @@ class iGibsonWrapper(Wrapper):
         self.visual_objects = parser.visual_objects
         self.max_instances = parser.max_instances
 
-    def render(self, **kwargs):
+    def render(self):
         """
-        Update positions in renderer without stepping the simulation. Usually used in the reset() function
+        Update the viewer of the iGibson renderer.
+        Call to render is made inside viewer's update.
         """
         if self.mode == 'gui' and self.viewer is not None:
             self.viewer.update()
 
     def step(self, action):
+        """Updates the states for the wrapper given a certain action
+        Args:
+            action (np-array): the action the robot should take
+        """        
         ret_val = super().step(action)
         for instance in self.renderer.instances:
             if instance.dynamic:
-                self.update_position(instance, self.env)
+                self._update_position(instance, self.env)
         return ret_val
 
     @staticmethod
-    def update_position(instance, env):
+    def _update_position(instance, env):
         """
         Update position for an object or a robot in renderer.
 
@@ -208,6 +253,7 @@ class iGibsonWrapper(Wrapper):
             instance.set_rotation(quat2rotmat(xyzw2wxyz(orn)))
 
     def reset(self):
+        super().reset()
         self.renderer.release()
         self.__init__(env=self.env,
                  width=self.width,
@@ -221,6 +267,9 @@ class iGibsonWrapper(Wrapper):
                  device_idx=self.device_idx)
                 
     def close(self):
+        """
+        Releases the iGibson renderer.
+        """        
         self.renderer.release()
 
 if __name__ == '__main__':

@@ -383,7 +383,7 @@ class RobotEnv(MujocoEnv):
 
                     # Switch to correct camera
                     if ig_wrapper is not None and ig_wrapper.camera_name != cam_name:
-                        ig_wrapper.switch_camera(cam_name)
+                        ig_wrapper._switch_camera(cam_name)
 
                     rendered_imgs = renderer.render(modes=modes)
                     rendered_mapping = {k: val for k, val in zip(modes, rendered_imgs)}

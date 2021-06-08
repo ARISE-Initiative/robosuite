@@ -24,80 +24,108 @@ def load_object(renderer,
                 instance_id,
                 visual_objects,
                 meshes):
+    """
+    Function that initializes the meshes in the memeory with appropriate materials.
+    """
 
 
-        primitive_shapes_path = {
-            'box': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj'),
-            'cylinder': os.path.join(robosuite.models.assets_root, 'objects/meshes/cylinder.obj'),
-            'sphere': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/sphere8.obj'),
-            'plane': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj')
-        }
-        
-        # if not in primitive shapes, get path to mesh
-        filename = primitive_shapes_path.get(geom_type)
-        if filename is None:
-            filename = meshes[geom.attrib['mesh']]['file']
-            filename = os.path.splitext(filename)[0] + '.obj'
-        
-        parent_body_name = parent_body.get('name', 'worldbody')
-        load_texture = True if geom_material is None else False
-
-        # place holder meshes for which we do not textures loaded
-        if geom_name in ['VisualBread_g0', 'VisualCan_g0', 'VisualCereal_g0', 'VisualMilk_g0']:
-            load_texture = False
-
-        if geom_name in ['Milk_g0_visual', 'Can_g0_visual', 'Cereal_g0_visual', 'Bread_g0_visual']:
-            load_texture = True
+    primitive_shapes_path = {
+        'box': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj'),
+        'cylinder': os.path.join(robosuite.models.assets_root, 'objects/meshes/cylinder.obj'),
+        'sphere': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/sphere8.obj'),
+        'plane': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj')
+    }
     
-        if geom_type == 'mesh':
-            scale = geom_scale
-        elif geom_type in ['box', 'sphere']:
-            scale = geom_size * 2
-        elif geom_type == 'cylinder':
-            scale = [geom_size[0], geom_size[0], geom_size[1]]
-        elif geom_type == 'plane':
-            scale = [geom_size[0]*2 , geom_size[1]*2, 0.01]
+    # if not in primitive shapes, get path to mesh
+    filename = primitive_shapes_path.get(geom_type)
+    if filename is None:
+        filename = meshes[geom.attrib['mesh']]['file']
+        filename = os.path.splitext(filename)[0] + '.obj'
+    
+    parent_body_name = parent_body.get('name', 'worldbody')
 
-        material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser) \
-                   else geom_material
+    load_texture = True if geom_material is None else False
 
-        if "rethink_mount/pedestal.obj" in filename:
-            filename = filename[:-4]
-            filename += '_ig.obj'
+    # place holder meshes for which we do not textures loaded
+    # This list should be extended if one sees placeholder meshes
+    # having textures
+    if geom_name in ['VisualBread_g0', 'VisualCan_g0', 'VisualCereal_g0', 'VisualMilk_g0']:
+        load_texture = False
 
-        renderer.load_object(filename,
-                             scale=scale,
-                             transform_orn=geom_orn,
-                             transform_pos=geom_pos,
-                             input_kd=geom_rgba,
-                             load_texture=load_texture,
-                             overwrite_material=material)
+    # # Special meshes for which we have to load the textures.
+    if geom_name in ['Milk_g0_visual', 'Can_g0_visual', 'Cereal_g0_visual', 'Bread_g0_visual']:
+        load_texture = True
 
-        if geom_type == 'mesh':
-            visual_objects[filename] = len(renderer.visual_objects) - 1
+    if geom_type == 'mesh':
+        scale = geom_scale
+    elif geom_type in ['box', 'sphere']:
+        scale = geom_size * 2
+    elif geom_type == 'cylinder':
+        scale = [geom_size[0], geom_size[0], geom_size[1]]
+    elif geom_type == 'plane':
+        scale = [geom_size[0]*2 , geom_size[1]*2, 0.01]
 
-        renderer.add_instance(len(renderer.visual_objects) - 1,
-                              pybullet_uuid=0,
-                              class_id=instance_id,
-                              dynamic=True,
-                              parent_body=parent_body_name)
+    material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser) \
+                else geom_material
+
+    # for iG the obj file which works for nvisii was not working.
+    # So we created a second file for iG.
+    if "rethink_mount/pedestal.obj" in filename:
+        filename = filename[:-4]
+        filename += '_ig.obj'
+
+    renderer.load_object(filename,
+                            scale=scale,
+                            transform_orn=geom_orn,
+                            transform_pos=geom_pos,
+                            input_kd=geom_rgba,
+                            load_texture=load_texture,
+                            overwrite_material=material)
+
+    if geom_type == 'mesh':
+        visual_objects[filename] = len(renderer.visual_objects) - 1
+
+    renderer.add_instance(len(renderer.visual_objects) - 1,
+                            pybullet_uuid=0,
+                            class_id=instance_id,
+                            dynamic=True,
+                            parent_body=parent_body_name)
 
 
 
 def random_string():
+    """
+    Generate a random string.
+    """
     res = ''.join(random.choices(string.ascii_letters +
                         string.digits, k=10))
     return res
 
 def get_id(intensity, name, self, resolution=1):
-    #TODO: Fix the directory creation in optimized and non optimized case
+    """
+    Create dummy png or size resolution from intensity values and load the texture in renderer.
+
+    Args:
+        intensity (float, np.ndarray): Could be any intensity value
+        name (string): name which will be used to save the file
+        resolution (int, optional): Resolution at which dummy texture file is written.
+                                    Defaults to 1.
+
+    Returns:
+        int: texture_id of iG renderer.
+    """
     if isinstance(intensity, np.ndarray):
         im = intensity
         im = np.tile(im, (resolution, resolution, 1))
     else:
         im = np.array([intensity] * (resolution ** 2)).reshape(resolution, resolution)
-        
-    tmpdirname = os.path.join(tempfile.gettempdir(), f'igibson_{random_string()}')
+    
+    if not self.renderer.rendering_settings.optimized:
+        tmpdirname = tempfile.TemporaryDirectory().name
+    else:
+        # if optimized the file created should stay on the disk as it is required later
+        # by the optimized renderer. In non-optimized case the file written could be deleted.
+        tmpdirname = os.path.join(tempfile.gettempdir(), f'igibson_{random_string()}')
     os.makedirs(tmpdirname, exist_ok=True)
     fname = os.path.join(tmpdirname, f'{name}.png')
     plt.imsave(fname, im)

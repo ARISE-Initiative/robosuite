@@ -9,6 +9,13 @@ from gibson2.render.mesh_renderer.mesh_renderer_cpu import Material
 class Parser():
 
     def __init__(self, renderer,  env):
+        """
+        Parse the mujoco xml and initialize iG renderer objects.
+
+        Args:
+            renderer: iGibson renderer
+            env : Mujoco env
+        """
 
         self.renderer = renderer
         self.env = env
@@ -17,6 +24,9 @@ class Parser():
         self.visual_objects = {}
     
     def parse_textures(self):
+        """
+        Parse and load all textures and store them
+        """
 
         self.texture_attributes = {}
         self.texture_id_mapping = {}
@@ -35,6 +45,9 @@ class Parser():
                 self.texture_id_mapping[texture_name] = (color, texture_type)
 
     def parse_materials(self):
+        """
+        Parse all materials and use texture mapping to initialize materials
+        """
 
         self.material_attributes = {}
         self.material_mapping = {}
@@ -79,11 +92,14 @@ class Parser():
                                                                 kd=rgba[:3])
 
     def parse_cameras(self):
+        """
+        Parse cameras and initialize the cameras.
+        """
 
         robot = MujocoRobot()
         for cam in self.xml_root.iter('camera'):
             camera_name = cam.get('name')
-            # get parent body name.
+            # get parent body name to find out where the camera is attached.
             parent_body_name = self.parent_map[cam].get('name', 'worldbody')
             pos = string_to_array(cam.get('pos', "0 0 0"))
             quat = string_to_array(cam.get('quat', "1 0 0 0"))
@@ -109,11 +125,17 @@ class Parser():
                                 robot=robot)                       
 
     def parse_meshes(self):
+        """
+        Create mapping of meshes.
+        """
         self.meshes = {}
         for mesh in self.xml_root.iter('mesh'):
             self.meshes[mesh.get('name')] = mesh.attrib
 
     def parse_geometries(self):
+        """
+        Iterate through each goemetry and load it in the iGibson renderer.
+        """
         self.parse_meshes()
         instance_id = 0
         for geom in self.xml_root.iter('geom'):
