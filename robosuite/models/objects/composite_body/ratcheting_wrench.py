@@ -77,9 +77,12 @@ class RatchetingWrenchObject(CompositeBodyObject):
 
         if self.grip_size is not None:
             grip_mat = CustomMaterial(
-                texture="WoodRed",
-                tex_name="woodred",
-                mat_name="woodred_mat",
+                # texture="WoodRed",
+                # tex_name="woodred",
+                # mat_name="woodred_mat",
+                texture="Ceramic",
+                tex_name="ceramic",
+                mat_name="ceramic_mat",
                 tex_attrib=tex_attrib,
                 mat_attrib=mat_attrib,
             )
@@ -146,7 +149,7 @@ class RatchetingWrenchObject(CompositeBodyObject):
                 inner_radius=max(self.handle_size[1:]),
                 height=self.grip_size[1],
                 ngeoms=50,
-                rgba=None,
+                rgba=(0.13, 0.13, 0.13, 1.),
                 material=grip_mat,
                 density=density,
                 solref=solref,

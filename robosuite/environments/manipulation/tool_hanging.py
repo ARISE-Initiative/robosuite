@@ -675,7 +675,7 @@ class ToolHanging_v2(ToolHanging):
         """
         Loads an xml model, puts it in self.model
         """
-        super()._load_model()
+        SingleArmEnv._load_model(self)
 
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -711,11 +711,11 @@ class ToolHanging_v2(ToolHanging):
             # size=((12. / 100.), (14. / 100.), (32. / 100.)), # 14 cm x 12 cm base, with 32 cm height
             size=((12. / 100.), (14. / 100.), (16. / 100.)), # reduced height by 50%
             mount_location=(0., (4.5 / 100.)), # 2.5 cm from right edge, so 4.5 cm to the right
-            # mount_width=(1. / 100.), # 1 cm thickness for rod cavity
-            mount_width=(1.25 / 100.), # try increasing tolerance a little
+            mount_width=(1. / 100.), # 1 cm thickness for rod cavity
+            # mount_width=(1.25 / 100.), # try increasing tolerance a little
             wall_thickness=(0.1 / 100.), # about 0.1-0.2 cm thickness for walls
             # base_thickness=(0.2 / 100.), # about 0.2 cm thick
-            base_thickness=(1 / 100.), # increased thickness to 1 cm
+            base_thickness=(1 / 100.), # increased thickness to 1 cm (different from real)
             # initialize_on_side=True,
             initialize_on_side=False,
             density=1000.,
@@ -728,11 +728,12 @@ class ToolHanging_v2(ToolHanging):
             name="frame",
             frame_length=(9.5 / 100.), # 9.5 cm wide
             # frame_height=(36. / 100.), # 36 cm tall
-            frame_height=(24. / 100.), # try reduced height
+            frame_height=(18. / 100.), # reduce height by 50%
             frame_thickness=(0.75 / 100.), # 0.75 cm thick
             hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
-            grip_location=0.,
-            grip_size=((3. / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
+            # grip_location=0.,
+            grip_location=((9. - 3.) / 100.) - (0.75 / 200.), # move up by half height of frame minus half height of grip minus half thickness
+            grip_size=((2. / 200.), (6. / 200.)), # 6 cm length, 2 cm thick
             density=500.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -766,7 +767,7 @@ class ToolHanging_v2(ToolHanging):
             inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
             height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
-            grip_size=((3. / 200.), (12. / 200.)), # 12 cm length, 3 cm thick
+            grip_size=((3. / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
             density=100.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -791,24 +792,34 @@ class ToolHanging_v2(ToolHanging):
         """
         Update from base class to do the following:
 
-        - move stand a little more to the left
-        - move stand further back towards robot
+        - move stand a little more to the left, and back towards robot
+        - fix the stand location (no randomization)
+
+        - rotate tool and hook to be horizontal
+        - put tool and hook on left side of stand, with modest randomization
         """
         # Create placement initializer
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
 
         # Pre-define settings for each object's placement
         objects = [self.stand, self.frame, self.tool]
-        x_centers = [-self.table_full_size[0] * 0.1, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
-        y_centers = [self.table_full_size[1] * 0.2, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
-        x_tols = [0.02, 0.02, 0.02]
-        y_tols = [0.02, 0.02, 0.02]
-        rot_centers = [np.pi / 12, 0, 0]
-        rot_tols = [np.pi / 24, np.pi / 6, np.pi / 6]
+        # x_centers = [-self.table_full_size[0] * 0.1, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
+        x_centers = [-self.table_full_size[0] * 0.1, -self.table_full_size[0] * 0.05, self.table_full_size[0] * 0.05]
+        # y_centers = [self.table_full_size[1] * 0.2, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
+        y_centers = [0., -self.table_full_size[1] * 0.2, -self.table_full_size[1] * 0.25]
+        # x_tols = [0.02, 0.02, 0.02]
+        x_tols = [0., 0.02, 0.02]
+        # y_tols = [0.02, 0.02, 0.02]
+        y_tols = [0., 0.02, 0.02]
+        # rot_centers = [np.pi / 12, 0, 0]
+        rot_centers = [0, (-np.pi / 2) + (np.pi / 6), (-np.pi / 2) - (np.pi / 9.)]
+        # rot_tols = [np.pi / 24, np.pi / 6, np.pi / 6]
+        rot_tols = [0., np.pi / 18, np.pi / 18.]
         rot_axes = ['z', 'y', 'z']
         z_offsets = [
             0.001, 
-            (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2. + 0.001,
+            # (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2. + 0.001,
+            (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2. + 0.001 + (self.stand_args["base_thickness"] / 2.) + (self.frame_args["grip_size"][1]),
             0.001,
         ]
         for obj, x, y, x_tol, y_tol, r, r_tol, r_axis, z_offset in zip(

@@ -69,7 +69,8 @@ class HookFrame(CompositeObject):
         self.use_texture = use_texture
         self.rgba = rgba
         self.mat_name = "brass_mat"
-        self.grip_mat_name = "woodred_mat"
+        # self.grip_mat_name = "woodred_mat"
+        self.grip_mat_name = "ceramic_mat"
 
         # Other private attributes
         self._important_sites = {}
@@ -97,8 +98,10 @@ class HookFrame(CompositeObject):
         # optionally add material for grip
         if (self.grip_location is not None) and (self.grip_size is not None):
             grip_mat = CustomMaterial(
-                texture="WoodRed",
-                tex_name="woodred",
+                # texture="WoodRed",
+                # tex_name="woodred",
+                texture="Ceramic",
+                tex_name="ceramic",
                 mat_name=self.grip_mat_name,
                 tex_attrib=tex_attrib,
                 mat_attrib=mat_attrib,
@@ -183,11 +186,12 @@ class HookFrame(CompositeObject):
             add_to_dict(
                 dic=obj_args,
                 geom_types="box",
-                geom_locations=((self.frame_length - self.frame_thickness) / 2 + self.grip_location, 0, -self.frame_thickness / 2),
+                geom_locations=((self.frame_length - self.frame_thickness) / 2, 0, (-self.frame_thickness / 2) + self.grip_location),
                 geom_quats=(1, 0, 0, 0),
                 geom_sizes=(self.grip_size[0], self.grip_size[0], self.grip_size[1]),
                 geom_names="grip_frame",
-                geom_rgbas=None if self.use_texture else self.rgba,
+                # geom_rgbas=None if self.use_texture else self.rgba,
+                geom_rgbas=(0.13, 0.13, 0.13, 1.0),
                 geom_materials=self.grip_mat_name if self.use_texture else None,
                 # geom_frictions=self.friction,
                 geom_frictions=(1., 0.005, 0.0001), # use default friction
