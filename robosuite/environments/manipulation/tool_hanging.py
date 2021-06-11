@@ -733,7 +733,7 @@ class ToolHanging_v2(ToolHanging):
             hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
             # grip_location=0.,
             grip_location=((9. - 3.) / 100.) - (0.75 / 200.), # move up by half height of frame minus half height of grip minus half thickness
-            grip_size=((2. / 200.), (6. / 200.)), # 6 cm length, 2 cm thick
+            grip_size=((2.54 / 200.), (6.35 / 200.)), # 6.35 cm length, 2.54 cm thick
             density=500.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -759,7 +759,7 @@ class ToolHanging_v2(ToolHanging):
 
         self.real_tool_args = dict(
             name="tool",
-            handle_size=((16.5 / 200.), (1.75 / 200.), (0.25 / 200.)), # 16.5 cm length, 1.75 cm width, 0.25 cm thick (1.5 cm with foam)
+            handle_size=((16.5 / 200.), (1.75 / 200.), (0.32 / 200.)), # 16.5 cm length, 1.75 cm width, 0.32 cm thick (1.5 cm with foam)
             outer_radius_1=(3.5 / 200.), # larger hole 3.5 cm outer diameter
             inner_radius_1=(2.3 / 200.), # larger hole 2.3 cm inner diameter
             height_1=(1. / 200.), # 1 cm height
@@ -767,7 +767,7 @@ class ToolHanging_v2(ToolHanging):
             inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
             height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
-            grip_size=((3. / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
+            grip_size=((3.5 / 200.), (8. / 200.)), # 8 cm length, 3.5 cm thick
             density=100.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
