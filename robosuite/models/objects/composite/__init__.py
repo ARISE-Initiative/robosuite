@@ -3,6 +3,7 @@ from .hammer import HammerObject
 from .lid import Lid
 from .pot_with_handles import PotWithHandlesObject
 from .hollow_cylinder import HollowCylinderObject
+from .cone import ConeObject
 from .needle import NeedleObject
 from .ring_tripod import RingTripodObject
 from .hook_frame import HookFrame
