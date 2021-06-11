@@ -94,7 +94,7 @@ class ConeObject(CompositeObject):
         """
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
         base_args = {
-            "total_size": [self.r2, self.r2, self.height],
+            "total_size": [self.r2, self.r2, self.height / 2.],
             "name": self.name,
             "locations_relative_to_center": True,
             "obj_types": "all",

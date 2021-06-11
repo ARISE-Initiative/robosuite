@@ -143,20 +143,31 @@ class RatchetingWrenchObject(CompositeBodyObject):
             #     solimp=solimp,
             #     friction=friction,
             # ))
-            objects.append(HollowCylinderObject(
+            # objects.append(HollowCylinderObject(
+            #     name="grip",
+            #     outer_radius=self.grip_size[0],
+            #     inner_radius=max(self.handle_size[1:]),
+            #     height=self.grip_size[1],
+            #     ngeoms=50,
+            #     rgba=(0.13, 0.13, 0.13, 1.),
+            #     material=grip_mat,
+            #     density=density,
+            #     solref=solref,
+            #     solimp=solimp,
+            #     # friction=friction,
+            #     friction=(1., 0.005, 0.0001), # use default friction
+            #     make_half=False,
+            # ))
+            objects.append(BoxObject(
                 name="grip",
-                outer_radius=self.grip_size[0],
-                inner_radius=max(self.handle_size[1:]),
-                height=self.grip_size[1],
-                ngeoms=50,
+                size=[self.grip_size[0], self.grip_size[0], self.grip_size[1]],
                 rgba=(0.13, 0.13, 0.13, 1.),
-                material=grip_mat,
+                # material=grip_mat,
                 density=density,
                 solref=solref,
                 solimp=solimp,
                 # friction=friction,
                 friction=(1., 0.005, 0.0001), # use default friction
-                make_half=False,
             ))
             positions.append(np.zeros(3))
             quats.append((np.sqrt(2) / 2., 0., np.sqrt(2) / 2., 0.)) # rotate 90 degrees about y-axis

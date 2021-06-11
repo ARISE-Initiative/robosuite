@@ -8,7 +8,7 @@ from robosuite.utils.sim_utils import check_contact
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import StandWithMount, HookFrame, PictureFrame, RatchetingWrenchObject, HollowCylinderObject
+from robosuite.models.objects import StandWithMount, HookFrame, PictureFrame, RatchetingWrenchObject, HollowCylinderObject, ConeObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialCompositeSampler
 from robosuite.utils.observables import Observable, sensor
@@ -363,6 +363,8 @@ class ToolHanging(SingleArmEnv):
             frame_intersection_site=self.sim.model.site_name2id("frame_intersection_site"), # corner of frame
             stand_mount_site=self.sim.model.site_name2id("stand_mount_site"), # where frame needs to be inserted into stand
         )
+        if ("tip_size" in self.frame_args) and (self.frame_args["tip_size"] is not None):
+            self.obj_site_id["frame_tip_site"] = self.sim.model.site_name2id("frame_tip_site") # tip site for insertion
 
         # Important geoms: 
         #   stand_base - for checking that stand base is upright
@@ -563,7 +565,10 @@ class ToolHanging(SingleArmEnv):
 
 
         # check (2): the end of the hook frame is close enough to the base. Just check the distance
-        bottom_hook_pos = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
+        if "frame_tip_site" in self.obj_site_id:
+            bottom_hook_pos = self.sim.data.site_xpos[self.obj_site_id["frame_tip_site"]]
+        else:
+            bottom_hook_pos = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
         insertion_dist = np.linalg.norm(bottom_hook_pos - base_pos)
         # insertion_tolerance = (self.frame_args["frame_thickness"] / 2.)
         insertion_tolerance = 0.05 # NOTE: this was manually tuned
@@ -653,9 +658,9 @@ class ToolHanging(SingleArmEnv):
 
 
         # check (5): check if tool insertion is far enough - check this by computing normalized distance of projection along frame hook line.
-        #            We ensure that it's at least 20% inserted along the length of the frame hook.
+        #            We ensure that it's at least 5% inserted along the length of the frame hook.
         normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
-        tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.2) and (normalized_dist_along_frame_hook_line < 1.0)
+        tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.05) and (normalized_dist_along_frame_hook_line < 1.0)
 
         return all([
             (not robot_and_tool_contact),
@@ -734,6 +739,8 @@ class ToolHanging_v2(ToolHanging):
             # grip_location=0.,
             grip_location=((9. - 3.) / 100.) - (0.75 / 200.), # move up by half height of frame minus half height of grip minus half thickness
             grip_size=((2.54 / 200.), (6.35 / 200.)), # 6.35 cm length, 2.54 cm thick
+            tip_size=((2.54 / 200.), (0.2 / 200.), (0.75 / 200.), (1.905 / 100.)), # 1-inch cylinder, 0.75 inch solder tip
+            # tip_size=((12.5 / 200.), (1.0 / 200.), (3.5 / 200.), (9.5 / 100.)), # 1-inch cylinder, 0.75 inch solder tip
             density=500.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -767,7 +774,8 @@ class ToolHanging_v2(ToolHanging):
             inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
             height_2=(1. / 200.), # 1 cm height
             ngeoms=8,
-            grip_size=((3.5 / 200.), (8. / 200.)), # 8 cm length, 3.5 cm thick
+            # grip_size=((3.5 / 200.), (8. / 200.)), # 8 cm length, 3.5 cm thick
+            grip_size=((3 / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
             density=100.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -778,6 +786,21 @@ class ToolHanging_v2(ToolHanging):
         self.tool_args = self.real_tool_args
         self.tool = RatchetingWrenchObject(**self.tool_args)
 
+        # self.cone =  ConeObject(
+        #     name="cone",
+        #     outer_radius=0.02,
+        #     inner_radius=0.005,
+        #     height=0.05,
+        #     ngeoms=8,
+        #     use_box=True,
+        #     rgba=(1., 0., 0., 1.),
+        #     material=None,
+        #     density=1000.,
+        #     solref=(0.02, 1.),
+        #     solimp=(0.998, 0.998, 0.001),
+        #     friction=(0.95, 0.3, 0.1),
+        # )
+
         # Create placement initializer
         self._get_placement_initializer()
 
@@ -786,6 +809,7 @@ class ToolHanging_v2(ToolHanging):
             mujoco_arena=mujoco_arena,
             mujoco_robots=[robot.robot_model for robot in self.robots], 
             mujoco_objects=[self.stand, self.frame, self.tool],
+            # mujoco_objects=[self.stand, self.frame, self.tool, self.cone],
         )
 
     def _get_placement_initializer(self):
@@ -840,3 +864,18 @@ class ToolHanging_v2(ToolHanging):
                     z_offset=z_offset,
                 )
             )
+
+        # self.placement_initializer.append_sampler(
+        #     sampler=UniformRandomSampler(
+        #         name="cone_ObjectSampler",
+        #         mujoco_objects=self.cone,
+        #         x_range=[0.1, 0.1],
+        #         y_range=[0.1, 0.1],
+        #         rotation=[0., 0.],
+        #         rotation_axis='z',
+        #         ensure_object_boundary_in_range=False,
+        #         ensure_valid_placement=False,
+        #         reference_pos=self.table_offset,
+        #         z_offset=0.001,
+        #     )
+        # )

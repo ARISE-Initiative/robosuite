@@ -26,6 +26,10 @@ class HookFrame(CompositeObject):
         grip_size ([float]): (R, H) radius and half-height for the cylindrical grip. Set to None
             to not add a grip.
 
+        tip_size ([float]): if not None, adds a cone tip to the end of the hook for easier insertion, with the
+            provided (CH, LR, UR, H) where CH is the base cylinder height, LR and UR are the lower and upper radius 
+            of the cone tip, and H is the half-height of the cone tip
+
         friction (3-array or None): If specified, sets friction values for this object. None results in default values
 
         density (float): Density value to use for all geoms. Defaults to 1000
@@ -44,6 +48,7 @@ class HookFrame(CompositeObject):
         hook_height=None,
         grip_location=None,
         grip_size=None,
+        tip_size=None,
         friction=None,
         density=1000.,
         solref=(0.02, 1.),
@@ -62,6 +67,7 @@ class HookFrame(CompositeObject):
         self.hook_height = hook_height
         self.grip_location = grip_location
         self.grip_size = tuple(grip_size) if grip_size is not None else None
+        self.tip_size = tuple(tip_size) if tip_size is not None else None
         self.friction = friction if friction is None else np.array(friction)
         self.solref = solref
         self.solimp = solimp
@@ -71,6 +77,7 @@ class HookFrame(CompositeObject):
         self.mat_name = "brass_mat"
         # self.grip_mat_name = "woodred_mat"
         self.grip_mat_name = "ceramic_mat"
+        self.tip_mat_name = "steel_mat"
 
         # Other private attributes
         self._important_sites = {}
@@ -107,6 +114,18 @@ class HookFrame(CompositeObject):
                 mat_attrib=mat_attrib,
             )
             self.append_material(grip_mat)
+        # optionally add material for tip
+        if self.tip_size is not None:
+            tip_mat = CustomMaterial(
+                # texture="WoodRed",
+                # tex_name="woodred",
+                texture="SteelScratched",
+                tex_name="steel",
+                mat_name=self.tip_mat_name,
+                tex_attrib=tex_attrib,
+                mat_attrib=mat_attrib,
+            )
+            self.append_material(tip_mat)
 
     def _get_geom_attrs(self):
         """
@@ -197,6 +216,75 @@ class HookFrame(CompositeObject):
                 geom_frictions=(1., 0.005, 0.0001), # use default friction
             )
 
+        # optionally add cone tip
+        if self.tip_size is not None:
+            from robosuite.models.objects import ConeObject
+            cone =  ConeObject(
+                name="cone",
+                outer_radius=self.tip_size[2],
+                inner_radius=self.tip_size[1],
+                height=self.tip_size[3],
+                # ngeoms=8,
+                ngeoms=50,
+                use_box=True,
+                # use_box=False,
+                rgba=None,
+                material=None,
+                density=self.density,
+                solref=self.solref,
+                solimp=self.solimp,
+                friction=self.friction,
+            )
+            cone_args = cone._get_geom_attrs()
+
+            # DIRTY HACK: add them in reverse (in hindsight, should just turn this into a composite body...)
+            cone_geom_types = cone_args["geom_types"]
+            cone_geom_locations = cone_args["geom_locations"]
+            cone_geom_sizes = cone_args["geom_sizes"][::-1]
+
+            # location of mount site is the translation we need
+            cylinder_offset = (
+                (self.size[0] - self.frame_thickness) / 2, 
+                0, 
+                -self.size[2] / 2 - self.tip_size[0], # account for half-height of cylinder
+            )
+            cone_offset = (
+                cylinder_offset[0], 
+                cylinder_offset[1], 
+                cylinder_offset[2] - self.tip_size[0] - self.tip_size[3] / 2., # need to move below cylinder, and account for half-height
+            )
+
+            # first add cylinder            
+            add_to_dict(
+                dic=obj_args,
+                geom_types="cylinder",
+                geom_locations=cylinder_offset,
+                geom_quats=(1, 0, 0, 0),
+                geom_sizes=(self.tip_size[2], self.tip_size[0]),
+                geom_names="tip_cylinder",
+                geom_rgbas=None if self.use_texture else self.rgba,
+                geom_materials=self.tip_mat_name if self.use_texture else None,
+                geom_frictions=self.friction,
+            )
+
+            # then add cone tip geoms
+            for i in range(len(cone_geom_types)):
+                add_to_dict(
+                    dic=obj_args,
+                    geom_types=cone_geom_types[i],
+                    geom_locations=(
+                        cone_geom_locations[i][0] + cone_offset[0],
+                        cone_geom_locations[i][1] + cone_offset[1],
+                        cone_geom_locations[i][2] + cone_offset[2],
+                    ),
+                    geom_quats=(1, 0, 0, 0),
+                    geom_sizes=cone_geom_sizes[i],
+                    geom_names="tip_cone_{}".format(i),
+                    geom_rgbas=None if self.use_texture else self.rgba,
+                    geom_materials=self.tip_mat_name if self.use_texture else None,
+                    geom_frictions=self.friction,
+                )
+
         # Sites
         obj_args["sites"] = [
             {
@@ -221,6 +309,21 @@ class HookFrame(CompositeObject):
                 "type": "sphere",
             },
         ]
+
+        if self.tip_size is not None:
+            obj_args["sites"].append(
+                {
+                    "name": f"tip_site",
+                    "pos": (
+                        ((self.size[0] - self.frame_thickness) / 2),
+                        0, 
+                        (-self.size[2] / 2) - 2. * self.tip_size[0] - self.tip_size[3],
+                    ),
+                    "size": "0.002",
+                    "rgba": RED,
+                    "type": "sphere",
+                },
+            )
 
         # Add back in base args and site args
         obj_args.update(base_args)
