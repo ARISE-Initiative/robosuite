@@ -136,6 +136,8 @@ class HookFrame(CompositeObject):
         """
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
         self.size = np.array((self.frame_length, self.frame_thickness, self.frame_height))
+        if self.tip_size is not None:
+            self.size[2] += 2. * (self.tip_size[0] + (2. * self.tip_size[3]))
         base_args = {
             "total_size": self.size / 2,
             "name": self.name,
@@ -244,9 +246,9 @@ class HookFrame(CompositeObject):
 
             # location of mount site is the translation we need
             cylinder_offset = (
-                (self.size[0] - self.frame_thickness) / 2, 
+                (self.frame_length - self.frame_thickness) / 2, 
                 0, 
-                -self.size[2] / 2 - self.tip_size[0], # account for half-height of cylinder
+                -self.frame_height / 2 - self.tip_size[0], # account for half-height of cylinder
             )
             cone_offset = (
                 cylinder_offset[0], 
@@ -289,21 +291,21 @@ class HookFrame(CompositeObject):
         obj_args["sites"] = [
             {
                 "name": f"hang_site",
-                "pos": (-self.size[0] / 2, 0, (self.size[2] - self.frame_thickness) / 2),
+                "pos": (-self.frame_length / 2, 0, (self.frame_height - self.frame_thickness) / 2),
                 "size": "0.002",
                 "rgba": RED,
                 "type": "sphere",
             },
             {
                 "name": f"mount_site",
-                "pos": ((self.size[0] - self.frame_thickness) / 2, 0, -self.size[2] / 2),
+                "pos": ((self.frame_length - self.frame_thickness) / 2, 0, -self.frame_height / 2),
                 "size": "0.002",
                 "rgba": GREEN,
                 "type": "sphere",
             },
             {
                 "name": f"intersection_site",
-                "pos": ((self.size[0] - self.frame_thickness) / 2, 0, (self.size[2] - self.frame_thickness) / 2),
+                "pos": ((self.frame_length - self.frame_thickness) / 2, 0, (self.frame_height - self.frame_thickness) / 2),
                 "size": "0.002",
                 "rgba": BLUE,
                 "type": "sphere",
@@ -315,9 +317,9 @@ class HookFrame(CompositeObject):
                 {
                     "name": f"tip_site",
                     "pos": (
-                        ((self.size[0] - self.frame_thickness) / 2),
+                        ((self.frame_length - self.frame_thickness) / 2),
                         0, 
-                        (-self.size[2] / 2) - 2. * self.tip_size[0] - self.tip_size[3],
+                        (-self.frame_height / 2) - 2. * self.tip_size[0] - self.tip_size[3],
                     ),
                     "size": "0.002",
                     "rgba": RED,

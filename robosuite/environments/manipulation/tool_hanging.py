@@ -731,7 +731,8 @@ class ToolHanging_v2(ToolHanging):
             base_thickness=(1 / 100.), # increased thickness to 1 cm (different from real)
             # initialize_on_side=True,
             initialize_on_side=False,
-            density=1000.,
+            # density=1000.,
+            density=50000.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
         )
@@ -747,8 +748,9 @@ class ToolHanging_v2(ToolHanging):
             # grip_location=0.,
             grip_location=((9. - 3.) / 100.) - (0.75 / 200.), # move up by half height of frame minus half height of grip minus half thickness
             grip_size=((2.54 / 200.), (6.35 / 200.)), # 6.35 cm length, 2.54 cm thick
-            tip_size=((2.54 / 200.), (0.2 / 200.), (0.75 / 200.), (1.905 / 100.)), # 1-inch cylinder, 0.75 inch solder tip
-            # tip_size=((12.5 / 200.), (1.0 / 200.), (3.5 / 200.), (9.5 / 100.)), # 1-inch cylinder, 0.75 inch solder tip
+            # tip_size=((2.54 / 200.), (0.2 / 200.), (0.75 / 200.), (1.905 / 100.)), # 1-inch cylinder, 0.75 inch solder tip
+            tip_size=((2.54 / 200.), (0.2 / 200.), (0.65 / 200.), (1.905 / 100.)), # reduce solder tip size a little
+            # tip_size=((12.5 / 200.), (1.0 / 200.), (3.5 / 200.), (9.5 / 100.)), # use this to enlarge visualization of tip
             density=500.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
@@ -784,7 +786,8 @@ class ToolHanging_v2(ToolHanging):
             ngeoms=8,
             # grip_size=((3.5 / 200.), (8. / 200.)), # 8 cm length, 3.5 cm thick
             grip_size=((3 / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
-            density=100.,
+            # density=100.,
+            density=1000.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
             friction=(0.95, 0.3, 0.1),
@@ -854,6 +857,8 @@ class ToolHanging_v2(ToolHanging):
             (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2. + 0.001 + (self.stand_args["base_thickness"] / 2.) + (self.frame_args["grip_size"][1]),
             0.001,
         ]
+        if ("tip_size" in self.frame_args) and (self.frame_args["tip_size"] is not None):
+            z_offsets[1] -= (self.frame_args["tip_size"][0] + 2. * self.frame_args["tip_size"][3])
         for obj, x, y, x_tol, y_tol, r, r_tol, r_axis, z_offset in zip(
                 objects, x_centers, y_centers, x_tols, y_tols, rot_centers, rot_tols, rot_axes, z_offsets
         ):
