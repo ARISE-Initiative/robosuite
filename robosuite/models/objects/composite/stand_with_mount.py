@@ -23,6 +23,8 @@ class StandWithMount(CompositeObject):
 
         initialize_on_side (bool): If True, will initialize this stand on its side (tipped over)
 
+        add_hole_vis (bool): If True, adds a rim around the top of the walls, to help make the hole more visually distinctive
+
         friction (3-array or None): If specified, sets friction values for this object. None results in default values
 
         density (float): Density value to use for all geoms. Defaults to 1000
@@ -41,6 +43,7 @@ class StandWithMount(CompositeObject):
         wall_thickness=0.01,
         base_thickness=0.01,
         initialize_on_side=True,
+        add_hole_vis=False,
         friction=None,
         density=1000.,
         solref=(0.02, 1.),
@@ -58,6 +61,7 @@ class StandWithMount(CompositeObject):
         self.wall_thickness = wall_thickness
         self.base_thickness = base_thickness
         self.initialize_on_side = initialize_on_side
+        self.add_hole_vis = add_hole_vis
         self.friction = friction if friction is None else np.array(friction)
         self.solref = solref
         self.solimp = solimp
@@ -143,6 +147,49 @@ class StandWithMount(CompositeObject):
                 geom_materials=self.mat_name if self.use_texture else None,
                 geom_frictions=self.friction,
             )
+
+        if self.add_hole_vis:
+            # add a purely visual rim
+            del base_args["obj_types"]
+            obj_args["obj_types"] = len(obj_args["geom_types"]) * ["all"]
+
+            vis_geom_side = 0.7 * ((self.mount_width - self.wall_thickness) / 2)
+            vis_geom_size = (vis_geom_side, vis_geom_side, self.wall_thickness / 2)
+            add_to_dict(
+                dic=obj_args,
+                geom_types="box",
+                geom_locations=(self.mount_location[0], self.mount_location[1], (self.size[2] / 2) - vis_geom_size[2]),
+                geom_quats=(1, 0, 0, 0),
+                geom_sizes=vis_geom_size,
+                geom_names="hole_vis",
+                geom_rgbas=(0., 1., 0., 0.5),
+                geom_materials=None,
+                geom_frictions=self.friction,
+                obj_types="visual",
+            )
+
+            # offset = self.wall_thickness
+            # x_rim_vals = np.array([-offset, 0, offset, 0]) + x_vals
+            # y_rim_vals = np.array([0, offset, 0, -offset]) + y_vals
+            # for i, (x, y, r) in enumerate(zip(x_rim_vals, y_rim_vals, r_vals)):
+
+
+            # rim_geom_size = (self.wall_thickness, self.mount_width / 2, self.wall_thickness)
+
+            #     add_to_dict(
+            #         dic=obj_args,
+            #         geom_types="box",
+            #         geom_locations=(x, y, (self.base_thickness / 2) + ),
+            #         geom_quats=T.convert_quat(T.axisangle2quat(np.array([0, 0, r])), to="wxyz"),
+            #         geom_sizes=(self.wall_thickness, self.mount_width / 2, self.wall_thickness),
+            #         geom_names=f"wall{i}",
+            #         geom_rgbas=None if self.use_texture else self.rgba,
+            #         geom_materials=self.mat_name if self.use_texture else None,
+            #         geom_frictions=self.friction,
+            #         obj_types="visual",
+            #     )
+
+
 
         # Sites
         obj_args["sites"] = [

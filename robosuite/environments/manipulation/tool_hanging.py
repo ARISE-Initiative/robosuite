@@ -679,6 +679,15 @@ class ToolHanging_v2(ToolHanging):
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
+
+
+        Made some aspects easier than real:
+            - agentview camera raised a little
+            - increase base thickness for stand
+            - increase mount width to 1.2 cm
+            - add hole visualization
+            - reduce hook height on stand a little
+            - reduce tool ends height a little
         """
         SingleArmEnv._load_model(self)
 
@@ -697,10 +706,15 @@ class ToolHanging_v2(ToolHanging):
         mujoco_arena.set_origin([0, 0, 0])
 
         # Modify default agentview camera
+        # mujoco_arena.set_camera(
+        #     camera_name="agentview",
+        #     pos=[0.325513958581774, -1.6760616413113212e-08, 1.217032898541255],
+        #     quat=[0.6269897818565369, 0.32693102955818176, 0.3269307613372803, 0.6269897818565369]
+        # )
         mujoco_arena.set_camera(
             camera_name="agentview",
-            pos=[0.325513958581774, -1.6760616413113212e-08, 1.217032898541255],
-            quat=[0.6269897818565369, 0.32693102955818176, 0.3269307613372803, 0.6269897818565369]
+            pos=[0.4837275266036987, 0.2505579098815722, 1.2639379055124524],
+            quat=[0.39713290333747864, 0.27807527780532837, 0.5016612410545349, 0.7164464592933655]
         )
 
         # Add sideview
@@ -724,13 +738,14 @@ class ToolHanging_v2(ToolHanging):
             # size=((12. / 100.), (14. / 100.), (32. / 100.)), # 14 cm x 12 cm base, with 32 cm height
             size=((12. / 100.), (14. / 100.), (16. / 100.)), # reduced height by 50%
             mount_location=(0., (4.5 / 100.)), # 2.5 cm from right edge, so 4.5 cm to the right
-            mount_width=(1. / 100.), # 1 cm thickness for rod cavity
-            # mount_width=(1.25 / 100.), # try increasing tolerance a little
+            # mount_width=(1. / 100.), # 1 cm thickness for rod cavity
+            mount_width=(1.2 / 100.), # NOTE: try increasing tolerance a little
             wall_thickness=(0.1 / 100.), # about 0.1-0.2 cm thickness for walls
             # base_thickness=(0.2 / 100.), # about 0.2 cm thick
             base_thickness=(1 / 100.), # increased thickness to 1 cm (different from real)
             # initialize_on_side=True,
             initialize_on_side=False,
+            add_hole_vis=True,
             # density=1000.,
             density=50000.,
             solref=(0.02, 1.),
@@ -744,7 +759,8 @@ class ToolHanging_v2(ToolHanging):
             # frame_height=(36. / 100.), # 36 cm tall
             frame_height=(18. / 100.), # reduce height by 50%
             frame_thickness=(0.75 / 100.), # 0.75 cm thick
-            hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
+            # hook_height=(1.7 / 100.), # add hook, 1.7 cm tall
+            hook_height=(1.2 / 100.), # NOTE: modified, add hook, 1.2 cm tall
             # grip_location=0.,
             grip_location=((9. - 3.) / 100.) - (0.75 / 200.), # move up by half height of frame minus half height of grip minus half thickness
             grip_size=((2.54 / 200.), (6.35 / 200.)), # 6.35 cm length, 2.54 cm thick
@@ -778,16 +794,19 @@ class ToolHanging_v2(ToolHanging):
             name="tool",
             handle_size=((16.5 / 200.), (1.75 / 200.), (0.32 / 200.)), # 16.5 cm length, 1.75 cm width, 0.32 cm thick (1.5 cm with foam)
             outer_radius_1=(3.5 / 200.), # larger hole 3.5 cm outer diameter
-            inner_radius_1=(2.3 / 200.), # larger hole 2.3 cm inner diameter
-            height_1=(1. / 200.), # 1 cm height
+            # inner_radius_1=(2.3 / 200.), # larger hole 2.3 cm inner diameter
+            inner_radius_1=(2.1 / 200.), # NOTE: reduced larger hole 2.1 cm inner diameter
+            # height_1=(1. / 200.), # 1 cm height
+            height_1=(0.7 / 200.), # 0.7 cm height
             outer_radius_2=(3. / 200.), # smaller hole 3 cm outer diameter
             inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
-            height_2=(1. / 200.), # 1 cm height
+            # height_2=(1. / 200.), # 1 cm height
+            height_2=(0.7 / 200.), # 0.7 cm height
             ngeoms=8,
             # grip_size=((3.5 / 200.), (8. / 200.)), # 8 cm length, 3.5 cm thick
             grip_size=((3 / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
             # density=100.,
-            density=1000.,
+            density=2000.,
             solref=(0.02, 1.),
             solimp=(0.998, 0.998, 0.001),
             friction=(0.95, 0.3, 0.1),
@@ -841,7 +860,7 @@ class ToolHanging_v2(ToolHanging):
         # x_centers = [-self.table_full_size[0] * 0.1, self.table_full_size[0] * 0.05, -self.table_full_size[0] * 0.1]
         x_centers = [-self.table_full_size[0] * 0.1, -self.table_full_size[0] * 0.05, self.table_full_size[0] * 0.05]
         # y_centers = [self.table_full_size[1] * 0.2, -self.table_full_size[1] * 0.05, -self.table_full_size[1] * 0.25]
-        y_centers = [0., -self.table_full_size[1] * 0.2, -self.table_full_size[1] * 0.25]
+        y_centers = [0., -self.table_full_size[1] * 0.3, -self.table_full_size[1] * 0.25]
         # x_tols = [0.02, 0.02, 0.02]
         x_tols = [0., 0.02, 0.02]
         # y_tols = [0.02, 0.02, 0.02]
