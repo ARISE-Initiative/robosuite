@@ -155,7 +155,7 @@ class iGibsonWrapper(Wrapper):
         self.renderer.set_camera(self.camera_position,
                                  self.camera_position + self.view_direction,
                                  [0, 0, 1])
-        self.renderer.lightP = ortho(-2, 2, -2, 2, -10, 25.0)
+        self.renderer.lightP = ortho(-3, 3, -3, 3, -10, 25.0)
         self.renderer.set_fov(fov)
 
     def _get_camera_pose(self, camera_name):
