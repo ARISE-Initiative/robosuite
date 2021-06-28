@@ -168,11 +168,8 @@ class JointVelocityController(Controller):
         else:
             self.current_vel = np.array(self.goal_vel)
 
-        # We clip the current joint velocity to be within a reasonable range for stability
-        joint_vel = np.clip(self.joint_vel, self.output_min, self.output_max)
-
         # Compute necessary error terms for PID velocity controller
-        err = self.current_vel - joint_vel
+        err = self.current_vel - self.joint_vel
         derr = err - self.last_err
         self.last_err = err
         self.derr_buf.push(derr)
