@@ -253,7 +253,7 @@ class iGibsonWrapper(Wrapper):
             instance.set_rotation(quat2rotmat(xyzw2wxyz(orn)))
 
     def reset(self):
-        super().reset()
+        obs = super().reset()
         self.renderer.release()
         self.__init__(env=self.env,
                  width=self.width,
@@ -265,6 +265,7 @@ class iGibsonWrapper(Wrapper):
                  optimized=self.optimized,
                  light_dimming_factor=self.light_dimming_factor,
                  device_idx=self.device_idx)
+        return obs
                 
     def close(self):
         """

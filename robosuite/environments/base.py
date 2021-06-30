@@ -350,10 +350,10 @@ class MujocoEnv(metaclass=EnvMeta):
             # To save memory, we only concatenate the image observations if explicitly requested
             if modality == "image-state" and not macros.CONCATENATE_IMAGES:
                 continue
-            if isinstance(array_obs, torch.Tensor):
-                obs_by_modality[modality].append(array_obs)
+            if isinstance(obs[0], torch.Tensor):
+                observations[modality] = torch.cat(obs, axis=-1)
             else:
-                obs_by_modality[modality].append(np.array(array_obs))
+                observations[modality] = np.concatenate(obs, axis=-1)
 
         return observations
 
