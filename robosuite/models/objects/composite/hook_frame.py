@@ -75,7 +75,6 @@ class HookFrame(CompositeObject):
         self.use_texture = use_texture
         self.rgba = rgba
         self.mat_name = "brass_mat"
-        # self.grip_mat_name = "woodred_mat"
         self.grip_mat_name = "ceramic_mat"
         self.tip_mat_name = "steel_mat"
 
@@ -105,8 +104,6 @@ class HookFrame(CompositeObject):
         # optionally add material for grip
         if (self.grip_location is not None) and (self.grip_size is not None):
             grip_mat = CustomMaterial(
-                # texture="WoodRed",
-                # tex_name="woodred",
                 texture="Ceramic",
                 tex_name="ceramic",
                 mat_name=self.grip_mat_name,
@@ -117,8 +114,6 @@ class HookFrame(CompositeObject):
         # optionally add material for tip
         if self.tip_size is not None:
             tip_mat = CustomMaterial(
-                # texture="WoodRed",
-                # tex_name="woodred",
                 texture="SteelScratched",
                 tex_name="steel",
                 mat_name=self.tip_mat_name,
@@ -191,19 +186,7 @@ class HookFrame(CompositeObject):
 
         # optionally add a grip
         if (self.grip_location is not None) and (self.grip_size is not None):
-            # add_to_dict(
-            #     dic=obj_args,
-            #     geom_types="cylinder",
-            #     geom_locations=((self.frame_length - self.frame_thickness) / 2 + self.grip_location, 0, -self.frame_thickness / 2),
-            #     geom_quats=(1, 0, 0, 0),
-            #     geom_sizes=self.grip_size,
-            #     geom_names="grip_frame",
-            #     geom_rgbas=None if self.use_texture else self.rgba,
-            #     geom_materials=self.grip_mat_name if self.use_texture else None,
-            #     geom_frictions=self.friction,
-            # )
-
-            # note: try box grip instead of cylindrical grip for stability
+            # note: use box grip instead of cylindrical grip for stability
             add_to_dict(
                 dic=obj_args,
                 geom_types="box",

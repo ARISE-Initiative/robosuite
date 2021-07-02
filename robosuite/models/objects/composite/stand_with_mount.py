@@ -168,29 +168,6 @@ class StandWithMount(CompositeObject):
                 obj_types="visual",
             )
 
-            # offset = self.wall_thickness
-            # x_rim_vals = np.array([-offset, 0, offset, 0]) + x_vals
-            # y_rim_vals = np.array([0, offset, 0, -offset]) + y_vals
-            # for i, (x, y, r) in enumerate(zip(x_rim_vals, y_rim_vals, r_vals)):
-
-
-            # rim_geom_size = (self.wall_thickness, self.mount_width / 2, self.wall_thickness)
-
-            #     add_to_dict(
-            #         dic=obj_args,
-            #         geom_types="box",
-            #         geom_locations=(x, y, (self.base_thickness / 2) + ),
-            #         geom_quats=T.convert_quat(T.axisangle2quat(np.array([0, 0, r])), to="wxyz"),
-            #         geom_sizes=(self.wall_thickness, self.mount_width / 2, self.wall_thickness),
-            #         geom_names=f"wall{i}",
-            #         geom_rgbas=None if self.use_texture else self.rgba,
-            #         geom_materials=self.mat_name if self.use_texture else None,
-            #         geom_frictions=self.friction,
-            #         obj_types="visual",
-            #     )
-
-
-
         # Sites
         obj_args["sites"] = [
             {
