@@ -14,9 +14,9 @@ from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialC
 from robosuite.utils.observables import Observable, sensor
 
 
-class ToolHanging(SingleArmEnv):
+class ToolHang(SingleArmEnv):
     """
-    This class corresponds to the tool hanging task for a single robot arm.
+    This class corresponds to the tool hang task for a single robot arm.
 
     Args:
         robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
