@@ -1,6 +1,14 @@
-from os import fwalk
+from os import error, fwalk
 import numpy as np
 import robosuite as suite
+
+try:
+    import gibson2
+except ImportError:
+    raise Exception("Use `pip install gibson2` to install iGibson renderer. "
+                    "Follow instructions here: http://svl.stanford.edu/igibson/docs/installation.html "
+                    "to download the iG assets and dataset."
+                    )
 
 from robosuite.wrappers import Wrapper
 from robosuite.utils import transform_utils as T
@@ -11,6 +19,13 @@ from gibson2.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
 from gibson2.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer, Instance, Robot
 from gibson2.utils.mesh_util import xyzw2wxyz, quat2rotmat, ortho
 from gibson2.render.viewer import Viewer
+
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+
 
 AVAILABLE_MODALITIES = ['rgb', 'seg', 'normal', '3d']
 
@@ -81,6 +96,9 @@ class iGibsonWrapper(Wrapper):
         check_modes(modes)        
         if not self.env.render_with_igibson:
             raise Exception("Set `render_with_igibson=True` while initializing the environment.")
+
+        if render2tensor and not HAS_TORCH:
+            raise Exception("`render2tensor` requires PyTorch to be installed.")
 
 
         self.env = env

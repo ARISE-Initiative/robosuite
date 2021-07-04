@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from collections import OrderedDict
 
 import robosuite.utils.macros as macros
@@ -10,6 +9,11 @@ from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING
 from robosuite.controllers import reset_controllers
 
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
 
 class RobotEnv(MujocoEnv):
     """

@@ -7,7 +7,13 @@ import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
 
 import numpy as np
-import torch
+
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+    
 
 REGISTERED_ENVS = {}
 
@@ -340,7 +346,7 @@ class MujocoEnv(metaclass=EnvMeta):
                     obs_by_modality[modality] = []
                 # Make sure all observations are numpy arrays so we can concatenate them
                 array_obs = [obs] if type(obs) in {int, float} or not obs.shape else obs
-                if isinstance(array_obs, torch.Tensor):
+                if HAS_TORCH and isinstance(array_obs, torch.Tensor):
                     obs_by_modality[modality].append(array_obs)
                 else:
                     obs_by_modality[modality].append(np.array(array_obs))
@@ -350,7 +356,7 @@ class MujocoEnv(metaclass=EnvMeta):
             # To save memory, we only concatenate the image observations if explicitly requested
             if modality == "image-state" and not macros.CONCATENATE_IMAGES:
                 continue
-            if isinstance(obs[0], torch.Tensor):
+            if HAS_TORCH and isinstance(obs[0], torch.Tensor):
                 observations[modality] = torch.cat(obs, axis=-1)
             else:
                 observations[modality] = np.concatenate(obs, axis=-1)
