@@ -12,7 +12,6 @@ import numpy as np
 
 import robosuite.utils.macros as macros
 from robosuite import make
-from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
 
 # Set the image convention to opencv so that the images are automatically rendered "right side up" when using imageio
 # (which uses opencv convention)
@@ -34,6 +33,7 @@ if __name__ == "__main__":
 
     # initialize an environment with offscreen renderer
     if args.ig:
+        from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
         env = iGibsonWrapper(
             env = make(
                 args.environment,

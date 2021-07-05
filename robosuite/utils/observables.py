@@ -1,5 +1,9 @@
 import numpy as np
-import torch
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
 
 def sensor(modality):
     """
@@ -241,7 +245,7 @@ class Observable:
                 obs = self._sensor(obs_cache)
                 torch_tensor = False
                 if self.modality == 'image':
-                    if isinstance(obs, torch.Tensor):
+                    if HAS_TORCH and isinstance(obs, torch.Tensor):
                         torch_tensor = True                
                 # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                 obs = self._filter(self._corrupter(obs, torch_tensor))
