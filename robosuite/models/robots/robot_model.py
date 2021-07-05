@@ -181,6 +181,17 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return max(self._horizontal_radius, self.mount.horizontal_radius)
 
     @property
+    def models(self):
+        """
+        Returns a list of all m(sub-)models owned by this robot model. By default, this includes the mount model,
+        if specified
+
+        Returns:
+            list: models owned by this object
+        """
+        return [self.mount] if self.mount is not None else []
+
+    @property
     def contact_geom_rgba(self):
         return ROBOT_COLLISION_COLOR
 

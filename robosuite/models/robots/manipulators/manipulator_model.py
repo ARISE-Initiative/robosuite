@@ -77,6 +77,18 @@ class ManipulatorModel(RobotModel):
         """
         return self.correct_naming(self._eef_name)
 
+    @property
+    def models(self):
+        """
+        Returns a list of all m(sub-)models owned by this robot model. By default, this includes the gripper model,
+        if specified
+
+        Returns:
+            list: models owned by this object
+        """
+        models = super().models
+        return models + list(self.grippers.values())
+
     # -------------------------------------------------------------------------------------- #
     # -------------------------- Private Properties ---------------------------------------- #
     # -------------------------------------------------------------------------------------- #
