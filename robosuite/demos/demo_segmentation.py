@@ -31,9 +31,6 @@ def segmentation_to_rgb(seg_im):
     NOTE: assumes that geom IDs go up to 255 at most - if not,
     multiple geoms might be assigned to the same color.
     """
-    assert seg_im.shape[-1] == 2
-    seg_im = seg_im[..., -1] # final channel is geom IDs
-
     # ensure all values lie within [0, 255]
     seg_im = np.mod(seg_im, 256)
 
@@ -60,6 +57,12 @@ if __name__ == "__main__":
     # Choose controller
     controller_name = "OSC_POSE"
 
+    # Choose camera
+    camera = "agentview"
+
+    # Choose segmentation type
+    segmentation_level = "instance"         # Options are {instance, class, element}
+
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
@@ -69,8 +72,10 @@ if __name__ == "__main__":
         has_renderer=False,
         has_offscreen_renderer=True,
         ignore_done=True,
-        use_camera_obs=False,
+        use_camera_obs=True,
         control_freq=20,
+        camera_names=camera,
+        camera_segmentations=segmentation_level,
     )
     env.reset()
 
@@ -85,8 +90,8 @@ if __name__ == "__main__":
         obs, reward, done, _ = env.step(action)
 
         if i % 5 == 0:
-            video_img = env.sim.render(camera_name="agentview", height=512, width=512, segmentation=True)[::-1]
-            np.savetxt("/tmp/seg_{}.txt".format(i), video_img[..., -1], fmt="%.2f")
+            video_img = obs[f"{camera}_segmentation_{segmentation_level}"].squeeze(-1)[::-1]
+            np.savetxt("/tmp/seg_{}.txt".format(i), video_img, fmt="%.2f")
             video_img = segmentation_to_rgb(video_img)
             video_writer.append_data(video_img)
             import json
