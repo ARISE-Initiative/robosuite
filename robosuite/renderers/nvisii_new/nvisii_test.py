@@ -12,8 +12,8 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "Door",
-                robots = ["Panda"],
+                "Lift",
+                robots = ["Sawyer"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer

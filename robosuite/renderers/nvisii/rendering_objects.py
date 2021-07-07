@@ -54,11 +54,6 @@ def render_grippers(env, gripper_info):
         gripper_quats = gripper_info[gripper][2]
         geom_quats = gripper_info[gripper][5]
 
-        print(gripper_quats)
-        print(geom_quats)
-
-        exit(0)
-
         for key in gripper_entities.keys():
 
             entity = gripper_entities[key]

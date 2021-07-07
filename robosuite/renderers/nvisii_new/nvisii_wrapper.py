@@ -210,20 +210,9 @@ class NViSIIWrapper(Wrapper):
         
         if parent_body != 'worldbody':
             pos = self.env.sim.data.get_body_xpos(parent_body)
-            B = self.env.sim.data.get_body_xmat(parent_body).reshape((3, 3))      
+            B = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(parent_body)].reshape((3, 3))      
             quat_xyzw_body = utils.quaternion_from_matrix3(B)
             quat_wxyz_body = np.array([quat_xyzw_body[3], quat_xyzw_body[0], quat_xyzw_body[1], quat_xyzw_body[2]]) # wxyz
-
-            if 'gripper' in name:
-
-                print(quat_wxyz_body)
-                print(parent_body)
-                print(geom_quat)
-
-                G = self.env.sim.data.get_geom_xmat(name).reshape((3, 3))
-                quat_xyzw_geom = utils.quaternion_from_matrix3(G)
-                quat_wxyz_geom = np.array([quat_xyzw_geom[3], quat_xyzw_geom[0], quat_xyzw_geom[1], quat_xyzw_geom[2]]) # wxyz
-                
             nvisii_quat = nvisii.quat(*geom_quat) * nvisii.quat(*quat_wxyz_body)
         else:
             pos = [0,0,0]
@@ -234,6 +223,11 @@ class NViSIIWrapper(Wrapper):
                                                        pos[1],
                                                        pos[2]))
             obj.transforms[0].set_rotation(nvisii_quat)
+        else:
+            obj.get_transform().set_position(nvisii.vec3(pos[0],
+                                                         pos[1],
+                                                         pos[2]))
+            obj.get_transform().set_rotation(nvisii_quat)
 
     def render(self, render_type="png"):
         self.img_cntr += 1
