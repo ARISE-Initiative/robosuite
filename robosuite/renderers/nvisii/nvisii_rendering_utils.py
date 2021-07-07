@@ -12,8 +12,8 @@ def create_entity(entity_type, entity_name, size, pos, texture_name, texture_fil
                     name = entity_name,
                     mesh = nvisii.mesh.create_box(name = entity_name,
                                                  size = nvisii.vec3(size[0],
-                                                                   size[1],
-                                                                   size[2])),
+                                                                    size[1],
+                                                                    size[2])),
                     transform = nvisii.transform.create(entity_name),
                     material = nvisii.material.create(entity_name)
                 )
@@ -108,14 +108,13 @@ def import_obj(env, name, obj_file, part_type='body'):
 
     return scene
 
-def get_positions(env, part_type, parts, robot_num):
+def get_positions(env, part_type, parts, robot_num, body=True):
 
     positions = {}
 
     for part in parts:
 
         part_name = f'{part_type}{robot_num}_{part}'
-
         positions[part_name] = get_position_body(env, part_name)
 
     return positions

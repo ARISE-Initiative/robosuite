@@ -239,7 +239,7 @@ def init_objects_nvisii(env):
                         materials[material_name] = material_texture
 
                 obj_name = f'{static_object.name}_object'
-                obj_body = static_object.worldbody.find("./body/body") # [@name='object']
+                obj_body = static_object.worldbody.find("./body/body")
 
                 geom_count = 0 
                 for geom in obj_body.iter('geom'):
