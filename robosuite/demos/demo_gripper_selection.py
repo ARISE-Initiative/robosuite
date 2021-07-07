@@ -5,7 +5,6 @@ This is controlled by gripper_type keyword argument.
 import numpy as np
 import robosuite as suite
 from robosuite import ALL_GRIPPERS
-from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -19,6 +18,7 @@ if __name__ == "__main__":
 
         # create environment with selected grippers
         if args.ig:
+            from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
             env = iGibsonWrapper(
                 env = suite.make(
                     "Lift",
