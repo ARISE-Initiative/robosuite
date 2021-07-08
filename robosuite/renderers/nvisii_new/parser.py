@@ -1,6 +1,7 @@
 import numpy as np
 import xml.etree.ElementTree as ET
 
+import nvisii
 from robosuite.utils.mjcf_utils import string_to_array
 from nvisii_utils import load_object
 
