@@ -401,7 +401,7 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "Door",
+                "PickPlace",
                 robots = ["Panda"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer

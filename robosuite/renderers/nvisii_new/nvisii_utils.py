@@ -10,14 +10,18 @@ def load_object(geom,
                 geom_pos,
                 geom_size,
                 geom_scale,
+                geom_tex_name,
+                geom_tex_file,
                 instance_id,
                 visual_objects,
                 meshes):
     """
     Function that initializes the meshes in the memory.
     """
-    
+
+    primitive_types = ['box', 'cylinder']
     component = None
+
     if geom_type == 'box':
 
         component = nvisii.entity.create(
@@ -57,6 +61,20 @@ def load_object(geom,
                                          geom_quat[2],
                                          geom_quat[3])
                 )
+
+    if geom_type in primitive_types:
+        component.get_transform().set_position(nvisii.vec3(float(geom_pos[0]),
+                                                           float(geom_pos[1]),
+                                                           float(geom_pos[2])))
+
+    if geom_tex_file is not None and geom_tex_name is not None and geom_type != 'mesh':
+        texture = nvisii.texture.get(geom_tex_name)
+
+        if texture is None:
+            texture = nvisii.texture.create_from_file(name = geom_tex_name,
+                                                      path = geom_tex_file)
+
+        component.get_material().set_base_color_texture(texture)
 
     return component
 

@@ -185,6 +185,8 @@ class NViSIIWrapper(Wrapper):
 
     def _load(self):        
         parser = Parser(self.env)
+        parser.parse_textures()
+        parser.parse_materials()
         parser.parse_geometries()
         self.components = parser.components
 
@@ -197,6 +199,7 @@ class NViSIIWrapper(Wrapper):
         ret_val = super().step(action)
         for key, value in self.components.items():
             self._update_orientation(name=key, component=value)
+
         return ret_val
 
     def _update_orientation(self, name, component):
@@ -207,9 +210,19 @@ class NViSIIWrapper(Wrapper):
         obj = component[0]
         parent_body = component[1]
         geom_quat = component[2]
+        dynamic = component[3]
+
+        if not dynamic:
+            return
         
+        self.body_tags = ['robot', 'pedestal', 'gripper', 'peg']
+
         if parent_body != 'worldbody':
-            pos = self.env.sim.data.get_body_xpos(parent_body)
+            if self.tag_in_name(name):
+                pos = self.env.sim.data.get_body_xpos(parent_body)
+            else:
+                pos = self.env.sim.data.get_geom_xpos(name)
+
             B = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(parent_body)].reshape((3, 3))      
             quat_xyzw_body = utils.quaternion_from_matrix3(B)
             quat_wxyz_body = np.array([quat_xyzw_body[3], quat_xyzw_body[0], quat_xyzw_body[1], quat_xyzw_body[2]]) # wxyz
@@ -228,6 +241,12 @@ class NViSIIWrapper(Wrapper):
                                                          pos[1],
                                                          pos[2]))
             obj.get_transform().set_rotation(nvisii_quat)
+
+    def tag_in_name(self, name):
+        for tag in self.body_tags:
+            if tag in name:
+                return True
+        return False
 
     def render(self, render_type="png"):
         self.img_cntr += 1
