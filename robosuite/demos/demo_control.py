@@ -48,7 +48,6 @@ import robosuite as suite
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 from robosuite.robots import Bimanual
-from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -124,6 +123,7 @@ if __name__ == "__main__":
 
     # initialize the task
     if args.ig:
+        from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
         env = iGibsonWrapper(
             env = suite.make(
                 **options,

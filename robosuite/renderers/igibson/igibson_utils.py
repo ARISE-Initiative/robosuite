@@ -44,7 +44,7 @@ def load_object(renderer,
     
     parent_body_name = parent_body.get('name', 'worldbody')
 
-    load_texture = True if geom_material is None else False
+    load_texture = geom_material is None or geom_material._is_set_by_parser
 
     # place holder meshes for which we do not textures loaded
     # This list should be extended if one sees placeholder meshes
