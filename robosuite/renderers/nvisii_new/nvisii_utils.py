@@ -46,7 +46,6 @@ def load_object(geom,
                 )
 
     elif geom_type == 'mesh':
-
         filename = meshes[geom.attrib['mesh']]['file']
         filename = os.path.splitext(filename)[0] + '.obj'
 

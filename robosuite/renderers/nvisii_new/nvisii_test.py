@@ -12,8 +12,8 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "Door",
-                robots = ["Jaco"],
+                "TwoArmPegInHole",
+                robots = ["Jaco", "Panda"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
@@ -23,7 +23,7 @@ if __name__ == '__main__':
                 control_freq=10, 
             ),
         img_path='images',
-        spp=256,
+        spp=512,
         use_noise=False,
         debug_mode=False,
     )
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     env.reset()
 
     for i in range(500):
-        action = np.random.randn(8)
+        action = np.random.randn(14)
         obs, reward, done, info = env.step(action)
 
         if i%100 == 0:

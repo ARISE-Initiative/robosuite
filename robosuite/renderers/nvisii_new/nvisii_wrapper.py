@@ -69,14 +69,14 @@ class NViSIIWrapper(Wrapper):
         self.light_1.get_transform().set_position(nvisii.vec3(3, 3, 4))
 
         self._init_floor(image="plywood-4k.jpg")
-        self._init_walls(image="marble-4k.jpg")
+        self._init_walls(image="gray-plaster-rough-4k.jpg")
         self._init_camera()
         # Sets the primary camera of the renderer to the camera entity
         nvisii.set_camera_entity(self.camera)
         self._camera_configuration(pos_vec = nvisii.vec3(0, 0, 1), 
                                    at_vec  = nvisii.vec3(0, 0, 1), 
                                    up_vec  = nvisii.vec3(0, 0, 1),
-                                   eye_vec = nvisii.vec3(1, 1, 1.5))
+                                   eye_vec = nvisii.vec3(1.5, 0, 1.5))
         
         # Environment configuration
         self._dome_light_intensity = 1
@@ -219,7 +219,6 @@ class NViSIIWrapper(Wrapper):
 
         if parent_body != 'worldbody':
             if self.tag_in_name(name):
-                # print(name, parent_body)
                 pos = self.env.sim.data.get_body_xpos(parent_body)
             else:
                 pos = self.env.sim.data.get_geom_xpos(name)
@@ -228,12 +227,16 @@ class NViSIIWrapper(Wrapper):
             quat_xyzw_body = utils.quaternion_from_matrix3(B)
             quat_wxyz_body = np.array([quat_xyzw_body[3], quat_xyzw_body[0], quat_xyzw_body[1], quat_xyzw_body[2]]) # wxyz
             nvisii_quat = nvisii.quat(*quat_wxyz_body) * nvisii.quat(*geom_quat)
-
         else:
             pos = [0,0,0]
-            nvisii_quat = nvisii.quat([1,0,0,0]) # wxyz
+            nvisii_quat = nvisii.quat(1,0,0,0) # wxyz
 
         if isinstance(obj, nvisii.scene):
+
+            # temp fix -- look into XML file for correct quat
+            if name == "robot0_s_visual":
+                nvisii_quat = nvisii.quat(0, 0.5, 0, 0)
+
             obj.transforms[0].set_position(nvisii.vec3(pos[0],
                                                        pos[1],
                                                        pos[2]))
