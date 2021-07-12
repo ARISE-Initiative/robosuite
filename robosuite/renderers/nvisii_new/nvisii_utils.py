@@ -10,6 +10,7 @@ def load_object(geom,
                 geom_pos,
                 geom_size,
                 geom_scale,
+                geom_rgba,
                 geom_tex_name,
                 geom_tex_file,
                 instance_id,
@@ -67,6 +68,7 @@ def load_object(geom,
                                                            float(geom_pos[2])))
 
     if geom_tex_file is not None and geom_tex_name is not None and geom_type != 'mesh':
+
         texture = nvisii.texture.get(geom_tex_name)
 
         if texture is None:
@@ -74,6 +76,21 @@ def load_object(geom,
                                                       path = geom_tex_file)
 
         component.get_material().set_base_color_texture(texture)
+    else:
+        if 'gripper' in geom_name:
+            if geom_rgba is not None:
+                if isinstance(component, nvisii.scene):
+                    for entity in component.entities:
+                        entity.get_material().set_base_color(nvisii.vec3(geom_rgba[0], geom_rgba[1], geom_rgba[2]))
+                else:
+                    component.get_material().set_base_color(nvisii.vec3(geom_rgba[0], geom_rgba[1], geom_rgba[2]))
+            elif geom_name == "gripper0_hand_visual":
+                for entity in component.entities:
+                        entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
+
+        elif geom_name == "robot0_right_e0_vis" or geom_name == "robot0_left_e0_vis":
+            for entity in component.entities:
+                entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
 
     return component
 

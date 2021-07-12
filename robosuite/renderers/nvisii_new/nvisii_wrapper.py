@@ -1,8 +1,10 @@
+import os
 import numpy as np
 import robosuite as suite
 import nvisii
 import nvisii_utils as utils
 import open3d as o3d
+import cv2
 
 from robosuite.wrappers import Wrapper
 from robosuite.utils import transform_utils as T
@@ -12,12 +14,17 @@ from parser import Parser
 class NViSIIWrapper(Wrapper):
     def __init__(self,
                  env,
-                 img_path,
+                 img_path='images/',
                  width=500,
                  height=500,
                  spp=256,
                  use_noise=False,
-                 debug_mode=False):
+                 debug_mode=False,
+                 video_mode=False,
+                 video_path='videos/',
+                 video_name='robosuite_video_0.mp4',
+                 video_fps=60,
+                 verbose=1):
         """
         Initializes the nvisii wrapper.
         Args:
@@ -39,6 +46,13 @@ class NViSIIWrapper(Wrapper):
         self.spp = spp
         self.use_noise = use_noise
 
+        self.video_mode = video_mode
+        self.video_path = video_path
+        self.video_name = video_name
+        self.video_fps = video_fps
+
+        self.verbose = verbose
+
         self.img_cntr = 0
 
         # enable interactive mode when debugging
@@ -52,6 +66,15 @@ class NViSIIWrapper(Wrapper):
             nvisii.configure_denoiser()
             nvisii.enable_denoiser()
             nvisii.configure_denoiser(True,True,False)
+
+        if not os.path.exists(img_path):
+            os.makedirs(img_path)
+
+        if video_mode:             
+            if not os.path.exists(video_path):
+                os.makedirs(video_path)
+            self.video = cv2.VideoWriter(video_path + video_name, cv2.VideoWriter_fourcc(*'MP4V'), video_fps, (self.width, self.height))
+            print(f'video mode enabled')
 
         # Intiailizes the lighting
         self.light_1 = nvisii.entity.create(
@@ -254,13 +277,28 @@ class NViSIIWrapper(Wrapper):
         return False
 
     def render(self, render_type="png"):
+
         self.img_cntr += 1
-        nvisii.render_to_file(
-            width             = self.width,
-            height            = self.height, 
-            samples_per_pixel = self.spp,   
-            file_path         = f'{self.img_path}/image_{self.img_cntr}.{render_type}'
-        )
+        verbose_word = 'frame' if self.video_mode else 'image'
+
+        if self.video_mode:
+            nvisii.render_to_file(
+                width = self.width,
+                height = self.height,
+                samples_per_pixel = self.spp,
+                file_path = f'{self.img_path}/image_0.{render_type}'
+            )
+            self.video.write(cv2.imread(f'{self.img_path}/image_0.{render_type}'))
+        else:
+            nvisii.render_to_file(
+                width = self.width,
+                height = self.height, 
+                samples_per_pixel = self.spp,   
+                file_path = f'{self.img_path}/image_{self.img_cntr}.{render_type}'
+            )
+
+        if self.verbose == 1:
+            print(f'Rendering {verbose_word}... {self.img_cntr}')
 
     def close(self):
         """

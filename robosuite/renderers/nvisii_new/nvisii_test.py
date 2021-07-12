@@ -12,31 +12,31 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "TwoArmPegInHole",
-                robots = ["Jaco", "Panda"],
+                "TwoArmLift",
+                robots = ["Baxter"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
                 ignore_done=True,
                 use_object_obs=True,          # use object-centric feature
                 use_camera_obs=False,         # no camera observations
-                control_freq=10, 
+                control_freq=10,
             ),
         img_path='images',
         spp=512,
         use_noise=False,
         debug_mode=False,
+        video_mode=True,
+        verbose=1
     )
 
     env.reset()
 
-    for i in range(500):
-        action = np.random.randn(14)
+    for i in range(600):
+        action = np.random.randn(16)
         obs, reward, done, info = env.step(action)
 
-        if i%100 == 0:
-            env.render(render_type="png")
-            print('Rendering image... ' + str(i/100 + 1))
+        env.render(render_type="png")
 
     env.close()
     

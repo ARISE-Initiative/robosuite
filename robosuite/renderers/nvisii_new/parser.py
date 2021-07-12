@@ -78,6 +78,9 @@ class Parser():
             geom_name = geom.get('name')
             geom_type = geom.get('type')
 
+            rgba_str = geom.get('rgba')
+            geom_rgba = string_to_array(rgba_str) if rgba_str is not None else None
+
             if geom_name is None:
                 if parent_body_name in repeated_names:
                     geom_name = parent_body_name + str(repeated_names[parent_body_name])
@@ -131,6 +134,7 @@ class Parser():
                                     geom_pos=geom_pos,
                                     geom_size=geom_size,
                                     geom_scale=geom_scale,
+                                    geom_rgba=geom_rgba,
                                     geom_tex_name=geom_tex_name,
                                     geom_tex_file=geom_tex_file,
                                     instance_id=instance_id,
