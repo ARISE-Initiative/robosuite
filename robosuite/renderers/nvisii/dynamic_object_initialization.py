@@ -28,14 +28,18 @@ def dynamic_robot_init(env, root, robot_num, robot_name):
 
                     count += 1
 
-    positions = vutils.get_positions(env, 'robot', meshes.keys(), robot_num)
+    positions = vutils.get_positions(env, 'robot', meshes, robot_num)
     quats = vutils.get_quaternions(env, 'robot', meshes.keys(), robot_num)
 
     robot_entities = {}
 
     for mesh in meshes:
-
-        obj_file = file_path + f'../../models/assets/robots/{robot_name.lower()}/meshes/{meshes[mesh]}.obj'
+        
+        file_name = meshes[mesh]
+        # if 'vis' in file_name:
+        #     file_name = file_name[:-4]
+        
+        obj_file = file_path + f'../../models/assets/robots/{robot_name.lower()}/meshes/{file_name}.obj'
 
         key = f'robot{robot_num}_{mesh}'
 
@@ -57,6 +61,10 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
     quats = {}
 
     count = 0
+
+    if 'robotiq' in gripper_name:
+        new_gripper_name = 'robotiq_' + gripper_name[gripper_name.rfind('_') + 1:] + '_gripper'
+        gripper_name = new_gripper_name
 
     if isinstance(env, TwoArmPegInHole):
 
@@ -146,11 +154,15 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
 
     for body in root.iter('body'):
 
+        body_name  = body.get('name')
+
         for geom in body.findall('geom'):
 
-            body_name  = body.get('name')
             geom_mesh  = geom.get('mesh')
             geom_quat = geom.get('quat')
+
+            if "collision" in geom.get('name'):
+                continue
 
             if geom_mesh != None:
                 if body_name in meshes:
@@ -161,7 +173,14 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
                 if geom_quat is None:
                     geom_quat = [1, 0, 0, 0]
                 else:
-                    geom_quat = [float(element) for element in geom_quat.split(' ')]
+                    geom_split_values = geom_quat.split(' ')
+                    geom_split_values_no_whitespace = []
+                    for i in geom_split_values:
+                        if i != "":
+                            geom_split_values_no_whitespace.append(i)
+
+                    # print(f'geom_quat: {geom_split_values_no_whitespace}')
+                    geom_quat = [float(element) for element in geom_split_values_no_whitespace]
                 
                 geom_quats[f'{body_name}-{geom_mesh}'] = geom_quat
 
@@ -185,13 +204,15 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
 
             if os.path.exists(obj_file):
 
+                # print('obj_file EXISTS!')
                 entity = vutils.import_obj(env,
                                            object_name,
                                            obj_file,
                                            part_type='body')
 
             else:
-
+                
+                # print('obj_file DOES NOT EXIST!')
                 stl_file = obj_file.replace('obj', 'stl')
                 mesh_gripper = o3d.io.read_triangle_mesh(stl_file)
 
@@ -200,6 +221,7 @@ def dynamic_gripper_init(env, root, robot_num, gripper_name):
 
                 mesh_name += f'_{robot_num}'
 
+                # print(mesh_name)
                 mesh = nvisii.mesh.create_from_data(mesh_name, positions=vertices, normals=normals)
                 entity = nvisii.entity.create(
                     name      = mesh_name,

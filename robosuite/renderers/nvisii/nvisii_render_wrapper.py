@@ -15,7 +15,6 @@ import xml.etree.ElementTree as ET
 
 from mujoco_py import MjSim, load_model_from_path
 from robosuite.wrappers import Wrapper
-from robosuite.models.robots import Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
 
 class NViSIIWrapper(Wrapper):
@@ -402,7 +401,7 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "NutAssembly",
+                "PickPlace",
                 robots = ["Panda"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
@@ -413,7 +412,7 @@ if __name__ == '__main__':
                 control_freq=10, 
             ),
         img_path='images',
-        spp=256,
+        spp=500,
         use_noise=False,
         debug_mode=False,
     )
@@ -426,7 +425,7 @@ if __name__ == '__main__':
 
         if i%100 == 0:
             env.render(render_type = "png")
-            print('Rendering image... ' + str(i + 1))
+            print('Rendering image... ' + str(i/100 + 1))
 
     env.close()
     

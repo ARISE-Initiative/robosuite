@@ -16,9 +16,32 @@ def render_robots(env, robot_info):
 
         for key in robot_entities.keys():
 
+            # offset_value = [0, 0, 0]
+            # if key == 'robot0_base':
+            #     offset_value=-np.array([0, 0, 0]) 
+            # elif key == 'robot0_link_1':
+            #     offset_value=-np.array([0, -0.03, 0.12]) 
+            # elif key == 'robot0_link_2':
+            #     offset_value=-np.array([0.0003, 0.059, 0.042]) 
+            # elif key == 'robot0_link_3':
+            #     offset_value=-np.array([0, 0.03, 0.13]) 
+            # elif key == 'robot0_link_4':
+            #     offset_value=-np.array([0, 0.067, 0.034])
+            # elif key == 'robot0_link_5':
+            #     offset_value=-np.array([0.0001, 0.021, 0.076]) 
+            # elif key == 'robot0_link_6':
+            #     offset_value=-np.array([0, 0, 0])
+            # elif key == 'robot0_link_7':
+            #     offset_value=-np.array([0, 0, 0.02]) 
+
             entity = robot_entities[key]
             entity_pos = robot_positions[key]
             entity_quat = robot_quats[key]
+
+            # print(robot_positions[key])
+            # print(offset_value)
+            # print(entity_pos)
+            # print('-----')
             
             set_position_rotation(entity, entity_pos, entity_quat)
 
@@ -86,37 +109,44 @@ def render_objects(env, obj_entities):
 
         set_position_rotation(entity, pos, quat)
         
-def set_position_rotation(entity, entity_pos, entity_quat, nvisii_quat = False, ):
+def set_position_rotation(entity, entity_pos, entity_quat, nvisii_quat = False):
 
     if isinstance(entity, tuple):
 
         for link_idx in range(len(entity)):
 
             entity[link_idx].get_transform().set_position(nvisii.vec3(entity_pos[0],
-                                                                     entity_pos[1],
-                                                                     entity_pos[2]))
+                                                                      entity_pos[1],
+                                                                      entity_pos[2]))
 
             if not nvisii_quat:
 
                 entity[link_idx].get_transform().set_rotation(nvisii.quat(entity_quat[0],
-                                                                         entity_quat[1],
-                                                                         entity_quat[2],
-                                                                         entity_quat[3]))
+                                                                          entity_quat[1],
+                                                                          entity_quat[2],
+                                                                          entity_quat[3]))
 
             else:
                 entity[link_idx].get_transform().set_rotation(entity_quat)
 
     elif isinstance(entity, nvisii.scene):
-        
+
+        # for i in range(0, len(entity.meshes)):
+        #     if entity.meshes[i] == None:
+        #         print('none')
+        #         continue
+
+        #     print(entity.meshes[i].get_name(), entity.meshes[i].get_center())
+
         entity.transforms[0].set_position(nvisii.vec3(entity_pos[0],
-                                                     entity_pos[1],
-                                                     entity_pos[2]))
+                                                      entity_pos[1],
+                                                      entity_pos[2]))
 
         if not nvisii_quat:
             entity.transforms[0].set_rotation(nvisii.quat(entity_quat[0],
-                                                           entity_quat[1],
-                                                           entity_quat[2],
-                                                           entity_quat[3]))
+                                                          entity_quat[1],
+                                                          entity_quat[2],
+                                                          entity_quat[3]))
         
         else:
             entity.transforms[0].set_rotation(entity_quat)
@@ -124,14 +154,14 @@ def set_position_rotation(entity, entity_pos, entity_quat, nvisii_quat = False, 
     else:
 
         entity.get_transform().set_position(nvisii.vec3(entity_pos[0],
-                                                       entity_pos[1],
-                                                       entity_pos[2]))
+                                                        entity_pos[1],
+                                                        entity_pos[2]))
 
         if not nvisii_quat:
             entity.get_transform().set_rotation(nvisii.quat(entity_quat[0],
-                                                           entity_quat[1],
-                                                           entity_quat[2],
-                                                           entity_quat[3]))
+                                                            entity_quat[1],
+                                                            entity_quat[2],
+                                                            entity_quat[3]))
         
         else:
             entity.get_transform().set_rotation(entity_quat)
