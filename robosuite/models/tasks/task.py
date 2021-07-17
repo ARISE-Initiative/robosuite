@@ -96,7 +96,7 @@ class Task(MujocoWorldBase):
         self._classes_to_ids = {}
         self._ids_to_classes = {}
 
-        models = self.mujoco_objects
+        models = [model for model in self.mujoco_objects]
         for robot in self.mujoco_robots:
             models += [robot] + robot.models
 
@@ -112,7 +112,7 @@ class Task(MujocoWorldBase):
             group_suffixes = ["", "_sites"]
             for ids, suffix in zip(id_groups, group_suffixes):
                 # Add entries to mapping dict
-                assert inst + suffix not in self._instances_to_ids, f"Instance {inst} already registered; should be unique"
+                assert inst + suffix not in self._instances_to_ids, f"Instance {inst + suffix} already registered; should be unique"
                 self._instances_to_ids[inst + suffix] = ids
                 if cls + suffix not in self._classes_to_ids:
                     self._classes_to_ids[cls + suffix] = ids

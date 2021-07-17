@@ -341,6 +341,11 @@ class RobotEnv(MujocoEnv):
                 sensors += cam_sensors
                 names += cam_sensor_names
 
+            # If any the camera segmentations are not None, then we shrink all the sites as a hacky way to
+            # prevent them from being rendered in the segmentation mask
+            if not all(seg is None for seg in self.camera_segmentations):
+                self.sim.model.site_size[:, :] = 1.0e-8
+
             # Create observables for these cameras
             for name, s in zip(names, sensors):
                 observables[name] = Observable(
