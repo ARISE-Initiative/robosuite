@@ -92,10 +92,6 @@ def load_object(geom,
                 for entity in component.entities:
                         entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
 
-        elif 'right_e0_vis' in geom_name or 'left_e0_vis' in geom_name:
-            for entity in component.entities:
-                entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
-
     return component
 
 def quaternion_from_matrix3(matrix3):
