@@ -2,14 +2,15 @@ import os
 import numpy as np
 import robosuite as suite
 import nvisii
-import nvisii_utils as utils
+import robosuite.renderers.nvisii.nvisii_utils as utils
 import open3d as o3d
 import cv2
 
 from robosuite.wrappers import Wrapper
 from robosuite.utils import transform_utils as T
+from robosuite.utils.mjcf_utils import xml_path_completion
 
-from parser import Parser
+from robosuite.renderers.nvisii.parser import Parser
 
 class NViSIIWrapper(Wrapper):
     def __init__(self,
@@ -120,14 +121,14 @@ class NViSIIWrapper(Wrapper):
         self.light_1.get_transform().set_position(nvisii.vec3(3, 3, 4))
 
         self._init_floor(image="plywood-4k.jpg")
-        self._init_walls(image="gray-plaster-rough-4k.jpg")
+        self._init_walls(image="plaster-wall-4k.jpg")
         self._init_camera()
         # Sets the primary camera of the renderer to the camera entity
         nvisii.set_camera_entity(self.camera)
         self._camera_configuration(pos_vec = nvisii.vec3(0, 0, 1), 
                                    at_vec  = nvisii.vec3(0, 0, 1), 
                                    up_vec  = nvisii.vec3(0, 0, 1),
-                                   eye_vec = nvisii.vec3(1.5, 0, 1.5))
+                                   eye_vec = nvisii.vec3(0.5, 0, 1.5))
         
         # Environment configuration
         self._dome_light_intensity = 1
@@ -156,7 +157,7 @@ class NViSIIWrapper(Wrapper):
         floor_entity.get_transform().set_scale(nvisii.vec3(1))
         floor_entity.get_transform().set_position(nvisii.vec3(0, 0, 0))
 
-        texture_image = f'../../models/assets/textures/{image}'
+        texture_image = xml_path_completion("textures/" + image)
         texture = nvisii.texture.create_from_file(name = 'floor_texture',
                                                   path = texture_image)
 
@@ -171,7 +172,7 @@ class NViSIIWrapper(Wrapper):
         Args:
             image (string): String for the file to use as an image for the walls
         """
-        texture_image = f'../../models/assets/textures/{image}'
+        texture_image = xml_path_completion("textures/" + image)
         texture = nvisii.texture.create_from_file(name = 'wall_texture',
                                                   path = texture_image)
 
@@ -284,26 +285,41 @@ class NViSIIWrapper(Wrapper):
             component (nvisii entity or scene): Object in renderer and other info
                                                 for object.
         """
-        obj = component[0]
-        parent_body = component[1]
-        geom_quat = component[2]
-        dynamic = component[3]
+        # obj = component[0]
+        # parent_body = component[1]
+        # geom_quat = component[2]
+        # dynamic = component[3]
+        # geom_pos = component[4]
+
+        obj = component.obj
+        parent_body_name = component.parent_body_name
+        geom_pos = component.geom_pos
+        geom_quat = component.geom_quat
+        dynamic = component.dynamic
+        
 
         if not dynamic:
             return
         
         self.body_tags = ['robot', 'pedestal', 'gripper', 'peg']
 
-        if parent_body != 'worldbody':
+        if parent_body_name != 'worldbody':
             if self.tag_in_name(name):
-                pos = self.env.sim.data.get_body_xpos(parent_body)
+                pos = self.env.sim.data.get_body_xpos(parent_body_name)
             else:
                 pos = self.env.sim.data.get_geom_xpos(name)
 
-            B = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(parent_body)].reshape((3, 3))      
+            B = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(parent_body_name)].reshape((3, 3))      
             quat_xyzw_body = utils.quaternion_from_matrix3(B)
             quat_wxyz_body = np.array([quat_xyzw_body[3], quat_xyzw_body[0], quat_xyzw_body[1], quat_xyzw_body[2]]) # wxyz
             nvisii_quat = nvisii.quat(*quat_wxyz_body) * nvisii.quat(*geom_quat)
+
+            if self.tag_in_name(name):
+                # Add position offset if there are position offset defined in the geom tag
+                homo_mat = T.pose2mat((np.zeros((1, 3), dtype=np.float32), quat_xyzw_body))
+                pos_offset = homo_mat @ np.array([geom_pos[0], geom_pos[1], geom_pos[2], 1.]).transpose()
+                pos = pos + pos_offset[:3]
+            
         else:
             pos = [0,0,0]
             nvisii_quat = nvisii.quat(1,0,0,0) # wxyz

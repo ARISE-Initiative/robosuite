@@ -1,9 +1,12 @@
 import numpy as np
 import xml.etree.ElementTree as ET
+from collections import namedtuple
 
 import nvisii
 from robosuite.utils.mjcf_utils import string_to_array
-from nvisii_utils import load_object
+from robosuite.renderers.nvisii.nvisii_utils import load_object
+
+Components = namedtuple('Components', ['obj', 'parent_body_name', 'geom_pos', 'geom_quat', 'dynamic'])
 
 class Parser():
     def __init__(self, env):
@@ -127,22 +130,25 @@ class Parser():
                     geom_tex_file = self.texture_attributes[geom_tex_name]['file']
 
             # load obj into nvisii
-            component = load_object(geom=geom,
-                                    geom_name=geom_name,
-                                    geom_type=geom_type,
-                                    geom_quat=geom_quat,
-                                    geom_pos=geom_pos,
-                                    geom_size=geom_size,
-                                    geom_scale=geom_scale,
-                                    geom_rgba=geom_rgba,
-                                    geom_tex_name=geom_tex_name,
-                                    geom_tex_file=geom_tex_file,
-                                    instance_id=instance_id,
-                                    visual_objects=self.visual_objects,
-                                    meshes=self.meshes
-                                    )
+            obj = load_object(geom=geom,
+                              geom_name=geom_name,
+                              geom_type=geom_type,
+                              geom_quat=geom_quat,
+                              geom_pos=geom_pos,
+                              geom_size=geom_size,
+                              geom_scale=geom_scale,
+                              geom_rgba=geom_rgba,
+                              geom_tex_name=geom_tex_name,
+                              geom_tex_file=geom_tex_file,
+                              instance_id=instance_id,
+                              visual_objects=self.visual_objects,
+                              meshes=self.meshes)
 
-            self.components[geom_name] = (component, parent_body_name, geom_quat, dynamic)
+            self.components[geom_name] = Components(obj=obj,
+                                                    parent_body_name=parent_body_name,
+                                                    geom_pos=geom_pos,
+                                                    geom_quat=geom_quat,
+                                                    dynamic=dynamic)
 
     def tag_in_name(self, name, tags):
         """

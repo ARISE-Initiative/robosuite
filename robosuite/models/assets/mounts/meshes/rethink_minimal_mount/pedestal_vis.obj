@@ -1,5 +1,7 @@
 # Blender v2.92.0 OBJ File: ''
 # www.blender.org
+
+mtllib pedestal_vis.mtl
 o Pedestal_Vis
 v -0.093967 -0.034797 -0.652075
 v -0.093967 -0.034797 -0.091275

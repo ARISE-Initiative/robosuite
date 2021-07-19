@@ -12,8 +12,8 @@ if __name__ == '__main__':
 
     env = NViSIIWrapper(
         env = suite.make(
-                "NutAssembly",
-                robots = ["Jaco"],
+                "TwoArmLift",
+                robots = ["Baxter"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     env.reset()
 
     for i in range(500):
-        action = np.random.randn(8)
+        action = np.random.randn(16)
         obs, reward, done, info = env.step(action)
 
         if i % 100 == 0:
