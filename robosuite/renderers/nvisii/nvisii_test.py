@@ -13,7 +13,7 @@ if __name__ == '__main__':
     env = NViSIIWrapper(
         env = suite.make(
                 "TwoArmLift",
-                robots = ["Jaco", "IIWA"],
+                robots = ["Baxter"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
