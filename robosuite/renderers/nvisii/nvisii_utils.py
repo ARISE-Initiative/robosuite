@@ -50,6 +50,10 @@ def load_object(geom,
         filename = meshes[geom.attrib['mesh']]['file']
         filename = os.path.splitext(filename)[0] + '.obj'
 
+        # print(geom_name)
+        # if 's_visual' in geom_name:
+        #     geom_scale = (3, 3, 3)
+
         component = nvisii.import_scene(
                     file_path=filename,
                     position=nvisii.vec3(geom_pos[0],
@@ -84,11 +88,11 @@ def load_object(geom,
                         entity.get_material().set_base_color(nvisii.vec3(geom_rgba[0], geom_rgba[1], geom_rgba[2]))
                 else:
                     component.get_material().set_base_color(nvisii.vec3(geom_rgba[0], geom_rgba[1], geom_rgba[2]))
-            elif geom_name == "gripper0_hand_visual":
+            elif 'hand_visual' in geom_name:
                 for entity in component.entities:
                         entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
 
-        elif geom_name == "robot0_right_e0_vis" or geom_name == "robot0_left_e0_vis":
+        elif 'right_e0_vis' in geom_name or 'left_e0_vis' in geom_name:
             for entity in component.entities:
                 entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
 

@@ -9,6 +9,8 @@ import cv2
 from robosuite.wrappers import Wrapper
 from robosuite.utils import transform_utils as T
 from robosuite.utils.mjcf_utils import xml_path_completion
+from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 
 from robosuite.renderers.nvisii.parser import Parser
 
@@ -128,7 +130,7 @@ class NViSIIWrapper(Wrapper):
         self._camera_configuration(pos_vec = nvisii.vec3(0, 0, 1), 
                                    at_vec  = nvisii.vec3(0, 0, 1), 
                                    up_vec  = nvisii.vec3(0, 0, 1),
-                                   eye_vec = nvisii.vec3(0.5, 0, 1.5))
+                                   eye_vec = nvisii.vec3(1.5, 0, 1.5))
         
         # Environment configuration
         self._dome_light_intensity = 1
@@ -327,8 +329,16 @@ class NViSIIWrapper(Wrapper):
         if isinstance(obj, nvisii.scene):
 
             # temp fix -- look into XML file for correct quat
-            if name == "robot0_s_visual":
-                nvisii_quat = nvisii.quat(0, 0.5, 0, 0)
+            if 's_visual' in name:
+                # single robot
+                if isinstance(self.env, SingleArmEnv):
+                    nvisii_quat = nvisii.quat(0, 0.5, 0, 0)
+                # two robots - 0
+                elif isinstance(self.env, TwoArmEnv) and 'robot_0' in name:
+                    nvisii_quat = nvisii.quat(-0, 0.5, 0.5, 0)
+                # two robots - 1
+                else:
+                    nvisii_quat = nvisii.quat(-0, 0.5, -0.5, 0)
 
             obj.transforms[0].set_position(nvisii.vec3(pos[0],
                                                        pos[1],

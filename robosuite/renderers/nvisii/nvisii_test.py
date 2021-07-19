@@ -13,7 +13,7 @@ if __name__ == '__main__':
     env = NViSIIWrapper(
         env = suite.make(
                 "TwoArmLift",
-                robots = ["Baxter"],
+                robots = ["Jaco", "IIWA"],
                 reward_shaping=True,
                 has_renderer=False,           # no on-screen renderer
                 has_offscreen_renderer=False, # no off-screen renderer
@@ -23,7 +23,7 @@ if __name__ == '__main__':
                 control_freq=10,
             ),
         img_path='images',
-        spp=512,
+        spp=256,
         use_noise=False,
         debug_mode=False,
         video_mode=False,
