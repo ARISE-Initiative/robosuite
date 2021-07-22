@@ -1,6 +1,6 @@
 import numpy as np
 import robosuite as suite
-from nvisii_wrapper import NViSIIWrapper
+from robosuite.renderers.nvisii.nvisii_wrapper import NViSIIWrapper
 
 if __name__ == '__main__':
 
@@ -27,12 +27,12 @@ if __name__ == '__main__':
         use_noise=False,
         debug_mode=False,
         video_mode=False,
-        verbose=1
+        verbose=1,
     )
 
     env.reset()
 
-    for i in range(500):
+    for i in range(60):
         action = np.random.randn(16)
         obs, reward, done, info = env.step(action)
 

@@ -27,7 +27,8 @@ class NViSIIWrapper(Wrapper):
                  video_path='videos/',
                  video_name='robosuite_video_0.mp4',
                  video_fps=60,
-                 verbose=1):
+                 verbose=1,
+                 image_options=None):
         """
         Initializes the nvisii wrapper. Wrapping any MuJoCo environment in this 
         wrapper will use the NViSII wrapper for rendering.
@@ -63,9 +64,13 @@ class NViSIIWrapper(Wrapper):
             
             video_fps (int, optional): Frames per second for video. Defaults to 60.
 
-            verbose (integer, optional): If verbose is set to 1, the wrapper will print the image
-                                         number for each image rendered. If verbose is set to 0, 
-                                         nothing will be printed. Defaults to 1.
+            verbose (int, optional): If verbose is set to 1, the wrapper will print the image
+                                     number for each image rendered. If verbose is set to 0, 
+                                     nothing will be printed. Defaults to 1.
+
+            image_options (string, optional): Options to render image with different ground truths
+                                              for NViSII. Options include "normal", "texture_coordinates",
+                                              "position"
         """
 
         super().__init__(env)
@@ -83,6 +88,7 @@ class NViSIIWrapper(Wrapper):
         self.video_fps = video_fps
 
         self.verbose = verbose
+        self.image_options = image_options
 
         self.img_cntr = 0
 
@@ -106,6 +112,17 @@ class NViSIIWrapper(Wrapper):
                 os.makedirs(video_path)
             self.video = cv2.VideoWriter(video_path + video_name, cv2.VideoWriter_fourcc(*'MP4V'), video_fps, (self.width, self.height))
             print(f'video mode enabled')
+
+        if image_options is None:
+            nvisii.sample_pixel_area(
+                x_sample_interval = (0.0, 1.0), 
+                y_sample_interval = (0.0, 1.0)
+            )
+        else:
+            nvisii.sample_pixel_area(
+                x_sample_interval = (.5,.5), 
+                y_sample_interval = (.5, .5)
+            )
 
         # Intiailizes the lighting
         self.light_1 = nvisii.entity.create(
@@ -287,11 +304,6 @@ class NViSIIWrapper(Wrapper):
             component (nvisii entity or scene): Object in renderer and other info
                                                 for object.
         """
-        # obj = component[0]
-        # parent_body = component[1]
-        # geom_quat = component[2]
-        # dynamic = component[3]
-        # geom_pos = component[4]
 
         obj = component.obj
         parent_body_name = component.parent_body_name
@@ -374,23 +386,42 @@ class NViSIIWrapper(Wrapper):
         verbose_word = 'frame' if self.video_mode else 'image'
 
         if self.video_mode:
-            nvisii.render_to_file(
-                width = self.width,
-                height = self.height,
-                samples_per_pixel = self.spp,
-                file_path = f'{self.img_path}/image_0.{render_type}'
-            )
-            self.video.write(cv2.imread(f'{self.img_path}/image_0.{render_type}'))
+            img_file = f'{self.img_path}/image_0.{render_type}'
+            if self.image_options is None:
+                self.render_to_file(img_file)
+            else:
+                self.render_data_to_file(img_file)
+
+            self.video.write(cv2.imread(img_file))
         else:
-            nvisii.render_to_file(
-                width = self.width,
-                height = self.height, 
-                samples_per_pixel = self.spp,   
-                file_path = f'{self.img_path}/image_{self.img_cntr}.{render_type}'
-            )
+            img_file = f'{self.img_path}/image_{self.img_cntr}.{render_type}'
+            if self.image_options is None:
+                self.render_to_file(img_file)
+            else:
+                self.render_data_to_file(img_file)
 
         if self.verbose == 1:
             print(f'Rendering {verbose_word}... {self.img_cntr}')
+
+    def render_to_file(self, img_file):
+        nvisii.render_to_file(
+            width = self.width,
+            height = self.height,
+            samples_per_pixel = self.spp,
+            file_path = img_file
+        )
+
+    def render_data_to_file(self, img_file):
+        nvisii.render_data_to_file(
+            width = self.width,
+            height = self.height, 
+            start_frame=0,
+            frame_count=1,
+            bounce=int(0),
+            options=self.image_options,
+            file_path=img_file
+        )
+
 
     def close(self):
         """
