@@ -13,6 +13,7 @@ from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 
 from robosuite.renderers.nvisii.parser import Parser
+from robosuite.utils.transform_utils import mat2quat
 
 class NViSIIWrapper(Wrapper):
     def __init__(self,
@@ -266,7 +267,7 @@ class NViSIIWrapper(Wrapper):
         pos = self.env.sim.data.geom_xpos[self.env.sim.model.geom_name2id(name)]
         R = self.env.sim.data.geom_xmat[self.env.sim.model.geom_name2id(name)].reshape(3, 3)
 
-        quat_xyzw = utils.quaternion_from_matrix3(R)
+        quat_xyzw = mat2quat(R)
         quat = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
 
         return pos, quat
@@ -324,7 +325,7 @@ class NViSIIWrapper(Wrapper):
                 pos = self.env.sim.data.get_geom_xpos(name)
 
             B = self.env.sim.data.body_xmat[self.env.sim.model.body_name2id(parent_body_name)].reshape((3, 3))      
-            quat_xyzw_body = utils.quaternion_from_matrix3(B)
+            quat_xyzw_body = mat2quat(B)
             quat_wxyz_body = np.array([quat_xyzw_body[3], quat_xyzw_body[0], quat_xyzw_body[1], quat_xyzw_body[2]]) # wxyz
             nvisii_quat = nvisii.quat(*quat_wxyz_body) * nvisii.quat(*geom_quat)
 

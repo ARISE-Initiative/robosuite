@@ -13,18 +13,39 @@ def load_object(geom,
                 geom_rgba,
                 geom_tex_name,
                 geom_tex_file,
-                instance_id,
-                visual_objects,
                 meshes):
     """
     Function that initializes the meshes in the memory.
+
+    Args:
+        geom (XML element): Object in XML file to load
+
+        geom_name (str): Name for the object.
+
+        geom_type (str): Type of the object. Types include "box", "cylinder", or "mesh".
+
+        geom_quat (array): Quaternion (wxyz) of the object.
+
+        geom_pos (array): Position of the object.
+
+        geom_size (array): Size of the object.
+
+        geom_scale (array): Scale of the object.
+
+        geom_rgba (array): Color of the object. This is only used if the geom type is not
+                           a mesh and there is no specified material.
+
+        geom_tex_name (str): Name of the texture for the object
+
+        geom_tex_file (str): File of the texture for the object
+
+        meshes (dict): meshes for the object
     """
 
     primitive_types = ['box', 'cylinder']
     component = None
 
     if geom_type == 'box':
-
         component = nvisii.entity.create(
                     name = geom_name,
                     mesh = nvisii.mesh.create_box(name = geom_name,
@@ -36,7 +57,6 @@ def load_object(geom,
                 )
 
     elif geom_type == 'cylinder':
-
         component = nvisii.entity.create(
                     name = geom_name,
                     mesh = nvisii.mesh.create_capped_cylinder(name   = geom_name,
@@ -49,10 +69,6 @@ def load_object(geom,
     elif geom_type == 'mesh':
         filename = meshes[geom.attrib['mesh']]['file']
         filename = os.path.splitext(filename)[0] + '.obj'
-
-        # print(geom_name)
-        # if 's_visual' in geom_name:
-        #     geom_scale = (3, 3, 3)
 
         component = nvisii.import_scene(
                     file_path=filename,
@@ -93,25 +109,3 @@ def load_object(geom,
                         entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
 
     return component
-
-def quaternion_from_matrix3(matrix3):
-    """Return quaternion from 3x3 rotation matrix.
-    >>> R = rotation_matrix4(0.123, (1, 2, 3))
-    >>> q = quaternion_from_matrix4(R)
-    >>> numpy.allclose(q, [0.0164262, 0.0328524, 0.0492786, 0.9981095])
-    True
-    """
-    EPS = 1e-6
-    q = np.empty((4, ), dtype=np.float64)
-    M = np.array(matrix3, dtype=np.float64, copy=False)[:3, :3]
-    t = np.trace(M) + 1
-    if t <= -EPS:
-        warnings.warn('Numerical warning of [t = np.trace(M) + 1 = {}]'\
-                .format(t))
-    t = max(t, EPS)
-    q[3] = t
-    q[2] = M[1, 0] - M[0, 1]
-    q[1] = M[0, 2] - M[2, 0]
-    q[0] = M[2, 1] - M[1, 2]
-    q *= 0.5 / math.sqrt(t)
-    return q

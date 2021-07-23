@@ -13,8 +13,7 @@ class Parser():
         """
         Parse the mujoco xml and initialize NViSII renderer objects.
         Args:
-            renderer: iGibson renderer
-            env : Mujoco env
+            env (Mujoco env): Environment to parse
         """
 
         self.env = env
@@ -67,7 +66,6 @@ class Parser():
         Iterate through each goemetry and load it in the NViSII renderer.
         """
         self.parse_meshes()
-        instance_id = 0
 
         repeated_names = {}
 
@@ -140,8 +138,6 @@ class Parser():
                               geom_rgba=geom_rgba,
                               geom_tex_name=geom_tex_name,
                               geom_tex_file=geom_tex_file,
-                              instance_id=instance_id,
-                              visual_objects=self.visual_objects,
                               meshes=self.meshes)
 
             self.components[geom_name] = Components(obj=obj,
@@ -155,7 +151,9 @@ class Parser():
         Checks if one of the tags in body tags in the name
 
         Args:
-            name (string): Name of component
+            name (str): Name of geom element.
+
+            tags (array): List of keywords to check from.
         """
         for tag in tags:
             if tag in name:
