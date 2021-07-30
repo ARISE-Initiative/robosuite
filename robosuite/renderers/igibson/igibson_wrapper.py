@@ -1,6 +1,7 @@
 from os import error, fwalk
 import numpy as np
 import robosuite as suite
+from robosuite.utils import observables
 
 try:
     import gibson2
@@ -19,6 +20,7 @@ from gibson2.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
 from gibson2.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer, Instance, Robot
 from gibson2.utils.mesh_util import xyzw2wxyz, quat2rotmat, ortho
 from gibson2.render.viewer import Viewer
+from robosuite.utils.observables import Observable, sensor
 
 try:
     import torch
@@ -28,16 +30,21 @@ except ImportError:
 
 
 AVAILABLE_MODALITIES = ['rgb', 'seg', 'normal', '3d']
+AVAILABLE_MODES = ['gui', 'headless']
 
 def check_modes(modes):
     for m in modes:
         if m not in AVAILABLE_MODALITIES:
-            raise Exception(f'`modes` can only be from the {AVAILABLE_MODALITIES}, got {m}')
+            raise ValueError(f'`modes` can only be from the {AVAILABLE_MODALITIES}, got {m}')
+
+def check_render_mode(render_mode):
+    if render_mode not in AVAILABLE_MODES:
+        raise ValueError(f'`render_mode` can only be from the {AVAILABLE_MODES}, got {render_mode}')
 
 class iGibsonWrapper(Wrapper):
     def __init__(self,
                  env,
-                 mode='gui',
+                 render_mode='gui',
                  width=1280,
                  height=720,
                  enable_pbr=True,
@@ -54,6 +61,10 @@ class iGibsonWrapper(Wrapper):
 
         Args:
             env (MujocoEnv instance): The environment to wrap.
+
+            render_mode (string, optional): The rendering mode. Could be set either to `gui`
+                                            or `headless`. If set to `gui` the viewer window
+                                            will open up.
 
             width (int, optional): Width of the rendered image. Defaults to 1280.
                                    All the cameras will be rendered at same resolution.
@@ -95,11 +106,12 @@ class iGibsonWrapper(Wrapper):
         super().__init__(env)
 
         check_modes(modes)
+        check_render_mode(render_mode)
 
         if render2tensor and not HAS_TORCH:
             raise Exception("`render2tensor` requires PyTorch to be installed.")
 
-        self.mode = mode
+        self.mode = render_mode
         self.env = env
         self.render2tensor = render2tensor
         self.width = width
@@ -144,15 +156,186 @@ class iGibsonWrapper(Wrapper):
         self._add_viewer(initial_pos=self.camera_position, 
                         initial_view_direction=self.view_direction)
 
-        # set parameters which will be used inside robosuite
-        # when use_camera_obs=True
-        self.env.ig_renderer_params = {'renderer':self.renderer,
-                                       'modes': modes,
-                                       'ig_wrapper_obj':self,
-                                       }
-
         # Setup observables again after setting the iG parameters
-        self.env._observables = self.env._setup_observables()
+        self._setup_observables()
+
+    def _setup_observables(self):
+        observables = self.env._setup_observables()
+
+        # can't delete an ordered dict while iterating.
+        observables_copy = observables.copy()
+
+        # delete mujoco observables.
+        for k,v in observables_copy.items():
+            if v.modality == 'image':
+                del observables[k]
+        
+        # Loop through cameras and change the sensor
+        if self.use_camera_obs:
+            
+            sensors = []
+            names = []
+
+            for (cam_name, cam_w, cam_h, cam_d) in \
+                zip(self.env.camera_names, self.env.camera_widths, self.env.camera_heights, self.env.camera_depths):
+
+                # Add cameras associated to our arrays
+                cam_sensors, cam_sensor_names = self._create_camera_sensors(
+                    cam_name, cam_w=cam_w, cam_h=cam_h, cam_d=cam_d, modality="image")
+                sensors += cam_sensors
+                names += cam_sensor_names    
+
+            # Create observables for these cameras
+            for name, s in zip(names, sensors):
+                observables[name] = Observable(
+                    name=name,
+                    sensor=s,
+                    sampling_rate=self.control_freq,
+                )       
+
+        self.env._observables = observables
+
+    def _create_camera_sensors(self, cam_name, cam_w, cam_h, cam_d, modality="image"):
+        """
+        Helper function to create sensors for a given camera. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            cam_name (str): Name of camera to create sensors for
+            cam_w (int): Width of camera
+            cam_h (int): Height of camera
+            cam_d (bool): Whether to create a depth sensor as well
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given camera
+                names (list): array of corresponding observable names
+        """
+        from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
+        import robosuite.utils.macros as macros
+
+        # Make sure we get correct convention
+        convention = IMAGE_CONVENTION_MAPPING[macros.IMAGE_CONVENTION]
+
+        # Create sensor information
+        sensors = []
+        names = []
+
+        # Add camera observables to the dict
+        rgb_sensor_name = f"{cam_name}_image"
+        depth_sensor_name = f"{cam_name}_depth"
+        seg_sensor_name = f"{cam_name}_seg"
+        normal_sensor_name = f"{cam_name}_normal"
+
+        def adjust_convention(img, convention):
+            if convention == 1:
+                img = img[::-1]
+            else:
+                img = img[::convention]
+            
+            return img
+
+        @sensor(modality=modality)
+        def camera_rgb(obs_cache):
+            
+            import pdb; pdb.set_trace();
+
+            # Switch to correct camera
+            if self is not None and self.camera_name != cam_name:
+                self._switch_camera(cam_name)
+
+            rendered_imgs = self.renderer.render(modes=self.modes)
+            rendered_mapping = {k: val for k, val in zip(self.modes, rendered_imgs)}
+
+            # in np array image received is of correct orientation
+            # in torch tensor image is flipped upside down
+            # adjusting the np image in a way so that return statement stays same
+            # flipping torch tensor when opencv coordinate system is required.
+
+            if 'rgb' in self.modes:
+                img = rendered_mapping['rgb'][:,:,:3]
+                if isinstance(img, np.ndarray):
+                    # np array is in range 0-1
+                    img = (img * 255).astype(np.uint8)
+                    img = adjust_convention(img, convention)
+                elif convention == -1:
+                    img = torch.flipud(img)
+            else:
+                img = np.zeros((256, 256), np.uint8)
+
+            if 'seg' in self.modes:
+                # 0th channel contains segmentation
+                seg_map = rendered_mapping['seg'][:,:,0]
+                if isinstance(seg_map, np.ndarray):
+                    # np array is in range 0-1
+                    seg_map = (seg_map * 255).astype(np.uint8)
+                    seg_map = adjust_convention(seg_map, convention)
+                elif convention == -1:
+                    # flip in Y direction if torch tensor
+                    seg_map = torch.flipud(seg_map)  
+                obs_cache[seg_sensor_name] = seg_map
+
+            if '3d' in self.modes:
+                # 2nd channel contains correct depth map
+                depth_map = rendered_mapping['3d'][:,:,2]
+                if isinstance(depth_map, np.ndarray):
+                    depth_map = adjust_convention(depth_map, convention)
+                elif convention == -1:
+                    # flip in Y direction if torch tensor
+                    depth_map = torch.flipud(depth_map)
+                
+                obs_cache[depth_sensor_name] = depth_map
+
+            if 'normal' in self.modes:
+                normal_map = rendered_mapping['normal'][:,:,:3]
+                if isinstance(normal_map, np.ndarray):
+                    # np array is in range 0-1
+                    normal_map = (normal_map * 255).astype(np.uint8)
+                    normal_map = adjust_convention(normal_map, convention)
+                elif convention == -1:
+                    normal_map = torch.flipud(normal_map)                                                  
+                obs_cache[normal_sensor_name] = normal_map
+            
+            if isinstance(img, np.ndarray):
+                return img[::convention]
+            else:
+                # negative strides are not possible in torch.
+                return img
+
+        sensors.append(camera_rgb)
+        names.append(rgb_sensor_name)
+
+        # Below modes are only applicable for iG renderer.
+        if 'seg' in self.modes:
+            @sensor(modality=modality)
+            def camera_seg(obs_cache):
+                return obs_cache[seg_sensor_name] if seg_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))
+
+            sensors.append(camera_seg)
+            names.append(seg_sensor_name)
+
+        if '3d' in self.modes or cam_d:
+            @sensor(modality=modality)
+            def camera_depth(obs_cache):
+                return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))  
+
+            sensors.append(camera_depth)
+            names.append(depth_sensor_name)                     
+
+        if 'normal' in self.modes:
+            @sensor(modality=modality)
+            def camera_normal(obs_cache):
+                return obs_cache[normal_sensor_name] if normal_sensor_name in obs_cache else \
+                    np.zeros((cam_h, cam_w, 1))  
+
+            sensors.append(camera_normal)
+            names.append(normal_sensor_name)               
+
+        return sensors, names
+
 
     def _switch_camera(self, camera_name):
         """
@@ -292,21 +475,25 @@ if __name__ == '__main__':
     #                          PickPlaceCan, Door, Wipe, TwoArmLift, TwoArmPegInHole, TwoArmHandover
 
     # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
-
+    # import robosuite.utils.macros as macros
+    # macros.IMAGE_CONVENTION = "opencv"
     env = iGibsonWrapper(
         env = suite.make(
-                "PickPlace",
+                "Door",
                 robots = ["Jaco"],
                 reward_shaping=True,
                 has_renderer=False,           
-                has_offscreen_renderer=False,
+                has_offscreen_renderer=True,
                 ignore_done=True,
                 use_object_obs=True,
-                use_camera_obs=False,  
+                use_camera_obs=True,  
                 render_camera='frontview',
                 control_freq=20, 
                 camera_names=['frontview', 'agentview']
             ),
+            width=500,
+            height=500,
+            render_mode='headless',
             enable_pbr=True,
             enable_shadow=True,
             modes=('rgb', 'seg', '3d', 'normal'),
@@ -319,6 +506,7 @@ if __name__ == '__main__':
     for i in range(10000):
         action = np.random.randn(8)
         obs, reward, done, _ = env.step(action)
+        # import pdb; pdb.set_trace();
         env.render()
 
     env.close()

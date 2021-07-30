@@ -334,14 +334,12 @@ class RobotEnv(MujocoEnv):
         """
         Helper function to create sensors for a given camera. This is abstracted in a separate function call so that we
         don't have local function naming collisions during the _setup_observables() call.
-
         Args:
             cam_name (str): Name of camera to create sensors for
             cam_w (int): Width of camera
             cam_h (int): Height of camera
             cam_d (bool): Whether to create a depth sensor as well
             modality (str): Modality to assign to all sensors
-
         Returns:
             2-tuple:
                 sensors (list): Array of sensors for the given camera
@@ -357,113 +355,26 @@ class RobotEnv(MujocoEnv):
         # Add camera observables to the dict
         rgb_sensor_name = f"{cam_name}_image"
         depth_sensor_name = f"{cam_name}_depth"
-        seg_sensor_name = f"{cam_name}_seg"
-        normal_sensor_name = f"{cam_name}_normal"
-
-        # get ig params
-        modes = self.ig_renderer_params.get('modes', [])
-        renderer = self.ig_renderer_params.get('renderer')
-        ig_wrapper = self.ig_renderer_params.get('ig_wrapper_obj')
-
-        def adjust_convention(img, convention):
-            if convention == 1:
-                img = img[::-1]
-            else:
-                img = img[::convention]
-            
-            return img
 
         @sensor(modality=modality)
         def camera_rgb(obs_cache):
-            if self.render_with_igibson:
-                # iGibson renderer
-                if self.ig_renderer_params == {}:
-                    # This function is called once before
-                    # the actual rendering
-                    img = np.zeros((256, 256), np.uint8)
-                else:
-
-                    # Switch to correct camera
-                    if ig_wrapper is not None and ig_wrapper.camera_name != cam_name:
-                        ig_wrapper._switch_camera(cam_name)
-
-                    rendered_imgs = renderer.render(modes=modes)
-                    rendered_mapping = {k: val for k, val in zip(modes, rendered_imgs)}
-
-                    # in np array image received is of correct orientation
-                    # in torch tensor image is flipped upside down
-                    # adjusting the np image in a way so that return statement stays same
-                    # flipping torch tensor when opencv coordinate system is required.
-
-                    if 'rgb' in modes:
-                        img = rendered_mapping['rgb'][:,:,:3]
-                        if isinstance(img, np.ndarray):
-                            # np array is in range 0-1
-                            img = (img * 255).astype(np.uint8)
-                            img = adjust_convention(img, convention)
-                        elif convention == -1:
-                            img = torch.flipud(img)
-                    else:
-                        img = np.zeros((256, 256), np.uint8)
-
-                    if 'seg' in modes:
-                        # 0th channel contains segmentation
-                        seg_map = rendered_mapping['seg'][:,:,0]
-                        if isinstance(seg_map, np.ndarray):
-                            # np array is in range 0-1
-                            seg_map = (seg_map * 255).astype(np.uint8)
-                            seg_map = adjust_convention(seg_map, convention)
-                        elif convention == -1:
-                            # flip in Y direction if torch tensor
-                            seg_map = torch.flipud(seg_map)  
-                        obs_cache[seg_sensor_name] = seg_map
-
-                    if '3d' in modes:
-                        # 2nd channel contains correct depth map
-                        depth_map = rendered_mapping['3d'][:,:,2]
-                        if isinstance(depth_map, np.ndarray):
-                            depth_map = adjust_convention(depth_map, convention)
-                        elif convention == -1:
-                            # flip in Y direction if torch tensor
-                            depth_map = torch.flipud(depth_map)
-                        
-                        obs_cache[depth_sensor_name] = depth_map
-
-                    if 'normal' in modes:
-                        normal_map = rendered_mapping['normal'][:,:,:3]
-                        if isinstance(normal_map, np.ndarray):
-                            # np array is in range 0-1
-                            normal_map = (normal_map * 255).astype(np.uint8)
-                            normal_map = adjust_convention(normal_map, convention)
-                        elif convention == -1:
-                            normal_map = torch.flipud(normal_map)                                                  
-                        obs_cache[normal_sensor_name] = normal_map
-
+            img = self.sim.render(
+                camera_name=cam_name,
+                width=cam_w,
+                height=cam_h,
+                depth=cam_d,
+            )
+            if cam_d:
+                rgb, depth = img
+                obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
+                return rgb[::convention]
             else:
-                img = self.sim.render(
-                    camera_name=cam_name,
-                    width=cam_w,
-                    height=cam_h,
-                    depth=cam_d,
-                )
-                if cam_d:
-                    rgb, depth = img
-                    obs_cache[depth_sensor_name] = np.expand_dims(depth[::convention], axis=-1)
-                    return rgb[::convention]
-            
-            if isinstance(img, np.ndarray):
                 return img[::convention]
-            else:
-                # negative strides are not possible in torch.
-                return img
 
         sensors.append(camera_rgb)
         names.append(rgb_sensor_name)
 
-        # camd is parameter only for mujoco rendering
-        # for depth in iG use '3d' in modes while intiliazing 
-        # the iGibsonWrapper.
-        if cam_d and not self.render_with_igibson:
+        if cam_d:
             @sensor(modality=modality)
             def camera_depth(obs_cache):
                 return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
@@ -471,34 +382,6 @@ class RobotEnv(MujocoEnv):
 
             sensors.append(camera_depth)
             names.append(depth_sensor_name)
-
-        # Below modes are only applicable for iG renderer.
-        if 'seg' in modes:
-            @sensor(modality=modality)
-            def camera_seg(obs_cache):
-                return obs_cache[seg_sensor_name] if seg_sensor_name in obs_cache else \
-                    np.zeros((cam_h, cam_w, 1))
-
-            sensors.append(camera_seg)
-            names.append(seg_sensor_name)
-
-        if '3d' in modes or cam_d:
-            @sensor(modality=modality)
-            def camera_depth(obs_cache):
-                return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
-                    np.zeros((cam_h, cam_w, 1))  
-
-            sensors.append(camera_depth)
-            names.append(depth_sensor_name)                     
-
-        if 'normal' in modes:
-            @sensor(modality=modality)
-            def camera_normal(obs_cache):
-                return obs_cache[normal_sensor_name] if normal_sensor_name in obs_cache else \
-                    np.zeros((cam_h, cam_w, 1))  
-
-            sensors.append(camera_normal)
-            names.append(normal_sensor_name)               
 
         return sensors, names
 
