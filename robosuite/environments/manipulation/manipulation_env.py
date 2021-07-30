@@ -126,8 +126,7 @@ class ManipulationEnv(RobotEnv):
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
-        camera_depths=False,
-        render_with_igibson=False,
+        camera_depths=False
     ):
         # Robot info
         robots = list(robots) if type(robots) is list or type(robots) is tuple else [robots]
@@ -166,8 +165,7 @@ class ManipulationEnv(RobotEnv):
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
-            robot_configs=robot_configs,
-            render_with_igibson=render_with_igibson
+            robot_configs=robot_configs
         )
 
     @property

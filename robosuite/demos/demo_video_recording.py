@@ -28,43 +28,22 @@ if __name__ == "__main__":
     parser.add_argument("--height", type=int, default=512)
     parser.add_argument("--width", type=int, default=512)
     parser.add_argument("--skip_frame", type=int, default=1)
-    parser.add_argument("--ig", action="store_true", help="Use iGibson renderer for rendering")
     args = parser.parse_args()
 
-    # initialize an environment with offscreen renderer
-    if args.ig:
-        from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
-        env = iGibsonWrapper(
-            env = make(
-                args.environment,
-                args.robots,
-                has_renderer=False,
-                ignore_done=True,
-                use_camera_obs=True,
-                use_object_obs=False,
-                camera_names=args.camera,
-                camera_heights=args.height,
-                camera_widths=args.width,
-                render_with_igibson=True
-            ),
-            enable_pbr=True,
-            enable_shadow=True,
-            render2tensor=False,
-        )
-    else:      
-        env = make(
-            args.environment,
-            args.robots,
-            has_renderer=False,
-            ignore_done=True,
-            use_camera_obs=True,
-            use_object_obs=False,
-            camera_names=args.camera,
-            camera_heights=args.height,
-            camera_widths=args.width,
-        )
+    # initialize an environment with offscreen renderer  
+    env = make(
+        args.environment,
+        args.robots,
+        has_renderer=False,
+        ignore_done=True,
+        use_camera_obs=True,
+        use_object_obs=False,
+        camera_names=args.camera,
+        camera_heights=args.height,
+        camera_widths=args.width,
+    )
 
-        obs = env.reset()
+    obs = env.reset()
     ndim = env.action_dim
 
     # create a video writer with imageio

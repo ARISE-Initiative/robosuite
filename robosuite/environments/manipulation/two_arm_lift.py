@@ -159,8 +159,7 @@ class TwoArmLift(TwoArmEnv):
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
-        camera_depths=False,
-        render_with_igibson=False,
+        camera_depths=False
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -198,8 +197,7 @@ class TwoArmLift(TwoArmEnv):
             camera_names=camera_names,
             camera_heights=camera_heights,
             camera_widths=camera_widths,
-            camera_depths=camera_depths,
-            render_with_igibson=render_with_igibson,
+            camera_depths=camera_depths
             
         )
 

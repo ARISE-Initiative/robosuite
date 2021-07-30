@@ -143,8 +143,7 @@ class Door(SingleArmEnv):
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
-        camera_depths=False,
-        render_with_igibson=False
+        camera_depths=False
     ):
         # settings for table top (hardcoded since it's not an essential part of the environment)
         self.table_full_size = (0.8, 0.3, 0.05)
@@ -182,8 +181,7 @@ class Door(SingleArmEnv):
             camera_names=camera_names,
             camera_heights=camera_heights,
             camera_widths=camera_widths,
-            camera_depths=camera_depths,
-            render_with_igibson=render_with_igibson,
+            camera_depths=camera_depths
         )
 
     def reward(self, action=None):

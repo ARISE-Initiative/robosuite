@@ -37,6 +37,7 @@ def check_modes(modes):
 class iGibsonWrapper(Wrapper):
     def __init__(self,
                  env,
+                 mode='gui',
                  width=1280,
                  height=720,
                  enable_pbr=True,
@@ -93,14 +94,12 @@ class iGibsonWrapper(Wrapper):
         """
         super().__init__(env)
 
-        check_modes(modes)        
-        if not self.env.render_with_igibson:
-            raise Exception("Set `render_with_igibson=True` while initializing the environment.")
+        check_modes(modes)
 
         if render2tensor and not HAS_TORCH:
             raise Exception("`render2tensor` requires PyTorch to be installed.")
 
-
+        self.mode = mode
         self.env = env
         self.render2tensor = render2tensor
         self.width = width
@@ -113,14 +112,9 @@ class iGibsonWrapper(Wrapper):
         self.device_idx = device_idx
         self.modes = modes
 
-        # if camd is et in env, add the depth mode in iG
+        # if camd is set in env, add the depth mode in iG
         if True in self.env.camera_depths and '3d' not in self.modes:
             self.modes += ['3d']
-
-        if not self.env.has_renderer:
-            self.mode = 'headless'
-        else:
-            self.mode = 'gui'
         
         self.mrs = MeshRendererSettings(msaa=msaa, 
                                         enable_pbr=enable_pbr, 
@@ -150,7 +144,7 @@ class iGibsonWrapper(Wrapper):
         self._add_viewer(initial_pos=self.camera_position, 
                         initial_view_direction=self.view_direction)
 
-        # set parameters which will be used inside rovobosuite
+        # set parameters which will be used inside robosuite
         # when use_camera_obs=True
         self.env.ig_renderer_params = {'renderer':self.renderer,
                                        'modes': modes,
@@ -304,15 +298,14 @@ if __name__ == '__main__':
                 "PickPlace",
                 robots = ["Jaco"],
                 reward_shaping=True,
-                has_renderer=True,           
+                has_renderer=False,           
                 has_offscreen_renderer=False,
                 ignore_done=True,
                 use_object_obs=True,
                 use_camera_obs=False,  
                 render_camera='frontview',
                 control_freq=20, 
-                camera_names=['frontview', 'agentview'],
-                render_with_igibson=True
+                camera_names=['frontview', 'agentview']
             ),
             enable_pbr=True,
             enable_shadow=True,

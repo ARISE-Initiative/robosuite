@@ -130,8 +130,7 @@ class RobotEnv(MujocoEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
-        robot_configs=None,
-        render_with_igibson=False,
+        robot_configs=None
     ):
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
@@ -199,8 +198,7 @@ class RobotEnv(MujocoEnv):
             control_freq=control_freq,
             horizon=horizon,
             ignore_done=ignore_done,
-            hard_reset=hard_reset,
-            render_with_igibson=render_with_igibson,
+            hard_reset=hard_reset
         )
 
     def visualize(self, vis_settings):
