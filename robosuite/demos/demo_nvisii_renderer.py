@@ -2,9 +2,8 @@ import argparse
 import numpy as np
 import robosuite as suite
 from robosuite.renderers.nvisii.nvisii_wrapper import NViSIIWrapper
+import robosuite.utils.transform_utils as T
 
-from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
-from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -63,6 +62,9 @@ if __name__ == '__main__':
     )
 
     env.reset()
+
+    camera_pos = np.array([1.5, 0, 1.5])
+    camera_quat = np.array([-1, 0, 0, 0])
 
     action_space = env.action_dim
 

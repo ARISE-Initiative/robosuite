@@ -145,10 +145,10 @@ class NViSIIWrapper(Wrapper):
         self._init_camera()
         # Sets the primary camera of the renderer to the camera entity
         nvisii.set_camera_entity(self.camera)
-        self._camera_configuration(pos_vec = nvisii.vec3(0, 0, 1), 
-                                   at_vec  = nvisii.vec3(0, 0, 1), 
+        self._camera_configuration(at_vec  = nvisii.vec3(0, 0, 1), 
                                    up_vec  = nvisii.vec3(0, 0, 1),
-                                   eye_vec = nvisii.vec3(1.5, 0, 1.5))
+                                   eye_vec = nvisii.vec3(1.5, 0, 1.5),
+                                   quat    = nvisii.quat(-1, 0, 0, 0))
         
         # Environment configuration
         self._dome_light_intensity = 1
@@ -243,21 +243,31 @@ class NViSIIWrapper(Wrapper):
             )
         )
 
-    def _camera_configuration(self, pos_vec, at_vec, up_vec, eye_vec):
+    def _camera_configuration(self, at_vec, up_vec, eye_vec, quat):
         """
         Sets the configuration for the NViSII camera. Configuration
         is dependent on where the camera is located and where it 
         looks at
         """
         # configures the camera
-        self.camera.get_transform().set_position(pos_vec)
-
         self.camera.get_transform().look_at(
             at  = at_vec, # look at (world coordinate)
             up  = up_vec, # up vector
             eye = eye_vec,
             previous = False
         )
+
+        self.camera.get_transform().rotate_around(eye_vec, quat)
+
+    def set_camera_pos_quat(self, pos, quat):
+        self.camera.get_transform().set_position(pos)
+        self.camera.get_transform().look_at(
+            at  = (0, 0, 1), # look at (world coordinate)
+            up  = (0, 0, 1), # up vector
+            eye = pos,
+            previous = False
+        )
+        # self.camera.get_transform().rotate_around(pos, quat)
 
     def _get_orientation_geom(self, name):
         """
@@ -312,7 +322,6 @@ class NViSIIWrapper(Wrapper):
         geom_quat = component.geom_quat
         dynamic = component.dynamic
         
-
         if not dynamic:
             return
         
