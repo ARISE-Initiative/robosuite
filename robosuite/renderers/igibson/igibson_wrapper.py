@@ -115,7 +115,7 @@ class iGibsonWrapper(Wrapper):
         super().__init__(env)
 
         check_modes(modes)
-        check_render_mode(render_mode, self.env.use_camera_obs)
+        check_render_mode(render_mode)
         # environment use camera obs must be false and iG camera_obs must be true.
         # This makes robosuite not initialize mujoco sensors
         # which was behaving strangely.

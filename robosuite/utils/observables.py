@@ -403,7 +403,6 @@ class Observable:
                 self._data_shape = tuple(img.shape)
             self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
         except Exception as e:
-            raise e
             raise ValueError("Current sensor for observable {} is invalid.".format(self.name))
 
     @property
