@@ -5,7 +5,7 @@ import tempfile
 
 import numpy as np
 import matplotlib.pyplot as plt
-import gibson2
+import igibson
 from transforms3d import quaternions
 import robosuite.utils.transform_utils as T
 import robosuite
@@ -30,10 +30,10 @@ def load_object(renderer,
 
 
     primitive_shapes_path = {
-        'box': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj'),
+        'box': os.path.join(igibson.assets_path, 'models/mjcf_primitives/cube.obj'),
         'cylinder': os.path.join(robosuite.models.assets_root, 'objects/meshes/cylinder.obj'),
-        'sphere': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/sphere8.obj'),
-        'plane': os.path.join(gibson2.assets_path, 'models/mjcf_primitives/cube.obj')
+        'sphere': os.path.join(igibson.assets_path, 'models/mjcf_primitives/sphere8.obj'),
+        'plane': os.path.join(igibson.assets_path, 'models/mjcf_primitives/cube.obj')
     }
     
     # if not in primitive shapes, get path to mesh
