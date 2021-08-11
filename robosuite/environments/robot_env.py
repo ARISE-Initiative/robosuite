@@ -307,7 +307,6 @@ class RobotEnv(MujocoEnv):
             observables.update(robot_obs)
 
         # Loop through cameras and update the observations if using camera obs
-        # import pdb; pdb.set_trace();
         if self.use_camera_obs:
             # Create sensor information
             sensors = []
