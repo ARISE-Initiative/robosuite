@@ -45,7 +45,15 @@ def check_render_mode(render_mode):
 
 def check_camera_obs(use_camera_obs):
     if use_camera_obs:
-        raise Exception("Cannot set `use_camera_obs` in the environment, instead set 'camera_obs' flag in iGibson initialization.")
+        raise ValueError("Cannot set `use_camera_obs` in the environment, instead set 'camera_obs' flag in iGibson initialization.")
+
+def check_render2tensor(render2tensor, render_mode):
+    if render2tensor and not HAS_TORCH:
+        raise AssertionError("`render2tensor` requires PyTorch to be installed.") 
+
+    if render_mode == 'gui' and render2tensor:
+        raise ValueError('render2tensor can only be set to true in `headless` mode. ')
+
 
 class iGibsonWrapper(Wrapper):
     def __init__(self,
@@ -120,11 +128,8 @@ class iGibsonWrapper(Wrapper):
         # This makes robosuite not initialize mujoco sensors
         # which was behaving strangely.
         check_camera_obs(self.env.use_camera_obs)
-        if self.env.use_camera_obs:
-            raise Exception("Cannot set `use_camera_obs` in the environment, instead set 'camera_obs' flag in iGibson initialization.")
-            
-        if render2tensor and not HAS_TORCH:
-            raise Exception("`render2tensor` requires PyTorch to be installed.")
+        check_render2tensor(render2tensor, render_mode)
+
 
         self.mode = render_mode
         self.env = env
@@ -185,7 +190,7 @@ class iGibsonWrapper(Wrapper):
             names = []
 
             for (cam_name, cam_d) in \
-                zip(self.env.camera_names, self.env.camera_widths, self.env.camera_heights, self.env.camera_depths):
+                zip(self.env.camera_names, self.env.camera_depths):
 
                 # Add cameras associated to our arrays
                 cam_sensors, cam_sensor_names = self._create_camera_sensors(
@@ -501,12 +506,12 @@ if __name__ == '__main__':
             ),
             width=1280,
             height=720,
-            render_mode='gui',
+            render_mode='headless',
             enable_pbr=True,
             enable_shadow=True,
             modes=('rgb', 'seg', '3d', 'normal'),
-            render2tensor=False,
-            camera_obs=False,
+            render2tensor=True,
+            camera_obs=True,
             optimized=False,
     )
 
@@ -515,7 +520,6 @@ if __name__ == '__main__':
     for i in range(10000):
         action = np.random.randn(8)
         obs, reward, done, _ = env.step(action)
-        # import pdb; pdb.set_trace();
         env.render()
 
     env.close()
