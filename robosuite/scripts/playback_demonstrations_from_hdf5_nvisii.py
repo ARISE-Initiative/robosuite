@@ -47,20 +47,6 @@ if __name__ == '__main__':
     env_name = f["data"].attrs["env"]
     env_args = json.loads(f["data"].attrs["env_args"])
 
-    # env = NViSIIWrapper(
-        
-    #     img_path='images',
-    #     width=1000,
-    #     height=1000,
-    #     spp=512,
-    #     use_noise=False,
-    #     debug_mode=False,
-    #     video_mode=True,
-    #     video_fps=30,
-    #     verbose=1,
-    #     image_options="position"
-    # )
-
     env = robosuite.make(
         env_name,
         robots = env_args['env_kwargs']['robots'],
@@ -70,7 +56,11 @@ if __name__ == '__main__':
         use_camera_obs=False,
         reward_shaping=True,
         control_freq=20,
-        renderer="nvisii"
+        renderer="nvisii",
+        width=500,
+        height=500,
+        spp=256,
+        video_mode=True,
     )
 
     demos = list(f["data"].keys())

@@ -563,6 +563,12 @@ class MujocoEnv(metaclass=EnvMeta):
         for obj in self.model.mujoco_objects:
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
 
+    def set_camera_pos_quat(self, camera_pos, camera_quat):
+        if self.renderer == "nvisii":
+            self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
+        else:
+            print('Setting camera position and quat requires NViSII renderer.')
+
     def reset_from_xml_string(self, xml_string):
         """
         Reloads the environment from an XML description of the environment.
