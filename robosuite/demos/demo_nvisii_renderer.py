@@ -46,20 +46,13 @@ if __name__ == '__main__':
             use_object_obs=True,          # use object-centric feature
             use_camera_obs=False,         # no camera observations
             control_freq=10,
-            renderer="nvisii"
+            renderer="nvisii",
+            img_path='images/',
+            width=args.width,
+            height=args.height,
+            spp=args.spp,
+            video_mode=args.video_mode,
         )
-
-    # env = NViSIIWrapper(
-    #     env=env,
-    #     img_path='images',
-    #     width=args.width,
-    #     height=args.height,
-    #     spp=args.spp,
-    #     use_noise=False,
-    #     debug_mode=False,
-    #     video_mode=args.video_mode,
-    #     verbose=1,
-    # )
 
     env.reset()
 

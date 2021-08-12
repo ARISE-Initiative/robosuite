@@ -180,7 +180,19 @@ class PickPlace(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
-        renderer="default"
+        renderer="default",
+        img_path='images/',
+        width=500,
+        height=500,
+        spp=256,
+        use_noise=False,
+        debug_mode=False,
+        video_mode=False,
+        video_path='videos/',
+        video_name='robosuite_video_0.mp4',
+        video_fps=60,
+        verbose=1,
+        image_options=None
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -235,7 +247,19 @@ class PickPlace(SingleArmEnv):
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
-            renderer=renderer
+            renderer=renderer,
+            img_path=img_path,
+            width=width,
+            height=height,
+            spp=spp,
+            use_noise=use_noise,
+            debug_mode=debug_mode,
+            video_mode=video_mode,
+            video_path=video_path,
+            video_name=video_name,
+            video_fps=video_fps,
+            verbose=verbose,
+            image_options=image_options
         )
 
     def reward(self, action=None):

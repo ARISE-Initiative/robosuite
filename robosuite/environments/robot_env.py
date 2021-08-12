@@ -131,7 +131,19 @@ class RobotEnv(MujocoEnv):
         camera_widths=256,
         camera_depths=False,
         robot_configs=None,
-        renderer="default"
+        renderer="default",
+        img_path='images/',
+        width=500,
+        height=500,
+        spp=256,
+        use_noise=False,
+        debug_mode=False,
+        video_mode=False,
+        video_path='videos/',
+        video_name='robosuite_video_0.mp4',
+        video_fps=60,
+        verbose=1,
+        image_options=None
     ):
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
@@ -200,7 +212,19 @@ class RobotEnv(MujocoEnv):
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
-            renderer=renderer
+            renderer=renderer,
+            img_path=img_path,
+            width=width,
+            height=height,
+            spp=spp,
+            use_noise=use_noise,
+            debug_mode=debug_mode,
+            video_mode=video_mode,
+            video_path=video_path,
+            video_name=video_name,
+            video_fps=video_fps,
+            verbose=verbose,
+            image_options=image_options
         )
 
     def visualize(self, vis_settings):

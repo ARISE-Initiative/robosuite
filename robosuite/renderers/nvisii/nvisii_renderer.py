@@ -436,15 +436,9 @@ class NViSIIRenderer(Renderer):
         )
 
     def reset(self):
-        print('resetting renderer... ' + str(self))
         nvisii.clear_all()
         self._init_nvisii_components()
-        nvisii.render_to_file(
-            width = self.width,
-            height = self.height,
-            samples_per_pixel = self.spp,
-            file_path = 'images/image_0_cleared_test.png'
-        )
+        self.update()
 
     def get_pixel_obs(self):
         frame_buffer = nvisii.render(
