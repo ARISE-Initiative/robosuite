@@ -143,8 +143,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.model_timestep = None
         self.control_timestep = None
         self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
-        # self.render_with_igibson = render_with_igibson # If true, it will not intialize the default MuJoCo Viewer.
-        # self.ig_renderer_params = {}
+        self.ig_renderer_params = {}
 
         # Load the model
         self._load_model()
@@ -286,7 +285,6 @@ class MujocoEnv(metaclass=EnvMeta):
     def _reset_internal(self):
         """Resets simulation internal configurations."""
 
-        # if not self.render_with_igibson:
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
             self.viewer = MujocoPyRenderer(self.sim)

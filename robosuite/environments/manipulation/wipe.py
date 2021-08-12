@@ -178,7 +178,6 @@ class Wipe(SingleArmEnv):
         camera_widths=256,
         camera_depths=False,
         task_config=None,
-        # render_with_igibson=False,
         renderer="default"
     ):
         # Assert that the gripper type is None
@@ -275,7 +274,6 @@ class Wipe(SingleArmEnv):
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
-            # render_with_igibson=render_with_igibson,
             renderer=renderer
         )
 
