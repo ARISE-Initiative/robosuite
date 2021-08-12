@@ -1,7 +1,6 @@
 from os import error, fwalk
 import numpy as np
 import robosuite as suite
-from robosuite.utils import observables
 
 try:
     import igibson
@@ -20,8 +19,9 @@ from igibson.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
 from igibson.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer, Instance, Robot
 from igibson.utils.mesh_util import xyzw2wxyz, quat2rotmat, ortho
 from igibson.render.viewer import Viewer
-from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.observables import sensor
 import robosuite.utils.macros as macros
+from robosuite.renderers.igibson.igibson_utils import TensorObservable
 macros.IMAGE_CONVENTION = "opencv"
 
 try:
@@ -200,7 +200,7 @@ class iGibsonWrapper(Wrapper):
 
             # Create observables for these cameras
             for name, s in zip(names, sensors):
-                observables[name] = Observable(
+                observables[name] = TensorObservable(
                     name=name,
                     sensor=s,
                     sampling_rate=self.control_freq,
@@ -515,7 +515,7 @@ if __name__ == '__main__':
             optimized=False,
     )
 
-    env.reset()
+    # env.reset()
 
     for i in range(10000):
         action = np.random.randn(8)

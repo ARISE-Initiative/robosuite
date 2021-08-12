@@ -1,9 +1,5 @@
 import numpy as np
-try:
-    import torch
-    HAS_TORCH = True
-except ImportError:
-    HAS_TORCH = False
+
 
 def sensor(modality):
     """
@@ -55,15 +51,9 @@ def create_deterministic_corrupter(corruption, low=-np.inf, high=np.inf):
     Returns:
         function: corrupter
     """
-    def corrupter(inp, torch_tensor=False):
-        # change this condition, to sth like self.render2tensor?
-        if torch_tensor:
-            inp = torch.clip(inp + corruption, low, high)            
-        else:
-            inp = np.array(inp)
-            inp = np.clip(inp + corruption, low, high)
-
-        return inp
+    def corrupter(inp):
+        inp = np.array(inp)
+        return np.clip(inp + corruption, low, high)
     return corrupter
 
 
@@ -80,15 +70,10 @@ def create_uniform_noise_corrupter(min_noise, max_noise, low=-np.inf, high=np.in
     Returns:
         function: corrupter
     """
-    def corrupter(inp, torch_tensor=False):
-        if torch_tensor:
-            noise = (max_noise - min_noise) * torch.rand(inp.shape) + min_noise
-            inp = torch.clip(inp + noise, low, high)
-        else:
-            inp = np.array(inp)
-            noise = (max_noise - min_noise) * np.random.random_sample(inp.shape) + min_noise
-            inp = np.clip(inp + noise, low, high)
-        return inp
+    def corrupter(inp):
+        inp = np.array(inp)
+        noise = (max_noise - min_noise) * np.random.random_sample(inp.shape) + min_noise
+        return np.clip(inp + noise, low, high)
     return corrupter
 
 
@@ -105,15 +90,10 @@ def create_gaussian_noise_corrupter(mean, std, low=-np.inf, high=np.inf):
     Returns:
         function: corrupter
     """
-    def corrupter(inp, torch_tensor=False):
-        if torch_tensor:
-            noise = mean + std * torch.randn(*inp.shape)
-            inp = torch.clip(inp + noise, low, high)
-        else:
-            inp = np.array(inp)
-            noise = mean + std * np.random.randn(*inp.shape)
-            inp = np.clip(inp + noise, low, high)
-        return inp
+    def corrupter(inp):
+        inp = np.array(inp)
+        noise = mean + std * np.random.randn(*inp.shape)
+        return np.clip(inp + noise, low, high)
     return corrupter
 
 
@@ -162,8 +142,7 @@ def create_gaussian_sampled_delayer(mean, std):
 
 
 # Common defaults to use
-# The _ in NO_CORUPPTION is for iG renderer headless mode case
-NO_CORRUPTION = lambda inp, _: inp
+NO_CORRUPTION = lambda inp: inp
 NO_FILTER = lambda inp: inp
 NO_DELAY = lambda: 0.0
 
@@ -242,21 +221,11 @@ class Observable:
             # we should grab a new measurement
             if (not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample) or\
                     force:
-                obs = self._sensor(obs_cache)
-                torch_tensor = False
-                if self.modality == 'image':
-                    if HAS_TORCH and isinstance(obs, torch.Tensor):
-                        torch_tensor = True                
                 # Get newest raw value, corrupt it, filter it, and set it as our current observed value
-                obs = self._filter(self._corrupter(obs, torch_tensor))
-                if not torch_tensor:
-                    obs = np.array(obs)
+                obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
                 self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
                 # Update cache entry as well
-                if torch_tensor:
-                    obs_cache[self.name] = self._current_observed_value
-                else:
-                    obs_cache[self.name] = np.array(self._current_observed_value)
+                obs_cache[self.name] = np.array(self._current_observed_value)
                 # Toggle sampled and re-sample next time delay
                 self._sampled = True
                 self._current_delay = self._delayer()
@@ -394,15 +363,9 @@ class Observable:
         """
         try:
             _ = self.modality
-            img = self._sensor({})
-            if isinstance(img, (np.ndarray, list, int, float)):
-                self._data_shape = np.array(img).shape
-                self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
-            else:
-                # torch tensor.shape returns torch.Size object, hence casted to tuple
-                self._data_shape = tuple(img.shape)
+            self._data_shape = np.array(self._sensor({})).shape
             self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
-        except Exception as e:
+        except:
             raise ValueError("Current sensor for observable {} is invalid.".format(self.name))
 
     @property

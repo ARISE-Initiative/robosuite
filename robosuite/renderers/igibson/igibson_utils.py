@@ -1,5 +1,6 @@
 import os
 import random
+from robosuite.utils.observables import Observable
 import string
 import tempfile
 
@@ -9,6 +10,12 @@ import igibson
 from transforms3d import quaternions
 import robosuite.utils.transform_utils as T
 import robosuite
+
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
 
 def load_object(renderer,
                 geom,
@@ -203,3 +210,85 @@ class MujocoCamera(object):
             xyzw = self.offset_ori
 
         return np.concatenate((position, xyzw))
+
+
+class TensorObservable(Observable):
+    """
+    Extends observable class to handle torch tensors.
+
+    """
+
+    def update(self, timestep, obs_cache, force):
+        """
+        Updates internal values for this observable, if enabled.
+
+        Args:
+            timestep (float): Amount of simulation time (in sec) that has passed since last call.
+            obs_cache (dict): Observation cache mapping observable names to pre-computed values to pass to sensor. This
+                will be updated in-place during this call.
+            force (bool): If True, will force the observable to update its internal value to the newest value.
+        """
+        if self._enabled:
+            # Increment internal time counter
+            self._time_since_last_sample += timestep
+
+            # If the delayed sampling time has been passed and we haven't sampled yet for this sampling period,
+            # we should grab a new measurement
+            if (not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample) or\
+                    force:
+                obs = self._sensor(obs_cache)
+                torch_tensor = False
+                if self.modality == 'image':
+                    if HAS_TORCH and isinstance(obs, torch.Tensor):
+                        torch_tensor = True                
+                # Get newest raw value, corrupt it, filter it, and set it as our current observed value
+                obs = self._filter(self._corrupter(obs))
+                if not torch_tensor:
+                    obs = np.array(obs)
+                self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
+                # Update cache entry as well
+                if torch_tensor:
+                    obs_cache[self.name] = self._current_observed_value
+                else:
+                    obs_cache[self.name] = np.array(self._current_observed_value)
+                # Toggle sampled and re-sample next time delay
+                self._sampled = True
+                self._current_delay = self._delayer()
+
+            # If our total time since last sample has surpassed our sampling timestep,
+            # then we reset our timer and sampled flag
+            if self._time_since_last_sample >= self._sampling_timestep:
+                if not self._sampled:
+                    # If we still haven't sampled yet, sample immediately and warn user that sampling rate is too low
+                    print(f"Warning: sampling rate for observable {self.name} is either too low or delay is too high. "
+                          f"Please adjust one (or both)")
+                    # Get newest raw value, corrupt it, filter it, and set it as our current observed value
+                    obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
+                    self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
+                    # Update cache entry as well
+                    obs_cache[self.name] = np.array(self._current_observed_value)
+                    # Re-sample next time delay
+                    self._current_delay = self._delayer()
+                self._time_since_last_sample %= self._sampling_timestep
+                self._sampled = False
+
+    def _check_sensor_validity(self):
+        """
+        Internal function that checks the validity of this observable's sensor. It does the following:
+
+            - Asserts that the inputted sensor has its __modality__ attribute defined from the sensor decorator
+            - Asserts that the inputted sensor can handle the empty dict {} arg case
+            - Updates the corresponding name, and data-types for this sensor
+        """
+        try:
+            _ = self.modality
+            img = self._sensor({})
+            if isinstance(img, (np.ndarray, list, int, float)):
+                self._data_shape = np.array(img).shape
+                self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
+            else:
+                # torch tensor.shape returns torch.Size object, hence casted to tuple
+                self._data_shape = tuple(img.shape)
+            self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
+        except Exception as e:
+            raise ValueError("Current sensor for observable {} is invalid.".format(self.name))
