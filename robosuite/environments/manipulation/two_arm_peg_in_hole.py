@@ -154,7 +154,8 @@ class TwoArmPegInHole(TwoArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
-        render_with_igibson=False,
+        # render_with_igibson=False,
+        renderer="default"
     ):
         # Assert that the gripper type is None
         assert gripper_types is None, "Tried to specify gripper other than None in TwoArmPegInHole environment!"
@@ -192,7 +193,8 @@ class TwoArmPegInHole(TwoArmEnv):
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
-            render_with_igibson=render_with_igibson,
+            # render_with_igibson=render_with_igibson,
+            renderer=renderer
         )
 
     def reward(self, action=None):

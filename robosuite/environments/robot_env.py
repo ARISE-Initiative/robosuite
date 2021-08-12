@@ -131,7 +131,8 @@ class RobotEnv(MujocoEnv):
         camera_widths=256,
         camera_depths=False,
         robot_configs=None,
-        render_with_igibson=False,
+        # render_with_igibson=False,
+        renderer="default"
     ):
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
@@ -200,7 +201,8 @@ class RobotEnv(MujocoEnv):
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
-            render_with_igibson=render_with_igibson,
+            # render_with_igibson=render_with_igibson,
+            renderer=renderer
         )
 
     def visualize(self, vis_settings):
@@ -377,7 +379,8 @@ class RobotEnv(MujocoEnv):
 
         @sensor(modality=modality)
         def camera_rgb(obs_cache):
-            if self.render_with_igibson:
+            # if self.render_with_igibson:
+            if False:
                 # iGibson renderer
                 if self.ig_renderer_params == {}:
                     # This function is called once before

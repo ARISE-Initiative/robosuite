@@ -59,15 +59,11 @@ def load_object(geom,
 
     elif geom_type == 'cylinder':
 
-        size = geom_size[1]
-        if "hammer_neck" in geom_name:
-            size *= 2
-
         component = nvisii.entity.create(
                     name = geom_name,
                     mesh = nvisii.mesh.create_capped_cylinder(name   = geom_name,
                                                               radius = geom_size[0],
-                                                              size   = size),
+                                                              size   = geom_size[1]),
                     transform = nvisii.transform.create(geom_name),
                     material = nvisii.material.create(geom_name)
                 )

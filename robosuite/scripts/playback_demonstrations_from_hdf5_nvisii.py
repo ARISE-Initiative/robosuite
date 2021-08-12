@@ -8,7 +8,6 @@ import json
 import robosuite
 from robosuite.utils.mjcf_utils import postprocess_model_xml
 
-from robosuite.renderers.nvisii.nvisii_wrapper import NViSIIWrapper
 import robosuite.utils.transform_utils as T
 
 def rotate_camera(env, pos, quat, point=(0, 0, 0.8), axis=(0, 0, 1), angle=1.423):
@@ -48,26 +47,30 @@ if __name__ == '__main__':
     env_name = f["data"].attrs["env"]
     env_args = json.loads(f["data"].attrs["env_args"])
 
-    env = NViSIIWrapper(
-        env = robosuite.make(
-            env_name,
-            robots = env_args['env_kwargs']['robots'],
-            has_renderer=False,
-            has_offscreen_renderer=False,
-            ignore_done=True,
-            use_camera_obs=False,
-            reward_shaping=True,
-            control_freq=20,
-        ),
-        img_path='images',
-        width=500,
-        height=500,
-        spp=256,
-        use_noise=False,
-        debug_mode=False,
-        video_mode=True,
-        video_fps=30,
-        verbose=1
+    # env = NViSIIWrapper(
+        
+    #     img_path='images',
+    #     width=1000,
+    #     height=1000,
+    #     spp=512,
+    #     use_noise=False,
+    #     debug_mode=False,
+    #     video_mode=True,
+    #     video_fps=30,
+    #     verbose=1,
+    #     image_options="position"
+    # )
+
+    env = robosuite.make(
+        env_name,
+        robots = env_args['env_kwargs']['robots'],
+        has_renderer=False,
+        has_offscreen_renderer=False,
+        ignore_done=True,
+        use_camera_obs=False,
+        reward_shaping=True,
+        control_freq=20,
+        renderer="nvisii"
     )
 
     demos = list(f["data"].keys())
