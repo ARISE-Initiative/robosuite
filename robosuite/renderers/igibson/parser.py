@@ -4,7 +4,7 @@ from robosuite.renderers.igibson.igibson_utils import get_id, MujocoCamera, Mujo
 from robosuite.utils.mjcf_utils import string_to_array
 import numpy as np
 
-from gibson2.render.mesh_renderer.mesh_renderer_cpu import Material
+from igibson.render.mesh_renderer.mesh_renderer_cpu import Material
 
 class Parser():
 
