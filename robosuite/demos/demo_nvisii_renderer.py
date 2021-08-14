@@ -1,7 +1,6 @@
 import argparse
 import numpy as np
 import robosuite as suite
-from robosuite.renderers.nvisii.nvisii_wrapper import NViSIIWrapper
 import robosuite.utils.transform_utils as T
 
 
@@ -26,7 +25,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--env", type=str, default="Door")
-    parser.add_argument("--robots", nargs="+", type=str, default="Sawyer", help="Which robot(s) to use in the env")
+    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
     parser.add_argument("--timesteps", type=int, default=300)
     parser.add_argument("--video_mode", type=str, default="False")
     parser.add_argument("--width", type=int, default=500)
@@ -37,29 +36,23 @@ if __name__ == '__main__':
 
     args.video_mode = str2bool(args.video_mode)
 
-    temp = suite.make(
-                args.env,
-                robots = args.robots,
-                reward_shaping=True,
-                has_renderer=False,           # no on-screen renderer
-                has_offscreen_renderer=False, # no off-screen renderer
-                ignore_done=True,
-                use_object_obs=True,          # use object-centric feature
-                use_camera_obs=False,         # no camera observations
-                control_freq=10,
-            )
-
-    env = NViSIIWrapper(
-        env=temp,
-        img_path='images',
-        width=args.width,
-        height=args.height,
-        spp=args.spp,
-        use_noise=False,
-        debug_mode=False,
-        video_mode=args.video_mode,
-        verbose=1,
-    )
+    env = suite.make(
+            args.env,
+            robots=args.robots,
+            reward_shaping=True,
+            has_renderer=False,           # no on-screen renderer
+            has_offscreen_renderer=False, # no off-screen renderer
+            ignore_done=True,
+            use_object_obs=True,          # use object-centric feature
+            use_camera_obs=False,         # no camera observations
+            control_freq=10,
+            renderer="nvisii",
+            img_path='images/',
+            width=args.width,
+            height=args.height,
+            spp=args.spp,
+            video_mode=args.video_mode,
+        )
 
     env.reset()
 
@@ -76,8 +69,10 @@ if __name__ == '__main__':
             env.render(render_type="png")
         else:
             if i % 100 == 0:
-                env.render(render_type="png")
+                env.render()
 
-    env.close()
+    env.reset()
+
+    env.close_renderer()
     
     print('Done.')

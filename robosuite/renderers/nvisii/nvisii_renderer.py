@@ -9,13 +9,13 @@ import cv2
 from robosuite.wrappers import Wrapper
 from robosuite.utils import transform_utils as T
 from robosuite.utils.mjcf_utils import xml_path_completion
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
-from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 
 from robosuite.renderers.nvisii.parser import Parser
 from robosuite.utils.transform_utils import mat2quat
 
-class NViSIIWrapper(Wrapper):
+from robosuite.renderers.base import Renderer
+
+class NViSIIRenderer(Renderer): 
     def __init__(self,
                  env,
                  img_path='images/',
@@ -43,7 +43,7 @@ class NViSIIWrapper(Wrapper):
 
             height (int, optional): Height of the rendered image. Defaults to 500.
 
-            spp (int, optional): Sample-per-pixel for each image. Higher spp will result
+            spp (int, optional): Sample-per-pixel for each image. Larger spp will result
                                  in higher quality images but will take more time to render
                                  each image. Higher quality images typically use an spp of
                                  around 512.
@@ -74,7 +74,7 @@ class NViSIIWrapper(Wrapper):
                                               "position"
         """
 
-        super().__init__(env)
+        super().__init__(env, renderer_type="nvisii")
 
         self.env = env
         self.img_path = img_path
@@ -125,6 +125,17 @@ class NViSIIWrapper(Wrapper):
                 y_sample_interval = (.5, .5)
             )
 
+        self._init_nvisii_components()
+
+    def _init_nvisii_components(self):
+        self._init_lighting()
+        self._init_floor(image="plywood-4k.jpg")
+        self._init_walls(image="plaster-wall-4k.jpg")
+        self._init_camera()
+
+        self._load()
+
+    def _init_lighting(self):
         # Intiailizes the lighting
         self.light_1 = nvisii.entity.create(
             name      = "light",
@@ -139,23 +150,6 @@ class NViSIIWrapper(Wrapper):
         self.light_1.get_light().set_intensity(150)
         self.light_1.get_transform().set_scale(nvisii.vec3(0.3))
         self.light_1.get_transform().set_position(nvisii.vec3(3, 3, 4))
-
-        self._init_floor(image="plywood-4k.jpg")
-        self._init_walls(image="plaster-wall-4k.jpg")
-        self._init_camera()
-        # Sets the primary camera of the renderer to the camera entity
-        nvisii.set_camera_entity(self.camera)
-        self._camera_configuration(at_vec  = nvisii.vec3(0, 0, 1), 
-                                   up_vec  = nvisii.vec3(0, 0, 1),
-                                   eye_vec = nvisii.vec3(1.5, 0, 1.5),
-                                   quat    = nvisii.quat(-1, 0, 0, 0))
-        
-        # Environment configuration
-        self._dome_light_intensity = 1
-        nvisii.set_dome_light_intensity(self._dome_light_intensity)
-        nvisii.set_max_bounce_depth(4)
-
-        self._load()
 
     def _init_floor(self, image):
         """
@@ -243,6 +237,18 @@ class NViSIIWrapper(Wrapper):
             )
         )
 
+        # Sets the primary camera of the renderer to the camera entity
+        nvisii.set_camera_entity(self.camera)
+        self._camera_configuration(at_vec  = nvisii.vec3(0, 0, 1), 
+                                   up_vec  = nvisii.vec3(0, 0, 1),
+                                   eye_vec = nvisii.vec3(1.5, 0, 1.5),
+                                   quat    = nvisii.quat(-1, 0, 0, 0))
+        
+        # Environment configuration
+        self._dome_light_intensity = 1
+        nvisii.set_dome_light_intensity(self._dome_light_intensity)
+        nvisii.set_max_bounce_depth(4)
+
     def _camera_configuration(self, at_vec, up_vec, eye_vec, quat):
         """
         Sets the configuration for the NViSII camera. Configuration
@@ -293,18 +299,15 @@ class NViSIIWrapper(Wrapper):
         parser.parse_geometries()
         self.components = parser.components
 
-    def step(self, action):
+    def update(self):
         """
         Updates the states for the wrapper given a certain action
 
         Args:
             action (np-array): The action the robot should take
         """
-        ret_val = super().step(action)
         for key, value in self.components.items():
             self._update_orientation(name=key, component=value)
-
-        return ret_val
 
     def _update_orientation(self, name, component):
         """
@@ -353,10 +356,10 @@ class NViSIIWrapper(Wrapper):
             # temp fix -- look into XML file for correct quat
             if 's_visual' in name:
                 # single robot
-                if isinstance(self.env, SingleArmEnv):
+                if len(self.env.robots) == 1:
                     nvisii_quat = nvisii.quat(0, 0.5, 0, 0)
                 # two robots - 0
-                elif isinstance(self.env, TwoArmEnv) and 'robot_0' in name:
+                elif len(self.env.robots) == 2 and 'robot_0' in name:
                     nvisii_quat = nvisii.quat(-0, 0.5, 0.5, 0)
                 # two robots - 1
                 else:
@@ -432,6 +435,22 @@ class NViSIIWrapper(Wrapper):
             file_path=img_file
         )
 
+    def reset(self):
+        nvisii.clear_all()
+        self._init_nvisii_components()
+        self.update()
+
+    def get_pixel_obs(self):
+        frame_buffer = nvisii.render(
+                            width = self.width,
+                            height = self.height,
+                            samples_per_pixel = self.spp
+                        )
+
+        frame_buffer = np.array(frame_buffer).reshape(self.height, self.width, 4)
+        frame_buffer = np.flipud(frame_buffer)
+
+        return frame_buffer  
 
     def close(self):
         """

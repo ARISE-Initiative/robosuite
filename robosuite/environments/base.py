@@ -6,6 +6,8 @@ from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
 import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
 
+from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
+
 import numpy as np
 
 REGISTERED_ENVS = {}
@@ -105,7 +107,20 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq=20,
         horizon=1000,
         ignore_done=False,
-        hard_reset=True
+        hard_reset=True,
+        renderer="default",
+        img_path='images/',
+        width=500,
+        height=500,
+        spp=256,
+        use_noise=False,
+        debug_mode=False,
+        video_mode=False,
+        video_path='videos/',
+        video_name='robosuite_video_0.mp4',
+        video_fps=60,
+        verbose=1,
+        image_options=None
     ):
         # First, verify that both the on- and off-screen renderers are not being used simultaneously
         if has_renderer is True and has_offscreen_renderer is True:
@@ -118,7 +133,6 @@ class MujocoEnv(metaclass=EnvMeta):
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
         self.render_gpu_device_id = render_gpu_device_id
-        self.viewer = None
 
         # Simulation-specific attributes
         self._observables = {}                      # Maps observable names to observable objects
@@ -134,6 +148,20 @@ class MujocoEnv(metaclass=EnvMeta):
         self.control_timestep = None
         self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
 
+        self.renderer = renderer
+        self.img_path = img_path
+        self.width = width
+        self.height = height
+        self.spp = spp
+        self.use_noise = use_noise
+        self.debug_mode = debug_mode
+        self.video_mode = video_mode
+        self.video_path = video_path
+        self.video_name = video_name
+        self.video_fps = video_fps
+        self.verbose = verbose
+        self.image_options = image_options
+
         # Load the model
         self._load_model()
 
@@ -143,11 +171,31 @@ class MujocoEnv(metaclass=EnvMeta):
         # Initialize the simulation
         self._initialize_sim()
 
+        self.viewer = self.initialize_renderer()
+
         # Run all further internal (re-)initialization required
         self._reset_internal()
 
         # Load observables
         self._observables = self._setup_observables()
+
+    def initialize_renderer(self):
+        if self.renderer == 'default':
+            return None
+        elif self.renderer == 'nvisii':
+            return NViSIIRenderer(env=self,
+                                  img_path=self.img_path,
+                                  width=self.width,
+                                  height=self.height,
+                                  spp=self.spp,
+                                  use_noise=self.use_noise,
+                                  debug_mode=self.debug_mode,
+                                  video_mode=self.video_mode,
+                                  video_path=self.video_path,
+                                  video_name=self.video_name,
+                                  video_fps=self.video_fps,
+                                  verbose=self.verbose,
+                                  image_options=self.image_options)
 
     def initialize_time(self, control_freq):
         """
@@ -251,6 +299,9 @@ class MujocoEnv(metaclass=EnvMeta):
                 self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
+        
+        self.viewer.reset()
+
         # Return new observations
         return self._get_observations(force_update=True)
 
@@ -389,6 +440,9 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time += self.control_timestep
 
         reward, done, info = self._post_action(action)
+
+        self.viewer.update() # change to update, check if renderer object exists, 
+
         return self._get_observations(), reward, done, info
 
     def _pre_action(self, action, policy_step=False):
@@ -441,6 +495,18 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         self.viewer.render()
 
+    def get_pixel_obs(self):
+        """
+        Gets the pixel observations for the environment from the specified renderer
+        """
+        self.viewer.get_pixel_obs()
+
+    def close_renderer(self):
+        """
+        Closes the renderer
+        """
+        self.viewer.close()
+
     def observation_spec(self):
         """
         Returns an observation as observation specification.
@@ -482,6 +548,12 @@ class MujocoEnv(metaclass=EnvMeta):
         # Set visuals for environment objects
         for obj in self.model.mujoco_objects:
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
+
+    def set_camera_pos_quat(self, camera_pos, camera_quat):
+        if self.renderer == "nvisii":
+            self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
+        else:
+            print('Setting camera position and quat requires NViSII renderer.')
 
     def reset_from_xml_string(self, xml_string):
         """
@@ -630,7 +702,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Destroys the current mujoco renderer instance if it exists
         """
         # if there is an active viewer window, destroy it
-        if self.viewer is not None:
+        if self.viewer is not None and self.renderer == "default":
             self.viewer.close()  # change this to viewer.finish()?
             self.viewer = None
 
