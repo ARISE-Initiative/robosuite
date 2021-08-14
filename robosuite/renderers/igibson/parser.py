@@ -197,9 +197,3 @@ class Parser():
             instance_id += 1
 
         self.max_instances = instance_id
-
-            
-
-            
-
-        

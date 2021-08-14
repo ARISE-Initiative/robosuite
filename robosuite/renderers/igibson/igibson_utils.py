@@ -10,6 +10,8 @@ import igibson
 from transforms3d import quaternions
 import robosuite.utils.transform_utils as T
 import robosuite
+import robosuite.utils.macros as macros
+from collections import OrderedDict
 
 try:
     import torch
@@ -292,3 +294,51 @@ class TensorObservable(Observable):
             self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
         except Exception as e:
             raise ValueError("Current sensor for observable {} is invalid.".format(self.name))
+
+# function which will be used to patch the environment.
+def _get_observations(self, force_update=False):
+    """
+    Grabs observations from the environment.
+
+    Args:
+        force_update (bool): If True, will force all the observables to update their internal values to the newest
+            value. This is useful if, e.g., you want to grab observations when directly setting simulation states
+            without actually stepping the simulation.
+
+    Returns:
+        OrderedDict: OrderedDict containing observations [(name_string, np.array), ...]
+
+    """
+    observations = OrderedDict()
+    obs_by_modality = OrderedDict()
+
+    # Force an update if requested
+    if force_update:
+        self._update_observables(force=True)
+
+    # Loop through all observables and grab their current observation
+    for obs_name, observable in self._observables.items():
+        if observable.is_enabled() and observable.is_active():
+            obs = observable.obs
+            observations[obs_name] = obs
+            modality = observable.modality + "-state"
+            if modality not in obs_by_modality:
+                obs_by_modality[modality] = []
+            # Make sure all observations are numpy arrays so we can concatenate them
+            array_obs = [obs] if type(obs) in {int, float} or not obs.shape else obs
+            if HAS_TORCH and isinstance(array_obs, torch.Tensor):
+                obs_by_modality[modality].append(array_obs)
+            else:
+                obs_by_modality[modality].append(np.array(array_obs))
+
+    # Add in modality observations
+    for modality, obs in obs_by_modality.items():
+        # To save memory, we only concatenate the image observations if explicitly requested
+        if modality == "image-state" and not macros.CONCATENATE_IMAGES:
+            continue
+        if HAS_TORCH and isinstance(obs[0], torch.Tensor):
+            observations[modality] = torch.cat(obs, axis=-1)
+        else:
+            observations[modality] = np.concatenate(obs, axis=-1)
+
+    return observations

@@ -8,13 +8,6 @@ from robosuite.models.base import MujocoModel
 
 import numpy as np
 
-try:
-    import torch
-    HAS_TORCH = True
-except ImportError:
-    HAS_TORCH = False
-    
-
 REGISTERED_ENVS = {}
 
 
@@ -112,7 +105,7 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq=20,
         horizon=1000,
         ignore_done=False,
-        hard_reset=True,
+        hard_reset=True
     ):
         # First, verify that both the on- and off-screen renderers are not being used simultaneously
         if has_renderer is True and has_offscreen_renderer is True:
@@ -140,7 +133,6 @@ class MujocoEnv(metaclass=EnvMeta):
         self.model_timestep = None
         self.control_timestep = None
         self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
-        self.ig_renderer_params = {}
 
         # Load the model
         self._load_model()
@@ -343,20 +335,14 @@ class MujocoEnv(metaclass=EnvMeta):
                     obs_by_modality[modality] = []
                 # Make sure all observations are numpy arrays so we can concatenate them
                 array_obs = [obs] if type(obs) in {int, float} or not obs.shape else obs
-                if HAS_TORCH and isinstance(array_obs, torch.Tensor):
-                    obs_by_modality[modality].append(array_obs)
-                else:
-                    obs_by_modality[modality].append(np.array(array_obs))
+                obs_by_modality[modality].append(np.array(array_obs))
 
         # Add in modality observations
         for modality, obs in obs_by_modality.items():
             # To save memory, we only concatenate the image observations if explicitly requested
             if modality == "image-state" and not macros.CONCATENATE_IMAGES:
                 continue
-            if HAS_TORCH and isinstance(obs[0], torch.Tensor):
-                observations[modality] = torch.cat(obs, axis=-1)
-            else:
-                observations[modality] = np.concatenate(obs, axis=-1)
+            observations[modality] = np.concatenate(obs, axis=-1)
 
         return observations
 

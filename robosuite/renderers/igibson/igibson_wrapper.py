@@ -1,4 +1,4 @@
-from os import error, fwalk
+import types
 import numpy as np
 import robosuite as suite
 
@@ -21,7 +21,7 @@ from igibson.utils.mesh_util import xyzw2wxyz, quat2rotmat, ortho
 from igibson.render.viewer import Viewer
 from robosuite.utils.observables import sensor
 import robosuite.utils.macros as macros
-from robosuite.renderers.igibson.igibson_utils import TensorObservable
+from robosuite.renderers.igibson.igibson_utils import TensorObservable, _get_observations
 macros.IMAGE_CONVENTION = "opencv"
 
 try:
@@ -144,6 +144,9 @@ class iGibsonWrapper(Wrapper):
         self.device_idx = device_idx
         self.modes = modes
         self.camera_obs = camera_obs
+
+        # Monkey patch environment get observations so that torch tensor do not cause errors.
+        self.env._get_observations = types.MethodType(_get_observations, self.env)
 
         # if camd is set in env, add the depth mode in iG
         if True in self.env.camera_depths and '3d' not in self.modes:
@@ -506,12 +509,12 @@ if __name__ == '__main__':
             ),
             width=1280,
             height=720,
-            render_mode='headless',
+            render_mode='gui',
             enable_pbr=True,
             enable_shadow=True,
             modes=('rgb', 'seg', '3d', 'normal'),
-            render2tensor=True,
-            camera_obs=True,
+            render2tensor=False,
+            camera_obs=False,
             optimized=False,
     )
 
@@ -525,11 +528,3 @@ if __name__ == '__main__':
     env.close()
     
     print('Done.')
-
-
-
-        
-
-        
-
-
