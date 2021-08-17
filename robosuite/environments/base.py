@@ -443,7 +443,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         reward, done, info = self._post_action(action)
 
-        self.viewer.update() 
+        self.viewer.update()
 
         return self._get_observations(), reward, done, info
 
