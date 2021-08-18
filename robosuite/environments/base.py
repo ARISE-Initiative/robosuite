@@ -169,7 +169,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # Initialize the simulation
         self._initialize_sim()
 
-        self.viewer = self.initialize_renderer()
+        self.initialize_renderer()
 
         # Run all further internal (re-)initialization required
         self._reset_internal()
@@ -182,9 +182,20 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def initialize_renderer(self):
         if self.renderer == 'default':
-            return None
+            self.viewer = None
+        elif self.renderer == 'mujoco':
+            # lazy import for NViSII
+            from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
+
+            self.viewer = MujocoRenderer(sim=self.sim,
+                                         render_camera=self.render_camera,
+                                         render_collision_mesh=self.render_collision_mesh,
+                                         render_visual_mesh=self.render_visual_mesh)
+
         elif self.renderer == 'nvisii':
+            # lazy import for NViSII
             from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
+
             return NViSIIRenderer(env=self,
                                   img_path=self.img_path,
                                   width=self.width,
@@ -198,21 +209,11 @@ class MujocoEnv(metaclass=EnvMeta):
                                   video_fps=self.video_fps,
                                   verbose=self.verbose,
                                   image_options=self.image_options)
+
         elif self.renderer == 'igibson':
+
             from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
-            return iGibsonWrapper(env=self)
-                                #   img_path=self.img_path,
-                                #   width=self.width,
-                                #   height=self.height,
-                                #   spp=self.spp,
-                                #   use_noise=self.use_noise,
-                                #   debug_mode=self.debug_mode,
-                                #   video_mode=self.video_mode,
-                                #   video_path=self.video_path,
-                                #   video_name=self.video_name,
-                                #   video_fps=self.video_fps,
-                                #   verbose=self.verbose,
-                                #   image_options=self.image_options)                                
+            return iGibsonWrapper(env=self)                               
 
     def initialize_time(self, control_freq):
         """
@@ -296,11 +297,13 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         # TODO(yukez): investigate black screen of death
         # Use hard reset if requested
+
         if self.hard_reset and not self.deterministic_reset:
             self._destroy_viewer()
             self._load_model()
             self._postprocess_model()
             self._initialize_sim()
+
         # Else, we only reset the sim internally
         else:
             self.sim.reset()
@@ -317,7 +320,8 @@ class MujocoEnv(metaclass=EnvMeta):
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
         
-        self.viewer.reset()
+        if self.renderer != "default":
+            self.viewer.reset()
 
         # Return new observations
         return self._get_observations(force_update=True)
@@ -458,7 +462,8 @@ class MujocoEnv(metaclass=EnvMeta):
 
         reward, done, info = self._post_action(action)
 
-        self.viewer.update() # change to update, check if renderer object exists, 
+        if self.renderer != "default":
+            self.viewer.update()
 
         return self._get_observations(), reward, done, info
 
