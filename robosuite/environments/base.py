@@ -6,8 +6,6 @@ from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
 import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
 
-from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
-
 import numpy as np
 
 REGISTERED_ENVS = {}
@@ -177,12 +175,16 @@ class MujocoEnv(metaclass=EnvMeta):
         self._reset_internal()
 
         # Load observables
-        self._observables = self._setup_observables()
+        if hasattr(self.viewer, '_setup_observables'):
+            self._observables = self._setup_observables()
+        else:
+            self._observables = self.viewer._setup_observables()
 
     def initialize_renderer(self):
         if self.renderer == 'default':
             return None
         elif self.renderer == 'nvisii':
+            from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
             return NViSIIRenderer(env=self,
                                   img_path=self.img_path,
                                   width=self.width,
@@ -196,6 +198,21 @@ class MujocoEnv(metaclass=EnvMeta):
                                   video_fps=self.video_fps,
                                   verbose=self.verbose,
                                   image_options=self.image_options)
+        elif self.renderer == 'igibson':
+            from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
+            return iGibsonWrapper(env=self)
+                                #   img_path=self.img_path,
+                                #   width=self.width,
+                                #   height=self.height,
+                                #   spp=self.spp,
+                                #   use_noise=self.use_noise,
+                                #   debug_mode=self.debug_mode,
+                                #   video_mode=self.video_mode,
+                                #   video_path=self.video_path,
+                                #   video_name=self.video_name,
+                                #   video_fps=self.video_fps,
+                                #   verbose=self.verbose,
+                                #   image_options=self.image_options)                                
 
     def initialize_time(self, control_freq):
         """

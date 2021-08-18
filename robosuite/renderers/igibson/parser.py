@@ -59,7 +59,7 @@ class Parser():
             self.material_attributes[material_name] = material.attrib
 
             if texture_name is not None:
-                texture_id, texture_type = self.texture_id_mapping[texture_name]
+                texture_id, _ = self.texture_id_mapping[texture_name]
                 specular = material.get('specular')
                 shininess = material.get('shininess')
                 roughness_id = -1 if specular is None else get_id(1 - float(specular), 'roughness', self)
@@ -67,15 +67,12 @@ class Parser():
 
                 if isinstance(texture_id, int):
                     repeat = string_to_array(material.get('texrepeat', "1 1"))
-                    texuniform = material.get('texuniform', 'false') == 'true'
                     self.material_mapping[material_name] = Material('texture',
                                                                     texture_id=texture_id,
                                                                     transform_param=[repeat[0], repeat[1], 0],
                                                                     metallic_texture_id=metallic_id,
                                                                     roughness_texture_id=roughness_id,
-                                                                    normal_texture_id=self.normal_id,
-                                                                    texuniform=texuniform, 
-                                                                    texture_type=texture_type)
+                                                                    normal_texture_id=self.normal_id)
                 else:
                     # texture id in this case will be a numpy array of rgb values
                     # If color are present both in material and texture, prioritize material color.
@@ -165,8 +162,7 @@ class Parser():
                                          texture_id=dummy_texture_id,
                                          metallic_texture_id=-1,
                                          roughness_texture_id=-1,
-                                         normal_texture_id=self.normal_id,
-                                         texuniform=False)
+                                         normal_texture_id=self.normal_id)
                 # Flag to check if default material is used
                 geom_material._is_set_by_parser = True
             else:

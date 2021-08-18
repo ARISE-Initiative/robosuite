@@ -22,6 +22,8 @@ from igibson.render.viewer import Viewer
 from robosuite.utils.observables import sensor
 import robosuite.utils.macros as macros
 from robosuite.renderers.igibson.igibson_utils import TensorObservable, _get_observations
+from robosuite.renderers.base import Renderer
+
 macros.IMAGE_CONVENTION = "opencv"
 
 try:
@@ -55,7 +57,7 @@ def check_render2tensor(render2tensor, render_mode):
         raise ValueError('render2tensor can only be set to true in `headless` mode. ')
 
 
-class iGibsonWrapper(Wrapper):
+class iGibsonWrapper(Renderer):
     def __init__(self,
                  env,
                  render_mode='gui',
@@ -180,9 +182,6 @@ class iGibsonWrapper(Wrapper):
         self._add_viewer(initial_pos=self.camera_position, 
                         initial_view_direction=self.view_direction)
 
-        # Setup observables again after setting the iG parameters
-        self._setup_observables()
-
     def _setup_observables(self):
         observables = self.env._setup_observables()
         
@@ -209,7 +208,7 @@ class iGibsonWrapper(Wrapper):
                     sampling_rate=self.control_freq,
                 )       
 
-        self.env._observables = observables
+        return observables
 
     def _create_camera_sensors(self, cam_name, cam_w, cam_h, cam_d, modality="image"):
         """
@@ -429,16 +428,14 @@ class iGibsonWrapper(Wrapper):
         if self.mode == 'gui' and self.viewer is not None:
             self.viewer.update()
 
-    def step(self, action):
+    def update(self):
         """Updates the states for the wrapper given a certain action
         Args:
             action (np-array): the action the robot should take
-        """        
-        ret_val = super().step(action)
+        """
         for instance in self.renderer.instances:
             if instance.dynamic:
                 self._update_position(instance, self.env)
-        return ret_val
 
     @staticmethod
     def _update_position(instance, env):
@@ -462,7 +459,6 @@ class iGibsonWrapper(Wrapper):
             instance.set_rotation(quat2rotmat(xyzw2wxyz(orn)))
 
     def reset(self):
-        obs = super().reset()
         self.renderer.release()
         self.__init__(env=self.env,
                  render_mode=self.mode,
@@ -477,7 +473,8 @@ class iGibsonWrapper(Wrapper):
                  light_dimming_factor=self.light_dimming_factor,
                  camera_obs=self.camera_obs,
                  device_idx=self.device_idx)
-        return obs
+
+        return self.env._get_observations()
                 
     def close(self):
         """
@@ -493,32 +490,48 @@ if __name__ == '__main__':
 
     # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 
-    env = iGibsonWrapper(
-        env = suite.make(
-                "Door",
-                robots = ["Jaco"],
-                reward_shaping=True,
-                has_renderer=False,           
-                has_offscreen_renderer=True,
-                ignore_done=True,
-                use_object_obs=True,
-                use_camera_obs=False,  
-                render_camera='frontview',
-                control_freq=20, 
-                camera_names=['frontview', 'agentview']
-            ),
-            width=1280,
-            height=720,
-            render_mode='gui',
-            enable_pbr=True,
-            enable_shadow=True,
-            modes=('rgb', 'seg', '3d', 'normal'),
-            render2tensor=False,
-            camera_obs=False,
-            optimized=False,
-    )
+    # env = iGibsonWrapper(
+    #     env = suite.make(
+    #             "Door",
+    #             robots = ["Jaco"],
+    #             reward_shaping=True,
+    #             has_renderer=False,           
+    #             has_offscreen_renderer=True,
+    #             ignore_done=True,
+    #             use_object_obs=True,
+    #             use_camera_obs=False,  
+    #             render_camera='frontview',
+    #             control_freq=20, 
+    #             camera_names=['frontview', 'agentview']
+    #         ),
+    #         width=1280,
+    #         height=720,
+    #         render_mode='gui',
+    #         enable_pbr=True,
+    #         enable_shadow=True,
+    #         modes=('rgb', 'seg', '3d', 'normal'),
+    #         render2tensor=False,
+    #         camera_obs=False,
+    #         optimized=False,
+    # )
 
     # env.reset()
+
+    env = suite.make(
+            "Door",
+            robots = ["Jaco"],
+            reward_shaping=True,
+            has_renderer=False,           # no on-screen renderer
+            has_offscreen_renderer=False, # no off-screen renderer
+            ignore_done=True,
+            use_object_obs=True,          # use object-centric feature
+            use_camera_obs=False,
+            render_camera='frontview',         
+            control_freq=10,
+            renderer="igibson",
+        )    
+
+    env.reset()
 
     for i in range(10000):
         action = np.random.randn(8)
