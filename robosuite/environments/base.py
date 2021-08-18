@@ -176,9 +176,10 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Load observables
         if hasattr(self.viewer, '_setup_observables'):
-            self._observables = self._setup_observables()
-        else:
             self._observables = self.viewer._setup_observables()
+        else:
+            self._observables = self._setup_observables()
+            
 
     def initialize_renderer(self):
         if self.renderer == 'default':
@@ -196,7 +197,7 @@ class MujocoEnv(metaclass=EnvMeta):
             # lazy import for NViSII
             from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
 
-            return NViSIIRenderer(env=self,
+            self.viewer = NViSIIRenderer(env=self,
                                   img_path=self.img_path,
                                   width=self.width,
                                   height=self.height,
@@ -213,7 +214,8 @@ class MujocoEnv(metaclass=EnvMeta):
         elif self.renderer == 'igibson':
 
             from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
-            return iGibsonWrapper(env=self)                               
+
+            self.viewer = iGibsonWrapper(env=self)                               
 
     def initialize_time(self, control_freq):
         """
