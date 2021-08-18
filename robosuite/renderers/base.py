@@ -24,7 +24,7 @@ class Renderer():
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self, action): 
+    def update(self): 
         raise NotImplementedError
 
     @abc.abstractmethod

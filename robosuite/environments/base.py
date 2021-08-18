@@ -6,8 +6,6 @@ from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
 import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
 
-from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
-
 import numpy as np
 
 REGISTERED_ENVS = {}
@@ -182,7 +180,19 @@ class MujocoEnv(metaclass=EnvMeta):
     def initialize_renderer(self):
         if self.renderer == 'default':
             self.viewer = None
+        elif self.renderer == 'mujoco':
+            # lazy import for NViSII
+            from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
+
+            self.viewer = MujocoRenderer(sim=self.sim,
+                                         render_camera=self.render_camera,
+                                         render_collision_mesh=self.render_collision_mesh,
+                                         render_visual_mesh=self.render_visual_mesh)
+
         elif self.renderer == 'nvisii':
+            # lazy import for NViSII
+            from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
+
             self.viewer = NViSIIRenderer(env=self,
                                          img_path=self.img_path,
                                          width=self.width,
@@ -302,7 +312,8 @@ class MujocoEnv(metaclass=EnvMeta):
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
         
-        self.viewer.reset()
+        if self.renderer != "default":
+            self.viewer.reset()
 
         # Return new observations
         return self._get_observations(force_update=True)
@@ -443,7 +454,8 @@ class MujocoEnv(metaclass=EnvMeta):
 
         reward, done, info = self._post_action(action)
 
-        self.viewer.update()
+        if self.renderer != "default":
+            self.viewer.update()
 
         return self._get_observations(), reward, done, info
 
