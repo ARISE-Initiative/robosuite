@@ -179,6 +179,9 @@ class MujocoEnv(metaclass=EnvMeta):
             self._observables = self.viewer._setup_observables()
         else:
             self._observables = self._setup_observables()
+
+        # check if viewer has get observations method and set a flag for future use.
+        self.viewer_get_obs = hasattr(self.viewer, '_get_observations')
             
 
     def initialize_renderer(self):
@@ -219,7 +222,9 @@ class MujocoEnv(metaclass=EnvMeta):
                                          camera_obs=True,
                                          height=256,
                                          width=256,
-                                         modes=('rgb', 'normal', 'seg')
+                                         modes=('rgb', 'normal', 'seg'),
+                                         render_mode='headless',
+                                         render2tensor=True
                                          )
                                                                         
 
@@ -332,7 +337,8 @@ class MujocoEnv(metaclass=EnvMeta):
             self.viewer.reset()
 
         # Return new observations
-        return self._get_observations(force_update=True)
+        observations = self.viewer._get_observations(force_update=True) if self.viewer_get_obs else self._get_observations(force_update=True)
+        return observations
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
@@ -473,7 +479,8 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer != "default":
             self.viewer.update()
 
-        return self._get_observations(), reward, done, info
+        observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
+        return observations, reward, done, info
 
     def _pre_action(self, action, policy_step=False):
         """
@@ -549,7 +556,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns:
             OrderedDict: Observations from the environment
         """
-        observation = self._get_observations()
+        observation = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
         return observation
 
     def clear_objects(self, object_names):

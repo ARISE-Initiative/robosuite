@@ -21,8 +21,9 @@ from igibson.utils.mesh_util import xyzw2wxyz, quat2rotmat, ortho
 from igibson.render.viewer import Viewer
 from robosuite.utils.observables import sensor
 import robosuite.utils.macros as macros
-from robosuite.renderers.igibson.igibson_utils import TensorObservable, _get_observations
+from robosuite.renderers.igibson.igibson_utils import TensorObservable
 from robosuite.renderers.base import Renderer
+from collections import OrderedDict
 
 macros.IMAGE_CONVENTION = "opencv"
 
@@ -147,9 +148,6 @@ class iGibsonWrapper(Renderer):
         self.modes = modes
         self.camera_obs = camera_obs
 
-        # Monkey patch environment get observations so that torch tensor do not cause errors.
-        self.env._get_observations = types.MethodType(_get_observations, self.env)
-
         # if camd is set in env, add the depth mode in iG
         if True in self.env.camera_depths and '3d' not in self.modes:
             self.modes += ['3d']
@@ -180,7 +178,7 @@ class iGibsonWrapper(Renderer):
 
         # add viewer
         self._add_viewer(initial_pos=self.camera_position, 
-                        initial_view_direction=self.view_direction)
+                        initial_view_direction=self.view_direction)      
 
     def _setup_observables(self):
         observables = self.env._setup_observables()
@@ -473,6 +471,53 @@ class iGibsonWrapper(Renderer):
         Releases the iGibson renderer.
         """        
         self.renderer.release()
+
+    def _get_observations(self, force_update=False):
+        """
+        Grabs observations from the environment.
+
+        Args:
+            force_update (bool): If True, will force all the observables to update their internal values to the newest
+                value. This is useful if, e.g., you want to grab observations when directly setting simulation states
+                without actually stepping the simulation.
+
+        Returns:
+            OrderedDict: OrderedDict containing observations [(name_string, np.array), ...]
+
+        """
+        observations = OrderedDict()
+        obs_by_modality = OrderedDict()
+
+        # Force an update if requested
+        if force_update:
+            self.env._update_observables(force=True)
+
+        # Loop through all observables and grab their current observation
+        for obs_name, observable in self.env._observables.items():
+            if observable.is_enabled() and observable.is_active():
+                obs = observable.obs
+                observations[obs_name] = obs
+                modality = observable.modality + "-state"
+                if modality not in obs_by_modality:
+                    obs_by_modality[modality] = []
+                # Make sure all observations are numpy arrays so we can concatenate them
+                array_obs = [obs] if type(obs) in {int, float} or not obs.shape else obs
+                if HAS_TORCH and isinstance(array_obs, torch.Tensor):
+                    obs_by_modality[modality].append(array_obs)
+                else:
+                    obs_by_modality[modality].append(np.array(array_obs))
+
+        # Add in modality observations
+        for modality, obs in obs_by_modality.items():
+            # To save memory, we only concatenate the image observations if explicitly requested
+            if modality == "image-state" and not macros.CONCATENATE_IMAGES:
+                continue
+            if HAS_TORCH and isinstance(obs[0], torch.Tensor):
+                observations[modality] = torch.cat(obs, axis=-1)
+            else:
+                observations[modality] = np.concatenate(obs, axis=-1)
+
+        return observations
 
 if __name__ == '__main__':
 
