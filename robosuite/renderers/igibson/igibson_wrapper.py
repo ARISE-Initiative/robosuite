@@ -205,7 +205,7 @@ class iGibsonWrapper(Renderer):
                 observables[name] = TensorObservable(
                     name=name,
                     sensor=s,
-                    sampling_rate=self.control_freq,
+                    sampling_rate=self.env.control_freq,
                 )       
 
         return observables
@@ -244,11 +244,7 @@ class iGibsonWrapper(Renderer):
         normal_sensor_name = f"{cam_name}_normal"
 
         def adjust_convention(img, convention):
-            if convention == 1:
-                img = img[::-1]
-            else:
-                img = img[::convention]
-            
+            img = img[::-convention]
             return img
 
         @sensor(modality=modality)
@@ -310,11 +306,7 @@ class iGibsonWrapper(Renderer):
                     normal_map = torch.flipud(normal_map)                                                  
                 obs_cache[normal_sensor_name] = normal_map
             
-            if isinstance(img, np.ndarray):
-                return img[::convention]
-            else:
-                # negative strides are not possible in torch.
-                return img
+            return img
 
         sensors.append(camera_rgb)
         names.append(rgb_sensor_name)

@@ -215,7 +215,13 @@ class MujocoEnv(metaclass=EnvMeta):
 
             from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
 
-            self.viewer = iGibsonWrapper(env=self)                               
+            self.viewer = iGibsonWrapper(env=self,
+                                         camera_obs=True,
+                                         height=256,
+                                         width=256,
+                                         modes=('rgb', 'normal', 'seg')
+                                         )
+                                                                        
 
     def initialize_time(self, control_freq):
         """
