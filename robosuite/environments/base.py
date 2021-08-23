@@ -214,11 +214,11 @@ class MujocoEnv(metaclass=EnvMeta):
 
             self.viewer = iGibsonWrapper(env=self,
                                          camera_obs=True,
-                                         height=256,
-                                         width=256,
+                                         height=720,
+                                         width=1280,
                                          modes=('rgb', 'normal', 'seg'),
                                          render_mode='headless',
-                                         render2tensor=True
+                                         render2tensor=False
                                          )
 
         else:

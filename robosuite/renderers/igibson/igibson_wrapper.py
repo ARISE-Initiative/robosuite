@@ -377,6 +377,18 @@ class iGibsonWrapper(Renderer):
 
         raise Exception("Camera {self.env.render_camera} not present")
 
+    def _set_camera_pos_quat(self, pos, quat):
+        """Set renderer position and quaternion.
+
+        Args:
+            pos ([list]): pos array of the camera.
+            quat ([list]): quat array of the camera.
+        """
+        # to wxyz
+        mat = quat2rotmat([quat[-1], quat[0], quat[1], quat[2]])[:3, :3]
+        mat = mat.dot(np.array([0, 0, 1]))
+        self.renderer.set_camera(pos, [0,0,1], [0,0,1])
+
 
     def _add_viewer(self, 
                  initial_pos = [0,0,1], 
