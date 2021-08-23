@@ -185,17 +185,11 @@ class MujocoEnv(metaclass=EnvMeta):
             
 
     def initialize_renderer(self):
+        self.renderer = self.renderer.lower()
+
         if self.renderer == 'default':
             self.viewer = None
-        elif self.renderer == 'mujoco':
-            # lazy import for NViSII
-            from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
-
-            self.viewer = MujocoRenderer(sim=self.sim,
-                                         render_camera=self.render_camera,
-                                         render_collision_mesh=self.render_collision_mesh,
-                                         render_visual_mesh=self.render_visual_mesh)
-
+        
         elif self.renderer == 'nvisii':
             # lazy import for NViSII
             from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
@@ -226,6 +220,9 @@ class MujocoEnv(metaclass=EnvMeta):
                                          render_mode='headless',
                                          render2tensor=True
                                          )
+
+        else:
+            raise ValueError(f'{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson')
                                                                         
 
     def initialize_time(self, control_freq):
