@@ -1,8 +1,8 @@
 import argparse
+import json
 import numpy as np
 import robosuite as suite
 import robosuite.utils.transform_utils as T
-
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--env", type=str, default="Door")
-    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+    parser.add_argument("--robots", nargs="+", type=str, default="IIWA", help="Which robot(s) to use in the env")
     parser.add_argument("--timesteps", type=int, default=300)
     parser.add_argument("--video_mode", type=str, default="False")
     parser.add_argument("--width", type=int, default=500)
@@ -35,6 +35,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     args.video_mode = str2bool(args.video_mode)
+
+    f = open('../renderers/config/nvisii_config.json')
+    renderer_config = json.load(f)
 
     env = suite.make(
             args.env,
@@ -47,11 +50,7 @@ if __name__ == '__main__':
             use_camera_obs=False,         # no camera observations
             control_freq=10,
             renderer="nvisii",
-            img_path='images/',
-            width=args.width,
-            height=args.height,
-            spp=args.spp,
-            video_mode=args.video_mode,
+            renderer_config=renderer_config,
         )
 
     env.reset()

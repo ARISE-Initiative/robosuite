@@ -107,18 +107,7 @@ class MujocoEnv(metaclass=EnvMeta):
         ignore_done=False,
         hard_reset=True,
         renderer="default",
-        img_path='images/',
-        width=500,
-        height=500,
-        spp=256,
-        use_noise=False,
-        debug_mode=False,
-        video_mode=False,
-        video_path='videos/',
-        video_name='robosuite_video_0.mp4',
-        video_fps=60,
-        verbose=1,
-        image_options=None
+        renderer_config=None,
     ):
         # First, verify that both the on- and off-screen renderers are not being used simultaneously
         if has_renderer is True and has_offscreen_renderer is True:
@@ -147,18 +136,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
 
         self.renderer = renderer
-        self.img_path = img_path
-        self.width = width
-        self.height = height
-        self.spp = spp
-        self.use_noise = use_noise
-        self.debug_mode = debug_mode
-        self.video_mode = video_mode
-        self.video_path = video_path
-        self.video_name = video_name
-        self.video_fps = video_fps
-        self.verbose = verbose
-        self.image_options = image_options
+        self.renderer_config = renderer_config
 
         # Load the model
         self._load_model()
@@ -191,22 +169,35 @@ class MujocoEnv(metaclass=EnvMeta):
             self.viewer = None
         
         elif self.renderer == 'nvisii':
-            # lazy import for NViSII
+            
             from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
 
+            self.img_path = self.renderer_config["img_path"]
+            self.width = self.renderer_config["width"]
+            self.height = self.renderer_config["height"]
+            self.spp = self.renderer_config["spp"]
+            self.use_noise = self.renderer_config["use_noise"]
+            self.debug_mode = self.renderer_config["debug_mode"]
+            self.video_mode = self.renderer_config["video_mode"]
+            self.video_path = self.renderer_config["video_path"]
+            self.video_name = self.renderer_config["video_name"]
+            self.video_fps = self.renderer_config["video_fps"]
+            self.verbose = self.renderer_config["verbose"]
+            self.image_options = self.renderer_config["image_options"]
+
             self.viewer = NViSIIRenderer(env=self,
-                                  img_path=self.img_path,
-                                  width=self.width,
-                                  height=self.height,
-                                  spp=self.spp,
-                                  use_noise=self.use_noise,
-                                  debug_mode=self.debug_mode,
-                                  video_mode=self.video_mode,
-                                  video_path=self.video_path,
-                                  video_name=self.video_name,
-                                  video_fps=self.video_fps,
-                                  verbose=self.verbose,
-                                  image_options=self.image_options)
+                                         img_path=self.img_path,
+                                         width=self.width,
+                                         height=self.height,
+                                         spp=self.spp,
+                                         use_noise=self.use_noise,
+                                         debug_mode=self.debug_mode,
+                                         video_mode=self.video_mode,
+                                         video_path=self.video_path,
+                                         video_name=self.video_name,
+                                         video_fps=self.video_fps,
+                                         verbose=self.verbose,
+                                         image_options=self.image_options)
 
         elif self.renderer == 'igibson':
 
