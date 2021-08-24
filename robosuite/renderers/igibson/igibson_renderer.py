@@ -58,7 +58,7 @@ def check_render2tensor(render2tensor, render_mode):
         raise ValueError('render2tensor can only be set to true in `headless` mode. ')
 
 
-class iGibsonWrapper(Renderer):
+class iGibsonRenderer(Renderer):
     def __init__(self,
                  env,
                  render_mode='gui',
@@ -74,8 +74,7 @@ class iGibsonWrapper(Renderer):
                  camera_obs=False,
                  modes=['rgb']):
         """
-        Initializes the iGibson wrapper. Wrapping any MuJoCo environment in this 
-        wrapper will use the iGibson wrapper for rendering.
+        Initializes the iGibson renderer.
 
         Args:
             env (MujocoEnv instance): The environment to wrap.
@@ -538,31 +537,6 @@ if __name__ == '__main__':
     #                          PickPlaceCan, Door, Wipe, TwoArmLift, TwoArmPegInHole, TwoArmHandover
 
     # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
-
-    # env = iGibsonWrapper(
-    #     env = suite.make(
-    #             "Door",
-    #             robots = ["Jaco"],
-    #             reward_shaping=True,
-    #             has_renderer=False,           
-    #             has_offscreen_renderer=True,
-    #             ignore_done=True,
-    #             use_object_obs=True,
-    #             use_camera_obs=False,  
-    #             render_camera='frontview',
-    #             control_freq=20, 
-    #             camera_names=['frontview', 'agentview']
-    #         ),
-    #         width=1280,
-    #         height=720,
-    #         render_mode='gui',
-    #         enable_pbr=True,
-    #         enable_shadow=True,
-    #         modes=('rgb', 'seg', '3d', 'normal'),
-    #         render2tensor=False,
-    #         camera_obs=False,
-    #         optimized=False,
-    # )
 
     # env.reset()
 

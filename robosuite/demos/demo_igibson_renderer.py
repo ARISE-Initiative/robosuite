@@ -1,5 +1,6 @@
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
+from robosuite.renderers import load_renderer_config
 
 
 if __name__ == "__main__":
@@ -42,10 +43,6 @@ if __name__ == "__main__":
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
-    # Help message to user
-    print()
-    print("Press \"H\" to show the viewer control panel.")
-
     # initialize the task
     env = suite.make(
             **options,
@@ -54,9 +51,12 @@ if __name__ == "__main__":
             ignore_done=True,
             use_camera_obs=False,
             control_freq=20,
-            renderer='igibson'
+            renderer='igibson',
             )
 
+    # Help message to user
+    print()
+    print("Press Esc to exit.")
 
     # Get action limits
     low, high = env.action_spec

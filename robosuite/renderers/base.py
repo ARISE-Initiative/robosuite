@@ -3,6 +3,32 @@ This file contains the base renderer class for Mujoco environments.
 """
 
 import abc
+import json
+import os
+
+def load_renderer_config(renderer):
+    """Loads the config of the specified renderer.
+    Modify the dictionary returned by this function 
+    according to reuirements.
+
+    Args:
+        renderer (str): Name of the renderer to use.
+
+    Returns:
+        dict: renderer default config.
+    """
+    if renderer == 'nvisii':
+        fname = 'config/nvisii_config.json'                
+    elif renderer == 'igibson':
+        fname = 'config/igibson_config.json'
+    else:
+        raise ValueError("renderer type can only be  'nvisii', or 'igibson'")
+
+    dir_path = os.path.dirname(__file__)
+    with open(os.path.join(dir_path, fname)) as f:
+        config = json.load(f)
+
+    return config
 
 class Renderer():
     """

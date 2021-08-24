@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from robosuite.renderers.base import load_renderer_config
 from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
 
@@ -164,6 +165,8 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
+        if self.renderer_config is None:
+            self.renderer_config = load_renderer_config(self.renderer)
 
         if self.renderer == 'default':
             self.viewer = None
@@ -201,16 +204,10 @@ class MujocoEnv(metaclass=EnvMeta):
 
         elif self.renderer == 'igibson':
 
-            from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
+            from robosuite.renderers.igibson.igibson_renderer import iGibsonRenderer
 
-            self.viewer = iGibsonWrapper(env=self,
-                                         camera_obs=False,
-                                         height=720,
-                                         width=1280,
-                                         modes=('rgb', 'normal', 'seg'),
-                                         render_mode='gui',
-                                         render2tensor=False,
-                                         optimized=False
+            self.viewer = iGibsonRenderer(env=self,
+                                         **self.renderer_config
                                          )
 
         else:
