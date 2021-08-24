@@ -1,5 +1,4 @@
 from robosuite.controllers import load_controller_config
-from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
 from robosuite.utils.input_utils import *
 
 
@@ -48,18 +47,16 @@ if __name__ == "__main__":
     print("Press \"H\" to show the viewer control panel.")
 
     # initialize the task
-    env = iGibsonWrapper(
-            env = suite.make(
+    env = suite.make(
             **options,
             has_renderer=False,
             has_offscreen_renderer=False,
             ignore_done=True,
             use_camera_obs=False,
             control_freq=20,
-        ),
-        enable_pbr=True,
-        enable_shadow=True,
-    )
+            renderer='igibson'
+            )
+
 
     # Get action limits
     low, high = env.action_spec

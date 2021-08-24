@@ -213,12 +213,13 @@ class MujocoEnv(metaclass=EnvMeta):
             from robosuite.renderers.igibson.igibson_wrapper import iGibsonWrapper
 
             self.viewer = iGibsonWrapper(env=self,
-                                         camera_obs=True,
+                                         camera_obs=False,
                                          height=720,
                                          width=1280,
                                          modes=('rgb', 'normal', 'seg'),
-                                         render_mode='headless',
-                                         render2tensor=False
+                                         render_mode='gui',
+                                         render2tensor=False,
+                                         optimized=False
                                          )
 
         else:
