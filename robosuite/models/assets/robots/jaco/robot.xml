@@ -33,7 +33,7 @@
             <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
             <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
             <!-- mount attached here -->
-            <body name="j2s7s300_link_0" pos="0 0 0">
+            <body name="j2s7s300_link_0" pos="0 0 0" quat="0.707107 0 0 0.707107">
                 <inertial pos="0 0 0.05" mass="4" diaginertia="0.4 0.4 0.4" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="base" />
                 <geom type="mesh" contype="0" conaffinity="1" material="carbon_jaco" mesh="base" name="base_collision"/>
