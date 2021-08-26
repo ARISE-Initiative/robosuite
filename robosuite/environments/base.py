@@ -165,20 +165,10 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
-
         if self.renderer_config is None and self.renderer != 'mujoco':
             self.renderer_config = load_renderer_config(self.renderer)
 
         if self.renderer == 'mujoco':
-
-            from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
-
-            self.viewer = MujocoRenderer(sim=self.sim,
-                                         render_camera=self.render_camera,
-                                         render_collision_mesh=self.render_collision_mesh,
-                                         render_visual_mesh=self.render_visual_mesh)
-        
-        elif self.renderer == 'mujoco':
             
             from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
 
@@ -202,8 +192,8 @@ class MujocoEnv(metaclass=EnvMeta):
                                          **self.renderer_config
                                          )
 
-        elif self.has_renderer:
-            raise ValueError(f"{self.renderer} is not a valid renderer name. Valid options include 'mujoco' (native mujoco renderer), 'nvisii', and 'igibson'")
+        else:
+            raise ValueError(f'{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson')
                                                                         
 
     def initialize_time(self, control_freq):
@@ -294,13 +284,10 @@ class MujocoEnv(metaclass=EnvMeta):
             self._load_model()
             self._postprocess_model()
             self._initialize_sim()
-            self.initialize_renderer()
 
         # Else, we only reset the sim internally
         else:
             self.sim.reset()
-            self.viewer.reset()
-
         # Reset necessary robosuite-centric variables
         self._reset_internal()
         self.sim.forward()
@@ -314,6 +301,8 @@ class MujocoEnv(metaclass=EnvMeta):
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
         
+        self.viewer.reset()
+
         # Return new observations
         observations = self.viewer._get_observations(force_update=True) if self.viewer_get_obs else self._get_observations(force_update=True)
         return observations
@@ -321,6 +310,7 @@ class MujocoEnv(metaclass=EnvMeta):
     def _reset_internal(self):
         """Resets simulation internal configurations."""
 
+        # create visualization screen or renderer
         if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
@@ -702,15 +692,13 @@ class MujocoEnv(metaclass=EnvMeta):
         Destroys the current mujoco renderer instance if it exists
         """
         # if there is an active viewer window, destroy it
-
-        if self.viewer is not None:
+        if self.viewer is not None and self.renderer == "default":
             self.viewer.close()  # change this to viewer.finish()?
             self.viewer = None
 
     def close(self):
         """Do any cleanup necessary here."""
-        if self.viewer is not None:
-            self.viewer.close()
+        self._destroy_viewer()
 
     @property
     def observation_modalities(self):
