@@ -178,6 +178,15 @@ class MujocoEnv(metaclass=EnvMeta):
                                          render_collision_mesh=self.render_collision_mesh,
                                          render_visual_mesh=self.render_visual_mesh)
         
+        elif self.renderer == 'mujoco':
+            
+            from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
+
+            self.viewer = MujocoRenderer(sim=self.sim,
+                                         render_camera=self.render_camera,
+                                         render_collision_mesh=self.render_collision_mesh,
+                                         render_visual_mesh=self.render_visual_mesh)
+
         elif self.renderer == 'nvisii':
             
             from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
