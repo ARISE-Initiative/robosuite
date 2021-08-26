@@ -189,18 +189,7 @@ class MujocoEnv(metaclass=EnvMeta):
             self.image_options = self.renderer_config["image_options"]
 
             self.viewer = NViSIIRenderer(env=self,
-                                         img_path=self.img_path,
-                                         width=self.width,
-                                         height=self.height,
-                                         spp=self.spp,
-                                         use_noise=self.use_noise,
-                                         debug_mode=self.debug_mode,
-                                         video_mode=self.video_mode,
-                                         video_path=self.video_path,
-                                         video_name=self.video_name,
-                                         video_fps=self.video_fps,
-                                         verbose=self.verbose,
-                                         image_options=self.image_options)
+                                         **self.renderer_config)
 
         elif self.renderer == 'igibson':
 
