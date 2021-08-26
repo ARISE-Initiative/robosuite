@@ -107,7 +107,7 @@ class MujocoEnv(metaclass=EnvMeta):
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
-        renderer="default",
+        renderer="mujoco",
         renderer_config=None,
     ):
         # First, verify that both the on- and off-screen renderers are not being used simultaneously
@@ -171,22 +171,18 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer == 'default':
             self.viewer = None
         
+        elif self.renderer == 'mujoco':
+            
+            from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
+
+            self.viewer = MujocoRenderer(sim=self.sim,
+                                         render_camera=self.render_camera,
+                                         render_collision_mesh=self.render_collision_mesh,
+                                         render_visual_mesh=self.render_visual_mesh)
+
         elif self.renderer == 'nvisii':
             
             from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
-
-            self.img_path = self.renderer_config["img_path"]
-            self.width = self.renderer_config["width"]
-            self.height = self.renderer_config["height"]
-            self.spp = self.renderer_config["spp"]
-            self.use_noise = self.renderer_config["use_noise"]
-            self.debug_mode = self.renderer_config["debug_mode"]
-            self.video_mode = self.renderer_config["video_mode"]
-            self.video_path = self.renderer_config["video_path"]
-            self.video_name = self.renderer_config["video_name"]
-            self.video_fps = self.renderer_config["video_fps"]
-            self.verbose = self.renderer_config["verbose"]
-            self.image_options = self.renderer_config["image_options"]
 
             self.viewer = NViSIIRenderer(env=self,
                                          **self.renderer_config)
@@ -319,23 +315,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """Resets simulation internal configurations."""
 
         # create visualization screen or renderer
-        if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
-
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
-
-            # make sure mujoco-py doesn't block rendering frames
-            # (see https://github.com/StanfordVL/robosuite/issues/39)
-            self.viewer.viewer._render_every_frame = True
-
-            # Set the camera angle for viewing
-            if self.render_camera is not None:
-                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
-
-        elif self.has_offscreen_renderer:
+        if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
                 self.sim.add_render_context(render_context)
@@ -451,8 +431,10 @@ class MujocoEnv(metaclass=EnvMeta):
 
         reward, done, info = self._post_action(action)
 
-        if self.renderer != "default":
-            self.viewer.update()
+        if self.renderer == "mujoco":
+            self.viewer.update_with_state(self.sim.get_state())
+
+        self.viewer.update()
 
         observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
         return observations, reward, done, info
