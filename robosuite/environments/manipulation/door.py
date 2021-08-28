@@ -210,7 +210,7 @@ class Door(SingleArmEnv):
         Returns:
             float: reward value
         """
-        reward = 0.
+        reward = 0.0
 
         # sparse completion reward
         if self._check_success():
@@ -256,7 +256,7 @@ class Door(SingleArmEnv):
         mujoco_arena.set_camera(
             camera_name="agentview",
             pos=[0.5986131746834771, -4.392035683362857e-09, 1.5903500240372423],
-            quat=[0.6380177736282349, 0.3048497438430786, 0.30484986305236816, 0.6380177736282349]
+            quat=[0.6380177736282349, 0.3048497438430786, 0.30484986305236816, 0.6380177736282349],
         )
 
         # initialize objects of interest
@@ -273,21 +273,21 @@ class Door(SingleArmEnv):
             self.placement_initializer.add_objects(self.door)
         else:
             self.placement_initializer = UniformRandomSampler(
-                    name="ObjectSampler",
-                    mujoco_objects=self.door,
-                    x_range=[0.07, 0.09],
-                    y_range=[-0.01, 0.01],
-                    rotation=(-np.pi / 2. - 0.25, -np.pi / 2.),
-                    rotation_axis='z',
-                    ensure_object_boundary_in_range=False,
-                    ensure_valid_placement=True,
-                    reference_pos=self.table_offset,
-                )
+                name="ObjectSampler",
+                mujoco_objects=self.door,
+                x_range=[0.07, 0.09],
+                y_range=[-0.01, 0.01],
+                rotation=(-np.pi / 2.0 - 0.25, -np.pi / 2.0),
+                rotation_axis="z",
+                ensure_object_boundary_in_range=False,
+                ensure_valid_placement=True,
+                reference_pos=self.table_offset,
+            )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
             mujoco_arena=mujoco_arena,
-            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=self.door,
         )
 
@@ -335,13 +335,19 @@ class Door(SingleArmEnv):
 
             @sensor(modality=modality)
             def door_to_eef_pos(obs_cache):
-                return obs_cache["door_pos"] - obs_cache[f"{pf}eef_pos"] if\
-                    "door_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["door_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if "door_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             @sensor(modality=modality)
             def handle_to_eef_pos(obs_cache):
-                return obs_cache["handle_pos"] - obs_cache[f"{pf}eef_pos"] if\
-                    "handle_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["handle_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if "handle_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             @sensor(modality=modality)
             def hinge_qpos(obs_cache):
@@ -352,9 +358,11 @@ class Door(SingleArmEnv):
 
             # Also append handle qpos if we're using a locked door version with rotatable handle
             if self.use_latch:
+
                 @sensor(modality=modality)
                 def handle_qpos(obs_cache):
                     return np.array([self.sim.data.qpos[self.handle_qpos_addr]])
+
                 sensors.append(handle_qpos)
                 names.append("handle_qpos")
 
@@ -413,7 +421,7 @@ class Door(SingleArmEnv):
             self._visualize_gripper_to_target(
                 gripper=self.robots[0].gripper,
                 target=self.door.important_sites["handle"],
-                target_type="site"
+                target_type="site",
             )
 
     @property

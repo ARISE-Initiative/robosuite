@@ -85,11 +85,13 @@ def choose_multi_arm_config():
     env_configs = {
         "Single Arms Opposed": "single-arm-opposed",
         "Single Arms Parallel": "single-arm-parallel",
-        "Bimanual": "bimanual"
+        "Bimanual": "bimanual",
     }
 
     # Select environment configuration
-    print("A multi-arm environment was chosen. Here is a list of multi-arm environment configurations:\n")
+    print(
+        "A multi-arm environment was chosen. Here is a list of multi-arm environment configurations:\n"
+    )
 
     for k, env_config in enumerate(list(env_configs)):
         print("[{}] {}".format(k, env_config))
@@ -144,10 +146,7 @@ def choose_robots(exclude_bimanual=False):
         print("[{}] {}".format(k, robot))
     print()
     try:
-        s = input(
-            "Choose a robot "
-            + "(enter a number from 0 to {}): ".format(len(robots) - 1)
-        )
+        s = input("Choose a robot " + "(enter a number from 0 to {}): ".format(len(robots) - 1))
         # parse input into a number within range
         k = min(max(int(s), 0), len(robots))
     except:
@@ -204,12 +203,16 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         return None, None
 
     # Get controller reference
-    controller = robot.controller if not isinstance(robot, Bimanual) else robot.controller[active_arm]
-    gripper_dof = robot.gripper.dof if not isinstance(robot, Bimanual) else robot.gripper[active_arm].dof
+    controller = (
+        robot.controller if not isinstance(robot, Bimanual) else robot.controller[active_arm]
+    )
+    gripper_dof = (
+        robot.gripper.dof if not isinstance(robot, Bimanual) else robot.gripper[active_arm].dof
+    )
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
-    if controller.name == 'IK_POSE':
+    if controller.name == "IK_POSE":
         # If this is panda, want to swap x and y axis
         if isinstance(robot.robot_model, Panda):
             drotation = drotation[[1, 0, 2]]
@@ -239,17 +242,19 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Lastly, map to axis angle form
         drotation = T.quat2axisangle(drotation)
 
-    elif controller.name == 'OSC_POSE':
+    elif controller.name == "OSC_POSE":
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
         drotation = drotation * 1.5 if isinstance(device, Keyboard) else drotation * 50
         dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
-    elif controller.name == 'OSC_POSITION':
+    elif controller.name == "OSC_POSITION":
         dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
     else:
         # No other controllers currently supported
-        print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")
+        print(
+            "Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!"
+        )
 
     # map 0 to -1 (open) and map 1 to 1 (closed)
     grasp = 1 if grasp else -1

@@ -28,8 +28,8 @@ if __name__ == "__main__":
         options["env_configuration"] = choose_multi_arm_config()
 
         # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
-        if options["env_configuration"] == 'bimanual':
-            options["robots"] = 'Baxter'
+        if options["env_configuration"] == "bimanual":
+            options["robots"] = "Baxter"
         else:
             options["robots"] = []
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     # Help message to user
     print()
-    print("Press \"H\" to show the viewer control panel.")
+    print('Press "H" to show the viewer control panel.')
 
     # initialize the task
     env = suite.make(
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         control_freq=20,
-        hard_reset=False,   # TODO: Not setting this flag to False brings up a segfault on macos or glfw error on linux
+        hard_reset=False,  # TODO: Not setting this flag to False brings up a segfault on macos or glfw error on linux
     )
     env = DomainRandomizationWrapper(env)
     env.reset()

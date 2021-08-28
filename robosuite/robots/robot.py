@@ -53,35 +53,43 @@ class Robot(object):
         control_freq=20,
     ):
         # Set relevant attributes
-        self.sim = None                                     # MjSim this robot is tied to
-        self.name = robot_type                              # Specific robot to instantiate
-        self.idn = idn                                      # Unique ID of this robot
-        self.robot_model = None                             # object holding robot model-specific info
-        self.control_freq = control_freq                    # controller Hz
-        self.mount_type = mount_type                        # Type of mount to use
+        self.sim = None  # MjSim this robot is tied to
+        self.name = robot_type  # Specific robot to instantiate
+        self.idn = idn  # Unique ID of this robot
+        self.robot_model = None  # object holding robot model-specific info
+        self.control_freq = control_freq  # controller Hz
+        self.mount_type = mount_type  # Type of mount to use
 
         # Scaling of Gaussian initial noise applied to robot joints
         self.initialization_noise = initialization_noise
         if self.initialization_noise is None:
-            self.initialization_noise = {"magnitude": 0.0, "type": "gaussian"}  # no noise conditions
+            self.initialization_noise = {
+                "magnitude": 0.0,
+                "type": "gaussian",
+            }  # no noise conditions
         elif self.initialization_noise == "default":
             self.initialization_noise = {"magnitude": 0.02, "type": "gaussian"}
-        self.initialization_noise["magnitude"] = \
-            self.initialization_noise["magnitude"] if self.initialization_noise["magnitude"] else 0.0
+        self.initialization_noise["magnitude"] = (
+            self.initialization_noise["magnitude"]
+            if self.initialization_noise["magnitude"]
+            else 0.0
+        )
 
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
 
-        self.robot_joints = None                            # xml joint names for robot
-        self.base_pos = None                                # Base position in world coordinates (x,y,z)
-        self.base_ori = None                                # Base rotation in world coordinates (x,y,z,w quat)
-        self._ref_joint_indexes = None                      # xml joint indexes for robot in mjsim
-        self._ref_joint_pos_indexes = None                  # xml joint position indexes in mjsim
-        self._ref_joint_vel_indexes = None                  # xml joint velocity indexes in mjsim
-        self._ref_joint_actuator_indexes = None             # xml joint (torq) actuator indexes for robot in mjsim
+        self.robot_joints = None  # xml joint names for robot
+        self.base_pos = None  # Base position in world coordinates (x,y,z)
+        self.base_ori = None  # Base rotation in world coordinates (x,y,z,w quat)
+        self._ref_joint_indexes = None  # xml joint indexes for robot in mjsim
+        self._ref_joint_pos_indexes = None  # xml joint position indexes in mjsim
+        self._ref_joint_vel_indexes = None  # xml joint velocity indexes in mjsim
+        self._ref_joint_actuator_indexes = (
+            None  # xml joint (torq) actuator indexes for robot in mjsim
+        )
 
-        self.recent_qpos = None                             # Current and last robot arm qpos
-        self.recent_actions = None                          # Current and last action applied
-        self.recent_torques = None                          # Current and last torques applied
+        self.recent_qpos = None  # Current and last robot arm qpos
+        self.recent_actions = None  # Current and last action applied
+        self.recent_torques = None  # Current and last torques applied
 
     def _load_controller(self):
         """
@@ -97,7 +105,9 @@ class Robot(object):
 
         # Add mount if specified
         if self.mount_type == "default":
-            self.robot_model.add_mount(mount=mount_factory(self.robot_model.default_mount, idn=self.idn))
+            self.robot_model.add_mount(
+                mount=mount_factory(self.robot_model.default_mount, idn=self.idn)
+            )
         else:
             self.robot_model.add_mount(mount=mount_factory(self.mount_type, idn=self.idn))
 
@@ -129,11 +139,18 @@ class Robot(object):
         if not deterministic:
             # Determine noise
             if self.initialization_noise["type"] == "gaussian":
-                noise = np.random.randn(len(self.init_qpos)) * self.initialization_noise["magnitude"]
+                noise = (
+                    np.random.randn(len(self.init_qpos)) * self.initialization_noise["magnitude"]
+                )
             elif self.initialization_noise["type"] == "uniform":
-                noise = np.random.uniform(-1.0, 1.0, len(self.init_qpos)) * self.initialization_noise["magnitude"]
+                noise = (
+                    np.random.uniform(-1.0, 1.0, len(self.init_qpos))
+                    * self.initialization_noise["magnitude"]
+                )
             else:
-                raise ValueError("Error: Invalid noise type specified. Options are 'gaussian' or 'uniform'.")
+                raise ValueError(
+                    "Error: Invalid noise type specified. Options are 'gaussian' or 'uniform'."
+                )
             init_qpos += noise
 
         # Set initial position in sim
@@ -144,7 +161,9 @@ class Robot(object):
 
         # Update base pos / ori references
         self.base_pos = self.sim.data.get_body_xpos(self.robot_model.root_body)
-        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3)))
+        self.base_ori = T.mat2quat(
+            self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3))
+        )
 
         # Setup buffers to hold recent values
         self.recent_qpos = DeltaBuffer(dim=len(self.joint_indexes))
@@ -166,14 +185,12 @@ class Robot(object):
 
         # indices for joint indexes
         self._ref_joint_indexes = [
-            self.sim.model.joint_name2id(joint)
-            for joint in self.robot_model.joints
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.joints
         ]
 
         # indices for joint pos actuation, joint vel actuation, gripper actuation
         self._ref_joint_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator)
-            for actuator in self.robot_model.actuators
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.actuators
         ]
 
     def setup_observables(self):
@@ -195,11 +212,19 @@ class Robot(object):
 
         @sensor(modality=modality)
         def joint_pos_cos(obs_cache):
-            return np.cos(obs_cache[pre_compute]) if pre_compute in obs_cache else np.zeros(self.robot_model.dof)
+            return (
+                np.cos(obs_cache[pre_compute])
+                if pre_compute in obs_cache
+                else np.zeros(self.robot_model.dof)
+            )
 
         @sensor(modality=modality)
         def joint_pos_sin(obs_cache):
-            return np.sin(obs_cache[pre_compute]) if pre_compute in obs_cache else np.zeros(self.robot_model.dof)
+            return (
+                np.sin(obs_cache[pre_compute])
+                if pre_compute in obs_cache
+                else np.zeros(self.robot_model.dof)
+            )
 
         @sensor(modality=modality)
         def joint_vel(obs_cache):
@@ -245,12 +270,14 @@ class Robot(object):
         """
         tolerance = 0.1
         for (qidx, (q, q_limits)) in enumerate(
-                zip(
-                    self.sim.data.qpos[self._ref_joint_pos_indexes],
-                    self.sim.model.jnt_range[self._ref_joint_indexes]
-                )
+            zip(
+                self.sim.data.qpos[self._ref_joint_pos_indexes],
+                self.sim.model.jnt_range[self._ref_joint_indexes],
+            )
         ):
-            if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
+            if q_limits[0] != q_limits[1] and not (
+                q_limits[0] + tolerance < q < q_limits[1] - tolerance
+            ):
                 print("Joint limit reached in joint " + str(qidx))
                 return True
         return False
@@ -392,7 +419,6 @@ class Robot(object):
         Returns:
             np.array: sensor values
         """
-        sensor_idx = np.sum(
-            self.sim.model.sensor_dim[:self.sim.model.sensor_name2id(sensor_name)])
+        sensor_idx = np.sum(self.sim.model.sensor_dim[: self.sim.model.sensor_name2id(sensor_name)])
         sensor_dim = self.sim.model.sensor_dim[self.sim.model.sensor_name2id(sensor_name)]
-        return np.array(self.sim.data.sensordata[sensor_idx: sensor_idx + sensor_dim])
+        return np.array(self.sim.data.sensordata[sensor_idx : sensor_idx + sensor_dim])

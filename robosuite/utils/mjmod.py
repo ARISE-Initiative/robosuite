@@ -17,7 +17,7 @@ import robosuite
 import robosuite.utils.transform_utils as trans
 
 
-class BaseModder():
+class BaseModder:
     """
     Base class meant to modify simulation attributes mid-sim.
 
@@ -31,6 +31,7 @@ class BaseModder():
             seed used to randomize these modifications without impacting other
             numpy seeds / randomizations
     """
+
     def __init__(self, sim, random_state=None):
         self.sim = sim
         if random_state is None:
@@ -92,6 +93,7 @@ class LightingModder(BaseModder):
 
         diffuse_perturbation_size (float): Magnitude of diffuse attribute randomization
     """
+
     def __init__(
         self,
         sim,
@@ -104,7 +106,7 @@ class LightingModder(BaseModder):
         randomize_diffuse=True,
         randomize_active=True,
         position_perturbation_size=0.1,
-        direction_perturbation_size=0.35, # 20 degrees
+        direction_perturbation_size=0.35,  # 20 degrees
         specular_perturbation_size=0.1,
         ambient_perturbation_size=0.1,
         diffuse_perturbation_size=0.1,
@@ -132,28 +134,28 @@ class LightingModder(BaseModder):
 
     def save_defaults(self):
         """
-        Uses the current MjSim state and model to save default parameter values. 
+        Uses the current MjSim state and model to save default parameter values.
         """
-        self._defaults = { k : {} for k in self.light_names }
+        self._defaults = {k: {} for k in self.light_names}
         for name in self.light_names:
-            self._defaults[name]['pos'] = np.array(self.get_pos(name))
-            self._defaults[name]['dir'] = np.array(self.get_dir(name))
-            self._defaults[name]['specular'] = np.array(self.get_specular(name))
-            self._defaults[name]['ambient'] = np.array(self.get_ambient(name))
-            self._defaults[name]['diffuse'] = np.array(self.get_diffuse(name))
-            self._defaults[name]['active'] = self.get_active(name)
+            self._defaults[name]["pos"] = np.array(self.get_pos(name))
+            self._defaults[name]["dir"] = np.array(self.get_dir(name))
+            self._defaults[name]["specular"] = np.array(self.get_specular(name))
+            self._defaults[name]["ambient"] = np.array(self.get_ambient(name))
+            self._defaults[name]["diffuse"] = np.array(self.get_diffuse(name))
+            self._defaults[name]["active"] = self.get_active(name)
 
     def restore_defaults(self):
         """
         Reloads the saved parameter values.
         """
         for name in self.light_names:
-            self.set_pos(name, self._defaults[name]['pos'])
-            self.set_dir(name, self._defaults[name]['dir'])
-            self.set_specular(name, self._defaults[name]['specular'])
-            self.set_ambient(name, self._defaults[name]['ambient'])
-            self.set_diffuse(name, self._defaults[name]['diffuse'])
-            self.set_active(name, self._defaults[name]['active'])
+            self.set_pos(name, self._defaults[name]["pos"])
+            self.set_dir(name, self._defaults[name]["dir"])
+            self.set_specular(name, self._defaults[name]["specular"])
+            self.set_ambient(name, self._defaults[name]["ambient"])
+            self.set_diffuse(name, self._defaults[name]["diffuse"])
+            self.set_active(name, self._defaults[name]["active"])
 
     def randomize(self):
         """
@@ -186,13 +188,13 @@ class LightingModder(BaseModder):
             name (str): Name of the lighting source to randomize for
         """
         delta_pos = self.random_state.uniform(
-            low=-self.position_perturbation_size, 
-            high=self.position_perturbation_size, 
+            low=-self.position_perturbation_size,
+            high=self.position_perturbation_size,
             size=3,
         )
         self.set_pos(
-            name, 
-            self._defaults[name]['pos'] + delta_pos,
+            name,
+            self._defaults[name]["pos"] + delta_pos,
         )
 
     def _randomize_direction(self, name):
@@ -203,11 +205,13 @@ class LightingModder(BaseModder):
             name (str): Name of the lighting source to randomize for
         """
         # sample a small, random axis-angle delta rotation
-        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.direction_perturbation_size, random_state=self.random_state)
+        random_axis, random_angle = trans.random_axis_angle(
+            angle_limit=self.direction_perturbation_size, random_state=self.random_state
+        )
         random_delta_rot = trans.quat2mat(trans.axisangle2quat(random_axis * random_angle))
-        
+
         # rotate direction by this delta rotation and set the new direction
-        new_dir = random_delta_rot.dot(self._defaults[name]['dir'])
+        new_dir = random_delta_rot.dot(self._defaults[name]["dir"])
         self.set_dir(
             name,
             new_dir,
@@ -221,13 +225,13 @@ class LightingModder(BaseModder):
             name (str): Name of the lighting source to randomize for
         """
         delta = self.random_state.uniform(
-            low=-self.specular_perturbation_size, 
-            high=self.specular_perturbation_size, 
+            low=-self.specular_perturbation_size,
+            high=self.specular_perturbation_size,
             size=3,
         )
         self.set_specular(
-            name, 
-            self._defaults[name]['specular'] + delta,
+            name,
+            self._defaults[name]["specular"] + delta,
         )
 
     def _randomize_ambient(self, name):
@@ -238,13 +242,13 @@ class LightingModder(BaseModder):
             name (str): Name of the lighting source to randomize for
         """
         delta = self.random_state.uniform(
-            low=-self.ambient_perturbation_size, 
-            high=self.ambient_perturbation_size, 
+            low=-self.ambient_perturbation_size,
+            high=self.ambient_perturbation_size,
             size=3,
         )
         self.set_ambient(
-            name, 
-            self._defaults[name]['ambient'] + delta,
+            name,
+            self._defaults[name]["ambient"] + delta,
         )
 
     def _randomize_diffuse(self, name):
@@ -255,13 +259,13 @@ class LightingModder(BaseModder):
             name (str): Name of the lighting source to randomize for
         """
         delta = self.random_state.uniform(
-            low=-self.diffuse_perturbation_size, 
-            high=self.diffuse_perturbation_size, 
+            low=-self.diffuse_perturbation_size,
+            high=self.diffuse_perturbation_size,
             size=3,
         )
         self.set_diffuse(
-            name, 
-            self._defaults[name]['diffuse'] + delta,
+            name,
+            self._defaults[name]["diffuse"] + delta,
         )
 
     def _randomize_active(self, name):
@@ -272,10 +276,7 @@ class LightingModder(BaseModder):
             name (str): Name of the lighting source to randomize for
         """
         active = int(self.random_state.uniform() > 0.5)
-        self.set_active(
-            name,
-            active
-        )
+        self.set_active(name, active)
 
     def get_pos(self, name):
         """
@@ -331,7 +332,7 @@ class LightingModder(BaseModder):
         lightid = self.get_lightid(name)
         assert lightid > -1, "Unkwnown light %s" % name
 
-        return self.model.light_dir[lightid] 
+        return self.model.light_dir[lightid]
 
     def set_dir(self, name, value):
         """
@@ -542,6 +543,7 @@ class CameraModder(BaseModder):
     Raises:
         AssertionError: [No randomization selected]
     """
+
     def __init__(
         self,
         sim,
@@ -552,7 +554,7 @@ class CameraModder(BaseModder):
         randomize_fovy=True,
         position_perturbation_size=0.01,
         rotation_perturbation_size=0.087,
-        fovy_perturbation_size=5.,
+        fovy_perturbation_size=5.0,
     ):
         super().__init__(sim, random_state=random_state)
 
@@ -574,22 +576,22 @@ class CameraModder(BaseModder):
 
     def save_defaults(self):
         """
-        Uses the current MjSim state and model to save default parameter values. 
+        Uses the current MjSim state and model to save default parameter values.
         """
-        self._defaults = { k : {} for k in self.camera_names }
+        self._defaults = {k: {} for k in self.camera_names}
         for camera_name in self.camera_names:
-            self._defaults[camera_name]['pos'] = np.array(self.get_pos(camera_name))
-            self._defaults[camera_name]['quat'] = np.array(self.get_quat(camera_name))
-            self._defaults[camera_name]['fovy'] = self.get_fovy(camera_name)
+            self._defaults[camera_name]["pos"] = np.array(self.get_pos(camera_name))
+            self._defaults[camera_name]["quat"] = np.array(self.get_quat(camera_name))
+            self._defaults[camera_name]["fovy"] = self.get_fovy(camera_name)
 
     def restore_defaults(self):
         """
         Reloads the saved parameter values.
         """
         for camera_name in self.camera_names:
-            self.set_pos(camera_name, self._defaults[camera_name]['pos'])
-            self.set_quat(camera_name, self._defaults[camera_name]['quat'])
-            self.set_fovy(camera_name, self._defaults[camera_name]['fovy'])
+            self.set_pos(camera_name, self._defaults[camera_name]["pos"])
+            self.set_quat(camera_name, self._defaults[camera_name]["quat"])
+            self.set_fovy(camera_name, self._defaults[camera_name]["fovy"])
 
     def randomize(self):
         """
@@ -613,13 +615,13 @@ class CameraModder(BaseModder):
             name (str): Name of the camera to randomize for
         """
         delta_pos = self.random_state.uniform(
-            low=-self.position_perturbation_size, 
-            high=self.position_perturbation_size, 
+            low=-self.position_perturbation_size,
+            high=self.position_perturbation_size,
             size=3,
         )
         self.set_pos(
-            name, 
-            self._defaults[name]['pos'] + delta_pos,
+            name,
+            self._defaults[name]["pos"] + delta_pos,
         )
 
     def _randomize_rotation(self, name):
@@ -630,13 +632,15 @@ class CameraModder(BaseModder):
             name (str): Name of the camera to randomize for
         """
         # sample a small, random axis-angle delta rotation
-        random_axis, random_angle = trans.random_axis_angle(angle_limit=self.rotation_perturbation_size, random_state=self.random_state)
+        random_axis, random_angle = trans.random_axis_angle(
+            angle_limit=self.rotation_perturbation_size, random_state=self.random_state
+        )
         random_delta_rot = trans.quat2mat(trans.axisangle2quat(random_axis * random_angle))
-        
+
         # compute new rotation and set it
-        base_rot = trans.quat2mat(trans.convert_quat(self._defaults[name]['quat'], to='xyzw'))
+        base_rot = trans.quat2mat(trans.convert_quat(self._defaults[name]["quat"], to="xyzw"))
         new_rot = random_delta_rot.T.dot(base_rot)
-        new_quat = trans.convert_quat(trans.mat2quat(new_rot), to='wxyz')
+        new_quat = trans.convert_quat(trans.mat2quat(new_rot), to="wxyz")
         self.set_quat(
             name,
             new_quat,
@@ -655,7 +659,7 @@ class CameraModder(BaseModder):
         )
         self.set_fovy(
             name,
-            self._defaults[name]['fovy'] + delta_fovy,
+            self._defaults[name]["fovy"] + delta_fovy,
         )
 
     def get_fovy(self, name):
@@ -722,8 +726,7 @@ class CameraModder(BaseModder):
             AssertionError: Invalid value
         """
         value = list(value)
-        assert len(value) == 4, (
-            "Expectd value of length 4, instead got %s" % value)
+        assert len(value) == 4, "Expectd value of length 4, instead got %s" % value
         camid = self.get_camid(name)
         assert camid > -1, "Unknown camera %s" % name
         self.model.cam_quat[camid] = value
@@ -758,8 +761,7 @@ class CameraModder(BaseModder):
             AssertionError: Invalid value
         """
         value = list(value)
-        assert len(value) == 3, (
-            "Expected value of length 3, instead got %s" % value)
+        assert len(value) == 3, "Expected value of length 3, instead got %s" % value
         camid = self.get_camid(name)
         assert camid > -1
         self.model.cam_pos[camid] = value
@@ -821,7 +823,7 @@ class TextureModder(BaseModder):
     """
 
     def __init__(
-        self, 
+        self,
         sim,
         random_state=None,
         geom_names=None,
@@ -829,7 +831,7 @@ class TextureModder(BaseModder):
         randomize_material=False,
         local_rgb_interpolation=0.1,
         local_material_interpolation=0.2,
-        texture_variations=('rgb', 'checker', 'noise', 'gradient'),
+        texture_variations=("rgb", "checker", "noise", "gradient"),
         randomize_skybox=True,
     ):
         super().__init__(sim, random_state=random_state)
@@ -846,24 +848,22 @@ class TextureModder(BaseModder):
         self.randomize_skybox = randomize_skybox
 
         self._all_texture_variation_callbacks = {
-            'rgb' : self.rand_rgb,
-            'checker' : self.rand_checker,
-            'noise' : self.rand_noise,
-            'gradient' : self.rand_gradient,
+            "rgb": self.rand_rgb,
+            "checker": self.rand_checker,
+            "noise": self.rand_noise,
+            "gradient": self.rand_gradient,
         }
-        self._texture_variation_callbacks = { 
-            k : self._all_texture_variation_callbacks[k] 
-            for k in self.texture_variations 
+        self._texture_variation_callbacks = {
+            k: self._all_texture_variation_callbacks[k] for k in self.texture_variations
         }
 
         self.save_defaults()
 
     def save_defaults(self):
         """
-        Uses the current MjSim state and model to save default parameter values. 
+        Uses the current MjSim state and model to save default parameter values.
         """
-        self.textures = [Texture(self.model, i)
-                         for i in range(self.model.ntex)]
+        self.textures = [Texture(self.model, i) for i in range(self.model.ntex)]
         # self._build_tex_geom_map()
 
         # save copy of original texture bitmaps
@@ -873,23 +873,23 @@ class TextureModder(BaseModder):
         # checker pattern bitmaps
         self._cache_checker_matrices()
 
-        self._defaults = { k : {} for k in self.geom_names }
+        self._defaults = {k: {} for k in self.geom_names}
         if self.randomize_skybox:
-            self._defaults['skybox'] = {}
+            self._defaults["skybox"] = {}
         for name in self.geom_names:
             if self._check_geom_for_texture(name):
                 # store the texture bitmap for this geom
                 tex_id = self._name_to_tex_id(name)
-                self._defaults[name]['texture'] = self._default_texture_bitmaps[tex_id]
+                self._defaults[name]["texture"] = self._default_texture_bitmaps[tex_id]
                 # store material properties as well (in tuple (reflectance, shininess, specular) form)
-                self._defaults[name]['material'] = self.get_material(name)
+                self._defaults[name]["material"] = self.get_material(name)
             else:
                 # store geom color
-                self._defaults[name]['rgb'] = np.array(self.get_geom_rgb(name))
+                self._defaults[name]["rgb"] = np.array(self.get_geom_rgb(name))
 
         if self.randomize_skybox:
-            tex_id = self._name_to_tex_id('skybox')
-            self._defaults['skybox']['texture'] = self._default_texture_bitmaps[tex_id]
+            tex_id = self._name_to_tex_id("skybox")
+            self._defaults["skybox"]["texture"] = self._default_texture_bitmaps[tex_id]
 
     def restore_defaults(self):
         """
@@ -897,13 +897,13 @@ class TextureModder(BaseModder):
         """
         for name in self.geom_names:
             if self._check_geom_for_texture(name):
-                self.set_texture(name, self._defaults[name]['texture'], perturb=False)
-                self.set_material(name, self._defaults[name]['material'], perturb=False)
+                self.set_texture(name, self._defaults[name]["texture"], perturb=False)
+                self.set_material(name, self._defaults[name]["material"], perturb=False)
             else:
-                self.set_geom_rgb(name, self._defaults[name]['rgb'])
+                self.set_geom_rgb(name, self._defaults[name]["rgb"])
 
         if self.randomize_skybox:
-            self.set_texture('skybox', self._defaults['skybox']['texture'], perturb=False)
+            self.set_texture("skybox", self._defaults["skybox"]["texture"], perturb=False)
 
     def randomize(self):
         """
@@ -934,7 +934,9 @@ class TextureModder(BaseModder):
         """
         if self.randomize_local:
             random_color = self.random_state.uniform(0, 1, size=3)
-            rgb = (1. - self.local_rgb_interpolation) * self._defaults[name]['rgb'] + self.local_rgb_interpolation * random_color
+            rgb = (1.0 - self.local_rgb_interpolation) * self._defaults[name][
+                "rgb"
+            ] + self.local_rgb_interpolation * random_color
         else:
             rgb = self.random_state.uniform(0, 1, size=3)
         self.set_geom_rgb(name, rgb)
@@ -958,12 +960,12 @@ class TextureModder(BaseModder):
             name (str): Name of the geom to randomize for
         """
         # Return immediately if this is the skybox
-        if name == 'skybox':
+        if name == "skybox":
             return
         # Grab material id
         mat_id = self._name_to_mat_id(name)
         # Randomize reflectance, shininess, and specular
-        material = self.random_state.uniform(0, 1, size=3)   # (reflectance, shininess, specular)
+        material = self.random_state.uniform(0, 1, size=3)  # (reflectance, shininess, specular)
         self.set_material(name, material, perturb=self.randomize_local)
 
     def rand_checker(self, name):
@@ -1059,9 +1061,9 @@ class TextureModder(BaseModder):
         Returns:
             np.array or n-tuple: if n > 1, each tuple entry is a rgb tuple. else, single (r,g,b) array
         """
+
         def _rand_rgb():
-            return np.array(self.random_state.uniform(size=3) * 255,
-                            dtype=np.uint8)
+            return np.array(self.random_state.uniform(size=3) * 255, dtype=np.uint8)
 
         if n == 1:
             return _rand_rgb()
@@ -1098,7 +1100,9 @@ class TextureModder(BaseModder):
         """
         bitmap_to_set = self.get_texture(name).bitmap
         if perturb:
-            bitmap = (1. - self.local_rgb_interpolation) * self._defaults[name]['texture'] + self.local_rgb_interpolation * bitmap
+            bitmap = (1.0 - self.local_rgb_interpolation) * self._defaults[name][
+                "texture"
+            ] + self.local_rgb_interpolation * bitmap
         bitmap_to_set[:] = bitmap
         self.upload_texture(name)
 
@@ -1114,9 +1118,13 @@ class TextureModder(BaseModder):
         """
         mat_id = self._name_to_mat_id(name)
         # Material is in tuple form (reflectance, shininess, specular)
-        material = np.array((self.model.mat_reflectance[mat_id],
-                             self.model.mat_shininess[mat_id],
-                             self.model.mat_specular[mat_id]))
+        material = np.array(
+            (
+                self.model.mat_reflectance[mat_id],
+                self.model.mat_shininess[mat_id],
+                self.model.mat_specular[mat_id],
+            )
+        )
         return material
 
     def set_material(self, name, material, perturb=False):
@@ -1134,8 +1142,9 @@ class TextureModder(BaseModder):
         """
         mat_id = self._name_to_mat_id(name)
         if perturb:
-            material = (1. - self.local_material_interpolation) * self._defaults[name]['material'] + \
-                       self.local_material_interpolation * material
+            material = (1.0 - self.local_material_interpolation) * self._defaults[name][
+                "material"
+            ] + self.local_material_interpolation * material
         self.model.mat_reflectance[mat_id] = material[0]
         self.model.mat_shininess[mat_id] = material[1]
         self.model.mat_specular[mat_id] = material[2]
@@ -1156,7 +1165,7 @@ class TextureModder(BaseModder):
     def set_checker(self, name, rgb1, rgb2, perturb=False):
         """
         Use the two checker matrices to create a checker
-        pattern from the two colors, and set it as 
+        pattern from the two colors, and set it as
         the texture for geom @name.
 
         Args:
@@ -1286,7 +1295,7 @@ class TextureModder(BaseModder):
         """
 
         # handle skybox separately
-        if name == 'skybox':
+        if name == "skybox":
             skybox_tex_id = -1
             for tex_id in range(self.model.ntex):
                 skybox_textype = 2
@@ -1317,7 +1326,7 @@ class TextureModder(BaseModder):
         """
 
         # handle skybox separately
-        if name == 'skybox':
+        if name == "skybox":
             raise ValueError("Error: skybox has no material!")
 
         assert self._check_geom_for_texture(name)
@@ -1363,7 +1372,7 @@ class TextureModder(BaseModder):
 
 
 # From mjtTexture
-MJT_TEXTURE_ENUM = ['2d', 'cube', 'skybox']
+MJT_TEXTURE_ENUM = ["2d", "cube", "skybox"]
 
 
 class Texture:
@@ -1375,7 +1384,7 @@ class Texture:
         tex_id (int): id of specific texture in mujoco sim
     """
 
-    __slots__ = ['id', 'type', 'height', 'width', 'tex_adr', 'tex_rgb']
+    __slots__ = ["id", "type", "height", "width", "tex_adr", "tex_rgb"]
 
     def __init__(self, model, tex_id):
         self.id = tex_id
@@ -1394,7 +1403,7 @@ class Texture:
             np.array: 3d-array representing the rgb texture bitmap
         """
         size = self.height * self.width * 3
-        data = self.tex_rgb[self.tex_adr:self.tex_adr + size]
+        data = self.tex_rgb[self.tex_adr : self.tex_adr + size]
         return data.reshape((self.height, self.width, 3))
 
 
@@ -1488,47 +1497,44 @@ class DynamicsModder(BaseModder):
 
         armature_perturbation_size (float): Magnitude of joint armature randomization
     """
+
     def __init__(
-            self,
-            sim,
-            random_state=None,
-
-            # Opt parameters
-            randomize_density=True,
-            randomize_viscosity=True,
-            density_perturbation_ratio=0.1,
-            viscosity_perturbation_ratio=0.1,
-
-            # Body parameters
-            body_names=None,
-            randomize_position=True,
-            randomize_quaternion=True,
-            randomize_inertia=True,
-            randomize_mass=True,
-            position_perturbation_size=0.02,
-            quaternion_perturbation_size=0.02,
-            inertia_perturbation_ratio=0.02,
-            mass_perturbation_ratio=0.02,
-
-            # Geom parameters
-            geom_names=None,
-            randomize_friction=True,
-            randomize_solref=True,
-            randomize_solimp=True,
-            friction_perturbation_ratio=0.1,
-            solref_perturbation_ratio=0.1,
-            solimp_perturbation_ratio=0.1,
-
-            # Joint parameters
-            joint_names=None,
-            randomize_stiffness=True,
-            randomize_frictionloss=True,
-            randomize_damping=True,
-            randomize_armature=True,
-            stiffness_perturbation_ratio=0.1,
-            frictionloss_perturbation_size=0.05,
-            damping_perturbation_size=0.01,
-            armature_perturbation_size=0.01,
+        self,
+        sim,
+        random_state=None,
+        # Opt parameters
+        randomize_density=True,
+        randomize_viscosity=True,
+        density_perturbation_ratio=0.1,
+        viscosity_perturbation_ratio=0.1,
+        # Body parameters
+        body_names=None,
+        randomize_position=True,
+        randomize_quaternion=True,
+        randomize_inertia=True,
+        randomize_mass=True,
+        position_perturbation_size=0.02,
+        quaternion_perturbation_size=0.02,
+        inertia_perturbation_ratio=0.02,
+        mass_perturbation_ratio=0.02,
+        # Geom parameters
+        geom_names=None,
+        randomize_friction=True,
+        randomize_solref=True,
+        randomize_solimp=True,
+        friction_perturbation_ratio=0.1,
+        solref_perturbation_ratio=0.1,
+        solimp_perturbation_ratio=0.1,
+        # Joint parameters
+        joint_names=None,
+        randomize_stiffness=True,
+        randomize_frictionloss=True,
+        randomize_damping=True,
+        randomize_armature=True,
+        stiffness_perturbation_ratio=0.1,
+        frictionloss_perturbation_size=0.05,
+        damping_perturbation_size=0.01,
+        armature_perturbation_size=0.01,
     ):
         super().__init__(sim=sim, random_state=random_state)
 
@@ -1551,41 +1557,93 @@ class DynamicsModder(BaseModder):
         # relative magnitude of the randomization to use, "type": either "ratio" or "size" (relative or absolute
         # perturbations), and "clip": (low, high) values to clip the final perturbed value by]
         self.opt_randomizations = {
-            "density": {"randomize": randomize_density, "perturbation": density_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, np.inf)},
-            "viscosity": {"randomize": randomize_viscosity, "perturbation": viscosity_perturbation_ratio,
-                          "type": "ratio", "clip": (0.0, np.inf)},
+            "density": {
+                "randomize": randomize_density,
+                "perturbation": density_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, np.inf),
+            },
+            "viscosity": {
+                "randomize": randomize_viscosity,
+                "perturbation": viscosity_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, np.inf),
+            },
         }
 
         self.body_randomizations = {
-            "position": {"randomize": randomize_position, "perturbation": position_perturbation_size,
-                         "type": "size", "clip": (-np.inf, np.inf)},
-            "quaternion": {"randomize": randomize_quaternion, "perturbation": quaternion_perturbation_size,
-                           "type": "size", "clip": (-np.inf, np.inf)},
-            "inertia": {"randomize": randomize_inertia, "perturbation": inertia_perturbation_ratio,
-                        "type": "ratio", "clip": (0.0, np.inf)},
-            "mass": {"randomize": randomize_mass, "perturbation": mass_perturbation_ratio,
-                     "type": "ratio", "clip": (0.0, np.inf)},
+            "position": {
+                "randomize": randomize_position,
+                "perturbation": position_perturbation_size,
+                "type": "size",
+                "clip": (-np.inf, np.inf),
+            },
+            "quaternion": {
+                "randomize": randomize_quaternion,
+                "perturbation": quaternion_perturbation_size,
+                "type": "size",
+                "clip": (-np.inf, np.inf),
+            },
+            "inertia": {
+                "randomize": randomize_inertia,
+                "perturbation": inertia_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, np.inf),
+            },
+            "mass": {
+                "randomize": randomize_mass,
+                "perturbation": mass_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, np.inf),
+            },
         }
 
         self.geom_randomizations = {
-            "friction": {"randomize": randomize_friction, "perturbation": friction_perturbation_ratio,
-                         "type": "ratio", "clip": (0.0, np.inf)},
-            "solref": {"randomize": randomize_solref, "perturbation": solref_perturbation_ratio,
-                       "type": "ratio", "clip": (0.0, 1.0)},
-            "solimp": {"randomize": randomize_solimp, "perturbation": solimp_perturbation_ratio,
-                       "type": "ratio", "clip": (0.0, np.inf)},
+            "friction": {
+                "randomize": randomize_friction,
+                "perturbation": friction_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, np.inf),
+            },
+            "solref": {
+                "randomize": randomize_solref,
+                "perturbation": solref_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, 1.0),
+            },
+            "solimp": {
+                "randomize": randomize_solimp,
+                "perturbation": solimp_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, np.inf),
+            },
         }
 
         self.joint_randomizations = {
-            "stiffness": {"randomize": randomize_stiffness, "perturbation": stiffness_perturbation_ratio,
-                          "type": "ratio", "clip": (0.0, np.inf)},
-            "frictionloss": {"randomize": randomize_frictionloss, "perturbation": frictionloss_perturbation_size,
-                             "type": "size", "clip": (0.0, np.inf)},
-            "damping": {"randomize": randomize_damping, "perturbation": damping_perturbation_size,
-                        "type": "size", "clip": (0.0, np.inf)},
-            "armature": {"randomize": randomize_armature, "perturbation": armature_perturbation_size,
-                         "type": "size", "clip": (0.0, np.inf)},
+            "stiffness": {
+                "randomize": randomize_stiffness,
+                "perturbation": stiffness_perturbation_ratio,
+                "type": "ratio",
+                "clip": (0.0, np.inf),
+            },
+            "frictionloss": {
+                "randomize": randomize_frictionloss,
+                "perturbation": frictionloss_perturbation_size,
+                "type": "size",
+                "clip": (0.0, np.inf),
+            },
+            "damping": {
+                "randomize": randomize_damping,
+                "perturbation": damping_perturbation_size,
+                "type": "size",
+                "clip": (0.0, np.inf),
+            },
+            "armature": {
+                "randomize": randomize_armature,
+                "perturbation": armature_perturbation_size,
+                "type": "size",
+                "clip": (0.0, np.inf),
+            },
         }
 
         # Store defaults so we don't loss track of the original (non-perturbed) values
@@ -1600,11 +1658,10 @@ class DynamicsModder(BaseModder):
         Grabs the current values for all parameters in sim and stores them as default values
         """
         self.opt_defaults = {
-            None:           # no name associated with the opt parameters
-                {
+            None: {  # no name associated with the opt parameters
                 "density": self.sim.model.opt.density,
                 "viscosity": self.sim.model.opt.viscosity,
-                }
+            }
         }
 
         self.body_defaults = {}
@@ -1642,7 +1699,12 @@ class DynamicsModder(BaseModder):
         Restores the default values curently saved in this modder
         """
         # Loop through all defaults and set the default value in sim
-        for group_defaults in (self.opt_defaults, self.body_defaults, self.geom_defaults, self.joint_defaults):
+        for group_defaults in (
+            self.opt_defaults,
+            self.body_defaults,
+            self.geom_defaults,
+            self.joint_defaults,
+        ):
             for name, defaults in group_defaults.items():
                 for attr, default_val in defaults.items():
                     self.mod(name=name, attr=attr, val=default_val)
@@ -1655,9 +1717,14 @@ class DynamicsModder(BaseModder):
         Randomizes all enabled dynamics parameters in the simulation
         """
         for group_defaults, group_randomizations, group_randomize_names in zip(
-                (self.opt_defaults, self.body_defaults, self.geom_defaults, self.joint_defaults),
-                (self.opt_randomizations, self.body_randomizations, self.geom_randomizations, self.joint_randomizations),
-                ([None], self.body_names, self.geom_names, self.joint_names)
+            (self.opt_defaults, self.body_defaults, self.geom_defaults, self.joint_defaults),
+            (
+                self.opt_randomizations,
+                self.body_randomizations,
+                self.geom_randomizations,
+                self.joint_randomizations,
+            ),
+            ([None], self.body_names, self.geom_names, self.joint_names),
         ):
             for name in group_randomize_names:
                 # Randomize all parameters associated with this element
@@ -1666,9 +1733,17 @@ class DynamicsModder(BaseModder):
                     settings = group_randomizations[attr]
                     if settings["randomize"]:
                         # Randomize accordingly, and clip the final perturbed value
-                        perturbation = np.random.rand() if type(val) in {int, float} else np.random.rand(*val.shape)
+                        perturbation = (
+                            np.random.rand()
+                            if type(val) in {int, float}
+                            else np.random.rand(*val.shape)
+                        )
                         perturbation = settings["perturbation"] * (-1 + 2 * perturbation)
-                        val = val + perturbation if settings["type"] == "size" else val * (1.0 + perturbation)
+                        val = (
+                            val + perturbation
+                            if settings["type"] == "size"
+                            else val * (1.0 + perturbation)
+                        )
                         val = np.clip(val, *settings["clip"])
                     # Modify this value
                     self.mod(name=name, attr=attr, val=val)
@@ -1705,8 +1780,10 @@ class DynamicsModder(BaseModder):
                 argument should match the expected type for the given parameter.
         """
         # Make sure specified parameter is valid, and then modify it
-        assert attr in self.dynamics_parameters, "Invalid dynamics parameter specified! Supported parameters are: {};" \
-                                                 " requested: {}".format(self.dynamics_parameters, attr)
+        assert attr in self.dynamics_parameters, (
+            "Invalid dynamics parameter specified! Supported parameters are: {};"
+            " requested: {}".format(self.dynamics_parameters, attr)
+        )
         # Modify the requested parameter (uses a clean way to programmatically call the appropriate method)
         getattr(self, f"mod_{attr}")(name, val)
 
@@ -1917,18 +1994,15 @@ class DynamicsModder(BaseModder):
             # Opt parameters
             "density",
             "viscosity",
-
             # Body parameters
             "position",
             "quaternion",
             "inertia",
             "mass",
-
             # Geom parameters
             "friction",
             "solref",
             "solimp",
-
             # Joint parameters
             "stiffness",
             "frictionloss",

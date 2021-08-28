@@ -23,7 +23,9 @@ def gripper_factory(name, idn=0):
     from robosuite.models.grippers import GRIPPER_MAPPING, ALL_GRIPPERS
 
     # Make sure gripper is valid
-    assert name in GRIPPER_MAPPING, f"Unknown gripper name: {name}. Valid options are: {ALL_GRIPPERS}"
+    assert (
+        name in GRIPPER_MAPPING
+    ), f"Unknown gripper name: {name}. Valid options are: {ALL_GRIPPERS}"
 
     # Generate gripper
     return GRIPPER_MAPPING[name](idn=idn)

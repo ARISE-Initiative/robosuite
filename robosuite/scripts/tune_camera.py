@@ -16,8 +16,8 @@ import robosuite.utils.transform_utils as T
 from robosuite.utils.mjcf_utils import find_elements, find_parent
 
 # some settings
-DELTA_POS_KEY_PRESS = 0.05      # delta camera position per key press
-DELTA_ROT_KEY_PRESS = 1         # delta camera angle per key press
+DELTA_POS_KEY_PRESS = 0.05  # delta camera position per key press
+DELTA_ROT_KEY_PRESS = 1  # delta camera angle per key press
 
 
 def modify_xml_for_camera_movement(xml, camera_name):
@@ -46,8 +46,9 @@ def modify_xml_for_camera_movement(xml, camera_name):
         if camera.get("name") == camera_name:
             camera_elem = camera
             break
-    assert camera_elem is not None, "No valid camera name found, options are: {}"\
-        .format([camera.get("name") for camera in cameras])
+    assert camera_elem is not None, "No valid camera name found, options are: {}".format(
+        [camera.get("name") for camera in cameras]
+    )
 
     # Find parent element of the camera element
     parent = find_parent(root=tree, child=camera_elem)
@@ -86,7 +87,7 @@ def move_camera(env, direction, scale, cam_body_id):
 
     # current camera pose
     camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-    camera_rot = T.quat2mat(T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw'))
+    camera_rot = T.quat2mat(T.convert_quat(env.sim.model.body_quat[cam_body_id], to="xyzw"))
 
     # move along camera frame axis and set new position
     camera_pos += scale * camera_rot.dot(direction)
@@ -106,7 +107,7 @@ def rotate_camera(env, direction, angle, cam_body_id):
 
     # current camera rotation
     camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-    camera_rot = T.quat2mat(T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw'))
+    camera_rot = T.quat2mat(T.convert_quat(env.sim.model.body_quat[cam_body_id], to="xyzw"))
 
     # rotate by angle and direction to get new camera rotation
     rad = np.pi * angle / 180.0
@@ -114,7 +115,7 @@ def rotate_camera(env, direction, angle, cam_body_id):
     camera_rot = camera_rot.dot(R[:3, :3])
 
     # set new rotation
-    env.sim.model.body_quat[cam_body_id] = T.convert_quat(T.mat2quat(camera_rot), to='wxyz')
+    env.sim.model.body_quat[cam_body_id] = T.convert_quat(T.mat2quat(camera_rot), to="wxyz")
     env.sim.forward()
 
 
@@ -144,42 +145,102 @@ class KeyboardHandler:
         # controls for moving position
         if key == glfw.KEY_W:
             # move forward
-            move_camera(env=self.env, direction=[0., 0., -1.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            move_camera(
+                env=self.env,
+                direction=[0.0, 0.0, -1.0],
+                scale=DELTA_POS_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_S:
             # move backward
-            move_camera(env=self.env, direction=[0., 0., 1.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            move_camera(
+                env=self.env,
+                direction=[0.0, 0.0, 1.0],
+                scale=DELTA_POS_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_A:
             # move left
-            move_camera(env=self.env, direction=[-1., 0., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            move_camera(
+                env=self.env,
+                direction=[-1.0, 0.0, 0.0],
+                scale=DELTA_POS_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_D:
             # move right
-            move_camera(env=self.env, direction=[1., 0., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            move_camera(
+                env=self.env,
+                direction=[1.0, 0.0, 0.0],
+                scale=DELTA_POS_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_R:
             # move up
-            move_camera(env=self.env, direction=[0., 1., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            move_camera(
+                env=self.env,
+                direction=[0.0, 1.0, 0.0],
+                scale=DELTA_POS_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_F:
             # move down
-            move_camera(env=self.env, direction=[0., -1., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            move_camera(
+                env=self.env,
+                direction=[0.0, -1.0, 0.0],
+                scale=DELTA_POS_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
 
         # controls for moving rotation
         elif key == glfw.KEY_UP:
             # rotate up
-            rotate_camera(env=self.env, direction=[1., 0., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            rotate_camera(
+                env=self.env,
+                direction=[1.0, 0.0, 0.0],
+                angle=DELTA_ROT_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_DOWN:
             # rotate down
-            rotate_camera(env=self.env, direction=[-1., 0., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            rotate_camera(
+                env=self.env,
+                direction=[-1.0, 0.0, 0.0],
+                angle=DELTA_ROT_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_LEFT:
             # rotate left
-            rotate_camera(env=self.env, direction=[0., 1., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            rotate_camera(
+                env=self.env,
+                direction=[0.0, 1.0, 0.0],
+                angle=DELTA_ROT_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_RIGHT:
             # rotate right
-            rotate_camera(env=self.env, direction=[0., -1., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            rotate_camera(
+                env=self.env,
+                direction=[0.0, -1.0, 0.0],
+                angle=DELTA_ROT_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_PERIOD:
             # rotate counterclockwise
-            rotate_camera(env=self.env, direction=[0., 0., 1.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            rotate_camera(
+                env=self.env,
+                direction=[0.0, 0.0, 1.0],
+                angle=DELTA_ROT_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
         elif key == glfw.KEY_SLASH:
             # rotate clockwise
-            rotate_camera(env=self.env, direction=[0., 0., -1.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            rotate_camera(
+                env=self.env,
+                direction=[0.0, 0.0, -1.0],
+                angle=DELTA_ROT_KEY_PRESS,
+                cam_body_id=self.cam_body_id,
+            )
 
     def on_release(self, window, key, scancode, action, mods):
         """
@@ -210,7 +271,9 @@ def print_command(char, info):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, default="Lift")
-    parser.add_argument("--robots", nargs="+", type=str, default="Sawyer", help="Which robot(s) to use in the env")
+    parser.add_argument(
+        "--robots", nargs="+", type=str, default="Sawyer", help="Which robot(s) to use in the env"
+    )
     args = parser.parse_args()
 
     print("\nWelcome to the camera tuning script! You will be able to tune a camera view")
@@ -226,9 +289,11 @@ if __name__ == "__main__":
     print("")
 
     # read camera XML tag from user input
-    inp = input("\nPlease paste a camera name below \n"
-                "OR xml tag below (e.g. <camera ... />) \n"
-                "OR leave blank for an example:\n")
+    inp = input(
+        "\nPlease paste a camera name below \n"
+        "OR xml tag below (e.g. <camera ... />) \n"
+        "OR leave blank for an example:\n"
+    )
 
     if len(inp) == 0:
         if args.env != "Lift":
@@ -239,8 +304,11 @@ if __name__ == "__main__":
 
     # remember the tag and infer some properties
     from_tag = "<" in inp
-    notify_str = "NOTE: using the following xml tag:\n" if from_tag else \
-        "NOTE: using the following camera (initialized at default sim location)\n"
+    notify_str = (
+        "NOTE: using the following xml tag:\n"
+        if from_tag
+        else "NOTE: using the following camera (initialized at default sim location)\n"
+    )
 
     print(notify_str)
     print("{}\n".format(inp))
@@ -278,13 +346,19 @@ if __name__ == "__main__":
     # Infer initial camera pose
     if from_tag:
         initial_file_camera_pos = np.array(cam_tree.get("pos").split(" ")).astype(float)
-        initial_file_camera_quat = T.convert_quat(np.array(cam_tree.get("quat").split(" ")).astype(float), to='xyzw')
+        initial_file_camera_quat = T.convert_quat(
+            np.array(cam_tree.get("quat").split(" ")).astype(float), to="xyzw"
+        )
         cam_fov = cam_tree.get("fovy", None)
     else:
         initial_file_camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-        initial_file_camera_quat = T.convert_quat(np.array(env.sim.model.body_quat[cam_body_id]), to='xyzw')
+        initial_file_camera_quat = T.convert_quat(
+            np.array(env.sim.model.body_quat[cam_body_id]), to="xyzw"
+        )
         cam_fov = env.sim.model.cam_fovy[camera_id]
-    initial_file_camera_pose = T.make_pose(initial_file_camera_pos, T.quat2mat(initial_file_camera_quat))
+    initial_file_camera_pose = T.make_pose(
+        initial_file_camera_pos, T.quat2mat(initial_file_camera_quat)
+    )
 
     # Modify fov if specified
     if cam_fov is not None:
@@ -293,8 +367,10 @@ if __name__ == "__main__":
     # remember difference between camera pose in initial tag
     # and absolute camera pose in world
     initial_world_camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-    initial_world_camera_quat = T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw')
-    initial_world_camera_pose = T.make_pose(initial_world_camera_pos, T.quat2mat(initial_world_camera_quat))
+    initial_world_camera_quat = T.convert_quat(env.sim.model.body_quat[cam_body_id], to="xyzw")
+    initial_world_camera_pose = T.make_pose(
+        initial_world_camera_pos, T.quat2mat(initial_world_camera_quat)
+    )
     world_in_file = initial_file_camera_pose.dot(T.pose_inv(initial_world_camera_pose))
 
     # register callbacks to handle key presses in the viewer
@@ -313,18 +389,19 @@ if __name__ == "__main__":
         if spin_count % 500 == 0:
             # convert from world coordinates to file coordinates (xml subtree)
             camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-            camera_quat = T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw')
+            camera_quat = T.convert_quat(env.sim.model.body_quat[cam_body_id], to="xyzw")
             world_camera_pose = T.make_pose(camera_pos, T.quat2mat(camera_quat))
             file_camera_pose = world_in_file.dot(world_camera_pose)
             # TODO: Figure out why numba causes black screen of death (specifically, during mat2pose --> mat2quat call below)
             camera_pos, camera_quat = T.mat2pose(file_camera_pose)
-            camera_quat = T.convert_quat(camera_quat, to='wxyz')
+            camera_quat = T.convert_quat(camera_quat, to="wxyz")
 
             print("\n\ncurrent camera tag you should copy")
             cam_tree.set("pos", "{} {} {}".format(camera_pos[0], camera_pos[1], camera_pos[2]))
-            cam_tree.set("quat", "{} {} {} {}".format(camera_quat[0], camera_quat[1], camera_quat[2], camera_quat[3]))
+            cam_tree.set(
+                "quat",
+                "{} {} {} {}".format(
+                    camera_quat[0], camera_quat[1], camera_quat[2], camera_quat[3]
+                ),
+            )
             print(ET.tostring(cam_tree, encoding="utf8").decode("utf8"))
-
-
-
-

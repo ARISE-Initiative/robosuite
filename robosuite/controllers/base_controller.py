@@ -25,11 +25,13 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
     """
-    def __init__(self,
-                 sim,
-                 eef_name,
-                 joint_indexes,
-                 actuator_range,
+
+    def __init__(
+        self,
+        sim,
+        eef_name,
+        joint_indexes,
+        actuator_range,
     ):
 
         # Actuator range
@@ -110,11 +112,15 @@ class Controller(object, metaclass=abc.ABCMeta):
         """
 
         if self.action_scale is None:
-            self.action_scale = abs(self.output_max - self.output_min) / abs(self.input_max - self.input_min)
+            self.action_scale = abs(self.output_max - self.output_min) / abs(
+                self.input_max - self.input_min
+            )
             self.action_output_transform = (self.output_max + self.output_min) / 2.0
             self.action_input_transform = (self.input_max + self.input_min) / 2.0
         action = np.clip(action, self.input_min, self.input_max)
-        transformed_action = (action - self.action_input_transform) * self.action_scale + self.action_output_transform
+        transformed_action = (
+            action - self.action_input_transform
+        ) * self.action_scale + self.action_output_transform
 
         return transformed_action
 
@@ -134,21 +140,37 @@ class Controller(object, metaclass=abc.ABCMeta):
         if self.new_update or force:
             self.sim.forward()
 
-            self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
-            self.ee_ori_mat = np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3]))
-            self.ee_pos_vel = np.array(self.sim.data.site_xvelp[self.sim.model.site_name2id(self.eef_name)])
-            self.ee_ori_vel = np.array(self.sim.data.site_xvelr[self.sim.model.site_name2id(self.eef_name)])
+            self.ee_pos = np.array(
+                self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)]
+            )
+            self.ee_ori_mat = np.array(
+                self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3])
+            )
+            self.ee_pos_vel = np.array(
+                self.sim.data.site_xvelp[self.sim.model.site_name2id(self.eef_name)]
+            )
+            self.ee_ori_vel = np.array(
+                self.sim.data.site_xvelr[self.sim.model.site_name2id(self.eef_name)]
+            )
 
             self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
             self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
 
-            self.J_pos = np.array(self.sim.data.get_site_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index])
-            self.J_ori = np.array(self.sim.data.get_site_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
+            self.J_pos = np.array(
+                self.sim.data.get_site_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index]
+            )
+            self.J_ori = np.array(
+                self.sim.data.get_site_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index]
+            )
             self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
-            mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
+            mass_matrix = np.ndarray(
+                shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order="C"
+            )
             mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
-            mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
+            mass_matrix = np.reshape(
+                mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel))
+            )
             self.mass_matrix = mass_matrix[self.qvel_index, :][:, self.qvel_index]
 
             # Clear self.new_update
@@ -214,7 +236,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         """
         # First run sanity check to make sure no strings are being inputted
         if isinstance(nums, str):
-            raise TypeError("Error: Only numeric inputs are supported for this function, nums2array!")
+            raise TypeError(
+                "Error: Only numeric inputs are supported for this function, nums2array!"
+            )
 
         # Check if input is an Iterable, if so, we simply convert the input to np.array and return
         # Else, input is a single value, so we map to a numpy array of correct size and return
@@ -265,5 +289,3 @@ class Controller(object, metaclass=abc.ABCMeta):
             str: controller name
         """
         raise NotImplementedError
-
-

@@ -55,20 +55,21 @@ class JointTorqueController(Controller):
             via an argument dict that has additional extraneous arguments won't raise an error
     """
 
-    def __init__(self,
-                 sim,
-                 eef_name,
-                 joint_indexes,
-                 actuator_range,
-                 input_max=1,
-                 input_min=-1,
-                 output_max=0.05,
-                 output_min=-0.05,
-                 policy_freq=20,
-                 torque_limits=None,
-                 interpolator=None,
-                 **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
-                 ):
+    def __init__(
+        self,
+        sim,
+        eef_name,
+        joint_indexes,
+        actuator_range,
+        input_max=1,
+        input_min=-1,
+        output_max=0.05,
+        output_min=-0.05,
+        policy_freq=20,
+        torque_limits=None,
+        interpolator=None,
+        **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
+    ):
 
         super().__init__(
             sim,
@@ -87,7 +88,9 @@ class JointTorqueController(Controller):
         self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits (if not specified, set them to actuator limits by default)
-        self.torque_limits = np.array(torque_limits) if torque_limits is not None else self.actuator_limits
+        self.torque_limits = (
+            np.array(torque_limits) if torque_limits is not None else self.actuator_limits
+        )
 
         # control frequency
         self.control_freq = policy_freq
@@ -96,9 +99,11 @@ class JointTorqueController(Controller):
         self.interpolator = interpolator
 
         # initialize torques
-        self.goal_torque = None                           # Goal torque desired, pre-compensation
-        self.current_torque = np.zeros(self.control_dim)  # Current torques being outputted, pre-compensation
-        self.torques = None                               # Torques returned every time run_controller is called
+        self.goal_torque = None  # Goal torque desired, pre-compensation
+        self.current_torque = np.zeros(
+            self.control_dim
+        )  # Current torques being outputted, pre-compensation
+        self.torques = None  # Torques returned every time run_controller is called
 
     def set_goal(self, torques):
         """
@@ -114,9 +119,13 @@ class JointTorqueController(Controller):
         self.update()
 
         # Check to make sure torques is size self.joint_dim
-        assert len(torques) == self.control_dim, "Delta torque must be equal to the robot's joint dimension space!"
+        assert (
+            len(torques) == self.control_dim
+        ), "Delta torque must be equal to the robot's joint dimension space!"
 
-        self.goal_torque = np.clip(self.scale_action(torques), self.torque_limits[0], self.torque_limits[1])
+        self.goal_torque = np.clip(
+            self.scale_action(torques), self.torque_limits[0], self.torque_limits[1]
+        )
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_torque)
@@ -167,4 +176,4 @@ class JointTorqueController(Controller):
 
     @property
     def name(self):
-        return 'JOINT_TORQUE'
+        return "JOINT_TORQUE"

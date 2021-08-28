@@ -75,7 +75,6 @@ class DataCollectionWrapper(Wrapper):
         self.env.sim.set_state_from_flattened(self._current_task_instance_state)
         self.env.sim.forward()
 
-
     def _on_first_interaction(self):
         """
         Bookkeeping for first timestep of episode.

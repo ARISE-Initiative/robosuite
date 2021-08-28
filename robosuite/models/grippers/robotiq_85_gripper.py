@@ -31,20 +31,16 @@ class Robotiq85GripperBase(GripperModel):
                 "left_outer_finger_collision",
                 "left_inner_finger_collision",
                 "left_fingertip_collision",
-                "left_fingerpad_collision"
+                "left_fingerpad_collision",
             ],
             "right_finger": [
                 "right_outer_finger_collision",
                 "right_inner_finger_collision",
                 "right_fingertip_collision",
-                "right_fingerpad_collision"
+                "right_fingerpad_collision",
             ],
-            "left_fingerpad": [
-                "left_fingerpad_collision"
-            ],
-            "right_fingerpad": [
-                "right_fingerpad_collision"
-            ],
+            "left_fingerpad": ["left_fingerpad_collision"],
+            "right_fingerpad": ["right_fingerpad_collision"],
         }
 
 

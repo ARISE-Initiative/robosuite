@@ -35,7 +35,7 @@ class ObjectPositionSampler:
         ensure_object_boundary_in_range=True,
         ensure_valid_placement=True,
         reference_pos=(0, 0, 0),
-        z_offset=0.,
+        z_offset=0.0,
     ):
         # Setup attributes
         self.name = name
@@ -43,7 +43,11 @@ class ObjectPositionSampler:
             self.mujoco_objects = []
         else:
             # Shallow copy the list so we don't modify the inputted list but still keep the object references
-            self.mujoco_objects = [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else copy(mujoco_objects)
+            self.mujoco_objects = (
+                [mujoco_objects]
+                if isinstance(mujoco_objects, MujocoObject)
+                else copy(mujoco_objects)
+            )
         self.ensure_object_boundary_in_range = ensure_object_boundary_in_range
         self.ensure_valid_placement = ensure_valid_placement
         self.reference_pos = reference_pos
@@ -56,9 +60,13 @@ class ObjectPositionSampler:
         Args:
             mujoco_objects (MujocoObject or list of MujocoObject): single model or list of MJCF object models
         """
-        mujoco_objects = [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+        mujoco_objects = (
+            [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+        )
         for obj in mujoco_objects:
-            assert obj not in self.mujoco_objects, "Object '{}' already in sampler!".format(obj.name)
+            assert obj not in self.mujoco_objects, "Object '{}' already in sampler!".format(
+                obj.name
+            )
             self.mujoco_objects.append(obj)
 
     def reset(self):
@@ -130,11 +138,11 @@ class UniformRandomSampler(ObjectPositionSampler):
         x_range=(0, 0),
         y_range=(0, 0),
         rotation=None,
-        rotation_axis='z',
+        rotation_axis="z",
         ensure_object_boundary_in_range=True,
         ensure_valid_placement=True,
         reference_pos=(0, 0, 0),
-        z_offset=0.,
+        z_offset=0.0,
     ):
         self.x_range = x_range
         self.y_range = y_range
@@ -195,22 +203,24 @@ class UniformRandomSampler(ObjectPositionSampler):
         if self.rotation is None:
             rot_angle = np.random.uniform(high=2 * np.pi, low=0)
         elif isinstance(self.rotation, collections.Iterable):
-            rot_angle = np.random.uniform(
-                high=max(self.rotation), low=min(self.rotation)
-            )
+            rot_angle = np.random.uniform(high=max(self.rotation), low=min(self.rotation))
         else:
             rot_angle = self.rotation
 
         # Return angle based on axis requested
-        if self.rotation_axis == 'x':
+        if self.rotation_axis == "x":
             return np.array([np.cos(rot_angle / 2), np.sin(rot_angle / 2), 0, 0])
-        elif self.rotation_axis == 'y':
+        elif self.rotation_axis == "y":
             return np.array([np.cos(rot_angle / 2), 0, np.sin(rot_angle / 2), 0])
-        elif self.rotation_axis == 'z':
+        elif self.rotation_axis == "z":
             return np.array([np.cos(rot_angle / 2), 0, 0, np.sin(rot_angle / 2)])
         else:
             # Invalid axis specified, raise error
-            raise ValueError("Invalid rotation axis specified. Must be 'x', 'y', or 'z'. Got: {}".format(self.rotation_axis))
+            raise ValueError(
+                "Invalid rotation axis specified. Must be 'x', 'y', or 'z'. Got: {}".format(
+                    self.rotation_axis
+                )
+            )
 
     def sample(self, fixtures=None, reference=None, on_top=True):
         """
@@ -242,21 +252,29 @@ class UniformRandomSampler(ObjectPositionSampler):
         if reference is None:
             base_offset = self.reference_pos
         elif type(reference) is str:
-            assert reference in placed_objects, "Invalid reference received. Current options are: {}, requested: {}"\
-                .format(placed_objects.keys(), reference)
+            assert (
+                reference in placed_objects
+            ), "Invalid reference received. Current options are: {}, requested: {}".format(
+                placed_objects.keys(), reference
+            )
             ref_pos, _, ref_obj = placed_objects[reference]
             base_offset = np.array(ref_pos)
             if on_top:
                 base_offset += np.array((0, 0, ref_obj.top_offset[-1]))
         else:
             base_offset = np.array(reference)
-            assert base_offset.shape[0] == 3, "Invalid reference received. Should be (x,y,z) 3-tuple, but got: {}"\
-                .format(base_offset)
+            assert (
+                base_offset.shape[0] == 3
+            ), "Invalid reference received. Should be (x,y,z) 3-tuple, but got: {}".format(
+                base_offset
+            )
 
         # Sample pos and quat for all objects assigned to this sampler
         for obj in self.mujoco_objects:
             # First make sure the currently sampled object hasn't already been sampled
-            assert obj.name not in placed_objects, "Object '{}' has already been sampled!".format(obj.name)
+            assert obj.name not in placed_objects, "Object '{}' has already been sampled!".format(
+                obj.name
+            )
 
             horizontal_radius = obj.horizontal_radius
             bottom_offset = obj.bottom_offset
@@ -275,9 +293,7 @@ class UniformRandomSampler(ObjectPositionSampler):
                         if (
                             np.linalg.norm((object_x - x, object_y - y))
                             <= other_obj.horizontal_radius + horizontal_radius
-                        ) and (
-                            object_z - z <= other_obj.top_offset[-1] - bottom_offset[-1]
-                        ):
+                        ) and (object_z - z <= other_obj.top_offset[-1] - bottom_offset[-1]):
                             location_valid = False
                             break
 
@@ -310,6 +326,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
     Args:
         name (str): Name of this sampler.
     """
+
     def __init__(self, name):
         # Samplers / args will be filled in later
         self.samplers = collections.OrderedDict()
@@ -331,7 +348,9 @@ class SequentialCompositeSampler(ObjectPositionSampler):
         """
         # Verify that all added mujoco objects haven't already been added, and add to this sampler's objects dict
         for obj in sampler.mujoco_objects:
-            assert obj not in self.mujoco_objects, f"Object '{obj.name}' already has sampler associated with it!"
+            assert (
+                obj not in self.mujoco_objects
+            ), f"Object '{obj.name}' already has sampler associated with it!"
             self.mujoco_objects.append(obj)
         self.samplers[sampler.name] = sampler
         self.sample_args[sampler.name] = sample_args
@@ -349,7 +368,7 @@ class SequentialCompositeSampler(ObjectPositionSampler):
             x_range=[-10, -20],
             y_range=[-10, -20],
             rotation=[0, 0],
-            rotation_axis='z',
+            rotation_axis="z",
             z_offset=10,
             ensure_object_boundary_in_range=False,
             ensure_valid_placement=False,
@@ -371,13 +390,20 @@ class SequentialCompositeSampler(ObjectPositionSampler):
             mujoco_objects (MujocoObject or list of MujocoObject): Object(s) to add
         """
         # First verify that all mujoco objects haven't already been added, and add to this sampler's objects dict
-        mujoco_objects = [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+        mujoco_objects = (
+            [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+        )
         for obj in mujoco_objects:
-            assert obj not in self.mujoco_objects, f"Object '{obj.name}' already has sampler associated with it!"
+            assert (
+                obj not in self.mujoco_objects
+            ), f"Object '{obj.name}' already has sampler associated with it!"
             self.mujoco_objects.append(obj)
         # Make sure sampler_name exists
-        assert sampler_name in self.samplers.keys(), "Invalid sub-sampler specified, valid options are: {}, " \
-                                                     "requested: {}".format(self.samplers.keys(), sampler_name)
+        assert (
+            sampler_name in self.samplers.keys()
+        ), "Invalid sub-sampler specified, valid options are: {}, " "requested: {}".format(
+            self.samplers.keys(), sampler_name
+        )
         # Add the mujoco objects to the requested sub-sampler
         self.samplers[sampler_name].add_objects(mujoco_objects)
 

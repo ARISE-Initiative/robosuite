@@ -4,15 +4,24 @@ import xml.etree.ElementTree as ET
 
 import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoXML, MujocoModel
-from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR,\
-                                       sort_elements, new_joint, add_prefix, add_material, find_elements
+from robosuite.utils.mjcf_utils import (
+    string_to_array,
+    array_to_string,
+    CustomMaterial,
+    OBJECT_COLLISION_COLOR,
+    sort_elements,
+    new_joint,
+    add_prefix,
+    add_material,
+    find_elements,
+)
 
 
 # Dict mapping geom type string keywords to group number
 GEOMTYPE2GROUP = {
-    "collision": {0},                 # If we want to use a geom for physics, but NOT visualize
-    "visual": {1},                    # If we want to use a geom for visualization, but NOT physics
-    "all": {0, 1},                    # If we want to use a geom for BOTH physics + visualization
+    "collision": {0},  # If we want to use a geom for physics, but NOT visualize
+    "visual": {1},  # If we want to use a geom for visualization, but NOT physics
+    "all": {0, 1},  # If we want to use a geom for BOTH physics + visualization
 }
 
 GEOM_GROUPS = GEOMTYPE2GROUP.keys()
@@ -44,7 +53,9 @@ class MujocoObject(MujocoModel):
     def __init__(self, obj_type="all", duplicate_collision_geoms=True):
         super().__init__()
         self.asset = ET.Element("asset")
-        assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
+        assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(
+            GEOM_GROUPS, obj_type
+        )
         self.obj_type = obj_type
         self.duplicate_collision_geoms = duplicate_collision_geoms
 
@@ -69,8 +80,15 @@ class MujocoObject(MujocoModel):
             other (MujocoXML or MujocoObject): other xml file whose assets will be merged into this one
         """
         for asset in other.asset:
-            if find_elements(root=self.asset, tags=asset.tag,
-                             attribs={"name": asset.get("name")}, return_first=True) is None:
+            if (
+                find_elements(
+                    root=self.asset,
+                    tags=asset.tag,
+                    attribs={"name": asset.get("name")},
+                    return_first=True,
+                )
+                is None
+            ):
                 self.asset.append(asset)
 
     def get_obj(self):
@@ -118,11 +136,17 @@ class MujocoObject(MujocoModel):
         """
         # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
         _elements = sort_elements(root=self.get_obj())
-        assert len(_elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
-                                                 "got {}".format(len(_elements["root_body"]))
+        assert (
+            len(_elements["root_body"]) == 1
+        ), "Invalid number of root bodies found for robot model. Expected 1," "got {}".format(
+            len(_elements["root_body"])
+        )
         _elements["root_body"] = _elements["root_body"][0]
-        _elements["bodies"] = [_elements["root_body"]] + _elements["bodies"] if "bodies" in _elements else \
-                              [_elements["root_body"]]
+        _elements["bodies"] = (
+            [_elements["root_body"]] + _elements["bodies"]
+            if "bodies" in _elements
+            else [_elements["root_body"]]
+        )
         self._root_body = _elements["root_body"].get("name")
         self._bodies = [e.get("name") for e in _elements.get("bodies", [])]
         self._joints = [e.get("name") for e in _elements.get("joints", [])]
@@ -134,14 +158,18 @@ class MujocoObject(MujocoModel):
 
         # Add default materials if we're using domain randomization
         if macros.USING_INSTANCE_RANDOMIZATION:
-            tex_element, mat_element, _, used = add_material(root=self.get_obj(), naming_prefix=self.naming_prefix)
+            tex_element, mat_element, _, used = add_material(
+                root=self.get_obj(), naming_prefix=self.naming_prefix
+            )
             # Only add the material / texture if they were actually used
             if used:
                 self.asset.append(tex_element)
                 self.asset.append(mat_element)
 
         # Add prefix to all elements
-        add_prefix(root=self.get_obj(), prefix=self.naming_prefix, exclude=self.exclude_from_prefixing)
+        add_prefix(
+            root=self.get_obj(), prefix=self.naming_prefix, exclude=self.exclude_from_prefixing
+        )
 
     @property
     def name(self):
@@ -300,10 +328,14 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
             visual geom copy
     """
 
-    def __init__(self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True):
+    def __init__(
+        self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True
+    ):
         MujocoXML.__init__(self, fname)
         # Set obj type and duplicate args
-        assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
+        assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(
+            GEOM_GROUPS, obj_type
+        )
         self.obj_type = obj_type
         self.duplicate_collision_geoms = duplicate_collision_geoms
 
@@ -431,7 +463,9 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
     @property
     def bottom_offset(self):
-        bottom_site = self.worldbody.find("./body/site[@name='{}bottom_site']".format(self.naming_prefix))
+        bottom_site = self.worldbody.find(
+            "./body/site[@name='{}bottom_site']".format(self.naming_prefix)
+        )
         return string_to_array(bottom_site.get("pos"))
 
     @property

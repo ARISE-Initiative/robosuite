@@ -70,7 +70,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Door")
-    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+    parser.add_argument(
+        "--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env"
+    )
     parser.add_argument("--directory", type=str, default="/tmp/")
     parser.add_argument("--timesteps", type=int, default=1000)
     args = parser.parse_args()

@@ -21,7 +21,9 @@ class Manipulator(Robot):
             gripper (GripperModel): Gripper to execute action for
             gripper_action (float): Value between [-1,1] to send to gripper
         """
-        actuator_idxs = [self.sim.model.actuator_name2id(actuator) for actuator in gripper.actuators]
+        actuator_idxs = [
+            self.sim.model.actuator_name2id(actuator) for actuator in gripper.actuators
+        ]
         gripper_action_actual = gripper.format_action(gripper_action)
         # rescale normalized gripper action to control ranges
         ctrl_range = self.sim.model.actuator_ctrlrange[actuator_idxs]

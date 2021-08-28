@@ -70,18 +70,20 @@ import argparse
 
 # Arguments for this test script
 parser = argparse.ArgumentParser()
-parser.add_argument("--render", action='store_true', help="Whether to render this test or not for visual validation")
+parser.add_argument(
+    "--render", action="store_true", help="Whether to render this test or not for visual validation"
+)
 args = parser.parse_args()
 
 # Define the controllers to use (action_dim, num_test_steps, test_value)
 controllers = {
-        "OSC_POSE":         [7, 6, 0.1],
-        "OSC_POSITION":     [4, 3, 0.1],
-        "IK_POSE":          [7, 6, 0.01],
-        "JOINT_POSITION":   [8, 7, 0.2],
-        "JOINT_VELOCITY":   [8, 7, -0.1],
-        "JOINT_TORQUE":     [8, 7, 0.25]
-    }
+    "OSC_POSE": [7, 6, 0.1],
+    "OSC_POSITION": [4, 3, 0.1],
+    "IK_POSE": [7, 6, 0.01],
+    "JOINT_POSITION": [8, 7, 0.2],
+    "JOINT_VELOCITY": [8, 7, -0.1],
+    "JOINT_TORQUE": [8, 7, 0.25],
+}
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions
 steps_per_action = 50
@@ -107,7 +109,7 @@ def test_all_controllers():
             has_offscreen_renderer=False,
             use_camera_obs=False,
             horizon=(steps_per_action + steps_per_rest) * num_test_steps,
-            controller_configs=controller_config
+            controller_configs=controller_config,
         )
         print("Testing controller: {}...".format(controller_name))
 
@@ -119,7 +121,9 @@ def test_all_controllers():
         # get action range
         action_min, action_max = env.action_spec
         assert action_min.shape == action_max.shape
-        assert action_min.shape[0] == action_dim, "Expected {}, got {}".format(action_dim, action_min.shape[0])
+        assert action_min.shape[0] == action_dim, "Expected {}, got {}".format(
+            action_dim, action_min.shape[0]
+        )
 
         # Keep track of done variable to know when to break loop
         count = 0
@@ -127,7 +131,7 @@ def test_all_controllers():
         while count < num_test_steps:
             action = neutral.copy()
             for i in range(steps_per_action):
-                if controller_name in {'IK_POSE', 'OSC_POSE'} and count > 2:
+                if controller_name in {"IK_POSE", "OSC_POSE"} and count > 2:
                     # Set this value to be the angle and set appropriate axis
                     vec = np.zeros(3)
                     vec[count - 3] = test_value

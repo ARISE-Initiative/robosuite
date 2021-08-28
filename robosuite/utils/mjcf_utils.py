@@ -58,11 +58,35 @@ SENSOR_TYPES = {
 }
 
 MUJOCO_NAMED_ATTRIBUTES = {
-    "class", "childclass", "name", "objname", "material", "texture",
-    "joint", "joint1", "joint2", "jointinparent", "geom", "geom1", "geom2",
-    "mesh", "fixed", "actuator", "objname", "tendon", "tendon1", "tendon2",
-    "slidesite", "cranksite", "body", "body1", "body2", "hfield", "target",
-    "prefix", "site",
+    "class",
+    "childclass",
+    "name",
+    "objname",
+    "material",
+    "texture",
+    "joint",
+    "joint1",
+    "joint2",
+    "jointinparent",
+    "geom",
+    "geom1",
+    "geom2",
+    "mesh",
+    "fixed",
+    "actuator",
+    "objname",
+    "tendon",
+    "tendon1",
+    "tendon2",
+    "slidesite",
+    "cranksite",
+    "body",
+    "body1",
+    "body2",
+    "hfield",
+    "target",
+    "prefix",
+    "site",
 }
 
 IMAGE_CONVENTION_MAPPING = {
@@ -136,26 +160,31 @@ class CustomMaterial(object):
     """
 
     def __init__(
-            self,
-            texture,
-            tex_name,
-            mat_name,
-            tex_attrib=None,
-            mat_attrib=None,
-            shared=False,
+        self,
+        texture,
+        tex_name,
+        mat_name,
+        tex_attrib=None,
+        mat_attrib=None,
+        shared=False,
     ):
         # Check if the desired texture is an rgba value
         if type(texture) is str:
             default = False
             # Verify that requested texture is valid
-            assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
-                texture, ALL_TEXTURES)
+            assert (
+                texture in ALL_TEXTURES
+            ), "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
+                texture, ALL_TEXTURES
+            )
         else:
             default = True
             # If specified, this is an rgba value and a default texture is desired; make sure length of rgba array is 4
             if texture is not None:
-                assert len(texture) == 4, "Error: Requested default texture. Got array of length {}." \
-                                          "Expected rgba array of length 4.".format(len(texture))
+                assert len(texture) == 4, (
+                    "Error: Requested default texture. Got array of length {}."
+                    "Expected rgba array of length 4.".format(len(texture))
+                )
 
         # Setup the texture and material attributes
         self.tex_attrib = {} if tex_attrib is None else tex_attrib.copy()
@@ -184,7 +213,7 @@ class CustomMaterial(object):
         else:
             if texture is not None:
                 # Create a texture patch
-                tex = Image.new('RGBA', (100, 100), tuple((np.array(texture)*255).astype('int')))
+                tex = Image.new("RGBA", (100, 100), tuple((np.array(texture) * 255).astype("int")))
                 # Create temp directory if it does not exist
                 save_dir = "/tmp/robosuite_temp_tex"
                 Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -426,11 +455,7 @@ def new_inertial(pos=(0, 0, 0), mass=None, **kwargs):
     return new_element(tag="inertial", name=None, **kwargs)
 
 
-def get_size(size,
-             size_max,
-             size_min,
-             default_max,
-             default_min):
+def get_size(size, size_max, size_min, default_max, default_min):
     """
     Helper method for providing a size, or a range to randomize from
 
@@ -448,20 +473,23 @@ def get_size(size,
         ValueError: [Inconsistent array sizes]
     """
     if len(default_max) != len(default_min):
-        raise ValueError('default_max = {} and default_min = {}'
-                         .format(str(default_max), str(default_min)) +
-                         ' have different lengths')
+        raise ValueError(
+            "default_max = {} and default_min = {}".format(str(default_max), str(default_min))
+            + " have different lengths"
+        )
     if size is not None:
         if (size_max is not None) or (size_min is not None):
-            raise ValueError('size = {} overrides size_max = {}, size_min = {}'
-                             .format(size, size_max, size_min))
+            raise ValueError(
+                "size = {} overrides size_max = {}, size_min = {}".format(size, size_max, size_min)
+            )
     else:
         if size_max is None:
             size_max = default_max
         if size_min is None:
             size_min = default_min
-        size = np.array([np.random.uniform(size_min[i], size_max[i])
-                         for i in range(len(default_max))])
+        size = np.array(
+            [np.random.uniform(size_min[i], size_max[i]) for i in range(len(default_max))]
+        )
     return np.array(size)
 
 
@@ -533,11 +561,11 @@ def add_to_dict(dic, fill_in_defaults=True, default_value=None, **kwargs):
 
 
 def add_prefix(
-        root,
-        prefix,
-        tags="default",
-        attribs="default",
-        exclude=None,
+    root,
+    prefix,
+    tags="default",
+    attribs="default",
+    exclude=None,
 ):
     """
     Find all element(s) matching the requested @tag, and appends @prefix to all @attributes if they exist.
@@ -608,7 +636,9 @@ def add_material(root, naming_prefix="", custom_material=None):
         custom_material.name = naming_prefix + custom_material.name
         custom_material.tex_attrib["name"] = naming_prefix + custom_material.tex_attrib["name"]
         custom_material.mat_attrib["name"] = naming_prefix + custom_material.mat_attrib["name"]
-        custom_material.mat_attrib["texture"] = naming_prefix + custom_material.mat_attrib["texture"]
+        custom_material.mat_attrib["texture"] = (
+            naming_prefix + custom_material.mat_attrib["texture"]
+        )
 
     # Check the current element for matching conditions
     if root.tag == "geom" and root.get("group", None) == "1" and root.get("material", None) is None:
@@ -618,7 +648,9 @@ def add_material(root, naming_prefix="", custom_material=None):
         used = True
     # Continue recursively searching through the element tree
     for r in root:
-        _, _, _, _used = add_material(root=r, naming_prefix=naming_prefix, custom_material=custom_material)
+        _, _, _, _used = add_material(
+            root=r, naming_prefix=naming_prefix, custom_material=custom_material
+        )
         # Update used
         used = used or _used
     # Lastly, return the new texture and material elements
@@ -640,7 +672,11 @@ def recolor_collision_geoms(root, rgba, exclude=None):
             return True if we should exclude the given element / attribute from having its collision geom impacted.
     """
     # Check this body
-    if root.tag == "geom" and root.get("group") in {None, "0"} and (exclude is None or not exclude(root)):
+    if (
+        root.tag == "geom"
+        and root.get("group") in {None, "0"}
+        and (exclude is None or not exclude(root))
+    ):
         root.set("rgba", array_to_string(rgba))
         root.attrib.pop("material", None)
 
@@ -732,10 +768,7 @@ def sort_elements(root, parent=None, element_filter=None, _elements_dict=None):
     # Loop through all possible subtrees for this XML recurisvely
     for r in root:
         _elements_dict = sort_elements(
-            root=r,
-            parent=root,
-            element_filter=element_filter,
-            _elements_dict=_elements_dict
+            root=r, parent=root, element_filter=element_filter, _elements_dict=_elements_dict
         )
 
     return _elements_dict
@@ -807,7 +840,9 @@ def find_elements(root, tags, attribs=None, return_first=True):
             if elements is not None:
                 return elements
         else:
-            found_elements = find_elements(tags=tags, attribs=attribs, root=r, return_first=return_first)
+            found_elements = find_elements(
+                tags=tags, attribs=attribs, root=r, return_first=return_first
+            )
             pre_elements = deepcopy(elements)
             if found_elements:
                 elements += found_elements if type(found_elements) is list else [found_elements]

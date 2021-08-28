@@ -68,16 +68,32 @@ class HammerObject(CompositeObject):
         self.head_density_ratio = head_density_ratio
 
         # Set radius and length ranges
-        self.handle_radius_range = handle_radius if isinstance(handle_radius, Iterable) else [handle_radius] * 2
-        self.handle_length_range = handle_length if isinstance(handle_length, Iterable) else [handle_length] * 2
-        self.handle_density_range = handle_density if isinstance(handle_density, Iterable) else [handle_density] * 2
-        self.handle_friction_range = handle_friction if isinstance(handle_friction, Iterable) else [handle_friction] * 2
+        self.handle_radius_range = (
+            handle_radius if isinstance(handle_radius, Iterable) else [handle_radius] * 2
+        )
+        self.handle_length_range = (
+            handle_length if isinstance(handle_length, Iterable) else [handle_length] * 2
+        )
+        self.handle_density_range = (
+            handle_density if isinstance(handle_density, Iterable) else [handle_density] * 2
+        )
+        self.handle_friction_range = (
+            handle_friction if isinstance(handle_friction, Iterable) else [handle_friction] * 2
+        )
 
         # Sample actual radius and length, as well as head half-size
-        self.handle_radius = np.random.uniform(self.handle_radius_range[0], self.handle_radius_range[1])
-        self.handle_length = np.random.uniform(self.handle_length_range[0], self.handle_length_range[1])
-        self.handle_density = np.random.uniform(self.handle_density_range[0], self.handle_density_range[1])
-        self.handle_friction = np.random.uniform(self.handle_friction_range[0], self.handle_friction_range[1])
+        self.handle_radius = np.random.uniform(
+            self.handle_radius_range[0], self.handle_radius_range[1]
+        )
+        self.handle_length = np.random.uniform(
+            self.handle_length_range[0], self.handle_length_range[1]
+        )
+        self.handle_density = np.random.uniform(
+            self.handle_density_range[0], self.handle_density_range[1]
+        )
+        self.handle_friction = np.random.uniform(
+            self.handle_friction_range[0], self.handle_friction_range[1]
+        )
         self.head_halfsize = np.random.uniform(self.handle_radius, self.handle_radius * 1.2)
 
         # Initialize RGBA values and texture flag
@@ -125,11 +141,13 @@ class HammerObject(CompositeObject):
         Returns:
             dict: args to be used by CompositeObject to generate geoms
         """
-        full_size = np.array((
-            3.2 * self.head_halfsize,
-            self.head_halfsize,
-            self.handle_length + 2 * self.head_halfsize
-        ))
+        full_size = np.array(
+            (
+                3.2 * self.head_halfsize,
+                self.head_halfsize,
+                self.handle_length + 2 * self.head_halfsize,
+            )
+        )
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
         base_args = {
             "total_size": full_size / 2.0,
@@ -140,15 +158,20 @@ class HammerObject(CompositeObject):
         obj_args = {}
 
         # Add handle component
-        assert self.handle_shape in {"cylinder", "box"},\
-            "Error loading hammer: Handle type must either be 'box' or 'cylinder', got {}.".format(self.handle_shape)
+        assert self.handle_shape in {
+            "cylinder",
+            "box",
+        }, "Error loading hammer: Handle type must either be 'box' or 'cylinder', got {}.".format(
+            self.handle_shape
+        )
         add_to_dict(
             dic=obj_args,
             geom_types="cylinder" if self.handle_shape == "cylinder" else "box",
             geom_locations=(0, 0, 0),
             geom_quats=(1, 0, 0, 0),
-            geom_sizes=np.array([self.handle_radius, self.handle_length / 2.0]) if self.handle_shape == "cylinder" else\
-                       np.array([self.handle_radius, self.handle_radius, self.handle_length / 2.0]),
+            geom_sizes=np.array([self.handle_radius, self.handle_length / 2.0])
+            if self.handle_shape == "cylinder"
+            else np.array([self.handle_radius, self.handle_radius, self.handle_length / 2.0]),
             geom_names="handle",
             geom_rgbas=None if self.use_texture else self.rgba_handle,
             geom_materials="wood_mat" if self.use_texture else None,
@@ -174,7 +197,11 @@ class HammerObject(CompositeObject):
         add_to_dict(
             dic=obj_args,
             geom_types="cylinder",
-            geom_locations=(self.head_halfsize * 2.2, 0, self.handle_length / 2.0 + self.head_halfsize),
+            geom_locations=(
+                self.head_halfsize * 2.2,
+                0,
+                self.handle_length / 2.0 + self.head_halfsize,
+            ),
             geom_quats=(0.707106, 0, 0.707106, 0),
             geom_sizes=np.array([self.head_halfsize * 0.8, self.head_halfsize * 0.2]),
             geom_names="neck",
@@ -188,7 +215,11 @@ class HammerObject(CompositeObject):
         add_to_dict(
             dic=obj_args,
             geom_types="cylinder",
-            geom_locations=(self.head_halfsize * 2.8, 0, self.handle_length / 2.0 + self.head_halfsize),
+            geom_locations=(
+                self.head_halfsize * 2.8,
+                0,
+                self.handle_length / 2.0 + self.head_halfsize,
+            ),
             geom_quats=(0.707106, 0, 0.707106, 0),
             geom_sizes=np.array([self.head_halfsize, self.head_halfsize * 0.4]),
             geom_names="face",
@@ -202,9 +233,19 @@ class HammerObject(CompositeObject):
         add_to_dict(
             dic=obj_args,
             geom_types="box",
-            geom_locations=(-self.head_halfsize * 2, 0, self.handle_length / 2.0 + self.head_halfsize),
+            geom_locations=(
+                -self.head_halfsize * 2,
+                0,
+                self.handle_length / 2.0 + self.head_halfsize,
+            ),
             geom_quats=(0.9238795, 0, 0.3826834, 0),
-            geom_sizes=np.array([self.head_halfsize * 0.7072, self.head_halfsize * 0.95, self.head_halfsize * 0.7072]),
+            geom_sizes=np.array(
+                [
+                    self.head_halfsize * 0.7072,
+                    self.head_halfsize * 0.95,
+                    self.head_halfsize * 0.7072,
+                ]
+            ),
             geom_names="claw",
             geom_rgbas=None if self.use_texture else self.rgba_claw,
             geom_materials="metal_mat" if self.use_texture else None,
@@ -227,7 +268,11 @@ class HammerObject(CompositeObject):
             np.array: (x, y, z, w) quaternion orientation for the hammer
         """
         # Randomly sample between +/- flip (such that the hammer head faces one way or the other)
-        return np.array([0.5, -0.5, 0.5, -0.5]) if np.random.rand() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
+        return (
+            np.array([0.5, -0.5, 0.5, -0.5])
+            if np.random.rand() >= 0.5
+            else np.array([-0.5, -0.5, -0.5, -0.5])
+        )
 
     @property
     def handle_geoms(self):

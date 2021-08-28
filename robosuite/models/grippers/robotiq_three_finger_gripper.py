@@ -27,11 +27,28 @@ class RobotiqThreeFingerGripperBase(GripperModel):
     @property
     def _important_geoms(self):
         return {
-            "left_finger": ["f1_l0", "f1_l1", "f1_l2", "f1_l3",
-                            "f2_l0", "f2_l1", "f2_l2", "f2_l3",
-                            "f1_tip_collision", "f2_tip_collision", "f1_pad_collision", "f2_pad_collision"],
-            "right_finger": ["f3_l0", "f3_l1", "f3_l2", "f3_l3",
-                             "finger_middle_tip_collision", "finger_middle_pad_collision"],
+            "left_finger": [
+                "f1_l0",
+                "f1_l1",
+                "f1_l2",
+                "f1_l3",
+                "f2_l0",
+                "f2_l1",
+                "f2_l2",
+                "f2_l3",
+                "f1_tip_collision",
+                "f2_tip_collision",
+                "f1_pad_collision",
+                "f2_pad_collision",
+            ],
+            "right_finger": [
+                "f3_l0",
+                "f3_l1",
+                "f3_l2",
+                "f3_l3",
+                "finger_middle_tip_collision",
+                "finger_middle_pad_collision",
+            ],
             "left_fingerpad": ["f1_pad_collision", "f2_pad_collision"],
             "right_fingerpad": ["finger_middle_pad_collision"],
         }
@@ -54,7 +71,9 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
             AssertionError: [Invalid action dimension size]
         """
         assert len(action) == self.dof
-        self.current_action = np.clip(self.current_action + self.speed * np.array(action), -1.0, 1.0)
+        self.current_action = np.clip(
+            self.current_action + self.speed * np.array(action), -1.0, 1.0
+        )
         # Automatically set the scissor joint to "closed" position by default
         return np.concatenate([self.current_action * np.ones(3), [-1]])
 

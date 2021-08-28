@@ -130,7 +130,7 @@ class Stack(SingleArmEnv):
         gripper_types="default",
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
-        table_friction=(1., 5e-3, 1e-4),
+        table_friction=(1.0, 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
@@ -265,9 +265,7 @@ class Stack(SingleArmEnv):
 
         # Aligning is successful when cubeA is right above cubeB
         if cubeA_lifted:
-            horiz_dist = np.linalg.norm(
-                np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2])
-            )
+            horiz_dist = np.linalg.norm(np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2]))
             r_lift += 0.5 * (1 - np.tanh(horiz_dist))
 
         # stacking is successful when the block is lifted and the gripper is not holding the object
@@ -323,8 +321,8 @@ class Stack(SingleArmEnv):
         )
         self.cubeA = BoxObject(
             name="cubeA",
-            size_min=[0.02, 0.02, 0.02], 
-            size_max=[0.02, 0.02, 0.02], 
+            size_min=[0.02, 0.02, 0.02],
+            size_max=[0.02, 0.02, 0.02],
             rgba=[1, 0, 0, 1],
             material=redwood,
         )
@@ -386,7 +384,9 @@ class Stack(SingleArmEnv):
 
             # Loop through all objects and reset their positions
             for obj_pos, obj_quat, obj in object_placements.values():
-                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
+                self.sim.data.set_joint_qpos(
+                    obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)])
+                )
 
     def _setup_observables(self):
         """
@@ -410,7 +410,9 @@ class Stack(SingleArmEnv):
 
             @sensor(modality=modality)
             def cubeA_quat(obs_cache):
-                return convert_quat(np.array(self.sim.data.body_xquat[self.cubeA_body_id]), to="xyzw")
+                return convert_quat(
+                    np.array(self.sim.data.body_xquat[self.cubeA_body_id]), to="xyzw"
+                )
 
             @sensor(modality=modality)
             def cubeB_pos(obs_cache):
@@ -418,24 +420,43 @@ class Stack(SingleArmEnv):
 
             @sensor(modality=modality)
             def cubeB_quat(obs_cache):
-                return convert_quat(np.array(self.sim.data.body_xquat[self.cubeB_body_id]), to="xyzw")
+                return convert_quat(
+                    np.array(self.sim.data.body_xquat[self.cubeB_body_id]), to="xyzw"
+                )
 
             @sensor(modality=modality)
             def gripper_to_cubeA(obs_cache):
-                return obs_cache["cubeA_pos"] - obs_cache[f"{pf}eef_pos"] if \
-                    "cubeA_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["cubeA_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if "cubeA_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             @sensor(modality=modality)
             def gripper_to_cubeB(obs_cache):
-                return obs_cache["cubeB_pos"] - obs_cache[f"{pf}eef_pos"] if \
-                    "cubeB_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["cubeB_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if "cubeB_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             @sensor(modality=modality)
             def cubeA_to_cubeB(obs_cache):
-                return obs_cache["cubeB_pos"] - obs_cache["cubeA_pos"] if \
-                    "cubeA_pos" in obs_cache and "cubeB_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["cubeB_pos"] - obs_cache["cubeA_pos"]
+                    if "cubeA_pos" in obs_cache and "cubeB_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
-            sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, gripper_to_cubeA, gripper_to_cubeB, cubeA_to_cubeB]
+            sensors = [
+                cubeA_pos,
+                cubeA_quat,
+                cubeB_pos,
+                cubeB_quat,
+                gripper_to_cubeA,
+                gripper_to_cubeB,
+                cubeA_to_cubeB,
+            ]
             names = [s.__name__ for s in sensors]
 
             # Create observables

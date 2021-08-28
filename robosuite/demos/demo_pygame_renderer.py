@@ -19,7 +19,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
-    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+    parser.add_argument(
+        "--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env"
+    )
     parser.add_argument("--camera", type=str, default="frontview", help="Name of camera to render")
     parser.add_argument("--timesteps", type=int, default=10000)
     parser.add_argument("--width", type=int, default=512)

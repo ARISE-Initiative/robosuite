@@ -11,9 +11,7 @@ def test_two_finger():
     two_finger_tester(False)
 
 
-def two_finger_tester(render,
-                      total_iters=1,
-                      test_y=True):
+def two_finger_tester(render, total_iters=1, test_y=True):
     gripper = RethinkGripper()
     tester = GripperTester(
         gripper=gripper,
@@ -24,8 +22,7 @@ def two_finger_tester(render,
         render=render,
     )
     tester.start_simulation()
-    tester.loop(total_iters=total_iters,
-                test_y=test_y)
+    tester.loop(total_iters=total_iters, test_y=test_y)
 
 
 if __name__ == "__main__":

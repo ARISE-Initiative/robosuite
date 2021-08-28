@@ -130,7 +130,7 @@ class Lift(SingleArmEnv):
         gripper_types="default",
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
-        table_friction=(1., 5e-3, 1e-4),
+        table_friction=(1.0, 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
@@ -215,7 +215,7 @@ class Lift(SingleArmEnv):
         Returns:
             float: reward value
         """
-        reward = 0.
+        reward = 0.0
 
         # sparse completion reward
         if self._check_success():
@@ -305,7 +305,7 @@ class Lift(SingleArmEnv):
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
             mujoco_arena=mujoco_arena,
-            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=self.cube,
         )
 
@@ -342,12 +342,17 @@ class Lift(SingleArmEnv):
 
             @sensor(modality=modality)
             def cube_quat(obs_cache):
-                return convert_quat(np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw")
+                return convert_quat(
+                    np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw"
+                )
 
             @sensor(modality=modality)
             def gripper_to_cube_pos(obs_cache):
-                return obs_cache[f"{pf}eef_pos"] - obs_cache["cube_pos"] if \
-                    f"{pf}eef_pos" in obs_cache and "cube_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache[f"{pf}eef_pos"] - obs_cache["cube_pos"]
+                    if f"{pf}eef_pos" in obs_cache and "cube_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             sensors = [cube_pos, cube_quat, gripper_to_cube_pos]
             names = [s.__name__ for s in sensors]
@@ -376,7 +381,9 @@ class Lift(SingleArmEnv):
 
             # Loop through all objects and reset their positions
             for obj_pos, obj_quat, obj in object_placements.values():
-                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
+                self.sim.data.set_joint_qpos(
+                    obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)])
+                )
 
     def visualize(self, vis_settings):
         """

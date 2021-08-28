@@ -37,8 +37,10 @@ class KeyboardHandler:
         self.num_robots = len(env.robots)
         self.active_robot_num = 0
         self.active_arm_joint = 1
-        self.active_arm = "right"       # only relevant for bimanual robots
-        self.current_joints_pos = env.sim.data.qpos[self.active_robot._ref_joint_pos_indexes[:self.num_joints]]
+        self.active_arm = "right"  # only relevant for bimanual robots
+        self.current_joints_pos = env.sim.data.qpos[
+            self.active_robot._ref_joint_pos_indexes[: self.num_joints]
+        ]
 
     def on_press(self, window, key, scancode, action, mods):
         """
@@ -54,7 +56,9 @@ class KeyboardHandler:
         # controls for setting active arm
         if key == glfw.KEY_0:
             # Notify use that joint indexes are 1-indexed
-            print("Joint Indexes are 1-Indexed. Available joints are 1 - {}".format(self.num_joints))
+            print(
+                "Joint Indexes are 1-Indexed. Available joints are 1 - {}".format(self.num_joints)
+            )
         elif key == glfw.KEY_1:
             # Make sure range is valid; if so, update this specific joint
             if self._check_valid_joint(1):
@@ -166,7 +170,11 @@ class KeyboardHandler:
         """
         if i > self.num_joints:
             # Print error
-            print("Error: Requested joint {} is out of range; available joints are 1 - {}".format(i, self.num_joints))
+            print(
+                "Error: Requested joint {} is out of range; available joints are 1 - {}".format(
+                    i, self.num_joints
+                )
+            )
             return False
         else:
             return True
@@ -178,7 +186,7 @@ class KeyboardHandler:
         if isinstance(self.active_robot, SingleArm):
             self.active_robot_num = (self.active_robot_num + 1) // self.num_robots
             robot = self.active_robot_num
-        else:   # Bimanual case
+        else:  # Bimanual case
             self.active_arm = "left" if self.active_arm == "right" else "right"
             robot = self.active_arm
         # Reset joint being controlled to 1
@@ -195,16 +203,22 @@ class KeyboardHandler:
             i (int): Joint index to update
             delta (float): Increment to alter specific joint by
         """
-        self.current_joints_pos[i-1] += delta
+        self.current_joints_pos[i - 1] += delta
         if isinstance(self.active_robot, SingleArm):
             robot = self.active_robot_num
-            self.env.sim.data.qpos[self.active_robot._ref_joint_pos_indexes] = self.current_joints_pos
-        else:   # Bimanual case
+            self.env.sim.data.qpos[
+                self.active_robot._ref_joint_pos_indexes
+            ] = self.current_joints_pos
+        else:  # Bimanual case
             robot = self.active_arm
             if self.active_arm == "right":
-                self.env.sim.data.qpos[self.active_robot._ref_joint_pos_indexes[:self.num_joints]] = self.current_joints_pos
-            else:   # left arm case
-                self.env.sim.data.qpos[self.active_robot._ref_joint_pos_indexes[self.num_joints:]] = self.current_joints_pos
+                self.env.sim.data.qpos[
+                    self.active_robot._ref_joint_pos_indexes[: self.num_joints]
+                ] = self.current_joints_pos
+            else:  # left arm case
+                self.env.sim.data.qpos[
+                    self.active_robot._ref_joint_pos_indexes[self.num_joints :]
+                ] = self.current_joints_pos
         # Print out current joint positions to user
         print("Robot {} joint qpos: {}".format(robot, self.current_joints_pos))
 
@@ -224,7 +238,7 @@ class KeyboardHandler:
         """
         if isinstance(self.active_robot, SingleArm):
             return len(self.active_robot.torque_limits[0])
-        else:   # Bimanual arm case
+        else:  # Bimanual arm case
             return int(len(self.active_robot.torque_limits[0]) / 2)
 
 
@@ -243,15 +257,24 @@ def print_command(char, info):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, default="Lift")
-    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-    parser.add_argument("--init_qpos", nargs="+", type=float, default=0,
-                        help="Initial qpos to use. 0 defaults to all zeros")
+    parser.add_argument(
+        "--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env"
+    )
+    parser.add_argument(
+        "--init_qpos",
+        nargs="+",
+        type=float,
+        default=0,
+        help="Initial qpos to use. 0 defaults to all zeros",
+    )
 
     args = parser.parse_args()
 
-    print("\nWelcome to the joint tuning script! You will be able to tune the robot\n"
-          "arm joints in the specified environment by using your keyboard. The \n"
-          "controls are printed below:")
+    print(
+        "\nWelcome to the joint tuning script! You will be able to tune the robot\n"
+        "arm joints in the specified environment by using your keyboard. The \n"
+        "controls are printed below:"
+    )
 
     print("")
     print_command("Keys", "Command")
@@ -263,7 +286,7 @@ if __name__ == "__main__":
     print("")
 
     # Setup printing options for numbers
-    np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+    np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
     # Define the controller
     controller_config = robosuite.load_controller_config(default_controller="JOINT_POSITION")
@@ -279,7 +302,7 @@ if __name__ == "__main__":
         control_freq=20,
         render_camera=None,
         controller_configs=controller_config,
-        initialization_noise=None
+        initialization_noise=None,
     )
     env.reset()
 

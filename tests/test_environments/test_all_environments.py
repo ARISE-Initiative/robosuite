@@ -38,7 +38,11 @@ def test_all_environments():
                 env_config["robots"] = robot_name
 
             # Notify user of which test we are currently on
-            print("Testing env: {} with robots {} with config {}...".format(env_name, env_config["robots"], config))
+            print(
+                "Testing env: {} with robots {} with config {}...".format(
+                    env_name, env_config["robots"], config
+                )
+            )
 
             # Create environment
             env = suite.make(

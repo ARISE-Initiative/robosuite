@@ -11,6 +11,7 @@ class Wrapper:
     Args:
         env (MujocoEnv): The environment to wrap.
     """
+
     def __init__(self, env):
         self.env = env
 
@@ -30,9 +31,7 @@ class Wrapper:
             if isinstance(env, Wrapper):
                 if env.class_name() == self.class_name():
                     raise Exception(
-                        "Attempted to double wrap with Wrapper: {}".format(
-                            self.__class__.__name__
-                        )
+                        "Attempted to double wrap with Wrapper: {}".format(self.__class__.__name__)
                     )
                 env = env.env
             else:

@@ -83,25 +83,26 @@ class JointPositionController(Controller):
         AssertionError: [Invalid impedance mode]
     """
 
-    def __init__(self,
-                 sim,
-                 eef_name,
-                 joint_indexes,
-                 actuator_range,
-                 input_max=1,
-                 input_min=-1,
-                 output_max=0.05,
-                 output_min=-0.05,
-                 kp=50,
-                 damping_ratio=1,
-                 impedance_mode="fixed",
-                 kp_limits=(0, 300),
-                 damping_ratio_limits=(0, 100),
-                 policy_freq=20,
-                 qpos_limits=None,
-                 interpolator=None,
-                 **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
-                 ):
+    def __init__(
+        self,
+        sim,
+        eef_name,
+        joint_indexes,
+        actuator_range,
+        input_max=1,
+        input_min=-1,
+        output_max=0.05,
+        output_min=-0.05,
+        kp=50,
+        damping_ratio=1,
+        impedance_mode="fixed",
+        kp_limits=(0, 300),
+        damping_ratio_limits=(0, 100),
+        policy_freq=20,
+        qpos_limits=None,
+        interpolator=None,
+        **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
+    ):
 
         super().__init__(
             sim,
@@ -133,9 +134,12 @@ class JointPositionController(Controller):
         self.damping_ratio_max = self.nums2array(damping_ratio_limits[1], self.control_dim)
 
         # Verify the proposed impedance mode is supported
-        assert impedance_mode in IMPEDANCE_MODES, "Error: Tried to instantiate OSC controller for unsupported " \
-                                                  "impedance mode! Inputted impedance mode: {}, Supported modes: {}". \
-            format(impedance_mode, IMPEDANCE_MODES)
+        assert impedance_mode in IMPEDANCE_MODES, (
+            "Error: Tried to instantiate OSC controller for unsupported "
+            "impedance mode! Inputted impedance mode: {}, Supported modes: {}".format(
+                impedance_mode, IMPEDANCE_MODES
+            )
+        )
 
         # Impedance mode
         self.impedance_mode = impedance_mode
@@ -180,9 +184,17 @@ class JointPositionController(Controller):
         # Parse action based on the impedance mode, and update kp / kd as necessary
         jnt_dim = len(self.qpos_index)
         if self.impedance_mode == "variable":
-            damping_ratio, kp, delta = action[:jnt_dim], action[jnt_dim:2*jnt_dim], action[2*jnt_dim:]
+            damping_ratio, kp, delta = (
+                action[:jnt_dim],
+                action[jnt_dim : 2 * jnt_dim],
+                action[2 * jnt_dim :],
+            )
             self.kp = np.clip(kp, self.kp_min, self.kp_max)
-            self.kd = 2 * np.sqrt(self.kp) * np.clip(damping_ratio, self.damping_ratio_min, self.damping_ratio_max)
+            self.kd = (
+                2
+                * np.sqrt(self.kp)
+                * np.clip(damping_ratio, self.damping_ratio_min, self.damping_ratio_max)
+            )
         elif self.impedance_mode == "variable_kp":
             kp, delta = action[:jnt_dim], action[jnt_dim:]
             self.kp = np.clip(kp, self.kp_min, self.kp_max)
@@ -191,17 +203,18 @@ class JointPositionController(Controller):
             delta = action
 
         # Check to make sure delta is size self.joint_dim
-        assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
+        assert (
+            len(delta) == jnt_dim
+        ), "Delta qpos must be equal to the robot's joint dimension space!"
 
         if delta is not None:
             scaled_delta = self.scale_action(delta)
         else:
             scaled_delta = None
 
-        self.goal_qpos = set_goal_position(scaled_delta,
-                                           self.joint_pos,
-                                           position_limit=self.position_limits,
-                                           set_pos=set_qpos)
+        self.goal_qpos = set_goal_position(
+            scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
+        )
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_qpos)
@@ -236,8 +249,9 @@ class JointPositionController(Controller):
         # torques = pos_err * kp + vel_err * kd
         position_error = desired_qpos - self.joint_pos
         vel_pos_error = -self.joint_vel
-        desired_torque = (np.multiply(np.array(position_error), np.array(self.kp))
-                          + np.multiply(vel_pos_error, self.kd))
+        desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(
+            vel_pos_error, self.kd
+        )
 
         # Return desired torques plus gravity compensations
         self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
@@ -256,7 +270,6 @@ class JointPositionController(Controller):
         # Reset interpolator if required
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_qpos)
-
 
     @property
     def control_limits(self):
@@ -286,4 +299,4 @@ class JointPositionController(Controller):
 
     @property
     def name(self):
-        return 'JOINT_POSITION'
+        return "JOINT_POSITION"

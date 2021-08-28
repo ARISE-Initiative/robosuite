@@ -208,7 +208,10 @@ class ManipulationEnv(RobotEnv):
         else:
             o_geoms = [object_geoms] if type(object_geoms) is str else object_geoms
         if isinstance(gripper, GripperModel):
-            g_geoms = [gripper.important_geoms["left_fingerpad"], gripper.important_geoms["right_fingerpad"]]
+            g_geoms = [
+                gripper.important_geoms["left_fingerpad"],
+                gripper.important_geoms["right_fingerpad"],
+            ]
         elif type(gripper) is str:
             g_geoms = [[gripper]]
         else:
@@ -279,11 +282,13 @@ class ManipulationEnv(RobotEnv):
         # color the gripper site appropriately based on (squared) distance to target
         dist = np.sum(np.square((target_pos - gripper_pos)))
         max_dist = 0.1
-        scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
+        scaled = (1.0 - min(dist / max_dist, 1.0)) ** 15
         rgba = np.zeros(3)
         rgba[0] = 1 - scaled
         rgba[1] = scaled
-        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper.important_sites["grip_site"])][:3] = rgba
+        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper.important_sites["grip_site"])][
+            :3
+        ] = rgba
 
     def _check_robot_configuration(self, robots):
         """
@@ -297,5 +302,6 @@ class ManipulationEnv(RobotEnv):
         if type(robots) is str:
             robots = [robots]
         for robot in robots:
-            assert issubclass(ROBOT_CLASS_MAPPING[robot], Manipulator),\
-                "Only manipulator robots supported for manipulation environment!"
+            assert issubclass(
+                ROBOT_CLASS_MAPPING[robot], Manipulator
+            ), "Only manipulator robots supported for manipulation environment!"

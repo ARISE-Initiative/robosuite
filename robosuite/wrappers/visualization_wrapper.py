@@ -53,7 +53,9 @@ class VisualizationWrapper(Wrapper):
                     indicator_config = deepcopy(DEFAULT_INDICATOR_SITE_CONFIG)
                     indicator_config["name"] = f"indicator{i}"
                 # Make sure name attribute is specified
-                assert "name" in indicator_config, "Name must be specified for all indicator object configurations!"
+                assert (
+                    "name" in indicator_config
+                ), "Name must be specified for all indicator object configurations!"
                 # Add this configuration to the internal array
                 self.indicator_configs.append(indicator_config)
 
@@ -76,8 +78,11 @@ class VisualizationWrapper(Wrapper):
         Returns:
             list: Indicator names for this environment.
         """
-        return [ind_config["name"] for ind_config in self.indicator_configs] if \
-            self.indicator_configs is not None else []
+        return (
+            [ind_config["name"] for ind_config in self.indicator_configs]
+            if self.indicator_configs is not None
+            else []
+        )
 
     def set_indicator_pos(self, indicator, pos):
         """
@@ -89,10 +94,15 @@ class VisualizationWrapper(Wrapper):
         """
         # Make sure indicator is valid
         indicator_names = set(self.get_indicator_names())
-        assert indicator in indicator_names, "Invalid indicator name specified. Valid options are {}, got {}".\
-            format(indicator_names, indicator)
+        assert (
+            indicator in indicator_names
+        ), "Invalid indicator name specified. Valid options are {}, got {}".format(
+            indicator_names, indicator
+        )
         # Set the specified indicator
-        self.env.sim.model.body_pos[self.env.sim.model.body_name2id(indicator + "_body")] = np.array(pos)
+        self.env.sim.model.body_pos[
+            self.env.sim.model.body_name2id(indicator + "_body")
+        ] = np.array(pos)
 
     def get_visualization_settings(self):
         """
@@ -111,8 +121,11 @@ class VisualizationWrapper(Wrapper):
             setting (str): Visualization keyword to set
             visible (bool): True if setting should be visualized.
         """
-        assert setting in self._vis_settings, "Invalid visualization setting specified. Valid options are {}, got {}".\
-            format(self._vis_settings.keys(), setting)
+        assert (
+            setting in self._vis_settings
+        ), "Invalid visualization setting specified. Valid options are {}, got {}".format(
+            self._vis_settings.keys(), setting
+        )
         self._vis_settings[setting] = visible
 
     def reset(self):
@@ -159,6 +172,8 @@ class VisualizationWrapper(Wrapper):
         if self.indicator_configs is not None:
             for indicator_config in self.indicator_configs:
                 config = deepcopy(indicator_config)
-                indicator_body = new_body(name=config["name"] + "_body", pos=config.pop("pos", (0, 0, 0)))
+                indicator_body = new_body(
+                    name=config["name"] + "_body", pos=config.pop("pos", (0, 0, 0))
+                )
                 indicator_body.append(new_site(**config))
                 model.worldbody.append(indicator_body)

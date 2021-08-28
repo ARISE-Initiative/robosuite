@@ -17,10 +17,7 @@ class Keyboard(Device):
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
-    def __init__(self,
-                 pos_sensitivity=1.0,
-                 rot_sensitivity=1.0
-                 ):
+    def __init__(self, pos_sensitivity=1.0, rot_sensitivity=1.0):
 
         self._display_controls()
         self._reset_internal_state()
@@ -58,8 +55,10 @@ class Keyboard(Device):
         """
         Resets internal state of controller, except for the reset signal.
         """
-        self.rotation = np.array([[-1., 0., 0.], [0., 1., 0.], [0., 0., -1.]])
-        self.raw_drotation = np.zeros(3) # immediate roll, pitch, yaw delta values from keyboard hits
+        self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
+        self.raw_drotation = np.zeros(
+            3
+        )  # immediate roll, pitch, yaw delta values from keyboard hits
         self.last_drotation = np.zeros(3)
         self.pos = np.zeros(3)  # (x, y, z)
         self.last_pos = np.zeros(3)
@@ -84,7 +83,9 @@ class Keyboard(Device):
 
         dpos = self.pos - self.last_pos
         self.last_pos = np.array(self.pos)
-        raw_drotation = self.raw_drotation - self.last_drotation # create local variable to return, then reset internal drotation
+        raw_drotation = (
+            self.raw_drotation - self.last_drotation
+        )  # create local variable to return, then reset internal drotation
         self.last_drotation = np.array(self.raw_drotation)
         return dict(
             dpos=dpos,
@@ -110,39 +111,51 @@ class Keyboard(Device):
         if key == glfw.KEY_W:
             self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
         elif key == glfw.KEY_S:
-            self.pos[0] += self._pos_step * self.pos_sensitivity   # inc x
+            self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
         elif key == glfw.KEY_A:
-            self.pos[1] -= self._pos_step * self.pos_sensitivity   # dec y
+            self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
         elif key == glfw.KEY_D:
-            self.pos[1] += self._pos_step * self.pos_sensitivity   # inc y
+            self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
         elif key == glfw.KEY_F:
-            self.pos[2] -= self._pos_step * self.pos_sensitivity   # dec z
+            self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
         elif key == glfw.KEY_R:
-            self.pos[2] += self._pos_step * self.pos_sensitivity   # inc z
+            self.pos[2] += self._pos_step * self.pos_sensitivity  # inc z
 
         # controls for moving orientation
         elif key == glfw.KEY_Z:
-            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1., 0., 0.])[:3, :3]
+            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[
+                :3, :3
+            ]
             self.rotation = self.rotation.dot(drot)  # rotates x
             self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_X:
-            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1., 0., 0.])[:3, :3]
+            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[
+                :3, :3
+            ]
             self.rotation = self.rotation.dot(drot)  # rotates x
             self.raw_drotation[1] += 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_T:
-            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0., 1., 0.])[:3, :3]
+            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[
+                :3, :3
+            ]
             self.rotation = self.rotation.dot(drot)  # rotates y
             self.raw_drotation[0] += 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_G:
-            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0., 1., 0.])[:3, :3]
+            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[
+                :3, :3
+            ]
             self.rotation = self.rotation.dot(drot)  # rotates y
             self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_C:
-            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0., 0., 1.])[:3, :3]
+            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[
+                :3, :3
+            ]
             self.rotation = self.rotation.dot(drot)  # rotates z
             self.raw_drotation[2] += 0.1 * self.rot_sensitivity
         elif key == glfw.KEY_V:
-            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0., 0., 1.])[:3, :3]
+            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[
+                :3, :3
+            ]
             self.rotation = self.rotation.dot(drot)  # rotates z
             self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
 

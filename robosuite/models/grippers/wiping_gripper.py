@@ -14,7 +14,7 @@ class WipingGripper(GripperModel):
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion('grippers/wiping_gripper.xml'), idn=idn)
+        super().__init__(xml_path_completion("grippers/wiping_gripper.xml"), idn=idn)
 
     def format_action(self, action):
         return action
@@ -30,5 +30,5 @@ class WipingGripper(GripperModel):
             "right_finger": [],
             "left_fingerpad": [],
             "right_fingerpad": [],
-            "corners": ["wiping_corner1", "wiping_corner2", "wiping_corner3", "wiping_corner4"]
+            "corners": ["wiping_corner1", "wiping_corner2", "wiping_corner3", "wiping_corner4"],
         }

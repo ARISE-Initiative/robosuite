@@ -53,6 +53,7 @@ class MujocoPyRenderer:
     Args:
         sim: MjSim object
     """
+
     def __init__(self, sim):
         self.viewer = CustomMjViewer(sim)
         self.callbacks = {}
@@ -98,7 +99,7 @@ class MujocoPyRenderer:
         """
         Allows for custom callback functions for the viewer. Called on key up.
         Parameter 'any' will ensure that the callback is called on any key up,
-        and block default mujoco viewer callbacks from executing, except for 
+        and block default mujoco viewer callbacks from executing, except for
         the ESC callback to close the viewer.
 
         Args:
@@ -111,7 +112,7 @@ class MujocoPyRenderer:
         """
         Allows for custom callback functions for the viewer. Called on key repeat.
         Parameter 'any' will ensure that the callback is called on any key repeat,
-        and block default mujoco viewer callbacks from executing, except for 
+        and block default mujoco viewer callbacks from executing, except for
         the ESC callback to close the viewer.
 
         Args:

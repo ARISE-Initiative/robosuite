@@ -68,8 +68,8 @@ if __name__ == "__main__":
         options["env_configuration"] = choose_multi_arm_config()
 
         # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
-        if options["env_configuration"] == 'bimanual':
-            options["robots"] = 'Baxter'
+        if options["env_configuration"] == "bimanual":
+            options["robots"] = "Baxter"
         else:
             options["robots"] = []
 
@@ -95,12 +95,12 @@ if __name__ == "__main__":
 
     # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value)
     controller_settings = {
-        "OSC_POSE":         [6, 6, 0.1],
-        "OSC_POSITION":     [3, 3, 0.1],
-        "IK_POSE":          [6, 6, 0.01],
-        "JOINT_POSITION":   [joint_dim, joint_dim, 0.2],
-        "JOINT_VELOCITY":   [joint_dim, joint_dim, -0.1],
-        "JOINT_TORQUE":     [joint_dim, joint_dim, 0.25]
+        "OSC_POSE": [6, 6, 0.1],
+        "OSC_POSITION": [3, 3, 0.1],
+        "IK_POSE": [6, 6, 0.01],
+        "JOINT_POSITION": [joint_dim, joint_dim, 0.2],
+        "JOINT_VELOCITY": [joint_dim, joint_dim, -0.1],
+        "JOINT_TORQUE": [joint_dim, joint_dim, 0.25],
     }
 
     # Define variables for each controller test
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     # Help message to user
     print()
-    print("Press \"H\" to show the viewer control panel.")
+    print('Press "H" to show the viewer control panel.')
 
     # initialize the task
     env = suite.make(
@@ -134,7 +134,9 @@ if __name__ == "__main__":
     n = 0
     gripper_dim = 0
     for robot in env.robots:
-        gripper_dim = robot.gripper["right"].dof if isinstance(robot, Bimanual) else robot.gripper.dof
+        gripper_dim = (
+            robot.gripper["right"].dof if isinstance(robot, Bimanual) else robot.gripper.dof
+        )
         n += int(robot.action_dim / (action_dim + gripper_dim))
 
     # Define neutral value
@@ -146,7 +148,7 @@ if __name__ == "__main__":
     while count < num_test_steps:
         action = neutral.copy()
         for i in range(steps_per_action):
-            if controller_name in {'IK_POSE', 'OSC_POSE'} and count > 2:
+            if controller_name in {"IK_POSE", "OSC_POSE"} and count > 2:
                 # Set this value to be the scaled axis angle vector
                 vec = np.zeros(3)
                 vec[count - 3] = test_value

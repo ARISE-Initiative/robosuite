@@ -28,11 +28,7 @@ class BoxObject(PrimitiveObject):
         obj_type="all",
         duplicate_collision_geoms=True,
     ):
-        size = get_size(size,
-                        size_max,
-                        size_min,
-                        [0.07, 0.07, 0.07],
-                        [0.03, 0.03, 0.03])
+        size = get_size(size, size_max, size_min, [0.07, 0.07, 0.07], [0.03, 0.03, 0.03])
         super().__init__(
             name=name,
             size=size,

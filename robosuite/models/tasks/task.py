@@ -23,20 +23,24 @@ class Task(MujocoWorldBase):
     """
 
     def __init__(
-        self, 
-        mujoco_arena, 
-        mujoco_robots, 
+        self,
+        mujoco_arena,
+        mujoco_robots,
         mujoco_objects=None,
     ):
         super().__init__()
 
         # Store references to all models
         self.mujoco_arena = mujoco_arena
-        self.mujoco_robots = [mujoco_robots] if isinstance(mujoco_robots, RobotModel) else mujoco_robots
+        self.mujoco_robots = (
+            [mujoco_robots] if isinstance(mujoco_robots, RobotModel) else mujoco_robots
+        )
         if mujoco_objects is None:
             self.mujoco_objects = []
         else:
-            self.mujoco_objects = [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+            self.mujoco_objects = (
+                [mujoco_objects] if isinstance(mujoco_objects, MujocoObject) else mujoco_objects
+            )
 
         # Merge all models
         self.merge_arena(self.mujoco_arena)
@@ -71,8 +75,9 @@ class Task(MujocoWorldBase):
         """
         for mujoco_obj in mujoco_objects:
             # Make sure we actually got a MujocoObject
-            assert isinstance(mujoco_obj, MujocoObject), \
-                "Tried to merge non-MujocoObject! Got type: {}".format(type(mujoco_obj))
+            assert isinstance(
+                mujoco_obj, MujocoObject
+            ), "Tried to merge non-MujocoObject! Got type: {}".format(type(mujoco_obj))
             # Merge this object
             self.merge_assets(mujoco_obj)
             self.worldbody.append(mujoco_obj.get_obj())

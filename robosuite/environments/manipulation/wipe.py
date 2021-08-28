@@ -12,38 +12,35 @@ import multiprocessing
 # Default Wipe environment configuration
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
-    "arm_limit_collision_penalty": -10.0,           # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
-    "wipe_contact_reward": 0.01,                    # reward for contacting something with the wiping tool
-    "unit_wiped_reward": 50.0,                      # reward per peg wiped
-    "ee_accel_penalty": 0,                          # penalty for large end-effector accelerations 
-    "excess_force_penalty_mul": 0.05,               # penalty for each step that the force is over the safety threshold
-    "distance_multiplier": 5.0,                     # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
-    "distance_th_multiplier": 5.0,                  # multiplier in the tanh function for the aforementioned reward
-
+    "arm_limit_collision_penalty": -10.0,  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
+    "wipe_contact_reward": 0.01,  # reward for contacting something with the wiping tool
+    "unit_wiped_reward": 50.0,  # reward per peg wiped
+    "ee_accel_penalty": 0,  # penalty for large end-effector accelerations
+    "excess_force_penalty_mul": 0.05,  # penalty for each step that the force is over the safety threshold
+    "distance_multiplier": 5.0,  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
+    "distance_th_multiplier": 5.0,  # multiplier in the tanh function for the aforementioned reward
     # settings for table top
-    "table_full_size": [0.5, 0.8, 0.05],            # Size of tabletop
-    "table_offset": [0.15, 0, 0.9],                 # Offset of table (z dimension defines max height of table)
-    "table_friction": [0.03, 0.005, 0.0001],        # Friction parameters for the table
-    "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
-    "table_height": 0.0,                            # Additional height of the table over the default location
-    "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
-    "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
-    "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
-    "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_markers": 100,                             # How many particles of dirt to generate in the environment
-
+    "table_full_size": [0.5, 0.8, 0.05],  # Size of tabletop
+    "table_offset": [0.15, 0, 0.9],  # Offset of table (z dimension defines max height of table)
+    "table_friction": [0.03, 0.005, 0.0001],  # Friction parameters for the table
+    "table_friction_std": 0,  # Standard deviation to sample different friction parameters for the table each episode
+    "table_height": 0.0,  # Additional height of the table over the default location
+    "table_height_std": 0.0,  # Standard deviation to sample different heigths of the table each episode
+    "line_width": 0.04,  # Width of the line to wipe (diameter of the pegs)
+    "two_clusters": False,  # if the dirt to wipe is one continuous line or two
+    "coverage_factor": 0.6,  # how much of the table surface we cover
+    "num_markers": 100,  # How many particles of dirt to generate in the environment
     # settings for thresholds
-    "contact_threshold": 1.0,                       # Minimum eef force to qualify as contact [N]
-    "pressure_threshold": 0.5,                      # force threshold (N) to overcome to get increased contact wiping reward
-    "pressure_threshold_max": 60.,                  # maximum force allowed (N)
-
+    "contact_threshold": 1.0,  # Minimum eef force to qualify as contact [N]
+    "pressure_threshold": 0.5,  # force threshold (N) to overcome to get increased contact wiping reward
+    "pressure_threshold_max": 60.0,  # maximum force allowed (N)
     # misc settings
-    "print_results": False,                         # Whether to print results or not
-    "get_info": False,                              # Whether to grab info after each env step if not
-    "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
-    "use_contact_obs": True,                        # if we use a binary observation for whether robot is in contact or not
-    "early_terminations": True,                     # Whether we allow for early terminations or not
-    "use_condensed_obj_obs": True,                  # Whether to use condensed object observation representation (only applicable if obj obs is active)
+    "print_results": False,  # Whether to print results or not
+    "get_info": False,  # Whether to grab info after each env step if not
+    "use_robot_obs": True,  # if we use robot observations (proprioception) as input to the policy
+    "use_contact_obs": True,  # if we use a binary observation for whether robot is in contact or not
+    "early_terminations": True,  # Whether we allow for early terminations or not
+    "use_condensed_obj_obs": True,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
 }
 
 
@@ -180,8 +177,9 @@ class Wipe(SingleArmEnv):
         task_config=None,
     ):
         # Assert that the gripper type is None
-        assert gripper_types == "WipingGripper",\
-            "Tried to specify gripper other than WipingGripper in Wipe environment!"
+        assert (
+            gripper_types == "WipingGripper"
+        ), "Tried to specify gripper other than WipingGripper in Wipe environment!"
 
         # Get config
         self.task_config = task_config if task_config is not None else DEFAULT_WIPE_CONFIG
@@ -191,51 +189,57 @@ class Wipe(SingleArmEnv):
         # settings for the reward
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
-        self.arm_limit_collision_penalty = self.task_config['arm_limit_collision_penalty']
-        self.wipe_contact_reward = self.task_config['wipe_contact_reward']
-        self.unit_wiped_reward = self.task_config['unit_wiped_reward']
-        self.ee_accel_penalty = self.task_config['ee_accel_penalty']
-        self.excess_force_penalty_mul = self.task_config['excess_force_penalty_mul']
-        self.distance_multiplier = self.task_config['distance_multiplier']
-        self.distance_th_multiplier = self.task_config['distance_th_multiplier']
+        self.arm_limit_collision_penalty = self.task_config["arm_limit_collision_penalty"]
+        self.wipe_contact_reward = self.task_config["wipe_contact_reward"]
+        self.unit_wiped_reward = self.task_config["unit_wiped_reward"]
+        self.ee_accel_penalty = self.task_config["ee_accel_penalty"]
+        self.excess_force_penalty_mul = self.task_config["excess_force_penalty_mul"]
+        self.distance_multiplier = self.task_config["distance_multiplier"]
+        self.distance_th_multiplier = self.task_config["distance_th_multiplier"]
         # Final reward computation
         # So that is better to finish that to stay touching the table for 100 steps
         # The 0.5 comes from continuous_distance_reward at 0. If something changes, this may change as well
         self.task_complete_reward = self.unit_wiped_reward * (self.wipe_contact_reward + 0.5)
         # Verify that the distance multiplier is not greater than the task complete reward
-        assert self.task_complete_reward > self.distance_multiplier,\
-            "Distance multiplier cannot be greater than task complete reward!"
+        assert (
+            self.task_complete_reward > self.distance_multiplier
+        ), "Distance multiplier cannot be greater than task complete reward!"
 
         # settings for table top
-        self.table_full_size = self.task_config['table_full_size']
-        self.table_height = self.task_config['table_height']
-        self.table_height_std = self.task_config['table_height_std']
-        delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))  # sample variation in height
-        self.table_offset = np.array(self.task_config['table_offset']) + np.array((0, 0, delta_height))
-        self.table_friction = self.task_config['table_friction']
-        self.table_friction_std = self.task_config['table_friction_std']
-        self.line_width = self.task_config['line_width']
-        self.two_clusters = self.task_config['two_clusters']
-        self.coverage_factor = self.task_config['coverage_factor']
-        self.num_markers = self.task_config['num_markers']
+        self.table_full_size = self.task_config["table_full_size"]
+        self.table_height = self.task_config["table_height"]
+        self.table_height_std = self.task_config["table_height_std"]
+        delta_height = min(
+            0, np.random.normal(self.table_height, self.table_height_std)
+        )  # sample variation in height
+        self.table_offset = np.array(self.task_config["table_offset"]) + np.array(
+            (0, 0, delta_height)
+        )
+        self.table_friction = self.task_config["table_friction"]
+        self.table_friction_std = self.task_config["table_friction_std"]
+        self.line_width = self.task_config["line_width"]
+        self.two_clusters = self.task_config["two_clusters"]
+        self.coverage_factor = self.task_config["coverage_factor"]
+        self.num_markers = self.task_config["num_markers"]
 
         # settings for thresholds
-        self.contact_threshold = self.task_config['contact_threshold']
-        self.pressure_threshold = self.task_config['pressure_threshold']
-        self.pressure_threshold_max = self.task_config['pressure_threshold_max']
+        self.contact_threshold = self.task_config["contact_threshold"]
+        self.pressure_threshold = self.task_config["pressure_threshold"]
+        self.pressure_threshold_max = self.task_config["pressure_threshold_max"]
 
         # misc settings
-        self.print_results = self.task_config['print_results']
-        self.get_info = self.task_config['get_info']
-        self.use_robot_obs = self.task_config['use_robot_obs']
-        self.use_contact_obs = self.task_config['use_contact_obs']
-        self.early_terminations = self.task_config['early_terminations']
-        self.use_condensed_obj_obs = self.task_config['use_condensed_obj_obs']
+        self.print_results = self.task_config["print_results"]
+        self.get_info = self.task_config["get_info"]
+        self.use_robot_obs = self.task_config["use_robot_obs"]
+        self.use_contact_obs = self.task_config["use_contact_obs"]
+        self.early_terminations = self.task_config["early_terminations"]
+        self.use_condensed_obj_obs = self.task_config["use_condensed_obj_obs"]
 
         # Scale reward if desired (see reward method for details)
-        self.reward_normalization_factor = horizon / \
-            (self.num_markers * self.unit_wiped_reward +
-             horizon * (self.wipe_contact_reward + self.task_complete_reward))
+        self.reward_normalization_factor = horizon / (
+            self.num_markers * self.unit_wiped_reward
+            + horizon * (self.wipe_contact_reward + self.task_complete_reward)
+        )
 
         # ee resets
         self.ee_force_bias = np.zeros(3)
@@ -347,10 +351,18 @@ class Wipe(SingleArmEnv):
             v2 /= np.linalg.norm(v2)
 
             # Corners of the tool in the coordinate frame of the plane
-            t1 = np.array([np.dot(corner1_pos - corner2_pos, v1), np.dot(corner1_pos - corner2_pos, v2)])
-            t2 = np.array([np.dot(corner2_pos - corner2_pos, v1), np.dot(corner2_pos - corner2_pos, v2)])
-            t3 = np.array([np.dot(corner3_pos - corner2_pos, v1), np.dot(corner3_pos - corner2_pos, v2)])
-            t4 = np.array([np.dot(corner4_pos - corner2_pos, v1), np.dot(corner4_pos - corner2_pos, v2)])
+            t1 = np.array(
+                [np.dot(corner1_pos - corner2_pos, v1), np.dot(corner1_pos - corner2_pos, v2)]
+            )
+            t2 = np.array(
+                [np.dot(corner2_pos - corner2_pos, v1), np.dot(corner2_pos - corner2_pos, v2)]
+            )
+            t3 = np.array(
+                [np.dot(corner3_pos - corner2_pos, v1), np.dot(corner3_pos - corner2_pos, v2)]
+            )
+            t4 = np.array(
+                [np.dot(corner4_pos - corner2_pos, v1), np.dot(corner4_pos - corner2_pos, v2)]
+            )
 
             pp = [t1, t2, t4, t3]
 
@@ -359,10 +371,15 @@ class Wipe(SingleArmEnv):
             n /= np.linalg.norm(n)
 
             def isLeft(P0, P1, P2):
-                return ((P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1]))
+                return (P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1])
 
             def PointInRectangle(X, Y, Z, W, P):
-                return (isLeft(X, Y, P) < 0 and isLeft(Y, Z, P) < 0 and isLeft(Z, W, P) < 0 and isLeft(W, X, P) < 0)
+                return (
+                    isLeft(X, Y, P) < 0
+                    and isLeft(Y, Z, P) < 0
+                    and isLeft(Z, W, P) < 0
+                    and isLeft(W, X, P) < 0
+                )
 
             # Only go into this computation if there are contact points
             if self.sim.data.ncon != 0:
@@ -371,7 +388,9 @@ class Wipe(SingleArmEnv):
                 for marker in self.model.mujoco_arena.markers:
 
                     # Current marker 3D location in world frame
-                    marker_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
+                    marker_pos = np.array(
+                        self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)]
+                    )
 
                     # We use the second tool corner as point on the plane and define the vector connecting
                     # the marker position to that point
@@ -390,7 +409,11 @@ class Wipe(SingleArmEnv):
                         if dist < 0.02:
                             # Write touching points and projected point in coordinates of the plane
                             pp_2 = np.array(
-                                [np.dot(projected_point - corner2_pos, v1), np.dot(projected_point - corner2_pos, v2)])
+                                [
+                                    np.dot(projected_point - corner2_pos, v1),
+                                    np.dot(projected_point - corner2_pos, v2),
+                                ]
+                            )
                             # Check if marker is within the tool center:
                             if PointInRectangle(pp[0], pp[1], pp[2], pp[3], pp_2):
                                 active_markers.append(marker)
@@ -403,7 +426,9 @@ class Wipe(SingleArmEnv):
             # Loop through all new markers we are wiping at this step
             for new_active_marker in new_active_markers:
                 # Grab relevant marker id info
-                new_active_marker_geom_id = self.sim.model.geom_name2id(new_active_marker.visual_geoms[0])
+                new_active_marker_geom_id = self.sim.model.geom_name2id(
+                    new_active_marker.visual_geoms[0]
+                )
                 # Make this marker transparent since we wiped it (alpha = 0)
                 self.sim.model.geom_rgba[new_active_marker_geom_id][3] = 0
                 # Add this marker the wiped list
@@ -420,7 +445,8 @@ class Wipe(SingleArmEnv):
                     _, _, mean_pos_to_things_to_wipe = self._get_wipe_information()
                     mean_distance_to_things_to_wipe = np.linalg.norm(mean_pos_to_things_to_wipe)
                     reward += self.distance_multiplier * (
-                            1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe))
+                        1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe)
+                    )
 
                 # Reward for keeping contact
                 if self.sim.data.ncon != 0 and self._has_gripper_contact:
@@ -436,7 +462,7 @@ class Wipe(SingleArmEnv):
                 elif total_force_ee > self.pressure_threshold and self.sim.data.ncon > 1:
                     reward += self.wipe_contact_reward + 0.01 * total_force_ee
                     if self.sim.data.ncon > 50:
-                        reward += 10. * self.wipe_contact_reward
+                        reward += 10.0 * self.wipe_contact_reward
 
                 # Penalize large accelerations
                 reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
@@ -447,14 +473,17 @@ class Wipe(SingleArmEnv):
 
         # Printing results
         if self.print_results:
-            string_to_print = 'Process {pid}, timestep {ts:>4}: reward: {rw:8.4f}' \
-                              'wiped markers: {ws:>3} collisions: {sc:>3} f-excess: {fe:>3}'.format(
-                                pid=id(multiprocessing.current_process()),
-                                ts=self.timestep,
-                                rw=reward,
-                                ws=len(self.wiped_markers),
-                                sc=self.collisions,
-                                fe=self.f_excess)
+            string_to_print = (
+                "Process {pid}, timestep {ts:>4}: reward: {rw:8.4f}"
+                "wiped markers: {ws:>3} collisions: {sc:>3} f-excess: {fe:>3}".format(
+                    pid=id(multiprocessing.current_process()),
+                    ts=self.timestep,
+                    rw=reward,
+                    ws=len(self.wiped_markers),
+                    sc=self.collisions,
+                    fe=self.f_excess,
+                )
+            )
             print(string_to_print)
 
         # If we're scaling our reward, we normalize the per-step rewards given the theoretical best episode return
@@ -486,7 +515,7 @@ class Wipe(SingleArmEnv):
             coverage_factor=self.coverage_factor,
             num_markers=self.num_markers,
             line_width=self.line_width,
-            two_clusters=self.two_clusters
+            two_clusters=self.two_clusters,
         )
 
         # Arena always gets set to zero origin
@@ -516,6 +545,7 @@ class Wipe(SingleArmEnv):
 
         # Add binary contact observation
         if self.use_contact_obs:
+
             @sensor(modality=f"{pf}proprio")
             def gripper_contact(obs_cache):
                 return self._has_gripper_contact
@@ -536,7 +566,9 @@ class Wipe(SingleArmEnv):
 
                 @sensor(modality=modality)
                 def wipe_centroid(obs_cache):
-                    return obs_cache["wipe_centroid"] if "wipe_centroid" in obs_cache else np.zeros(3)
+                    return (
+                        obs_cache["wipe_centroid"] if "wipe_centroid" in obs_cache else np.zeros(3)
+                    )
 
                 @sensor(modality=modality)
                 def proportion_wiped(obs_cache):
@@ -549,8 +581,11 @@ class Wipe(SingleArmEnv):
                     # also use ego-centric obs
                     @sensor(modality=modality)
                     def gripper_to_wipe_centroid(obs_cache):
-                        return obs_cache["wipe_centroid"] - obs_cache[f"{pf}eef_pos"] if \
-                            "wipe_centroid" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                        return (
+                            obs_cache["wipe_centroid"] - obs_cache[f"{pf}eef_pos"]
+                            if "wipe_centroid" in obs_cache and f"{pf}eef_pos" in obs_cache
+                            else np.zeros(3)
+                        )
 
                     sensors.append(gripper_to_wipe_centroid)
                     names.append("gripper_to_wipe_centroid")
@@ -558,7 +593,9 @@ class Wipe(SingleArmEnv):
             else:
                 # use explicit representation of wiping objects
                 for i, marker in enumerate(self.model.mujoco_arena.markers):
-                    marker_sensors, marker_sensor_names = self._create_marker_sensors(i, marker, modality)
+                    marker_sensors, marker_sensor_names = self._create_marker_sensors(
+                        i, marker, modality
+                    )
                     sensors += marker_sensors
                     names += marker_sensor_names
 
@@ -604,8 +641,11 @@ class Wipe(SingleArmEnv):
             # also use ego-centric obs
             @sensor(modality=modality)
             def gripper_to_marker(obs_cache):
-                return obs_cache[f"marker{i}_pos"] - obs_cache[f"{pf}eef_pos"] if \
-                    f"marker{i}_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache[f"marker{i}_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if f"marker{i}_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             sensors.append(gripper_to_marker)
             names.append(f"gripper_to_marker{i}")
@@ -655,19 +695,19 @@ class Wipe(SingleArmEnv):
         # Prematurely terminate if contacting the table with the arm
         if self.check_contact(self.robots[0].robot_model):
             if self.print_results:
-                print(40 * '-' + " COLLIDED " + 40 * '-')
+                print(40 * "-" + " COLLIDED " + 40 * "-")
             terminated = True
 
         # Prematurely terminate if task is success
         if self._check_success():
             if self.print_results:
-                print(40 * '+' + " FINISHED WIPING " + 40 * '+')
+                print(40 * "+" + " FINISHED WIPING " + 40 * "+")
             terminated = True
 
         # Prematurely terminate if contacting the table with the arm
         if self.robots[0].check_q_limits():
             if self.print_results:
-                print(40 * '-' + " JOINT LIMIT " + 40 * '-')
+                print(40 * "-" + " JOINT LIMIT " + 40 * "-")
             terminated = True
 
         return terminated
@@ -694,11 +734,11 @@ class Wipe(SingleArmEnv):
             self.ee_torque_bias = self.robots[0].ee_torque
 
         if self.get_info:
-            info['add_vals'] = ['nwipedmarkers', 'colls', 'percent_viapoints_', 'f_excess']
-            info['nwipedmarkers'] = len(self.wiped_markers)
-            info['colls'] = self.collisions
-            info['percent_viapoints_'] = len(self.wiped_markers) / self.num_markers
-            info['f_excess'] = self.f_excess
+            info["add_vals"] = ["nwipedmarkers", "colls", "percent_viapoints_", "f_excess"]
+            info["nwipedmarkers"] = len(self.wiped_markers)
+            info["colls"] = self.collisions
+            info["percent_viapoints_"] = len(self.wiped_markers) / self.num_markers
+            info["f_excess"] = self.f_excess
 
         # allow episode to finish early if allowed
         if self.early_terminations:
@@ -715,7 +755,9 @@ class Wipe(SingleArmEnv):
         if len(self.wiped_markers) < self.num_markers:
             for marker in self.model.mujoco_arena.markers:
                 if marker not in self.wiped_markers:
-                    marker_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
+                    marker_pos = np.array(
+                        self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)]
+                    )
                     wipe_centroid += marker_pos
                     marker_positions.append(marker_pos)
                     num_non_wiped_markers += 1

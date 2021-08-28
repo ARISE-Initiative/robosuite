@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--camera",
         type=str,
-        default='agentview',
+        default="agentview",
     )
 
     # number of frames in output video
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output",
         type=str,
-        default='reset.mp4',
+        default="reset.mp4",
     )
 
     args = parser.parse_args()
@@ -56,8 +56,8 @@ if __name__ == "__main__":
         options["env_configuration"] = choose_multi_arm_config()
 
         # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
-        if options["env_configuration"] == 'bimanual':
-            options["robots"] = 'Baxter'
+        if options["env_configuration"] == "bimanual":
+            options["robots"] = "Baxter"
         else:
             options["robots"] = []
 
@@ -93,4 +93,3 @@ if __name__ == "__main__":
         env.step(np.zeros_like(env.action_spec[0]))
         video_writer.append_data(video_img)
     video_writer.close()
-
