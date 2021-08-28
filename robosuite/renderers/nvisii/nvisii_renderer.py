@@ -425,15 +425,42 @@ class NViSIIRenderer(Renderer):
         )
 
     def render_data_to_file(self, img_file):
-        nvisii.render_data_to_file(
-            width = self.width,
-            height = self.height, 
-            start_frame=0,
-            frame_count=1,
-            bounce=int(0),
-            options=self.image_options,
-            file_path=img_file
-        )
+
+        if self.image_options == "depth" and self.img_cntr != 1:
+
+            depth_data = nvisii.render_data(
+                width = self.width,
+                height = self.height, 
+                start_frame=0,
+                frame_count=1,
+                bounce=int(0),
+                options=self.image_options,
+            )
+
+            depth_data = np.array(depth_data).reshape(self.height, self.width, 4)
+            depth_data = np.flipud(depth_data)[:, :, [0, 1, 2]]
+
+            # normalize depths
+            depth_data[:, :, 0] = (depth_data[:, :, 0] - np.min(depth_data[:, :, 0])) / (np.max(depth_data[:, :, 0]) - np.min(depth_data[:, :, 0]))
+            depth_data[:, :, 1] = (depth_data[:, :, 1] - np.min(depth_data[:, :, 1])) / (np.max(depth_data[:, :, 1]) - np.min(depth_data[:, :, 1]))
+            depth_data[:, :, 2] = (depth_data[:, :, 2] - np.min(depth_data[:, :, 2])) / (np.max(depth_data[:, :, 2]) - np.min(depth_data[:, :, 2]))
+
+            from PIL import Image
+            
+            depth_image = Image.fromarray((depth_data * 255).astype(np.uint8))
+            depth_image.save(img_file)
+
+        else:
+            
+            nvisii.render_data_to_file(
+                width = self.width,
+                height = self.height, 
+                start_frame=0,
+                frame_count=1,
+                bounce=int(0),
+                options=self.image_options,
+                file_path=img_file
+            )
 
     def reset(self):
         nvisii.clear_all()

@@ -47,6 +47,9 @@ if __name__ == '__main__':
     env_name = f["data"].attrs["env"]
     env_args = json.loads(f["data"].attrs["env_args"])
 
+    config_file = open('../renderers/config/nvisii_config.json')
+    renderer_config = json.load(config_file)
+
     env = robosuite.make(
         env_name,
         robots = env_args['env_kwargs']['robots'],
@@ -57,10 +60,7 @@ if __name__ == '__main__':
         reward_shaping=True,
         control_freq=20,
         renderer="nvisii",
-        width=500,
-        height=500,
-        spp=256,
-        video_mode=True,
+        renderer_config=renderer_config,
     )
 
     demos = list(f["data"].keys())
@@ -130,4 +130,5 @@ if __name__ == '__main__':
             env.set_camera_pos_quat(camera_pos, camera_quat)
 
     print('done')
+    env.close_renderer()
     env.close()
