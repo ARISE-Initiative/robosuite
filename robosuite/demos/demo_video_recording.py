@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser.add_argument("--skip_frame", type=int, default=1)
     args = parser.parse_args()
 
-    # initialize an environment with offscreen renderer  
+    # initialize an environment with offscreen renderer
     env = make(
         args.environment,
         args.robots,
