@@ -1,6 +1,7 @@
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 
+
 if __name__ == "__main__":
 
     # Create dict to hold options that will be passed to env creation call
