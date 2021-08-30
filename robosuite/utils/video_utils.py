@@ -1,7 +1,5 @@
 """
 A set of utilities for generating nice robosuite videos :D
-
-NOTE: This requires cv2 package to be installed
 """
 
 import numpy as np
@@ -68,7 +66,6 @@ class DemoPlaybackCamera:
         self.f = h5py.File(demo, "r")
 
         # Extract relevant info
-        env_name = self.f["data"].attrs["env"]
         env_info = json.loads(self.f["data"].attrs["env_info"])
 
         # Construct default env arguments
