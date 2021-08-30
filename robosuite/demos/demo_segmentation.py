@@ -1,31 +1,34 @@
 """
 Play random actions in an environment and render a video that demonstrates segmentation.
 """
+import argparse
+import json
 import imageio
 import colorsys
 import random
 import numpy as np
 import matplotlib.cm as cm
+from PIL import Image
 
 import robosuite as suite
 from robosuite.controllers import load_controller_config
 
 
-def random_colors(N, bright=True):
+def randomize_colors(N, bright=True):
     """
     Modified from https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/visualize.py#L59
     Generate random colors.
     To get visually distinct colors, generate them in HSV space then
     convert to RGB.
     """
-    brightness = 1.0 if bright else 0.7
-    hsv = [(i / N, 1, brightness) for i in range(N)]
+    brightness = 1. if bright else 0.5
+    hsv = [(1.0 * i / N, 1, brightness) for i in range(N)]
     colors = np.array(list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv)))
-    rstate = np.random.RandomState(seed=0)
-    rstate.shuffle(colors)
+    rstate = np.random.RandomState(seed=20)
+    np.random.shuffle(colors)
     return colors
 
-def segmentation_to_rgb(seg_im):
+def segmentation_to_rgb(seg_im, random_colors=False):
     """
     Helper function to visualize segmentations as RGB frames.
     NOTE: assumes that geom IDs go up to 255 at most - if not,
@@ -34,34 +37,41 @@ def segmentation_to_rgb(seg_im):
     # ensure all values lie within [0, 255]
     seg_im = np.mod(seg_im, 256)
 
-    # colors = random_colors(N=256, bright=True)
-    # return (255. * colors[seg_im]).astype(np.uint8)
+    if random_colors:
+        colors = randomize_colors(N=256, bright=True)
+        return (255. * colors[seg_im]).astype(np.uint8)
+    else:
+        # deterministic shuffling of values to map each geom ID to a random int in [0, 255]
+        rstate = np.random.RandomState(seed=8)
+        inds = np.arange(256)
+        rstate.shuffle(inds)
 
-    # deterministic shuffling of values to map each geom ID to a random int in [0, 255]
-    rstate = np.random.RandomState(seed=1)
-    inds = np.arange(256)
-    rstate.shuffle(inds)
-
-    # use @inds to map each geom ID to a color
-    return (255. * cm.rainbow(inds[seg_im], 3)).astype(np.uint8)[..., :3]
+        # use @inds to map each geom ID to a color
+        return (255. * cm.rainbow(inds[seg_im], 3)).astype(np.uint8)[..., :3]
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--video-path", type=str, default="/tmp/video.mp4", help="Path to video file")
+    parser.add_argument("--random-colors", action="store_true", help="Radnomize segmentation colors")
+    parser.add_argument("--segmentation-level", type=str, default="element", help="instance, class, or element")
+    args = parser.parse_args()
 
     # Create dict to hold options that will be passed to env creation call
     options = {}
 
     # Choose environment and add it to options
-    options["env_name"] = "Lift"
+    options["env_name"] = "Stack"
     options["robots"] = ["Panda"]
 
     # Choose controller
     controller_name = "OSC_POSE"
 
     # Choose camera
-    camera = "agentview"
+    camera = "frontview"
 
     # Choose segmentation type
-    segmentation_level = "instance"         # Options are {instance, class, element}
+    segmentation_level = args.segmentation_level # Options are {instance, class, element}
 
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
@@ -76,32 +86,30 @@ if __name__ == "__main__":
         control_freq=20,
         camera_names=camera,
         camera_segmentations=segmentation_level,
+        camera_heights=512,
+        camera_widths=512,
     )
     env.reset()
 
-    video_writer = imageio.get_writer("/tmp/video.mp4", fps=20)
+    video_writer = imageio.get_writer(args.video_path, fps=20)
 
     # Get action limits
     low, high = env.action_spec
 
     # do visualization
-    for i in range(300):
-        action = 0.1 * np.random.uniform(low, high)
+    for i in range(100):
+        action = 0.5 * np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
 
+        video_img = obs[f"{camera}_segmentation_{segmentation_level}"].squeeze(-1)[::-1]
+        np.savetxt("/tmp/seg_{}.txt".format(i), video_img, fmt="%.2f")
+        video_img = segmentation_to_rgb(video_img, args.random_colors)
+        video_writer.append_data(video_img)
+
+        image = Image.fromarray(video_img)
+        image.save("/tmp/seg_{}.png".format(i))
         if i % 5 == 0:
-            video_img = obs[f"{camera}_segmentation_{segmentation_level}"].squeeze(-1)[::-1]
-            np.savetxt("/tmp/seg_{}.txt".format(i), video_img, fmt="%.2f")
-            video_img = segmentation_to_rgb(video_img)
-            video_writer.append_data(video_img)
-            import json
-            print("geom_id2name")
-            print(json.dumps(env.sim.model._geom_id2name, indent=4))
-            from PIL import Image
-            image = Image.fromarray(video_img)
-            image.save("/tmp/seg_{}.png".format(i))
-            break
+            print("Step #{} / 100".format(i))
 
     video_writer.close()
-
-
+    print("Video saved to {}".format(args.video_path))
