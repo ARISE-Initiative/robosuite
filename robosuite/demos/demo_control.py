@@ -116,7 +116,7 @@ if __name__ == "__main__":
     print()
     print("Press \"H\" to show the viewer control panel.")
 
-    # initialize the task 
+    # initialize the task
     env = suite.make(
         **options,
         has_renderer=True,
