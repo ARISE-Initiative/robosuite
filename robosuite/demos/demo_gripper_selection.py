@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     for gripper in ALL_GRIPPERS:
 
-        # create environment with selected grippers        
+        # create environment with selected grippers
         env = suite.make(
             "Lift",
             robots="Panda",
