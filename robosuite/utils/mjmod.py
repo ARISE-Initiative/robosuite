@@ -7,7 +7,7 @@ https://github.com/openai/mujoco-py/blob/1fe312b09ae7365f0dd9d4d0e453f8da59fae0b
 
 import os
 import numpy as np
-
+from skimage.transform import resize
 from collections import defaultdict
 from PIL import Image
 from mujoco_py import cymj
@@ -830,6 +830,7 @@ class TextureModder(BaseModder):
         local_rgb_interpolation=0.1,
         local_material_interpolation=0.2,
         texture_variations=('rgb', 'checker', 'noise', 'gradient'),
+        randomize_texture_images=False,
         randomize_skybox=True,
     ):
         super().__init__(sim, random_state=random_state)
@@ -844,6 +845,7 @@ class TextureModder(BaseModder):
         self.local_material_interpolation = local_material_interpolation
         self.texture_variations = list(texture_variations)
         self.randomize_skybox = randomize_skybox
+        self.randomize_texture_images = randomize_texture_images
 
         self._all_texture_variation_callbacks = {
             'rgb' : self.rand_rgb,
@@ -891,6 +893,18 @@ class TextureModder(BaseModder):
             tex_id = self._name_to_tex_id('skybox')
             self._defaults['skybox']['texture'] = self._default_texture_bitmaps[tex_id]
 
+    def change_default_texture(self, name, target_tex_id):
+        if 'texture' in self._defaults[name].keys():
+            current_bitmap_size = self._defaults[name]['texture'].shape
+            new_bitmap = self.textures[target_tex_id].bitmap
+            if current_bitmap_size != new_bitmap.shape:
+               new_bitmap = resize(new_bitmap, current_bitmap_size, preserve_range=True).astype(np.uint8)
+            self._defaults[name]['texture'] = new_bitmap
+            # self._default_texture_bitmaps[target_tex_id]
+            self.set_texture(name, new_bitmap)
+        else:
+            print('%s does not have a texture'%name)
+
     def restore_defaults(self):
         """
         Reloads the saved parameter values.
@@ -914,6 +928,8 @@ class TextureModder(BaseModder):
         for name in self.geom_names:
             if self._check_geom_for_texture(name):
                 # geom has valid texture that can be randomized
+                if self.randomize_texture_images:
+                    self.change_default_texture(name, self.random_state.randint(len(self.textures)))
                 self._randomize_texture(name)
                 # randomize material if requested
                 if self.randomize_material:
@@ -1169,7 +1185,6 @@ class TextureModder(BaseModder):
         rgb1 = np.asarray(rgb1).reshape([1, 1, -1])
         rgb2 = np.asarray(rgb2).reshape([1, 1, -1])
         bitmap = rgb1 * cbd1 + rgb2 * cbd2
-
         self.set_texture(name, bitmap, perturb=perturb)
 
     def set_gradient(self, name, rgb1, rgb2, vertical=True, perturb=False):

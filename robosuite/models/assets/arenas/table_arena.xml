@@ -15,7 +15,44 @@
     <!-- added table texture and material for domain randomization -->
     <texture  name="textable" builtin="flat" height="512" width="512" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
     <material name="table_mat" texture="textable" />
-
+    <texture file="../textures/robot.png" type="2d" name="tex-robot"/>
+    <material name="table_robot" reflectance="0.0" shininess="0.0" specular="0.2" texrepeat="1 1" texture="tex-robot" />
+    <texture file="../textures/tennis.png" type="2d" name="tex-tennis"/>
+    <material name="table_tennis" reflectance="0.0" shininess="0.0" specular="0.2" texrepeat="1 1" texture="tex-tennis" />
+    <texture file="../textures/marble.png" type="2d" name="tex-marble"/>
+    <material name="table_marble" reflectance="0.0" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-marble" />
+    <texture file="../textures/navy_blue.png" type="2d" name="tex-navy"/>
+    <material name="table_navy" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-navy" />
+    <texture file="../textures/real_door.png" type="2d" name="tex-door"/>
+    <material name="table_door" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-door" />
+    <texture file="../textures/barn_wood.png" type="2d" name="tex-barn"/>
+    <material name="table_barn" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-barn" />
+    <texture file="../textures/wood1.png" type="2d" name="tex-wood1"/>
+    <material name="table_wood1" reflectance="0.0" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-wood1" />
+    <texture file="../textures/wood2.png" type="2d" name="tex-wood2"/>
+    <material name="table_wood2" reflectance="0.0" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-wood2" />
+    <texture file="../textures/wood3.png" type="2d" name="tex-wood3"/>
+    <material name="table_wood3" reflectance="0.0" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-wood3" />
+    <texture file="../textures/wood4.png" type="2d" name="tex-wood4"/>
+    <material name="table_wood4" reflectance="0.0" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-wood4" />
+    <texture file="../textures/tiles.png" type="2d" name="tex-tiles"/>
+    <material name="table_tiles" reflectance="0.0" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-tiles" />
+    <texture file="../textures/brick1.png" type="2d" name="tex-brick1"/>
+    <material name="table_brick1" reflectance="0.0" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-brick1" />
+    <texture file="../textures/tiles2.png" type="2d" name="tex-tiles2"/>
+    <material name="table_tiles2" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-tiles2" />
+    <texture file="../textures/crinkle.png" type="2d" name="tex-crinkle"/>
+    <material name="table_crinkle" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-crinkle" />
+    <texture file="../textures/feathers.png" type="2d" name="tex-feathers"/>
+    <material name="table_feathers" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-feathers" />
+    <texture file="../textures/swirl.png" type="2d" name="tex-swirl"/>
+    <material name="table_swirl" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-swirl" />
+    <texture file="../textures/fur.png" type="2d" name="tex-fur"/>
+    <material name="table_fur" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-fur" />
+    <texture file="../textures/monstera.png" type="2d" name="tex-monstera"/>
+    <material name="table_monstera" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-monstera" />
+    <texture file="../textures/scales.png" type="2d" name="tex-scales"/>
+    <material name="table_scales" reflectance="0.1" shininess="0.1" specular="0.2" texrepeat="1 1" texture="tex-scales" />
   </asset>
   <worldbody>
     <!-- Floor -->
@@ -41,10 +78,14 @@
 
     <light name="light1" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
     <light name="light2" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light3" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-1 -1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light4" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 -1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light name="light5" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
     <!-- front view -->
     <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
     <!-- bird view -->
     <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
+    <camera mode="fixed" name="nearfrontview" pos="1.2 0 1.45" quat="0.56 0.43 0.43 0.56"/>
     <!-- agent view -->
     <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
     <!-- side view -->

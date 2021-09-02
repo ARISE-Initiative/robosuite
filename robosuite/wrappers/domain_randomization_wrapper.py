@@ -148,7 +148,6 @@ class DomainRandomizationWrapper(Wrapper):
         self.camera_randomization_args = camera_randomization_args
         self.lighting_randomization_args = lighting_randomization_args
         self.dynamics_randomization_args = dynamics_randomization_args
-        self.randomize_on_reset = randomize_on_reset
         self.randomize_every_n_steps = randomize_every_n_steps
 
         self.step_counter = 0
@@ -188,6 +187,10 @@ class DomainRandomizationWrapper(Wrapper):
             self.modders.append(self.dynamics_modder)
 
         self.save_default_domain()
+        # initially randomize
+        self.randomize_on_reset = True
+        self.reset()
+        self.randomize_on_reset = randomize_on_reset
 
     def reset(self):
         """
