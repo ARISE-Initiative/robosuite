@@ -147,9 +147,9 @@ class NViSIIRenderer(Renderer):
             nvisii.light.create("light")
         )
 
-        self.light_1.get_light().set_intensity(150)
-        self.light_1.get_transform().set_scale(nvisii.vec3(0.3))
-        self.light_1.get_transform().set_position(nvisii.vec3(3, 3, 4))
+        self.light_1.get_light().set_intensity(150) # intensity of the light 
+        self.light_1.get_transform().set_scale(nvisii.vec3(0.3)) # scale the light down
+        self.light_1.get_transform().set_position(nvisii.vec3(3, 3, 4)) # sets the position of the light
 
     def _init_floor(self, image):
         """
@@ -447,7 +447,7 @@ class NViSIIRenderer(Renderer):
 
             from PIL import Image
             
-            depth_image = Image.fromarray((depth_data * 255).astype(np.uint8))
+            depth_image = Image.fromarray(((1 - depth_data) * 255).astype(np.uint8))
             depth_image.save(img_file)
 
         else:

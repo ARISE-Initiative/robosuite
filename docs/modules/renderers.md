@@ -14,7 +14,7 @@ This is the default renderer from [mujoco-py](https://openai.github.io/mujoco-py
 [PyGame](https://www.pygame.org/news) is a simple renderer that serves also as an alternative to MjViewer. A limitation of PyGame is that it can only render on-screen, limiting its applicability to train on computing clusters. However, it is useful for visualizing the robots' behaviors in the system runtime where MjViewer is not supported.
 
 ##### NViSII
-[NViSII](https://github.com/owl-project/NVISII) is a ray tracing based renderer. The renderer is currently used for visualization purposes and results in high quality images of the environment.
+[NViSII](https://github.com/owl-project/NVISII) is a ray tracing based renderer. The renderer is currently used for visualization purposes and results in high quality images of the environment. Through NViSII, we are able to achieve different vision modalities including depth, segmentations, surface normals, texture coordinates, and positioning.
 
 ###### Using the NViSII renderer
 Installing NViSII can be done using the command `pip install nvisii`.

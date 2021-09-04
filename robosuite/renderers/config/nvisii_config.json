@@ -5,10 +5,10 @@
     "spp": 256,
     "use_noise": false,
     "debug_mode": false,
-    "video_mode": true,
+    "video_mode": false,
     "video_path": "videos/",
     "video_name": "robosuite_video_0.mp4",
     "video_fps": 60,
     "verbose": 1,
-    "image_options": "depth"
+    "image_options": null
 }

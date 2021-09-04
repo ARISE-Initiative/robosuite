@@ -102,7 +102,6 @@ if __name__ == '__main__':
         for j, action in enumerate(actions):
             env.step(action)
             env.render()
-            # print('rendered image... ' + str(image_count))
             image_count += 1
 
             i += 1
@@ -122,7 +121,6 @@ if __name__ == '__main__':
             env.step(np.zeros(16))
 
             env.render()
-            # print('rendered image... ' + str(image_count))
             image_count += 1
             i += 1
 

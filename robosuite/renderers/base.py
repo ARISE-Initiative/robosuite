@@ -43,24 +43,42 @@ class Renderer():
         self.renderer_type = renderer_type
 
     def __str__(self):
+        """Prints the renderer type in a formatted way
+        
+        Returns:
+            str: string representing the renderer
+        """
         return f'<RendererObject renderer_type="{self.renderer_type}">'
 
     @abc.abstractmethod
     def render(self, **kwargs):
+        """Renders the current state with the specified renderer
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self): 
+    def update(self):
+        """Updates the states in the renderer (for NViSII and iGibson)
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def close(self):
+        """Closes the renderer objects
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def reset(self):
+        """Reset the renderer with initial states for environment
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def get_pixel_obs(self):
+        """Get the pixel observations from the given renderer
+
+        Returns:
+            numpyarr: numpy array representing pixels of renderer 
+        """
         raise NotImplementedError
