@@ -86,13 +86,6 @@ def load_object(renderer,
     material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser and mesh_file_name in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL) \
                 else geom_material
 
-    # for iG the obj file which works for nvisii was not working.
-    # So we created a second file for iG.
-    if "rethink_mount/pedestal.obj" in filename:
-        filename = filename[:-4]
-        filename += '_ig.obj'
-
-
     renderer.load_object(filename,
                         scale=scale,
                         transform_orn=geom_orn,
