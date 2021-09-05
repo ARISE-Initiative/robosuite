@@ -11,14 +11,25 @@ import igibson
 from transforms3d import quaternions
 import robosuite.utils.transform_utils as T
 import robosuite
-import robosuite.utils.macros as macros
-from collections import OrderedDict
 
 try:
     import torch
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
+
+# these robots have material defined in mtl files.
+# Update this when mtl files are defined for other robots.
+ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL = {'panda', 'sawyer'}
+
+# place holder meshes for which we do not textures loaded
+# This list should be extended if one sees placeholder meshes
+# having textures. Place holder meshes
+MESHES_FOR_NO_LOAD_TEXTURE = {'VisualBread_g0', 'VisualCan_g0', 'VisualCereal_g0', 'VisualMilk_g0'}
+
+# Special meshes for which we have to load the textures
+MESHES_FOR_LOAD_TEXTURE = {'Milk_g0_visual', 'Can_g0_visual', 'Cereal_g0_visual', 'Bread_g0_visual'}
+
 
 def load_object(renderer,
                 geom,
@@ -38,10 +49,6 @@ def load_object(renderer,
     Function that initializes the meshes in the memeory with appropriate materials.
     """
     
-    # these robots have material defined in mtl files.
-    # Update this when mtl files are defined for other robots.
-    robots_with_mtl_files = ['panda', 'sawyer']
-
     primitive_shapes_path = {
         'box': os.path.join(igibson.assets_path, 'models/mjcf_primitives/cube.obj'),
         'cylinder': os.path.join(robosuite.models.assets_root, 'objects/meshes/cylinder.obj'),
@@ -60,14 +67,10 @@ def load_object(renderer,
 
     load_texture = geom_material is None or geom_material._is_set_by_parser
 
-    # place holder meshes for which we do not textures loaded
-    # This list should be extended if one sees placeholder meshes
-    # having textures
-    if geom_name in ['VisualBread_g0', 'VisualCan_g0', 'VisualCereal_g0', 'VisualMilk_g0']:
+    if geom_name in MESHES_FOR_NO_LOAD_TEXTURE:
         load_texture = False
 
-    # # Special meshes for which we have to load the textures.
-    if geom_name in ['Milk_g0_visual', 'Can_g0_visual', 'Cereal_g0_visual', 'Bread_g0_visual']:
+    if geom_name in MESHES_FOR_LOAD_TEXTURE:
         load_texture = True
 
     if geom_type == 'mesh':
@@ -80,7 +83,7 @@ def load_object(renderer,
         scale = [geom_size[0]*2 , geom_size[1]*2, 0.01]
 
     # If only color of the robot mesh is defined we add some metallic and specular by default which makes it look a bit nicer.
-    material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser and mesh_file_name in robots_with_mtl_files) \
+    material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser and mesh_file_name in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL) \
                 else geom_material
 
     # for iG the obj file which works for nvisii was not working.
@@ -102,7 +105,7 @@ def load_object(renderer,
         visual_objects[filename] = len(renderer.visual_objects)
     
     # do not use pbr if robots have already defined materials.
-    use_pbr_mapping = mesh_file_name not in robots_with_mtl_files
+    use_pbr_mapping = mesh_file_name not in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL
 
     renderer.add_instance(len(renderer.visual_objects) - 1,
                             pybullet_uuid=0,
@@ -121,7 +124,21 @@ def random_string():
                         string.digits, k=10))
     return res
 
-def get_id(intensity, name, self, resolution=1):
+def adjust_convention(img, convention):
+    """
+    Inverts (could) the image according to the given convention
+
+    Args:
+        img (np.ndarray): Image numpy array
+        convention (int): -1 or 1 depending on macros.IMAGE_CONVENTION
+
+    Returns:
+        np.ndarray: Inverted or non inverted (vertically) image.
+    """
+    img = img[::-convention]
+    return img
+
+def get_texture_id(intensity, name, self, resolution=1):
     """
     Create dummy png or size resolution from intensity values and load the texture in renderer.
 
@@ -196,7 +213,7 @@ class MujocoCamera(object):
         self.active = False
 
     def switch(self):
-        self.active = [True, False][self.active]
+        self.active = not self.active
 
     def get_pose(self):
         offset_mat = np.eye(4)

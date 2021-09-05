@@ -20,12 +20,13 @@ from igibson.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer, Instanc
 from igibson.utils.mesh_util import xyzw2wxyz, quat2rotmat, ortho
 from igibson.render.viewer import Viewer
 from robosuite.utils.observables import sensor
+from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
 import robosuite.utils.macros as macros
-from robosuite.renderers.igibson.igibson_utils import TensorObservable
+from robosuite.renderers.igibson.igibson_utils import TensorObservable, adjust_convention
 from robosuite.renderers.base import Renderer
 from collections import OrderedDict
 
-macros.IMAGE_CONVENTION = "opencv"
+
 
 try:
     import torch
@@ -34,8 +35,8 @@ except ImportError:
     HAS_TORCH = False
 
 
-AVAILABLE_MODALITIES = ['rgb', 'seg', 'normal', '3d']
-AVAILABLE_MODES = ['gui', 'headless']
+AVAILABLE_MODALITIES = {'rgb', 'seg', 'normal', '3d'}
+AVAILABLE_MODES = {'gui', 'headless'}
 
 def check_modes(modes):
     for m in modes:
@@ -80,46 +81,48 @@ class iGibsonRenderer(Renderer):
             env (MujocoEnv instance): The environment to wrap.
 
             render_mode (string, optional): The rendering mode. Could be set either to `gui`
-                                            or `headless`. If set to `gui` the viewer window
-                                            will open up.
+                or `headless`. If set to `gui` the viewer window
+                will open up.
 
             width (int, optional): Width of the rendered image. Defaults to 1280.
-                                   All the cameras will be rendered at same resolution.
-                                   This width will be given preference over `camera_widths`
-                                   specified at the initialization of the environment.
+                All the cameras will be rendered at same resolution.
+                This width will be given preference over `camera_widths`
+                specified at the initialization of the environment.
 
             height (int, optional): Height of the rendered image. Defaults to 720.
-                                    All the cameras will be rendered at same resolution.
-                                    This width will be given preference over `camera_heights`
-                                    specified at the initialization of the environment.
+                All the cameras will be rendered at same resolution.
+                This width will be given preference over `camera_heights`
+                specified at the initialization of the environment.
 
             enable_pbr (bool, optional): Whether to enable physically-based rendering. Defaults to True.
 
             enable_shadow (bool, optional): Whether to render shadows. Defaults to True.
 
             msaa (bool, optional): Whether to use multisample anti-aliasing. Defaults to True.
-                                   If using `seg` in modes, please turn off msaa because of
-                                   segmentation artefacts.
+                If using `seg` in modes, please turn off msaa because of
+                segmentation artefacts.
 
             render2tensor (bool, optional): Whether to render images as torch cuda tensors. Defaults to False.
-                                            Images are rendered as numpy arrays by default. If `render2tensor`
-                                            is True, it will render as torch tensors on gpu.
+                Images are rendered as numpy arrays by default. If `render2tensor`
+                is True, it will render as torch tensors on gpu.
 
             optimized (bool, optional): Whether to use optimized renderer, which will be faster. Defaults to False.
-                                        Turning this will speed up the rendering at the cost of slight loss in
-                                        visuals of the renderered image.
+                Turning this will speed up the rendering at the cost of slight loss in
+                visuals of the renderered image.
 
             light_dimming_factor (float, optional): Controls the intensity of light. Defaults to 1.0.
-                                                    Increasing this will increase the intensity of the light.
+                Increasing this will increase the intensity of the light.
 
             device_idx (int, optional): GPU index to render on. Defaults to 0.
 
-            camera_obs (bool, optional): Whether to use camera observation or not.
+            camera_obs (bool, optional): Whether to use camera observation or not. The orientation of the image
+                array will follow `macros.IMAGE_CONVENTION` which is by default set to
+                `opengl`.
 
             modes (list, optional): Types of modality to render. Defaults to ['rgb'].
-                                    Available modalities are `['rgb', 'seg', '3d', 'normal']`
-                                    If `camd` is set to True while initializing the environment
-                                    `3d` mode is automatically added in the list of modes.
+                Available modalities are `['rgb', 'seg', '3d', 'normal']`
+                If `camd` is set to True while initializing the environment
+                `3d` mode is automatically added in the list of modes.
         
         """
         super().__init__(env)
@@ -176,8 +179,8 @@ class iGibsonRenderer(Renderer):
         self._switch_camera(camera_name=self.env.render_camera)
 
         # add viewer
-        self._add_viewer(initial_pos=self.camera_position, 
-                        initial_view_direction=self.view_direction)      
+        self.viewer = self._add_viewer(initial_pos=self.camera_position, 
+                                       initial_view_direction=self.view_direction)      
 
     def _setup_observables(self):
         observables = self.env._setup_observables()
@@ -224,9 +227,6 @@ class iGibsonRenderer(Renderer):
                 sensors (list): Array of sensors for the given camera
                 names (list): array of corresponding observable names
         """
-        from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
-        import robosuite.utils.macros as macros
-
         # Make sure we get correct convention
         convention = IMAGE_CONVENTION_MAPPING[macros.IMAGE_CONVENTION]
 
@@ -239,10 +239,6 @@ class iGibsonRenderer(Renderer):
         depth_sensor_name = f"{cam_name}_depth"
         seg_sensor_name = f"{cam_name}_seg"
         normal_sensor_name = f"{cam_name}_normal"
-
-        def adjust_convention(img, convention):
-            img = img[::-convention]
-            return img
 
         @sensor(modality=modality)
         def camera_rgb(obs_cache):
@@ -258,6 +254,7 @@ class iGibsonRenderer(Renderer):
             # in torch tensor image is flipped upside down
             # adjusting the np image in a way so that return statement stays same
             # flipping torch tensor when opencv coordinate system is required.
+            # using torch.flipud because negative strides do not work in torch.
 
             if 'rgb' in self.modes:
                 img = rendered_mapping['rgb'][:,:,:3]
@@ -404,13 +401,10 @@ class iGibsonRenderer(Renderer):
         if self.mode == 'gui' and not self.render2tensor:
             # in case of robosuite viewer, we open only one window.
             # Later use the numpad to activate additional cameras            
-            self.viewer = Viewer(initial_pos = initial_pos,
+            return Viewer(initial_pos = initial_pos,
                                 initial_view_direction=initial_view_direction,
                                 initial_up=initial_up,
                                 renderer=self.renderer)
-                        
-        else:
-            self.viewer = None
 
     def _load(self):        
         parser = Parser(self.renderer, self.env)
