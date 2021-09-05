@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from robosuite.renderers.igibson.igibson_utils import get_id, MujocoCamera, MujocoRobot, load_object
+from robosuite.renderers.igibson.igibson_utils import get_texture_id, MujocoCamera, MujocoRobot, load_object
 from robosuite.utils.mjcf_utils import string_to_array
 import numpy as np
 
@@ -51,7 +51,7 @@ class Parser():
 
         self.material_attributes = {}
         self.material_mapping = {}
-        self.normal_id = get_id(np.array([127, 127, 255]).reshape(1,1,3).astype(np.uint8), 'normal', self)
+        self.normal_id = get_texture_id(np.array([127, 127, 255]).reshape(1,1,3).astype(np.uint8), 'normal', self)
         for material in self.xml_root.iter('material'):
             material_name = material.get('name')
             texture_name = material.get('texture')
@@ -62,8 +62,8 @@ class Parser():
                 texture_id, _ = self.texture_id_mapping[texture_name]
                 specular = material.get('specular')
                 shininess = material.get('shininess')
-                roughness_id = -1 if specular is None else get_id(1 - float(specular), 'roughness', self)
-                metallic_id = -1 if shininess is None else get_id(float(shininess), 'metallic', self)
+                roughness_id = -1 if specular is None else get_texture_id(1 - float(specular), 'roughness', self)
+                metallic_id = -1 if shininess is None else get_texture_id(float(shininess), 'metallic', self)
 
                 if isinstance(texture_id, int):
                     repeat = string_to_array(material.get('texrepeat', "1 1"))
@@ -157,11 +157,11 @@ class Parser():
             if geom_material is None:
                 color = geom_rgba[:3].reshape(1,1,3)
                 #TODO: check converting the below texture to color material
-                dummy_texture_id = get_id(color, 'texture', self)
+                dummy_texture_id = get_texture_id(color, 'texture', self)
                 geom_material = Material('texture',
                                          texture_id=dummy_texture_id,
-                                         metallic_texture_id=-1,
-                                         roughness_texture_id=-1,
+                                         metallic_texture_id=get_texture_id(1, 'metallic', self),
+                                         roughness_texture_id=get_texture_id(1, 'roughness', self),
                                          normal_texture_id=self.normal_id)
                 # Flag to check if default material is used
                 geom_material._is_set_by_parser = True
