@@ -8,7 +8,6 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import igibson
-from transforms3d import quaternions
 import robosuite.utils.transform_utils as T
 import robosuite
 
@@ -211,7 +210,7 @@ class MujocoCamera(object):
     def get_pose(self):
         offset_mat = np.eye(4)
         q_wxyz = np.concatenate((self.offset_ori[3:], self.offset_ori[:3]))
-        offset_mat[:3, :3] = quaternions.quat2mat(q_wxyz)
+        offset_mat[:3, :3] = T.quat2mat(q_wxyz)
         offset_mat[:3, -1] = self.offset_pos
 
         if self.camera_link_name != 'worldbody':
@@ -225,7 +224,7 @@ class MujocoCamera(object):
             position = total_pose[:3, -1]
 
             rot = total_pose[:3, :3]
-            wxyz = quaternions.mat2quat(rot)
+            wxyz = T.mat2quat(rot)
             xyzw = np.concatenate((wxyz[1:], wxyz[:1]))
 
         else:

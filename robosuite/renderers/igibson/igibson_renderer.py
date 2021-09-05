@@ -371,7 +371,7 @@ class iGibsonRenderer(Renderer):
                         camera_view_dir = camera_ori_mat.dot(np.array([0, 0, -1])) 
                         return camera_pos, camera_view_dir, cam.fov
 
-        raise Exception("Camera {self.env.render_camera} not present")
+        raise Exception(f"Camera {self.env.render_camera} not present")
 
     def _set_camera_pos_quat(self, pos, quat):
         """Set renderer position and quaternion.
