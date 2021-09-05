@@ -160,8 +160,8 @@ class Parser():
                 dummy_texture_id = get_id(color, 'texture', self)
                 geom_material = Material('texture',
                                          texture_id=dummy_texture_id,
-                                         metallic_texture_id=-1,
-                                         roughness_texture_id=-1,
+                                         metallic_texture_id=get_id(1, 'metallic', self),
+                                         roughness_texture_id=get_id(1, 'roughness', self),
                                          normal_texture_id=self.normal_id)
                 # Flag to check if default material is used
                 geom_material._is_set_by_parser = True
