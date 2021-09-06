@@ -462,10 +462,10 @@ class RobotEnv(MujocoEnv):
 
         if cam_s == "instance":
             name2id = {inst: i for i, inst in enumerate(list(self.model.instances_to_ids.keys()))}
-            mapping = {idn: name2id[inst] for idn, inst in self.model.ids_to_instances.items()}
+            mapping = {idn: name2id[inst] for idn, inst in self.model.geom_ids_to_instances.items()}
         elif cam_s == "class":
             name2id = {cls: i for i, cls in enumerate(list(self.model.classes_to_ids.keys()))}
-            mapping = {idn: name2id[cls] for idn, cls in self.model.ids_to_classes.items()}
+            mapping = {idn: name2id[cls] for idn, cls in self.model.geom_ids_to_classes.items()}
         else:  # element
             # No additional mapping needed
             mapping = None
