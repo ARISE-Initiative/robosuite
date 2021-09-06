@@ -21,6 +21,7 @@ def robotiq_tester(render,
     tester.start_simulation()
     tester.loop(total_iters=total_iters,
                 test_y=test_y)
+    tester.close()
 
 
 if __name__ == "__main__":

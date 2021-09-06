@@ -82,6 +82,8 @@ def test_camera_transforms():
     print("estimated obj pos: {}".format(estimated_obj_pos))
     print("z err: {}".format(z_err))
 
+    env.close()
+
 
 if __name__ == "__main__":
 
