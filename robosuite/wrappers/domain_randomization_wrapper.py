@@ -231,14 +231,20 @@ class DomainRandomizationWrapper(Wrapper):
                 - (bool) whether the current episode is completed or not
                 - (dict) misc information
         """
+        # Step the internal randomization state
+        self.step_randomization()
 
+        return super().step(action)
+
+    def step_randomization(self):
+        """
+        Steps the internal randomization state
+        """
         # functionality for randomizing at a particular frequency
         if self.randomize_every_n_steps > 0:
             if self.step_counter % self.randomize_every_n_steps == 0:
                 self.randomize_domain()
         self.step_counter += 1
-
-        return super().step(action)
 
     def randomize_domain(self):
         """
