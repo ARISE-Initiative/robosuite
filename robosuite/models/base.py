@@ -6,7 +6,7 @@ import io
 import robosuite.utils.macros as macros
 from robosuite.utils import XMLError
 from robosuite.utils.mjcf_utils import find_elements, sort_elements,\
-    add_material, string_to_array, add_prefix, recolor_collision_geoms
+    add_material, string_to_array, add_prefix, recolor_collision_geoms, _element_filter
 
 
 class MujocoXML(object):
@@ -38,6 +38,9 @@ class MujocoXML(object):
         default = self.create_default_element("default")
         default_classes = self._get_default_classes(default)
         self._replace_defaults_inline(default_dic=default_classes)
+
+        # Remove original default classes
+        self.root.remove(default)
 
         self.resolve_asset_dependency()
 
@@ -486,8 +489,30 @@ class MujocoXMLModel(MujocoXML, MujocoModel):
         # Define other variables that get filled later
         self.mount = None
 
+        # Define filter method to automatically add a default name to visual / collision geoms if encountered
+        group_mapping = {
+            None: "col",
+            "0": "col",
+            "1": "vis",
+        }
+        ctr_mapping = {
+            "col": 0,
+            "vis": 0,
+        }
+
+        def _add_default_name_filter(element, parent):
+            # Run default filter
+            filter_key = _element_filter(element=element, parent=parent)
+            # Also additionally modify element if it is (a) a geom and (b) has no name
+            if element.tag == "geom" and element.get("name") is None:
+                group = group_mapping[element.get("group")]
+                element.set("name", f"g{ctr_mapping[group]}_{group}")
+                ctr_mapping[group] += 1
+            # Return default filter key
+            return filter_key
+
         # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
-        self._elements = sort_elements(root=self.root)
+        self._elements = sort_elements(root=self.root, element_filter=_add_default_name_filter)
         assert len(self._elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
                                                       "got {}".format(len(self._elements["root_body"]))
         self._elements["root_body"] = self._elements["root_body"][0]
