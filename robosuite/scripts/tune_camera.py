@@ -14,121 +14,23 @@ import numpy as np
 import robosuite
 import robosuite.utils.transform_utils as T
 from robosuite.utils.mjcf_utils import find_elements, find_parent
+from robosuite.utils.camera_utils import CameraMover
 
 # some settings
 DELTA_POS_KEY_PRESS = 0.05      # delta camera position per key press
 DELTA_ROT_KEY_PRESS = 1         # delta camera angle per key press
 
 
-def modify_xml_for_camera_movement(xml, camera_name):
-    """
-    Cameras in mujoco are 'fixed', so they can't be moved by default.
-    Although it's possible to hack position movement, rotation movement
-    does not work. An alternative is to attach a camera to a body element,
-    and move the body.
-
-    This function modifies the camera with name @camera_name in the xml
-    by attaching it to a body element that we can then manipulate. In this
-    way, we can move the camera by moving the body.
-
-    See http://www.mujoco.org/forum/index.php?threads/move-camera.2201/ for
-    further details.
-
-    xml (str): Mujoco sim XML file as a string
-    camera_name (str): Name of camera to tune
-    """
-    tree = ET.fromstring(xml)
-
-    # find the correct camera
-    camera_elem = None
-    cameras = find_elements(root=tree, tags="camera", return_first=False)
-    for camera in cameras:
-        if camera.get("name") == camera_name:
-            camera_elem = camera
-            break
-    assert camera_elem is not None, "No valid camera name found, options are: {}"\
-        .format([camera.get("name") for camera in cameras])
-
-    # Find parent element of the camera element
-    parent = find_parent(root=tree, child=camera_elem)
-    assert parent is not None
-
-    # add camera body
-    cam_body = ET.SubElement(parent, "body")
-    cam_body.set("name", "cameramover")
-    cam_body.set("pos", camera_elem.get("pos"))
-    cam_body.set("quat", camera_elem.get("quat"))
-    new_camera = ET.SubElement(cam_body, "camera")
-    new_camera.set("mode", "fixed")
-    new_camera.set("name", camera_elem.get("name"))
-    new_camera.set("pos", "0 0 0")
-    # Also need to define inertia
-    inertial = ET.SubElement(cam_body, "inertial")
-    inertial.set("diaginertia", "1e-08 1e-08 1e-08")
-    inertial.set("mass", "1e-08")
-    inertial.set("pos", "0 0 0")
-
-    # remove old camera element
-    parent.remove(camera_elem)
-
-    return ET.tostring(tree, encoding="utf8").decode("utf8")
-
-
-def move_camera(env, direction, scale, cam_body_id):
-    """
-    Move the camera view along a direction (in the camera frame).
-
-    Args:
-        direction (np.arry): 3-array for where to move camera in camera frame
-        scale (float): how much to move along that direction
-        cam_body_id (int): id corresponding to parent body of camera element
-    """
-
-    # current camera pose
-    camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-    camera_rot = T.quat2mat(T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw'))
-
-    # move along camera frame axis and set new position
-    camera_pos += scale * camera_rot.dot(direction)
-    env.sim.model.body_pos[cam_body_id] = camera_pos
-    env.sim.forward()
-
-
-def rotate_camera(env, direction, angle, cam_body_id):
-    """
-    Rotate the camera view about a direction (in the camera frame).
-
-    Args:
-        direction (np.array): 3-array for where to move camera in camera frame
-        angle (float): how much to rotate about that direction
-        cam_body_id (int): id corresponding to parent body of camera element
-    """
-
-    # current camera rotation
-    camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-    camera_rot = T.quat2mat(T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw'))
-
-    # rotate by angle and direction to get new camera rotation
-    rad = np.pi * angle / 180.0
-    R = T.rotation_matrix(rad, direction, point=None)
-    camera_rot = camera_rot.dot(R[:3, :3])
-
-    # set new rotation
-    env.sim.model.body_quat[cam_body_id] = T.convert_quat(T.mat2quat(camera_rot), to='wxyz')
-    env.sim.forward()
-
-
 class KeyboardHandler:
-    def __init__(self, env, cam_body_id):
+    def __init__(self, camera_mover):
         """
         Store internal state here.
 
         Args:
-            env (MujocoEnv): Environment to use
+            camera_mover (CameraMover): Playback camera class
         cam_body_id (int): id corresponding to parent body of camera element
         """
-        self.env = env
-        self.cam_body_id = cam_body_id
+        self.camera_mover = camera_mover
 
     def on_press(self, window, key, scancode, action, mods):
         """
@@ -144,42 +46,42 @@ class KeyboardHandler:
         # controls for moving position
         if key == glfw.KEY_W:
             # move forward
-            move_camera(env=self.env, direction=[0., 0., -1.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.move_camera(direction=[0., 0., -1.], scale=DELTA_POS_KEY_PRESS)
         elif key == glfw.KEY_S:
             # move backward
-            move_camera(env=self.env, direction=[0., 0., 1.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.move_camera(direction=[0., 0., 1.], scale=DELTA_POS_KEY_PRESS)
         elif key == glfw.KEY_A:
             # move left
-            move_camera(env=self.env, direction=[-1., 0., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.move_camera(direction=[-1., 0., 0.], scale=DELTA_POS_KEY_PRESS)
         elif key == glfw.KEY_D:
             # move right
-            move_camera(env=self.env, direction=[1., 0., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.move_camera(direction=[1., 0., 0.], scale=DELTA_POS_KEY_PRESS)
         elif key == glfw.KEY_R:
             # move up
-            move_camera(env=self.env, direction=[0., 1., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.move_camera(direction=[0., 1., 0.], scale=DELTA_POS_KEY_PRESS)
         elif key == glfw.KEY_F:
             # move down
-            move_camera(env=self.env, direction=[0., -1., 0.], scale=DELTA_POS_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.move_camera(direction=[0., -1., 0.], scale=DELTA_POS_KEY_PRESS)
 
         # controls for moving rotation
         elif key == glfw.KEY_UP:
             # rotate up
-            rotate_camera(env=self.env, direction=[1., 0., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.rotate_camera(point=None, axis=[1., 0., 0.], angle=DELTA_ROT_KEY_PRESS)
         elif key == glfw.KEY_DOWN:
             # rotate down
-            rotate_camera(env=self.env, direction=[-1., 0., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.rotate_camera(point=None, axis=[-1., 0., 0.], angle=DELTA_ROT_KEY_PRESS)
         elif key == glfw.KEY_LEFT:
             # rotate left
-            rotate_camera(env=self.env, direction=[0., 1., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.rotate_camera(point=None, axis=[0., 1., 0.], angle=DELTA_ROT_KEY_PRESS)
         elif key == glfw.KEY_RIGHT:
             # rotate right
-            rotate_camera(env=self.env, direction=[0., -1., 0.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.rotate_camera(point=None, axis=[0., -1., 0.], angle=DELTA_ROT_KEY_PRESS)
         elif key == glfw.KEY_PERIOD:
             # rotate counterclockwise
-            rotate_camera(env=self.env, direction=[0., 0., 1.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.rotate_camera(point=None, axis=[0., 0., 1.], angle=DELTA_ROT_KEY_PRESS)
         elif key == glfw.KEY_SLASH:
             # rotate clockwise
-            rotate_camera(env=self.env, direction=[0., 0., -1.], angle=DELTA_ROT_KEY_PRESS, cam_body_id=self.cam_body_id)
+            self.camera_mover.rotate_camera(point=None, axis=[0., 0., -1.], angle=DELTA_ROT_KEY_PRESS)
 
     def on_release(self, window, key, scancode, action, mods):
         """
@@ -259,40 +161,35 @@ if __name__ == "__main__":
         control_freq=100,
     )
     env.reset()
-    initial_mjstate = env.sim.get_state().flatten()
-    xml = env.sim.model.get_xml()
 
-    # add body to camera to be able to move it around
-    xml = modify_xml_for_camera_movement(xml, camera_name=CAMERA_NAME)
-    env.reset_from_xml_string(xml)
-    env.sim.reset()
-    env.sim.set_state_from_flattened(initial_mjstate)
-    env.sim.forward()
-
-    camera_id = env.sim.model.camera_name2id(CAMERA_NAME)
-    env.viewer.set_camera(camera_id=camera_id)
-
-    # Store camera mover id
-    cam_body_id = env.sim.model.body_name2id("cameramover")
+    # Create the camera mover
+    camera_mover = CameraMover(
+        env=env,
+        camera=CAMERA_NAME,
+    )
 
     # Infer initial camera pose
     if from_tag:
         initial_file_camera_pos = np.array(cam_tree.get("pos").split(" ")).astype(float)
         initial_file_camera_quat = T.convert_quat(np.array(cam_tree.get("quat").split(" ")).astype(float), to='xyzw')
+        # Set these values as well
+        camera_mover.set_camera_pose(pos=initial_file_camera_pos, quat=initial_file_camera_quat)
     else:
-        initial_file_camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-        initial_file_camera_quat = T.convert_quat(np.array(env.sim.model.body_quat[cam_body_id]), to='xyzw')
+        initial_file_camera_pos, initial_file_camera_quat = camera_mover.get_camera_pose()
+    # Define initial file camera pose
     initial_file_camera_pose = T.make_pose(initial_file_camera_pos, T.quat2mat(initial_file_camera_quat))
 
-    # remember difference between camera pose in initial tag
-    # and absolute camera pose in world
-    initial_world_camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-    initial_world_camera_quat = T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw')
+    # remember difference between camera pose in initial tag and absolute camera pose in world
+    initial_world_camera_pos, initial_world_camera_quat = camera_mover.get_camera_pose()
     initial_world_camera_pose = T.make_pose(initial_world_camera_pos, T.quat2mat(initial_world_camera_quat))
     world_in_file = initial_file_camera_pose.dot(T.pose_inv(initial_world_camera_pose))
 
+    # Make sure we're using the camera that we're modifying
+    camera_id = env.sim.model.camera_name2id(CAMERA_NAME)
+    env.viewer.set_camera(camera_id=camera_id)
+
     # register callbacks to handle key presses in the viewer
-    key_handler = KeyboardHandler(env=env, cam_body_id=cam_body_id)
+    key_handler = KeyboardHandler(camera_mover=camera_mover)
     env.viewer.add_keypress_callback("any", key_handler.on_press)
     env.viewer.add_keyup_callback("any", key_handler.on_release)
     env.viewer.add_keyrepeat_callback("any", key_handler.on_press)
@@ -306,8 +203,7 @@ if __name__ == "__main__":
         spin_count += 1
         if spin_count % 500 == 0:
             # convert from world coordinates to file coordinates (xml subtree)
-            camera_pos = np.array(env.sim.model.body_pos[cam_body_id])
-            camera_quat = T.convert_quat(env.sim.model.body_quat[cam_body_id], to='xyzw')
+            camera_pos, camera_quat = camera_mover.get_camera_pose()
             world_camera_pose = T.make_pose(camera_pos, T.quat2mat(camera_quat))
             file_camera_pose = world_in_file.dot(world_camera_pose)
             # TODO: Figure out why numba causes black screen of death (specifically, during mat2pose --> mat2quat call below)
