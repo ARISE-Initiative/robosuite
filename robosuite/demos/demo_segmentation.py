@@ -61,8 +61,8 @@ if __name__ == "__main__":
     options = {}
 
     # Choose environment and add it to options
-    options["env_name"] = "Stack"
-    options["robots"] = ["Panda"]
+    options["env_name"] = "TwoArmHandover"
+    options["robots"] = ["Panda", "Panda"]
 
     # Choose controller
     controller_name = "OSC_POSE"
