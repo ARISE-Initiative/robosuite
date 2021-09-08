@@ -168,12 +168,20 @@ if __name__ == "__main__":
         camera=CAMERA_NAME,
     )
 
+    # Make sure we're using the camera that we're modifying
+    camera_id = env.sim.model.camera_name2id(CAMERA_NAME)
+    env.viewer.set_camera(camera_id=camera_id)
+
     # Infer initial camera pose
     if from_tag:
         initial_file_camera_pos = np.array(cam_tree.get("pos").split(" ")).astype(float)
         initial_file_camera_quat = T.convert_quat(np.array(cam_tree.get("quat").split(" ")).astype(float), to='xyzw')
         # Set these values as well
         camera_mover.set_camera_pose(pos=initial_file_camera_pos, quat=initial_file_camera_quat)
+        # Optionally set fov if specified
+        cam_fov = cam_tree.get("fovy", None)
+        if cam_fov is not None:
+            env.sim.model.cam_fovy[camera_id] = float(cam_fov)
     else:
         initial_file_camera_pos, initial_file_camera_quat = camera_mover.get_camera_pose()
     # Define initial file camera pose
@@ -183,10 +191,6 @@ if __name__ == "__main__":
     initial_world_camera_pos, initial_world_camera_quat = camera_mover.get_camera_pose()
     initial_world_camera_pose = T.make_pose(initial_world_camera_pos, T.quat2mat(initial_world_camera_quat))
     world_in_file = initial_file_camera_pose.dot(T.pose_inv(initial_world_camera_pose))
-
-    # Make sure we're using the camera that we're modifying
-    camera_id = env.sim.model.camera_name2id(CAMERA_NAME)
-    env.viewer.set_camera(camera_id=camera_id)
 
     # register callbacks to handle key presses in the viewer
     key_handler = KeyboardHandler(camera_mover=camera_mover)
