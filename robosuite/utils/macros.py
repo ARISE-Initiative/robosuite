@@ -30,4 +30,4 @@ IMAGE_CONVENTION = "opengl"     # Options are {"opengl", "opencv"}
 # Image concatenation
 # In general, observations are concatenated together by modality. However, image observations are expensive memory-wise,
 # so we skip concatenating all images together by default, unless this flag is set to True
-CONCATENATE_IMAGES = True
+CONCATENATE_IMAGES = False

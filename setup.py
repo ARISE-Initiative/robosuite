@@ -19,7 +19,7 @@ setup(
         "numpy>=1.13.3",
         "numba>=0.49.1",
         "scipy>=1.2.3",
-        "mujoco-py==2.0.2.9",
+        "mujoco-py==2.0.2.13",
     ],
     eager_resources=['*'],
     include_package_data=True,
@@ -28,7 +28,7 @@ setup(
     author="Yuke Zhu, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín",
     url="https://github.com/ARISE-Initiative/robosuite",
     author_email="yukez@cs.utexas.edu",
-    version="1.2.0",
+    version="1.2.2",
     long_description=long_description,
     long_description_content_type='text/markdown'
 )

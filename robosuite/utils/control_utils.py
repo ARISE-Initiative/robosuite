@@ -243,5 +243,5 @@ def set_goal_orientation(delta,
                     else:
                         euler[idx] = orientation_limit[1][idx]
         if limited:
-            goal_orientation = trans.euler2mat(np.array([euler[1], euler[0], euler[2]]))
+            goal_orientation = trans.euler2mat(np.array([euler[0], euler[1], euler[2]]))
     return goal_orientation

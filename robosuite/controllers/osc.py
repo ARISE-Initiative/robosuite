@@ -234,7 +234,7 @@ class OperationalSpaceController(Controller):
                 scaled_delta = self.scale_action(delta)
                 if not self.use_ori and set_ori is None:
                     # Set default control for ori since user isn't actively controlling ori
-                    set_ori = np.array([[0, -1., 0.], [-1., 0., 0.], [0., 0., 1.]])
+                    set_ori = np.array([[0., 1., 0.], [1., 0., 0.], [0., 0., -1.]])
             else:
                 scaled_delta = []
         # Else, interpret actions as absolute values
@@ -244,7 +244,7 @@ class OperationalSpaceController(Controller):
             # Set default control for ori if we're only using position control
             if set_ori is None:
                 set_ori = T.quat2mat(T.axisangle2quat(delta[3:6])) if self.use_ori else \
-                    np.array([[0, -1., 0.], [-1., 0., 0.], [0., 0., 1.]])
+                    np.array([[0., 1., 0.], [1., 0., 0.], [0., 0., -1.]])
             # No scaling of values since these are absolute values
             scaled_delta = delta
 
