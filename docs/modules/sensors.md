@@ -12,18 +12,21 @@ Cameras bundle a name to a set of properties to render images of the environment
 
 #### Observables
 
-**robosuite** provides a realistic, customizable interface via the [Observable](../source/robosuite.utils.html#robosuite.utils.observables.Observable) class API. Observables model realistic sensor sampling, in which ground truth data is sampled (`sensor`), passed through a corrupting function (`corrupter`), and then finally passed through a filtering function (`filter`). Moreover, each observable has its own `sampling_rate` and `delayer` function which simulates sensor delay. While default values are used to instantiate each observable during environment creation, each of these components can be modified by the user at runtime using `env.modify_observable(...)` . Moreover, each observable is assigned a modality, and are grouped together in the returned observation dictionary during the `env.step()` call. For example, if an environment consists of camera observations and a single robot's proprioceptive observations, the observation dict structure might look as follows:
+**robosuite** provides a realistic, customizable interface via the [Observable](../source/robosuite.utils.html#robosuite.utils.observables.Observable) class API. Observables model realistic sensor sampling, in which ground truth data is sampled (`sensor`), passed through a corrupting function (`corrupter`), and then finally passed through a filtering function (`filter`). Moreover, each observable has its own `sampling_rate` and `delayer` function which simulates sensor delay. While default values are used to instantiate each observable during environment creation, each of these components can be modified by the user at runtime using `env.modify_observable(...)` . Moreover, each observable is assigned a modality, and are grouped together in the returned observation dictionary during the `env.step()` call. For example, if an environment consists of camera observations (RGB, depth, and instance segmentation) and a single robot's proprioceptive observations, the observation dict structure might look as follows:
 
 ```python
 {
-    "frontview_image": np.array(...),    # this has modality "image"
-    "frontview_depth": np.array(...),    # this has modality "image"
-    "robot0_joint_pos": np.array(...),   # this has modality "robot0_proprio"
-    "robot0_gripper_pos": np.array(...), # this has modality "robot0_proprio"
-    "image-state": np.array(...),           # this is a concatenation of all image observations
-    "robot0_proprio-state": np.array(...),  # this is a concatenation of all robot0_proprio observations
+    "frontview_image": np.array(...),                   # this has modality "image"
+    "frontview_depth": np.array(...),                   # this has modality "image"
+    "frontview_segmentation_instance": np.array(...),   # this has modality "image"
+    "robot0_joint_pos": np.array(...),                  # this has modality "robot0_proprio"
+    "robot0_gripper_pos": np.array(...),                # this has modality "robot0_proprio"
+    "image-state": np.array(...),                       # this is a concatenation of all image observations
+    "robot0_proprio-state": np.array(...),              # this is a concatenation of all robot0_proprio observations
 }
 ```
+
+For more information on the vision ground-truth sensors supported, please see the [Renderer](./renderers) section.
 
 Note that for memory efficiency the `image-state` is not returned by default (this can be toggled in `robosuite/utils/macros.py`).
 

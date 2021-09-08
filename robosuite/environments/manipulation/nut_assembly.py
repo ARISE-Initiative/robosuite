@@ -133,6 +133,18 @@ class NutAssembly(SingleArmEnv):
             bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
             "camera names" param.
 
+        camera_segmentations (None or str or list of str or list of list of str): Camera segmentation(s) to use
+            for each camera. Valid options are:
+
+                `None`: no segmentation sensor used
+                `'instance'`: segmentation at the class-instance level
+                `'class'`: segmentation at the class level
+                `'element'`: segmentation at the per-geom level
+
+            If not None, multiple types of segmentations can be specified. A [list of str / str or None] specifies
+            [multiple / a single] segmentation(s) to use for all cameras. A list of list of str specifies per-camera
+            segmentation setting(s) to use.
+
     Raises:
         AssertionError: [Invalid nut type specified]
         AssertionError: [Invalid number of robots specified]
@@ -168,6 +180,7 @@ class NutAssembly(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
+        camera_segmentations=None,      # {None, instance, class, element}
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -217,6 +230,7 @@ class NutAssembly(SingleArmEnv):
             camera_heights=camera_heights,
             camera_widths=camera_widths,
             camera_depths=camera_depths,
+            camera_segmentations=camera_segmentations,
         )
 
     def reward(self, action=None):

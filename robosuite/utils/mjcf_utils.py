@@ -825,3 +825,42 @@ def save_sim_model(sim, fname):
     """
     with open(fname, "w") as f:
         sim.save(file=f, format="xml")
+
+
+def get_ids(sim, elements, element_type="geom", inplace=False):
+    """
+    Grabs the mujoco IDs for each element in @elements, corresponding to the specified @element_type.
+
+    Args:
+        sim (MjSim): Active mujoco simulation object
+        elements (str or list or dict): Element(s) to convert into IDs. Note that the return type corresponds to
+            @elements type, where each element name is replaced with the ID
+        element_type (str): The type of element to grab ID for. Options are {geom, body, site}
+        inplace (bool): If False, will create a copy of @elements to prevent overwriting the original data structure
+
+    Returns:
+        str or list or dict: IDs corresponding to @elements.
+    """
+    if not inplace:
+        # Copy elements first so we don't write to the underlying object
+        elements = deepcopy(elements)
+    # Choose what to do based on elements type
+    if isinstance(elements, str):
+        # We simply return the value of this single element
+        assert element_type in {"geom", "body", "site"},\
+            f"element_type must be either geom, body, or site. Got: {element_type}"
+        if element_type == "geom":
+            elements = sim.model.geom_name2id(elements)
+        elif element_type == "body":
+            elements = sim.model.body_name2id(elements)
+        else:       # site
+            elements = sim.model.site_name2id(elements)
+    elif isinstance(elements, dict):
+        # Iterate over each element in dict and recursively repeat
+        for name, ele in elements:
+            elements[name] = get_ids(sim=sim, elements=ele, element_type=element_type, inplace=True)
+    else:       # We assume this is an iterable array
+        assert isinstance(elements, Iterable), "Elements must be iterable for get_id!"
+        elements = [get_ids(sim=sim, elements=ele, element_type=element_type, inplace=True) for ele in elements]
+
+    return elements

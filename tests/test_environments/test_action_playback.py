@@ -65,6 +65,7 @@ def test_playback():
         state_playback = env.sim.get_state().flatten()
         assert(np.all(np.equal(states[i + 1], state_playback)))
 
+    env.close()
     print("test passed!")
 
 
