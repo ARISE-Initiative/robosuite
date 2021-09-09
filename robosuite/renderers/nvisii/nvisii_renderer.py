@@ -71,7 +71,7 @@ class NViSIIRenderer(Renderer):
 
             image_options (string, optional): Options to render image with different ground truths
                                               for NViSII. Options include "normal", "texture_coordinates",
-                                              "position"
+                                              "position", "depth".
         """
 
         super().__init__(env, renderer_type="nvisii")

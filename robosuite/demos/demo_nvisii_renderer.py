@@ -4,6 +4,10 @@ import numpy as np
 import robosuite as suite
 import robosuite.utils.transform_utils as T
 
+from robosuite.controllers import load_controller_config
+from robosuite.utils.input_utils import *
+from robosuite.renderers import load_renderer_config
+
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
@@ -21,6 +25,10 @@ if __name__ == '__main__':
 
     Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
     '''
+
+    # print welcome info
+    print("Welcome to robosuite v{}!".format(suite.__version__))
+    print(suite.__logo__)
     
     parser = argparse.ArgumentParser()
 
