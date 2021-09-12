@@ -1,12 +1,13 @@
 import xml.etree.ElementTree as ET
 
 from robosuite.renderers.igibson.igibson_utils import get_texture_id, MujocoCamera, MujocoRobot, load_object
+from robosuite.renderers.base_parser import BaseParser
 from robosuite.utils.mjcf_utils import string_to_array
 import numpy as np
 
 from igibson.render.mesh_renderer.mesh_renderer_cpu import Material
 
-class Parser():
+class Parser(BaseParser):
 
     def __init__(self, renderer,  env):
         """
@@ -17,11 +18,7 @@ class Parser():
             env : Mujoco env
         """
 
-        self.renderer = renderer
-        self.env = env
-        self.xml_root = ET.fromstring(self.env.mjpy_model.get_xml())      
-        self.parent_map = {c:p for p in self.xml_root.iter() for c in p}
-        self.visual_objects = {}
+        super().__init__(renderer, env)
     
     def parse_textures(self):
         """
