@@ -42,6 +42,12 @@ class VisualizationWrapper(Wrapper):
                 http://www.mujoco.org/book/XMLreference.html#site for specific site attributes that can be specified.
         """
         super().__init__(env)
+
+        # Make sure that the environment is NOT using segmentation sensors, since we cannot use segmentation masks
+        # with visualization sites simultaneously
+        assert all(seg is None for seg in env.camera_segmentations), \
+            "Cannot use camera segmentations with visualization wrapper!"
+
         # Standardize indicator configs
         self.indicator_configs = None
         if indicator_configs is not None:

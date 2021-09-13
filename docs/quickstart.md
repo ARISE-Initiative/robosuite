@@ -52,7 +52,6 @@ We can add a gripper to the robot by creating a gripper instance and calling the
 from robosuite.models.grippers import gripper_factory
 
 gripper = gripper_factory('PandaGripper')
-gripper.hide_visualization()
 mujoco_robot.add_gripper(gripper)
 ```
 To add the robot to the world, we place the robot on to a desired position and merge it into the world
@@ -70,7 +69,7 @@ mujoco_arena.set_origin([0.8, 0, 0])
 world.merge(mujoco_arena)
 ```
 
-**Step 4: Adding the object.** For details of `MujocoObject`, refer to the documentations about [MujocoObject](modeling/object_model), we can create a ball and add it to the world. It is a bit more complicated than before because we are adding a free joint to the object (so it can move) and we want to place the object properly.
+**Step 4: Adding the object.** For details of `MujocoObject`, refer to the documentations about [MujocoObject](modeling/object_model), we can create a ball and add it to the world.
 ```python
 from robosuite.models.objects import BallObject
 from robosuite.utils.mjcf_utils import new_joint
@@ -78,8 +77,7 @@ from robosuite.utils.mjcf_utils import new_joint
 sphere = BallObject(
     name="sphere",
     size=[0.04],
-    rgba=[0, 0.5, 0.5, 1]).get_collision()
-sphere.append(new_joint(name='sphere_free_joint', type='free'))
+    rgba=[0, 0.5, 0.5, 1]).get_obj()
 sphere.set('pos', '1.0 0 1.0')
 world.worldbody.append(sphere)
 ```

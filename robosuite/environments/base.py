@@ -240,7 +240,8 @@ class MujocoEnv(metaclass=EnvMeta):
         index or a list of indices that point to the corresponding elements
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
-        pass
+        # Setup mappings from model to IDs
+        self.model.generate_id_mappings(sim=self.sim)
 
     def _setup_observables(self):
         """

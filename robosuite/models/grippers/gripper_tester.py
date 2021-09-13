@@ -43,6 +43,9 @@ class GripperTester:
         step_time=400,
         render=True
     ):
+        # define viewer
+        self.viewer = None
+
         world = MujocoWorldBase()
         # Add a table
         arena = TableArena(table_full_size=(0.4, 0.4, 0.1), table_offset=(0, 0, 0.1), has_legs=False)
@@ -153,6 +156,13 @@ class GripperTester:
         """
         self.sim.set_state(self.sim_state)
         self.cur_step = 0
+
+    def close(self):
+        """
+        Close the viewer if it exists
+        """
+        if self.viewer is not None:
+            self.viewer.close()
 
     def step(self):
         """
