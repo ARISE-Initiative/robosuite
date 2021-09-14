@@ -26,60 +26,79 @@ if __name__ == '__main__':
     Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
     '''
 
+    options = {}
+
     # print welcome info
     print("Welcome to robosuite v{}!".format(suite.__version__))
     print(suite.__logo__)
-    
-    parser = argparse.ArgumentParser()
 
-    parser.add_argument("--env", type=str, default="PickPlace")
-    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-    parser.add_argument("--timesteps", type=int, default=300)
-    parser.add_argument("--video_mode", type=str, default="False")
-    parser.add_argument("--width", type=int, default=500)
-    parser.add_argument("--height", type=int, default=500)
-    parser.add_argument("--spp", type=int, default=256)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--renderer", type=str, default="nvisii")
 
     args = parser.parse_args()
+    renderer = args.renderer
 
-    args.video_mode = str2bool(args.video_mode)
+    options["env_name"] = choose_environment()
 
-    f = open('../renderers/config/nvisii_config.json')
-    renderer_config = json.load(f)
+    # If a multi-arm environment has been chosen, choose configuration and appropriate robot(s)
+    if "TwoArm" in options["env_name"]:
+        # Choose env config and add it to options
+        options["env_configuration"] = choose_multi_arm_config()
+
+        # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
+        if options["env_configuration"] == 'bimanual':
+            options["robots"] = 'Baxter'
+        else:
+            options["robots"] = []
+
+            # Have user choose two robots
+            print("A multiple single-arm configuration was chosen.\n")
+
+            for i in range(2):
+                print("Please choose Robot {}...\n".format(i))
+                options["robots"].append(choose_robots(exclude_bimanual=True))
+
+    # Else, we simply choose a single (single-armed) robot to instantiate in the environment
+    else:
+        options["robots"] = choose_robots(exclude_bimanual=True)
+
+    # Choose controller
+    controller_name = choose_controller()
+
+    # Load the desired controller
+    options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
     env = suite.make(
-            args.env,
-            robots=args.robots,
-            reward_shaping=True,
+            **options,
             has_renderer=False,           # no on-screen renderer
             has_offscreen_renderer=False, # no off-screen renderer
             ignore_done=True,
-            use_object_obs=True,          # use object-centric feature
             use_camera_obs=False,         # no camera observations
-            control_freq=10,
-            renderer="nvisii",
-            renderer_config=renderer_config,
+            control_freq=20,
+            renderer=renderer,
         )
 
     env.reset()
 
-    camera_pos = np.array([1.5, 0, 1.5])
-    camera_quat = np.array([-1, 0, 0, 0])
+    low, high = env.action_spec
 
-    action_space = env.action_dim
+    if renderer == "nvisii":
 
-    for i in range(args.timesteps):
-        action = np.random.randn(action_space)
-        obs, reward, done, info = env.step(action)
+        timesteps = 300
+        for i in range(timesteps):
+            action = np.random.uniform(low, high)
+            obs, reward, done, _ = env.step(action)
 
-        if args.video_mode:
-            env.render(render_type="png")
-        else:
             if i % 100 == 0:
                 env.render()
 
-    env.reset()
+    else:
+
+        # do visualization
+        for i in range(10000):
+            action = np.random.uniform(low, high)
+            obs, reward, done, _ = env.step(action)
+            env.render()
 
     env.close_renderer()
-    
     print('Done.')

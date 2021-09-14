@@ -5,10 +5,11 @@ from collections import namedtuple
 import nvisii
 from robosuite.utils.mjcf_utils import string_to_array
 from robosuite.renderers.nvisii.nvisii_utils import load_object
+from robosuite.renderers.base_parser import BaseParser
 
 Components = namedtuple('Components', ['obj', 'parent_body_name', 'geom_pos', 'geom_quat', 'dynamic'])
 
-class Parser():
+class Parser(BaseParser):
     def __init__(self, env):
         """
         Parse the mujoco xml and initialize NViSII renderer objects.
