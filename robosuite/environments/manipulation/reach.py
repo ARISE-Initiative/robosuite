@@ -390,7 +390,7 @@ class Reach(SingleArmEnv):
 
             ball_id = self.sim.model.body_name2id(self.ball.root_body)
             new_position = object_placements['ball'][0]
-            print('setting ball', new_position)
+            # print('setting ball', new_position)
             self.sim.data.body_xpos[ball_id] = new_position
             # below only works if there are joints - but we don't want joint bc we need static ball
             # Loop through all objects and reset their positions
