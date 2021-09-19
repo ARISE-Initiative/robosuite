@@ -1,4 +1,3 @@
-import types
 import numpy as np
 import robosuite as suite
 
@@ -58,6 +57,19 @@ def check_render2tensor(render2tensor, render_mode):
     if render_mode == 'gui' and render2tensor:
         raise ValueError('render2tensor can only be set to true in `headless` mode. ')
 
+def check_segmentation_type(segmentation_type):
+
+    assert len(segmentation_type) == 1, \
+            ValueError('Only one segmentation type can be used for all cameras. Set `camera_segmentations` to be' \
+            'either `class`, `instance` or `element`')
+    if segmentation_type[0] is not None:
+        assert len(segmentation_type[0]) == 1, \
+                ValueError('Only one sensor per camera can be used.' \
+                'Set `camera_segmentations` to be either `class`, `instance` or `element`')
+
+    if segmentation_type[0] is not None:
+        return segmentation_type[0][0] 
+
 
 class iGibsonRenderer(Renderer):
     def __init__(self,
@@ -73,7 +85,7 @@ class iGibsonRenderer(Renderer):
                  light_dimming_factor=1.0,
                  device_idx=0,
                  camera_obs=False,
-                 modes=['rgb']):
+                 vision_modalities=['rgb']):
         """
         Initializes the iGibson renderer.
 
@@ -119,21 +131,25 @@ class iGibsonRenderer(Renderer):
                 array will follow `macros.IMAGE_CONVENTION` which is by default set to
                 `opengl`.
 
-            modes (list, optional): Types of modality to render. Defaults to ['rgb'].
+            vision_modalities (list, optional): Types of modality to render. Defaults to ['rgb'].
                 Available modalities are `['rgb', 'seg', '3d', 'normal']`
                 If `camd` is set to True while initializing the environment
                 `3d` mode is automatically added in the list of modes.
+                If `camera_segmentation` is set, that camera segmentation sensor is used.
+
         
         """
         super().__init__(env)
 
-        check_modes(modes)
+        check_modes(vision_modalities)
         check_render_mode(render_mode)
         # environment use camera obs must be false and iG camera_obs must be true.
         # This makes robosuite not initialize mujoco sensors
         # which was behaving strangely.
         check_camera_obs(self.env.use_camera_obs)
         check_render2tensor(render2tensor, render_mode)
+        segmentation_type = check_segmentation_type(self.env.camera_segmentations)
+            
 
 
         self.mode = render_mode
@@ -147,12 +163,19 @@ class iGibsonRenderer(Renderer):
         self.optimized = optimized
         self.light_dimming_factor = light_dimming_factor
         self.device_idx = device_idx
-        self.modes = modes
+        self.modes = vision_modalities
         self.camera_obs = camera_obs
+        self.segmentation_type = segmentation_type
+        
+        # setup references so that segmentation mappings are created.
+        env._setup_references()
 
         # if camd is set in env, add the depth mode in iG
         if True in self.env.camera_depths and '3d' not in self.modes:
             self.modes += ['3d']
+
+        if self.segmentation_type is not None:
+            self.modes += ['seg']
         
         self.mrs = MeshRendererSettings(msaa=msaa, 
                                         enable_pbr=enable_pbr, 
@@ -407,13 +430,15 @@ class iGibsonRenderer(Renderer):
                                 renderer=self.renderer)
 
     def _load(self):        
-        parser = Parser(self.renderer, self.env)
+        parser = Parser(self.renderer, self.env, self.segmentation_type)
         parser.parse_cameras()        
         parser.parse_textures()
         parser.parse_materials()
         parser.parse_geometries()
         self.visual_objects = parser.visual_objects
-        self.max_instances = parser.max_instances
+        self.max_elements = parser.max_elements
+        self.max_instance_classes = parser.max_instances
+        self.max_classes = parser.max_classes
 
     def render(self):
         """
@@ -459,7 +484,7 @@ class iGibsonRenderer(Renderer):
                  render_mode=self.mode,
                  width=self.width,
                  height=self.height,
-                 modes=self.modes,
+                 vision_modalities=self.modes,
                  enable_pbr=self.enable_pbr,
                  enable_shadow=self.enable_shadow,
                  msaa=self.msaa,
@@ -546,6 +571,7 @@ if __name__ == '__main__':
             render_camera='frontview',         
             control_freq=10,
             renderer="igibson",
+            camera_segmentations=None
         )    
 
     env.reset()

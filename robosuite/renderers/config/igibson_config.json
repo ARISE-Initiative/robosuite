@@ -10,5 +10,5 @@
     "light_dimming_factor":1.0,
     "device_idx":0,    
     "camera_obs":false,
-    "modes":["rgb"]    
+    "vision_modalities":["rgb"]    
 }

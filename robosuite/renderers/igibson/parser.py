@@ -9,7 +9,7 @@ from igibson.render.mesh_renderer.mesh_renderer_cpu import Material
 
 class Parser(BaseParser):
 
-    def __init__(self, renderer,  env):
+    def __init__(self, renderer, env, segmentation_type):
         """
         Parse the mujoco xml and initialize iG renderer objects.
 
@@ -19,6 +19,8 @@ class Parser(BaseParser):
         """
 
         super().__init__(renderer, env)
+        self.segmentation_type = segmentation_type
+        self.create_class_mapping()
     
     def parse_textures(self):
         """
@@ -84,6 +86,38 @@ class Parser(BaseParser):
                 # color can either come from texture, or could be defined in the material itself.
                 self.material_mapping[material_name] = Material('color',
                                                                 kd=rgba[:3])
+    
+    def create_class_mapping(self):
+        """
+        Create class name to index mapping for both semantic and instance
+        segmentation.
+        """
+        self.class2index = {}
+        for i,c in enumerate(self.env.model._classes_to_ids.keys()):
+            self.class2index[c] = i
+        self.class2index[None] = i+1
+        self.max_classes = i+1
+
+        self.instance2index = {}
+        for i, instance_class in enumerate(self.env.model._instances_to_ids):
+            self.instance2index = {instance_class: i}
+        self.instance2index[None] = i+1
+        self.max_instances = i+1
+
+
+    def get_class_id(self, geom_index, element_id):
+        """
+        Given index of the geom object get the class id based on
+        self.segmentation type.
+        """
+        if self.segmentation_type == 'class':
+            class_id = self.class2index[self.env.model_geom_ids_to_classes.get(geom_index)]
+        elif self.segmentation_type == 'instance':
+            class_id = self.instance2index[self.env.model._geom_ids_to_instances.get(geom_index)]
+        else:
+            class_id = element_id
+
+        return class_id
 
     def parse_cameras(self):
         """
@@ -109,14 +143,7 @@ class Parser(BaseParser):
                                   )
             robot.cameras.append(camera)    
 
-        self.renderer.add_robot([],
-                                [],
-                                [],
-                                [],
-                                [],
-                                0,
-                                dynamic=False,
-                                robot=robot)                       
+        self.renderer.add_robot([], [], [], [], [], 0, dynamic=False, robot=robot)                       
 
     def parse_meshes(self):
         """
@@ -131,8 +158,8 @@ class Parser(BaseParser):
         Iterate through each goemetry and load it in the iGibson renderer.
         """
         self.parse_meshes()
-        instance_id = 0
-        for geom in self.xml_root.iter('geom'):
+        element_id = 0
+        for geom_index, geom in enumerate(self.xml_root.iter('geom')):
             geom_name = geom.get('name', 'NONAME')
             geom_type = geom.get('type')
 
@@ -171,6 +198,9 @@ class Parser(BaseParser):
 
             # setting material_ids so that randomized material works
             geom_material.material_ids = 0
+            
+            class_id = self.get_class_id(geom_index, element_id)
+            
             load_object(renderer=self.renderer,
                         geom=geom,
                         geom_name=geom_name,
@@ -182,11 +212,11 @@ class Parser(BaseParser):
                         geom_scale=geom_scale,
                         geom_material=geom_material,
                         parent_body=parent_body,
-                        instance_id=instance_id,
+                        class_id=class_id,
                         visual_objects=self.visual_objects,
                         meshes=self.meshes
                         )
 
-            instance_id += 1
+            element_id += 1
 
-        self.max_instances = instance_id
+        self.max_elements = element_id

@@ -41,7 +41,7 @@ def load_object(renderer,
                 geom_scale,
                 geom_material,
                 parent_body,
-                instance_id,
+                class_id,
                 visual_objects,
                 meshes):
     """
@@ -101,7 +101,7 @@ def load_object(renderer,
 
     renderer.add_instance(len(renderer.visual_objects) - 1,
                             pybullet_uuid=0,
-                            class_id=instance_id,
+                            class_id=class_id,
                             dynamic=True,
                             use_pbr_mapping=use_pbr_mapping,
                             parent_body=parent_body_name)
