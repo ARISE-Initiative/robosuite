@@ -99,8 +99,8 @@ class Parser(BaseParser):
         self.max_classes = i+1
 
         self.instance2index = {}
-        for i, instance_class in enumerate(self.env.model._instances_to_ids):
-            self.instance2index = {instance_class: i}
+        for i, instance_class in enumerate(self.env.model._instances_to_ids.keys()):
+            self.instance2index[instance_class] = i
         self.instance2index[None] = i+1
         self.max_instances = i+1
 
@@ -111,7 +111,7 @@ class Parser(BaseParser):
         self.segmentation type.
         """
         if self.segmentation_type == 'class':
-            class_id = self.class2index[self.env.model_geom_ids_to_classes.get(geom_index)]
+            class_id = self.class2index[self.env.model._geom_ids_to_classes.get(geom_index)]
         elif self.segmentation_type == 'instance':
             class_id = self.instance2index[self.env.model._geom_ids_to_instances.get(geom_index)]
         else:

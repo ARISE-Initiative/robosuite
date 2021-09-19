@@ -22,6 +22,7 @@ from robosuite.utils.observables import sensor
 from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
 import robosuite.utils.macros as macros
 from robosuite.renderers.igibson.igibson_utils import TensorObservable, adjust_convention
+from robosuite.renderers import load_renderer_config
 from robosuite.renderers.base import Renderer
 from collections import OrderedDict
 
@@ -174,7 +175,7 @@ class iGibsonRenderer(Renderer):
         if True in self.env.camera_depths and '3d' not in self.modes:
             self.modes += ['3d']
 
-        if self.segmentation_type is not None:
+        if self.segmentation_type is not None and 'seg' not in self.modes:
             self.modes += ['seg']
         
         self.mrs = MeshRendererSettings(msaa=msaa, 
@@ -558,6 +559,11 @@ if __name__ == '__main__':
     # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 
     # env.reset()
+    config = load_renderer_config('igibson')
+    config['vision_modalities'] = ['seg']
+    config['camera_obs'] = True
+    config['render_mode'] = 'headless'
+    config['msaa'] = False    
 
     env = suite.make(
             "Door",
@@ -571,14 +577,24 @@ if __name__ == '__main__':
             render_camera='frontview',         
             control_freq=10,
             renderer="igibson",
-            camera_segmentations=None
+            camera_segmentations='class',
+            renderer_config=config,
+            camera_names=['frontview']            
         )    
 
     env.reset()
 
+    import matplotlib
+    cmap = matplotlib.cm.get_cmap('jet')
+    color_list = np.array([cmap(i/env.viewer.max_classes) for i in range(env.viewer.max_classes)])    
+
     for i in range(10000):
         action = np.random.randn(8)
         obs, reward, done, _ = env.step(action)
+        seg = obs['frontview_seg']
+        print(np.unique(seg))
+        im = (color_list[seg] * 255).astype(np.uint8)
+        # print(obs.keys())        
         env.render()
 
     env.close()
