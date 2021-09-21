@@ -21,3 +21,19 @@ This is the default onscreen / offscreen renderer from [mujoco-py](https://opena
 ##### PyGame
 
 [PyGame](https://www.pygame.org/news) is a simple renderer that serves also as an alternative to MjViewer for rendering onscreen. A limitation of PyGame is that it can only render on-screen, limiting its applicability to train on computing clusters. This is because PyGame still relies on the MjRenderContextOffscreen to render frames offscreen, from which PyGame then maps to its native onscreen renderer. However, it is useful for visualizing the robots' behaviors in the system runtime where MjViewer is not supported.
+
+##### NViSII
+[NViSII](https://github.com/owl-project/NVISII) is a ray tracing based renderer. The renderer is currently used for visualization purposes and results in high quality images of the environment. Through NViSII, we are able to achieve different vision modalities including depth, segmentations, surface normals, texture coordinates, and positioning.
+
+###### Using the NViSII renderer
+Installing NViSII can be done using the command `pip install nvisii`.
+
+Note that NViSII requires users' drivers to be up to date. Please refer [here](https://github.com/owl-project/NVISII) for more information.
+
+##### iGibson
+[iGibson](http://svl.stanford.edu/igibson/) is a simulation environment providing fast visual rendering and physics simulation based on Bullet. From various things that iGibson offers, we have integrated its rendererer into the robosuite environment. This can be used for faster rendering and training on a variety of modalities like rgb, depth, surface normal and segmenation. It uses physically based rendering (PBR) is a computer graphics approach that seeks to render images in a way that models the flow of light in the real world. It is also capable of rendering and returning PyTorch tensors which reduces the tensor copying time during the training process.
+
+###### Using the iGibson Renderer.
+Installing iGibson can be done using the command `pip install igibson`.
+
+Please refer [here](http://svl.stanford.edu/igibson/docs/installation.html) for a step by step guide.

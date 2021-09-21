@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from robosuite.renderers.base import load_renderer_config
 from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
 
@@ -105,7 +106,9 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq=20,
         horizon=1000,
         ignore_done=False,
-        hard_reset=True
+        hard_reset=True,
+        renderer="mujoco",
+        renderer_config=None,
     ):
         # First, verify that both the on- and off-screen renderers are not being used simultaneously
         if has_renderer is True and has_offscreen_renderer is True:
@@ -118,7 +121,6 @@ class MujocoEnv(metaclass=EnvMeta):
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
         self.render_gpu_device_id = render_gpu_device_id
-        self.viewer = None
 
         # Simulation-specific attributes
         self._observables = {}                      # Maps observable names to observable objects
@@ -134,6 +136,9 @@ class MujocoEnv(metaclass=EnvMeta):
         self.control_timestep = None
         self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
 
+        self.renderer = renderer
+        self.renderer_config = renderer_config
+
         # Load the model
         self._load_model()
 
@@ -143,11 +148,53 @@ class MujocoEnv(metaclass=EnvMeta):
         # Initialize the simulation
         self._initialize_sim()
 
+        self.initialize_renderer()
+
         # Run all further internal (re-)initialization required
         self._reset_internal()
 
         # Load observables
-        self._observables = self._setup_observables()
+        if hasattr(self.viewer, '_setup_observables'):
+            self._observables = self.viewer._setup_observables()
+        else:
+            self._observables = self._setup_observables()
+
+        # check if viewer has get observations method and set a flag for future use.
+        self.viewer_get_obs = hasattr(self.viewer, '_get_observations')
+            
+
+    def initialize_renderer(self):
+        self.renderer = self.renderer.lower()
+        if self.renderer_config is None and self.renderer != 'mujoco':
+            self.renderer_config = load_renderer_config(self.renderer)
+
+        if self.renderer == 'mujoco':
+            
+            from robosuite.renderers.mujoco.mujoco_renderer import MujocoRenderer
+
+            self.viewer = MujocoRenderer(sim=self.sim,
+                                         render_camera=self.render_camera,
+                                         render_collision_mesh=self.render_collision_mesh,
+                                         render_visual_mesh=self.render_visual_mesh)
+
+        elif self.renderer == 'nvisii':
+            
+            from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
+
+            self.viewer = NViSIIRenderer(env=self,
+                                         **self.renderer_config)
+
+        elif self.renderer == 'igibson':
+
+            from robosuite.renderers.igibson.igibson_renderer import iGibsonRenderer
+
+            self.viewer = iGibsonRenderer(env=self,
+                                         **self.renderer_config
+                                         )
+
+        else:
+            raise ValueError(f'{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson')
+                                                                        
 
     def initialize_time(self, control_freq):
         """
@@ -232,11 +279,13 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         # TODO(yukez): investigate black screen of death
         # Use hard reset if requested
+
         if self.hard_reset and not self.deterministic_reset:
             self._destroy_viewer()
             self._load_model()
             self._postprocess_model()
             self._initialize_sim()
+
         # Else, we only reset the sim internally
         else:
             self.sim.reset()
@@ -252,30 +301,18 @@ class MujocoEnv(metaclass=EnvMeta):
                 self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
+        
+        self.viewer.reset()
+
         # Return new observations
-        return self._get_observations(force_update=True)
+        observations = self.viewer._get_observations(force_update=True) if self.viewer_get_obs else self._get_observations(force_update=True)
+        return observations
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
 
         # create visualization screen or renderer
-        if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
-
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
-
-            # make sure mujoco-py doesn't block rendering frames
-            # (see https://github.com/StanfordVL/robosuite/issues/39)
-            self.viewer.viewer._render_every_frame = True
-
-            # Set the camera angle for viewing
-            if self.render_camera is not None:
-                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
-
-        elif self.has_offscreen_renderer:
+        if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
                 self.sim.add_render_context(render_context)
@@ -390,7 +427,14 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time += self.control_timestep
 
         reward, done, info = self._post_action(action)
-        return self._get_observations(), reward, done, info
+
+        if self.renderer == "mujoco":
+            self.viewer.update_with_state(self.sim.get_state())
+
+        self.viewer.update()
+
+        observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
+        return observations, reward, done, info
 
     def _pre_action(self, action, policy_step=False):
         """
@@ -442,6 +486,18 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         self.viewer.render()
 
+    def get_pixel_obs(self):
+        """
+        Gets the pixel observations for the environment from the specified renderer
+        """
+        self.viewer.get_pixel_obs()
+
+    def close_renderer(self):
+        """
+        Closes the renderer
+        """
+        self.viewer.close()
+
     def observation_spec(self):
         """
         Returns an observation as observation specification.
@@ -454,7 +510,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns:
             OrderedDict: Observations from the environment
         """
-        observation = self._get_observations()
+        observation = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
         return observation
 
     def clear_objects(self, object_names):
@@ -483,6 +539,12 @@ class MujocoEnv(metaclass=EnvMeta):
         # Set visuals for environment objects
         for obj in self.model.mujoco_objects:
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
+
+    def set_camera_pos_quat(self, camera_pos, camera_quat):
+        if self.renderer == "nvisii":
+            self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
+        else:
+            print('Setting camera position and quat requires NViSII renderer.')
 
     def reset_from_xml_string(self, xml_string):
         """
@@ -631,7 +693,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Destroys the current mujoco renderer instance if it exists
         """
         # if there is an active viewer window, destroy it
-        if self.viewer is not None:
+        if self.viewer is not None and self.renderer == "default":
             self.viewer.close()  # change this to viewer.finish()?
             self.viewer = None
 

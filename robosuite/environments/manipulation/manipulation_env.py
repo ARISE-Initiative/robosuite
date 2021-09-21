@@ -140,6 +140,8 @@ class ManipulationEnv(RobotEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,
+        renderer="default",
+        renderer_config=None,
     ):
         # Robot info
         robots = list(robots) if type(robots) is list or type(robots) is tuple else [robots]
@@ -180,6 +182,8 @@ class ManipulationEnv(RobotEnv):
             camera_depths=camera_depths,
             camera_segmentations=camera_segmentations,
             robot_configs=robot_configs,
+            renderer=renderer,
+            renderer_config=renderer_config,
         )
 
     @property

@@ -157,6 +157,8 @@ class Door(SingleArmEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,      # {None, instance, class, element}
+        renderer="default",
+        renderer_config=None,
     ):
         # settings for table top (hardcoded since it's not an essential part of the environment)
         self.table_full_size = (0.8, 0.3, 0.05)
@@ -196,6 +198,8 @@ class Door(SingleArmEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
             camera_segmentations=camera_segmentations,
+            renderer=renderer,
+            renderer_config=renderer_config,
         )
 
     def reward(self, action=None):

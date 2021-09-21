@@ -176,6 +176,8 @@ class TwoArmHandover(TwoArmEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,      # {None, instance, class, element}
+        renderer="default",
+        renderer_config=None,
     ):
         # Task settings
         self.prehensile = prehensile
@@ -221,6 +223,8 @@ class TwoArmHandover(TwoArmEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
             camera_segmentations=camera_segmentations,
+            renderer=renderer,
+            renderer_config=renderer_config,
         )
 
     def reward(self, action=None):

@@ -191,6 +191,8 @@ class Wipe(SingleArmEnv):
         camera_depths=False,
         camera_segmentations=None,      # {None, instance, class, element}
         task_config=None,
+        renderer="default",
+        renderer_config=None,
     ):
         # Assert that the gripper type is None
         assert gripper_types == "WipingGripper",\
@@ -287,6 +289,8 @@ class Wipe(SingleArmEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
             camera_segmentations=camera_segmentations,
+            renderer=renderer,
+            renderer_config=renderer_config,
         )
 
     def reward(self, action=None):
