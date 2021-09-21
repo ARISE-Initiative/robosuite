@@ -6,11 +6,11 @@
 
 -------
 ## Latest Updates
-[09/20/2021] **v1.3.0**: Ray-tracing and physics-based rendering tools :sparkles: and access to vision modalities 🎥
+[09/20/2021] **v1.3**: Ray-tracing and physics-based rendering tools :sparkles: and access to vision modalities 🎥
 
-[02/17/2021] **v1.2.0**: Added observable sensor models :eyes: and dynamics randomization :game_die:
+[02/17/2021] **v1.2**: Added observable sensor models :eyes: and dynamics randomization :game_die:
 
-[12/17/2020] **v1.1.0**: Refactored infrastructure and standardized model classes for much easier environment prototyping :wrench:
+[12/17/2020] **v1.1**: Refactored infrastructure and standardized model classes for much easier environment prototyping :wrench:
 
 -------
 
