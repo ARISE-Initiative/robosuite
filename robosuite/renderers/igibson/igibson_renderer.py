@@ -25,6 +25,7 @@ from robosuite.renderers.igibson.igibson_utils import TensorObservable, adjust_c
 from robosuite.renderers import load_renderer_config
 from robosuite.renderers.base import Renderer
 from collections import OrderedDict
+from igibson.utils.constants import MAX_CLASS_COUNT
 
 
 
@@ -296,7 +297,7 @@ class iGibsonRenderer(Renderer):
                 seg_map = rendered_mapping['seg'][:,:,0]
                 if isinstance(seg_map, np.ndarray):
                     # np array is in range 0-1
-                    seg_map = (seg_map * 255).astype(np.uint8)
+                    seg_map = (seg_map * MAX_CLASS_COUNT).astype(np.int16)
                     seg_map = adjust_convention(seg_map, convention)
                 elif convention == -1:
                     # flip in Y direction if torch tensor

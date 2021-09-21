@@ -96,13 +96,13 @@ class Parser(BaseParser):
         for i,c in enumerate(self.env.model._classes_to_ids.keys()):
             self.class2index[c] = i
         self.class2index[None] = i+1
-        self.max_classes = i+1
+        self.max_classes = len(self.class2index)
 
         self.instance2index = {}
         for i, instance_class in enumerate(self.env.model._instances_to_ids.keys()):
             self.instance2index[instance_class] = i
         self.instance2index[None] = i+1
-        self.max_instances = i+1
+        self.max_instances = len(self.instance2index)
 
 
     def get_class_id(self, geom_index, element_id):
