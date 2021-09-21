@@ -19,7 +19,9 @@ except ImportError:
 
 # these robots have material defined in mtl files.
 # Update this when mtl files are defined for other robots.
-ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL = {'panda', 'sawyer'}
+# for jaco material is defined in xml, we can update xml
+# to add shininess and specular and remove it from this list.
+ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL = {'panda', 'sawyer', 'jaco'}
 
 # place holder meshes for which we do not textures loaded
 # This list should be extended if one sees placeholder meshes
