@@ -29,7 +29,7 @@ class NViSIIRenderer(Renderer):
                  video_name='robosuite_video_0.mp4',
                  video_fps=60,
                  verbose=1,
-                 image_options=None):
+                 vision_modalities=None):
         """
         Initializes the nvisii wrapper. Wrapping any MuJoCo environment in this 
         wrapper will use the NViSII wrapper for rendering.
@@ -69,7 +69,7 @@ class NViSIIRenderer(Renderer):
                                      number for each image rendered. If verbose is set to 0, 
                                      nothing will be printed. Defaults to 1.
 
-            image_options (string, optional): Options to render image with different ground truths
+            vision_modalities (string, optional): Options to render image with different ground truths
                                               for NViSII. Options include "normal", "texture_coordinates",
                                               "position", "depth".
         """
@@ -89,7 +89,7 @@ class NViSIIRenderer(Renderer):
         self.video_fps = video_fps
 
         self.verbose = verbose
-        self.image_options = image_options
+        self.vision_modalities = vision_modalities
 
         self.img_cntr = 0
 
@@ -114,7 +114,7 @@ class NViSIIRenderer(Renderer):
             self.video = cv2.VideoWriter(video_path + video_name, cv2.VideoWriter_fourcc(*'MP4V'), video_fps, (self.width, self.height))
             print(f'video mode enabled')
 
-        if image_options is None:
+        if vision_modalities is None:
             nvisii.sample_pixel_area(
                 x_sample_interval = (0.0, 1.0), 
                 y_sample_interval = (0.0, 1.0)
@@ -400,7 +400,7 @@ class NViSIIRenderer(Renderer):
 
         if self.video_mode:
             img_file = f'{self.img_path}/image_0.{render_type}'
-            if self.image_options is None:
+            if self.vision_modalities is None:
                 self.render_to_file(img_file)
             else:
                 self.render_data_to_file(img_file)
@@ -408,7 +408,7 @@ class NViSIIRenderer(Renderer):
             self.video.write(cv2.imread(img_file))
         else:
             img_file = f'{self.img_path}/image_{self.img_cntr}.{render_type}'
-            if self.image_options is None:
+            if self.vision_modalities is None:
                 self.render_to_file(img_file)
             else:
                 self.render_data_to_file(img_file)
@@ -426,7 +426,7 @@ class NViSIIRenderer(Renderer):
 
     def render_data_to_file(self, img_file):
 
-        if self.image_options == "depth" and self.img_cntr != 1:
+        if self.vision_modalities == "depth" and self.img_cntr != 1:
 
             depth_data = nvisii.render_data(
                 width = self.width,
@@ -434,7 +434,7 @@ class NViSIIRenderer(Renderer):
                 start_frame=0,
                 frame_count=1,
                 bounce=int(0),
-                options=self.image_options,
+                options=self.vision_modalities,
             )
 
             depth_data = np.array(depth_data).reshape(self.height, self.width, 4)
@@ -458,7 +458,7 @@ class NViSIIRenderer(Renderer):
                 start_frame=0,
                 frame_count=1,
                 bounce=int(0),
-                options=self.image_options,
+                options=self.vision_modalities,
                 file_path=img_file
             )
 
