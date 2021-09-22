@@ -33,3 +33,10 @@ Installing NViSII can be done using the command `pip install nvisii`. Note that 
 
 ###### Using the iGibson Renderer.
 Installing iGibson can be done using the command `pip install igibson`. Please refer to the [iGibson installation guide](http://svl.stanford.edu/igibson/docs/installation.html) for a step by step guide.
+
+
+###### Some image modalities from iGibson renderer.
+
+![iGibson renderer vision modalities](../images/renderers/vision_modalities_ig.png "iGibson renderer vision modalities")
+
+
