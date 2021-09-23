@@ -1,6 +1,8 @@
+"""
+Dumps video of the modality specified from iGibson renderer.
+"""
+
 import argparse
-import json
-from robosuite.renderers.base import Renderer
 import numpy as np
 import robosuite as suite
 import imageio
@@ -35,10 +37,10 @@ if __name__ == '__main__':
     Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
     ''' 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--vision_modality",
+    parser.add_argument("--vision-modality",
                         type=str, 
                         default="rgb", 
-                        help="Modality to render. Could be set to `depth`, `normal`, `segmentation` and `rgb`")    
+                        help="Modality to render. Could be set to `depth`, `normal`, `segmentation` or `rgb`")    
     parser.add_argument("--video-path", type=str, default="/tmp/video.mp4", help="Path to video file")
     parser.add_argument("--segmentation-level", 
                         default=None, 
@@ -153,4 +155,6 @@ if __name__ == '__main__':
 
         if i % 5 == 0:
             print("Step #{} / 100".format(i))
+
     print('Done.')
+    print(f'Dumped file at location {args.video_path}')

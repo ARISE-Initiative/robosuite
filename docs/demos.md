@@ -182,3 +182,18 @@ The `demo_video_recording.py` script shows how to record a video of robot roll-o
 ```sh
 $ python demo_video_recording.py --environment Lift --robots Panda
 ```
+
+### Various Renderers
+The `demo_renderers.py.` script shows the rendering visuals of different renderers. We support three renderers currently i.e., MuJoCo (default), NViSII and iGibson renderers. More information about these renderers can be found in the [renderer module](modules/renderers) documentation. Example:
+```sh
+$ python demo_renderers.py --renderer igibson
+```
+The `--renderer` flag can be set to `mujoco` (default), `nvisii` and `igibson`.
+
+### iGibson Modalities 
+The `demo_igibson_modalities.py` script shows how to use different modalities of iGibson renderer. This script uses the flags specified and renders that particular vision modality. Example:
+```sh
+$ python demo_igibson_modalities.py --vision-modality segmentation --segmentation-level instance
+```
+The `--vision-modality` flag can be set to `depth`, `normal`, `segmentation` or `rgb` (default).
+The `-segmentation-level` flag can be set only when `--vision-modality` is set to `segmentation`. It can set to `instance`, `class`, or `element`.
