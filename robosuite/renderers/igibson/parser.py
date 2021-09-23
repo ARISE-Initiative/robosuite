@@ -143,7 +143,7 @@ class Parser(BaseParser):
                                   )
             robot.cameras.append(camera)    
 
-        self.renderer.add_robot([], [], [], [], [], 0, dynamic=False, robot=robot)                       
+        self.renderer.add_robot([], [], [], [], None, 0, dynamic=False, robot=robot)                       
 
     def parse_meshes(self):
         """
