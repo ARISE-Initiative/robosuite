@@ -28,6 +28,8 @@ from collections import OrderedDict
 from igibson.utils.constants import MAX_CLASS_COUNT
 
 
+from robosuite.utils import macros
+
 
 try:
     import torch
@@ -42,7 +44,7 @@ AVAILABLE_MODES = {'gui', 'headless'}
 def check_modes(modes):
     for m in modes:
         if m not in AVAILABLE_MODALITIES:
-            raise ValueError(f'`modes` can only be from the {AVAILABLE_MODALITIES}, got {m}')
+            raise ValueError(f'`vision_modalities` can only be from the {AVAILABLE_MODALITIES}, got `{m}`')
 
 def check_render_mode(render_mode):
     if render_mode not in AVAILABLE_MODES:
@@ -297,7 +299,9 @@ class iGibsonRenderer(Renderer):
                 seg_map = rendered_mapping['seg'][:,:,0]
                 if isinstance(seg_map, np.ndarray):
                     # np array is in range 0-1
-                    seg_map = (seg_map * MAX_CLASS_COUNT).astype(np.int16)
+                    # round function is important here otherwise trippy looking segmaps
+                    seg_map = (seg_map * MAX_CLASS_COUNT).round().astype(np.int64)
+                    # flip the image upside down if required
                     seg_map = adjust_convention(seg_map, convention)
                 elif convention == -1:
                     # flip in Y direction if torch tensor
@@ -439,7 +443,7 @@ class iGibsonRenderer(Renderer):
         parser.parse_geometries()
         self.visual_objects = parser.visual_objects
         self.max_elements = parser.max_elements
-        self.max_instance_classes = parser.max_instances
+        self.max_instances = parser.max_instances
         self.max_classes = parser.max_classes
 
     def render(self):
@@ -559,12 +563,13 @@ if __name__ == '__main__':
 
     # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 
-    # env.reset()
     config = load_renderer_config('igibson')
-    config['vision_modalities'] = ['seg']
+    # config['vision_modalities'] = ['rgb', 'normal', '3d']
+    # config['vision_modalities'] = ['seg']
     config['camera_obs'] = True
     config['render_mode'] = 'headless'
-    config['msaa'] = False    
+    config['msaa'] = False          
+
 
     env = suite.make(
             "Door",
