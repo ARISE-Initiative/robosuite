@@ -564,11 +564,13 @@ if __name__ == '__main__':
     # Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
 
     config = load_renderer_config('igibson')
+    # config['optimized'] = True
+
     # config['vision_modalities'] = ['rgb', 'normal', '3d']
     # config['vision_modalities'] = ['seg']
-    config['camera_obs'] = True
-    config['render_mode'] = 'headless'
-    config['msaa'] = False          
+    # config['camera_obs'] = True
+    # config['render_mode'] = 'headless'
+    # config['msaa'] = False          
 
 
     env = suite.make(
@@ -583,23 +585,16 @@ if __name__ == '__main__':
             render_camera='frontview',         
             control_freq=10,
             renderer="igibson",
-            camera_segmentations='class',
+            camera_segmentations='element',
             renderer_config=config,
             camera_names=['frontview']            
         )    
 
     env.reset()
 
-    import matplotlib
-    cmap = matplotlib.cm.get_cmap('jet')
-    color_list = np.array([cmap(i/env.viewer.max_classes) for i in range(env.viewer.max_classes)])    
-
     for i in range(10000):
         action = np.random.randn(8)
         obs, reward, done, _ = env.step(action)
-        seg = obs['frontview_seg']
-        print(np.unique(seg))
-        im = (color_list[seg] * 255).astype(np.uint8)
         # print(obs.keys())        
         env.render()
 

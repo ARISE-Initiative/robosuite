@@ -87,6 +87,11 @@ def load_object(renderer,
     material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser and mesh_file_name in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL) \
                 else geom_material
 
+    # for translucent objects no overwrite material should be specified.
+    # it will fall in 3rd condition of load_object method of renderer.
+    if geom_rgba is not None and len(geom_rgba) == 4 and geom_rgba[3] != 1:
+        material = None                
+
     renderer.load_object(filename,
                         scale=scale,
                         transform_orn=geom_orn,
