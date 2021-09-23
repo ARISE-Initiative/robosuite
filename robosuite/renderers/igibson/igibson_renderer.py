@@ -567,10 +567,9 @@ if __name__ == '__main__':
     # config['optimized'] = True
 
     # config['vision_modalities'] = ['rgb', 'normal', '3d']
-    config['vision_modalities'] = ['seg']
-    config['camera_obs'] = True
-    config['render_mode'] = 'headless'
-    config['render2tensor'] = True
+    # config['vision_modalities'] = ['seg']
+    # config['camera_obs'] = True
+    # config['render_mode'] = 'headless'
     # config['msaa'] = False          
 
 
@@ -596,7 +595,6 @@ if __name__ == '__main__':
     for i in range(10000):
         action = np.random.randn(8)
         obs, reward, done, _ = env.step(action)
-        print(obs['frontview_seg'].unique())
         # print(obs.keys())        
         env.render()
 
