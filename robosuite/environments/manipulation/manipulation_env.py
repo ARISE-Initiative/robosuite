@@ -140,7 +140,7 @@ class ManipulationEnv(RobotEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,
-        renderer="default",
+        renderer="mujoco",
         renderer_config=None,
     ):
         # Robot info

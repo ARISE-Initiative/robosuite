@@ -22,7 +22,7 @@ def load_renderer_config(renderer):
     elif renderer == 'igibson':
         fname = 'config/igibson_config.json'
     else:
-        raise ValueError("renderer type can only be  'nvisii', or 'igibson'")
+        raise ValueError(f"renderer type can only be  'nvisii', or 'igibson' got '{renderer}'")
 
     dir_path = os.path.dirname(__file__)
     with open(os.path.join(dir_path, fname)) as f:
@@ -38,7 +38,7 @@ class Renderer():
 
     def __init__(self, 
                  env,
-                 renderer_type="default"):
+                 renderer_type="mujoco"):
         self.env = env        
         self.renderer_type = renderer_type
 

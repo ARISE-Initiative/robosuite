@@ -145,7 +145,7 @@ class RobotEnv(MujocoEnv):
         camera_depths=False,
         camera_segmentations=None,
         robot_configs=None,
-        renderer="default",
+        renderer="mujoco",
         renderer_config=None,
     ):
         # First, verify that correct number of robots are being inputted
