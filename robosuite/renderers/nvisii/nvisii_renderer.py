@@ -5,6 +5,8 @@ import nvisii
 import robosuite.renderers.nvisii.nvisii_utils as utils
 import open3d as o3d
 import cv2
+import matplotlib.cm as cm
+import colorsys
 
 from robosuite.wrappers import Wrapper
 from robosuite.utils import transform_utils as T
@@ -14,6 +16,9 @@ from robosuite.renderers.nvisii.parser import Parser
 from robosuite.utils.transform_utils import mat2quat
 
 from robosuite.renderers.base import Renderer
+
+np.set_printoptions(threshold=np.inf)
+
 
 class NViSIIRenderer(Renderer): 
     def __init__(self,
@@ -93,11 +98,15 @@ class NViSIIRenderer(Renderer):
 
         self.img_cntr = 0
 
+        env._setup_references()
+
         # enable interactive mode when debugging
         if debug_mode:
             nvisii.initialize_interactive()
         else:
             nvisii.initialize(headless = True)
+
+        self.segmentation_type = self.env.camera_segmentations
 
         # add denoiser to nvisii if not using noise
         if not use_noise: 
@@ -114,15 +123,15 @@ class NViSIIRenderer(Renderer):
             self.video = cv2.VideoWriter(video_path + video_name, cv2.VideoWriter_fourcc(*'MP4V'), video_fps, (self.width, self.height))
             print(f'video mode enabled')
 
-        if vision_modalities is None:
+        if vision_modalities is None and self.segmentation_type[0] == None:
             nvisii.sample_pixel_area(
                 x_sample_interval = (0.0, 1.0), 
                 y_sample_interval = (0.0, 1.0)
             )
         else:
             nvisii.sample_pixel_area(
-                x_sample_interval = (.5,.5), 
-                y_sample_interval = (.5, .5)
+                x_sample_interval = (0.5, 0.5), 
+                y_sample_interval = (0.5, 0.5)
             )
 
         self._init_nvisii_components()
@@ -293,11 +302,14 @@ class NViSIIRenderer(Renderer):
         Loads the nessecary textures, materials, and geoms into the
         NViSII renderer
         """   
-        parser = Parser(self.env)
+        parser = Parser("nvisii", self.env, self.segmentation_type)
         parser.parse_textures()
         parser.parse_materials()
         parser.parse_geometries()
         self.components = parser.components
+        self.max_elements = parser.max_elements
+        self.max_instance_classes = parser.max_instances
+        self.max_classes = parser.max_classes
 
     def update(self):
         """
@@ -400,15 +412,19 @@ class NViSIIRenderer(Renderer):
 
         if self.video_mode:
             img_file = f'{self.img_path}/image_0.{render_type}'
-            if self.vision_modalities is None:
-                self.render_to_file(img_file)
+            if self.segmentation_type[0] != None:
+                self.render_segmentation_data(img_file)
+            elif self.vision_modalities is None:
+                self.render_to_file(img_file)                
             else:
                 self.render_data_to_file(img_file)
 
             self.video.write(cv2.imread(img_file))
         else:
             img_file = f'{self.img_path}/image_{self.img_cntr}.{render_type}'
-            if self.vision_modalities is None:
+            if self.segmentation_type[0] != None:
+                self.render_segmentation_data(img_file)
+            elif self.vision_modalities is None:
                 self.render_to_file(img_file)
             else:
                 self.render_data_to_file(img_file)
@@ -423,6 +439,28 @@ class NViSIIRenderer(Renderer):
             samples_per_pixel = self.spp,
             file_path = img_file
         )
+
+    def render_segmentation_data(self, img_file):
+
+        segmentation_array = nvisii.render_data(
+                        width=int(self.width), 
+                        height=int(self.height), 
+                        start_frame=0,
+                        frame_count=1,
+                        bounce=int(0),
+                        options="entity_id",
+                        seed=1
+                    )
+        segmentation_array = np.array(segmentation_array).reshape(self.height,self.width,4)[:,:,0]
+        segmentation_array[segmentation_array>3.4028234663852886e+37]=0
+        segmentation_array[segmentation_array<3.4028234663852886e-37]=0
+        segmentation_array = np.flipud(segmentation_array)
+
+        rgb_data = self.segmentation_to_rgb(segmentation_array.astype(dtype=np.uint8))
+
+        from PIL import Image
+        rgb_img = Image.fromarray(rgb_data)
+        rgb_img.save(img_file)
 
     def render_data_to_file(self, img_file):
 
@@ -461,6 +499,39 @@ class NViSIIRenderer(Renderer):
                 options=self.vision_modalities,
                 file_path=img_file
             )
+
+    def randomize_colors(self, N, bright=True):
+        """
+        Modified from https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/visualize.py#L59
+        Generate random colors.
+        To get visually distinct colors, generate them in HSV space then
+        convert to RGB.
+        """
+        brightness = 1. if bright else 0.5
+        hsv = [(1.0 * i / N, 1, brightness) for i in range(N)]
+        colors = np.array(list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv)))
+        rstate = np.random.RandomState(seed=20)
+        np.random.shuffle(colors)
+        return colors
+
+    def segmentation_to_rgb(self, seg_im, random_colors=False):
+        """
+        Helper function to visualize segmentations as RGB frames.
+        NOTE: assumes that geom IDs go up to 255 at most - if not,
+        multiple geoms might be assigned to the same color.
+        """
+        # ensure all values lie within [0, 255]
+        seg_im = np.mod(seg_im, 256)
+
+        if random_colors:
+            colors = randomize_colors(N=256, bright=True)
+            return (255. * colors[seg_im]).astype(np.uint8)
+        else:
+
+            cmap = cm.get_cmap('jet')
+            color_list = np.array([cmap(i/(np.amax(seg_im) + 1)) for i in range(np.amax(seg_im) + 1)])
+
+            return (color_list[seg_im] * 255).astype(np.uint8)
 
     def reset(self):
         nvisii.clear_all()

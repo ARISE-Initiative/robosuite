@@ -1,7 +1,7 @@
 {
     "img_path": "images/",
-    "width": 500,
-    "height": 500,
+    "width": 1280,
+    "height": 720,
     "spp": 512,
     "use_noise": false,
     "debug_mode": false,

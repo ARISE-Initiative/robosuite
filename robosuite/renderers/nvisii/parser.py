@@ -10,14 +10,18 @@ from robosuite.renderers.base_parser import BaseParser
 Components = namedtuple('Components', ['obj', 'parent_body_name', 'geom_pos', 'geom_quat', 'dynamic'])
 
 class Parser(BaseParser):
-    def __init__(self, env):
+    def __init__(self, renderer, env, segmentation_type):
         """
         Parse the mujoco xml and initialize NViSII renderer objects.
         Args:
             env (Mujoco env): Environment to parse
         """
 
-        self.env = env
+        super().__init__(renderer, env)
+
+        self.segmentation_type = segmentation_type
+        self.create_class_mapping()
+
         self.xml_root = ET.fromstring(self.env.mjpy_model.get_xml())      
         self.parent_map = {c:p for p in self.xml_root.iter() for c in p}
         self.visual_objects = {}
@@ -67,12 +71,11 @@ class Parser(BaseParser):
         Iterate through each goemetry and load it in the NViSII renderer.
         """
         self.parse_meshes()
-
+        element_id = 0
         repeated_names = {}
-
         block_rendering_objects = ['VisualBread_g0', 'VisualCan_g0', 'VisualCereal_g0', 'VisualMilk_g0']
 
-        for geom in self.xml_root.iter('geom'):
+        for geom_index, geom in enumerate(self.xml_root.iter('geom')):
             
             parent_body = self.parent_map.get(geom)
             parent_body_name = parent_body.get('name', 'worldbody')
@@ -128,6 +131,8 @@ class Parser(BaseParser):
                 if geom_tex_name in self.texture_attributes:
                     geom_tex_file = self.texture_attributes[geom_tex_name]['file']
 
+            class_id = self.get_class_id(geom_index, element_id)
+
             # load obj into nvisii
             obj = load_object(geom=geom,
                               geom_name=geom_name,
@@ -141,11 +146,47 @@ class Parser(BaseParser):
                               geom_tex_file=geom_tex_file,
                               meshes=self.meshes)
 
+            element_id += 1
+
             self.components[geom_name] = Components(obj=obj,
                                                     parent_body_name=parent_body_name,
                                                     geom_pos=geom_pos,
                                                     geom_quat=geom_quat,
                                                     dynamic=dynamic)
+
+        self.max_elements = element_id
+
+    def create_class_mapping(self):
+        """
+        Create class name to index mapping for both semantic and instance
+        segmentation.
+        """
+        self.class2index = {}
+        for i,c in enumerate(self.env.model._classes_to_ids.keys()):
+            self.class2index[c] = i
+        self.class2index[None] = i+1
+        self.max_classes = len(self.class2index)
+
+        self.instance2index = {}
+        for i, instance_class in enumerate(self.env.model._instances_to_ids.keys()):
+            self.instance2index[instance_class] = i
+        self.instance2index[None] = i+1
+        self.max_instances = len(self.instance2index)
+
+
+    def get_class_id(self, geom_index, element_id):
+        """
+        Given index of the geom object get the class id based on
+        self.segmentation type.
+        """
+        if self.segmentation_type == 'class':
+            class_id = self.class2index[self.env.model._geom_ids_to_classes.get(geom_index)]
+        elif self.segmentation_type == 'instance':
+            class_id = self.instance2index[self.env.model._geom_ids_to_instances.get(geom_index)]
+        else:
+            class_id = element_id
+
+        return class_id
 
     def tag_in_name(self, name, tags):
         """
