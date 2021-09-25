@@ -532,21 +532,19 @@ class NVISIIRenderer(Renderer):
 
             max_r = 0
             if self.segmentation_type[0][0] == 'element':
-                max_r = np.amax(seg_im)
+                max_r = np.amax(seg_im) + 1
             elif self.segmentation_type[0][0] == 'class':
                 max_r = self.max_classes
                 for i in range(len(seg_im)):
                     for j in range(len(seg_im[0])):
-                        seg_im[i][j] = self.parser.class2index[self.env.model._geom_ids_to_classes.get(seg_im[i][j])]
+                        seg_im[i][j] = self.parser.entity_id_class_mapping[seg_im[i][j]] if seg_im[i][j] in self.parser.entity_id_class_mapping else max_r-1
             elif self.segmentation_type[0][0] == 'instance':
                 max_r = self.max_instances
                 for i in range(len(seg_im)):
                     for j in range(len(seg_im[0])):
-                        seg_im[i][j] = self.parser.instance2index[self.env.model._geom_ids_to_instances.get(seg_im[i][j])]
-
-                print(max_r, np.amax(seg_im))
-
-            color_list = np.array([cmap(i/(max_r + 1)) for i in range(max_r + 1)])
+                        seg_im[i][j] = self.parser.entity_id_class_mapping[seg_im[i][j]] if seg_im[i][j] in self.parser.entity_id_class_mapping else max_r-1
+                        
+            color_list = np.array([cmap(i/(max_r)) for i in range(max_r)])
 
             return (color_list[seg_im] * 255).astype(np.uint8)
 

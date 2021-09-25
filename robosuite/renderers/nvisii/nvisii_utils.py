@@ -13,6 +13,7 @@ def load_object(geom,
                 geom_rgba,
                 geom_tex_name,
                 geom_tex_file,
+                class_id,
                 meshes):
     """
     Function that initializes the meshes in the memory.
@@ -39,7 +40,9 @@ def load_object(geom,
 
         geom_tex_file (str): File of the texture for the object
 
-        meshes (dict): meshes for the object
+        class_id (int) : Class id for the component
+
+        meshes (dict): Meshes for the object
     """
 
     primitive_types = ['box', 'cylinder']
@@ -84,6 +87,11 @@ def load_object(geom,
                                          geom_quat[3])
                 )
 
+    if isinstance(component, nvisii.scene):
+        entity_id = component.entities[0].get_id()
+    else:
+        entity_id = component.get_id()
+
     if geom_type in primitive_types:
         component.get_transform().set_position(nvisii.vec3(float(geom_pos[0]),
                                                            float(geom_pos[1]),
@@ -110,4 +118,4 @@ def load_object(geom,
                 for entity in component.entities:
                         entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
 
-    return component
+    return component, entity_id
