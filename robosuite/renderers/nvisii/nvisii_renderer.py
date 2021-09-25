@@ -302,14 +302,14 @@ class NViSIIRenderer(Renderer):
         Loads the nessecary textures, materials, and geoms into the
         NViSII renderer
         """   
-        parser = Parser("nvisii", self.env, self.segmentation_type)
-        parser.parse_textures()
-        parser.parse_materials()
-        parser.parse_geometries()
-        self.components = parser.components
-        self.max_elements = parser.max_elements
-        self.max_instance_classes = parser.max_instances
-        self.max_classes = parser.max_classes
+        self.parser = Parser("nvisii", self.env, self.segmentation_type)
+        self.parser.parse_textures()
+        self.parser.parse_materials()
+        self.parser.parse_geometries()
+        self.components = self.parser.components
+        self.max_elements = self.parser.max_elements
+        self.max_instances = self.parser.max_instances
+        self.max_classes = self.parser.max_classes
 
     def update(self):
         """
@@ -529,7 +529,24 @@ class NViSIIRenderer(Renderer):
         else:
 
             cmap = cm.get_cmap('jet')
-            color_list = np.array([cmap(i/(np.amax(seg_im) + 1)) for i in range(np.amax(seg_im) + 1)])
+
+            max_r = 0
+            if self.segmentation_type[0][0] == 'element':
+                max_r = np.amax(seg_im)
+            elif self.segmentation_type[0][0] == 'class':
+                max_r = self.max_classes
+                for i in range(len(seg_im)):
+                    for j in range(len(seg_im[0])):
+                        seg_im[i][j] = self.parser.class2index[self.env.model._geom_ids_to_classes.get(seg_im[i][j])]
+            elif self.segmentation_type[0][0] == 'instance':
+                max_r = self.max_instances
+                for i in range(len(seg_im)):
+                    for j in range(len(seg_im[0])):
+                        seg_im[i][j] = self.parser.instance2index[self.env.model._geom_ids_to_instances.get(seg_im[i][j])]
+
+                print(max_r, np.amax(seg_im))
+
+            color_list = np.array([cmap(i/(max_r + 1)) for i in range(max_r + 1)])
 
             return (color_list[seg_im] * 255).astype(np.uint8)
 

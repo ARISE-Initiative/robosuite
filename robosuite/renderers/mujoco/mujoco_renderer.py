@@ -33,7 +33,6 @@ class MujocoRenderer(Renderer):
         if self.viewer is not None:
             self.viewer.close()
             self.viewer = None
-        self.initialize_renderer()
 
     def update(self):
         pass
