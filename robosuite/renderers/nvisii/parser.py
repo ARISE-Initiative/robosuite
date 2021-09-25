@@ -12,7 +12,7 @@ Components = namedtuple('Components', ['obj', 'parent_body_name', 'geom_pos', 'g
 class Parser(BaseParser):
     def __init__(self, renderer, env, segmentation_type):
         """
-        Parse the mujoco xml and initialize NViSII renderer objects.
+        Parse the mujoco xml and initialize NVISII renderer objects.
         Args:
             env (Mujoco env): Environment to parse
         """
@@ -68,7 +68,7 @@ class Parser(BaseParser):
 
     def parse_geometries(self):
         """
-        Iterate through each goemetry and load it in the NViSII renderer.
+        Iterate through each goemetry and load it in the NVISII renderer.
         """
         self.parse_meshes()
         element_id = 0
