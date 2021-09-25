@@ -179,9 +179,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         elif self.renderer == 'nvisii':
             
-            from robosuite.renderers.nvisii.nvisii_renderer import NViSIIRenderer
+            from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
 
-            self.viewer = NViSIIRenderer(env=self,
+            self.viewer = NVISIIRenderer(env=self,
                                          **self.renderer_config)
 
         elif self.renderer == 'igibson':
@@ -544,7 +544,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer == "nvisii":
             self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
         else:
-            print('Setting camera position and quat requires NViSII renderer.')
+            print('Setting camera position and quat requires NVISII renderer.')
 
     def reset_from_xml_string(self, xml_string):
         """

@@ -20,7 +20,7 @@ from robosuite.renderers.base import Renderer
 np.set_printoptions(threshold=np.inf)
 
 
-class NViSIIRenderer(Renderer): 
+class NVISIIRenderer(Renderer): 
     def __init__(self,
                  env,
                  img_path='images/',
@@ -37,7 +37,7 @@ class NViSIIRenderer(Renderer):
                  vision_modalities=None):
         """
         Initializes the nvisii wrapper. Wrapping any MuJoCo environment in this 
-        wrapper will use the NViSII wrapper for rendering.
+        wrapper will use the NVISII wrapper for rendering.
 
         Args:
             env (MujocoEnv instance): The environment to wrap.
@@ -57,7 +57,7 @@ class NViSIIRenderer(Renderer):
 
             debug_mode (bool, optional): Use debug mode for nvisii. Deafults to false.
 
-            video_mode (bool, optional): By deafult, the NViSII wrapper saves the results as 
+            video_mode (bool, optional): By deafult, the NVISII wrapper saves the results as 
                                          images. If video_mode is set to true, a video is
                                          produced and will be stored in the directory defined
                                          by video_path. Defaults to false.
@@ -75,7 +75,7 @@ class NViSIIRenderer(Renderer):
                                      nothing will be printed. Defaults to 1.
 
             vision_modalities (string, optional): Options to render image with different ground truths
-                                              for NViSII. Options include "normal", "texture_coordinates",
+                                              for NVISII. Options include "normal", "texture_coordinates",
                                               "position", "depth".
         """
 
@@ -229,7 +229,7 @@ class NViSIIRenderer(Renderer):
 
     def _init_camera(self):
         """
-        Intializes the camera for the NViSII renderer
+        Intializes the camera for the NVISII renderer
         """
 
         # intializes the camera
@@ -260,7 +260,7 @@ class NViSIIRenderer(Renderer):
 
     def _camera_configuration(self, at_vec, up_vec, eye_vec, quat):
         """
-        Sets the configuration for the NViSII camera. Configuration
+        Sets the configuration for the NVISII camera. Configuration
         is dependent on where the camera is located and where it 
         looks at
         """
@@ -300,7 +300,7 @@ class NViSIIRenderer(Renderer):
     def _load(self):
         """
         Loads the nessecary textures, materials, and geoms into the
-        NViSII renderer
+        NVISII renderer
         """   
         parser = Parser("nvisii", self.env, self.segmentation_type)
         parser.parse_textures()
@@ -401,7 +401,7 @@ class NViSIIRenderer(Renderer):
 
     def render(self, render_type="png"):
         """
-        Renders an image of the NViSII renderer
+        Renders an image of the NVISII renderer
         
         Args:
             render_type (string, optional): Type of file to save as. Defaults to 'png'
