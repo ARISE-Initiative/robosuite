@@ -14,6 +14,16 @@ class MujocoRenderer(Renderer):
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
         
+        self.initialize_renderer()       
+
+    def reset(self):
+        if self.viewer is not None:
+            self.viewer.close()
+            self.viewer = None
+
+        self.initialize_renderer()
+
+    def initialize_renderer(self):
         self.viewer = MujocoPyRenderer(self.sim)
         self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
         self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
@@ -27,15 +37,13 @@ class MujocoRenderer(Renderer):
 
         # Set the camera angle for viewing
         if self.render_camera is not None:
-            self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))        
-
-    def reset(self):
-        if self.viewer is not None:
-            self.viewer.close()
-            self.viewer = None
+            self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera)) 
 
     def update(self):
         pass
+
+    def set_camera(self, camera_id):
+        self.viewer.set_camera(camera_id=camera_id)
 
     def update_with_state(self, state):
         self.sim.set_state(state)

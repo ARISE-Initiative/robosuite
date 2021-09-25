@@ -165,6 +165,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
+
         if self.renderer_config is None and self.renderer != 'mujoco':
             self.renderer_config = load_renderer_config(self.renderer)
 
