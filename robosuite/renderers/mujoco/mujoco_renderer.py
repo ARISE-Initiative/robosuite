@@ -1,5 +1,4 @@
-from robosuite.utils import MujocoPyRenderer
-
+from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
 from robosuite.renderers.base import Renderer
 
 class MujocoRenderer(Renderer):
