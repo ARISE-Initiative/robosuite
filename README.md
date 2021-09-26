@@ -6,7 +6,7 @@
 
 -------
 ## Latest Updates
-[09/20/2021] **v1.3**: Ray-tracing and physics-based rendering tools :sparkles: and access to vision modalities 🎥
+[09/20/2021] **v1.3**: Ray tracing and physically based rendering tools :sparkles: and access to vision modalities 🎥
 
 [02/17/2021] **v1.2**: Added observable sensor models :eyes: and dynamics randomization :game_die:
 
