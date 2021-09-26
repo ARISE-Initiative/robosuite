@@ -23,7 +23,7 @@ NVISIIRenderer is a ray tracing-based renderer. It is primarily used for trainin
 ![NVISII renderer vision modalities](../images/renderers/vision_modalities_nvisii.png "NVISII renderer vision modalities")
 
 ###### Using the NVISII renderer
-Installing NVISII can be done using the command `pip install nvisii`. Note that NVISII requires users' drivers to be up to date. Please refer [here](https://github.com/owl-project/NVISII) for more information. You can try the NVISII renderer with the `demo_renderers.py` [script](../demos.html#renderer-options) and learn about the APIs for obtaining vision modalities with `demo_nvisii_modalities.py`.
+Installing NVISII can be done using the command `pip install nvisii`. Note that NVISII requires users' drivers to be up to date. Please refer [here](https://github.com/owl-project/NVISII) for more information. You can try the NVISII renderer with the `demo_renderers.py` [script](../demos.html#rendering-options) and learn about the APIs for obtaining vision modalities with `demo_nvisii_modalities.py`.
 
 ##### iGibson
 iGibsonRenderer is a [physically based renderer](https://en.wikipedia.org/wiki/Physically_based_rendering) (PBR), a computer graphics rendering technique that seeks to render images in a way that models the flow of light in the real world. [iGibson](http://svl.stanford.edu/igibson/) features fast visual rendering and physics simulation based on Bullet. This renderer supports faster rendering and training on a variety of vision modalities like depth, surface normal, and segmenation. It is also capable of rendering and returning [PyTorch tensors](https://pytorch.org/docs/stable/tensors.html) which reduces the tensor copying time between CPU and GPU during the model training process.
@@ -31,7 +31,7 @@ iGibsonRenderer is a [physically based renderer](https://en.wikipedia.org/wiki/P
 ![iGibson renderer vision modalities](../images/renderers/vision_modalities_igibson.png "iGibson renderer vision modalities")
 
 ###### Using the iGibson Renderer
-Installing iGibson can be done using the command `pip install igibson`. Please refer to the [iGibson installation guide](http://svl.stanford.edu/igibson/docs/installation.html) for a step by step guide. You can try the NVISII renderer with the `demo_renderers.py` [script](../demos.html#renderer-options) and learn about the APIs for obtaining vision modalities with `demo_igibson_modalities.py`.
+Installing iGibson can be done using the command `pip install igibson`. Please refer to the [iGibson installation guide](http://svl.stanford.edu/igibson/docs/installation.html) for a step by step guide. You can try the NVISII renderer with the `demo_renderers.py` [script](../demos.html#rendering-options) and learn about the APIs for obtaining vision modalities with `demo_igibson_modalities.py`.
 
 ##### PyGame
 
