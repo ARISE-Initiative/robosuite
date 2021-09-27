@@ -77,15 +77,8 @@ class Parser(BaseParser):
             parent_body = self.parent_map.get(geom)
             parent_body_name = parent_body.get('name', 'worldbody')
 
-            geom_name = geom.get('name', 'NONAME')
+            geom_name = geom.get('name')
             geom_type = geom.get('type')
-
-            if (geom.get('group') != '1' and geom_type != 'plane') or ('collision' in geom_name):
-                continue
-
-            if 'floor' in geom_name or 'wall' in geom_name or geom_name in block_rendering_objects:
-                element_id += 1
-                continue
 
             rgba_str = geom.get('rgba')
             geom_rgba = string_to_array(rgba_str) if rgba_str is not None else None
@@ -97,6 +90,13 @@ class Parser(BaseParser):
                 else:
                     geom_name = parent_body_name + '0'
                     repeated_names[parent_body_name] = 1
+
+            if (geom.get('group') != '1' and geom_type != 'plane') or ('collision' in geom_name):
+                continue
+
+            if 'floor' in geom_name or 'wall' in geom_name or geom_name in block_rendering_objects:
+                element_id += 1
+                continue
 
             geom_quat = string_to_array(geom.get('quat', '1 0 0 0'))
             geom_quat = [geom_quat[0], geom_quat[1], geom_quat[2], geom_quat[3]]

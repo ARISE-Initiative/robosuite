@@ -77,7 +77,6 @@ if __name__ == '__main__':
             use_camera_obs=False,         # no camera observations
             control_freq=20,
             renderer=renderer,
-            camera_segmentations="element"
         )
 
     env.reset()
@@ -88,8 +87,8 @@ if __name__ == '__main__':
 
         timesteps = 300
         for i in range(timesteps):
-            #action = np.random.uniform(low, high)
-            #obs, reward, done, _ = env.step(action)
+            action = np.random.uniform(low, high)
+            obs, reward, done, _ = env.step(action)
 
             if i % 100 == 0:
                 env.render()

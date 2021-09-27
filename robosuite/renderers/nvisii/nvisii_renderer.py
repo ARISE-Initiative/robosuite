@@ -524,7 +524,7 @@ class NVISIIRenderer(Renderer):
         seg_im = np.mod(seg_im, 256)
 
         if random_colors:
-            colors = randomize_colors(N=256, bright=True)
+            colors = self.randomize_colors(N=256, bright=True)
             return (255. * colors[seg_im]).astype(np.uint8)
         else:
 
