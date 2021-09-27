@@ -12,6 +12,14 @@ robosuite.utils.buffers module
    :undoc-members:
    :show-inheritance:
 
+robosuite.utils.camera\_utils module
+------------------------------------
+
+.. automodule:: robosuite.utils.camera_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.utils.control\_utils module
 -------------------------------------
 
