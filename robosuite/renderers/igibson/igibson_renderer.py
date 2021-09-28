@@ -183,9 +183,9 @@ class iGibsonRenderer(Renderer):
             self.modes += ['seg']
         
         self.mrs = MeshRendererSettings(msaa=msaa, 
-                                        env_texture_filename=os.path.join(suite.models.assets_root,"light_map","photo_studio_01_2k.hdr"),
-                                        env_texture_filename2=os.path.join(suite.models.assets_root,"light_map","photo_studio_01_2k.hdr"),
-                                        env_texture_filename3=os.path.join(suite.models.assets_root,"light_map","photo_studio_01_2k.hdr"),
+                                        env_texture_filename=os.path.join(suite.models.assets_root,"light_maps","photo_studio_01_2k.hdr"),
+                                        env_texture_filename2=os.path.join(suite.models.assets_root,"light_maps","photo_studio_01_2k.hdr"),
+                                        env_texture_filename3=os.path.join(suite.models.assets_root,"light_maps","photo_studio_01_2k.hdr"),
                                         enable_pbr=enable_pbr, 
                                         enable_shadow=enable_shadow,
                                         optimized=optimized,
