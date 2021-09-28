@@ -54,3 +54,42 @@ class MujocoRenderer(Renderer):
     def close(self):
         self.viewer.close()
         self.viewer = None
+
+    def add_keypress_callback(self, key, fn):
+        """
+        Allows for custom callback functions for the viewer. Called on key down.
+        Parameter 'any' will ensure that the callback is called on any key down,
+        and block default mujoco viewer callbacks from executing, except for
+        the ESC callback to close the viewer.
+
+        Args:
+            key (int): keycode
+            fn (function handle): function callback to associate with the keypress
+        """
+        self.viewer.add_keypress_callback(key, fn)
+
+    def add_keyup_callback(self, key, fn):
+        """
+        Allows for custom callback functions for the viewer. Called on key up.
+        Parameter 'any' will ensure that the callback is called on any key up,
+        and block default mujoco viewer callbacks from executing, except for 
+        the ESC callback to close the viewer.
+
+        Args:
+            key (int): keycode
+            fn (function handle): function callback to associate with the keypress
+        """
+        self.viewer.add_keyup_callback(key, fn)
+
+    def add_keyrepeat_callback(self, key, fn):
+        """
+        Allows for custom callback functions for the viewer. Called on key repeat.
+        Parameter 'any' will ensure that the callback is called on any key repeat,
+        and block default mujoco viewer callbacks from executing, except for 
+        the ESC callback to close the viewer.
+
+        Args:
+            key (int): keycode
+            fn (function handle): function callback to associate with the keypress
+        """
+        self.viewer.add_keyrepeat_callback(key, fn)
