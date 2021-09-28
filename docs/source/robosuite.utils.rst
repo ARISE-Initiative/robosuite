@@ -68,14 +68,6 @@ robosuite.utils.mjmod module
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.mujoco\_py\_renderer module
--------------------------------------------
-
-.. automodule:: robosuite.utils.mujoco_py_renderer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 robosuite.utils.numba module
 ----------------------------
 

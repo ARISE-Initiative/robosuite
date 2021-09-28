@@ -4,6 +4,14 @@ robosuite.renderers.mujoco package
 Submodules
 ----------
 
+robosuite.renderers.mujoco.mujoco\_py\_renderer module
+------------------------------------------------------
+
+.. automodule:: robosuite.renderers.mujoco.mujoco_py_renderer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.renderers.mujoco.mujoco\_renderer module
 --------------------------------------------------
 
