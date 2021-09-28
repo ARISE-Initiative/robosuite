@@ -31,7 +31,7 @@ iGibsonRenderer is a [physically based renderer](https://en.wikipedia.org/wiki/P
 ![iGibson renderer vision modalities](../images/renderers/vision_modalities_igibson.png "iGibson renderer vision modalities")
 
 ### Using the iGibson Renderer
-Installing iGibson can be done using the command `pip install igibson`. Please refer to the [iGibson installation guide](http://svl.stanford.edu/igibson/docs/installation.html) for a step by step guide. Note that you will have to download the iGibson 1.0 dataset (see instructions [here](http://svl.stanford.edu/igibson/docs/dataset.html#download-igibson-1-0-scenes)) to use the environment light map that illuminates the scene (in the future, the light maps will be part of robosuite assets to not have to download the iGibson dataset). You can try the iGibson renderer with the `demo_renderers.py` [script](../demos.html#rendering-options) and learn about the APIs for obtaining vision modalities with `demo_igibson_modalities.py`.
+Installing iGibson can be done using the command `pip install igibson`. Please refer to the [iGibson installation guide](http://svl.stanford.edu/igibson/docs/installation.html) for a step by step guide. You can try the iGibson renderer with the `demo_renderers.py` [script](../demos.html#rendering-options) and learn about the APIs for obtaining vision modalities with `demo_igibson_modalities.py`.
 
 ## PyGame
 
