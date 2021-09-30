@@ -487,6 +487,29 @@ class NVISIIRenderer(Renderer):
             
             depth_image = Image.fromarray(((1 - depth_data) * 255).astype(np.uint8))
             depth_image.save(img_file)
+        
+        elif self.vision_modalities == "normal" and self.img_cntr != 1:
+
+            normal_data = nvisii.render_data(
+                width = self.width,
+                height = self.height, 
+                start_frame=0,
+                frame_count=1,
+                bounce=int(0),
+                options="screen_space_normal",
+            )
+
+            normal_data = np.array(normal_data).reshape(self.height, self.width, 4)
+            normal_data = np.flipud(normal_data)[:, :, [0, 1, 2]]
+
+            normal_data[:, :, 0] = (normal_data[:, :, 0] + 1) / 2 * 255   # R
+            normal_data[:, :, 1] = (normal_data[:, :, 1] + 1) / 2 * 255   # G
+            normal_data[:, :, 2] = 255 - ((normal_data[:, :, 2] + 1) / 2 * 255)  # B
+
+            from PIL import Image
+            
+            normal_image = Image.fromarray((normal_data).astype(np.uint8))
+            normal_image.save(img_file)
 
         else:
             
