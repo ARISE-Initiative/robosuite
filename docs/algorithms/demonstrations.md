@@ -45,7 +45,7 @@ We have included an example script that illustrates how demonstrations can be lo
 
 We have included some sample demonstrations for each task at `models/assets/demonstrations`.
 
-Our twin project [RoboTurk](http://roboturk.stanford.edu) has also collected pilot datasets of more than a thousand demonstrations for two tasks in our suite via crowdsourcing. You can find detailed information about the RoboTurk datasets [here](roboturk).
+Our sister project [RoboTurk](http://roboturk.stanford.edu) has also collected several human demonstration datasets across different tasks and humans, including pilot datasets of more than a thousand demonstrations for two tasks in our suite via crowdsourcing. You can find detailed information about the RoboTurk datasets [here](roboturk).
 
 
 ## Structure of collected demonstrations
@@ -81,7 +81,9 @@ The reason for storing mujoco states instead of raw observations is to make it e
 
 ## Using Demonstrations for Learning
 
-[Several](https://arxiv.org/abs/1802.09564) [prior](https://arxiv.org/abs/1807.06919) [works](https://arxiv.org/abs/1804.02717) have demonstrated the effectiveness of altering the start state distribution of training episodes for learning RL policies. We provide a generic utility for setting various types of learning curriculums which dictate how to sample from demonstration episodes when doing an environment reset. For more information see the `DemoSamplerWrapper` class.
+We have recently released the [robomimic](https://arise-initiative.github.io/robomimic-web/) framework, which makes it easy to train policies using your own [datasets collected with robosuite](https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#robosuite-hdf5-datasets), and other publically released datasets (such as those collected with RoboTurk). The framework also contains many useful examples for how to integrate hdf5 datasets into your own learning pipeline.
+
+The robosuite repository also has some utilities for using the demonstrations to alter the start state distribution of training episodes for learning RL policies - this have proved effective in [several](https://arxiv.org/abs/1802.09564) [prior](https://arxiv.org/abs/1807.06919) [works](https://arxiv.org/abs/1804.02717). For example, we provide a generic utility for setting various types of learning curriculums which dictate how to sample from demonstration episodes when doing an environment reset. For more information see the `DemoSamplerWrapper` class.
 
 ## Warnings
 We have verified that deterministic action playback works specifically when playing back demonstrations on the *same machine* that the demonstrations were originally collected upon. However, this means that deterministic action playback is NOT guaranteed (in fact, very unlikely) to work across platforms or even across different machines using the same OS.
