@@ -14,7 +14,7 @@ We are providing the dataset in the hopes that it will be beneficial to research
 
 You can download the dataset [here](http://cvgl.stanford.edu/projects/roboturk/RoboTurkPilot.zip).
 
-**Note:** to get started with this data, we highly recommend using the [robomimic](https://arise-initiative.github.io/robomimic-web/) framework - see [this link](https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#roboturk-pilot-datasets) for more information.
+**Note:** to get started with this data, we highly recommend using the [robomimic](https://arise-initiative.github.io/robomimic-web/) framework - see [this link](https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#roboturk-pilot-datasets) for more information. To use this data, you should be on the [roboturk_v1](https://github.com/ARISE-Initiative/robosuite/tree/roboturk_v1) branch of robosuite, which is `v0.3` with a few minor changes. You can do this by using `git checkout roboturk_v1` after cloning the repository, or just download the source code from [this link](https://github.com/ARISE-Initiative/robosuite/tree/roboturk_v1).
 
 After unzipping the dataset, the following subdirectories can be found within the `RoboTurkPilot` directory.
 
