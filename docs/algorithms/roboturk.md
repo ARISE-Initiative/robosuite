@@ -2,17 +2,19 @@
 
 [RoboTurk](https://roboturk.stanford.edu/) is a crowdsourcing platform developed in order to enabled collecting large-scale manipulation datasets. Below, we describe RoboTurk datasets that are compatible with robosuite.
 
-## Updated Datasets compatible with v1.0+
+## Datasets compatible with v1.2+
 
-We are currently in the process of organizing a standardized dataset for our benchmarking tasks, which will be made available soon and compatible with v1.2.0+. In the meantime, we have provided a [small-scale dataset](https://drive.google.com/drive/folders/1LLkuFnRdqQ6xn1cYzkbJUs_DreaAvN7i?usp=sharing) of expert demonstrations on two of our tasks.
+We have collected several human demonstration datasets across several tasks implemented in robosuite as part of the [robomimic](https://arise-initiative.github.io/robomimic-web/) framework. For more information on these datasets, including how to download them and start training policies with them, please see [this link](https://arise-initiative.github.io/robomimic-web/docs/introduction/results.html#downloading-released-datasets).
 
-## Original Datasets compatible with v0.3
+## Datasets compatible with v0.3
 
 We collected a large-scale dataset on the `SawyerPickPlace` and `SawyerNutAssembly` tasks using the [RoboTurk](https://crowdncloud.ai/) platform. Crowdsourced workers collected these task demonstrations remotely. It consists of **1070** successful `SawyerPickPlace` demonstrations and **1147** successful `SawyerNutAssembly` demonstrations.
 
 We are providing the dataset in the hopes that it will be beneficial to researchers working on imitation learning. Large-scale imitation learning has not been explored much in the community; it will be exciting to see how this data is used.
 
 You can download the dataset [here](http://cvgl.stanford.edu/projects/roboturk/RoboTurkPilot.zip).
+
+**Note:** to get started with this data, we highly recommend using the [robomimic](https://arise-initiative.github.io/robomimic-web/) framework - see [this link](https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#roboturk-pilot-datasets) for more information.
 
 After unzipping the dataset, the following subdirectories can be found within the `RoboTurkPilot` directory.
 
