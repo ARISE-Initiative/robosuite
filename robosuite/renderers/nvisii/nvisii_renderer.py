@@ -560,12 +560,18 @@ class NVISIIRenderer(Renderer):
                 max_r = self.max_classes
                 for i in range(len(seg_im)):
                     for j in range(len(seg_im[0])):
-                        seg_im[i][j] = self.parser.entity_id_class_mapping[seg_im[i][j]] if seg_im[i][j] in self.parser.entity_id_class_mapping else max_r-1
+                        if seg_im[i][j] in self.parser.entity_id_class_mapping:
+                            seg_im[i][j] = self.parser.entity_id_class_mapping[seg_im[i][j]]
+                        else:
+                            seg_im[i][j] = max_r-1
             elif self.segmentation_type[0][0] == 'instance':
                 max_r = self.max_instances
                 for i in range(len(seg_im)):
                     for j in range(len(seg_im[0])):
-                        seg_im[i][j] = self.parser.entity_id_class_mapping[seg_im[i][j]] if seg_im[i][j] in self.parser.entity_id_class_mapping else max_r-1
+                        if seg_im[i][j] in self.parser.entity_id_class_mapping:
+                            seg_im[i][j] = self.parser.entity_id_class_mapping[seg_im[i][j]]
+                        else:
+                            seg_im[i][j] = max_r-1
                         
             color_list = np.array([cmap(i/(max_r)) for i in range(max_r)])
 

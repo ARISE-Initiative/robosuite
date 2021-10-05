@@ -95,7 +95,6 @@ class Parser(BaseParser):
                 continue
 
             if 'floor' in geom_name or 'wall' in geom_name or geom_name in block_rendering_objects:
-                element_id += 1
                 continue
 
             geom_quat = string_to_array(geom.get('quat', '1 0 0 0'))
@@ -132,7 +131,7 @@ class Parser(BaseParser):
             class_id = self.get_class_id(geom_index, element_id)
 
             # load obj into nvisii
-            obj, entity_id = load_object(geom=geom,
+            obj, entity_ids = load_object(geom=geom,
                                          geom_name=geom_name,
                                          geom_type=geom_type,
                                          geom_quat=geom_quat,
@@ -147,7 +146,8 @@ class Parser(BaseParser):
 
             element_id += 1
 
-            self.entity_id_class_mapping[entity_id] = class_id
+            for entity_id in entity_ids:
+                self.entity_id_class_mapping[entity_id] = class_id
 
             self.components[geom_name] = Components(obj=obj,
                                                     geom_index=geom_index,

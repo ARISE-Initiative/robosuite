@@ -87,10 +87,12 @@ def load_object(geom,
                                          geom_quat[3])
                 )
 
+    entity_ids = []
     if isinstance(component, nvisii.scene):
-        entity_id = component.entities[0].get_id()
+        for i in range(len(component.entities)):
+            entity_ids.append(component.entities[i].get_id())
     else:
-        entity_id = component.get_id()
+        entity_ids.append(component.get_id())
 
     if geom_type in primitive_types:
         component.get_transform().set_position(nvisii.vec3(float(geom_pos[0]),
@@ -118,4 +120,4 @@ def load_object(geom,
                 for entity in component.entities:
                         entity.get_material().set_base_color(nvisii.vec3(0.05, 0.05, 0.05))
 
-    return component, entity_id
+    return component, entity_ids
