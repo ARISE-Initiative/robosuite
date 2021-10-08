@@ -1,0 +1,21 @@
+<mujoco model="peg">
+    <asset>
+        <texture file="../textures/red-wood.png" type="cube" name="red-wood"/>
+        <material name="red-wood"  reflectance="1.0" shininess="1.0" specular="0.4" texrepeat="1 1" texture="red-wood" texuniform="true"/>
+    </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom pos="0 0 0" size="0.075 0.02 0.02" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.2" group="0" condim="4" material="red-wood"/>
+          <geom pos="-0.10 0 0" size="0.025 0.02 0.02" rgba="0 1 0 1" name="tip_geom" type="box" solimp="0.998 0.998 0.001" solref="0.02 1" density="100" friction="0.95 0.3 0.2" group="0" condim="4"/>
+<!--?          <geom pos="0 0 0" size="0.075 0.02 0.02" type="box" solimp="0.9, 0.95, 0.001" solref="0.02 1" density="1000" friction="1, 0.005, 0.0001" group="0" condim="4" material="red-wood"/>-->
+<!--?          <geom pos="-0.10 0 0" size="0.025 0.02 0.02" rgba="0 1 0 1" name="tip_geom" type="box" solimp="0.9, 0.95, 0.001" solref="0.02 1" density="1000" friction="1, 0.005, 0.0001" group="0" condim="4"/>-->
+        <site rgba="1 0 0 1" size="0.005" pos="-0.10 0 0" name="tip_site"/>
+        <site rgba="1 0 0 1" size="0.003" pos="0 0 0" name="center_site"/>
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.02" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.02" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.11 0.06 0" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>

@@ -1,0 +1,21 @@
+{
+  "type": "OSC_POSE",
+  "input_max": 1,
+  "input_min": -1,
+  "output_max": [0.05, 0.05, 0.05, 0.0, 0.0, 0.5],
+  "output_min": [-0.05, -0.05, -0.05, 0.0, 0.0, -0.5],
+  "kp": 150,
+  "damping_ratio": 1,
+  "impedance_mode": "fixed",
+  "kp_limits": [0, 300],
+  "damping_ratio_limits": [0, 10],
+  "position_limits": null,
+  "orientation_limits": [
+    [3.09, -0.05, -3.09],
+    [-3.09, 0.05, -0.05]
+  ],
+  "uncouple_pos_ori": true,
+  "control_delta": true,
+  "interpolation": null,
+  "ramp_ratio": 0.2
+}

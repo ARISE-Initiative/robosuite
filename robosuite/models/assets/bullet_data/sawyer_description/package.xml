@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>sawyer_description</name>
+  <version>5.0.4</version>
+  <description>
+    Description of Sawyer Robot from Rethink Robotics.
+    This package contains the URDF and meshes describing Sawyer.
+  </description>
+
+  <maintainer email="rsdk.support@rethinkrobotics.com">
+    Rethink Robotics Inc.
+  </maintainer>
+  <license>BSD</license>
+  <url type="website">http://sdk.rethinkrobotics.com/intera/</url>
+  <url type="repository">
+    https://github.com/RethinkRobotics/sawyer_robot
+  </url>
+  <url type="bugtracker">
+    https://github.com/RethinkRobotics/sawyer_robot/issues
+  </url>
+  <author>Rethink Robotics Inc.</author>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>joint_state_publisher</run_depend>
+  <run_depend>tf2_ros</run_depend>
+  <run_depend>rviz</run_depend>
+
+</package>
