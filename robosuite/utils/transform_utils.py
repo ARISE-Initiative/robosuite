@@ -513,14 +513,14 @@ def quat2axisangle(quat):
 
 def quat2euler(quat):
     """
-	Convert a quaternion into euler angles (roll, pitch, yaw)
-	roll is rotation around x in radians (counterclockwise)
-	pitch is rotation around y in radians (counterclockwise)
-	yaw is rotation around z in radians (counterclockwise)
+    Convert a quaternion into euler angles (roll, pitch, yaw)
+    roll is rotation around x in radians (counterclockwise)
+    pitch is rotation around y in radians (counterclockwise)
+    yaw is rotation around z in radians (counterclockwise)
 
-	Taken from:
-	https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/
-	"""
+    Taken from:
+    https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/
+    """
 
     x, y, z, w = quat
 
