@@ -36,3 +36,12 @@ Installing iGibson can be done using the command `pip install igibson`. Please r
 ## PyGame
 
 [PyGame](https://www.pygame.org/news) is a simple renderer that serves also as an alternative to MjViewer for rendering onscreen. A limitation of PyGame is that it can only render on-screen, limiting its applicability to train on computing clusters. This is because PyGame still relies on the MjRenderContextOffscreen to render frames offscreen, from which PyGame then maps to its native onscreen renderer. However, it is useful for visualizing the robots' behaviors in the system runtime where MjViewer is not supported. Check out this [demo script](../demos.html#pygame-renderer) for an example of using the PyGame renderer.
+
+## Render FPS
+Render FPS is tested on a machine with Ubuntu 18.04, Intel Core i9-900K CPU@3.60GHz and Nvidia RTX. The FPS of different renderers on Door environment, IIWA robot and Joint Velocity controller are as follows:
+
+|                     | mujoco-py | iGibson (render2tensor optimized) | iGibson (render2tensor) | iGibson (render2numpy) | NVISII |
+| ------------------- | --------- | --------------------------------- | ----------------------- | ---------------------- | ------ |
+| Simulation + render | 62        | 64                                | 58                      | 45                     | 0.5    |
+| Render only         | 508       | 1392                              | 285                     | 271                    | 0.5    |
+
