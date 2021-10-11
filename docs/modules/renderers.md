@@ -37,11 +37,12 @@ Installing iGibson can be done using the command `pip install igibson`. Please r
 
 [PyGame](https://www.pygame.org/news) is a simple renderer that serves also as an alternative to MjViewer for rendering onscreen. A limitation of PyGame is that it can only render on-screen, limiting its applicability to train on computing clusters. This is because PyGame still relies on the MjRenderContextOffscreen to render frames offscreen, from which PyGame then maps to its native onscreen renderer. However, it is useful for visualizing the robots' behaviors in the system runtime where MjViewer is not supported. Check out this [demo script](../demos.html#pygame-renderer) for an example of using the PyGame renderer.
 
-## Render FPS
-Render FPS is tested on a machine with Ubuntu 18.04, Intel Core i9-900K CPU@3.60GHz and Nvidia RTX. The FPS of different renderers on Door environment, IIWA robot and Joint Velocity controller are as follows:
+## Renderer Profiling
+The following table shows the estimated frame rate of each renderer in frames per second (FPS). The profiling was conducted on a machine with Ubuntu 18.04, Intel Core i9-900K CPU@3.60GHz, and Nvidia RTX. The FPS numbers of each rendering option are reported below. These numbers are estimated on the Door environment with IIWA robot and Joint Velocity controller and 256x256 image size.
 
-|                     | mujoco-py | iGibson (render2tensor optimized) | iGibson (render2tensor) | iGibson (render2numpy) | NVISII |
-| ------------------- | --------- | --------------------------------- | ----------------------- | ---------------------- | ------ |
-| Simulation + render | 62        | 64                                | 58                      | 45                     | 0.5    |
-| Render only         | 508       | 1392                              | 285                     | 271                    | 0.5    |
+|                   | mujoco-py | iGibson<br>(render2tensor optimized) | iGibson<br>(render2tensor) | iGibson<br>(render2numpy) | NVISII |
+|-------------------|:---------:|:---------------------------------:|:-----------------------:|:----------------------:|:------:|
+| Simulation + rendering | 62 | 64 | 58 | 45 | 0.5 |
+| Rendering only         | 508 | 1392 | 285 | 271 | 0.5 |
 
+In practice, both mujoco-py and iGibson renderers are well-suited for vision-based policy learning. In comparison, iGibson offers a faster rendering speed and additional functionalities for perception research. You might also find that iGibson has better cross-platform compatibility than the generic mujoco-py renderer, but it requires iGibson as a dependency. NVISII is best suited for photorealistic rendering; however, the ray-tracing computation substantially slows down its rendering speed compared to the other two renderers. It is mainly intended for perception tasks and qualitative visualizations, rather than online policy training.
