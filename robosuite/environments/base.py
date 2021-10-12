@@ -144,7 +144,13 @@ class MujocoEnv(metaclass=EnvMeta):
         self._reset_internal()
 
         # Load observables
-        self._observables = self._setup_observables()
+        if hasattr(self.viewer, '_setup_observables'):
+            self._observables = self.viewer._setup_observables()
+        else:
+            self._observables = self._setup_observables()
+
+        # check if viewer has get observations method and set a flag for future use.
+        self.viewer_get_obs = hasattr(self.viewer, '_get_observations')
 
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
@@ -273,8 +279,10 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.viewer is not None and self.renderer != 'mujoco':
             self.viewer.reset()
         
+        observations = self.viewer._get_observations(force_update=True) if self.viewer_get_obs else self._get_observations(force_update=True)
+
         # Return new observations
-        return self._get_observations(force_update=True)
+        return observations
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
@@ -473,7 +481,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns:
             OrderedDict: Observations from the environment
         """
-        observation = self._get_observations()
+        observation = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
         return observation
 
     def clear_objects(self, object_names):
