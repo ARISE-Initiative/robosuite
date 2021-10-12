@@ -414,7 +414,8 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.viewer is not None and self.renderer != 'mujoco':
             self.viewer.update()
 
-        return self._get_observations(), reward, done, info
+        observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
+        return observations, reward, done, info
 
     def _pre_action(self, action, policy_step=False):
         """
