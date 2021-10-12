@@ -27,7 +27,8 @@ def run_test():
     horizon = 300
     #controller_config = robosuite.load_controller_config(default_controller='OSC_POSE')
 
-    controller_config = robosuite.load_controller_config(custom_fpath = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/jaco_osc_pose_10hz.json'))
+    #controller_config = robosuite.load_controller_config(custom_fpath = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/jaco_osc_pose_10hz.json'))
+    controller_config = robosuite.load_controller_config(custom_fpath = os.path.join(os.path.dirname(__file__), '..', 'controllers/config/jaco_osc_pose_1hz.json'))
     robot_name = args.robot_name
     env = robosuite.make("Lift", robots=robot_name,
                          has_renderer=False,        
@@ -37,7 +38,7 @@ def run_test():
                          use_object_obs=False,
                          camera_names='frontview',
                          controller_configs=controller_config, 
-                         control_freq=10, 
+                         control_freq=1, 
                          horizon=horizon)
     active_robot = env.robots[0]
     init_qpos = deepcopy(active_robot.init_qpos)
@@ -129,7 +130,7 @@ def run_test():
     print('init pos', init_qpos)
     active_robot = env.robots[0]
     for i in range(action_array.shape[0]):
-        action = action_array[i]
+        action = list(targets[i]-prev_eef) + [0, 0, 0, 0]
         target_position = prev_eef + action[:3]
         target_positions.append(target_position)
         o,r,done,_ = env.step(action)
