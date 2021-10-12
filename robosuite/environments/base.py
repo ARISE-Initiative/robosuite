@@ -270,7 +270,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
 
-        if self.has_renderer or self.renderer != 'mujoco':
+        if self.viewer is not None and self.renderer != 'mujoco':
             self.viewer.reset()
         
         # Return new observations
@@ -403,9 +403,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         reward, done, info = self._post_action(action)
 
-        if self.has_renderer or self.renderer != 'mujoco':
-            if self.renderer == "mujoco":
-                self.viewer.update_with_state(self.sim.get_state())
+        if self.viewer is not None and self.renderer != 'mujoco':
             self.viewer.update()
 
         return self._get_observations(), reward, done, info
