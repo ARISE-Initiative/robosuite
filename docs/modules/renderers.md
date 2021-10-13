@@ -45,4 +45,13 @@ The following table shows the estimated frame rate of each renderer in frames pe
 | Simulation + rendering | 62 | 64 | 58 | 45 | 0.5 |
 | Rendering only         | 508 | 1392 | 285 | 271 | 0.5 |
 
+
+For the same environment setup, we profiled the renderer on a machine with Ubuntu 18.04, Intel Core i7-8700K CPU@3.70GHz 
+and Nvidia GTX 1080ti.
+
+|                   | mujoco-py | iGibson<br>(render2tensor optimized) | iGibson<br>(render2tensor) | iGibson<br>(render2numpy) | NVISII |
+|-------------------|:---------:|:---------------------------------:|:-----------------------:|:----------------------:|:------:|
+| Simulation + rendering | 65 | 62 | 45 | 41 | 0.4 |
+| Rendering only         | 1000 | 1500 | 250 | 205 | 0.4 |
+
 In practice, both mujoco-py and iGibson renderers are well-suited for vision-based policy learning. In comparison, iGibson offers a faster rendering speed and additional functionalities for perception research. You might also find that iGibson has better cross-platform compatibility than the generic mujoco-py renderer, but it requires iGibson as a dependency. NVISII is best suited for photorealistic rendering; however, the ray-tracing computation substantially slows down its rendering speed compared to the other two renderers. It is mainly intended for perception tasks and qualitative visualizations, rather than online policy training.
