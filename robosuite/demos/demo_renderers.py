@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     env = suite.make(
             **options,
-            has_renderer=False,           # no on-screen renderer
+            has_renderer=False if renderer != 'mujoco' else True,           # no on-screen renderer
             has_offscreen_renderer=False, # no off-screen renderer
             ignore_done=True,
             use_camera_obs=False,         # no camera observations
