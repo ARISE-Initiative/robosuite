@@ -524,7 +524,8 @@ class MujocoEnv(metaclass=EnvMeta):
         """
 
         # if there is an active viewer window, destroy it
-        self.close()
+        if self.renderer != 'nvisii':
+            self.close()
 
         # Since we are reloading from an xml_string, we are deterministically resetting
         self.deterministic_reset = True

@@ -248,9 +248,9 @@ class NVISIIRenderer(Renderer):
 
         # Sets the primary camera of the renderer to the camera entity
         nvisii.set_camera_entity(self.camera)
-        self._camera_configuration(at_vec  = nvisii.vec3(0, 0, 1), 
+        self._camera_configuration(at_vec  = nvisii.vec3(0, 0, 1.06), 
                                    up_vec  = nvisii.vec3(0, 0, 1),
-                                   eye_vec = nvisii.vec3(1.5, 0, 1.5),
+                                   eye_vec = nvisii.vec3(1.24, 0.0, 1.35),
                                    quat    = nvisii.quat(-1, 0, 0, 0))
         
         # Environment configuration
@@ -277,7 +277,7 @@ class NVISIIRenderer(Renderer):
     def set_camera_pos_quat(self, pos, quat):
         self.camera.get_transform().set_position(pos)
         self.camera.get_transform().look_at(
-            at  = (0, 0, 1), # look at (world coordinate)
+            at  = (0, 0, 1.06), # look at (world coordinate)
             up  = (0, 0, 1), # up vector
             eye = pos,
             previous = False
