@@ -6,11 +6,11 @@
 
 -------
 ## Latest Updates
-[09/20/2021] **v1.3.0**: Ray-tracing and physics-based rendering tools :sparkles: and access to vision modalities 🎥
+[09/20/2021] **v1.3**: Ray tracing and physically based rendering tools :sparkles: and access to vision modalities 🎥
 
-[02/17/2021] **v1.2.0**: Added observable sensor models :eyes: and dynamics randomization :game_die:
+[02/17/2021] **v1.2**: Added observable sensor models :eyes: and dynamics randomization :game_die:
 
-[12/17/2020] **v1.1.0**: Refactored infrastructure and standardized model classes for much easier environment prototyping :wrench:
+[12/17/2020] **v1.1**: Refactored infrastructure and standardized model classes for much easier environment prototyping :wrench:
 
 -------
 
@@ -18,7 +18,7 @@
 
 Data-driven algorithms, such as reinforcement learning and imitation learning, provide a powerful and generic tool in robotics. These learning paradigms, fueled by new advances in deep learning, have achieved some exciting successes in a variety of robot control problems. However, the challenges of reproducibility and the limited accessibility of robot hardware (especially during a pandemic) have impaired research progress. The overarching goal of **robosuite** is to provide researchers with:
 
-* a standardized set of benchmarking tasks for rigorus evaluation and algorithm development;
+* a standardized set of benchmarking tasks for rigorous evaluation and algorithm development;
 * a modular design that offers great flexibility to design new robot simulation environments;
 * a high-quality implementation of robot controllers and off-the-shelf learning algorithms to lower the barriers to entry.
 
@@ -27,7 +27,7 @@ This framework was originally developed since late 2017 by researchers in [Stanf
 This release of **robosuite** contains seven robot models, eight gripper models, six controller modes, and nine standardized tasks. It also offers a modular design of APIs for building new environments with procedural generation. We highlight these primary features below:
 
 * **standardized tasks**: a set of standardized manipulation tasks of large diversity and varying complexity and RL benchmarking results for reproducible research;
-* **procedural generation**: modular APIs for programmatically creating new environments and new tasks as a combinations of robot models, arenas, and parameterized 3D objects;
+* **procedural generation**: modular APIs for programmatically creating new environments and new tasks as combinations of robot models, arenas, and parameterized 3D objects;
 * **controller supports**: a selection of controller types to command the robots, such as joint-space velocity control, inverse kinematics control, operational space control, and 3D motion devices for teleoperation;
 * **multi-modal sensors**: heterogeneous types of sensory signals, including low-level physical states, RGB cameras, depth maps, and proprioception;
 * **human demonstrations**: utilities for collecting human demonstrations, replaying demonstration datasets, and leveraging demonstration data for learning. Check out our sister project [robomimic](https://arise-initiative.github.io/robomimic-web/);

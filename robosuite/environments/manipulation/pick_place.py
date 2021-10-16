@@ -193,6 +193,8 @@ class PickPlace(SingleArmEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,      # {None, instance, class, element}
+        renderer="mujoco",
+        renderer_config=None,
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -248,6 +250,8 @@ class PickPlace(SingleArmEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
             camera_segmentations=camera_segmentations,
+            renderer=renderer,
+            renderer_config=renderer_config,
         )
 
     def reward(self, action=None):

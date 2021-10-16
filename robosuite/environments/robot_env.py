@@ -10,6 +10,11 @@ from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING
 from robosuite.controllers import reset_controllers
 
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
 
 class RobotEnv(MujocoEnv):
     """
@@ -140,6 +145,8 @@ class RobotEnv(MujocoEnv):
         camera_depths=False,
         camera_segmentations=None,
         robot_configs=None,
+        renderer="mujoco",
+        renderer_config=None,
     ):
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
@@ -219,6 +226,8 @@ class RobotEnv(MujocoEnv):
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
+            renderer=renderer,
+            renderer_config=renderer_config,
         )
 
     def visualize(self, vis_settings):
@@ -360,7 +369,6 @@ class RobotEnv(MujocoEnv):
         """
         Helper function to create sensors for a given camera. This is abstracted in a separate function call so that we
         don't have local function naming collisions during the _setup_observables() call.
-
         Args:
             cam_name (str): Name of camera to create sensors for
             cam_w (int): Width of camera
@@ -373,7 +381,6 @@ class RobotEnv(MujocoEnv):
                 `'element'`: segmentation at the per-geom level
 
             modality (str): Modality to assign to all sensors
-
         Returns:
             2-tuple:
                 sensors (list): Array of sensors for the given camera
