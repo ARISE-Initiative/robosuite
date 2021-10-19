@@ -12,14 +12,6 @@ robosuite.renderers.mujoco.mujoco\_py\_renderer module
    :undoc-members:
    :show-inheritance:
 
-robosuite.renderers.mujoco.mujoco\_renderer module
---------------------------------------------------
-
-.. automodule:: robosuite.renderers.mujoco.mujoco_renderer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 
