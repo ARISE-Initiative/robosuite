@@ -51,10 +51,10 @@ def load_object(renderer,
     """
     
     primitive_shapes_path = {
-        'box': os.path.join(igibson.assets_path, 'models/mjcf_primitives/cube.obj'),
+        'box': os.path.join(robosuite.models.assets_root, 'objects/meshes/cube.obj'),
         'cylinder': os.path.join(robosuite.models.assets_root, 'objects/meshes/cylinder.obj'),
-        'sphere': os.path.join(igibson.assets_path, 'models/mjcf_primitives/sphere8.obj'),
-        'plane': os.path.join(igibson.assets_path, 'models/mjcf_primitives/cube.obj')
+        'sphere': os.path.join(robosuite.models.assets_root, 'objects/meshes/sphere8.obj'),
+        'plane': os.path.join(robosuite.models.assets_root, 'objects/meshes/cube.obj')
     }
     
     # if not in primitive shapes, get path to mesh
