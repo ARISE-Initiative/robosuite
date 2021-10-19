@@ -26,12 +26,33 @@ NVISIIRenderer is a ray tracing-based renderer. It is primarily used for trainin
 Installing NVISII can be done using the command `pip install nvisii`. Note that NVISII requires users' drivers to be up to date. Please refer [here](https://github.com/owl-project/NVISII) for more information. You can try the NVISII renderer with the `demo_renderers.py` [script](../demos.html#rendering-options) and learn about the APIs for obtaining vision modalities with `demo_nvisii_modalities.py`.
 
 ## iGibson
-iGibsonRenderer is a [physically based renderer](https://en.wikipedia.org/wiki/Physically_based_rendering) (PBR), a computer graphics rendering technique that seeks to render images in a way that models the flow of light in the real world. The original [iGibson](http://svl.stanford.edu/igibson/) features fast visual rendering and physics simulation based on Bullet. We have created a version of robosuite that uses only the renderer of iGibson. This renderer supports faster rendering and training on a variety of vision modalities like depth, surface normal, and segmentation. It is also capable of rendering and returning [PyTorch tensors](https://pytorch.org/docs/stable/tensors.html), allowing for tensor-to-tensor rendering that reduces the tensor copying time between CPU and GPU accelerating substantially the model training process in RL. 
+iGibsonRenderer uses a [physically based rendering](https://en.wikipedia.org/wiki/Physically_based_rendering) (PBR), a computer graphics technique that seeks to render images in a way that models the flow of light in the real world. The original [iGibson](http://svl.stanford.edu/igibson/) environment combines fast visual rendering with physics simulation based on Bullet. We have created a version of robosuite that uses only the renderer of iGibson. This renderer supports faster image generation with optimization, and the generation of a variety of vision modalities like depth, surface normal, and segmentation. It is capable of rendering and returning [PyTorch tensors](https://pytorch.org/docs/stable/tensors.html), allowing for tensor-to-tensor rendering that reduces the tensor copying time between CPU and GPU accelerating substantially the process of training models for exampe with reinforcement learning. 
 
 ![iGibson renderer vision modalities](../images/renderers/vision_modalities_igibson.png "iGibson renderer vision modalities")
 
 ### Using the iGibson Renderer
 Installing iGibson can be done using the command `pip install igibson`. Please refer to the [iGibson installation guide](http://svl.stanford.edu/igibson/docs/installation.html) for a step by step guide. You can try the iGibson renderer with the `demo_renderers.py` [script](../demos.html#rendering-options) and learn about the APIs for obtaining vision modalities with `demo_igibson_modalities.py`.
+
+### Requirements to use the iGibson Renderer
+
+Using iGibson's PBR requires Linux or Windows machines; you can still use the iGibson renderer with Mac OS X but it won't be PBR, it goes back to classic OpenGL rendering. Apart from that, the minimum system requirements are the following:
+
+- Linux
+  - Ubuntu 16.04
+  - Nvidia GPU with VRAM > 6.0GB
+  - Nvidia driver >= 384
+  - CUDA >= 9.0, CuDNN >= v7
+  - libegl-dev (Debian/Ubuntu: vendor neutral GL dispatch library – EGL support)
+- Windows
+  - Windows 10
+  - Nvidia GPU with VRAM > 6.0GB
+  - Nvidia driver >= 384
+  - CUDA >= 9.0, CuDNN >= v7
+- Mac OS X
+  - Tested on 10.15
+  - PBR features not supported
+
+Other system configurations may work, but have not been extensively tested.
 
 ## PyGame
 
