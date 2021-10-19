@@ -1,0 +1,14 @@
+{
+    "img_path": "images/",
+    "width": 1280,
+    "height": 720,
+    "spp": 512,
+    "use_noise": false,
+    "debug_mode": false,
+    "video_mode": true,
+    "video_path": "videos/",
+    "video_name": "robosuite_video_0.mp4",
+    "video_fps": 30,
+    "verbose": 1,
+    "vision_modalities": null
+}

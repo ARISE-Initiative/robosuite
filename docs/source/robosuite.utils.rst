@@ -12,6 +12,14 @@ robosuite.utils.buffers module
    :undoc-members:
    :show-inheritance:
 
+robosuite.utils.camera\_utils module
+------------------------------------
+
+.. automodule:: robosuite.utils.camera_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.utils.control\_utils module
 -------------------------------------
 
@@ -56,14 +64,6 @@ robosuite.utils.mjmod module
 ----------------------------
 
 .. automodule:: robosuite.utils.mjmod
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-robosuite.utils.mujoco\_py\_renderer module
--------------------------------------------
-
-.. automodule:: robosuite.utils.mujoco_py_renderer
    :members:
    :undoc-members:
    :show-inheritance:
