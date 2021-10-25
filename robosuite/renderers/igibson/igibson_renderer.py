@@ -406,7 +406,7 @@ class iGibsonRenderer(Renderer):
 
         raise Exception(f"Camera {self.env.render_camera} not present")
 
-    def _set_camera_pos_quat(self, pos, quat):
+    def set_camera_pos_quat(self, pos, quat):
         """Set renderer position and quaternion.
 
         Args:

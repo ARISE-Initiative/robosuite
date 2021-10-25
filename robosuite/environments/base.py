@@ -511,10 +511,10 @@ class MujocoEnv(metaclass=EnvMeta):
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
 
     def set_camera_pos_quat(self, camera_pos, camera_quat):
-        if self.renderer == "nvisii":
+        if self.renderer in ["nvisii", "igibson"]:
             self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
         else:
-            print('Setting camera position and quat requires NVISII renderer.')
+            raise AttributeError('setting camera position and quat requires renderer to be either NVISII or iGibson.')
 
     def reset_from_xml_string(self, xml_string):
         """
