@@ -3,14 +3,13 @@
 
 The base installation requires the MuJoCo physics engine (with [mujoco-py](https://github.com/nimrod-gileadi/mujoco-py), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate`.
 
-First [download the mujoco binary](https://mujoco.org/download) for your OS and unzip its contents into `~/.mujoco/mujoco210`. There is no license key needed anymore as Mujoco is now free.
-   - For Linux, you will need to install some packages to build `mujoco-py` (sourced from [here](https://github.com/openai/mujoco-py/blob/master/Dockerfile), with a couple missing packages added). If using `apt`, the required installation command is:
-     ```sh
-     $ sudo apt install curl git libgl1-mesa-dev libgl1-mesa-glx libglew-dev \
-             libosmesa6-dev software-properties-common net-tools unzip vim \
-             virtualenv wget xpra xserver-xorg-dev libglfw3-dev patchelf
-     ```
-     Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mujoco210/bin` before proceeding to the next step.
+For Linux, you will need to install some packages to build `mujoco-py` (sourced from [here](https://github.com/openai/mujoco-py/blob/master/Dockerfile), with a couple missing packages added). If using `apt`, the required installation command is:
+   ```sh
+   $ sudo apt install curl git libgl1-mesa-dev libgl1-mesa-glx libglew-dev \
+            libosmesa6-dev software-properties-common net-tools unzip vim \
+            virtualenv wget xpra xserver-xorg-dev libglfw3-dev patchelf
+   ```
+   Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mujoco210/bin` before proceeding to the next step.
 
 ### Install from pip
 1. After setting up mujoco, robosuite can be installed with
