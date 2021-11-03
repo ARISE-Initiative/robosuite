@@ -368,7 +368,6 @@ class iGibsonRenderer(Renderer):
 
         return sensors, names
 
-
     def _switch_camera(self, camera_name):
         """
         Change renderer camera to one of the available cameras of the environment

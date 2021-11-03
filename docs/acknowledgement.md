@@ -8,6 +8,6 @@
 - [Danfei Xu](https://cs.stanford.edu/~danfei/) (placement initializer)
 - [Andrew Kondrich](http://www.andrewkondrich.com/), [Jonathan Booher](https://web.stanford.edu/~jaustinb/) (domain randomization)
 - [Albert Tung](https://www.linkedin.com/in/albert-tung3/) (demonstration collection)
-- [Abhishek Joshi](https://www.linkedin.com/in/abhishek-joshi-4ab469180), [Divyansh Jha](https://github.com/divyanshj16) (robosuite v1.3 renderers)
+- [Abhishek Joshi](https://www.linkedin.com/in/abhishek-joshi-4ab469180), [Divyansh Jha](https://github.com/divyanshj16), [Fei Xia](http://fxia.me/) (robosuite v1.3 renderers)
 
 We wholeheartedly welcome the community to contribute to our project through issues and pull requests. New contributors will be added to the list above.

@@ -10,6 +10,7 @@ from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING
 from robosuite.controllers import reset_controllers
 
+
 class RobotEnv(MujocoEnv):
     """
     Initializes a robot environment in Mujoco.
