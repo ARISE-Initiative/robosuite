@@ -368,7 +368,6 @@ class iGibsonRenderer(Renderer):
 
         return sensors, names
 
-
     def _switch_camera(self, camera_name):
         """
         Change renderer camera to one of the available cameras of the environment
@@ -406,7 +405,7 @@ class iGibsonRenderer(Renderer):
 
         raise Exception(f"Camera {self.env.render_camera} not present")
 
-    def _set_camera_pos_quat(self, pos, quat):
+    def set_camera_pos_quat(self, pos, quat):
         """Set renderer position and quaternion.
 
         Args:
