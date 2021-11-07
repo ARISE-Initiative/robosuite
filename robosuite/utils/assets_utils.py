@@ -23,7 +23,6 @@ def download_assets():
         os.makedirs(assets_path)
 
         print("Downloading assets from", assets_url)
-
         assets_obj = requests.get(assets_url)
         with open(assets_tmp_path, 'wb') as local_file:
             local_file.write(assets_obj.content)
