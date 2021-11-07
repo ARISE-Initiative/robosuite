@@ -11,6 +11,17 @@ For Linux, you will need to install some packages to build `mujoco-py` (sourced 
    ```
    Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mujoco210/bin` before proceeding to the next step.
 
+For macOS, compiling `mujoco-py` requires specific versions of [GCC](https://github.com/nimrod-gileadi/mujoco-py/blob/master/mujoco_py/builder.py#L311). We have verified that the following compiling procedure works on macOS Big Sur:
+   ```sh
+   $ brew install gcc@7 # make sure homebrew is installed
+   $ git clone https://github.com/ARISE-Initiative/robosuite.git
+   $ conda create -n robosuite python=3.7 # make sure Anaconda is installed
+   $ conda activate robosuite
+   $ cd robosuite # go to the robosuite root folder
+   $ pip install -e .
+   $ CC=gcc-7 python -c "import robosuite"  # this will trigger mujoco_py to compile
+   ```
+
 ### Install from pip
 1. After setting up mujoco, robosuite can be installed with
 ```sh
