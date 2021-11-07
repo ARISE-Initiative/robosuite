@@ -66,7 +66,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'robosuite'
 copyright = u'Stanford University and The University of Texas at Austin 2021'
-author = u'Yuke Zhu, Josiah Wong, Jiren Zhu, Ajay Mandlekar, Roberto Martín-Martín'
+author = u'Yuke Zhu, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -116,6 +116,8 @@ html_static_path = ['_static']
 
 html_context = {
     'css_files': [
+        '_static/css/theme.css',
+        '_static/pygments.css',
         '_static/theme_overrides.css',  # override wide tables in RTD theme
     ],
 }
