@@ -23,3 +23,6 @@ __logo__ = """
     /[_]\  [~]\/    |//  |
      ] [   OOO      /o|__|
 """
+
+from robosuite.utils.assets_utils import download_assets
+download_assets()
