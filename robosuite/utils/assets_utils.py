@@ -27,8 +27,8 @@ def download_assets():
             "{} -O /tmp/robosuite_assets_v1.tar.gz".format(assets_url)
         )
 
-    print("Decompressing assets to", assets_path)
-    os.system("tar -zxf /tmp/robosuite_assets_v1.tar.gz --directory {}".format(os.path.dirname(assets_path)))
+        print("Decompressing assets to", assets_path)
+        os.system("tar -zxf /tmp/robosuite_assets_v1.tar.gz --directory {}".format(os.path.dirname(assets_path)))
 
 
 if __name__ == "__main__":
