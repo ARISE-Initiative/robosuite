@@ -16,6 +16,7 @@ setup(
         package for package in find_packages() if package.startswith("robosuite")
     ],
     install_requires=[
+        "requests",
         "numpy>=1.20.0",
         "numba>=0.52.0,<=0.53.1",
         "scipy>=1.2.3",
@@ -28,7 +29,7 @@ setup(
     author="Yuke Zhu, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín",
     url="https://github.com/ARISE-Initiative/robosuite",
     author_email="yukez@cs.utexas.edu",
-    version="1.3.0",
+    version="1.3.1",
     long_description=long_description,
     long_description_content_type='text/markdown'
 )
