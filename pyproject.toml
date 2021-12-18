@@ -1,13 +1,14 @@
 [tool.black]
 line-length = 120
-target-version = ['py36', 'py37', 'py38']
-extend-exclude = 'robosuite/((models/assets)|(controllers/config))'
+target-version = ["py36", "py37", "py38"]
+extend-exclude = "robosuite/((models/assets)|(controllers/config))"
 
 [tool.isort]
 profile = "black"
 line_length = 120
-py_version = 'all'
+skip=["__init__.py"]
+py_version = "all"
 extend_skip = [
-    'robosuite/models/assets',
-    'robosuite/controllers/config',
+    "robosuite/models/assets",
+    "robosuite/controllers/config",
 ]
