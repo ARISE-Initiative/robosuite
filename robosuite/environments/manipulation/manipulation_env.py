@@ -1,9 +1,9 @@
 import numpy as np
 
 from robosuite.environments.robot_env import RobotEnv
-from robosuite.models.grippers import GripperModel
 from robosuite.models.base import MujocoModel
-from robosuite.robots import Manipulator, ROBOT_CLASS_MAPPING
+from robosuite.models.grippers import GripperModel
+from robosuite.robots import ROBOT_CLASS_MAPPING, Manipulator
 
 
 class ManipulationEnv(RobotEnv):
@@ -297,7 +297,7 @@ class ManipulationEnv(RobotEnv):
         # color the gripper site appropriately based on (squared) distance to target
         dist = np.sum(np.square((target_pos - gripper_pos)))
         max_dist = 0.1
-        scaled = (1.0 - min(dist / max_dist, 1.)) ** 15
+        scaled = (1.0 - min(dist / max_dist, 1.0)) ** 15
         rgba = np.zeros(3)
         rgba[0] = 1 - scaled
         rgba[1] = scaled
@@ -315,5 +315,6 @@ class ManipulationEnv(RobotEnv):
         if type(robots) is str:
             robots = [robots]
         for robot in robots:
-            assert issubclass(ROBOT_CLASS_MAPPING[robot], Manipulator),\
-                "Only manipulator robots supported for manipulation environment!"
+            assert issubclass(
+                ROBOT_CLASS_MAPPING[robot], Manipulator
+            ), "Only manipulator robots supported for manipulation environment!"

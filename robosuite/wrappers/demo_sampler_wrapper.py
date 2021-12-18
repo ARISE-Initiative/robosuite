@@ -5,10 +5,11 @@ altering the start state distribution of training episodes for
 learning RL policies.
 """
 
-import random
 import os
-import h5py
+import random
 import time
+
+import h5py
 import numpy as np
 
 from robosuite.utils.mjcf_utils import postprocess_model_xml
@@ -74,6 +75,7 @@ class DemoSamplerWrapper(Wrapper):
         AssertionError: [Invalid sampling scheme]
         AssertionError: [Invalid scheme ratio]
     """
+
     def __init__(
         self,
         env,
@@ -129,7 +131,7 @@ class DemoSamplerWrapper(Wrapper):
         assert len(self.sampling_schemes) == len(self.scheme_ratios)
 
         # make sure the distribution lies in the probability simplex
-        assert np.all(self.scheme_ratios > 0.)
+        assert np.all(self.scheme_ratios > 0.0)
         assert sum(self.scheme_ratios) == 1.0
 
         # open loop configuration
@@ -225,7 +227,7 @@ class DemoSamplerWrapper(Wrapper):
         """
         Sampling method.
 
-        Open loop reverse sampling from demonstrations. Starts by 
+        Open loop reverse sampling from demonstrations. Starts by
         sampling from states near the end of the demonstrations.
         Increases the window backwards as the number of calls to
         this sampling method increases at a fixed rate.

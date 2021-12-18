@@ -1,14 +1,13 @@
 from collections import OrderedDict
+
 import numpy as np
+from mujoco_py import MjSim
 
 import robosuite.utils.transform_utils as T
 from robosuite.models.mounts import mount_factory
+from robosuite.models.robots import create_robot
 from robosuite.utils.buffers import DeltaBuffer
 from robosuite.utils.observables import Observable, sensor
-
-from mujoco_py import MjSim
-
-from robosuite.models.robots import create_robot
 
 
 class Robot(object):
@@ -53,12 +52,12 @@ class Robot(object):
         control_freq=20,
     ):
         # Set relevant attributes
-        self.sim = None                                     # MjSim this robot is tied to
-        self.name = robot_type                              # Specific robot to instantiate
-        self.idn = idn                                      # Unique ID of this robot
-        self.robot_model = None                             # object holding robot model-specific info
-        self.control_freq = control_freq                    # controller Hz
-        self.mount_type = mount_type                        # Type of mount to use
+        self.sim = None  # MjSim this robot is tied to
+        self.name = robot_type  # Specific robot to instantiate
+        self.idn = idn  # Unique ID of this robot
+        self.robot_model = None  # object holding robot model-specific info
+        self.control_freq = control_freq  # controller Hz
+        self.mount_type = mount_type  # Type of mount to use
 
         # Scaling of Gaussian initial noise applied to robot joints
         self.initialization_noise = initialization_noise
@@ -66,22 +65,23 @@ class Robot(object):
             self.initialization_noise = {"magnitude": 0.0, "type": "gaussian"}  # no noise conditions
         elif self.initialization_noise == "default":
             self.initialization_noise = {"magnitude": 0.02, "type": "gaussian"}
-        self.initialization_noise["magnitude"] = \
+        self.initialization_noise["magnitude"] = (
             self.initialization_noise["magnitude"] if self.initialization_noise["magnitude"] else 0.0
+        )
 
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
 
-        self.robot_joints = None                            # xml joint names for robot
-        self.base_pos = None                                # Base position in world coordinates (x,y,z)
-        self.base_ori = None                                # Base rotation in world coordinates (x,y,z,w quat)
-        self._ref_joint_indexes = None                      # xml joint indexes for robot in mjsim
-        self._ref_joint_pos_indexes = None                  # xml joint position indexes in mjsim
-        self._ref_joint_vel_indexes = None                  # xml joint velocity indexes in mjsim
-        self._ref_joint_actuator_indexes = None             # xml joint (torq) actuator indexes for robot in mjsim
+        self.robot_joints = None  # xml joint names for robot
+        self.base_pos = None  # Base position in world coordinates (x,y,z)
+        self.base_ori = None  # Base rotation in world coordinates (x,y,z,w quat)
+        self._ref_joint_indexes = None  # xml joint indexes for robot in mjsim
+        self._ref_joint_pos_indexes = None  # xml joint position indexes in mjsim
+        self._ref_joint_vel_indexes = None  # xml joint velocity indexes in mjsim
+        self._ref_joint_actuator_indexes = None  # xml joint (torq) actuator indexes for robot in mjsim
 
-        self.recent_qpos = None                             # Current and last robot arm qpos
-        self.recent_actions = None                          # Current and last action applied
-        self.recent_torques = None                          # Current and last torques applied
+        self.recent_qpos = None  # Current and last robot arm qpos
+        self.recent_actions = None  # Current and last action applied
+        self.recent_torques = None  # Current and last torques applied
 
     def _load_controller(self):
         """
@@ -157,23 +157,15 @@ class Robot(object):
         """
         # indices for joints in qpos, qvel
         self.robot_joints = self.robot_model.joints
-        self._ref_joint_pos_indexes = [
-            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_joints
-        ]
-        self._ref_joint_vel_indexes = [
-            self.sim.model.get_joint_qvel_addr(x) for x in self.robot_joints
-        ]
+        self._ref_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_joints]
+        self._ref_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_joints]
 
         # indices for joint indexes
-        self._ref_joint_indexes = [
-            self.sim.model.joint_name2id(joint)
-            for joint in self.robot_model.joints
-        ]
+        self._ref_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_model.joints]
 
         # indices for joint pos actuation, joint vel actuation, gripper actuation
         self._ref_joint_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator)
-            for actuator in self.robot_model.actuators
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.actuators
         ]
 
     def setup_observables(self):
@@ -245,10 +237,7 @@ class Robot(object):
         """
         tolerance = 0.1
         for (qidx, (q, q_limits)) in enumerate(
-                zip(
-                    self.sim.data.qpos[self._ref_joint_pos_indexes],
-                    self.sim.model.jnt_range[self._ref_joint_indexes]
-                )
+            zip(self.sim.data.qpos[self._ref_joint_pos_indexes], self.sim.model.jnt_range[self._ref_joint_indexes])
         ):
             if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
                 print("Joint limit reached in joint " + str(qidx))
@@ -392,7 +381,6 @@ class Robot(object):
         Returns:
             np.array: sensor values
         """
-        sensor_idx = np.sum(
-            self.sim.model.sensor_dim[:self.sim.model.sensor_name2id(sensor_name)])
+        sensor_idx = np.sum(self.sim.model.sensor_dim[: self.sim.model.sensor_name2id(sensor_name)])
         sensor_dim = self.sim.model.sensor_dim[self.sim.model.sensor_name2id(sensor_name)]
-        return np.array(self.sim.data.sensordata[sensor_idx: sensor_idx + sensor_dim])
+        return np.array(self.sim.data.sensordata[sensor_idx : sensor_idx + sensor_dim])

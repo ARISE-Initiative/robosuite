@@ -1,9 +1,8 @@
 import numpy as np
 
-from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import array_to_string, add_to_dict
-from robosuite.utils.mjcf_utils import RED, GREEN, BLUE, CustomMaterial
 import robosuite.utils.transform_utils as T
+from robosuite.models.objects import CompositeObject
+from robosuite.utils.mjcf_utils import BLUE, GREEN, RED, CustomMaterial, add_to_dict, array_to_string
 
 
 class PotWithHandlesObject(CompositeObject):
@@ -124,11 +123,13 @@ class PotWithHandlesObject(CompositeObject):
         Returns:
             dict: args to be used by CompositeObject to generate geoms
         """
-        full_size = np.array((
-            self.body_half_size,
-            self.body_half_size + self.handle_length * 2,
-            self.body_half_size,
-        ))
+        full_size = np.array(
+            (
+                self.body_half_size,
+                self.body_half_size + self.handle_length * 2,
+                self.body_half_size,
+            )
+        )
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
         base_args = {
             "total_size": full_size / 2.0,
@@ -161,12 +162,15 @@ class PotWithHandlesObject(CompositeObject):
         )
 
         # Walls
-        x_off = np.array([0, -(self.body_half_size[0] - self.thickness / 2),
-                          0, self.body_half_size[0] - self.thickness / 2])
-        y_off = np.array([-(self.body_half_size[1] - self.thickness / 2),
-                          0, self.body_half_size[1] - self.thickness / 2, 0])
-        w_vals = np.array([self.body_half_size[1], self.body_half_size[0],
-                           self.body_half_size[1], self.body_half_size[0]])
+        x_off = np.array(
+            [0, -(self.body_half_size[0] - self.thickness / 2), 0, self.body_half_size[0] - self.thickness / 2]
+        )
+        y_off = np.array(
+            [-(self.body_half_size[1] - self.thickness / 2), 0, self.body_half_size[1] - self.thickness / 2, 0]
+        )
+        w_vals = np.array(
+            [self.body_half_size[1], self.body_half_size[0], self.body_half_size[1], self.body_half_size[0]]
+        )
         r_vals = np.array([np.pi / 2, 0, -np.pi / 2, np.pi])
         for i, (x, y, w, r) in enumerate(zip(x_off, y_off, w_vals, r_vals)):
             add_to_dict(
@@ -183,18 +187,18 @@ class PotWithHandlesObject(CompositeObject):
             )
 
         # Add handles
-        main_bar_size = np.array([
-            self.handle_width / 2 + self.handle_radius,
-            self.handle_radius,
-            self.handle_radius,
-        ])
+        main_bar_size = np.array(
+            [
+                self.handle_width / 2 + self.handle_radius,
+                self.handle_radius,
+                self.handle_radius,
+            ]
+        )
         side_bar_size = np.array([self.handle_radius, self.handle_length / 2, self.handle_radius])
         handle_z = self.body_half_size[2] - self.handle_radius
-        for i, (g_list, handle_side, rgba) in enumerate(zip(
-                [self._handle0_geoms, self._handle1_geoms],
-                [1.0, -1.0],
-                [self.rgba_handle_0, self.rgba_handle_1]
-        )):
+        for i, (g_list, handle_side, rgba) in enumerate(
+            zip([self._handle0_geoms, self._handle1_geoms], [1.0, -1.0], [self.rgba_handle_0, self.rgba_handle_1])
+        ):
             handle_center = np.array((0, handle_side * (self.body_half_size[1] + self.handle_length), handle_z))
             # Solid handle case
             if self.solid_handle:
@@ -230,7 +234,7 @@ class PotWithHandlesObject(CompositeObject):
                     density=self.density,
                 )
                 # Side bars
-                for bar_side, suffix in zip([-1., 1.], ["-", "+"]):
+                for bar_side, suffix in zip([-1.0, 1.0], ["-", "+"]):
                     name = f"handle{i}_{suffix}"
                     g_list.append(name)
                     add_to_dict(
@@ -239,7 +243,7 @@ class PotWithHandlesObject(CompositeObject):
                         geom_locations=(
                             bar_side * self.handle_width / 2,
                             handle_side * (self.body_half_size[1] + self.handle_length / 2),
-                            handle_z
+                            handle_z,
                         ),
                         geom_quats=(1, 0, 0, 0),
                         geom_sizes=side_bar_size,
@@ -252,12 +256,14 @@ class PotWithHandlesObject(CompositeObject):
             # Add relevant site
             handle_site = self.get_site_attrib_template()
             handle_name = f"handle{i}"
-            handle_site.update({
-                "name": handle_name,
-                "pos": array_to_string(handle_center - handle_side * np.array([0, 0.005, 0])),
-                "size": "0.005",
-                "rgba": rgba,
-            })
+            handle_site.update(
+                {
+                    "name": handle_name,
+                    "pos": array_to_string(handle_center - handle_side * np.array([0, 0.005, 0])),
+                    "size": "0.005",
+                    "rgba": rgba,
+                }
+            )
             site_attrs.append(handle_site)
             # Add to important sites
             self._important_sites[f"handle{i}"] = self.naming_prefix + handle_name
@@ -265,17 +271,19 @@ class PotWithHandlesObject(CompositeObject):
         # Add pot body site
         pot_site = self.get_site_attrib_template()
         center_name = "center"
-        pot_site.update({
-            "name": center_name,
-            "size": "0.005",
-        })
+        pot_site.update(
+            {
+                "name": center_name,
+                "size": "0.005",
+            }
+        )
         site_attrs.append(pot_site)
         # Add to important sites
         self._important_sites["center"] = self.naming_prefix + center_name
 
         # Add back in base args and site args
         obj_args.update(base_args)
-        obj_args["sites"] = site_attrs        # All sites are part of main (top) body
+        obj_args["sites"] = site_attrs  # All sites are part of main (top) body
 
         # Return this dict
         return obj_args

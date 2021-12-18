@@ -2,8 +2,9 @@
 Gripper with 140mm Jaw width from Robotiq (has two fingers).
 """
 import numpy as np
-from robosuite.utils.mjcf_utils import xml_path_completion
+
 from robosuite.models.grippers.gripper_model import GripperModel
+from robosuite.utils.mjcf_utils import xml_path_completion
 
 
 class Robotiq140GripperBase(GripperModel):
@@ -62,7 +63,9 @@ class Robotiq140Gripper(Robotiq140GripperBase):
             AssertionError: [Invalid action dimension size]
         """
         assert len(action) == 1
-        self.current_action = np.clip(self.current_action + np.array([1.0, -1.0]) * self.speed * np.sign(action), -1.0, 1.0)
+        self.current_action = np.clip(
+            self.current_action + np.array([1.0, -1.0]) * self.speed * np.sign(action), -1.0, 1.0
+        )
         return self.current_action
 
     @property

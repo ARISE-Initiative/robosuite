@@ -1,4 +1,5 @@
 import numpy as np
+
 from robosuite.models.robots.manipulators.manipulator_model import ManipulatorModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
@@ -27,8 +28,7 @@ class Baxter(ManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific gripper names
         """
-        return {"right": "RethinkGripper",
-                "left": "RethinkGripper"}
+        return {"right": "RethinkGripper", "left": "RethinkGripper"}
 
     @property
     def default_controller_config(self):
@@ -39,8 +39,7 @@ class Baxter(ManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific default controller config names
         """
-        return {"right": "default_baxter",
-                "left": "default_baxter"}
+        return {"right": "default_baxter", "left": "default_baxter"}
 
     @property
     def init_qpos(self):
@@ -54,15 +53,16 @@ class Baxter(ManipulatorModel):
         """
         # [right, left]
         # Arms half extended
-        return np.array([0.403, -0.636, 0.114, 1.432, 0.735, 1.205, -0.269,
-                        -0.403, -0.636, -0.114, 1.432, -0.735, 1.205, 0.269])
+        return np.array(
+            [0.403, -0.636, 0.114, 1.432, 0.735, 1.205, -0.269, -0.403, -0.636, -0.114, 1.432, -0.735, 1.205, 0.269]
+        )
 
     @property
     def base_xpos_offset(self):
         return {
             "bins": (-0.5, -0.1, 0),
             "empty": (-0.29, 0, 0),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0)
+            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0),
         }
 
     @property
@@ -86,5 +86,4 @@ class Baxter(ManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific eef names
         """
-        return {"right": "right_hand",
-                "left": "left_hand"}
+        return {"right": "right_hand", "left": "left_hand"}

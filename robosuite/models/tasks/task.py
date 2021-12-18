@@ -1,8 +1,9 @@
-from robosuite.models.world import MujocoWorldBase
-from robosuite.models.robots import RobotModel
-from robosuite.models.objects import MujocoObject
-from robosuite.utils.mjcf_utils import get_ids
 from copy import deepcopy
+
+from robosuite.models.objects import MujocoObject
+from robosuite.models.robots import RobotModel
+from robosuite.models.world import MujocoWorldBase
+from robosuite.utils.mjcf_utils import get_ids
 
 
 class Task(MujocoWorldBase):
@@ -25,9 +26,9 @@ class Task(MujocoWorldBase):
     """
 
     def __init__(
-        self, 
-        mujoco_arena, 
-        mujoco_robots, 
+        self,
+        mujoco_arena,
+        mujoco_robots,
         mujoco_objects=None,
     ):
         super().__init__()
@@ -80,8 +81,9 @@ class Task(MujocoWorldBase):
         """
         for mujoco_obj in mujoco_objects:
             # Make sure we actually got a MujocoObject
-            assert isinstance(mujoco_obj, MujocoObject), \
-                "Tried to merge non-MujocoObject! Got type: {}".format(type(mujoco_obj))
+            assert isinstance(mujoco_obj, MujocoObject), "Tried to merge non-MujocoObject! Got type: {}".format(
+                type(mujoco_obj)
+            )
             # Merge this object
             self.merge_assets(mujoco_obj)
             self.worldbody.append(mujoco_obj.get_obj())
@@ -127,7 +129,9 @@ class Task(MujocoWorldBase):
             if cls not in self._classes_to_ids:
                 self._classes_to_ids[cls] = {group_type: [] for group_type in group_types}
 
-            for ids, group_type, ids_to_inst, ids_to_cls in zip(id_groups, group_types, ids_to_instances, ids_to_classes):
+            for ids, group_type, ids_to_inst, ids_to_cls in zip(
+                id_groups, group_types, ids_to_instances, ids_to_classes
+            ):
                 # Add geom, site ids
                 self._instances_to_ids[inst][group_type] = ids
                 self._classes_to_ids[cls][group_type] += ids

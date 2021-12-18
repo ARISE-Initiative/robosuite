@@ -2,12 +2,13 @@
 Play random actions in an environment and render a video that demonstrates segmentation.
 """
 import argparse
-import json
-import imageio
 import colorsys
+import json
 import random
-import numpy as np
+
+import imageio
 import matplotlib.cm as cm
+import numpy as np
 from PIL import Image
 
 import robosuite as suite
@@ -21,12 +22,13 @@ def randomize_colors(N, bright=True):
     To get visually distinct colors, generate them in HSV space then
     convert to RGB.
     """
-    brightness = 1. if bright else 0.5
+    brightness = 1.0 if bright else 0.5
     hsv = [(1.0 * i / N, 1, brightness) for i in range(N)]
     colors = np.array(list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv)))
     rstate = np.random.RandomState(seed=20)
     np.random.shuffle(colors)
     return colors
+
 
 def segmentation_to_rgb(seg_im, random_colors=False):
     """
@@ -39,7 +41,7 @@ def segmentation_to_rgb(seg_im, random_colors=False):
 
     if random_colors:
         colors = randomize_colors(N=256, bright=True)
-        return (255. * colors[seg_im]).astype(np.uint8)
+        return (255.0 * colors[seg_im]).astype(np.uint8)
     else:
         # deterministic shuffling of values to map each geom ID to a random int in [0, 255]
         rstate = np.random.RandomState(seed=8)
@@ -47,7 +49,8 @@ def segmentation_to_rgb(seg_im, random_colors=False):
         rstate.shuffle(inds)
 
         # use @inds to map each geom ID to a color
-        return (255. * cm.rainbow(inds[seg_im], 3)).astype(np.uint8)[..., :3]
+        return (255.0 * cm.rainbow(inds[seg_im], 3)).astype(np.uint8)[..., :3]
+
 
 if __name__ == "__main__":
 
@@ -71,7 +74,7 @@ if __name__ == "__main__":
     camera = "frontview"
 
     # Choose segmentation type
-    segmentation_level = args.segmentation_level # Options are {instance, class, element}
+    segmentation_level = args.segmentation_level  # Options are {instance, class, element}
 
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)

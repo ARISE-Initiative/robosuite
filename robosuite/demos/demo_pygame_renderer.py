@@ -8,10 +8,11 @@ Example:
     $ python demo_pygame_renderer.py --environment Stack --width 1000 --height 1000
 """
 
-import sys
 import argparse
-import pygame
+import sys
+
 import numpy as np
+import pygame
 
 import robosuite
 

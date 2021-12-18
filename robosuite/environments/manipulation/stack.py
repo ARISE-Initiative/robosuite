@@ -1,16 +1,15 @@
 from collections import OrderedDict
+
 import numpy as np
 
-from robosuite.utils.transform_utils import convert_quat
-from robosuite.utils.mjcf_utils import CustomMaterial
-
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
-
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.tasks import ManipulationTask
-from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.utils.mjcf_utils import CustomMaterial
 from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.utils.transform_utils import convert_quat
 
 
 class Stack(SingleArmEnv):
@@ -142,7 +141,7 @@ class Stack(SingleArmEnv):
         gripper_types="default",
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
-        table_friction=(1., 5e-3, 1e-4),
+        table_friction=(1.0, 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
@@ -162,7 +161,7 @@ class Stack(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
-        camera_segmentations=None,      # {None, instance, class, element}
+        camera_segmentations=None,  # {None, instance, class, element}
         renderer="mujoco",
         renderer_config=None,
     ):
@@ -283,9 +282,7 @@ class Stack(SingleArmEnv):
 
         # Aligning is successful when cubeA is right above cubeB
         if cubeA_lifted:
-            horiz_dist = np.linalg.norm(
-                np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2])
-            )
+            horiz_dist = np.linalg.norm(np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2]))
             r_lift += 0.5 * (1 - np.tanh(horiz_dist))
 
         # stacking is successful when the block is lifted and the gripper is not holding the object
@@ -341,8 +338,8 @@ class Stack(SingleArmEnv):
         )
         self.cubeA = BoxObject(
             name="cubeA",
-            size_min=[0.02, 0.02, 0.02], 
-            size_max=[0.02, 0.02, 0.02], 
+            size_min=[0.02, 0.02, 0.02],
+            size_max=[0.02, 0.02, 0.02],
             rgba=[1, 0, 0, 1],
             material=redwood,
         )
@@ -440,18 +437,27 @@ class Stack(SingleArmEnv):
 
             @sensor(modality=modality)
             def gripper_to_cubeA(obs_cache):
-                return obs_cache["cubeA_pos"] - obs_cache[f"{pf}eef_pos"] if \
-                    "cubeA_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["cubeA_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if "cubeA_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             @sensor(modality=modality)
             def gripper_to_cubeB(obs_cache):
-                return obs_cache["cubeB_pos"] - obs_cache[f"{pf}eef_pos"] if \
-                    "cubeB_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["cubeB_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if "cubeB_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             @sensor(modality=modality)
             def cubeA_to_cubeB(obs_cache):
-                return obs_cache["cubeB_pos"] - obs_cache["cubeA_pos"] if \
-                    "cubeA_pos" in obs_cache and "cubeB_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["cubeB_pos"] - obs_cache["cubeA_pos"]
+                    if "cubeA_pos" in obs_cache and "cubeB_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, gripper_to_cubeA, gripper_to_cubeB, cubeA_to_cubeB]
             names = [s.__name__ for s in sensors]

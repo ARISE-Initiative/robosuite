@@ -2,8 +2,9 @@
 Gripper for Franka's Panda (has two fingers).
 """
 import numpy as np
-from robosuite.utils.mjcf_utils import xml_path_completion
+
 from robosuite.models.grippers.gripper_model import GripperModel
+from robosuite.utils.mjcf_utils import xml_path_completion
 
 
 class PandaGripperBase(GripperModel):
@@ -51,7 +52,9 @@ class PandaGripper(PandaGripperBase):
             AssertionError: [Invalid action dimension size]
         """
         assert len(action) == self.dof
-        self.current_action = np.clip(self.current_action + np.array([-1.0, 1.0]) * self.speed * np.sign(action), -1.0, 1.0)
+        self.current_action = np.clip(
+            self.current_action + np.array([-1.0, 1.0]) * self.speed * np.sign(action), -1.0, 1.0
+        )
         return self.current_action
 
     @property

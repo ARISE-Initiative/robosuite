@@ -23,14 +23,13 @@ Periodic prijntouts should verify the above patterns; conversely, running the sc
 render the trajectories to allow for visual analysis of gains
 """
 
+import argparse
+import json
+import os
+
 import numpy as np
 
 import robosuite as suite
-
-import os
-import json
-import argparse
-
 
 # Define the rate of change when sweeping through kp / damping values
 num_timesteps_per_change = 10
@@ -41,7 +40,7 @@ d = 0.05
 
 # Define default values for fixing one of the two gains
 kp_default = 150
-damping_default = 1     # critically damped
+damping_default = 1  # critically damped
 
 # Define arguments for this test
 parser = argparse.ArgumentParser()
@@ -58,9 +57,9 @@ def test_variable_impedance():
         np.random.seed(3)
 
         # Define controller path to load
-        controller_path = os.path.join(os.path.dirname(__file__),
-                                       '../../robosuite',
-                                       'controllers/config/{}.json'.format(controller_name.lower()))
+        controller_path = os.path.join(
+            os.path.dirname(__file__), "../../robosuite", "controllers/config/{}.json".format(controller_name.lower())
+        )
 
         # Load the controller
         with open(controller_path) as f:
@@ -80,18 +79,18 @@ def test_variable_impedance():
             use_camera_obs=False,
             horizon=10000,
             control_freq=20,
-            controller_configs=controller_config
+            controller_configs=controller_config,
         )
 
         # Setup printing options for numbers
-        np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+        np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
         # Get limits on kp and damping values
         # Define control dim. Note that this is not the action space, but internal dimensionality of gains
         control_dim = 6 if "OSC" in controller_name else 7
         low, high = env.action_spec
-        damping_low, kp_low = low[:control_dim], low[control_dim:2*control_dim]
-        damping_high, kp_high = high[:control_dim], high[control_dim:2 * control_dim]
+        damping_low, kp_low = low[:control_dim], low[control_dim : 2 * control_dim]
+        damping_high, kp_high = high[:control_dim], high[control_dim : 2 * control_dim]
         damping_range = damping_high - damping_low
         kp_range = kp_high - kp_low
 
@@ -100,7 +99,7 @@ def test_variable_impedance():
             delta = np.array([0, d, 0, 0, 0, 0])
         elif controller_name == "OSC_POSITION":
             delta = np.array([0, d, 0])
-        else:   # JOINT_POSITION
+        else:  # JOINT_POSITION
             delta = np.array([d, 0, 0, 0, 0, 0, 0])
 
         # Get total number of steps each test should take (num steps ramping up + num steps ramping down)
@@ -133,12 +132,12 @@ def test_variable_impedance():
             if gain == "kp":
                 kp = kp_low
                 damping = damping_default * np.ones(control_dim)
-                gain_val = kp # alias for kp
+                gain_val = kp  # alias for kp
                 gain_range = kp_range
-            else:   # "damping"
+            else:  # "damping"
                 kp = kp_default * np.ones(control_dim)
                 damping = damping_low
-                gain_val = damping # alias for damping
+                gain_val = damping  # alias for damping
                 gain_range = damping_range
 
             # Initialize counters
@@ -148,7 +147,7 @@ def test_variable_impedance():
             # Run trajectory until the threshold condition is met
             while i < total_steps:
                 # Create action (damping, kp, traj, gripper)
-                action = np.concatenate([damping, kp, sign*delta, [0]])
+                action = np.concatenate([damping, kp, sign * delta, [0]])
 
                 # Take an environment step
                 env.step(action)
@@ -166,9 +165,7 @@ def test_variable_impedance():
                 if i % num_timesteps_per_change == 0:
                     # Compare delta, print out to user, and update last_pos
                     delta_pos = np.linalg.norm(cur_pos - last_pos)
-                    print("    Magnitude eef distance change with {} = {}: {:.5f}".format(
-                        gain, gain_val[0], delta_pos
-                    ))
+                    print("    Magnitude eef distance change with {} = {}: {:.5f}".format(gain, gain_val[0], delta_pos))
                     last_pos = cur_pos
                     # Update gain
                     gain_val += percent_increase * gain_range * sign

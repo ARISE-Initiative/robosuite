@@ -2,12 +2,11 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
+from robosuite.models.arenas import EmptyArena
+from robosuite.models.objects import CylinderObject, PlateWithHoleObject
+from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string, find_elements
 from robosuite.utils.observables import Observable, sensor
-
-from robosuite.models.objects import CylinderObject, PlateWithHoleObject
-from robosuite.models.arenas import EmptyArena
-from robosuite.models.tasks import ManipulationTask
 
 
 class TwoArmPegInHole(TwoArmEnv):
@@ -166,7 +165,7 @@ class TwoArmPegInHole(TwoArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
-        camera_segmentations=None,      # {None, instance, class, element}
+        camera_segmentations=None,  # {None, instance, class, element}
         renderer="mujoco",
         renderer_config=None,
     ):
@@ -299,7 +298,7 @@ class TwoArmPegInHole(TwoArmEnv):
         mujoco_arena.set_camera(
             camera_name="agentview",
             pos=[1.0666432116509934, 1.4903257668114777e-08, 2.0563394967349096],
-            quat=[0.6530979871749878, 0.27104058861732483, 0.27104055881500244, 0.6530978679656982]
+            quat=[0.6530979871749878, 0.27104058861732483, 0.27104055881500244, 0.6530978679656982],
         )
 
         # initialize objects of interest
@@ -403,8 +402,11 @@ class TwoArmPegInHole(TwoArmEnv):
 
             @sensor(modality=modality)
             def peg_to_hole(obs_cache):
-                return obs_cache["hole_pos"] - np.array(self.sim.data.body_xpos[self.peg_body_id]) if \
-                    "hole_pos" in obs_cache else np.zeros(3)
+                return (
+                    obs_cache["hole_pos"] - np.array(self.sim.data.body_xpos[self.peg_body_id])
+                    if "hole_pos" in obs_cache
+                    else np.zeros(3)
+                )
 
             @sensor(modality=modality)
             def peg_quat(obs_cache):
@@ -512,7 +514,5 @@ class TwoArmPegInHole(TwoArmEnv):
 
         world_pose_in_hole = T.pose_inv(hole_pose_in_world)
 
-        peg_pose_in_hole = T.pose_in_A_to_pose_in_B(
-            peg_pose_in_world, world_pose_in_hole
-        )
+        peg_pose_in_hole = T.pose_in_A_to_pose_in_B(peg_pose_in_world, world_pose_in_hole)
         return peg_pose_in_hole
