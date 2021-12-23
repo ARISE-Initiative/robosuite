@@ -33,7 +33,7 @@ We always love to see more test coverage. When it is appropriate, add a new test
 
 Coding Conventions
 ------------------
-We value readability and adhere to the following coding conventions:
+We use the [black](https://github.com/psf/black) and [isort](https://github.com/pycqa/isort) as the [pre-commit](https://pre-commit.com/) hooks to format the source code before code review. These hooks should be automatically triggered when committing new code to our repository. Below are the good practices we follow as our coding conventions. 
 - Indent using four spaces (soft tabs)
 - Always put spaces after list items and method parameters (e.g., `[1, 2, 3]` rather than `[1,2,3]`), and around operators and hash arrows (e.g., `x += 1` rather than `x+=1`)
 - Use the [Google Python Style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) for the docstrings
