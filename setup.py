@@ -19,7 +19,6 @@ setup(
         "numba>=0.52.0,<=0.53.1",
         "scipy>=1.2.3",
         "free-mujoco-py==2.1.6",
-        "pre-commit",
     ],
     eager_resources=["*"],
     include_package_data=True,
