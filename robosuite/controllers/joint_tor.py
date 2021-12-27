@@ -1,5 +1,6 @@
-from robosuite.controllers.base_controller import Controller
 import numpy as np
+
+from robosuite.controllers.base_controller import Controller
 
 
 class JointTorqueController(Controller):
@@ -55,20 +56,21 @@ class JointTorqueController(Controller):
             via an argument dict that has additional extraneous arguments won't raise an error
     """
 
-    def __init__(self,
-                 sim,
-                 eef_name,
-                 joint_indexes,
-                 actuator_range,
-                 input_max=1,
-                 input_min=-1,
-                 output_max=0.05,
-                 output_min=-0.05,
-                 policy_freq=20,
-                 torque_limits=None,
-                 interpolator=None,
-                 **kwargs  # does nothing; used so no error raised when dict is passed with extra terms used previously
-                 ):
+    def __init__(
+        self,
+        sim,
+        eef_name,
+        joint_indexes,
+        actuator_range,
+        input_max=1,
+        input_min=-1,
+        output_max=0.05,
+        output_min=-0.05,
+        policy_freq=20,
+        torque_limits=None,
+        interpolator=None,
+        **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
+    ):
 
         super().__init__(
             sim,
@@ -96,9 +98,9 @@ class JointTorqueController(Controller):
         self.interpolator = interpolator
 
         # initialize torques
-        self.goal_torque = None                           # Goal torque desired, pre-compensation
+        self.goal_torque = None  # Goal torque desired, pre-compensation
         self.current_torque = np.zeros(self.control_dim)  # Current torques being outputted, pre-compensation
-        self.torques = None                               # Torques returned every time run_controller is called
+        self.torques = None  # Torques returned every time run_controller is called
 
     def set_goal(self, torques):
         """
@@ -167,4 +169,4 @@ class JointTorqueController(Controller):
 
     @property
     def name(self):
-        return 'JOINT_TORQUE'
+        return "JOINT_TORQUE"

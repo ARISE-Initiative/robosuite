@@ -1,8 +1,17 @@
 import numpy as np
 
 from robosuite.models.base import MujocoXML
-from robosuite.utils.mjcf_utils import array_to_string, string_to_array, \
-    new_geom, new_body, new_joint, ENVIRONMENT_COLLISION_COLOR, recolor_collision_geoms, find_elements, new_element
+from robosuite.utils.mjcf_utils import (
+    ENVIRONMENT_COLLISION_COLOR,
+    array_to_string,
+    find_elements,
+    new_body,
+    new_element,
+    new_geom,
+    new_joint,
+    recolor_collision_geoms,
+    string_to_array,
+)
 
 
 class Arena(MujocoXML):
@@ -15,8 +24,11 @@ class Arena(MujocoXML):
         self.floor = self.worldbody.find("./geom[@name='floor']")
 
         # Recolor all geoms
-        recolor_collision_geoms(root=self.worldbody, rgba=ENVIRONMENT_COLLISION_COLOR,
-                                exclude=lambda e: True if e.get("name", None) == "floor" else False)
+        recolor_collision_geoms(
+            root=self.worldbody,
+            rgba=ENVIRONMENT_COLLISION_COLOR,
+            exclude=lambda e: True if e.get("name", None) == "floor" else False,
+        )
 
     def set_origin(self, offset):
         """

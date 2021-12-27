@@ -1,14 +1,14 @@
-import numpy as np
 from collections import OrderedDict
 from copy import deepcopy
 
-import robosuite.utils.macros as macros
-from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
-from robosuite.utils.observables import Observable, sensor
+import numpy as np
 
+import robosuite.utils.macros as macros
+from robosuite.controllers import reset_controllers
 from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING
-from robosuite.controllers import reset_controllers
+from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
+from robosuite.utils.observables import Observable, sensor
 
 
 class RobotEnv(MujocoEnv):
@@ -168,8 +168,9 @@ class RobotEnv(MujocoEnv):
 
         # Camera / Rendering Settings
         self.has_offscreen_renderer = has_offscreen_renderer
-        self.camera_names = list(camera_names) if type(camera_names) is list or \
-            type(camera_names) is tuple else [camera_names]
+        self.camera_names = (
+            list(camera_names) if type(camera_names) is list or type(camera_names) is tuple else [camera_names]
+        )
         self.num_cameras = len(self.camera_names)
 
         self.camera_heights = self._input2list(camera_heights, self.num_cameras)
@@ -202,7 +203,7 @@ class RobotEnv(MujocoEnv):
                     "controller_config": controller_configs[idx],
                     "mount_type": mount_types[idx],
                     "initialization_noise": initialization_noise[idx],
-                    "control_freq": control_freq
+                    "control_freq": control_freq,
                 },
                 **robot_config,
             )
@@ -335,13 +336,18 @@ class RobotEnv(MujocoEnv):
             # Create sensor information
             sensors = []
             names = []
-            for (cam_name, cam_w, cam_h, cam_d, cam_segs) in \
-                    zip(self.camera_names, self.camera_widths, self.camera_heights,
-                        self.camera_depths, self.camera_segmentations):
+            for (cam_name, cam_w, cam_h, cam_d, cam_segs) in zip(
+                self.camera_names,
+                self.camera_widths,
+                self.camera_heights,
+                self.camera_depths,
+                self.camera_segmentations,
+            ):
 
                 # Add cameras associated to our arrays
                 cam_sensors, cam_sensor_names = self._create_camera_sensors(
-                    cam_name, cam_w=cam_w, cam_h=cam_h, cam_d=cam_d, cam_segs=cam_segs, modality="image")
+                    cam_name, cam_w=cam_w, cam_h=cam_h, cam_d=cam_d, cam_segs=cam_segs, modality="image"
+                )
                 sensors += cam_sensors
                 names += cam_sensor_names
 
@@ -412,10 +418,10 @@ class RobotEnv(MujocoEnv):
         names.append(rgb_sensor_name)
 
         if cam_d:
+
             @sensor(modality=modality)
             def camera_depth(obs_cache):
-                return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else \
-                    np.zeros((cam_h, cam_w, 1))
+                return obs_cache[depth_sensor_name] if depth_sensor_name in obs_cache else np.zeros((cam_h, cam_w, 1))
 
             sensors.append(camera_depth)
             names.append(depth_sensor_name)
@@ -484,8 +490,12 @@ class RobotEnv(MujocoEnv):
             seg = np.expand_dims(seg[::convention, :, 1], axis=-1)
             # Map raw IDs to grouped IDs if we're using instance or class-level segmentation
             if mapping is not None:
-                seg = np.fromiter(map(lambda x: mapping.get(x, -1), seg.flatten()), dtype=np.int32) \
-                          .reshape(cam_h, cam_w, 1) + 1
+                seg = (
+                    np.fromiter(map(lambda x: mapping.get(x, -1), seg.flatten()), dtype=np.int32).reshape(
+                        cam_h, cam_w, 1
+                    )
+                    + 1
+                )
             return seg
 
         name = f"{seg_name_root}_{cam_s}"
@@ -524,15 +534,21 @@ class RobotEnv(MujocoEnv):
                                 temp_names.append(robot_cam_name)
                     # We also need to broadcast the corresponding values from each camera dimensions as well
                     end_idx = len(temp_names) - 1
-                    self.camera_widths = self.camera_widths[:start_idx] + \
-                        [self.camera_widths[start_idx]] * (end_idx - start_idx) + \
-                        self.camera_widths[(start_idx + 1):]
-                    self.camera_heights = self.camera_heights[:start_idx] + \
-                        [self.camera_heights[start_idx]] * (end_idx - start_idx) + \
-                        self.camera_heights[(start_idx + 1):]
-                    self.camera_depths = self.camera_depths[:start_idx] + \
-                        [self.camera_depths[start_idx]] * (end_idx - start_idx) + \
-                        self.camera_depths[(start_idx + 1):]
+                    self.camera_widths = (
+                        self.camera_widths[:start_idx]
+                        + [self.camera_widths[start_idx]] * (end_idx - start_idx)
+                        + self.camera_widths[(start_idx + 1) :]
+                    )
+                    self.camera_heights = (
+                        self.camera_heights[:start_idx]
+                        + [self.camera_heights[start_idx]] * (end_idx - start_idx)
+                        + self.camera_heights[(start_idx + 1) :]
+                    )
+                    self.camera_depths = (
+                        self.camera_depths[:start_idx]
+                        + [self.camera_depths[start_idx]] * (end_idx - start_idx)
+                        + self.camera_depths[(start_idx + 1) :]
+                    )
                 else:
                     # We simply add this camera to the temp_names
                     temp_names.append(cam_name)
@@ -556,14 +572,14 @@ class RobotEnv(MujocoEnv):
             AssertionError: [Invalid action dimension]
         """
         # Verify that the action is the correct dimension
-        assert len(action) == self.action_dim, \
-            "environment got invalid action dimension -- expected {}, got {}".format(
-                self.action_dim, len(action))
+        assert len(action) == self.action_dim, "environment got invalid action dimension -- expected {}, got {}".format(
+            self.action_dim, len(action)
+        )
 
         # Update robot joints based on controller actions
         cutoff = 0
         for idx, robot in enumerate(self.robots):
-            robot_action = action[cutoff:cutoff+robot.action_dim]
+            robot_action = action[cutoff : cutoff + robot.action_dim]
             robot.control(robot_action, policy_step=policy_step)
             cutoff += robot.action_dim
 

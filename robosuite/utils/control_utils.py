@@ -1,4 +1,5 @@
 import numpy as np
+
 import robosuite.utils.transform_utils as trans
 from robosuite.utils.numba import jit_decorator
 
@@ -32,8 +33,7 @@ def nullspace_torques(mass_matrix, nullspace_matrix, initial_joint, joint_pos, j
     joint_kv = np.sqrt(joint_kp) * 2
 
     # calculate desired torques based on gains and error
-    pose_torques = np.dot(mass_matrix, (joint_kp * (
-            initial_joint - joint_pos) - joint_kv * joint_vel))
+    pose_torques = np.dot(mass_matrix, (joint_kp * (initial_joint - joint_pos) - joint_kv * joint_vel))
 
     # map desired torques to null subspace within joint torque actuator space
     nullspace_torques = np.dot(nullspace_matrix.transpose(), pose_torques)
@@ -62,19 +62,13 @@ def opspace_matrices(mass_matrix, J_full, J_pos, J_ori):
     mass_matrix_inv = np.linalg.inv(mass_matrix)
 
     # J M^-1 J^T
-    lambda_full_inv = np.dot(
-        np.dot(J_full, mass_matrix_inv),
-        J_full.transpose())
+    lambda_full_inv = np.dot(np.dot(J_full, mass_matrix_inv), J_full.transpose())
 
     # Jx M^-1 Jx^T
-    lambda_pos_inv = np.dot(
-        np.dot(J_pos, mass_matrix_inv),
-        J_pos.transpose())
+    lambda_pos_inv = np.dot(np.dot(J_pos, mass_matrix_inv), J_pos.transpose())
 
     # Jr M^-1 Jr^T
-    lambda_ori_inv = np.dot(
-        np.dot(J_ori, mass_matrix_inv),
-        J_ori.transpose())
+    lambda_ori_inv = np.dot(np.dot(J_ori, mass_matrix_inv), J_ori.transpose())
 
     # take the inverses, but zero out small singular values for stability
     lambda_full = np.linalg.pinv(lambda_full_inv)
@@ -117,10 +111,7 @@ def orientation_error(desired, current):
     return error
 
 
-def set_goal_position(delta,
-                      current_position,
-                      position_limit=None,
-                      set_pos=None):
+def set_goal_position(delta, current_position, position_limit=None, set_pos=None):
     """
     Calculates and returns the desired goal position, clipping the result accordingly to @position_limits.
     @delta and @current_position must be specified if a relative goal is requested, else @set_pos must be
@@ -145,9 +136,10 @@ def set_goal_position(delta,
         goal_position = current_position + delta
 
     if position_limit is not None:
-        if position_limit.shape != (2,n):
-            raise ValueError("Position limit should be shaped (2,{}) "
-                             "but is instead: {}".format(n, position_limit.shape))
+        if position_limit.shape != (2, n):
+            raise ValueError(
+                "Position limit should be shaped (2,{}) " "but is instead: {}".format(n, position_limit.shape)
+            )
 
         # Clip goal position
         goal_position = np.clip(goal_position, position_limit[0], position_limit[1])
@@ -155,10 +147,7 @@ def set_goal_position(delta,
     return goal_position
 
 
-def set_goal_orientation(delta,
-                         current_orientation,
-                         orientation_limit=None,
-                         set_ori=None):
+def set_goal_orientation(delta, current_orientation, orientation_limit=None, set_ori=None):
     """
     Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
     @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
@@ -189,9 +178,10 @@ def set_goal_orientation(delta,
 
     # check for orientation limits
     if np.array(orientation_limit).any():
-        if orientation_limit.shape != (2,3):
-            raise ValueError("Orientation limit should be shaped (2,3) "
-                             "but is instead: {}".format(orientation_limit.shape))
+        if orientation_limit.shape != (2, 3):
+            raise ValueError(
+                "Orientation limit should be shaped (2,3) " "but is instead: {}".format(orientation_limit.shape)
+            )
 
         # Convert to euler angles for clipping
         euler = trans.mat2euler(goal_orientation)
@@ -221,8 +211,7 @@ def set_goal_orientation(delta,
                     else:
                         euler[idx] = orientation_limit[1][idx]
             else:  # Inverted angle sector meaning
-                if (orientation_limit[0][idx] < euler[idx]
-                        or euler[idx] < orientation_limit[1][idx]):
+                if orientation_limit[0][idx] < euler[idx] or euler[idx] < orientation_limit[1][idx]:
                     continue
                 else:
                     limited = True

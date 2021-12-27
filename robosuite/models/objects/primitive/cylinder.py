@@ -1,7 +1,7 @@
 import numpy as np
 
+from robosuite.models.objects import MujocoGeneratedObject, PrimitiveObject
 from robosuite.utils.mjcf_utils import get_size
-from robosuite.models.objects import PrimitiveObject, MujocoGeneratedObject
 
 
 class CylinderObject(PrimitiveObject):
@@ -28,11 +28,7 @@ class CylinderObject(PrimitiveObject):
         obj_type="all",
         duplicate_collision_geoms=True,
     ):
-        size = get_size(size,
-                        size_max,
-                        size_min,
-                        [0.07, 0.07],
-                        [0.03, 0.03])
+        size = get_size(size, size_max, size_min, [0.07, 0.07], [0.03, 0.03])
 
         # We override solref, solimp, and joint default values for better stability
         if friction is None:

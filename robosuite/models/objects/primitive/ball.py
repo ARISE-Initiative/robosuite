@@ -1,7 +1,7 @@
 import numpy as np
 
-from robosuite.utils.mjcf_utils import get_size
 from robosuite.models.objects import PrimitiveObject
+from robosuite.utils.mjcf_utils import get_size
 
 
 class BallObject(PrimitiveObject):
@@ -28,11 +28,7 @@ class BallObject(PrimitiveObject):
         obj_type="all",
         duplicate_collision_geoms=True,
     ):
-        size = get_size(size,
-                        size_max,
-                        size_min,
-                        [0.07],
-                        [0.03])
+        size = get_size(size, size_max, size_min, [0.07], [0.03])
         super().__init__(
             name=name,
             size=size,

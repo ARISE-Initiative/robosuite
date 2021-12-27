@@ -1,7 +1,8 @@
 import numpy as np
+
 from robosuite.models.arenas import TableArena
-from robosuite.utils.mjcf_utils import CustomMaterial, find_elements
 from robosuite.models.objects import CylinderObject
+from robosuite.utils.mjcf_utils import CustomMaterial, find_elements
 
 
 class WipeArena(TableArena):
@@ -21,7 +22,7 @@ class WipeArena(TableArena):
     """
 
     def __init__(
-        self, 
+        self,
         table_full_size=(0.8, 0.8, 0.05),
         table_friction=(0.01, 0.005, 0.0001),
         table_offset=(0, 0, 0.8),
@@ -29,7 +30,7 @@ class WipeArena(TableArena):
         num_markers=10,
         table_friction_std=0,
         line_width=0.02,
-        two_clusters=False
+        two_clusters=False,
     ):
         # Tactile table-specific features
         self.table_friction_std = table_friction_std
@@ -80,7 +81,7 @@ class WipeArena(TableArena):
             # If we're using two clusters, we resample the starting position and direction at the halfway point
             if self.two_clusters and i == int(np.floor(self.num_markers / 2)):
                 pos = self.sample_start_pos()
-            marker_name = f'contact{i}'
+            marker_name = f"contact{i}"
             marker = CylinderObject(
                 name=marker_name,
                 size=[self.line_width / 2, 0.001],
@@ -145,10 +146,12 @@ class WipeArena(TableArena):
             (
                 np.random.uniform(
                     -self.table_half_size[0] * self.coverage_factor + self.line_width / 2,
-                    self.table_half_size[0] * self.coverage_factor - self.line_width / 2),
+                    self.table_half_size[0] * self.coverage_factor - self.line_width / 2,
+                ),
                 np.random.uniform(
                     -self.table_half_size[1] * self.coverage_factor + self.line_width / 2,
-                    self.table_half_size[1] * self.coverage_factor - self.line_width / 2)
+                    self.table_half_size[1] * self.coverage_factor - self.line_width / 2,
+                ),
             )
         )
 
@@ -171,12 +174,13 @@ class WipeArena(TableArena):
         posnew1 = pos[1] + 0.005 * np.cos(self.direction)
 
         # We keep resampling until we get a valid new position that's on the table
-        while abs(posnew0) >= self.table_half_size[0] * self.coverage_factor - self.line_width / 2 or \
-                abs(posnew1) >= self.table_half_size[1] * self.coverage_factor - self.line_width / 2:
+        while (
+            abs(posnew0) >= self.table_half_size[0] * self.coverage_factor - self.line_width / 2
+            or abs(posnew1) >= self.table_half_size[1] * self.coverage_factor - self.line_width / 2
+        ):
             self.direction += np.random.normal(0, 0.5)
             posnew0 = pos[0] + 0.005 * np.sin(self.direction)
             posnew1 = pos[1] + 0.005 * np.cos(self.direction)
 
         # Return this newly sampled position
         return np.array((posnew0, posnew1))
-

@@ -1,10 +1,9 @@
-from robosuite.models.objects import CompositeObject
+from collections.abc import Iterable
+
 import numpy as np
 
-from robosuite.utils.mjcf_utils import add_to_dict
-from robosuite.utils.mjcf_utils import RED, GREEN, BLUE, CYAN, CustomMaterial
-
-from collections.abc import Iterable
+from robosuite.models.objects import CompositeObject
+from robosuite.utils.mjcf_utils import BLUE, CYAN, GREEN, RED, CustomMaterial, add_to_dict
 
 
 class HammerObject(CompositeObject):
@@ -125,11 +124,9 @@ class HammerObject(CompositeObject):
         Returns:
             dict: args to be used by CompositeObject to generate geoms
         """
-        full_size = np.array((
-            3.2 * self.head_halfsize,
-            self.head_halfsize,
-            self.handle_length + 2 * self.head_halfsize
-        ))
+        full_size = np.array(
+            (3.2 * self.head_halfsize, self.head_halfsize, self.handle_length + 2 * self.head_halfsize)
+        )
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
         base_args = {
             "total_size": full_size / 2.0,
@@ -140,15 +137,18 @@ class HammerObject(CompositeObject):
         obj_args = {}
 
         # Add handle component
-        assert self.handle_shape in {"cylinder", "box"},\
-            "Error loading hammer: Handle type must either be 'box' or 'cylinder', got {}.".format(self.handle_shape)
+        assert self.handle_shape in {
+            "cylinder",
+            "box",
+        }, "Error loading hammer: Handle type must either be 'box' or 'cylinder', got {}.".format(self.handle_shape)
         add_to_dict(
             dic=obj_args,
             geom_types="cylinder" if self.handle_shape == "cylinder" else "box",
             geom_locations=(0, 0, 0),
             geom_quats=(1, 0, 0, 0),
-            geom_sizes=np.array([self.handle_radius, self.handle_length / 2.0]) if self.handle_shape == "cylinder" else\
-                       np.array([self.handle_radius, self.handle_radius, self.handle_length / 2.0]),
+            geom_sizes=np.array([self.handle_radius, self.handle_length / 2.0])
+            if self.handle_shape == "cylinder"
+            else np.array([self.handle_radius, self.handle_radius, self.handle_length / 2.0]),
             geom_names="handle",
             geom_rgbas=None if self.use_texture else self.rgba_handle,
             geom_materials="wood_mat" if self.use_texture else None,

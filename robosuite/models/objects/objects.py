@@ -1,18 +1,26 @@
 import copy
-from copy import deepcopy
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 
 import robosuite.utils.macros as macros
-from robosuite.models.base import MujocoXML, MujocoModel
-from robosuite.utils.mjcf_utils import string_to_array, array_to_string, CustomMaterial, OBJECT_COLLISION_COLOR,\
-                                       sort_elements, new_joint, add_prefix, add_material, find_elements
-
+from robosuite.models.base import MujocoModel, MujocoXML
+from robosuite.utils.mjcf_utils import (
+    OBJECT_COLLISION_COLOR,
+    CustomMaterial,
+    add_material,
+    add_prefix,
+    array_to_string,
+    find_elements,
+    new_joint,
+    sort_elements,
+    string_to_array,
+)
 
 # Dict mapping geom type string keywords to group number
 GEOMTYPE2GROUP = {
-    "collision": {0},                 # If we want to use a geom for physics, but NOT visualize
-    "visual": {1},                    # If we want to use a geom for visualization, but NOT physics
-    "all": {0, 1},                    # If we want to use a geom for BOTH physics + visualization
+    "collision": {0},  # If we want to use a geom for physics, but NOT visualize
+    "visual": {1},  # If we want to use a geom for visualization, but NOT physics
+    "all": {0, 1},  # If we want to use a geom for BOTH physics + visualization
 }
 
 GEOM_GROUPS = GEOMTYPE2GROUP.keys()
@@ -69,8 +77,10 @@ class MujocoObject(MujocoModel):
             other (MujocoXML or MujocoObject): other xml file whose assets will be merged into this one
         """
         for asset in other.asset:
-            if find_elements(root=self.asset, tags=asset.tag,
-                             attribs={"name": asset.get("name")}, return_first=True) is None:
+            if (
+                find_elements(root=self.asset, tags=asset.tag, attribs={"name": asset.get("name")}, return_first=True)
+                is None
+            ):
                 self.asset.append(asset)
 
     def get_obj(self):
@@ -118,11 +128,15 @@ class MujocoObject(MujocoModel):
         """
         # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
         _elements = sort_elements(root=self.get_obj())
-        assert len(_elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
-                                                 "got {}".format(len(_elements["root_body"]))
+        assert (
+            len(_elements["root_body"]) == 1
+        ), "Invalid number of root bodies found for robot model. Expected 1," "got {}".format(
+            len(_elements["root_body"])
+        )
         _elements["root_body"] = _elements["root_body"][0]
-        _elements["bodies"] = [_elements["root_body"]] + _elements["bodies"] if "bodies" in _elements else \
-                              [_elements["root_body"]]
+        _elements["bodies"] = (
+            [_elements["root_body"]] + _elements["bodies"] if "bodies" in _elements else [_elements["root_body"]]
+        )
         self._root_body = _elements["root_body"].get("name")
         self._bodies = [e.get("name") for e in _elements.get("bodies", [])]
         self._joints = [e.get("name") for e in _elements.get("joints", [])]

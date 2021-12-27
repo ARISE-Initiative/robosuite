@@ -15,8 +15,3 @@ class Interpolator(object, metaclass=abc.ABCMeta):
             np.array: Next interpolated step
         """
         raise NotImplementedError
-
-
-
-
-

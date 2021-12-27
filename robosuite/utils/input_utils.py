@@ -5,10 +5,10 @@ Utility functions for grabbing user inputs
 import numpy as np
 
 import robosuite as suite
+import robosuite.utils.transform_utils as T
+from robosuite.devices import *
 from robosuite.models.robots import *
 from robosuite.robots import *
-from robosuite.devices import *
-import robosuite.utils.transform_utils as T
 
 
 def choose_environment():
@@ -28,10 +28,7 @@ def choose_environment():
         print("[{}] {}".format(k, env))
     print()
     try:
-        s = input(
-            "Choose an environment to run "
-            + "(enter a number from 0 to {}): ".format(len(envs) - 1)
-        )
+        s = input("Choose an environment to run " + "(enter a number from 0 to {}): ".format(len(envs) - 1))
         # parse input into a number within range
         k = min(max(int(s), 0), len(envs))
     except:
@@ -60,10 +57,7 @@ def choose_controller():
         print("[{}] {} - {}".format(k, controller, controllers_info[controller]))
     print()
     try:
-        s = input(
-            "Choose a controller for the robot "
-            + "(enter a number from 0 to {}): ".format(len(controllers) - 1)
-        )
+        s = input("Choose a controller for the robot " + "(enter a number from 0 to {}): ".format(len(controllers) - 1))
         # parse input into a number within range
         k = min(max(int(s), 0), len(controllers) - 1)
     except:
@@ -85,7 +79,7 @@ def choose_multi_arm_config():
     env_configs = {
         "Single Arms Opposed": "single-arm-opposed",
         "Single Arms Parallel": "single-arm-parallel",
-        "Bimanual": "bimanual"
+        "Bimanual": "bimanual",
     }
 
     # Select environment configuration
@@ -144,10 +138,7 @@ def choose_robots(exclude_bimanual=False):
         print("[{}] {}".format(k, robot))
     print()
     try:
-        s = input(
-            "Choose a robot "
-            + "(enter a number from 0 to {}): ".format(len(robots) - 1)
-        )
+        s = input("Choose a robot " + "(enter a number from 0 to {}): ".format(len(robots) - 1))
         # parse input into a number within range
         k = min(max(int(s), 0), len(robots))
     except:
@@ -209,7 +200,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
-    if controller.name == 'IK_POSE':
+    if controller.name == "IK_POSE":
         # If this is panda, want to swap x and y axis
         if isinstance(robot.robot_model, Panda):
             drotation = drotation[[1, 0, 2]]
@@ -239,13 +230,13 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Lastly, map to axis angle form
         drotation = T.quat2axisangle(drotation)
 
-    elif controller.name == 'OSC_POSE':
+    elif controller.name == "OSC_POSE":
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
         drotation = drotation * 1.5 if isinstance(device, Keyboard) else drotation * 50
         dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
-    elif controller.name == 'OSC_POSITION':
+    elif controller.name == "OSC_POSITION":
         dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
     else:
         # No other controllers currently supported

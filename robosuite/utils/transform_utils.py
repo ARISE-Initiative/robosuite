@@ -5,12 +5,13 @@ NOTE: convention for quaternions is (x, y, z, w)
 """
 
 import math
+
 import numpy as np
+
 from robosuite.utils.numba import jit_decorator
 
-
 PI = np.pi
-EPS = np.finfo(float).eps * 4.
+EPS = np.finfo(float).eps * 4.0
 
 # axis sequences for Euler angles
 _NEXT_AXIS = [1, 2, 0, 1]
@@ -238,7 +239,7 @@ def random_axis_angle(angle_limit=None, random_state=None):
     """
     Samples an axis-angle rotation by first sampling a random axis
     and then sampling an angle. If @angle_limit is provided, the size
-    of the rotation angle is constrained. 
+    of the rotation angle is constrained.
 
     If @random_state is provided (instance of np.random.RandomState), it
     will be used to generate random numbers.
@@ -251,7 +252,7 @@ def random_axis_angle(angle_limit=None, random_state=None):
         AssertionError: [Invalid RNG]
     """
     if angle_limit is None:
-        angle_limit = 2. * np.pi
+        angle_limit = 2.0 * np.pi
 
     if random_state is not None:
         assert isinstance(random_state, np.random.RandomState)
@@ -264,7 +265,7 @@ def random_axis_angle(angle_limit=None, random_state=None):
     # for why it works.
     random_axis = npr.randn(3)
     random_axis /= np.linalg.norm(random_axis)
-    random_angle = npr.uniform(low=0., high=angle_limit)
+    random_angle = npr.uniform(low=0.0, high=angle_limit)
     return random_axis, random_angle
 
 
@@ -453,7 +454,7 @@ def pose2mat(pose):
     homo_pose_mat = np.zeros((4, 4), dtype=np.float32)
     homo_pose_mat[:3, :3] = quat2mat(pose[1])
     homo_pose_mat[:3, 3] = np.array(pose[0], dtype=np.float32)
-    homo_pose_mat[3, 3] = 1.
+    homo_pose_mat[3, 3] = 1.0
     return homo_pose_mat
 
 
@@ -498,17 +499,17 @@ def quat2axisangle(quat):
         np.array: (ax,ay,az) axis-angle exponential coordinates
     """
     # clip quaternion
-    if quat[3] > 1.:
-        quat[3] = 1.
-    elif quat[3] < -1.:
-        quat[3] = -1.
+    if quat[3] > 1.0:
+        quat[3] = 1.0
+    elif quat[3] < -1.0:
+        quat[3] = -1.0
 
-    den = np.sqrt(1. - quat[3] * quat[3])
-    if math.isclose(den, 0.):
+    den = np.sqrt(1.0 - quat[3] * quat[3])
+    if math.isclose(den, 0.0):
         # This is (close to) a zero degree rotation, immediately return
         return np.zeros(3)
 
-    return (quat[:3] * 2. * math.acos(quat[3])) / den
+    return (quat[:3] * 2.0 * math.acos(quat[3])) / den
 
 
 def axisangle2quat(vec):
@@ -525,15 +526,15 @@ def axisangle2quat(vec):
     angle = np.linalg.norm(vec)
 
     # handle zero-rotation case
-    if math.isclose(angle, 0.):
-        return np.array([0., 0., 0., 1.])
+    if math.isclose(angle, 0.0):
+        return np.array([0.0, 0.0, 0.0, 1.0])
 
     # make sure that axis is a unit vector
     axis = vec / angle
 
     q = np.zeros(4)
-    q[3] = np.cos(angle / 2.)
-    q[:3] = axis * np.sin(angle / 2.)
+    q[3] = np.cos(angle / 2.0)
+    q[:3] = axis * np.sin(angle / 2.0)
     return q
 
 
@@ -600,15 +601,15 @@ def _skew_symmetric_translation(pos_A_in_B):
     """
     return np.array(
         [
-            0.,
+            0.0,
             -pos_A_in_B[2],
             pos_A_in_B[1],
             pos_A_in_B[2],
-            0.,
+            0.0,
             -pos_A_in_B[0],
             -pos_A_in_B[1],
             pos_A_in_B[0],
-            0.,
+            0.0,
         ]
     ).reshape((3, 3))
 
@@ -697,9 +698,7 @@ def rotation_matrix(angle, direction, point=None):
     cosa = math.cos(angle)
     direction = unit_vector(direction[:3])
     # rotation matrix around unit vector
-    R = np.array(
-        ((cosa, 0.0, 0.0), (0.0, cosa, 0.0), (0.0, 0.0, cosa)), dtype=np.float32
-    )
+    R = np.array(((cosa, 0.0, 0.0), (0.0, cosa, 0.0), (0.0, 0.0, cosa)), dtype=np.float32)
     R += np.outer(direction, direction) * (1.0 - cosa)
     direction *= sina
     R += np.array(
@@ -776,12 +775,7 @@ def clip_rotation(quat, limit):
         a = limit * np.sign(a) / 2
         sa = math.sin(a)
         ca = math.cos(a)
-        quat = np.array([
-            x * sa,
-            y * sa,
-            z * sa,
-            ca
-        ])
+        quat = np.array([x * sa, y * sa, z * sa, ca])
         clipped = True
 
     return quat, clipped
@@ -876,9 +870,7 @@ def get_orientation_error(target_orn, current_orn):
         orn_error (np.array): (ax,ay,az) current orientation error, corresponds to
             (target_orn - current_orn)
     """
-    current_orn = np.array(
-        [current_orn[3], current_orn[0], current_orn[1], current_orn[2]]
-    )
+    current_orn = np.array([current_orn[3], current_orn[0], current_orn[1], current_orn[2]])
     target_orn = np.array([target_orn[3], target_orn[0], target_orn[1], target_orn[2]])
 
     pinv = np.zeros((3, 4))

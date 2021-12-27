@@ -1,9 +1,10 @@
 """
 Defines the base class of all grippers
 """
+import numpy as np
+
 from robosuite.models.base import MujocoXMLModel
 from robosuite.utils.mjcf_utils import GRIPPER_COLLISION_COLOR
-import numpy as np
 
 
 class GripperModel(MujocoXMLModel):
@@ -22,8 +23,9 @@ class GripperModel(MujocoXMLModel):
         self.current_action = np.zeros(self.dof)
 
         # Grab gripper offset (string -> np.array -> elements [1, 2, 3, 0] (x, y, z, w))
-        self.rotation_offset = np.fromstring(self.worldbody[0].attrib.get("quat", "1 0 0 0"),
-                                             dtype=np.float64, sep=" ")[[1, 2, 3, 0]]
+        self.rotation_offset = np.fromstring(
+            self.worldbody[0].attrib.get("quat", "1 0 0 0"), dtype=np.float64, sep=" "
+        )[[1, 2, 3, 0]]
 
     def format_action(self, action):
         """

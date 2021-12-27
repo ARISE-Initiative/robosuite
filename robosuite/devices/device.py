@@ -10,8 +10,8 @@ class Device(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def start_control(self):
         """
-        Method that should be called externally before controller can 
-        start receiving commands. 
+        Method that should be called externally before controller can
+        start receiving commands.
         """
         raise NotImplementedError
 

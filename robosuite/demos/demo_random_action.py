@@ -1,7 +1,6 @@
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 
-
 if __name__ == "__main__":
 
     # Create dict to hold options that will be passed to env creation call
@@ -20,8 +19,8 @@ if __name__ == "__main__":
         options["env_configuration"] = choose_multi_arm_config()
 
         # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
-        if options["env_configuration"] == 'bimanual':
-            options["robots"] = 'Baxter'
+        if options["env_configuration"] == "bimanual":
+            options["robots"] = "Baxter"
         else:
             options["robots"] = []
 
@@ -44,7 +43,7 @@ if __name__ == "__main__":
 
     # Help message to user
     print()
-    print("Press \"H\" to show the viewer control panel.")
+    print('Press "H" to show the viewer control panel.')
 
     # initialize the task
     env = suite.make(
