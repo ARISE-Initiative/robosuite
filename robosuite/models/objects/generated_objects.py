@@ -1,10 +1,20 @@
+from copy import deepcopy
+
 import numpy as np
 
 from robosuite.models.objects import MujocoGeneratedObject, MujocoObject
-from robosuite.utils.mjcf_utils import new_body, new_geom, new_site, new_joint, new_inertial,\
-    array_to_string, find_elements, add_prefix, OBJECT_COLLISION_COLOR, CustomMaterial
-
-from copy import deepcopy
+from robosuite.utils.mjcf_utils import (
+    OBJECT_COLLISION_COLOR,
+    CustomMaterial,
+    add_prefix,
+    array_to_string,
+    find_elements,
+    new_body,
+    new_geom,
+    new_inertial,
+    new_joint,
+    new_site,
+)
 
 
 class CompositeBodyObject(MujocoGeneratedObject):
@@ -46,6 +56,7 @@ class CompositeBodyObject(MujocoGeneratedObject):
             should specify the appropriate attributes for the given site.
             See http://www.mujoco.org/book/XMLreference.html#site for reference.
     """
+
     def __init__(
         self,
         name,
@@ -63,7 +74,7 @@ class CompositeBodyObject(MujocoGeneratedObject):
         self._name = name
 
         # Set internal variable geometric properties which will be modified later
-        self._object_absolute_positions = {"root": np.zeros(3)}     # maps body names to abs positions (rel to root)
+        self._object_absolute_positions = {"root": np.zeros(3)}  # maps body names to abs positions (rel to root)
         self._top = 0
         self._bottom = 0
         self._horizontal = 0
@@ -139,10 +150,7 @@ class CompositeBodyObject(MujocoGeneratedObject):
 
         # Loop through all objects and associated args and append them appropriately
         for o, o_parent, o_pos, o_quat in zip(
-                self.objects,
-                self.object_parents,
-                self.object_locations,
-                self.object_quats
+            self.objects, self.object_parents, self.object_locations, self.object_quats
         ):
             self._append_object(root=obj, obj=o, parent_name=o_parent, pos=o_pos, quat=o_quat)
 
@@ -243,11 +251,11 @@ class CompositeBodyObject(MujocoGeneratedObject):
 
     @property
     def bottom_offset(self):
-        return np.array([0., 0., self._bottom])
+        return np.array([0.0, 0.0, self._bottom])
 
     @property
     def top_offset(self):
-        return np.array([0., 0., self._top])
+        return np.array([0.0, 0.0, self._top])
 
     @property
     def horizontal_radius(self):
@@ -330,8 +338,8 @@ class CompositeObject(MujocoGeneratedObject):
         geom_materials=None,
         geom_frictions=None,
         rgba=None,
-        density=100.,
-        solref=(0.02, 1.),
+        density=100.0,
+        solref=(0.02, 1.0),
         solimp=(0.9, 0.95, 0.001),
         locations_relative_to_center=False,
         joints="default",
@@ -387,7 +395,7 @@ class CompositeObject(MujocoGeneratedObject):
         self.density = [density] * n_geoms if density is None or type(density) in {float, int} else list(density)
         self.solref = [solref] * n_geoms if solref is None or type(solref[0]) in {float, int} else list(solref)
         self.solimp = [solimp] * n_geoms if obj_types is None or type(solimp[0]) in {float, int} else list(solimp)
-        self.rgba = rgba        # override superclass setting of this variable
+        self.rgba = rgba  # override superclass setting of this variable
         self.locations_relative_to_center = locations_relative_to_center
         self.obj_types = [obj_types] * n_geoms if obj_types is None or type(obj_types) is str else list(obj_types)
 
@@ -432,8 +440,21 @@ class CompositeObject(MujocoGeneratedObject):
             obj.append(new_site(**site_spec))
 
         # Loop through all geoms and generate the composite object
-        for i, (obj_type, g_type, g_size, g_loc, g_name, g_rgba, g_friction,
-                g_quat, g_material, g_density, g_solref, g_solimp) in enumerate(zip(
+        for i, (
+            obj_type,
+            g_type,
+            g_size,
+            g_loc,
+            g_name,
+            g_rgba,
+            g_friction,
+            g_quat,
+            g_material,
+            g_density,
+            g_solref,
+            g_solimp,
+        ) in enumerate(
+            zip(
                 self.obj_types,
                 self.geom_types,
                 self.geom_sizes,
@@ -446,7 +467,8 @@ class CompositeObject(MujocoGeneratedObject):
                 self.density,
                 self.solref,
                 self.solimp,
-        )):
+            )
+        ):
             # geom type
             geom_type = g_type
             # get cartesian size from size spec
@@ -471,8 +493,11 @@ class CompositeObject(MujocoGeneratedObject):
             geom_rgba = g_rgba if g_rgba is not None else self.rgba
 
             # geom friction
-            geom_friction = array_to_string(g_friction) if g_friction is not None else \
-                            array_to_string(np.array([1., 0.005, 0.0001]))  # mujoco default
+            geom_friction = (
+                array_to_string(g_friction)
+                if g_friction is not None
+                else array_to_string(np.array([1.0, 0.005, 0.0001]))
+            )  # mujoco default
 
             # Define base geom attributes
             geom_attr = {
@@ -484,18 +509,18 @@ class CompositeObject(MujocoGeneratedObject):
 
             # Optionally define quat if specified
             if g_quat is not None:
-                geom_attr['quat'] = array_to_string(g_quat)
+                geom_attr["quat"] = array_to_string(g_quat)
 
             # Add collision geom if necessary
             if obj_type in {"collision", "all"}:
                 col_geom_attr = deepcopy(geom_attr)
                 col_geom_attr.update(self.get_collision_attrib_template())
                 if g_density is not None:
-                    col_geom_attr['density'] = str(g_density)
-                col_geom_attr['friction'] = geom_friction
-                col_geom_attr['solref'] = array_to_string(g_solref)
-                col_geom_attr['solimp'] = array_to_string(g_solimp)
-                col_geom_attr['rgba'] = OBJECT_COLLISION_COLOR
+                    col_geom_attr["density"] = str(g_density)
+                col_geom_attr["friction"] = geom_friction
+                col_geom_attr["solref"] = array_to_string(g_solref)
+                col_geom_attr["solimp"] = array_to_string(g_solimp)
+                col_geom_attr["rgba"] = OBJECT_COLLISION_COLOR
                 obj.append(new_geom(**col_geom_attr))
 
             # Add visual geom if necessary
@@ -504,7 +529,7 @@ class CompositeObject(MujocoGeneratedObject):
                 vis_geom_attr.update(self.get_visual_attrib_template())
                 vis_geom_attr["name"] += "_vis"
                 if g_material is not None:
-                    vis_geom_attr['material'] = g_material
+                    vis_geom_attr["material"] = g_material
                 vis_geom_attr["rgba"] = geom_rgba
                 obj.append(new_geom(**vis_geom_attr))
 
@@ -515,26 +540,26 @@ class CompositeObject(MujocoGeneratedObject):
         """
         converts from geom size specification to x, y, and z half-length bounding box
         """
-        if geom_type in ['box', 'ellipsoid']:
+        if geom_type in ["box", "ellipsoid"]:
             return geom_size
-        if geom_type == 'sphere':
+        if geom_type == "sphere":
             # size is radius
             return [geom_size[0], geom_size[0], geom_size[0]]
-        if geom_type == 'capsule':
+        if geom_type == "capsule":
             # size is radius, half-length of cylinder part
             return [geom_size[0], geom_size[0], geom_size[0] + geom_size[1]]
-        if geom_type == 'cylinder':
+        if geom_type == "cylinder":
             # size is radius, half-length
             return [geom_size[0], geom_size[0], geom_size[1]]
         raise Exception("unsupported geom type!")
 
     @property
     def bottom_offset(self):
-        return np.array([0., 0., -self.total_size[2]])
+        return np.array([0.0, 0.0, -self.total_size[2]])
 
     @property
     def top_offset(self):
-        return np.array([0., 0., self.total_size[2]])
+        return np.array([0.0, 0.0, self.total_size[2]])
 
     @property
     def horizontal_radius(self):
@@ -630,7 +655,7 @@ class PrimitiveObject(MujocoGeneratedObject):
         self.friction = list(friction)
 
         if solref is None:
-            self.solref = [0.02, 1.]  # MuJoCo default
+            self.solref = [0.02, 1.0]  # MuJoCo default
         else:
             self.solref = solref
 
@@ -679,11 +704,7 @@ class PrimitiveObject(MujocoGeneratedObject):
         obj = new_body(name="main")
 
         # Get base element attributes
-        element_attr = {
-            "name": "g0",
-            "type": ob_type,
-            "size": array_to_string(self.size)
-        }
+        element_attr = {"name": "g0", "type": ob_type, "size": array_to_string(self.size)}
 
         # Add collision geom if necessary
         if self.obj_type in {"collision", "all"}:

@@ -1,7 +1,7 @@
 import numpy as np
+
 from robosuite.models.arenas import Arena
-from robosuite.utils.mjcf_utils import xml_path_completion
-from robosuite.utils.mjcf_utils import array_to_string
+from robosuite.utils.mjcf_utils import array_to_string, xml_path_completion
 
 
 class BinsArena(Arena):

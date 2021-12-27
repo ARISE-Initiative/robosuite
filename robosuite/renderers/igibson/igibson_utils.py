@@ -1,18 +1,20 @@
 import os
 import random
-from robosuite.utils.observables import Observable
 import string
 import tempfile
 from pathlib import Path
 
-import numpy as np
-import matplotlib.pyplot as plt
 import igibson
-import robosuite.utils.transform_utils as T
+import matplotlib.pyplot as plt
+import numpy as np
+
 import robosuite
+import robosuite.utils.transform_utils as T
+from robosuite.utils.observables import Observable
 
 try:
     import torch
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -21,50 +23,52 @@ except ImportError:
 # Update this when mtl files are defined for other robots.
 # for jaco material is defined in xml, we can update xml
 # to add shininess and specular and remove it from this list.
-ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL = {'panda', 'sawyer', 'jaco'}
+ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL = {"panda", "sawyer", "jaco"}
 
 # place holder meshes for which we do not textures loaded
 # This list should be extended if one sees placeholder meshes
 # having textures. Place holder meshes
-MESHES_FOR_NO_LOAD_TEXTURE = {'VisualBread_g0', 'VisualCan_g0', 'VisualCereal_g0', 'VisualMilk_g0'}
+MESHES_FOR_NO_LOAD_TEXTURE = {"VisualBread_g0", "VisualCan_g0", "VisualCereal_g0", "VisualMilk_g0"}
 
 # Special meshes for which we have to load the textures
-MESHES_FOR_LOAD_TEXTURE = {'Milk_g0_visual', 'Can_g0_visual', 'Cereal_g0_visual', 'Bread_g0_visual'}
+MESHES_FOR_LOAD_TEXTURE = {"Milk_g0_visual", "Can_g0_visual", "Cereal_g0_visual", "Bread_g0_visual"}
 
 
-def load_object(renderer,
-                geom,
-                geom_name,
-                geom_type,
-                geom_orn,
-                geom_pos,
-                geom_rgba,
-                geom_size,
-                geom_scale,
-                geom_material,
-                parent_body,
-                class_id,
-                visual_objects,
-                meshes):
+def load_object(
+    renderer,
+    geom,
+    geom_name,
+    geom_type,
+    geom_orn,
+    geom_pos,
+    geom_rgba,
+    geom_size,
+    geom_scale,
+    geom_material,
+    parent_body,
+    class_id,
+    visual_objects,
+    meshes,
+):
     """
     Function that initializes the meshes in the memeory with appropriate materials.
     """
-    
+
     primitive_shapes_path = {
-        'box': os.path.join(robosuite.models.assets_root, 'objects/meshes/cube.obj'),
-        'cylinder': os.path.join(robosuite.models.assets_root, 'objects/meshes/cylinder.obj'),
-        'sphere': os.path.join(robosuite.models.assets_root, 'objects/meshes/sphere8.obj'),
-        'plane': os.path.join(robosuite.models.assets_root, 'objects/meshes/cube.obj')
+        "box": os.path.join(robosuite.models.assets_root, "objects/meshes/cube.obj"),
+        "cylinder": os.path.join(robosuite.models.assets_root, "objects/meshes/cylinder.obj"),
+        "sphere": os.path.join(robosuite.models.assets_root, "objects/meshes/sphere8.obj"),
+        "plane": os.path.join(robosuite.models.assets_root, "objects/meshes/cube.obj"),
     }
-    
+
     # if not in primitive shapes, get path to mesh
     filename = primitive_shapes_path.get(geom_type)
     if filename is None:
-        filename = meshes[geom.attrib['mesh']]['file']
-        filename = os.path.splitext(filename)[0] + '.obj'
-    
+        filename = meshes[geom.attrib["mesh"]]["file"]
+        filename = os.path.splitext(filename)[0] + ".obj"
+
     mesh_file_name = Path(filename).parents[1].name
-    parent_body_name = parent_body.get('name', 'worldbody')
+    parent_body_name = parent_body.get("name", "worldbody")
 
     load_texture = geom_material is None or geom_material._is_set_by_parser
 
@@ -74,54 +78,64 @@ def load_object(renderer,
     if geom_name in MESHES_FOR_LOAD_TEXTURE:
         load_texture = True
 
-    if geom_type == 'mesh':
+    if geom_type == "mesh":
         scale = geom_scale
-    elif geom_type in ['box', 'sphere']:
+    elif geom_type in ["box", "sphere"]:
         scale = geom_size * 2
-    elif geom_type == 'cylinder':
+    elif geom_type == "cylinder":
         scale = [geom_size[0], geom_size[0], geom_size[1]]
-    elif geom_type == 'plane':
-        scale = [geom_size[0]*2 , geom_size[1]*2, 0.01]
+    elif geom_type == "plane":
+        scale = [geom_size[0] * 2, geom_size[1] * 2, 0.01]
 
     # If only color of the robot mesh is defined we add some metallic and specular by default which makes it look a bit nicer.
-    material = None if (geom_type == 'mesh' and geom_material._is_set_by_parser and mesh_file_name in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL) \
-                else geom_material
+    material = (
+        None
+        if (
+            geom_type == "mesh"
+            and geom_material._is_set_by_parser
+            and mesh_file_name in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL
+        )
+        else geom_material
+    )
 
     # for translucent objects no overwrite material should be specified.
     # it will fall in 3rd condition of load_object method of renderer.
     if geom_rgba is not None and len(geom_rgba) == 4 and geom_rgba[3] != 1:
-        material = None                
+        material = None
 
-    renderer.load_object(filename,
-                        scale=scale,
-                        transform_orn=geom_orn,
-                        transform_pos=geom_pos,
-                        input_kd=geom_rgba,
-                        load_texture=load_texture,
-                        overwrite_material=material)
+    renderer.load_object(
+        filename,
+        scale=scale,
+        transform_orn=geom_orn,
+        transform_pos=geom_pos,
+        input_kd=geom_rgba,
+        load_texture=load_texture,
+        overwrite_material=material,
+    )
 
-    if geom_type == 'mesh':
+    if geom_type == "mesh":
         visual_objects[filename] = len(renderer.visual_objects)
-    
+
     # do not use pbr if robots have already defined materials.
     use_pbr_mapping = mesh_file_name not in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL
 
-    renderer.add_instance(len(renderer.visual_objects) - 1,
-                            pybullet_uuid=0,
-                            class_id=class_id,
-                            dynamic=True,
-                            use_pbr_mapping=use_pbr_mapping,
-                            parent_body=parent_body_name)
-
+    renderer.add_instance(
+        len(renderer.visual_objects) - 1,
+        pybullet_uuid=0,
+        class_id=class_id,
+        dynamic=True,
+        use_pbr_mapping=use_pbr_mapping,
+        parent_body=parent_body_name,
+    )
 
 
 def random_string():
     """
     Generate a random string.
     """
-    res = ''.join(random.choices(string.ascii_letters +
-                        string.digits, k=10))
+    res = "".join(random.choices(string.ascii_letters + string.digits, k=10))
     return res
+
 
 def adjust_convention(img, convention):
     """
@@ -136,6 +150,7 @@ def adjust_convention(img, convention):
     """
     img = img[::-convention]
     return img
+
 
 def get_texture_id(intensity, name, self, resolution=1):
     """
@@ -155,15 +170,15 @@ def get_texture_id(intensity, name, self, resolution=1):
         im = np.tile(im, (resolution, resolution, 1))
     else:
         im = np.array([intensity] * (resolution ** 2)).reshape(resolution, resolution)
-    
+
     if not self.renderer.rendering_settings.optimized:
         tmpdirname = tempfile.TemporaryDirectory().name
     else:
         # if optimized the file created should stay on the disk as it is required later
         # by the optimized renderer. In non-optimized case the file written could be deleted.
-        tmpdirname = os.path.join(tempfile.gettempdir(), f'igibson_{random_string()}')
+        tmpdirname = os.path.join(tempfile.gettempdir(), f"igibson_{random_string()}")
     os.makedirs(tmpdirname, exist_ok=True)
-    fname = os.path.join(tmpdirname, f'{name}.png')
+    fname = os.path.join(tmpdirname, f"{name}.png")
     plt.imsave(fname, im)
     return self.renderer.load_texture_file(str(fname))
 
@@ -172,20 +187,23 @@ class MujocoRobot(object):
     def __init__(self):
         self.cameras = []
 
+
 class MujocoCamera(object):
     """
     Camera class to define camera locations and its activation state (to render from them or not)
     """
-    def __init__(self, 
-                 camera_link_name, 
-                 offset_pos = np.array([0,0,0]), 
-                 offset_ori = np.array([0,0,0,1]), #xyzw -> Pybullet convention (to be consistent)
-                 fov=45,
-                 active=True, 
-                 modes=None, 
-                 camera_name=None,
-                 mujoco_env=None,
-                 ):
+
+    def __init__(
+        self,
+        camera_link_name,
+        offset_pos=np.array([0, 0, 0]),
+        offset_ori=np.array([0, 0, 0, 1]),  # xyzw -> Pybullet convention (to be consistent)
+        fov=45,
+        active=True,
+        modes=None,
+        camera_name=None,
+        mujoco_env=None,
+    ):
         """
         :param link_name: string, name of the link the camera is attached to
         :param offset_pos: vector 3d, position offset to the reference frame of the link
@@ -198,7 +216,7 @@ class MujocoCamera(object):
         self.offset_ori = np.array(offset_ori)
         self.active = active
         self.modes = modes
-        self.camera_name = [camera_name, camera_link_name + '_cam'][camera_name is None]
+        self.camera_name = [camera_name, camera_link_name + "_cam"][camera_name is None]
         self.mujoco_env = mujoco_env
         self.fov = fov
 
@@ -220,11 +238,11 @@ class MujocoCamera(object):
         offset_mat[:3, :3] = T.quat2mat(q_wxyz)
         offset_mat[:3, -1] = self.offset_pos
 
-        if self.camera_link_name != 'worldbody':
+        if self.camera_link_name != "worldbody":
 
             pos_body_in_world = self.mujoco_env.sim.data.get_body_xpos(self.camera_link_name)
             rot_body_in_world = self.mujoco_env.sim.data.get_body_xmat(self.camera_link_name).reshape((3, 3))
-            pose_body_in_world = T.make_pose(pos_body_in_world, rot_body_in_world) 
+            pose_body_in_world = T.make_pose(pos_body_in_world, rot_body_in_world)
 
             total_pose = np.array(pose_body_in_world).dot(np.array(offset_mat))
 
@@ -263,13 +281,14 @@ class TensorObservable(Observable):
 
             # If the delayed sampling time has been passed and we haven't sampled yet for this sampling period,
             # we should grab a new measurement
-            if (not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample) or\
-                    force:
+            if (
+                not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample
+            ) or force:
                 obs = self._sensor(obs_cache)
                 torch_tensor = False
-                if self.modality == 'image':
+                if self.modality == "image":
                     if HAS_TORCH and isinstance(obs, torch.Tensor):
-                        torch_tensor = True                
+                        torch_tensor = True
                 # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                 obs = self._filter(self._corrupter(obs))
                 if not torch_tensor:
@@ -289,8 +308,10 @@ class TensorObservable(Observable):
             if self._time_since_last_sample >= self._sampling_timestep:
                 if not self._sampled:
                     # If we still haven't sampled yet, sample immediately and warn user that sampling rate is too low
-                    print(f"Warning: sampling rate for observable {self.name} is either too low or delay is too high. "
-                          f"Please adjust one (or both)")
+                    print(
+                        f"Warning: sampling rate for observable {self.name} is either too low or delay is too high. "
+                        f"Please adjust one (or both)"
+                    )
                     # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                     obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
                     self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs

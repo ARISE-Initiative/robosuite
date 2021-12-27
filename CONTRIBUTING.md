@@ -27,13 +27,15 @@ $ python -m pytest
 
 Submission
 ----------
-Please read the coding conventions below and make sure that your code is consistent with ours. When making a contribution, make a [pull request](https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/proposing-changes-to-your-work-with-pull-requests)
+Please read the coding conventions below and make sure that your code is consistent with ours. We use the [black](https://github.com/psf/black) and [isort](https://github.com/pycqa/isort) as the [pre-commit](https://pre-commit.com/) hooks to format the source code before code review. To install these hooks, first `pip install pre-commit; pre-commit install` to set them up. Once set up, these hooks should be automatically triggered when committing new changes. If you want to manually check the format of the codes that have already been committed, please run `pre-commit run --all-files` in the project folder.
+
+When making a contribution, make a [pull request](https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/proposing-changes-to-your-work-with-pull-requests)
 to robosuite with an itemized list of what you have done. When you submit a pull request, it is immensely helpful to include example script(s) that showcase the proposed changes and highlight any new APIs. 
 We always love to see more test coverage. When it is appropriate, add a new test to the [tests](https://github.com/ARISE-Initiative/robosuite/tree/master/tests) folder for checking the correctness of your code.
 
 Coding Conventions
 ------------------
-We value readability and adhere to the following coding conventions:
+In addition to the pre-commit hooks, we value readability and adhere to the following coding conventions:
 - Indent using four spaces (soft tabs)
 - Always put spaces after list items and method parameters (e.g., `[1, 2, 3]` rather than `[1,2,3]`), and around operators and hash arrows (e.g., `x += 1` rather than `x+=1`)
 - Use the [Google Python Style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) for the docstrings

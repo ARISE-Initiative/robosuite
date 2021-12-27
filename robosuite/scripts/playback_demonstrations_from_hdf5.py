@@ -13,12 +13,13 @@ Example:
     $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/SawyerPickPlace/
 """
 
-import os
-import h5py
 import argparse
-import random
-import numpy as np
 import json
+import os
+import random
+
+import h5py
+import numpy as np
 
 import robosuite
 from robosuite.utils.mjcf_utils import postprocess_model_xml
@@ -29,11 +30,11 @@ if __name__ == "__main__":
         "--folder",
         type=str,
         help="Path to your demonstration folder that contains the demo.hdf5 file, e.g.: "
-             "'path_to_assets_dir/demonstrations/YOUR_DEMONSTRATION'"
+        "'path_to_assets_dir/demonstrations/YOUR_DEMONSTRATION'",
     ),
     parser.add_argument(
-        "--use-actions", 
-        action='store_true',
+        "--use-actions",
+        action="store_true",
     )
     args = parser.parse_args()
 

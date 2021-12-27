@@ -21,4 +21,5 @@ def mount_factory(name, idn=0):
     """
     # Import MOUNT_MAPPING at runtime so we avoid circular imports
     from robosuite.models.mounts import MOUNT_MAPPING
+
     return MOUNT_MAPPING.get(name, "Unknown mount name: {}".format(name))(idn=idn)

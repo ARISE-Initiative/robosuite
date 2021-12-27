@@ -1,12 +1,19 @@
+import io
 import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
-import io
 
 import robosuite.utils.macros as macros
 from robosuite.utils import XMLError
-from robosuite.utils.mjcf_utils import find_elements, sort_elements,\
-    add_material, string_to_array, add_prefix, recolor_collision_geoms, _element_filter
+from robosuite.utils.mjcf_utils import (
+    _element_filter,
+    add_material,
+    add_prefix,
+    find_elements,
+    recolor_collision_geoms,
+    sort_elements,
+    string_to_array,
+)
 
 
 class MujocoXML(object):
@@ -94,8 +101,13 @@ class MujocoXML(object):
             if not isinstance(other, MujocoXML):
                 raise XMLError("{} is not a MujocoXML instance.".format(type(other)))
             if merge_body is not None:
-                root = self.worldbody if merge_body == "default" else \
-                    find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
+                root = (
+                    self.worldbody
+                    if merge_body == "default"
+                    else find_elements(
+                        root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True
+                    )
+                )
                 for body in other.worldbody:
                     root.append(body)
             self.merge_assets(other)
@@ -132,11 +144,7 @@ class MujocoXML(object):
 
                 model = load_model_from_xml(string.getvalue())
                 return model
-            raise ValueError(
-                "Unkown model mode: {}. Available options are: {}".format(
-                    mode, ",".join(available_modes)
-                )
-            )
+            raise ValueError("Unkown model mode: {}. Available options are: {}".format(mode, ",".join(available_modes)))
 
     def get_xml(self):
         """
@@ -172,8 +180,10 @@ class MujocoXML(object):
             other (MujocoXML or MujocoObject): other xml file whose assets will be merged into this one
         """
         for asset in other.asset:
-            if find_elements(root=self.asset, tags=asset.tag,
-                             attribs={"name": asset.get("name")}, return_first=True) is None:
+            if (
+                find_elements(root=self.asset, tags=asset.tag, attribs={"name": asset.get("name")}, return_first=True)
+                is None
+            ):
                 self.asset.append(asset)
 
     def get_element_names(self, root, element_type):
@@ -260,6 +270,7 @@ class MujocoModel(object):
 
     Standardizes core API for accessing models' relevant geoms, names, etc.
     """
+
     def correct_naming(self, names):
         """
         Corrects all strings in @names by adding the naming prefix to it and returns the name-corrected values
@@ -294,8 +305,9 @@ class MujocoModel(object):
         # Loop through all visualization geoms and set their alpha values appropriately
         for vis_g in self.sites:
             vis_g_id = sim.model.site_name2id(vis_g)
-            if (visible and sim.model.site_rgba[vis_g_id][3] < 0) or \
-                    (not visible and sim.model.site_rgba[vis_g_id][3] > 0):
+            if (visible and sim.model.site_rgba[vis_g_id][3] < 0) or (
+                not visible and sim.model.site_rgba[vis_g_id][3] > 0
+            ):
                 # We toggle the alpha value
                 sim.model.site_rgba[vis_g_id][3] = -sim.model.site_rgba[vis_g_id][3]
 
@@ -513,11 +525,17 @@ class MujocoXMLModel(MujocoXML, MujocoModel):
 
         # Parse element tree to get all relevant bodies, joints, actuators, and geom groups
         self._elements = sort_elements(root=self.root, element_filter=_add_default_name_filter)
-        assert len(self._elements["root_body"]) == 1, "Invalid number of root bodies found for robot model. Expected 1," \
-                                                      "got {}".format(len(self._elements["root_body"]))
+        assert (
+            len(self._elements["root_body"]) == 1
+        ), "Invalid number of root bodies found for robot model. Expected 1," "got {}".format(
+            len(self._elements["root_body"])
+        )
         self._elements["root_body"] = self._elements["root_body"][0]
-        self._elements["bodies"] = [self._elements["root_body"]] + self._elements["bodies"] if \
-            "bodies" in self._elements else [self._elements["root_body"]]
+        self._elements["bodies"] = (
+            [self._elements["root_body"]] + self._elements["bodies"]
+            if "bodies" in self._elements
+            else [self._elements["root_body"]]
+        )
         self._root_body = self._elements["root_body"].get("name")
         self._bodies = [e.get("name") for e in self._elements.get("bodies", [])]
         self._joints = [e.get("name") for e in self._elements.get("joints", [])]
@@ -676,4 +694,3 @@ class MujocoXMLModel(MujocoXML, MujocoModel):
     @property
     def horizontal_radius(self):
         raise NotImplementedError
-

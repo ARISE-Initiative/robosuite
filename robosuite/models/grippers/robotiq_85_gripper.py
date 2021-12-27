@@ -2,8 +2,9 @@
 6-DoF gripper with its open/close variant
 """
 import numpy as np
-from robosuite.utils.mjcf_utils import xml_path_completion
+
 from robosuite.models.grippers.gripper_model import GripperModel
+from robosuite.utils.mjcf_utils import xml_path_completion
 
 
 class Robotiq85GripperBase(GripperModel):
@@ -31,20 +32,16 @@ class Robotiq85GripperBase(GripperModel):
                 "left_outer_finger_collision",
                 "left_inner_finger_collision",
                 "left_fingertip_collision",
-                "left_fingerpad_collision"
+                "left_fingerpad_collision",
             ],
             "right_finger": [
                 "right_outer_finger_collision",
                 "right_inner_finger_collision",
                 "right_fingertip_collision",
-                "right_fingerpad_collision"
+                "right_fingerpad_collision",
             ],
-            "left_fingerpad": [
-                "left_fingerpad_collision"
-            ],
-            "right_fingerpad": [
-                "right_fingerpad_collision"
-            ],
+            "left_fingerpad": ["left_fingerpad_collision"],
+            "right_fingerpad": ["right_fingerpad_collision"],
         }
 
 

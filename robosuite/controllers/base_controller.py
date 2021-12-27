@@ -1,7 +1,9 @@
 import abc
 from collections.abc import Iterable
-import numpy as np
+
 import mujoco_py
+import numpy as np
+
 import robosuite.utils.macros as macros
 
 
@@ -25,11 +27,13 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
     """
-    def __init__(self,
-                 sim,
-                 eef_name,
-                 joint_indexes,
-                 actuator_range,
+
+    def __init__(
+        self,
+        sim,
+        eef_name,
+        joint_indexes,
+        actuator_range,
     ):
 
         # Actuator range
@@ -135,7 +139,9 @@ class Controller(object, metaclass=abc.ABCMeta):
             self.sim.forward()
 
             self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
-            self.ee_ori_mat = np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3]))
+            self.ee_ori_mat = np.array(
+                self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3])
+            )
             self.ee_pos_vel = np.array(self.sim.data.site_xvelp[self.sim.model.site_name2id(self.eef_name)])
             self.ee_ori_vel = np.array(self.sim.data.site_xvelr[self.sim.model.site_name2id(self.eef_name)])
 
@@ -146,7 +152,7 @@ class Controller(object, metaclass=abc.ABCMeta):
             self.J_ori = np.array(self.sim.data.get_site_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
             self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
-            mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order='C')
+            mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order="C")
             mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
             mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
             self.mass_matrix = mass_matrix[self.qvel_index, :][:, self.qvel_index]
@@ -265,5 +271,3 @@ class Controller(object, metaclass=abc.ABCMeta):
             str: controller name
         """
         raise NotImplementedError
-
-

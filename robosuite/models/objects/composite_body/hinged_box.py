@@ -1,8 +1,7 @@
-from robosuite.models.objects import CompositeBodyObject, BoxObject, CylinderObject
 import numpy as np
 
-from robosuite.utils.mjcf_utils import array_to_string
-from robosuite.utils.mjcf_utils import RED, BLUE, CustomMaterial
+from robosuite.models.objects import BoxObject, CompositeBodyObject, CylinderObject
+from robosuite.utils.mjcf_utils import BLUE, RED, CustomMaterial, array_to_string
 
 
 class HingedBoxObject(CompositeBodyObject):
@@ -70,25 +69,29 @@ class HingedBoxObject(CompositeBodyObject):
 
         # Create objects
         objects = []
-        for i, (size, mat, rgba) in enumerate(zip(
+        for i, (size, mat, rgba) in enumerate(
+            zip(
                 (self.box1_size, self.box2_size),
                 (self.box1_material, self.box2_material),
                 (self.box1_rgba, self.box2_rgba),
-        )):
-            objects.append(BoxObject(
-                name=f"box{i + 1}",
-                size=size,
-                rgba=rgba,
-                material=mat,
-            ))
+            )
+        ):
+            objects.append(
+                BoxObject(
+                    name=f"box{i + 1}",
+                    size=size,
+                    rgba=rgba,
+                    material=mat,
+                )
+            )
 
         # Also add hinge for visualization
         objects.append(
             CylinderObject(
                 name="hinge",
-                size=np.array([min(self.box1_size[2], self.box2_size[2]) / 5.,
-                               min(self.box1_size[0], self.box2_size[0])]),
-
+                size=np.array(
+                    [min(self.box1_size[2], self.box2_size[2]) / 5.0, min(self.box1_size[0], self.box2_size[0])]
+                ),
                 rgba=[0.5, 0.5, 0, 1],
                 obj_type="visual",
             )
@@ -99,7 +102,7 @@ class HingedBoxObject(CompositeBodyObject):
         hinge_joint = {
             "name": "box_hinge",
             "type": "hinge",
-            "axis": "0 1 0",                # y-axis hinge
+            "axis": "0 1 0",  # y-axis hinge
             "pos": array_to_string(rel_hinge_pos),
             "stiffness": "0.0001",
             "limited": "true",
@@ -109,22 +112,22 @@ class HingedBoxObject(CompositeBodyObject):
         # Define positions -- second box should lie on top of first box with edge aligned at hinge joint
         # Hinge visualizer should be aligned at hinge joint location
         positions = [
-            np.zeros(3),                    # First box is centered at top-level body anyways
+            np.zeros(3),  # First box is centered at top-level body anyways
             np.array([-(self.box2_size[0] - self.box1_size[0]), 0, self.box1_size[2] + self.box2_size[2]]),
-            np.array(rel_hinge_pos)
+            np.array(rel_hinge_pos),
         ]
 
         quats = [
-            None,                           # Default quaternion for box 1
-            None,                           # Default quaternion for box 2
-            [0.707, 0.707, 0, 0],        # Rotated 90 deg about x-axis
+            None,  # Default quaternion for box 1
+            None,  # Default quaternion for box 2
+            [0.707, 0.707, 0, 0],  # Rotated 90 deg about x-axis
         ]
 
         # Define parents -- which body each is aligned to
         parents = [
-            None,                           # box 1 attached to top-level body
-            objects[0].root_body,             # box 2 attached to box 1
-            objects[1].root_body,             # hinge attached to box 2
+            None,  # box 1 attached to top-level body
+            objects[0].root_body,  # box 2 attached to box 1
+            objects[1].root_body,  # hinge attached to box 2
         ]
 
         # Run super init

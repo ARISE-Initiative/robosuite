@@ -1,8 +1,8 @@
-from robosuite.models.base import MujocoXMLModel
-from robosuite.utils.mjcf_utils import array_to_string, ROBOT_COLLISION_COLOR, string_to_array
-from robosuite.utils.transform_utils import euler2mat, mat2quat
-
 import numpy as np
+
+from robosuite.models.base import MujocoXMLModel
+from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, string_to_array
+from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 REGISTERED_ROBOTS = {}
 
@@ -70,8 +70,9 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         # By default, set small frictionloss and armature values
         self.set_joint_attribute(attrib="frictionloss", values=0.1 * np.ones(self.dof), force=False)
         self.set_joint_attribute(attrib="damping", values=0.1 * np.ones(self.dof), force=False)
-        self.set_joint_attribute(attrib="armature",
-                                 values=np.array([5.0 / (i + 1) for i in range(self.dof)]), force=False)
+        self.set_joint_attribute(
+            attrib="armature", values=np.array([5.0 / (i + 1) for i in range(self.dof)]), force=False
+        )
 
     def set_base_xpos(self, pos):
         """
@@ -90,7 +91,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             rot (3-array): (r,p,y) euler angles specifying the orientation for the robot base
         """
         # xml quat assumes w,x,y,z so we need to convert to this format from outputted x,y,z,w format from fcn
-        rot = mat2quat(euler2mat(rot))[[3,0,1,2]]
+        rot = mat2quat(euler2mat(rot))[[3, 0, 1, 2]]
         self._elements["root_body"].set("quat", array_to_string(rot))
 
     def set_joint_attribute(self, attrib, values, force=True):
@@ -106,8 +107,10 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Raises:
             AssertionError: [Inconsistent dimension sizes]
         """
-        assert values.size == len(self._elements["joints"]), "Error setting joint attributes: " + \
-            "Values must be same size as joint dimension. Got {}, expected {}!".format(values.size, self.dof)
+        assert values.size == len(self._elements["joints"]), (
+            "Error setting joint attributes: "
+            + "Values must be same size as joint dimension. Got {}, expected {}!".format(values.size, self.dof)
+        )
         for i, joint in enumerate(self._elements["joints"]):
             if force or joint.get(attrib, None) is None:
                 joint.set(attrib, array_to_string(np.array([values[i]])))
@@ -166,8 +169,11 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Returns:
             np.array: (dx, dy, dz) offset vector
         """
-        return (self.mount.bottom_offset - self.mount.top_offset) + self._base_offset if \
-            self.mount is not None else self._base_offset
+        return (
+            (self.mount.bottom_offset - self.mount.top_offset) + self._base_offset
+            if self.mount is not None
+            else self._base_offset
+        )
 
     @property
     def horizontal_radius(self):

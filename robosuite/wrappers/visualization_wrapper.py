@@ -5,10 +5,12 @@ By default, this visualizes all sites possible for the environment. Visualizatio
 for a given environment can be found by calling `get_visualization_settings()`, and can
 be set individually by calling `set_visualization_setting(setting, visible)`.
 """
-import numpy as np
-from robosuite.wrappers import Wrapper
-from robosuite.utils.mjcf_utils import new_site, new_geom, new_body
 from copy import deepcopy
+
+import numpy as np
+
+from robosuite.utils.mjcf_utils import new_body, new_geom, new_site
+from robosuite.wrappers import Wrapper
 
 DEFAULT_INDICATOR_SITE_CONFIG = {
     "type": "sphere",
@@ -45,8 +47,9 @@ class VisualizationWrapper(Wrapper):
 
         # Make sure that the environment is NOT using segmentation sensors, since we cannot use segmentation masks
         # with visualization sites simultaneously
-        assert all(seg is None for seg in env.camera_segmentations), \
-            "Cannot use camera segmentations with visualization wrapper!"
+        assert all(
+            seg is None for seg in env.camera_segmentations
+        ), "Cannot use camera segmentations with visualization wrapper!"
 
         # Standardize indicator configs
         self.indicator_configs = None
@@ -82,8 +85,9 @@ class VisualizationWrapper(Wrapper):
         Returns:
             list: Indicator names for this environment.
         """
-        return [ind_config["name"] for ind_config in self.indicator_configs] if \
-            self.indicator_configs is not None else []
+        return (
+            [ind_config["name"] for ind_config in self.indicator_configs] if self.indicator_configs is not None else []
+        )
 
     def set_indicator_pos(self, indicator, pos):
         """
@@ -95,8 +99,9 @@ class VisualizationWrapper(Wrapper):
         """
         # Make sure indicator is valid
         indicator_names = set(self.get_indicator_names())
-        assert indicator in indicator_names, "Invalid indicator name specified. Valid options are {}, got {}".\
-            format(indicator_names, indicator)
+        assert indicator in indicator_names, "Invalid indicator name specified. Valid options are {}, got {}".format(
+            indicator_names, indicator
+        )
         # Set the specified indicator
         self.env.sim.model.body_pos[self.env.sim.model.body_name2id(indicator + "_body")] = np.array(pos)
 
@@ -117,8 +122,11 @@ class VisualizationWrapper(Wrapper):
             setting (str): Visualization keyword to set
             visible (bool): True if setting should be visualized.
         """
-        assert setting in self._vis_settings, "Invalid visualization setting specified. Valid options are {}, got {}".\
-            format(self._vis_settings.keys(), setting)
+        assert (
+            setting in self._vis_settings
+        ), "Invalid visualization setting specified. Valid options are {}, got {}".format(
+            self._vis_settings.keys(), setting
+        )
         self._vis_settings[setting] = visible
 
     def reset(self):
