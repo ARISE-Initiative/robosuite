@@ -1,15 +1,15 @@
-from collections import OrderedDict
 import random
+from collections import OrderedDict
+
 import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
-
 from robosuite.models.arenas import PegsArena
-from robosuite.models.objects import SquareNutObject, RoundNutObject
+from robosuite.models.objects import RoundNutObject, SquareNutObject
 from robosuite.models.tasks import ManipulationTask
-from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 
 
 class NutAssembly(SingleArmEnv):
@@ -180,14 +180,14 @@ class NutAssembly(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
-        camera_segmentations=None,      # {None, instance, class, element}
+        camera_segmentations=None,  # {None, instance, class, element}
         renderer="mujoco",
         renderer_config=None,
     ):
         # task settings
         self.single_object_mode = single_object_mode
         self.nut_to_id = {"square": 0, "round": 1}
-        self.nut_id_to_sensors = {}                    # Maps nut id to sensor names for that nut
+        self.nut_id_to_sensors = {}  # Maps nut id to sensor names for that nut
         if nut_type is not None:
             assert nut_type in self.nut_to_id.keys(), "invalid @nut_type argument - choose one of {}".format(
                 list(self.nut_to_id.keys())
@@ -305,7 +305,7 @@ class NutAssembly(SingleArmEnv):
             active_nuts.append(nut)
 
         # reaching reward governed by distance to closest object
-        r_reach = 0.
+        r_reach = 0.0
         if active_nuts:
             # reaching reward via minimum distance to the handles of the objects
             dists = [
@@ -314,30 +314,35 @@ class NutAssembly(SingleArmEnv):
                     target=active_nut.important_sites["handle"],
                     target_type="site",
                     return_distance=True,
-                ) for active_nut in active_nuts
+                )
+                for active_nut in active_nuts
             ]
             r_reach = (1 - np.tanh(10.0 * min(dists))) * reach_mult
 
         # grasping reward for touching any objects of interest
-        r_grasp = int(self._check_grasp(
-            gripper=self.robots[0].gripper,
-            object_geoms=[g for active_nut in active_nuts for g in active_nut.contact_geoms])
-        ) * grasp_mult
+        r_grasp = (
+            int(
+                self._check_grasp(
+                    gripper=self.robots[0].gripper,
+                    object_geoms=[g for active_nut in active_nuts for g in active_nut.contact_geoms],
+                )
+            )
+            * grasp_mult
+        )
 
         # lifting reward for picking up an object
-        r_lift = 0.
+        r_lift = 0.0
         table_pos = np.array(self.sim.data.body_xpos[self.table_body_id])
-        if active_nuts and r_grasp > 0.:
+        if active_nuts and r_grasp > 0.0:
             z_target = table_pos[2] + 0.2
-            object_z_locs = self.sim.data.body_xpos[[self.obj_body_id[active_nut.name]
-                                                     for active_nut in active_nuts]][:, 2]
-            z_dists = np.maximum(z_target - object_z_locs, 0.)
-            r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (
-                    lift_mult - grasp_mult
-            )
+            object_z_locs = self.sim.data.body_xpos[[self.obj_body_id[active_nut.name] for active_nut in active_nuts]][
+                :, 2
+            ]
+            z_dists = np.maximum(z_target - object_z_locs, 0.0)
+            r_lift = grasp_mult + (1 - np.tanh(15.0 * min(z_dists))) * (lift_mult - grasp_mult)
 
         # hover reward for getting object above peg
-        r_hover = 0.
+        r_hover = 0.0
         if active_nuts:
             r_hovers = np.zeros(len(active_nuts))
             peg_body_ids = [self.peg1_body_id, self.peg2_body_id]
@@ -353,9 +358,7 @@ class NutAssembly(SingleArmEnv):
                     raise Exception("Got invalid object to reach: {}".format(nut.name))
                 ob_xy = self.sim.data.body_xpos[self.obj_body_id[nut.name]][:2]
                 dist = np.linalg.norm(peg_pos - ob_xy)
-                r_hovers[i] = r_lift + (1 - np.tanh(10.0 * dist)) * (
-                        hover_mult - lift_mult
-                )
+                r_hovers[i] = r_lift + (1 - np.tanh(10.0 * dist)) * (hover_mult - lift_mult)
             r_hover = np.max(r_hovers)
 
         return r_reach, r_grasp, r_lift, r_hover
@@ -368,9 +371,9 @@ class NutAssembly(SingleArmEnv):
             peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id])
         res = False
         if (
-                abs(obj_pos[0] - peg_pos[0]) < 0.03
-                and abs(obj_pos[1] - peg_pos[1]) < 0.03
-                and obj_pos[2] < self.table_offset[2] + 0.05
+            abs(obj_pos[0] - peg_pos[0]) < 0.03
+            and abs(obj_pos[1] - peg_pos[1]) < 0.03
+            and obj_pos[2] < self.table_offset[2] + 0.05
         ):
             res = True
         return res
@@ -409,7 +412,7 @@ class NutAssembly(SingleArmEnv):
                         x_range=[-0.115, -0.11],
                         y_range=default_y_range,
                         rotation=None,
-                        rotation_axis='z',
+                        rotation_axis="z",
                         ensure_object_boundary_in_range=False,
                         ensure_valid_placement=True,
                         reference_pos=self.table_offset,
@@ -419,10 +422,12 @@ class NutAssembly(SingleArmEnv):
         # Reset sampler before adding any new samplers / objects
         self.placement_initializer.reset()
 
-        for i, (nut_cls, nut_name) in enumerate(zip(
+        for i, (nut_cls, nut_name) in enumerate(
+            zip(
                 (SquareNutObject, RoundNutObject),
                 nut_names,
-        )):
+            )
+        ):
             nut = nut_cls(name=nut_name)
             self.nuts.append(nut)
             # Add this nut to the placement initializer
@@ -436,7 +441,7 @@ class NutAssembly(SingleArmEnv):
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
             mujoco_arena=mujoco_arena,
-            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=self.nuts,
         )
 
@@ -487,8 +492,12 @@ class NutAssembly(SingleArmEnv):
             # for conversion to relative gripper frame
             @sensor(modality=modality)
             def world_pose_in_gripper(obs_cache):
-                return T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"]))) if\
-                    f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache else np.eye(4)
+                return (
+                    T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"])))
+                    if f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache
+                    else np.eye(4)
+                )
+
             sensors = [world_pose_in_gripper]
             names = ["world_pose_in_gripper"]
             enableds = [True]
@@ -497,7 +506,7 @@ class NutAssembly(SingleArmEnv):
             # Define nut related sensors
             for i, nut in enumerate(self.nuts):
                 # Create sensors for this nut
-                using_nut = (self.single_object_mode == 0 or self.nut_id == i)
+                using_nut = self.single_object_mode == 0 or self.nut_id == i
                 nut_sensors, nut_sensor_names = self._create_nut_sensors(nut_name=nut.name, modality=modality)
                 sensors += nut_sensors
                 names += nut_sensor_names
@@ -555,8 +564,9 @@ class NutAssembly(SingleArmEnv):
         @sensor(modality=modality)
         def nut_to_eef_pos(obs_cache):
             # Immediately return default value if cache is empty
-            if any([name not in obs_cache for name in
-                    [f"{nut_name}_pos", f"{nut_name}_quat", "world_pose_in_gripper"]]):
+            if any(
+                [name not in obs_cache for name in [f"{nut_name}_pos", f"{nut_name}_quat", "world_pose_in_gripper"]]
+            ):
                 return np.zeros(3)
             obj_pose = T.pose2mat((obs_cache[f"{nut_name}_pos"], obs_cache[f"{nut_name}_quat"]))
             rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
@@ -566,8 +576,9 @@ class NutAssembly(SingleArmEnv):
 
         @sensor(modality=modality)
         def nut_to_eef_quat(obs_cache):
-            return obs_cache[f"{nut_name}_to_{pf}eef_quat"] if \
-                f"{nut_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
+            return (
+                obs_cache[f"{nut_name}_to_{pf}eef_quat"] if f"{nut_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
+            )
 
         sensors = [nut_pos, nut_quat, nut_to_eef_pos, nut_to_eef_quat]
         names = [f"{nut_name}_pos", f"{nut_name}_quat", f"{nut_name}_to_{pf}eef_pos", f"{nut_name}_to_{pf}eef_quat"]
@@ -655,7 +666,8 @@ class NutAssembly(SingleArmEnv):
                     target=nut.important_sites["handle"],
                     target_type="site",
                     return_distance=True,
-                ) for nut in self.nuts
+                )
+                for nut in self.nuts
             ]
             closest_nut_id = np.argmin(dists)
             # Visualize the distance to this target
@@ -682,9 +694,7 @@ class NutAssemblySquare(NutAssembly):
     """
 
     def __init__(self, **kwargs):
-        assert (
-                "single_object_mode" not in kwargs and "nut_type" not in kwargs
-        ), "invalid set of arguments"
+        assert "single_object_mode" not in kwargs and "nut_type" not in kwargs, "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="square", **kwargs)
 
 
@@ -694,7 +704,5 @@ class NutAssemblyRound(NutAssembly):
     """
 
     def __init__(self, **kwargs):
-        assert (
-                "single_object_mode" not in kwargs and "nut_type" not in kwargs
-        ), "invalid set of arguments"
+        assert "single_object_mode" not in kwargs and "nut_type" not in kwargs, "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="round", **kwargs)

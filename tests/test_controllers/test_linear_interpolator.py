@@ -21,14 +21,14 @@ Note: As this is a qualitative test, it is up to the user to evaluate the output
 the tested controllers.
 """
 
+import argparse
+import json
+import os
+
 import numpy as np
 
 import robosuite as suite
-
-import os
-import json
 import robosuite.utils.transform_utils as T
-import argparse
 
 # Define the threshold locations, delta values, and ratio #
 
@@ -57,7 +57,7 @@ parser.add_argument("--render", action="store_true", help="Whether to render tes
 args = parser.parse_args()
 
 # Setup printing options for numbers
-np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
 
 # function to run the actual sim in order to receive summed absolute delta torques
@@ -96,9 +96,11 @@ def test_linear_interpolator():
                 np.random.seed(3)
 
                 # Define controller path to load
-                controller_path = os.path.join(os.path.dirname(__file__),
-                                               '../../robosuite',
-                                               'controllers/config/{}.json'.format(controller_name.lower()))
+                controller_path = os.path.join(
+                    os.path.dirname(__file__),
+                    "../../robosuite",
+                    "controllers/config/{}.json".format(controller_name.lower()),
+                )
                 with open(controller_path) as f:
                     controller_config = json.load(f)
                     controller_config["interpolation"] = interpolator
@@ -113,7 +115,7 @@ def test_linear_interpolator():
                     use_camera_obs=False,
                     horizon=10000,
                     control_freq=20,
-                    controller_configs=controller_config
+                    controller_configs=controller_config,
                 )
 
                 # Reset the environment
@@ -126,8 +128,11 @@ def test_linear_interpolator():
                 env.robots[0].controller.reset_goal()
 
                 # Notify user a new trajectory is beginning
-                print("\nTesting controller {} with trajectory {} and interpolator={}...".format(
-                    controller_name, traj, interpolator))
+                print(
+                    "\nTesting controller {} with trajectory {} and interpolator={}...".format(
+                        controller_name, traj, interpolator
+                    )
+                )
 
                 # If rendering, set controller to front view to get best angle for viewing robot movements
                 if args.render:
@@ -136,8 +141,10 @@ def test_linear_interpolator():
                 # Keep track of state of robot eef (pos, ori (euler)) and torques
                 current_torques = np.zeros(7)
                 initial_state = [env.robots[0]._hand_pos, T.mat2euler(env.robots[0]._hand_orn)]
-                dstate = [env.robots[0]._hand_pos - initial_state[0],
-                          T.mat2euler(env.robots[0]._hand_orn) - initial_state[1]]
+                dstate = [
+                    env.robots[0]._hand_pos - initial_state[0],
+                    T.mat2euler(env.robots[0]._hand_orn) - initial_state[1],
+                ]
 
                 # Define the uniform trajectory action
                 if traj == "pos":
@@ -163,11 +170,15 @@ def test_linear_interpolator():
                     # Update torques, timestep count, and state
                     summed_abs_delta_torques[j] += summed_torques
                     timesteps[j] += 1
-                    dstate = [env.robots[0]._hand_pos - initial_state[0],
-                              T.mat2euler(env.robots[0]._hand_orn) - initial_state[1]]
+                    dstate = [
+                        env.robots[0]._hand_pos - initial_state[0],
+                        T.mat2euler(env.robots[0]._hand_orn) - initial_state[1],
+                    ]
 
                 # When finished, print out the timestep results
-                print("Completed trajectory. Total summed absolute delta torques: {}".format(summed_abs_delta_torques[j]))
+                print(
+                    "Completed trajectory. Total summed absolute delta torques: {}".format(summed_abs_delta_torques[j])
+                )
 
                 # Shut down this env before starting the next test
                 env.close()

@@ -1,14 +1,13 @@
 from collections import OrderedDict
-from mujoco_py import MjSim, MjRenderContextOffscreen
-from mujoco_py import load_model_from_xml
-
-from robosuite.utils import SimulationError, XMLError
-from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
-from robosuite.renderers.base import load_renderer_config
-import robosuite.utils.macros as macros
-from robosuite.models.base import MujocoModel
 
 import numpy as np
+from mujoco_py import MjRenderContextOffscreen, MjSim, load_model_from_xml
+
+import robosuite.utils.macros as macros
+from robosuite.models.base import MujocoModel
+from robosuite.renderers.base import load_renderer_config
+from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
+from robosuite.utils import SimulationError, XMLError
 
 REGISTERED_ENVS = {}
 
@@ -112,18 +111,18 @@ class MujocoEnv(metaclass=EnvMeta):
         self.viewer = None
 
         # Simulation-specific attributes
-        self._observables = {}                      # Maps observable names to observable objects
-        self._obs_cache = {}                        # Maps observable names to pre-/partially-computed observable values
+        self._observables = {}  # Maps observable names to observable objects
+        self._obs_cache = {}  # Maps observable names to pre-/partially-computed observable values
         self.control_freq = control_freq
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
-        self._model_postprocessor = None            # Function to post-process model after load_model() call
+        self._model_postprocessor = None  # Function to post-process model after load_model() call
         self.model = None
         self.cur_time = None
         self.model_timestep = None
         self.control_timestep = None
-        self.deterministic_reset = False            # Whether to add randomized resetting of objects / robot joints
+        self.deterministic_reset = False  # Whether to add randomized resetting of objects / robot joints
 
         self.renderer = renderer
         self.renderer_config = renderer_config
@@ -137,42 +136,41 @@ class MujocoEnv(metaclass=EnvMeta):
         # Initialize the simulation
         self._initialize_sim()
 
-        #initializes the rendering
+        # initializes the rendering
         self.initialize_renderer()
 
         # Run all further internal (re-)initialization required
         self._reset_internal()
 
         # Load observables
-        if hasattr(self.viewer, '_setup_observables'):
+        if hasattr(self.viewer, "_setup_observables"):
             self._observables = self.viewer._setup_observables()
         else:
             self._observables = self._setup_observables()
 
         # check if viewer has get observations method and set a flag for future use.
-        self.viewer_get_obs = hasattr(self.viewer, '_get_observations')
+        self.viewer_get_obs = hasattr(self.viewer, "_get_observations")
 
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
 
-        if self.renderer_config is None and self.renderer != 'mujoco':
+        if self.renderer_config is None and self.renderer != "mujoco":
             self.renderer_config = load_renderer_config(self.renderer)
 
-        if self.renderer == 'mujoco' or self.renderer == 'default':
+        if self.renderer == "mujoco" or self.renderer == "default":
             pass
-        elif self.renderer == 'nvisii':
+        elif self.renderer == "nvisii":
             from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
 
-            self.viewer = NVISIIRenderer(env=self,
-                                         **self.renderer_config)
-        elif self.renderer == 'igibson':
+            self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
+        elif self.renderer == "igibson":
             from robosuite.renderers.igibson.igibson_renderer import iGibsonRenderer
 
-            self.viewer = iGibsonRenderer(env=self,
-                                         **self.renderer_config
-                                         )
+            self.viewer = iGibsonRenderer(env=self, **self.renderer_config)
         else:
-            raise ValueError(f'{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson')
+            raise ValueError(
+                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson"
+            )
 
     def initialize_time(self, control_freq):
         """
@@ -187,7 +185,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.control_freq = control_freq
         if control_freq <= 0:
             raise SimulationError("Control frequency {} is invalid".format(control_freq))
-        self.control_timestep = 1. / control_freq
+        self.control_timestep = 1.0 / control_freq
 
     def set_model_postprocessor(self, postprocessor):
         """
@@ -254,7 +252,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # Use hard reset if requested
 
         if self.hard_reset and not self.deterministic_reset:
-            if self.renderer == 'mujoco' or self.renderer == 'default':
+            if self.renderer == "mujoco" or self.renderer == "default":
                 self._destroy_viewer()
             self._load_model()
             self._postprocess_model()
@@ -262,7 +260,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # Else, we only reset the sim internally
         else:
             self.sim.reset()
-        
+
         # Reset necessary robosuite-centric variables
         self._reset_internal()
         self.sim.forward()
@@ -276,10 +274,14 @@ class MujocoEnv(metaclass=EnvMeta):
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
 
-        if self.viewer is not None and self.renderer != 'mujoco':
+        if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.reset()
-        
-        observations = self.viewer._get_observations(force_update=True) if self.viewer_get_obs else self._get_observations(force_update=True)
+
+        observations = (
+            self.viewer._get_observations(force_update=True)
+            if self.viewer_get_obs
+            else self._get_observations(force_update=True)
+        )
 
         # Return new observations
         return observations
@@ -290,8 +292,8 @@ class MujocoEnv(metaclass=EnvMeta):
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
             self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+            self.viewer.viewer.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
+            self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
 
             # hiding the overlay speeds up rendering significantly
             self.viewer.viewer._hide_overlay = True
@@ -308,8 +310,8 @@ class MujocoEnv(metaclass=EnvMeta):
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
                 self.sim.add_render_context(render_context)
-            self.sim._render_context_offscreen.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-            self.sim._render_context_offscreen.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+            self.sim._render_context_offscreen.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
+            self.sim._render_context_offscreen.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
 
         # additional housekeeping
         self.sim_state_initial = self.sim.get_state()
@@ -411,7 +413,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         reward, done, info = self._post_action(action)
 
-        if self.viewer is not None and self.renderer != 'mujoco':
+        if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.update()
 
         observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
@@ -514,7 +516,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer in ["nvisii", "igibson"]:
             self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
         else:
-            raise AttributeError('setting camera position and quat requires renderer to be either NVISII or iGibson.')
+            raise AttributeError("setting camera position and quat requires renderer to be either NVISII or iGibson.")
 
     def reset_from_xml_string(self, xml_string):
         """
@@ -524,7 +526,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """
 
         # if there is an active viewer window, destroy it
-        if self.renderer != 'nvisii':
+        if self.renderer != "nvisii":
             self.close()
 
         # Since we are reloading from an xml_string, we are deterministically resetting
@@ -583,8 +585,9 @@ class MujocoEnv(metaclass=EnvMeta):
             AssertionError: [Invalid input type]
         """
         # Make sure model is MujocoModel type
-        assert isinstance(model, MujocoModel), \
-            "Inputted model must be of type MujocoModel; got type {} instead!".format(type(model))
+        assert isinstance(
+            model, MujocoModel
+        ), "Inputted model must be of type MujocoModel; got type {} instead!".format(type(model))
         contact_set = set()
         for contact in self.sim.data.contact[: self.sim.data.ncon]:
             # check contact geom in geoms; add to contact set if match is found
@@ -601,9 +604,10 @@ class MujocoEnv(metaclass=EnvMeta):
         Args:
             observable (Observable): Observable instance.
         """
-        assert observable.name not in self._observables,\
-            "Observable name {} is already associated with an existing observable! Use modify_observable(...) " \
+        assert observable.name not in self._observables, (
+            "Observable name {} is already associated with an existing observable! Use modify_observable(...) "
             "to modify a pre-existing observable.".format(observable.name)
+        )
         self._observables[observable.name] = observable
 
     def modify_observable(self, observable_name, attribute, modifier):
@@ -618,8 +622,9 @@ class MujocoEnv(metaclass=EnvMeta):
                 match the function being replaced.
         """
         # Find the observable
-        assert observable_name in self._observables, "No valid observable with name {} found. Options are: {}".\
-            format(observable_name, self.observation_names)
+        assert observable_name in self._observables, "No valid observable with name {} found. Options are: {}".format(
+            observable_name, self.observation_names
+        )
         obs = self._observables[observable_name]
         # replace attribute accordingly
         if attribute == "sensor":
@@ -638,9 +643,11 @@ class MujocoEnv(metaclass=EnvMeta):
             obs.set_active(modifier)
         else:
             # Invalid attribute specified
-            raise ValueError("Invalid observable attribute specified. Requested: {}, valid options are {}".
-                             format(attribute, {"sensor", "corrupter", "filter", "delayer",
-                                                "sampling_rate", "enabled", "active"}))
+            raise ValueError(
+                "Invalid observable attribute specified. Requested: {}, valid options are {}".format(
+                    attribute, {"sensor", "corrupter", "filter", "delayer", "sampling_rate", "enabled", "active"}
+                )
+            )
 
     def _check_success(self):
         """

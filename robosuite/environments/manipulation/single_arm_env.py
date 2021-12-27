@@ -9,6 +9,7 @@ class SingleArmEnv(ManipulationEnv):
     """
     A manipulation environment intended for a single robot arm.
     """
+
     def _load_model(self):
         """
         Verifies correct robot model is loaded
@@ -16,8 +17,9 @@ class SingleArmEnv(ManipulationEnv):
         super()._load_model()
 
         # Verify the correct robot has been loaded
-        assert isinstance(self.robots[0], SingleArm), \
-            "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
+        assert isinstance(
+            self.robots[0], SingleArm
+        ), "Error: Expected one single-armed robot! Got {} type instead.".format(type(self.robots[0]))
 
     def _check_robot_configuration(self, robots):
         """

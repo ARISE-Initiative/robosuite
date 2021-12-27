@@ -35,6 +35,7 @@ class RingBuffer(Buffer):
         dim (int): Size of entries being added. This is, e.g.: the size of a state vector that is to be stored
         length (int): Size of the ring buffer
     """
+
     def __init__(self, dim, length):
         # Store input args
         self.dim = dim
@@ -88,7 +89,7 @@ class RingBuffer(Buffer):
         Returns:
             float or np.array: Averaged value of all elements in buffer
         """
-        return np.mean(self.buf[:self._size], axis=0)
+        return np.mean(self.buf[: self._size], axis=0)
 
 
 class DeltaBuffer(Buffer):
@@ -102,6 +103,7 @@ class DeltaBuffer(Buffer):
         init_value (None or Iterable): Initial value to fill "last" value with initially.
             If None (default), last array will be filled with zeros
     """
+
     def __init__(self, dim, init_value=None):
         # Setup delta object
         self.dim = dim

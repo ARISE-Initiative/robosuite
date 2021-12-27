@@ -34,19 +34,18 @@ demonstrates how this can be easily achieved by using the GymWrapper.
 import robosuite as suite
 from robosuite.wrappers import GymWrapper
 
-
 if __name__ == "__main__":
 
     # Notice how the environment is wrapped by the wrapper
     env = GymWrapper(
         suite.make(
             "Lift",
-            robots="Sawyer",                # use Sawyer robot
-            use_camera_obs=False,           # do not use pixel observations
-            has_offscreen_renderer=False,   # not needed since not using pixel obs
-            has_renderer=True,              # make sure we can render to the screen
-            reward_shaping=True,            # use dense rewards
-            control_freq=20,                # control should happen fast enough so that simulation looks smooth
+            robots="Sawyer",  # use Sawyer robot
+            use_camera_obs=False,  # do not use pixel observations
+            has_offscreen_renderer=False,  # not needed since not using pixel obs
+            has_renderer=True,  # make sure we can render to the screen
+            reward_shaping=True,  # use dense rewards
+            control_freq=20,  # control should happen fast enough so that simulation looks smooth
         )
     )
 

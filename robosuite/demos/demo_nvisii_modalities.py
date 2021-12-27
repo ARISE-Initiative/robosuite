@@ -3,32 +3,34 @@ Dumps video of the modality specified from iGibson renderer.
 """
 
 import argparse
-import numpy as np
-import robosuite as suite
+
 import imageio
 import matplotlib.cm
+import numpy as np
 
+import robosuite as suite
 from robosuite.controllers import load_controller_config
-from robosuite.utils.input_utils import *
 from robosuite.renderers import load_renderer_config
 from robosuite.utils import macros
+from robosuite.utils.input_utils import *
 
+if __name__ == "__main__":
 
-if __name__ == '__main__':
-
-    '''
+    """
     Registered environments: Lift, Stack, NutAssembly, NutAssemblySingle, NutAssemblySquare, NutAssemblyRound,
-                             PickPlace, PickPlaceSingle, PickPlaceMilk, PickPlaceBread, PickPlaceCereal, 
+                             PickPlace, PickPlaceSingle, PickPlaceMilk, PickPlaceBread, PickPlaceCereal,
                              PickPlaceCan, Door, Wipe, TwoArmLift, TwoArmPegInHole, TwoArmHandover
 
     Possible robots: Baxter, IIWA, Jaco, Kinova3, Panda, Sawyer, UR5e
-    ''' 
+    """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--vision-modality",
-                        type=str, 
-                        default="rgb", 
-                        help="Modality to render. Could be set to `depth`, `normal`, `segmentation`, or `rgb`")    
-    
+    parser.add_argument(
+        "--vision-modality",
+        type=str,
+        default="rgb",
+        help="Modality to render. Could be set to `depth`, `normal`, `segmentation`, or `rgb`",
+    )
+
     args = parser.parse_args()
 
     options = {}
@@ -45,8 +47,8 @@ if __name__ == '__main__':
         options["env_configuration"] = choose_multi_arm_config()
 
         # If chosen configuration was bimanual, the corresponding robot must be Baxter. Else, have user choose robots
-        if options["env_configuration"] == 'bimanual':
-            options["robots"] = 'Baxter'
+        if options["env_configuration"] == "bimanual":
+            options["robots"] = "Baxter"
         else:
             options["robots"] = []
 
@@ -61,38 +63,37 @@ if __name__ == '__main__':
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
 
-
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller="OSC_POSE")
 
     # change renderer config
-    config = load_renderer_config('nvisii')
+    config = load_renderer_config("nvisii")
 
-    if args.vision_modality == 'rgb':
-        config['vision_modalities'] = None
-    if args.vision_modality == 'segmentation':
-        config['vision_modalities'] = 'segmentation'
-    if args.vision_modality == 'depth':
-        config['vision_modalities'] = 'depth'
-    if args.vision_modality == 'normal':
-        config['vision_modalities'] = 'normal'
-        
+    if args.vision_modality == "rgb":
+        config["vision_modalities"] = None
+    if args.vision_modality == "segmentation":
+        config["vision_modalities"] = "segmentation"
+    if args.vision_modality == "depth":
+        config["vision_modalities"] = "depth"
+    if args.vision_modality == "normal":
+        config["vision_modalities"] = "normal"
+
     env = suite.make(
-            **options,
-            has_renderer=False,           # no on-screen renderer
-            has_offscreen_renderer=False, # no off-screen renderer
-            ignore_done=True,
-            use_camera_obs=False,         # no camera observations
-            control_freq=20,
-            renderer='nvisii',
-            renderer_config=config,
-            camera_segmentations='element' if config['vision_modalities'] == 'segmentation' else None
-        )
+        **options,
+        has_renderer=False,  # no on-screen renderer
+        has_offscreen_renderer=False,  # no off-screen renderer
+        ignore_done=True,
+        use_camera_obs=False,  # no camera observations
+        control_freq=20,
+        renderer="nvisii",
+        renderer_config=config,
+        camera_segmentations="element" if config["vision_modalities"] == "segmentation" else None,
+    )
 
     env.reset()
 
-    low, high = env.action_spec                    
-    
+    low, high = env.action_spec
+
     timesteps = 300
     for i in range(timesteps):
         action = np.random.uniform(low, high)
@@ -102,6 +103,4 @@ if __name__ == '__main__':
             env.render()
 
     env.close_renderer()
-    print('Done.')
-    
-
+    print("Done.")

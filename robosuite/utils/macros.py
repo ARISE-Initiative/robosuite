@@ -8,7 +8,7 @@ To make sure global reference is maintained, should import these settings as:
 """
 
 # Global Mujoco Simulation Parameters
-SIMULATION_TIMESTEP = 0.002     # Internal simulation timestep (in seconds)
+SIMULATION_TIMESTEP = 0.002  # Internal simulation timestep (in seconds)
 
 # Instance Randomization
 # Used if we want to randomize geom groups uniformly per instance -- e.g.: entire robot arm, vs. per-joint geom
@@ -25,7 +25,7 @@ CACHE_NUMBA = True
 # applications assume an OpenCV coordinate frame convention. For consistency, you can set the image convention
 # here; this will assure that any rendered frames will match the associated convention.
 # See the figure at the bottom of https://amytabb.com/ts/2019_06_28/ for an informative overview.
-IMAGE_CONVENTION = "opengl"     # Options are {"opengl", "opencv"}
+IMAGE_CONVENTION = "opengl"  # Options are {"opengl", "opencv"}
 
 # Image concatenation
 # In general, observations are concatenated together by modality. However, image observations are expensive memory-wise,
