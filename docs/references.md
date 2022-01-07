@@ -5,6 +5,15 @@ A list of references of projects and papers that use **robosuite**. If you would
 ## 2021
 
 - [Guided Imitation of Task and Motion Planning](https://arxiv.org/abs/2112.03386). Michael McDonald, Dylan Hadfield-Menell
+- [V-MAO: Generative Modeling for Multi-Arm Manipulation of Articulated Objects](https://arxiv.org/abs/2111.03987). Xingyu Liu, Kris M. Kitani
+- [Koopman Q-learning: Offline Reinforcement Learning via Symmetries of Dynamics](https://arxiv.org/abs/2111.01365). Matthias Weissenbacher, Samarth Sinha, Animesh Garg, Yoshinobu Kawahara
+- [Validate on Sim, Detect on Real -- Model Selection for Domain Randomization](https://arxiv.org/abs/2111.00765). Gal Leibovich, Guy Jacob, Shadi Endrawis, Gal Novik, Aviv Tamar
+- [Towards More Generalizable One-shot Visual Imitation Learning](https://arxiv.org/abs/2110.13423). Zhao Mandi, Fangchen Liu, Kimin Lee, Pieter Abbeel
+- [Decentralized Multi-Agent Control of a Manipulator in Continuous Task Learning](https://www.mdpi.com/2076-3417/11/21/10227). Asad Ali Shahid, Jorge Said Vidal Sesin, Damjan Pecioski, Francesco Braghin, Dario Piga, Loris Roveda
+- [Augmenting Reinforcement Learning with Behavior Primitives for Diverse Manipulation Tasks](https://arxiv.org/abs/2110.03655). Soroush Nasiriany, Huihan Liu, Yuke Zhu
+- [Bottom-Up Skill Discovery from Unsegmented Demonstrations for Long-Horizon Robot Manipulation](https://arxiv.org/abs/2109.13841). Yifeng Zhu, Peter Stone, Yuke Zhu
+- [Lifelong Robotic Reinforcement Learning by Retaining Experiences](https://arxiv.org/abs/2109.09180). Annie Xie, Chelsea Finn
+- [ThriftyDAgger: Budget-Aware Novelty and Risk Gating for Interactive Imitation Learning](https://arxiv.org/abs/2109.08273). Ryan Hoque, Ashwin Balakrishna, Ellen Novoseller, Albert Wilcox, Daniel S. Brown, Ken Goldberg
 - [What Matters in Learning from Offline Human Demonstrations for Robot Manipulation](https://arxiv.org/abs/2108.03298). Ajay Mandlekar, Danfei Xu, Josiah Wong, Soroush Nasiriany, Chen Wang, Rohun Kulkarni, Li Fei-Fei, Silvio Savarese, Yuke Zhu, Roberto Martín-Martín
 - [Multi-Modal Mutual Information (MuMMI) Training for Robust Self-Supervised Deep Reinforcement Learning](https://arxiv.org/abs/2107.02339). Kaiqi Chen, Yong Lee, Harold Soh
 - [SECANT: Self-Expert Cloning for Zero-Shot Generalization of Visual Policies](https://arxiv.org/abs/2106.09678). Linxi Fan, Guanzhi Wang, De-An Huang, Zhiding Yu, Li Fei-Fei, Yuke Zhu, Anima Anandkumar
@@ -12,6 +21,7 @@ A list of references of projects and papers that use **robosuite**. If you would
 - [Learning a Skill-sequence-dependent Policy for Long-horizon Manipulation Tasks](https://arxiv.org/abs/2105.05484). Zhihao Li, Zhenglong Sun, Jionglong Su, Jiaming Zhang
 - [Efficient Self-Supervised Data Collection for Offline Robot Learning](https://arxiv.org/abs/2105.04607). Shadi Endrawis, Gal Leibovich, Guy Jacob, Gal Novik, Aviv Tamar
 - [LASER: Learning a Latent Action Space for Efficient Reinforcement Learning](https://arxiv.org/abs/2103.15793). Arthur Allshire, Roberto Martín-Martín, Charles Lin, Shawn Manuel, Silvio Savarese, Animesh Garg
+- [S4RL: Surprisingly Simple Self-Supervision for Offline Reinforcement Learning](https://arxiv.org/abs/2103.06326). Samarth Sinha, Ajay Mandlekar, Animesh Garg
 - [Generalization Through Hand-Eye Coordination: An Action Space for Learning Spatially-Invariant Visuomotor Control](https://arxiv.org/abs/2103.00375). Chen Wang, Rui Wang, Ajay Mandlekar, Li Fei-Fei, Silvio Savarese, Danfei Xu
 
 ## 2020
