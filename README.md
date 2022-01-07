@@ -33,7 +33,7 @@ This release of **robosuite** contains seven robot models, eight gripper models,
 * **human demonstrations**: utilities for collecting human demonstrations, replaying demonstration datasets, and leveraging demonstration data for learning. Check out our sister project [robomimic](https://arise-initiative.github.io/robomimic-web/);
 * **photorealistic rendering**: integration with advanced graphics tools that provide real-time photorealistic renderings of simulated scenes.
 
-## Citations
+## Citation
 Please cite [**robosuite**](https://robosuite.ai) if you use this framework in your publications:
 ```bibtex
 @inproceedings{robosuite2020,
