@@ -21,7 +21,7 @@ This release of **robosuite** contains seven robot models, eight gripper models,
 * [**human demonstrations**](algorithms/demonstrations): utilities for collecting human demonstrations, replaying demonstration datasets, and leveraging demonstration data for learning.
 * [**photorealistic rendering**](modules/renderers): integration with advanced graphics tools that provide real-time photorealistic renderings of simulated scenes.
 
-## Citations
+## Citation
 Please cite [robosuite](https://robosuite.ai) if you use this framework in your publications:
 ```
 @inproceedings{robosuite2020,
