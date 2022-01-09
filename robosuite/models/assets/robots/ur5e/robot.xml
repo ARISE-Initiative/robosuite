@@ -31,40 +31,39 @@
             <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
             <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
             <!-- mount attached here -->
-            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="base_vis" />
-            <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="base" name="base_col"/>
-            <body name="shoulder_link" pos="0 0 0.163">
-                <inertial pos="0 0 0" mass="3.7" diaginertia="0.0102675 0.0102675 0.00666" />
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="-1 0 0 0" mesh="base_vis" />
+            <geom type="mesh" rgba="0.7 0.7 0.7 1" quat="-1 0 0 0" mesh="base" name="base_col"/>
+            <body name="shoulder_link" pos="0 0 0.163" quat="0 0 0 1">
+                <inertial pos="0 0 0" mass="3.761" diaginertia="0.0102675 0.0102675 0.00666"/>
                 <joint name="shoulder_pan_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="shoulder_vis" name="shoulder_visual" />
-                <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="shoulder" name="shoulder_col" />
-                <body name="upper_arm_link" pos="0 0.138 0" quat="0.707107 0 0.707107 0">
-                    <inertial pos="0 0 0.2125" mass="8.393" diaginertia="0.133886 0.133886 0.0151074" />
-                    <joint name="shoulder_lift_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="upperarm_vis" name="upperarm_visual" />
-                    <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="upperarm" name="upperarm_col"/>
-                    <body name="forearm_link" pos="0 -0.131 0.425">
-                        <inertial pos="0 0 0.196" mass="2.275" diaginertia="0.0311796 0.0311796 0.004095" />
-                        <joint name="elbow_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-3.14159 3.14159" damping="0.001" frictionloss="0.01" />
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="forearm_vis" name="forearm_visual" />
-                        <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="forearm" name="forearm_col"/>
-                        <body name="wrist_1_link" pos="0 0 0.392" quat="0.707107 0 0.707107 0">
-                            <inertial pos="0 0.127 0" mass="1.219" diaginertia="0.0025599 0.0025599 0.0021942" />
-                            <joint name="wrist_1_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
-                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist1_vis" name="wrist1_visual" />
-                            <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist1" name="wrist1_col" />
-                            <body name="wrist_2_link" pos="0 0.127 0">
-                                <inertial pos="0 0 0.1" mass="1.219" diaginertia="0.0025599 0.0025599 0.0021942" />
+                <geom quat="0 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" mesh="shoulder_vis" name="shoulder_visual" />
+                <geom quat="0 0 0 1" type="mesh" rgba="0.7 0.7 0.7 1" mesh="shoulder" name="shoulder_col" />
+                <body name="upper_arm_link" pos="0 0 0" quat="0.707107 0.707107 0 0">
+                    <inertial pos="-0.2125 0 0.138" quat="0.707107 0 0.707107 0" mass="8.058" diaginertia="0.133886 0.133886 0.0151074"/>
+                    <joint name="shoulder_lift_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" pos="0 0 0.138" quat="0.5 0.5 -0.5 -0.5" mesh="upperarm_vis" name="upperarm_visual" />
+                    <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="upperarm" pos="0 0 0.138" quat="0.5 0.5 -0.5 -0.5" name="upperarm_col"/>
+                    <body name="forearm_link" pos="-0.425 0 0">
+                        <inertial pos="-0.1961 0 0.007" quat="0.707107 0 0.707107 0" mass="2.846" diaginertia="0.0312094 0.0312094 0.004095"/>
+                        <joint name="elbow_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14159 3.14159" damping="0.001" frictionloss="0.01" />
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" pos="0 0 0.007" quat="0.5 0.5 -0.5 -0.5" mesh="forearm_vis" name="forearm_visual" />
+                        <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="forearm" pos="0 0 0.007" quat="0.5 0.5 -0.5 -0.5" name="forearm_col"/>
+                        <body name="wrist_1_link" pos="-0.3922 0 0.1333">
+                            <inertial pos="0 0 0" mass="1.37" diaginertia="0.0025599 0.0025599 0.0021942"/>
+                            <joint name="wrist_1_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" pos="0 0 -0.127" quat="0.707107 0.707107 0 0" mesh="wrist1_vis" name="wrist1_visual" />
+                            <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist1" pos="0 0 -0.127" quat="0.707107 0.707107 0 0" name="wrist1_col" />
+                            <body name="wrist_2_link" pos="0 -0.0997 -2.04488e-11" quat="0.707107 0.707107 0 0">
+                                <inertial pos="0 0 0" mass="1.3" diaginertia="0.0025599 0.0025599 0.0021942"/>
                                 <joint name="wrist_2_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
-                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist2_vis" name="wrist2_visual" />
-                                <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist2" name="wrist2_col" />
-                                <body name="wrist_3_link" pos="0 0 0.1">
-                                    <inertial pos="0 0.0771683 0" quat="0.707107 0 0 0.707107" mass="0.1889" diaginertia="0.000132134 9.90863e-05 9.90863e-05" />
-                                    <joint name="wrist_3_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
-                                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" quat="0.707 0.707 0 0" mesh="wrist3_vis" name="wrist3_visual" />
-                                    <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist3" name="wrist3_col" />
-                                    <geom size="0.005 0.005 0.005" pos="0 0.09 0" quat="0.707107 0 0 0.707107" type="box" name="wrist3_col2"/>
-                                    <body name="right_hand" pos="0 0.098 0" quat="0.707 -0.707 0 0" >
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" pos="0 0 -0.0997" mesh="wrist2_vis" name="wrist2_visual" />
+                                <geom type="mesh" rgba="0.7 0.7 0.7 1" pos="0 0 -0.0997" mesh="wrist2" name="wrist2_col" />
+                                <body name="wrist_3_link" pos="0 0.0996 -2.04283e-11" quat="0.707107 -0.707107 0 0">
+                                    <inertial pos="0 0 -0.0229" quat="0.5 0.5 -0.5 0.5" mass="0.365" diaginertia="0.000132117 9.89041e-05 9.89041e-05"/>
+                                    <joint name="wrist_3_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01" />
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" pos="0 0 -0.0989" quat="0.707107 0.707107 0 0" mesh="wrist3_vis" name="wrist3_visual" />
+                                    <geom type="mesh" rgba="0.7 0.7 0.7 1" pos="0 0 -0.0989" quat="0.707107 0.707107 0 0" mesh="wrist3" name="wrist3_col" />
+                                    <body name="right_hand" pos="0 0 0" quat="1 0 0 0" >
                                         <!-- This camera points out from the eef. -->
                                         <camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
                                         <!-- To add gripper -->
