@@ -125,7 +125,9 @@ TEXTURE_FILES = {
     "Lemon": "lemon.png",
 }
 
-TEXTURES = {texture_name: os.path.join("textures", texture_file) for (texture_name, texture_file) in TEXTURE_FILES.items()}
+TEXTURES = {
+    texture_name: os.path.join("textures", texture_file) for (texture_name, texture_file) in TEXTURE_FILES.items()
+}
 
 ALL_TEXTURES = TEXTURES.keys()
 
