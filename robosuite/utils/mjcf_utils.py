@@ -95,9 +95,7 @@ IMAGE_CONVENTION_MAPPING = {
     "opencv": -1,
 }
 
-DEFAULT_TEXTURE_PATH = "textures"
-
-TEXTURES = {
+TEXTURE_FILES = {
     "WoodRed": "red-wood.png",
     "WoodGreen": "green-wood.png",
     "WoodBlue": "blue-wood.png",
@@ -127,7 +125,7 @@ TEXTURES = {
     "Lemon": "lemon.png",
 }
 
-[TEXTURES.update({texture_name: os.path.join(DEFAULT_TEXTURE_PATH, texture_file)}) for (texture_name, texture_file) in TEXTURES.items()]
+TEXTURES = {texture_name: os.path.join("textures", texture_file) for (texture_name, texture_file) in TEXTURE_FILES.items()}
 
 ALL_TEXTURES = TEXTURES.keys()
 
