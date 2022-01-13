@@ -212,7 +212,7 @@ class CustomMaterial(object):
         # Handle default and non-default cases separately for linking texture patch file locations
         if not default:
             # Add in the filepath to texture patch
-            self.tex_attrib["file"] = xml_path_completion("textures/" + TEXTURES[texture])
+            self.tex_attrib["file"] = xml_path_completion(TEXTURES[texture])
         else:
             if texture is not None:
                 # Create a texture patch
