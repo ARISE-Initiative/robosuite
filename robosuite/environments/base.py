@@ -4,7 +4,7 @@ import numpy as np
 from mujoco_py import MjRenderContextOffscreen, MjSim, load_model_from_xml
 
 import robosuite.utils.macros as macros
-from robosuite.models.base import MujocoModel
+import robosuite.utils.sim_utils as SU
 from robosuite.renderers.base import load_renderer_config
 from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
 from robosuite.utils import SimulationError, XMLError
@@ -553,25 +553,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns:
             bool: True if any geom in @geoms_1 is in contact with any geom in @geoms_2.
         """
-        # Check if either geoms_1 or geoms_2 is a string, convert to list if so
-        if type(geoms_1) is str:
-            geoms_1 = [geoms_1]
-        elif isinstance(geoms_1, MujocoModel):
-            geoms_1 = geoms_1.contact_geoms
-        if type(geoms_2) is str:
-            geoms_2 = [geoms_2]
-        elif isinstance(geoms_2, MujocoModel):
-            geoms_2 = geoms_2.contact_geoms
-        for contact in self.sim.data.contact[: self.sim.data.ncon]:
-            # check contact geom in geoms
-            c1_in_g1 = self.sim.model.geom_id2name(contact.geom1) in geoms_1
-            c2_in_g2 = self.sim.model.geom_id2name(contact.geom2) in geoms_2 if geoms_2 is not None else True
-            # check contact geom in geoms (flipped)
-            c2_in_g1 = self.sim.model.geom_id2name(contact.geom2) in geoms_1
-            c1_in_g2 = self.sim.model.geom_id2name(contact.geom1) in geoms_2 if geoms_2 is not None else True
-            if (c1_in_g1 and c2_in_g2) or (c1_in_g2 and c2_in_g1):
-                return True
-        return False
+        return SU.check_contact(sim=self.sim, geoms_1=geoms_1, geoms_2=geoms_2)
 
     def get_contacts(self, model):
         """
@@ -584,19 +566,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Raises:
             AssertionError: [Invalid input type]
         """
-        # Make sure model is MujocoModel type
-        assert isinstance(
-            model, MujocoModel
-        ), "Inputted model must be of type MujocoModel; got type {} instead!".format(type(model))
-        contact_set = set()
-        for contact in self.sim.data.contact[: self.sim.data.ncon]:
-            # check contact geom in geoms; add to contact set if match is found
-            g1, g2 = self.sim.model.geom_id2name(contact.geom1), self.sim.model.geom_id2name(contact.geom2)
-            if g1 in model.contact_geoms and g2 not in model.contact_geoms:
-                contact_set.add(g2)
-            elif g2 in model.contact_geoms and g1 not in model.contact_geoms:
-                contact_set.add(g1)
-        return contact_set
+        return SU.get_contacts(sim=self.sim, model=model)
 
     def add_observable(self, observable):
         """
