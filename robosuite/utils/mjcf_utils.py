@@ -95,7 +95,7 @@ IMAGE_CONVENTION_MAPPING = {
     "opencv": -1,
 }
 
-TEXTURES = {
+TEXTURE_FILES = {
     "WoodRed": "red-wood.png",
     "WoodGreen": "green-wood.png",
     "WoodBlue": "blue-wood.png",
@@ -123,6 +123,10 @@ TEXTURES = {
     "Glass": "glass.png",
     "FeltGray": "gray-felt.png",
     "Lemon": "lemon.png",
+}
+
+TEXTURES = {
+    texture_name: os.path.join("textures", texture_file) for (texture_name, texture_file) in TEXTURE_FILES.items()
 }
 
 ALL_TEXTURES = TEXTURES.keys()
@@ -208,7 +212,7 @@ class CustomMaterial(object):
         # Handle default and non-default cases separately for linking texture patch file locations
         if not default:
             # Add in the filepath to texture patch
-            self.tex_attrib["file"] = xml_path_completion("textures/" + TEXTURES[texture])
+            self.tex_attrib["file"] = xml_path_completion(TEXTURES[texture])
         else:
             if texture is not None:
                 # Create a texture patch
