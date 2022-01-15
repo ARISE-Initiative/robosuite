@@ -22,6 +22,7 @@ A list of references of projects and papers that use **robosuite**. If you would
 - [Calibration-Free Monocular Vision-Based Robot Manipulations With Occlusion Awareness](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9439456). Yongle Luo, Kun Dong, Lili Zhao, Zhiyong Sun, Erkang Cheng, Honglin Kan, Chao Zhou, Bo Song
 - [Learning a Skill-sequence-dependent Policy for Long-horizon Manipulation Tasks](https://arxiv.org/abs/2105.05484). Zhihao Li, Zhenglong Sun, Jionglong Su, Jiaming Zhang
 - [Efficient Self-Supervised Data Collection for Offline Robot Learning](https://arxiv.org/abs/2105.04607). Shadi Endrawis, Gal Leibovich, Guy Jacob, Gal Novik, Aviv Tamar
+- [Learning Visually Guided Latent Actions for Assistive Teleoperation](https://arxiv.org/abs/2105.00580). Siddharth Karamcheti, Albert J. Zhai, Dylan P. Losey, Dorsa Sadigh
 - [LASER: Learning a Latent Action Space for Efficient Reinforcement Learning](https://arxiv.org/abs/2103.15793). Arthur Allshire, Roberto Martín-Martín, Charles Lin, Shawn Manuel, Silvio Savarese, Animesh Garg
 - [S4RL: Surprisingly Simple Self-Supervision for Offline Reinforcement Learning](https://arxiv.org/abs/2103.06326). Samarth Sinha, Ajay Mandlekar, Animesh Garg
 - [Generalization Through Hand-Eye Coordination: An Action Space for Learning Spatially-Invariant Visuomotor Control](https://arxiv.org/abs/2103.00375). Chen Wang, Rui Wang, Ajay Mandlekar, Li Fei-Fei, Silvio Savarese, Danfei Xu
@@ -47,6 +48,7 @@ A list of references of projects and papers that use **robosuite**. If you would
 - [Intrinsic Motivation for Encouraging Synergistic Behavior](https://arxiv.org/abs/2002.05189). Rohan Chitnis, Shubham Tulsiani, Saurabh Gupta, Abhinav Gupta
 - [Learning Continuous Control Actions for Robotic Grasping with Reinforcement Learning](https://ieeexplore.ieee.org/document/9282951). Asad Ali Shahid, Loris Roveda, Dario Piga, Francesco Braghin
 - [Combining Reinforcement Learning and Rule-based Method to Manipulate Objects in Clutter](https://ieeexplore.ieee.org/document/9207153). Yiwen Chen, Zhaojie Ju, Chenguang Yang
+- [Research on Complex Robot Manipulation Tasks Based on Hindsight Trust Region Policy Optimization](https://ieeexplore.ieee.org/document/9327251). Deyu Yang, Hanbo Zhang, Xuguang Lan
 
 ## 2019
 
