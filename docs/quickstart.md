@@ -69,7 +69,7 @@ mujoco_arena.set_origin([0.8, 0, 0])
 world.merge(mujoco_arena)
 ```
 
-**Step 4: Adding the object.** For details of `MujocoObject`, refer to the documentations about [MujocoObject](modeling/object_model), we can create a ball and add it to the world.
+**Step 4: Adding the object.** For details of `MujocoObject`, refer to the documentation about [MujocoObject](modeling/object_model), we can create a ball and add it to the world.
 ```python
 from robosuite.models.objects import BallObject
 from robosuite.utils.mjcf_utils import new_joint

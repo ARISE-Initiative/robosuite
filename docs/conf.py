@@ -67,7 +67,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "robosuite"
-copyright = "Stanford University and The University of Texas at Austin 2021"
+copyright = "Stanford University and The University of Texas at Austin 2022"
 author = "Yuke Zhu, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín"
 
 # The version info for the project you're documenting, acts as replacement for
