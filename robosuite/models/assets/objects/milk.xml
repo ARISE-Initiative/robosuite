@@ -1,7 +1,7 @@
 <mujoco model="milk">
   <asset>
-    <mesh file="meshes/milk.stl" name="milk_mesh" scale="0.9 0.9 0.9"/>
-    <texture file="../textures/ceramic.png" name="tex-ceramic"/>
+    <mesh file="meshes/milk.msh" name="milk_mesh" scale="0.9 0.9 0.9"/>
+    <texture file="../textures/ceramic.png" name="tex-ceramic" type="2d"/>
     <material name="ceramic" reflectance="0.5" texrepeat="1 1" texture="tex-ceramic" texuniform="true"/>
   </asset>
   <worldbody>
