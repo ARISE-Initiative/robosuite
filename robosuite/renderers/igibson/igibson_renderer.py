@@ -21,7 +21,7 @@ from igibson.render.mesh_renderer.mesh_renderer_settings import MeshRendererSett
 from igibson.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
 from igibson.render.viewer import Viewer
 from igibson.utils.constants import MAX_CLASS_COUNT
-from igibson.utils.mesh_util import ortho, quat2rotmat, xyzw2wxyz
+from igibson.utils.mesh_util import ortho, quat2rotmat, xyzw2wxyz, xyz2mat
 
 from robosuite.renderers import load_renderer_config
 from robosuite.renderers.base import Renderer
@@ -491,8 +491,8 @@ class iGibsonRenderer(Renderer):
                 pos = [0, 0, 0]
                 orn = [0, 0, 0, 1]  # xyzw
 
-            instance.set_position(pos)
-            instance.set_rotation(quat2rotmat(xyzw2wxyz(orn)))
+            instance.set_position([xyz2mat(pos)])
+            instance.set_rotation([quat2rotmat(xyzw2wxyz(orn))])
 
     def reset(self):
         self.renderer.release()
