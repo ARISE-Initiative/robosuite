@@ -52,6 +52,8 @@ Using iGibson's PBR requires Linux or Windows machines; you can still use the iG
   - Tested on 10.15
   - PBR features not supported
 
+**NOTE**: Since PBR is not supported on Mac OS X, colors and textures will look rather flat. More realistic images are obtained on Linux/Windows.
+
 Other system configurations may work, but have not been extensively tested.
 
 ## PyGame
