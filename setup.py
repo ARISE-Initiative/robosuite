@@ -27,7 +27,7 @@ setup(
     author="Yuke Zhu, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín",
     url="https://github.com/ARISE-Initiative/robosuite",
     author_email="yukez@cs.utexas.edu",
-    version="1.3.1",
+    version="1.3.2",
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
