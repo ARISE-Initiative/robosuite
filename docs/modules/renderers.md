@@ -35,7 +35,7 @@ Installing iGibson can be done using the command `pip install igibson`. Please r
 
 ### Requirements to use the iGibson Renderer
 
-Using iGibson's PBR requires Linux or Windows machines; you can still use the iGibson renderer with Mac OS X but it won't be PBR, it goes back to classic OpenGL rendering. Apart from that, the minimum system requirements are the following:
+Using iGibson's PBR requires Linux or Windows machines; you can still use the iGibson renderer with macOS but it won't be PBR, it goes back to classic OpenGL rendering. Apart from that, the minimum system requirements are the following:
 
 - Linux
   - Ubuntu 16.04
@@ -48,11 +48,11 @@ Using iGibson's PBR requires Linux or Windows machines; you can still use the iG
   - Nvidia GPU with VRAM > 6.0GB
   - Nvidia driver >= 384
   - CUDA >= 9.0, CuDNN >= v7
-- Mac OS X
+- macOS
   - Tested on 10.15
   - PBR features not supported
 
-**NOTE**: Since PBR is not supported on Mac OS X, colors and textures will look rather flat. More realistic images are obtained on Linux/Windows.
+**NOTE**: Since PBR is not supported on macOS, colors and textures will look flat. More realistic renderings can be obtained on Linux and Windows.
 
 Other system configurations may work, but have not been extensively tested.
 
