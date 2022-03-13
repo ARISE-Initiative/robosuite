@@ -9,7 +9,7 @@ Keyboard:
     solver from Bullet physics.
 
     Note:
-        To run this script with Mac OS X, you must run it with root access.
+        To run this script with macOS, you must run it with root access.
 
 SpaceMouse:
 
@@ -29,7 +29,7 @@ SpaceMouse:
     RSS 2018
 
     Note:
-        This current implementation only supports Mac OS X (Linux support can be added).
+        This current implementation only supports macOS (Linux support can be added).
         Download and install the driver before running the script:
             https://www.3dconnexion.com/service/drivers.html
 
