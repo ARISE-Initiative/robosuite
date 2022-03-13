@@ -4,7 +4,7 @@ pybullet-svl>=3.1.6.4
 # required for GymWrapper
 gym
 
-# Mac OS X only
+# macOS only
 hidapi
 
 # required for demonstration utils
