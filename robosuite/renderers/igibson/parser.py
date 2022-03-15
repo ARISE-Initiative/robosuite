@@ -154,7 +154,7 @@ class Parser(BaseParser):
         element_id = 0
         for geom_index, geom in enumerate(self.xml_root.iter("geom")):
             geom_name = geom.get("name", "NONAME")
-            geom_type = geom.get("type")
+            geom_type = geom.get("type", "sphere")
 
             if (geom.get("group") != "1" and geom_type != "plane") or ("collision" in geom_name):
                 continue

@@ -80,8 +80,10 @@ def load_object(
 
     if geom_type == "mesh":
         scale = geom_scale
-    elif geom_type in ["box", "sphere"]:
+    elif geom_type == "box": 
         scale = geom_size * 2
+    elif geom_type == "sphere":
+        scale = np.repeat(geom_size * 2, 3)
     elif geom_type == "cylinder":
         scale = [geom_size[0], geom_size[0], geom_size[1]]
     elif geom_type == "plane":
