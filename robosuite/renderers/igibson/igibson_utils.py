@@ -51,7 +51,7 @@ def load_object(
     meshes,
 ):
     """
-    Function that initializes the meshes in the memeory with appropriate materials.
+    Function that initializes the meshes in the memory with appropriate materials.
     """
 
     primitive_shapes_path = {
@@ -109,7 +109,6 @@ def load_object(
         transform_orn=geom_orn,
         transform_pos=geom_pos,
         input_kd=geom_rgba,
-        load_texture=load_texture,
         overwrite_material=material,
     )
 
@@ -119,13 +118,13 @@ def load_object(
     # do not use pbr if robots have already defined materials.
     use_pbr_mapping = mesh_file_name not in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL
 
-    renderer.add_instance(
-        len(renderer.visual_objects) - 1,
+    renderer.add_instance_group(
+        [len(renderer.visual_objects) - 1],#len(renderer.visual_objects) - 1,
         pybullet_uuid=0,
         class_id=class_id,
         dynamic=True,
         use_pbr_mapping=use_pbr_mapping,
-        parent_body=parent_body_name,
+        parent_body_name=parent_body_name,
     )
 
 
@@ -180,7 +179,7 @@ def get_texture_id(intensity, name, self, resolution=1):
     os.makedirs(tmpdirname, exist_ok=True)
     fname = os.path.join(tmpdirname, f"{name}.png")
     plt.imsave(fname, im)
-    return self.renderer.load_texture_file(str(fname))
+    return self.renderer.load_texture_file(str(fname), 1)
 
 
 class MujocoRobot(object):
