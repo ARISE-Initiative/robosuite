@@ -3,7 +3,7 @@
 
 NOTE: requires pybullet module.
 
-Run `pip install pybullet==2.6.9`.
+Run `pip install "pybullet-svl>=3.1.6.4"`.
 
 
 NOTE: IK is only supported for the following robots:
@@ -19,7 +19,7 @@ Attempting to run IK with any other robot will raise an error!
 try:
     import pybullet as p
 except ImportError:
-    raise Exception("Please make sure pybullet is installed. Run `pip install pybullet==2.6.9`")
+    raise Exception("""Please make sure pybullet is installed. Run `pip install "pybullet-svl>=3.1.6.4"`""")
 import os
 from os.path import join as pjoin
 
