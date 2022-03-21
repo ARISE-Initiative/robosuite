@@ -1,3 +1,5 @@
+import platform
+
 import numpy as np
 from igibson.render.mesh_renderer.instances import InstanceGroup
 
@@ -157,6 +159,11 @@ class iGibsonRenderer(Renderer):
 
         """
         super().__init__(env)
+
+        if platform.system() == "Darwin":
+            print("*"*80)
+            print("WARN: Darwin (MacOS) does not support PBR iGibson renderer, color will look flat. Rendering quality is higher in Linux/Windows machines.")
+            print("*" * 80)
 
         check_modes(vision_modalities)
         check_render_mode(render_mode)
