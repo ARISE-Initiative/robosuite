@@ -1,7 +1,7 @@
 <mujoco model="cereal">
   <asset>
-    <mesh file="meshes/cereal.stl" name="cereal_mesh"/>
-    <texture type="cube" file="../textures/cereal.png" rgb1="1 1 1" name="tex-cereal"/>
+    <mesh file="meshes/cereal.msh" name="cereal_mesh"/>
+    <texture type="2d" file="../textures/cereal.png" rgb1="1 1 1" name="tex-cereal"/>
     <material name="cereal" reflectance="0.5" texrepeat="1 1" texture="tex-cereal" texuniform="false"/>
   </asset>
   <worldbody>

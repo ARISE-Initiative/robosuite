@@ -1,6 +1,8 @@
 import numpy as np
+from igibson.render.mesh_renderer.instances import InstanceGroup
 
 import robosuite as suite
+from robosuite.robots.robot import Robot
 
 try:
     import igibson
@@ -14,23 +16,21 @@ except ImportError:
 import os
 from collections import OrderedDict
 
-from igibson.render.mesh_renderer.mesh_renderer_cpu import Instance, MeshRenderer, Robot
+from igibson.render.mesh_renderer.mesh_renderer_cpu import MeshRenderer
 from igibson.render.mesh_renderer.mesh_renderer_settings import MeshRendererSettings
 from igibson.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
 from igibson.render.viewer import Viewer
 from igibson.utils.constants import MAX_CLASS_COUNT
-from igibson.utils.mesh_util import ortho, quat2rotmat, xyzw2wxyz
+from igibson.utils.mesh_util import ortho, quat2rotmat, xyzw2wxyz, xyz2mat
 
-import robosuite.utils.macros as macros
 from robosuite.renderers import load_renderer_config
 from robosuite.renderers.base import Renderer
-from robosuite.renderers.igibson.igibson_utils import TensorObservable, adjust_convention
+from robosuite.renderers.igibson.igibson_utils import TensorObservable, adjust_convention, MujocoRobot
 from robosuite.renderers.igibson.parser import Parser
 from robosuite.utils import macros
 from robosuite.utils import transform_utils as T
 from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
 from robosuite.utils.observables import sensor
-from robosuite.wrappers import Wrapper
 
 try:
     import torch
@@ -95,7 +95,7 @@ class iGibsonRenderer(Renderer):
         height=720,
         enable_pbr=True,
         enable_shadow=True,
-        msaa=True,
+        msaa=False,
         render2tensor=False,
         optimized=False,
         light_dimming_factor=1.0,
@@ -399,8 +399,8 @@ class iGibsonRenderer(Renderer):
             camera_name (string): name of the camera
         """
         for instance in self.renderer.instances:
-            if isinstance(instance, Robot):
-                for cam in instance.robot.cameras:
+            if isinstance(instance.ig_object, MujocoRobot):
+                for cam in instance.ig_object.cameras:
                     if cam.camera_name == camera_name:
                         camera_pose = cam.get_pose()
                         camera_pos = camera_pose[:3]
@@ -480,10 +480,10 @@ class iGibsonRenderer(Renderer):
 
         :param instance: Instance in the renderer
         """
-        if isinstance(instance, Instance):
-            if instance.parent_body != "worldbody":
-                pos_body_in_world = env.sim.data.get_body_xpos(instance.parent_body)
-                rot_body_in_world = env.sim.data.get_body_xmat(instance.parent_body).reshape((3, 3))
+        if isinstance(instance, InstanceGroup):
+            if instance.parent_body_name != "worldbody":
+                pos_body_in_world = env.sim.data.get_body_xpos(instance.parent_body_name)
+                rot_body_in_world = env.sim.data.get_body_xmat(instance.parent_body_name).reshape((3, 3))
                 pose_body_in_world = T.make_pose(pos_body_in_world, rot_body_in_world)
                 pose_geom_in_world = pose_body_in_world
                 pos, orn = T.mat2pose(pose_geom_in_world)  # xyzw
@@ -491,8 +491,8 @@ class iGibsonRenderer(Renderer):
                 pos = [0, 0, 0]
                 orn = [0, 0, 0, 1]  # xyzw
 
-            instance.set_position(pos)
-            instance.set_rotation(quat2rotmat(xyzw2wxyz(orn)))
+            instance.set_position([xyz2mat(pos)])
+            instance.set_rotation([quat2rotmat(xyzw2wxyz(orn))])
 
     def reset(self):
         self.renderer.release()
