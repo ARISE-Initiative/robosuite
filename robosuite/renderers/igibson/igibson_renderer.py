@@ -473,6 +473,10 @@ class iGibsonRenderer(Renderer):
             if instance.dynamic:
                 self._update_position(instance, self.env)
 
+        # Update camera pose
+        self.camera_position, self.view_direction, fov = self._get_camera_pose(self.camera_name)
+        self.renderer.set_camera(self.camera_position, self.camera_position + self.view_direction, [0, 0, 1])
+
     @staticmethod
     def _update_position(instance, env):
         """
