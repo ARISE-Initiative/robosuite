@@ -86,11 +86,13 @@ class TwoArmEnv(ManipulationEnv):
         Returns:
             np.array: (3,3) orientation matrix for EEF0
         """
-        pf = self.robots[0].robot_model.naming_prefix
+        pf = self.robots[0].gripper.naming_prefix
+
         if self.env_configuration == "bimanual":
-            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "right_ee")]).reshape(3, 3)
+            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "right_grip_site")]).reshape(3, 3)
+        
         else:
-            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "ee")]).reshape(3, 3)
+            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "grip_site")]).reshape(3, 3)
 
     @property
     def _eef1_xmat(self):
@@ -103,11 +105,11 @@ class TwoArmEnv(ManipulationEnv):
             np.array: (3,3) orientation matrix for EEF1
         """
         if self.env_configuration == "bimanual":
-            pf = self.robots[0].robot_model.naming_prefix
-            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "left_ee")]).reshape(3, 3)
+            pf = self.robots[0].gripper.naming_prefix
+            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "left_grip_site")]).reshape(3, 3)
         else:
-            pf = self.robots[1].robot_model.naming_prefix
-            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "ee")]).reshape(3, 3)
+            pf = self.robots[1].gripper.naming_prefix
+            return np.array(self.sim.data.site_xmat[self.sim.model.site_name2id(pf + "grip_site")]).reshape(3, 3)
 
     @property
     def _eef0_xquat(self):
