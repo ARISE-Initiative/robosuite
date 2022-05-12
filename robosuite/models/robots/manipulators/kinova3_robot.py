@@ -21,7 +21,7 @@ class Kinova3(ManipulatorModel):
 
     @property
     def default_gripper(self):
-        return "Robotiq85Gripper"
+        return "ReachKinovaGripper"
 
     @property
     def default_controller_config(self):
@@ -29,7 +29,10 @@ class Kinova3(ManipulatorModel):
 
     @property
     def init_qpos(self):
-        return np.array([0.000, 0.650, 0.000, 1.890, 0.000, 0.600, -np.pi / 2])
+        #return np.array([0.000, 0.650, 0.000, 1.890, 0.000, 0.600, -np.pi / 2])
+        #return np.array([-0.142, 1.374, -0.160, 2.291, -0.249, -2.104, -1.497])
+        #return np.array([-0.098,1.445,0.042,2.271,-0.098,-2.132,-1.632])
+        return np.array([-0.087, 1.618, -0.028, 2.050, -0.147, -2.125, -1.567])
 
     @property
     def base_xpos_offset(self):

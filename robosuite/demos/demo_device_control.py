@@ -102,19 +102,31 @@ import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
+from robosuite.models.objects import BoxObject
+import glfw, code
+from mujoco_py.generated import const
+
+def add_key_listener(keycode, env):
+    env.viewer.add_keypress_callback(keycode , device.on_press)
+    env.viewer.add_keyup_callback(keycode, device.on_release)
+    env.viewer.add_keyrepeat_callback(keycode, device.on_press)
+  
+
+def is_corner(geom_id, env):
+    return "sensor_corner" in env.sim.model.geom_id2name(geom_id)
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
-    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
+    parser.add_argument("--robots", nargs="+", type=str, default="Kinova3", help="Which robot(s) to use in the env")
     parser.add_argument(
         "--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary"
     )
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
     parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
-    parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
+    parser.add_argument("--controller", type=str, default="osc_aug", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
@@ -125,6 +137,8 @@ if __name__ == "__main__":
         controller_name = "IK_POSE"
     elif args.controller == "osc":
         controller_name = "OSC_POSE"
+    elif args.controller == "osc_aug":
+        controller_name = "OSC_AUG_POSE"
     else:
         print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
         raise ValueError
@@ -150,7 +164,7 @@ if __name__ == "__main__":
         **config,
         has_renderer=True,
         has_offscreen_renderer=False,
-        render_camera="agentview",
+        render_camera="birdview",
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
@@ -161,6 +175,16 @@ if __name__ == "__main__":
     # Wrap this environment in a visualization wrapper
     env = VisualizationWrapper(env, indicator_configs=None)
 
+    # set camera parameters
+
+
+    # add an object for grasping
+    mujoco_object = BoxObject(
+        name="box", size=[0.02, 0.02, 0.02], rgba=[1, 0, 0, 1], friction=[1, 0.005, 0.0001]
+    ).get_obj()
+    # Set the position of this object
+    mujoco_object.set("pos", "0 0 1.21")
+
     # Setup printing options for numbers
     np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
@@ -169,15 +193,14 @@ if __name__ == "__main__":
         from robosuite.devices import Keyboard
 
         device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-        env.viewer.add_keypress_callback("any", device.on_press)
-        env.viewer.add_keyup_callback("any", device.on_release)
-        env.viewer.add_keyrepeat_callback("any", device.on_press)
+        add_key_listener("any", env)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
         device = SpaceMouse(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
+
 
     while True:
         # Reset the environment
@@ -186,6 +209,7 @@ if __name__ == "__main__":
         # Setup rendering
         cam_id = 0
         num_cam = len(env.sim.model.camera_names)
+        env.viewer.viewer.cam.distance = 0.01
         env.render()
 
         # Initialize variables that should the maintained between resets
@@ -237,6 +261,26 @@ if __name__ == "__main__":
             elif rem_action_dim < 0:
                 # We're in an environment with no gripper action space, so trim the action space to be the action dim
                 action = action[: env.action_dim]
+
+            ## USER CODE START
+
+            # get all active contacts
+            active_contacts = env.sim.data.contact[:env.sim.data.ncon]
+
+            #code.interact(local=locals())
+            #env.viewer.viewer.add_marker(size=np.array([0.01,0.01,0.01]), pos=np.array([0, 0, 1]), type = const.GEOM_SPHERE, label='hi')
+
+            for c in active_contacts:
+                if (is_corner(c.geom1, env)):
+                    env.viewer.viewer.add_marker(type=const.GEOM_SPHERE, size=np.array([0.01,0.01,0.01]), pos=c.pos,label='contact')
+            #print(env.sim.data.qpos)
+            #for robot in env.robots:
+            #  print(robot.get_sensor_measurement("gripper0_touch1"))
+            #code.interact(local=locals())
+
+
+            ## USER CODE END
+
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)

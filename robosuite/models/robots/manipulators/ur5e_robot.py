@@ -21,7 +21,7 @@ class UR5e(ManipulatorModel):
 
     @property
     def default_gripper(self):
-        return "Robotiq85Gripper"
+        return "ReachGripper"
 
     @property
     def default_controller_config(self):
