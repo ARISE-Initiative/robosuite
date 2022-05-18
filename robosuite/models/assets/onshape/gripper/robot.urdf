@@ -1,0 +1,64 @@
+<robot name="onshape">
+<link name="link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///link_visual.stl"/>
+</geometry>
+<material name="link_material">
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///link_collision.stl"/>
+</geometry>
+<material name="link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-4.18816e-05 2.93334e-08 0.0591819" rpy="0 0 0"/>
+<mass value="0.156692" />
+<inertia ixx="0.000178231" ixy="1.16689e-10"  ixz="3.88365e-05" iyy="0.000180147" iyz="-2.52539e-10" izz="4.88221e-05" />
+</inertial>
+</link>
+
+<link name="link_2">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///link_2_visual.stl"/>
+</geometry>
+<material name="link_2_material">
+<color rgba="0.917647 0.917647 0.917647 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///link_2_collision.stl"/>
+</geometry>
+<material name="link_2_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="2.93334e-08 -0.0337819 -0.00630812" rpy="0 0 0"/>
+<mass value="0.156692" />
+<inertia ixx="4.88221e-05" ixy="-3.88365e-05"  ixz="-2.52539e-10" iyy="0.000178231" iyz="-1.16689e-10" izz="0.000180147" />
+</inertial>
+</link>
+
+<joint name="j1" type="revolute">
+<origin xyz="-0.00127 0 0.1016" rpy="-1.5708 -0 1.5708" />
+<parent link="link" />
+<child link="link_2" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-3.14159" upper="3.14159"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+
+</robot>

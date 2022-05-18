@@ -1,0 +1,12 @@
+{
+    "onshape_api": "https://cad.onshape.com",
+    "onshape_access_key": "i5fUfOVumSCoyWZWcZNLzoEu",
+    "onshape_secret_key": "ZQi2gd4vPBd89ISw8DVKvD2Yl4o49JaRnZnIVul7f6BXw0kp",
+    "documentId": "b11690f3237c274455b859cc",
+    "outputFormat": "urdf",
+    "assemblyName": "RRManipulator",
+    "useScads": false,
+    "mergeSTLs": "all",
+    "simplifySTLs": "all"
+}
+

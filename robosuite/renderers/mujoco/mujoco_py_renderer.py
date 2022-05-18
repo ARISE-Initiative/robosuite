@@ -42,6 +42,8 @@ class CustomMjViewer(MjViewer):
             # retain functionality for closing the viewer
             if key == glfw.KEY_ESCAPE:
                 super().key_callback(window, key, scancode, action, mods)
+            if key == glfw.KEY_TAB: ## TODO Michael
+                super().key_callback(window, key, scancode, action, mods)
         else:
             # only use default mujoco callbacks if "any" callbacks are unset
             super().key_callback(window, key, scancode, action, mods)

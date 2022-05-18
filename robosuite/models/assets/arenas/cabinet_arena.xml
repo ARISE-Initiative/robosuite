@@ -1,4 +1,4 @@
-<mujoco model="table_arena">
+<mujoco model="cabinet_arena">
   <asset>
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
     <texture file="../textures/wood-tiles.png" type="2d" name="texplane"/>
@@ -16,6 +16,8 @@
     <texture  name="textable" builtin="flat" height="512" width="512" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
     <material name="table_mat" texture="textable" />
 
+    <mesh name="cabinet" file="meshes/kitchen_cabinet.stl" />
+
   </asset>
   <worldbody>
     <!-- Floor -->
@@ -31,7 +33,29 @@
     <body name="table" pos="0 0 0.4">
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" group="0" name="table_collision" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="table_ceramic"/>
+      <geom pos="0 0.26 0.08" size="0.25 0.01 0.35" type="box" group="0" name="cabinet_collision" friction="1 0.005 0.0001"/>
+      <geom pos="0 -0.26 0.08" size="0.25 0.01 0.08" type="box" group="0" name="cabinet_collision1" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0.7" size="0.25 0.25 0.01" type="box" group="0" name="cabinet_collision2" friction="1 0.005 0.0001"/>
+      <geom pos="0.25 0 0.08" size="0.01 0.25 0.08" type="box" group="0" name="cabinet_collision3" friction="1 0.005 0.0001"/>
+      <geom pos="0 0.26 0.08" size="0.25 0.01 0.08" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual" material="table_ceramic"/>
+      <geom pos="0 -0.26 0.08" size="0.25 0.01 0.08" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual1" material="table_ceramic"/>
+      <geom pos="0 0 0.16" size="0.25 0.25 0.01" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual2" rgba="0 0.05 0.3 0.2"/>
+      <geom pos="0.25 0 0.08" size="0.01 0.25 0.08" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual3" material="table_ceramic"/>
+      <!--<geom pos="0 0.26 0.35" size="0.25 0.01 0.35" type="box" group="0" name="cabinet_collision" friction="1 0.005 0.0001"/>
+      <geom pos="0 -0.26 0.35" size="0.25 0.01 0.35" type="box" group="0" name="cabinet_collision1" friction="1 0.005 0.0001"/>
+      <geom pos="0 0 0.7" size="0.25 0.25 0.01" type="box" group="0" name="cabinet_collision2" friction="1 0.005 0.0001"/>
+      <geom pos="0.25 0 0.35" size="0.01 0.25 0.35" type="box" group="0" name="cabinet_collision3" friction="1 0.005 0.0001"/>
+      <geom pos="0 0.26 0.35" size="0.25 0.01 0.35" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual" material="table_ceramic"/>
+      <geom pos="0 -0.26 0.35" size="0.25 0.01 0.35" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual1" material="table_ceramic"/>
+      <geom pos="0 0 0.7" size="0.25 0.25 0.01" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual2" rgba="0 0.05 0.3 0.2"/>
+      <geom pos="0.25 0 0.35" size="0.01 0.25 0.35" type="box" conaffinity="0" contype="0" group="1" name="cabinet_visual3" material="table_ceramic"/>-->
+
       <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
+      <!--<body name="cabinet" pos="0 0 0">
+          <inertial pos="0 0 0.26" mass="13.184" diaginertia="0.816 0.941 0.914" />
+          <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="cabinet" name="cabinet_visual" rgba="0.92 0.8 0.66 1" />
+          <geom type="mesh" group="0" mesh="cabinet" name="cabinet_collision"/>
+      </body>-->
       <!-- Legs (visual only) -->
       <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg1_visual" material="table_legs_metal"/>
       <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg2_visual" material="table_legs_metal"/>
@@ -42,11 +66,12 @@
     <light name="light1" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
     <light name="light2" diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
     <!-- front view -->
-    <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
+    <!--<camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>-->
+    <camera mode="fixed" name="backview" pos="-0.8 -0.3 1.1" quat="0.5 0.5 -0.5 -0.5"/>
     <!-- bird view -->
-    <camera mode="fixed" name="birdview" pos="0.2 0 2.0" quat="0.7071 0 0 0.7071"/>
+    <camera mode="fixed" name="birdview" pos="0. -0.4 2.0" quat="0.7071 0 0 -0.7071"/>
     <!-- agent view -->
-    <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
+    <!--<camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>-->
     <!-- side view -->
     <camera mode="fixed" name="sideview" pos="-0.05651774593317116 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364" />
   </worldbody>

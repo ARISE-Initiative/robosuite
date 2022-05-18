@@ -21,7 +21,7 @@ class Keyboard(Device):
     def __init__(self, pos_sensitivity=1.0, rot_sensitivity=1.0):
 
         self._display_controls()
-        self._reset_internal_state()
+        self._reset_internal_state(np.zeros(3))
 
         self._reset_state = 0
         self._enabled = False
@@ -52,23 +52,23 @@ class Keyboard(Device):
         print_command("ESC", "quit")
         print("")
 
-    def _reset_internal_state(self):
+    def _reset_internal_state(self, init_pos):
         """
         Resets internal state of controller, except for the reset signal.
         """
         self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
         self.raw_drotation = np.zeros(3)  # immediate roll, pitch, yaw delta values from keyboard hits
         self.last_drotation = np.zeros(3)
-        self.pos = np.zeros(3)  # (x, y, z)
+        self.pos = init_pos  # (x, y, z)
         self.last_pos = np.zeros(3)
         self.grasp = False
 
-    def start_control(self):
+    def start_control(self, init_pos=np.zeros(3)):
         """
         Method that should be called externally before controller can
         start receiving commands.
         """
-        self._reset_internal_state()
+        self._reset_internal_state(init_pos)
         self._reset_state = 0
         self._enabled = True
 
@@ -108,13 +108,13 @@ class Keyboard(Device):
 
         # controls for moving position
         if key == glfw.KEY_W:
-            self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
+            self.pos[0] += self._pos_step * self.pos_sensitivity  # dec x
         elif key == glfw.KEY_S:
-            self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
+            self.pos[0] -= self._pos_step * self.pos_sensitivity  # inc x
         elif key == glfw.KEY_A:
-            self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
+            self.pos[1] += self._pos_step * self.pos_sensitivity  # dec y
         elif key == glfw.KEY_D:
-            self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
+            self.pos[1] -= self._pos_step * self.pos_sensitivity  # inc y
         elif key == glfw.KEY_F:
             self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
         elif key == glfw.KEY_R:
@@ -166,4 +166,4 @@ class Keyboard(Device):
         elif key == glfw.KEY_Q:
             self._reset_state = 1
             self._enabled = False
-            self._reset_internal_state()
+            self._reset_internal_state(np.zeros(3))

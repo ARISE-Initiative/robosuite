@@ -1,18 +1,19 @@
 <mujoco model="reach_hand">
+    <asset>
+        <mesh name="paddle" file="meshes/reach_gripper/paddle_gripper.stl" />
+    </asset>
     <worldbody>
-        <body name="reach_gripper" pos="0 0 0.015" quat="0.707107 0 0 -0.707107" >
+        <body name="reach_gripper" pos="0 0 0.05" quat="1.0 0 0 0" >
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
             <inertial pos="0 0 0" mass="3e-2" diaginertia="1e-2 1e-2 1e-2"/>
-
-            <geom type="box" pos="0 0.03 0.0" size="0.04 0.06 0.02" name="reach_link" solimp="0.9 0.95 0.001 0.5 2" solmix="10000" solref="0.005 1" group="1" rgba="0.25 0.25 0.25 1" />
+            <geom type="capsule" pos="0 0.0 0.0" size="0.03 0.05" name="reach_link" solimp="0.9 0.95 0.001 0.5 2" solmix="10000" solref="0.005 1" group="1" rgba="0.25 0.25 0.25 1" />
+            <body name="paddle" pos="0 0 0.05" quat="0.7071068 0 0 0.7071068">
+                <inertial pos="0 0 0.02" mass="0.1" diaginertia="0.01 0.01 0.005" />
+                <!--<geom type="box" pos="0 0 0" size="0.03 0.03 0.05" name="paddle_link" solimp="0.9 0.95 0.001 0.5 2" solmix="10000" solref="0.005 1" group="1" rgba="0.499 0.499 0.499 1" />-->
+                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="paddle" name="ee_visual" rgba="0.499 0.499 0.499 1" />
+                <geom type="mesh" group="0" conaffinity="1" contype="0" solref="0.02 1" friction="1 0.005 0.0001" condim="4" mesh="paddle" name="ee_collision"/>
+            </body>
             <!--<geom type="box" pos="0 0.03 0.0" size="0.025 0.06 0.015" name="reach_link" solimp="0.2 0.9 0.01" solmix="10000" solref="0.05 1" group="1" rgba="0.25 0.25 0.25 1" />-->
-
-            <geom type="sphere" pos="0.04 0.06 0.02" size="0.05" name="sensor_corner1" group="1" rgba="0.25 0.25 0.25 0.1" gap="0.5"/>
-            <geom type="sphere" pos="0.04 0.0 0.02" size="0.05" name="sensor_corner2" group="1" rgba="0.25 0.25 0.25 0.1" gap="0.5"/>
-            <geom type="sphere" pos="0.04 -0.06 0.02" size="0.05" name="sensor_corner3" group="1" rgba="0.25 0.25 0.25 0.1" gap="0.5"/>
-            <geom type="sphere" pos="-0.04 0.06 0.02" size="0.05" name="sensor_corner4" group="1" rgba="0.25 0.25 0.25 0.1" gap="0.5"/>
-            <geom type="sphere" pos="-0.04 0.0 0.02" size="0.05" name="sensor_corner5" group="1" rgba="0.25 0.25 0.25 0.1" gap="0.5"/>
-            <geom type="sphere" pos="-0.04 -0.06 0.02" size="0.05" name="sensor_corner6" group="1" rgba="0.25 0.25 0.25 0.1" gap="0.5"/>
 
             <!-- This site was added for visualization. -->
             <body name="eef" pos="0 0 0.015" quat="1 0 0 0">

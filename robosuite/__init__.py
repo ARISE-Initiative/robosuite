@@ -2,6 +2,7 @@ from robosuite.environments.base import make
 
 # Manipulation environments
 from robosuite.environments.manipulation.lift import Lift
+from robosuite.environments.manipulation.reach import Reach
 from robosuite.environments.manipulation.stack import Stack
 from robosuite.environments.manipulation.nut_assembly import NutAssembly
 from robosuite.environments.manipulation.pick_place import PickPlace

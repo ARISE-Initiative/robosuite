@@ -1,0 +1,32 @@
+<mujoco model="rrgripper">
+    <asset>
+        <mesh name="link1" file="meshes/rrmanip/link_visual.stl" />
+        <mesh name="link1_vis" file="meshes/rrmanip/link_collision.stl" />
+        <mesh name="link2" file="meshes/rrmanip/link_2_visual.stl" />
+        <mesh name="link2_vis" file="meshes/rrmanip/link_2_collision.stl" />
+    </asset>
+    <actuator>
+        <!--<position ctrllimited="true" ctrlrange="-3.14 3.14" joint="joint1" kp="1000" name="rr_joint1" forcelimited="true" forcerange="-20 20"/>-->
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_j1"/>
+    </actuator>
+    <worldbody>
+        <body name="link1" pos="0 0 0">
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
+            <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            <inertial pos="0 0 0.0591819" mass="0.156692" diaginertia="0.000178231 0.000180147 4.88221e-05" />
+            <geom pos="0 0 0." quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" mesh="link1_vis" name="link1_visual" rgba="1 1 1 1" />
+            <geom pos="0 0 0." quat="1 0 0 0" type="mesh" mesh="link1"  group="0" name="link1_collider"/>
+            <body name="link2" pos="0 0 0.0762" quat="1 0 0 0">
+                <inertial pos="0 0 0.0591819" mass="0.156692" diaginertia="0.000178231 0.000180147 4.88221e-05" />
+                <joint name="joint1" pos="0 0 0" axis="1 0 0" type="hinge" limited="true" range="-3.14 3.14" damping="100" armature="1.0" frictionloss="1.0"/>
+                <geom pos="0 0 0." quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" mesh="link1_vis" name="link_visual" rgba="1 1 1 1" />
+                <geom pos="0 0 0." quat="1 0 0 0" type="mesh" mesh="link1"  group="0" name="link_collider"/>
+            </body>
+        </body>
+    </worldbody>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
+</mujoco>

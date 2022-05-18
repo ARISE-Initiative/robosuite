@@ -1,0 +1,259 @@
+<sdf version="1.6">
+<model name="onshape">
+<link name="link1">
+<frame name="link1_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="link1_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link1_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.568627 0.576471 0.6 1</ambient><diffuse>0.568627 0.576471 0.6 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="link1_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link1_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.568627 0.576471 0.6 1</ambient><diffuse>0.568627 0.576471 0.6 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="link1_frame">-1.04016e-06 0.000831416 0.0241106 0 0 0</pose>
+<mass>2.05413</mass>
+<inertia><ixx>0.0168008</ixx><ixy>1.4816e-07</ixy><ixz>-1.86506e-05</ixz><iyy>0.00969422</iyy><iyz>-4.94419e-05</iyz><izz>0.00884774</izz></inertia>
+</inertial>
+</link>
+
+<link name="link2">
+<frame name="link2_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="link2_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link2_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="link2_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link2_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="link2_frame">-0.0272388 0.00703816 0.306898 0 0 0</pose>
+<mass>1.97662</mass>
+<inertia><ixx>0.0107799</ixx><ixy>-4.21959e-08</ixy><ixz>0.000129304</ixz><iyy>0.0099239</iyy><iyz>3.05654e-08</iyz><izz>0.00372807</izz></inertia>
+</inertial>
+</link>
+
+<link name="link3">
+<frame name="link3_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="link3_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link3_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.568627 0.576471 0.6 1</ambient><diffuse>0.568627 0.576471 0.6 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="link3_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link3_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.568627 0.576471 0.6 1</ambient><diffuse>0.568627 0.576471 0.6 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="link3_frame">0.0896831 0.00413665 0.392728 0 0 0</pose>
+<mass>1.77965</mass>
+<inertia><ixx>0.00843729</ixx><ixy>-0.000175012</ixy><ixz>0.000237979</ixz><iyy>0.0059305</iyy><iyz>0.00229693</iyz><izz>0.00449631</izz></inertia>
+</inertial>
+</link>
+
+<link name="link4-5">
+<frame name="link4-5_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="link4-5_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link4-5_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="link4-5_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link4-5_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="link4-5_frame">0.136097 0.193881 0.628879 0 0 0</pose>
+<mass>1.28901</mass>
+<inertia><ixx>0.0051274</ixx><ixy>-0.000352807</ixy><ixz>0.000797207</ixz><iyy>0.00432251</iyy><iyz>0.00133772</iyz><izz>0.00261717</izz></inertia>
+</inertial>
+</link>
+
+<link name="link4-5_2">
+<frame name="link4-5_2_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="link4-5_2_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link4-5_2_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="link4-5_2_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link4-5_2_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="link4-5_2_frame">0.0351251 0.250522 0.639921 0 0 0</pose>
+<mass>1.28901</mass>
+<inertia><ixx>0.0051274</ixx><ixy>-0.000450714</ixy><ixz>0.000746236</ixz><iyy>0.00443511</iyy><iyz>0.00125888</iyz><izz>0.00250457</izz></inertia>
+</inertial>
+</link>
+
+<link name="link6">
+<frame name="link6_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="link6_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link6_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="link6_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link6_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.627451 0.627451 0.627451 1</ambient><diffuse>0.627451 0.627451 0.627451 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="link6_frame">-0.0143289 0.35461 0.368173 0 0 0</pose>
+<mass>1.26054</mass>
+<inertia><ixx>0.00433505</ixx><ixy>0.000560415</ixy><ixz>-0.00147462</ixz><iyy>0.0046681</iyy><iyz>0.000761095</iyz><izz>0.00282748</izz></inertia>
+</inertial>
+</link>
+
+<link name="link7">
+<frame name="link7_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="link7_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link7_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.568627 0.576471 0.6 1</ambient><diffuse>0.568627 0.576471 0.6 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="link7_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://link7_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.568627 0.576471 0.6 1</ambient><diffuse>0.568627 0.576471 0.6 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="link7_frame">0.0723503 0.457242 0.36064 0 0 0</pose>
+<mass>2.26819</mass>
+<inertia><ixx>0.0083623</ixx><ixy>0.000930983</ixy><ixz>-0.000189628</ixz><iyy>0.00289005</iyy><iyz>0.000147094</iyz><izz>0.00853102</izz></inertia>
+</inertial>
+</link>
+
+<link name="l7.step">
+<frame name="l7.step_frame"><pose>0 0 0 0 -0 0</pose></frame>
+<visual name="l7.step_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://l7.step_visual.stl</uri></mesh>
+</geometry>
+<material><ambient>0.569543 0.577347 0.60076 1</ambient><diffuse>0.569543 0.577347 0.60076 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<visual name="l7.step_visual">
+<pose>0 0 0 0 -0 0</pose>
+<geometry>
+<mesh><uri>file://l7.step_collision.stl</uri></mesh>
+</geometry>
+<material><ambient>0.569543 0.577347 0.60076 1</ambient><diffuse>0.569543 0.577347 0.60076 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+</visual>
+<inertial>
+<pose frame="l7.step_frame">0.047819 0.542135 0.260822 0 0 0</pose>
+<mass>0.310614</mass>
+<inertia><ixx>0.000500799</ixx><ixy>4.73338e-06</ixy><ixz>4.36326e-06</ixz><iyy>0.000425453</iyy><iyz>-2.48455e-05</iyz><izz>0.000448493</izz></inertia>
+</inertial>
+</link>
+
+<joint name="j7" type="revolute">
+<pose>0.0567958 0.524265 0.309285 -0.210269 -0.334044 2.61394</pose>
+<parent>link7</parent>
+<child>l7.step</child>
+<axis>
+<xyz>0 0 1</xyz>
+<limit><effort>1</effort><velocity>20</velocity><lower>-2.96706</lower><upper>2.96706</upper></limit>
+</axis>
+</joint>
+
+<joint name="j6" type="revolute">
+<pose>0.0284395 0.386313 0.323059 1.502 0.386836 -1.28536</pose>
+<parent>link6</parent>
+<child>link7</child>
+<axis>
+<xyz>0 0 1</xyz>
+<limit><effort>1</effort><velocity>20</velocity><lower>-1.39626</lower><upper>4.53786</upper></limit>
+</axis>
+</joint>
+
+<joint name="j5" type="revolute">
+<pose>0.0326093 0.3122 0.500514 -0.387664 -0.0637077 -2.83016</pose>
+<parent>link4-5_2</parent>
+<child>link6</child>
+<axis>
+<xyz>0 0 1</xyz>
+<limit><effort>1</effort><velocity>20</velocity><lower>-2.96706</lower><upper>2.96706</upper></limit>
+</axis>
+</joint>
+
+<joint name="j4" type="revolute">
+<pose>0.08953 0.226829 0.669398 -2.06633 -1.17819 -1.1047</pose>
+<parent>link4-5</parent>
+<child>link4-5_2</child>
+<axis>
+<xyz>0 0 1</xyz>
+<limit><effort>1</effort><velocity>20</velocity><lower>-1.8675</lower><upper>2.68781</upper></limit>
+</axis>
+</joint>
+
+<joint name="j3" type="revolute">
+<pose>0.0931645 0.101509 0.522151 2.53095 0.182944 0.00293578</pose>
+<parent>link3</parent>
+<child>link4-5</child>
+<axis>
+<xyz>0 0 1</xyz>
+<limit><effort>1</effort><velocity>20</velocity><lower>-2.96706</lower><upper>2.96706</upper></limit>
+</axis>
+</joint>
+
+<joint name="j2" type="revolute">
+<pose>0.0290553 -0.00741863 0.357002 1.5708 0.936704 -1.82217</pose>
+<parent>link2</parent>
+<child>link3</child>
+<axis>
+<xyz>0 0 1</xyz>
+<limit><effort>1</effort><velocity>20</velocity><lower>-2.26893</lower><upper>2.26893</upper></limit>
+</axis>
+</joint>
+
+<joint name="j1" type="revolute">
+<pose>-1.77987e-06 4.36677e-05 0.147 3.14159 5.63767e-17 2.89022</pose>
+<parent>link1</parent>
+<child>link2</child>
+<axis>
+<xyz>0 0 1</xyz>
+<limit><effort>1</effort><velocity>20</velocity><lower>-2.79253</lower><upper>2.79253</upper></limit>
+</axis>
+</joint>
+
+
+</model>
+</sdf>

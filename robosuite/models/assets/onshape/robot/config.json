@@ -1,0 +1,12 @@
+{
+    "onshape_api": "https://cad.onshape.com",
+    "onshape_access_key": "i5fUfOVumSCoyWZWcZNLzoEu",
+    "onshape_secret_key": "ZQi2gd4vPBd89ISw8DVKvD2Yl4o49JaRnZnIVul7f6BXw0kp",
+    "documentId": "940fb6ce55407bfee077e9b8",
+    "outputFormat": "sdf",
+    "assemblyName": "RizonScene",
+    "useScads": false,
+    "mergeSTLs": "all",
+    "simplifySTLs": "all"
+}
+

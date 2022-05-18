@@ -24,7 +24,9 @@ class Panda(ManipulatorModel):
 
     @property
     def default_gripper(self):
-        return "PandaGripper"
+        return "RRGripper"
+        #return "ReachGripper"
+        #return "PandaGripper"
 
     @property
     def default_controller_config(self):
@@ -32,7 +34,10 @@ class Panda(ManipulatorModel):
 
     @property
     def init_qpos(self):
-        return np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, np.pi / 4])
+        return np.array([-2.174,1.160,1.077,-2.003,1.129,2.519,-1.824])
+        
+        #return np.array([-0.923, 0.734, 0.688, -2.245, 2.693, 2.012, -0.685])
+        
 
     @property
     def base_xpos_offset(self):

@@ -31,10 +31,10 @@ class CylinderObject(PrimitiveObject):
         size = get_size(size, size_max, size_min, [0.07, 0.07], [0.03, 0.03])
 
         # We override solref, solimp, and joint default values for better stability
-        if friction is None:
-            friction = [1, 0.01, 0.001]
-        if solref is None:
-            solref = [0.01, 0.5]
+        #if friction is None:
+        #    friction = [1, 0.01, 0.001]
+        #if solref is None:
+        #    solref = [0.01, 0.5]
         if joints == "default":
             joints = [{"type": "free", "damping": "0.0001"}]
 
