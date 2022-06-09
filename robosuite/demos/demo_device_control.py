@@ -118,7 +118,7 @@ def is_corner(geom_id, env):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", type=str, default="Lift")
+    parser.add_argument("--environment", type=str, default="Reach")
     parser.add_argument("--robots", nargs="+", type=str, default="Kinova3", help="Which robot(s) to use in the env")
     parser.add_argument(
         "--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary"
