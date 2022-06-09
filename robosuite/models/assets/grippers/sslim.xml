@@ -1,0 +1,95 @@
+<mujoco model="onshape">
+    <compiler angle="radian" />
+    <size njmax="500" nconmax="100" />
+    <asset>
+        <mesh name="forearm" file="meshes/sslim_gripper/forearm.stl" />
+        <mesh name="box" file="meshes/sslim_gripper/box.stl" />
+        <mesh name="finger_base" file="meshes/sslim_gripper/finger_base.stl" />
+        <mesh name="proximal_left" file="meshes/sslim_gripper/proximal_left.stl" />
+        <mesh name="distal_left" file="meshes/sslim_gripper/distal_left.stl" />
+        <mesh name="proximal_right" file="meshes/sslim_gripper/proximal_right.stl" />
+        <mesh name="distal_right" file="meshes/sslim_gripper/distal_right.stl" />
+        <mesh name="thumb_base" file="meshes/sslim_gripper/thumb_base.stl" />
+        <mesh name="thumb_proximal" file="meshes/sslim_gripper/thumb_proximal.stl" />
+        <mesh name="thumb_distal" file="meshes/sslim_gripper/thumb_distal.stl" />
+    </asset>
+    <actuator>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="wristPitchJoint" kp="100" name="wristPitchJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="wristYawJoint" kp="100" name="wristYawJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="proximalLeftJoint" kp="100" name="proximalLeftJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="distalLeftJoint" kp="100" name="distalLeftJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="proximalRightJoint" kp="100" name="proximalRightJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="distalRightJoint" kp="100" name="distalRightJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="thumbSlideJoint" kp="1000" name="thumbSlideJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="thumbProximalJoint" kp="100" name="thumbProximalJoint" forcelimited="true" forcerange="-20 20"/>
+        <position ctrllimited="true" ctrlrange="-3.14 3.14" joint="thumbDistalJoint" kp="100" name="thumbDistalJoint" forcelimited="true" forcerange="-20 20"/>
+        <!--<motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="wristPitchJoint" name="torq_j1"/>-->
+    </actuator>
+    <worldbody>
+        <body name="forearm" pos="0 0 0">
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
+            <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            <geom pos="0 -0.175762 0.154323" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.34902 0.376471 0.4 1" mesh="forearm" />
+            <geom pos="0 -0.175762 0.154323" type="mesh" rgba="0.34902 0.376471 0.4 1" mesh="forearm" />
+            <body name="box" pos="0 -0.0697616 0.0413234" quat="1.31337e-06 0.989884 0.141876 1.88241e-07">
+                <inertial pos="0 0.000550903 -0.009" quat="0.5 0.5 0.5 0.5" mass="0.00525901" diaginertia="2.97238e-07 2.93441e-07 2.8019e-07" />
+                <joint name="wristPitchJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-1.5708 1.5708" damping="0.5" />
+                <geom pos="0 0.106 -0.113" quat="1.32679e-06 1 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.980392 0.713725 0.00392157 1" mesh="box" />
+                <geom pos="0 0.106 -0.113" quat="1.32679e-06 1 0 0" type="mesh" rgba="0.980392 0.713725 0.00392157 1" mesh="box" />
+                <body name="finger_base" pos="0 0.009 -0.009" quat="0.70635 0.706353 -0.0326759 0.032676">
+                    <inertial pos="-7.02522e-09 -0.0458078 -0.0469358" quat="0.612698 0.790317 0 0" mass="0.263181" diaginertia="0.000456745 0.000348773 0.000146834" />
+                    <joint name="wristYawJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14159 3.14159" damping="0.5" />
+                    <geom pos="0 -0.104 -0.097" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.6 0.6 0.6 1" mesh="finger_base" />
+                    <geom pos="0 -0.104 -0.097" quat="0.707105 0.707108 0 0" type="mesh" rgba="0.6 0.6 0.6 1" mesh="finger_base" />
+                    <body name="proximal_left" pos="0 -0.104 -0.11" quat="1.32679e-06 -1 0 0">
+                        <inertial pos="1.99534e-09 0.0171572 -0.0115186" quat="0.755644 0.654983 8.74814e-07 -1.00926e-06" mass="0.0345732" diaginertia="1.13395e-05 1.04205e-05 4.73735e-06" />
+                        <joint name="proximalLeftJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-1.5708 1.5708" damping="0.5" />
+                        <geom pos="0 0 -0.013" quat="0.707105 -0.707108 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.8 0.776471 0.713725 1" mesh="proximal_left" />
+                        <geom pos="0 0 -0.013" quat="0.707105 -0.707108 0 0" type="mesh" rgba="0.8 0.776471 0.713725 1" mesh="proximal_left" />
+                        <body name="distal_left" pos="0 0.045 0">
+                            <inertial pos="-8.65838e-06 0.0154507 -0.0128245" quat="0.71455 0.699583 0.000843371 -0.00125721" mass="0.0267849" diaginertia="7.71431e-06 6.44236e-06 2.85663e-06" />
+                            <joint name="distalLeftJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-1.5708 1.5708" damping="0.5" />
+                            <geom pos="0 -0.045 -0.013" quat="0.707105 -0.707108 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.890196 0.698039 0.639216 1" mesh="distal_left" />
+                            <geom pos="0 -0.045 -0.013" quat="0.707105 -0.707108 0 0" type="mesh" rgba="0.890196 0.698039 0.639216 1" mesh="distal_left" />
+                        </body>
+                    </body>
+                    <body name="proximal_right" pos="0 -0.104 -0.014">
+                        <inertial pos="3.90829e-09 -0.0171529 -0.0115175" quat="0.655072 0.755567 1.18729e-06 -1.02937e-06" mass="0.0345675" diaginertia="1.13426e-05 1.04233e-05 4.73725e-06" />
+                        <joint name="proximalRightJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-1.5708 1.5708" damping="0.5" />
+                        <geom pos="0 0 -0.083" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.8 0.776471 0.713725 1" mesh="proximal_right" />
+                        <geom pos="0 0 -0.083" quat="0.707105 0.707108 0 0" type="mesh" rgba="0.8 0.776471 0.713725 1" mesh="proximal_right" />
+                        <body name="distal_right" pos="0 -0.045 0">
+                            <inertial pos="6.992e-10 -0.0154703 -0.012805" quat="0.700335 0.713815 1.61631e-08 1.44482e-06" mass="0.0268187" diaginertia="7.73491e-06 6.45631e-06 2.86686e-06" />
+                            <joint name="distalRightJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-1.5708 1.5708" damping="0.5" />
+                            <geom pos="0 0.045 -0.083" quat="0.707105 0.707108 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.890196 0.698039 0.639216 1" mesh="distal_right" />
+                            <geom pos="0 0.045 -0.083" quat="0.707105 0.707108 0 0" type="mesh" rgba="0.890196 0.698039 0.639216 1" mesh="distal_right" />
+                        </body>
+                    </body>
+                    <body name="thumb_base" pos="0 -0.085 -0.08" quat="0.499998 0.5 -0.5 0.500002">
+                        <inertial pos="-0.0164306 0 -0.0121333" quat="0.99939 0.0349179 0 0" mass="0.0116768" diaginertia="2.79506e-06 2.42573e-06 1.76999e-06" />
+                        <joint name="thumbSlideJoint" pos="0 0 0" axis="0 0 1" type="slide" limited="true" range="-0.065 0" damping="0.5" />
+                        <geom pos="-0.0025 0 -0.019" quat="0.499998 -0.5 -0.5 -0.500002" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.6 0.6 0.6 1" mesh="thumb_base" />
+                        <geom pos="-0.0025 0 -0.019" quat="0.499998 -0.5 -0.5 -0.500002" type="mesh" rgba="0.6 0.6 0.6 1" mesh="thumb_base" />
+                        <body name="thumb_proximal" pos="-0.031 0 -0.019" quat="0.707105 0 -0.707108 0">
+                            <inertial pos="-0.0158885 -4.7044e-08 -0.0142305" quat="0.505461 0.494478 0.494483 0.505458" mass="0.0255561" diaginertia="7.47005e-06 6.74416e-06 4.25897e-06" />
+                            <joint name="thumbProximalJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-1.5708 1.5708" damping="0.5" />
+                            <geom pos="0 0 -0.0285" quat="0.707105 -0.707108 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.8 0.776471 0.713725 1" mesh="thumb_proximal" />
+                            <geom pos="0 0 -0.0285" quat="0.707105 -0.707108 0 0" type="mesh" rgba="0.8 0.776471 0.713725 1" mesh="thumb_proximal" />
+                            <body name="thumb_distal" pos="-0.04 0 0">
+                                <inertial pos="-0.0145875 1.55149e-08 -0.014134" quat="0.502964 0.497018 0.497018 0.502964" mass="0.0281605" diaginertia="7.72315e-06 6.22689e-06 2.9861e-06" />
+                                <joint name="thumbDistalJoint" pos="0 0 0" axis="0 0 1" limited="true" range="-1.5708 1.5708" damping="0.5" />
+                                <geom pos="0.04 0 -0.0285" quat="0.707105 -0.707108 0 0" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.890196 0.698039 0.639216 1" mesh="thumb_distal" />
+                                <geom pos="0.04 0 -0.0285" quat="0.707105 -0.707108 0 0" type="mesh" rgba="0.890196 0.698039 0.639216 1" mesh="thumb_distal" />
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
+</mujoco>
