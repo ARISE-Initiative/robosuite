@@ -31,6 +31,7 @@ class DataCollectionWrapper(Wrapper):
         # in-memory cache for simulation states and action info
         self.states = []
         self.action_infos = []  # stores information about actions taken
+        self.successful = False  # stores success state of demonstration
 
         # how often to save simulation state, in terms of environment steps
         self.collect_freq = collect_freq
@@ -119,10 +120,12 @@ class DataCollectionWrapper(Wrapper):
             state_path,
             states=np.array(self.states),
             action_infos=self.action_infos,
+            successful = self.successful,
             env=env_name,
         )
         self.states = []
         self.action_infos = []
+        self.successful = False
 
     def reset(self):
         """
@@ -165,6 +168,10 @@ class DataCollectionWrapper(Wrapper):
             info = {}
             info["actions"] = np.array(action)
             self.action_infos.append(info)
+            
+        # check if the demonstration is successful
+        if self.env._check_success():
+            self.successful = True
 
         # flush collected data to disk if necessary
         if self.t % self.flush_freq == 0:
