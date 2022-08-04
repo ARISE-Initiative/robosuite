@@ -132,7 +132,7 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
             states.extend(dic["states"])
             for ai in dic["action_infos"]:
                 actions.append(ai["actions"])
-            success = dic["successful"]
+            success = success or dic["successful"]
 
         if len(states) == 0:
             continue
