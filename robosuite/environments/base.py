@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 import numpy as np
-from mujoco_py import MjRenderContextOffscreen, MjSim, load_model_from_xml
 
 import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
