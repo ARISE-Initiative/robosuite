@@ -8,11 +8,12 @@ from robosuite.renderers.base import load_renderer_config
 from robosuite.utils import SimulationError, XMLError
 
 if macros.USE_DM_BINDING:
-    from robosuite.utils import PygameRenderer, OpenCVRenderer
-    from robosuite.utils.binding_utils import MjSim, MjRenderContextOffscreen
+    from robosuite.utils import OpenCVRenderer, PygameRenderer
+    from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 else:
+    from mujoco_py import MjRenderContextOffscreen, MjSim, load_model_from_xml
+
     from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
-    from mujoco_py import MjSim, MjRenderContextOffscreen, load_model_from_xml
 
 REGISTERED_ENVS = {}
 
@@ -111,7 +112,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.has_renderer = has_renderer
         if macros.USE_DM_BINDING:
             # offscreen renderer needed for on-screen rendering
-            self.has_offscreen_renderer = (has_renderer or has_offscreen_renderer)
+            self.has_offscreen_renderer = has_renderer or has_offscreen_renderer
         else:
             self.has_offscreen_renderer = has_offscreen_renderer
         self.render_camera = render_camera
@@ -314,8 +315,8 @@ class MujocoEnv(metaclass=EnvMeta):
                 self.viewer = OpenCVRenderer(self.sim)
             else:
                 self.viewer = MujocoPyRenderer(self.sim)
-                self.viewer.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
-                self.viewer.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+                self.viewer.viewer.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
+                self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
 
                 # hiding the overlay speeds up rendering significantly
                 self.viewer.viewer._hide_overlay = True

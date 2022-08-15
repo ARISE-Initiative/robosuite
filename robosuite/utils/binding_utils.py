@@ -2,15 +2,16 @@
 Useful classes for supporting DeepMind MuJoCo binding.
 """
 
-import os
 import gc
-import numpy as np
+import os
 from tempfile import TemporaryDirectory
-
-import mujoco
 
 # DIRTY HACK copied from mujoco-py - a global lock on rendering
 from threading import Lock
+
+import mujoco
+import numpy as np
+
 _MjSim_render_lock = Lock()
 
 
@@ -21,6 +22,7 @@ class MjRenderContext:
 
     See https://github.com/openai/mujoco-py/blob/4830435a169c1f3e3b5f9b58a7c3d9c39bdf4acb/mujoco_py/mjrendercontext.pyx
     """
+
     def __init__(self, sim, offscreen=True, device_id=-1):
         assert offscreen, "only offscreen supported for now"
         self.sim = sim
@@ -30,7 +32,7 @@ class MjRenderContext:
         if offscreen:
             if self.device_id is not None and self.device_id >= 0:
                 os.environ["MUJOCO_GL"] = "egl"
-                os.environ['MUJOCO_EGL_DEVICE_ID'] = str(self.device_id)
+                os.environ["MUJOCO_EGL_DEVICE_ID"] = str(self.device_id)
             else:
                 os.environ["MUJOCO_GL"] = "osmesa"
 
@@ -100,8 +102,8 @@ class MjRenderContext:
             self.cam.fixedcamid = camera_id
 
         mujoco.mjv_updateScene(
-            self.model._model, self.data._data, self.vopt, self.pert,
-            self.cam, mujoco.mjtCatBit.mjCAT_ALL, self.scn)
+            self.model._model, self.data._data, self.vopt, self.pert, self.cam, mujoco.mjtCatBit.mjCAT_ALL, self.scn
+        )
 
         if segmentation:
             self.scn.flags[mujoco.mjtRndFlag.mjRND_SEGMENT] = 1
@@ -109,7 +111,7 @@ class MjRenderContext:
 
         # for marker_params in self._markers:
         #     self._add_marker_to_scene(marker_params)
-        
+
         mujoco.mjr_render(viewport=viewport, scn=self.scn, con=self.con)
         # for gridpos, (text1, text2) in self._overlay.items():
         #     mjr_overlay(const.FONTSCALE_150, gridpos, rect, text1.encode(), text2.encode(), &self._con)
@@ -122,12 +124,12 @@ class MjRenderContext:
         viewport = mujoco.MjrRect(0, 0, width, height)
         rgb_img = np.empty((height, width, 3), dtype=np.uint8)
         depth_img = np.empty((height, width), dtype=np.float32) if depth else None
-        
+
         mujoco.mjr_readPixels(rgb=rgb_img, depth=depth_img, viewport=viewport, con=self.con)
 
         ret_img = rgb_img
         if segmentation:
-            seg_img = (rgb_img[:, :, 0] + rgb_img[:, :, 1] * (2**8) + rgb_img[:, :, 2] * (2 ** 16))
+            seg_img = rgb_img[:, :, 0] + rgb_img[:, :, 1] * (2**8) + rgb_img[:, :, 2] * (2**16)
             seg_img[seg_img >= (self.scn.ngeom + 1)] = 0
             seg_ids = np.full((self.scn.ngeom + 1, 2), fill_value=-1, dtype=np.int32)
 
@@ -169,6 +171,7 @@ class MjSimState:
     """
     A mujoco simulation state.
     """
+
     def __init__(self, time, qpos, qvel):
         self.time = time
         self.qpos = qpos
@@ -177,7 +180,7 @@ class MjSimState:
     @classmethod
     def from_flattened(cls, array, sim):
         """
-        Takes flat mjstate array and MjSim instance and 
+        Takes flat mjstate array and MjSim instance and
         returns MjSimState.
         """
         idx_time = 0
@@ -185,8 +188,8 @@ class MjSimState:
         idx_qvel = idx_qpos + sim.model.nq
 
         time = array[idx_time]
-        qpos = array[idx_qpos:idx_qpos + sim.model.nq]
-        qvel = array[idx_qvel:idx_qvel + sim.model.nv]
+        qpos = array[idx_qpos : idx_qpos + sim.model.nq]
+        qvel = array[idx_qvel : idx_qvel + sim.model.nv]
         assert sim.model.na == 0
 
         return cls(time=time, qpos=qpos, qvel=qvel)
@@ -201,14 +204,14 @@ class _MjModelMeta(type):
 
     Taken from dm_control: https://github.com/deepmind/dm_control/blob/main/dm_control/mujoco/wrapper/core.py#L244
     """
+
     def __new__(cls, name, bases, dct):
         for attr in dir(mujoco.MjModel):
             if not attr.startswith("_"):
                 if attr not in dct:
                     # pylint: disable=protected-access
                     fget = lambda self, attr=attr: getattr(self._model, attr)
-                    fset = (
-                      lambda self, value, attr=attr: setattr(self._model, attr, value))
+                    fset = lambda self, value, attr=attr: setattr(self._model, attr, value)
                     # pylint: enable=protected-access
                     dct[attr] = property(fget, fset)
         return super().__new__(cls, name, bases, dct)
@@ -220,6 +223,7 @@ class MjModel(metaclass=_MjModelMeta):
     constant. It also contains simulation and visualization options which may be
     changed occasionally, although this is done explicitly by the user.
     """
+
     _HAS_DYNAMIC_ATTRIBUTES = True
 
     def __init__(self, model_ptr):
@@ -243,6 +247,7 @@ class MjModel(metaclass=_MjModelMeta):
     Some methods supported by sim.model in mujoco-py.
     Copied from https://github.com/openai/mujoco-py/blob/ab86d331c9a77ae412079c6e58b8771fe63747fc/mujoco_py/generated/wrappers.pxi#L2611
     """
+
     def _extract_mj_names(self, name_adr, num_obj, obj_type):
         """
         See https://github.com/openai/mujoco-py/blob/ab86d331c9a77ae412079c6e58b8771fe63747fc/mujoco_py/generated/wrappers.pxi#L1127
@@ -251,7 +256,7 @@ class MjModel(metaclass=_MjModelMeta):
         ### TODO: fix this to use @name_adr like mujoco-py - more robust than assuming IDs are continuous ###
 
         # objects don't need to be named in the XML, so name might be None
-        id2name = { i: None for i in range(num_obj) }
+        id2name = {i: None for i in range(num_obj)}
         name2id = {}
         for i in range(num_obj):
             name = mujoco.mj_id2name(self._model, obj_type, i)
@@ -270,7 +275,7 @@ class MjModel(metaclass=_MjModelMeta):
         #         name2id[decoded_name] = obj_id
         #         id2name[obj_id] = decoded_name
 
-         # sort names by increasing id to keep order deterministic
+        # sort names by increasing id to keep order deterministic
         return tuple(id2name[nid] for nid in sorted(name2id.values())), name2id, id2name
 
     def make_mappings(self):
@@ -278,16 +283,36 @@ class MjModel(metaclass=_MjModelMeta):
         Make some useful internal mappings that mujoco-py supported.
         """
         p = self
-        self.body_names, self._body_name2id, self._body_id2name = self._extract_mj_names(p.name_bodyadr, p.nbody, mujoco.mjtObj.mjOBJ_BODY)
-        self.joint_names, self._joint_name2id, self._joint_id2name = self._extract_mj_names(p.name_jntadr, p.njnt, mujoco.mjtObj.mjOBJ_JOINT)
-        self.geom_names, self._geom_name2id, self._geom_id2name = self._extract_mj_names(p.name_geomadr, p.ngeom, mujoco.mjtObj.mjOBJ_GEOM)
-        self.site_names, self._site_name2id, self._site_id2name = self._extract_mj_names(p.name_siteadr, p.nsite, mujoco.mjtObj.mjOBJ_SITE)
-        self.light_names, self._light_name2id, self._light_id2name = self._extract_mj_names(p.name_lightadr, p.nlight, mujoco.mjtObj.mjOBJ_LIGHT)
-        self.camera_names, self._camera_name2id, self._camera_id2name = self._extract_mj_names(p.name_camadr, p.ncam, mujoco.mjtObj.mjOBJ_CAMERA)
-        self.actuator_names, self._actuator_name2id, self._actuator_id2name = self._extract_mj_names(p.name_actuatoradr, p.nu, mujoco.mjtObj.mjOBJ_ACTUATOR)
-        self.sensor_names, self._sensor_name2id, self._sensor_id2name = self._extract_mj_names(p.name_sensoradr, p.nsensor, mujoco.mjtObj.mjOBJ_SENSOR)
-        self.tendon_names, self._tendon_name2id, self._tendon_id2name = self._extract_mj_names(p.name_tendonadr, p.ntendon, mujoco.mjtObj.mjOBJ_TENDON)
-        self.mesh_names, self._mesh_name2id, self._mesh_id2name = self._extract_mj_names(p.name_meshadr, p.nmesh, mujoco.mjtObj.mjOBJ_MESH)
+        self.body_names, self._body_name2id, self._body_id2name = self._extract_mj_names(
+            p.name_bodyadr, p.nbody, mujoco.mjtObj.mjOBJ_BODY
+        )
+        self.joint_names, self._joint_name2id, self._joint_id2name = self._extract_mj_names(
+            p.name_jntadr, p.njnt, mujoco.mjtObj.mjOBJ_JOINT
+        )
+        self.geom_names, self._geom_name2id, self._geom_id2name = self._extract_mj_names(
+            p.name_geomadr, p.ngeom, mujoco.mjtObj.mjOBJ_GEOM
+        )
+        self.site_names, self._site_name2id, self._site_id2name = self._extract_mj_names(
+            p.name_siteadr, p.nsite, mujoco.mjtObj.mjOBJ_SITE
+        )
+        self.light_names, self._light_name2id, self._light_id2name = self._extract_mj_names(
+            p.name_lightadr, p.nlight, mujoco.mjtObj.mjOBJ_LIGHT
+        )
+        self.camera_names, self._camera_name2id, self._camera_id2name = self._extract_mj_names(
+            p.name_camadr, p.ncam, mujoco.mjtObj.mjOBJ_CAMERA
+        )
+        self.actuator_names, self._actuator_name2id, self._actuator_id2name = self._extract_mj_names(
+            p.name_actuatoradr, p.nu, mujoco.mjtObj.mjOBJ_ACTUATOR
+        )
+        self.sensor_names, self._sensor_name2id, self._sensor_id2name = self._extract_mj_names(
+            p.name_sensoradr, p.nsensor, mujoco.mjtObj.mjOBJ_SENSOR
+        )
+        self.tendon_names, self._tendon_name2id, self._tendon_id2name = self._extract_mj_names(
+            p.name_tendonadr, p.ntendon, mujoco.mjtObj.mjOBJ_TENDON
+        )
+        self.mesh_names, self._mesh_name2id, self._mesh_id2name = self._extract_mj_names(
+            p.name_meshadr, p.nmesh, mujoco.mjtObj.mjOBJ_MESH
+        )
 
     def body_id2name(self, id):
         if id not in self._body_id2name:
@@ -296,7 +321,7 @@ class MjModel(metaclass=_MjModelMeta):
 
     def body_name2id(self, name):
         if name not in self._body_name2id:
-            raise ValueError("No \"body\" with name %s exists. Available \"body\" names = %s." % (name, self.body_names))
+            raise ValueError('No "body" with name %s exists. Available "body" names = %s.' % (name, self.body_names))
         return self._body_name2id[name]
 
     def joint_id2name(self, id):
@@ -306,7 +331,7 @@ class MjModel(metaclass=_MjModelMeta):
 
     def joint_name2id(self, name):
         if name not in self._joint_name2id:
-            raise ValueError("No \"joint\" with name %s exists. Available \"joint\" names = %s." % (name, self.joint_names))
+            raise ValueError('No "joint" with name %s exists. Available "joint" names = %s.' % (name, self.joint_names))
         return self._joint_name2id[name]
 
     def geom_id2name(self, id):
@@ -316,7 +341,7 @@ class MjModel(metaclass=_MjModelMeta):
 
     def geom_name2id(self, name):
         if name not in self._geom_name2id:
-            raise ValueError("No \"geom\" with name %s exists. Available \"geom\" names = %s." % (name, self.geom_names))
+            raise ValueError('No "geom" with name %s exists. Available "geom" names = %s.' % (name, self.geom_names))
         return self._geom_name2id[name]
 
     def site_id2name(self, id):
@@ -326,7 +351,7 @@ class MjModel(metaclass=_MjModelMeta):
 
     def site_name2id(self, name):
         if name not in self._site_name2id:
-            raise ValueError("No \"site\" with name %s exists. Available \"site\" names = %s." % (name, self.site_names))
+            raise ValueError('No "site" with name %s exists. Available "site" names = %s.' % (name, self.site_names))
         return self._site_name2id[name]
 
     def light_id2name(self, id):
@@ -336,7 +361,7 @@ class MjModel(metaclass=_MjModelMeta):
 
     def light_name2id(self, name):
         if name not in self._light_name2id:
-            raise ValueError("No \"light\" with name %s exists. Available \"light\" names = %s." % (name, self.light_names))
+            raise ValueError('No "light" with name %s exists. Available "light" names = %s.' % (name, self.light_names))
         return self._light_name2id[name]
 
     def camera_id2name(self, id):
@@ -346,7 +371,9 @@ class MjModel(metaclass=_MjModelMeta):
 
     def camera_name2id(self, name):
         if name not in self._camera_name2id:
-            raise ValueError("No \"camera\" with name %s exists. Available \"camera\" names = %s." % (name, self.camera_names))
+            raise ValueError(
+                'No "camera" with name %s exists. Available "camera" names = %s.' % (name, self.camera_names)
+            )
         return self._camera_name2id[name]
 
     def actuator_id2name(self, id):
@@ -356,7 +383,9 @@ class MjModel(metaclass=_MjModelMeta):
 
     def actuator_name2id(self, name):
         if name not in self._actuator_name2id:
-            raise ValueError("No \"actuator\" with name %s exists. Available \"actuator\" names = %s." % (name, self.actuator_names))
+            raise ValueError(
+                'No "actuator" with name %s exists. Available "actuator" names = %s.' % (name, self.actuator_names)
+            )
         return self._actuator_name2id[name]
 
     def sensor_id2name(self, id):
@@ -366,7 +395,9 @@ class MjModel(metaclass=_MjModelMeta):
 
     def sensor_name2id(self, name):
         if name not in self._sensor_name2id:
-            raise ValueError("No \"sensor\" with name %s exists. Available \"sensor\" names = %s." % (name, self.sensor_names))
+            raise ValueError(
+                'No "sensor" with name %s exists. Available "sensor" names = %s.' % (name, self.sensor_names)
+            )
         return self._sensor_name2id[name]
 
     def tendon_id2name(self, id):
@@ -376,7 +407,9 @@ class MjModel(metaclass=_MjModelMeta):
 
     def tendon_name2id(self, name):
         if name not in self._tendon_name2id:
-            raise ValueError("No \"tendon\" with name %s exists. Available \"tendon\" names = %s." % (name, self.tendon_names))
+            raise ValueError(
+                'No "tendon" with name %s exists. Available "tendon" names = %s.' % (name, self.tendon_names)
+            )
         return self._tendon_name2id[name]
 
     def mesh_id2name(self, id):
@@ -386,7 +419,7 @@ class MjModel(metaclass=_MjModelMeta):
 
     def mesh_name2id(self, name):
         if name not in self._mesh_name2id:
-            raise ValueError("No \"mesh\" with name %s exists. Available \"mesh\" names = %s." % (name, self.mesh_names))
+            raise ValueError('No "mesh" with name %s exists. Available "mesh" names = %s.' % (name, self.mesh_names))
         return self._mesh_name2id[name]
 
     # def userdata_id2name(self, id):
@@ -401,7 +434,7 @@ class MjModel(metaclass=_MjModelMeta):
 
     def get_xml(self):
         with TemporaryDirectory() as td:
-            filename = os.path.join(td, 'model.xml')
+            filename = os.path.join(td, "model.xml")
             ret = mujoco.mj_saveLastXML(filename.encode(), self._model)
             return open(filename).read()
 
@@ -462,6 +495,7 @@ class _MjDataMeta(type):
 
     Taken from dm_control.
     """
+
     def __new__(cls, name, bases, dct):
         for attr in dir(mujoco.MjData):
             if not attr.startswith("_"):
@@ -479,6 +513,7 @@ class MjData(metaclass=_MjDataMeta):
     MjData contains all of the dynamic variables and intermediate results produced
     by the simulation. These are expected to change on each simulation timestep.
     """
+
     def __init__(self, model):
         """Construct a new MjData instance.
         Args:
@@ -500,6 +535,7 @@ class MjData(metaclass=_MjDataMeta):
     Some methods supported by sim.data in mujoco-py.
     Copied from https://github.com/openai/mujoco-py/blob/ab86d331c9a77ae412079c6e58b8771fe63747fc/mujoco_py/generated/wrappers.pxi#L2611
     """
+
     @property
     def body_xpos(self):
         """
@@ -507,7 +543,7 @@ class MjData(metaclass=_MjDataMeta):
               so we explicitly expose this as a property
         """
         return self._data.xpos
-    
+
     @property
     def body_xquat(self):
         """
@@ -676,8 +712,7 @@ class MjData(metaclass=_MjDataMeta):
         else:
             start_i, end_i = addr
             value = np.array(value)
-            assert value.shape == (end_i - start_i,), (
-                "Value has incorrect shape %s: %s" % (name, value))
+            assert value.shape == (end_i - start_i,), "Value has incorrect shape %s: %s" % (name, value)
             self.qpos[start_i:end_i] = value
 
     def get_joint_qvel(self, name):
@@ -695,8 +730,7 @@ class MjData(metaclass=_MjDataMeta):
         else:
             start_i, end_i = addr
             value = np.array(value)
-            assert value.shape == (end_i - start_i,), (
-                "Value has incorrect shape %s: %s" % (name, value))
+            assert value.shape == (end_i - start_i,), "Value has incorrect shape %s: %s" % (name, value)
             self.qvel[start_i:end_i] = value
 
 
@@ -705,6 +739,7 @@ class MjSim:
     Meant to somewhat replicate functionality in mujoco-py's MjSim object
     (see https://github.com/openai/mujoco-py/blob/master/mujoco_py/mjsim.pyx).
     """
+
     def __init__(self, model):
         """
         Args:
@@ -741,8 +776,17 @@ class MjSim:
         """Step simulation."""
         mujoco.mj_step(self.model._model, self.data._data)
 
-    def render(self, width=None, height=None, *, camera_name=None, depth=False,
-               mode='offscreen', device_id=-1, segmentation=False):
+    def render(
+        self,
+        width=None,
+        height=None,
+        *,
+        camera_name=None,
+        depth=False,
+        mode="offscreen",
+        device_id=-1,
+        segmentation=False,
+    ):
         """
         Renders view from a camera and returns image as an `numpy.ndarray`.
         Args:
@@ -767,9 +811,9 @@ class MjSim:
         assert self._render_context_offscreen is not None
         with _MjSim_render_lock:
             self._render_context_offscreen.render(
-                width=width, height=height, camera_id=camera_id, segmentation=segmentation)
-            return self._render_context_offscreen.read_pixels(
-                width, height, depth=depth, segmentation=segmentation)
+                width=width, height=height, camera_id=camera_id, segmentation=segmentation
+            )
+            return self._render_context_offscreen.read_pixels(width, height, depth=depth, segmentation=segmentation)
 
     def add_render_context(self, render_context):
         assert render_context.offscreen

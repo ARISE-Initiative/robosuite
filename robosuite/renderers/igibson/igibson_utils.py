@@ -80,7 +80,7 @@ def load_object(
 
     if geom_type == "mesh":
         scale = geom_scale
-    elif geom_type == "box": 
+    elif geom_type == "box":
         scale = geom_size * 2
     elif geom_type == "sphere":
         scale = np.repeat(geom_size * 2, 3)
@@ -121,7 +121,7 @@ def load_object(
     use_pbr_mapping = mesh_file_name not in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL
 
     renderer.add_instance_group(
-        [len(renderer.visual_objects) - 1],#len(renderer.visual_objects) - 1,
+        [len(renderer.visual_objects) - 1],  # len(renderer.visual_objects) - 1,
         pybullet_uuid=0,
         class_id=class_id,
         dynamic=True,
@@ -170,7 +170,7 @@ def get_texture_id(intensity, name, self, resolution=1):
         im = intensity
         im = np.tile(im, (resolution, resolution, 1))
     else:
-        im = np.array([intensity] * (resolution ** 2)).reshape(resolution, resolution)
+        im = np.array([intensity] * (resolution**2)).reshape(resolution, resolution)
 
     if not self.renderer.rendering_settings.optimized:
         tmpdirname = tempfile.TemporaryDirectory().name

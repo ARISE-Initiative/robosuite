@@ -12,8 +12,8 @@ from robosuite.models.world import MujocoWorldBase
 from robosuite.utils.mjcf_utils import array_to_string, new_actuator, new_joint
 
 if macros.USE_DM_BINDING:
+    from robosuite.utils import OpenCVRenderer, PygameRenderer
     from robosuite.utils.binding_utils import MjSim
-    from robosuite.utils import PygameRenderer, OpenCVRenderer
 else:
     from mujoco_py import MjSim, MjViewer
 

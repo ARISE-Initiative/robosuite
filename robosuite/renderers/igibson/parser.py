@@ -136,7 +136,7 @@ class Parser(BaseParser):
             )
             robot.cameras.append(camera)
 
-        #self.renderer.add_robot([], [], [], [], None, 0, dynamic=False, robot=robot)
+        # self.renderer.add_robot([], [], [], [], None, 0, dynamic=False, robot=robot)
         self.renderer.add_instance_group([], ig_object=robot)
 
     def parse_meshes(self):
