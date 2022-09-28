@@ -39,7 +39,6 @@ if _MUJOCO_GL not in ('disable', 'disabled', 'off', 'false', '0'):
     if _MUJOCO_GL not in _VALID_MUJOCO_GL:
         raise RuntimeError(
             f'invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}')
-    import pdb; pdb.set_trace()
         
     if _SYSTEM == 'Linux' and _MUJOCO_GL == 'osmesa':
         os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
