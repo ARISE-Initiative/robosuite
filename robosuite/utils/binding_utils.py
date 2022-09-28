@@ -14,6 +14,42 @@ import numpy as np
 
 _MjSim_render_lock = Lock()
 
+import ctypes
+import ctypes.util
+import os
+import platform
+import subprocess
+
+_SYSTEM = platform.system()
+if _SYSTEM == 'Windows':
+  ctypes.WinDLL(os.path.join(os.path.dirname(__file__), 'mujoco.dll'))
+
+# pylint: disable=g-import-not-at-top
+if os.environ.get('CUDA_VISIBLE_DEVICES', '') == '':
+    _MUJOCO_GL = "osmesa"
+_MUJOCO_GL = os.environ.get('MUJOCO_GL', '').lower().strip()
+if _MUJOCO_GL not in ('disable', 'disabled', 'off', 'false', '0'):
+    _VALID_MUJOCO_GL = ('enable', 'enabled', 'on', 'true', '1' , 'glfw', '')
+    if _SYSTEM == 'Linux':
+        _VALID_MUJOCO_GL += ('glx', 'egl', 'osmesa')
+    elif _SYSTEM == 'Windows':
+        _VALID_MUJOCO_GL += ('wgl',)
+    elif _SYSTEM == 'Darwin':
+        _VALID_MUJOCO_GL += ('cgl',)
+    if _MUJOCO_GL not in _VALID_MUJOCO_GL:
+        raise RuntimeError(
+            f'invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}')
+    import pdb; pdb.set_trace()
+        
+    if _SYSTEM == 'Linux' and _MUJOCO_GL == 'osmesa':
+        os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
+        from robosuite.utils.osmesa_context import OSMesaGLContext
+    elif _SYSTEM == 'Linux' and _MUJOCO_GL == 'egl':
+        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+        from robosuite.utils.egl_context import EGLGLContext
+    else:
+        from robosuite.utils.glfw_context import GLFWGLContext
+    
 
 class MjRenderContext:
     """
@@ -23,7 +59,7 @@ class MjRenderContext:
     See https://github.com/openai/mujoco-py/blob/4830435a169c1f3e3b5f9b58a7c3d9c39bdf4acb/mujoco_py/mjrendercontext.pyx
     """
 
-    def __init__(self, sim, offscreen=True, device_id=-1):
+    def __init__(self, sim, offscreen=True, device_id=-1, max_width=640, max_height=480):
         assert offscreen, "only offscreen supported for now"
         self.sim = sim
         self.offscreen = offscreen
@@ -33,11 +69,29 @@ class MjRenderContext:
             if self.device_id is not None and self.device_id >= 0:
                 os.environ["MUJOCO_GL"] = "egl"
                 os.environ["MUJOCO_EGL_DEVICE_ID"] = str(self.device_id)
+                os.environ['PYOPENGL_PLATFORM'] = 'egl'
+
+                GLContext = EGLGLContext
             else:
                 os.environ["MUJOCO_GL"] = "osmesa"
+                os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
+                GLContext = OSMesaGLContext
+        else:
+            os.environ['PYOPENGL_PLATFORM'] = 'glfw'
+            GLContext = GLFWGLContext
 
         # setup GL context with defaults for now
-        self.gl_ctx = mujoco.GLContext(max_width=640, max_height=480)
+        
+        import time;
+        t1 = time.time_ns()
+        self.gl_ctx = mujoco.GLContext(max_width=max_width, max_height=max_height)
+
+        t2 = time.time_ns()
+        
+        self.gl_ctx = GLContext(max_width=max_width, max_height=max_height, device_id=self.device_id)
+
+        t3 = time.time_ns()
+        print((t2 - t1) / (10 ** 9), (t3 - t2) / (10 ** 9))
         self.gl_ctx.make_current()
 
         # Ensure the model data has been updated so that there
@@ -163,8 +217,8 @@ class MjRenderContext:
 
 
 class MjRenderContextOffscreen(MjRenderContext):
-    def __init__(self, sim, device_id):
-        super().__init__(sim, offscreen=True, device_id=device_id)
+    def __init__(self, sim, device_id, max_width=640, max_height=480):
+        super().__init__(sim, offscreen=True, device_id=device_id, max_width=max_width, max_height=max_height)
 
 
 class MjSimState:
