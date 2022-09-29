@@ -1,0 +1,84 @@
+<mujoco model="link6_vis">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <material name="Face064_002_001_002_001" specular="0.5" shininess="0.225" rgba="1.000000 0.000000 0.000000 1.000000"/>
+    <material name="Face065_002_001_002_001" specular="0.5" shininess="0.225" rgba="0.000000 1.000000 0.000000 1.000000"/>
+    <material name="Face374_002_001_002_001" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Face539_002_001_002_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Feature001_009_001_002_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Feature002_006_001_002_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Shell002_002_001_002_001" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Shell003_002_001_002_001" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Shell004_001_001_002_001" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Shell005_001_001_002_001" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Shell006_003_002_001" specular="0.5" shininess="0.225" rgba="0.901961 0.921569 0.929412 1.000000"/>
+    <material name="Shell007_002_002_001" specular="0.5" shininess="0.225" rgba="0.250000 0.250000 0.250000 1.000000"/>
+    <material name="Shell011_002_002_001" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Shell012_002_002_001" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Shell_003_001_002_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Union001_001_001_002_001" specular="0.5" shininess="0.225" rgba="0.039216 0.541176 0.780392 1.000000"/>
+    <material name="Union_001_001_002_001" specular="0.5" shininess="0.225" rgba="0.039216 0.541176 0.780392 1.000000"/>
+    <mesh file="link6_vis_0.obj"/>
+    <mesh file="link6_vis_1.obj"/>
+    <mesh file="link6_vis_2.obj"/>
+    <mesh file="link6_vis_3.obj"/>
+    <mesh file="link6_vis_4.obj"/>
+    <mesh file="link6_vis_5.obj"/>
+    <mesh file="link6_vis_6.obj"/>
+    <mesh file="link6_vis_7.obj"/>
+    <mesh file="link6_vis_8.obj"/>
+    <mesh file="link6_vis_9.obj"/>
+    <mesh file="link6_vis_10.obj"/>
+    <mesh file="link6_vis_11.obj"/>
+    <mesh file="link6_vis_12.obj"/>
+    <mesh file="link6_vis_13.obj"/>
+    <mesh file="link6_vis_14.obj"/>
+    <mesh file="link6_vis_15.obj"/>
+    <mesh file="link6_vis_16.obj"/>
+  </asset>
+  <worldbody>
+    <body name="link6_vis">
+      <geom mesh="link6_vis_0" material="Shell006_003_002_001" class="visual"/>
+      <geom mesh="link6_vis_1" material="Shell011_002_002_001" class="visual"/>
+      <geom mesh="link6_vis_2" material="Shell007_002_002_001" class="visual"/>
+      <geom mesh="link6_vis_3" material="Shell005_001_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_4" material="Shell004_001_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_5" material="Shell003_002_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_6" material="Shell002_002_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_7" material="Union001_001_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_8" material="Union_001_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_9" material="Face539_002_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_10" material="Shell_003_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_11" material="Face374_002_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_12" material="Face065_002_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_13" material="Face064_002_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_14" material="Part__Feature002_006_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_15" material="Part__Feature001_009_001_002_001" class="visual"/>
+      <geom mesh="link6_vis_16" material="Shell012_002_002_001" class="visual"/>
+      <geom mesh="link6_vis_0" class="collision"/>
+      <geom mesh="link6_vis_1" class="collision"/>
+      <geom mesh="link6_vis_2" class="collision"/>
+      <geom mesh="link6_vis_3" class="collision"/>
+      <geom mesh="link6_vis_4" class="collision"/>
+      <geom mesh="link6_vis_5" class="collision"/>
+      <geom mesh="link6_vis_6" class="collision"/>
+      <geom mesh="link6_vis_7" class="collision"/>
+      <geom mesh="link6_vis_8" class="collision"/>
+      <geom mesh="link6_vis_9" class="collision"/>
+      <geom mesh="link6_vis_10" class="collision"/>
+      <geom mesh="link6_vis_11" class="collision"/>
+      <geom mesh="link6_vis_12" class="collision"/>
+      <geom mesh="link6_vis_13" class="collision"/>
+      <geom mesh="link6_vis_14" class="collision"/>
+      <geom mesh="link6_vis_15" class="collision"/>
+      <geom mesh="link6_vis_16" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>

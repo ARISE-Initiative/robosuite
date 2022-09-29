@@ -1,0 +1,48 @@
+<mujoco model="link7_vis">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <material name="Part__Mirroring001_004_002" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Mirroring002_004_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Mirroring003_004_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Mirroring004_004_002" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Part__Mirroring005_004_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Mirroring006_004_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Mirroring007_004_001" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <material name="Part__Mirroring_004_001" specular="0.5" shininess="0.225" rgba="0.898039 0.917647 0.929412 1.000000"/>
+    <mesh file="link7_vis_0.obj"/>
+    <mesh file="link7_vis_1.obj"/>
+    <mesh file="link7_vis_2.obj"/>
+    <mesh file="link7_vis_3.obj"/>
+    <mesh file="link7_vis_4.obj"/>
+    <mesh file="link7_vis_5.obj"/>
+    <mesh file="link7_vis_6.obj"/>
+    <mesh file="link7_vis_7.obj"/>
+  </asset>
+  <worldbody>
+    <body name="link7_vis">
+      <geom mesh="link7_vis_0" material="Part__Mirroring004_004_002" class="visual"/>
+      <geom mesh="link7_vis_1" material="Part__Mirroring001_004_002" class="visual"/>
+      <geom mesh="link7_vis_2" material="Part__Mirroring007_004_001" class="visual"/>
+      <geom mesh="link7_vis_3" material="Part__Mirroring006_004_001" class="visual"/>
+      <geom mesh="link7_vis_4" material="Part__Mirroring005_004_001" class="visual"/>
+      <geom mesh="link7_vis_5" material="Part__Mirroring003_004_001" class="visual"/>
+      <geom mesh="link7_vis_6" material="Part__Mirroring002_004_001" class="visual"/>
+      <geom mesh="link7_vis_7" material="Part__Mirroring_004_001" class="visual"/>
+      <geom mesh="link7_vis_0" class="collision"/>
+      <geom mesh="link7_vis_1" class="collision"/>
+      <geom mesh="link7_vis_2" class="collision"/>
+      <geom mesh="link7_vis_3" class="collision"/>
+      <geom mesh="link7_vis_4" class="collision"/>
+      <geom mesh="link7_vis_5" class="collision"/>
+      <geom mesh="link7_vis_6" class="collision"/>
+      <geom mesh="link7_vis_7" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>

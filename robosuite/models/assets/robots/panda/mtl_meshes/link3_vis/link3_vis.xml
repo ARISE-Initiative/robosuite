@@ -1,0 +1,32 @@
+<mujoco model="link3_vis">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <material name="Part__Feature001_010_001_002" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Part__Feature002_007_001_002" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Part__Feature003_004_001_002" specular="0.5" shininess="0.225" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    <material name="Part__Feature_001_001_001_002" specular="0.5" shininess="0.225" rgba="0.250980 0.250980 0.250980 1.000000"/>
+    <mesh file="link3_vis_0.obj"/>
+    <mesh file="link3_vis_1.obj"/>
+    <mesh file="link3_vis_2.obj"/>
+    <mesh file="link3_vis_3.obj"/>
+  </asset>
+  <worldbody>
+    <body name="link3_vis">
+      <geom mesh="link3_vis_0" material="Part__Feature003_004_001_002" class="visual"/>
+      <geom mesh="link3_vis_1" material="Part__Feature002_007_001_002" class="visual"/>
+      <geom mesh="link3_vis_2" material="Part__Feature001_010_001_002" class="visual"/>
+      <geom mesh="link3_vis_3" material="Part__Feature_001_001_001_002" class="visual"/>
+      <geom mesh="link3_vis_0" class="collision"/>
+      <geom mesh="link3_vis_1" class="collision"/>
+      <geom mesh="link3_vis_2" class="collision"/>
+      <geom mesh="link3_vis_3" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>
