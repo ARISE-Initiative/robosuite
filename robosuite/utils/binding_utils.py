@@ -75,8 +75,8 @@ class MjRenderContext:
         self.offscreen = offscreen
         self.device_id = device_id
 
-        if self.device_id is None:
-            import pdb; pdb.set_trace()
+        # if self.device_id is None:
+        #     import pdb; pdb.set_trace()
         # if offscreen:
         #     if self.device_id is not None:
         #         os.environ["MUJOCO_GL"] = "egl"
