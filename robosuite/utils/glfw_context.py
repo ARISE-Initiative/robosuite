@@ -14,28 +14,10 @@
 # ==============================================================================
 """An OpenGL context created via GLFW."""
 
-import glfw
+from mujoco.glfw import GLContext
 
-
-class GLFWGLContext:
+class GLFWGLContext(GLContext):
     """An OpenGL context created via GLFW."""
 
     def __init__(self, max_width, max_height, device_id=0):
-        glfw.init()
-        glfw.window_hint(glfw.VISIBLE, device_id)
-        self._context = glfw.create_window(
-            width=max_width, height=max_height, title="Invisible window", monitor=None, share=None
-        )
-
-    def make_current(self):
-        glfw.make_context_current(self._context)
-
-    def free(self):
-        if self._context:
-            if glfw.get_current_context() == self._context:
-                glfw.make_context_current(None)
-            glfw.destroy_window(self._context)
-            self._context = None
-
-    def __del__(self):
-        self.free()
+        super().__init__(max_width, max_height)
