@@ -20,35 +20,47 @@ import os
 import platform
 import subprocess
 
-_SYSTEM = platform.system()
-if _SYSTEM == 'Windows':
-  ctypes.WinDLL(os.path.join(os.path.dirname(__file__), 'mujoco.dll'))
+from robosuite.utils import macros
 
 # pylint: disable=g-import-not-at-top
-if os.environ.get('CUDA_VISIBLE_DEVICES', '') == '':
+
+_SYSTEM = platform.system()
+if _SYSTEM == "Windows":
+    ctypes.WinDLL(os.path.join(os.path.dirname(__file__), "mujoco.dll"))
+elif _SYSTEM == "Linux":
+    ctypes.CDLL(ctypes.util.find_library('GL'), ctypes.RTLD_GLOBAL)    
+    ctypes.CDLL(ctypes.util.find_library('OSMesa'), ctypes.RTLD_GLOBAL)    
+
+if os.environ.get("MUJOCO_GL", None) == "osmesa" or not macros.MUJOCO_GPU_RENDERING:
     _MUJOCO_GL = "osmesa"
-_MUJOCO_GL = os.environ.get('MUJOCO_GL', '').lower().strip()
-if _MUJOCO_GL not in ('disable', 'disabled', 'off', 'false', '0'):
-    _VALID_MUJOCO_GL = ('enable', 'enabled', 'on', 'true', '1' , 'glfw', '')
-    if _SYSTEM == 'Linux':
-        _VALID_MUJOCO_GL += ('glx', 'egl', 'osmesa')
-    elif _SYSTEM == 'Windows':
-        _VALID_MUJOCO_GL += ('wgl',)
-    elif _SYSTEM == 'Darwin':
-        _VALID_MUJOCO_GL += ('cgl',)
+else:
+    CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", None)
+    if CUDA_VISIBLE_DEVICES is not None:
+        MUJOCO_EGL_DEVICE_ID = os.environ.get("MUJOCO_EGL_DEVICE_ID", None)
+        if MUJOCO_EGL_DEVICE_ID is not None:
+            assert MUJOCO_EGL_DEVICE_ID.isdigit() and MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES
+
+_MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
+if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
+    _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
+    if _SYSTEM == "Linux":
+        _VALID_MUJOCO_GL += ("glx", "egl", "osmesa")
+    elif _SYSTEM == "Windows":
+        _VALID_MUJOCO_GL += ("wgl",)
+    elif _SYSTEM == "Darwin":
+        _VALID_MUJOCO_GL += ("cgl",)
     if _MUJOCO_GL not in _VALID_MUJOCO_GL:
-        raise RuntimeError(
-            f'invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}')
-        
-    if _SYSTEM == 'Linux' and _MUJOCO_GL == 'osmesa':
-        os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
+        raise RuntimeError(f"invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}")
+
+    if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
+        os.environ["PYOPENGL_PLATFORM"] = "osmesa"
         from robosuite.utils.osmesa_context import OSMesaGLContext
-    elif _SYSTEM == 'Linux' and _MUJOCO_GL == 'egl':
-        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+    elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
+        os.environ["PYOPENGL_PLATFORM"] = "egl"
         from robosuite.utils.egl_context import EGLGLContext
     else:
         from robosuite.utils.glfw_context import GLFWGLContext
-    
+
 
 class MjRenderContext:
     """
@@ -68,29 +80,30 @@ class MjRenderContext:
             if self.device_id is not None and self.device_id >= 0:
                 os.environ["MUJOCO_GL"] = "egl"
                 os.environ["MUJOCO_EGL_DEVICE_ID"] = str(self.device_id)
-                os.environ['PYOPENGL_PLATFORM'] = 'egl'
+                os.environ["PYOPENGL_PLATFORM"] = "egl"
 
                 GLContext = EGLGLContext
             else:
                 os.environ["MUJOCO_GL"] = "osmesa"
-                os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
                 GLContext = OSMesaGLContext
+                import pdb; pdb.set_trace()
         else:
-            os.environ['PYOPENGL_PLATFORM'] = 'glfw'
+            os.environ["PYOPENGL_PLATFORM"] = "glfw"
             GLContext = GLFWGLContext
 
         # setup GL context with defaults for now
-        
-        import time;
+
+        import time
+
         t1 = time.time_ns()
         self.gl_ctx = mujoco.GLContext(max_width=max_width, max_height=max_height)
 
         t2 = time.time_ns()
-        
+
         self.gl_ctx = GLContext(max_width=max_width, max_height=max_height, device_id=self.device_id)
 
         t3 = time.time_ns()
-        print((t2 - t1) / (10 ** 9), (t3 - t2) / (10 ** 9))
+        print((t2 - t1) / (10**9), (t3 - t2) / (10**9))
         self.gl_ctx.make_current()
 
         # Ensure the model data has been updated so that there
