@@ -28,14 +28,19 @@ _SYSTEM = platform.system()
 if _SYSTEM == "Windows":
     ctypes.WinDLL(os.path.join(os.path.dirname(__file__), "mujoco.dll"))
 
+GL_IMPORT = ""
 
-CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", '')
-if CUDA_VISIBLE_DEVICES != '':
+CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", "")
+if CUDA_VISIBLE_DEVICES != "":
     MUJOCO_EGL_DEVICE_ID = os.environ.get("MUJOCO_EGL_DEVICE_ID", None)
     if MUJOCO_EGL_DEVICE_ID is not None:
         assert MUJOCO_EGL_DEVICE_ID.isdigit() and (MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES), "MUJOCO_EGL_DEVICE_ID needs to be set to one of the device id specified in CUDA_VISIBLE_DEVICES"
 
-_MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip() or macros.MUJOCO_GPU_RENDERING
+if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["osmesa", 'glx']:
+    # If gpu rendering is specified in macros, then we enforce gpu
+    # option for rendering
+    os.environ["MUJOCO_GL"] = "egl"
+_MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
 if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
     _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
     if _SYSTEM == "Linux":
