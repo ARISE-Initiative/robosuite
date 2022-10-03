@@ -32,37 +32,37 @@
 	<material name="Shell009_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
 	<material name="Shell010_001" specular="0.5" shininess="0.45" rgba="0.901961 0.921569 0.929412 1.000000"/>
 	<material name="Shell_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
-	<mesh name="link0_vis_0" file="mtl_meshes/link0_vis/link0_vis_0.obj"/>
-	<mesh name="link0_vis_1" file="mtl_meshes/link0_vis/link0_vis_1.obj"/>
-	<mesh name="link0_vis_2" file="mtl_meshes/link0_vis/link0_vis_2.obj"/>
-	<mesh name="link0_vis_3" file="mtl_meshes/link0_vis/link0_vis_3.obj"/>
-	<mesh name="link0_vis_4" file="mtl_meshes/link0_vis/link0_vis_4.obj"/>
-	<mesh name="link0_vis_5" file="mtl_meshes/link0_vis/link0_vis_5.obj"/>
-	<mesh name="link0_vis_6" file="mtl_meshes/link0_vis/link0_vis_6.obj"/>
-	<mesh name="link0_vis_7" file="mtl_meshes/link0_vis/link0_vis_7.obj"/>
-	<mesh name="link0_vis_8" file="mtl_meshes/link0_vis/link0_vis_8.obj"/>
-	<mesh name="link0_vis_9" file="mtl_meshes/link0_vis/link0_vis_9.obj"/>
-	<mesh name="link0_vis_10" file="mtl_meshes/link0_vis/link0_vis_10.obj"/>
-	<mesh name="link0_vis_11" file="mtl_meshes/link0_vis/link0_vis_11.obj"/>
+	<mesh name="link0_vis_0" file="obj_meshes/link0_vis/link0_vis_0.obj"/>
+	<mesh name="link0_vis_1" file="obj_meshes/link0_vis/link0_vis_1.obj"/>
+	<mesh name="link0_vis_2" file="obj_meshes/link0_vis/link0_vis_2.obj"/>
+	<mesh name="link0_vis_3" file="obj_meshes/link0_vis/link0_vis_3.obj"/>
+	<mesh name="link0_vis_4" file="obj_meshes/link0_vis/link0_vis_4.obj"/>
+	<mesh name="link0_vis_5" file="obj_meshes/link0_vis/link0_vis_5.obj"/>
+	<mesh name="link0_vis_6" file="obj_meshes/link0_vis/link0_vis_6.obj"/>
+	<mesh name="link0_vis_7" file="obj_meshes/link0_vis/link0_vis_7.obj"/>
+	<mesh name="link0_vis_8" file="obj_meshes/link0_vis/link0_vis_8.obj"/>
+	<mesh name="link0_vis_9" file="obj_meshes/link0_vis/link0_vis_9.obj"/>
+	<mesh name="link0_vis_10" file="obj_meshes/link0_vis/link0_vis_10.obj"/>
+	<mesh name="link0_vis_11" file="obj_meshes/link0_vis/link0_vis_11.obj"/>
 
         <!-- link 1 material and mesh -->
 	<material name="Part__Feature_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
-	<mesh name="link1_vis" file="mtl_meshes/link1_vis/link1_vis.obj"/>
+	<mesh name="link1_vis" file="obj_meshes/link1_vis/link1_vis.obj"/>
 
 
         <!-- link 2 material and mesh -->
 	<material name="Part__Feature024" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
-	<mesh name="link2_vis" file="mtl_meshes/link2_vis/link2_vis.obj"/>
+	<mesh name="link2_vis" file="obj_meshes/link2_vis/link2_vis.obj"/>
 
         <!-- link 3 material and mesh -->
 	<material name="Part__Feature001_010_001_002" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
 	<material name="Part__Feature002_007_001_002" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
 	<material name="Part__Feature003_004_001_002" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
 	<material name="Part__Feature_001_001_001_002" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
-	<mesh name="link3_vis_0" file="mtl_meshes/link3_vis/link3_vis_0.obj"/>
-	<mesh name="link3_vis_1" file="mtl_meshes/link3_vis/link3_vis_1.obj"/>
-	<mesh name="link3_vis_2" file="mtl_meshes/link3_vis/link3_vis_2.obj"/>
-	<mesh name="link3_vis_3" file="mtl_meshes/link3_vis/link3_vis_3.obj"/>
+	<mesh name="link3_vis_0" file="obj_meshes/link3_vis/link3_vis_0.obj"/>
+	<mesh name="link3_vis_1" file="obj_meshes/link3_vis/link3_vis_1.obj"/>
+	<mesh name="link3_vis_2" file="obj_meshes/link3_vis/link3_vis_2.obj"/>
+	<mesh name="link3_vis_3" file="obj_meshes/link3_vis/link3_vis_3.obj"/>
 
 
         <!-- link 4 material and mesh -->
@@ -70,18 +70,18 @@
 	<material name="Part__Feature002_001_003_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
 	<material name="Part__Feature003_001_003_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
 	<material name="Part__Feature_002_003_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
-	<mesh name="link4_vis_0" file="mtl_meshes/link4_vis/link4_vis_0.obj"/>
-	<mesh name="link4_vis_1" file="mtl_meshes/link4_vis/link4_vis_1.obj"/>
-	<mesh name="link4_vis_2" file="mtl_meshes/link4_vis/link4_vis_2.obj"/>
-	<mesh name="link4_vis_3" file="mtl_meshes/link4_vis/link4_vis_3.obj"/>
+	<mesh name="link4_vis_0" file="obj_meshes/link4_vis/link4_vis_0.obj"/>
+	<mesh name="link4_vis_1" file="obj_meshes/link4_vis/link4_vis_1.obj"/>
+	<mesh name="link4_vis_2" file="obj_meshes/link4_vis/link4_vis_2.obj"/>
+	<mesh name="link4_vis_3" file="obj_meshes/link4_vis/link4_vis_3.obj"/>
 
         <!-- link 5 material and mesh -->
 	<material name="Part__Feature_002_004_003" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
 	<material name="Shell001_001_001_003" specular="0.5" shininess="0.45" rgba="0.250000 0.250000 0.250000 1.000000"/>
 	<material name="Shell_001_001_003" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
-	<mesh name="link5_vis_0" file="mtl_meshes/link5_vis/link5_vis_0.obj"/>
-	<mesh name="link5_vis_1" file="mtl_meshes/link5_vis/link5_vis_1.obj"/>
-	<mesh name="link5_vis_2" file="mtl_meshes/link5_vis/link5_vis_2.obj"/>
+	<mesh name="link5_vis_0" file="obj_meshes/link5_vis/link5_vis_0.obj"/>
+	<mesh name="link5_vis_1" file="obj_meshes/link5_vis/link5_vis_1.obj"/>
+	<mesh name="link5_vis_2" file="obj_meshes/link5_vis/link5_vis_2.obj"/>
 
         <!-- link 6 material and mesh -->
 	<material name="Face064_002_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 0.000000 0.000000 1.000000"/>
@@ -101,23 +101,23 @@
 	<material name="Shell_003_001_002_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
 	<material name="Union001_001_001_002_001" specular="0.5" shininess="0.45" rgba="0.039216 0.541176 0.780392 1.000000"/>
 	<material name="Union_001_001_002_001" specular="0.5" shininess="0.45" rgba="0.039216 0.541176 0.780392 1.000000"/>	
-	<mesh name="link6_vis_0" file="mtl_meshes/link6_vis/link6_vis_0.obj"/>
-	<mesh name="link6_vis_1" file="mtl_meshes/link6_vis/link6_vis_1.obj"/>
-	<mesh name="link6_vis_2" file="mtl_meshes/link6_vis/link6_vis_2.obj"/>
-	<mesh name="link6_vis_3" file="mtl_meshes/link6_vis/link6_vis_3.obj"/>
-	<mesh name="link6_vis_4" file="mtl_meshes/link6_vis/link6_vis_4.obj"/>
-	<mesh name="link6_vis_5" file="mtl_meshes/link6_vis/link6_vis_5.obj"/>
-	<mesh name="link6_vis_6" file="mtl_meshes/link6_vis/link6_vis_6.obj"/>
-	<mesh name="link6_vis_7" file="mtl_meshes/link6_vis/link6_vis_7.obj"/>
-	<mesh name="link6_vis_8" file="mtl_meshes/link6_vis/link6_vis_8.obj"/>
-	<mesh name="link6_vis_9" file="mtl_meshes/link6_vis/link6_vis_9.obj"/>
-	<mesh name="link6_vis_10" file="mtl_meshes/link6_vis/link6_vis_10.obj"/>
-	<mesh name="link6_vis_11" file="mtl_meshes/link6_vis/link6_vis_11.obj"/>
-	<mesh name="link6_vis_12" file="mtl_meshes/link6_vis/link6_vis_12.obj"/>
-	<mesh name="link6_vis_13" file="mtl_meshes/link6_vis/link6_vis_13.obj"/>
-	<mesh name="link6_vis_14" file="mtl_meshes/link6_vis/link6_vis_14.obj"/>
-	<mesh name="link6_vis_15" file="mtl_meshes/link6_vis/link6_vis_15.obj"/>
-	<mesh name="link6_vis_16" file="mtl_meshes/link6_vis/link6_vis_16.obj"/>
+	<mesh name="link6_vis_0" file="obj_meshes/link6_vis/link6_vis_0.obj"/>
+	<mesh name="link6_vis_1" file="obj_meshes/link6_vis/link6_vis_1.obj"/>
+	<mesh name="link6_vis_2" file="obj_meshes/link6_vis/link6_vis_2.obj"/>
+	<mesh name="link6_vis_3" file="obj_meshes/link6_vis/link6_vis_3.obj"/>
+	<mesh name="link6_vis_4" file="obj_meshes/link6_vis/link6_vis_4.obj"/>
+	<mesh name="link6_vis_5" file="obj_meshes/link6_vis/link6_vis_5.obj"/>
+	<mesh name="link6_vis_6" file="obj_meshes/link6_vis/link6_vis_6.obj"/>
+	<mesh name="link6_vis_7" file="obj_meshes/link6_vis/link6_vis_7.obj"/>
+	<mesh name="link6_vis_8" file="obj_meshes/link6_vis/link6_vis_8.obj"/>
+	<mesh name="link6_vis_9" file="obj_meshes/link6_vis/link6_vis_9.obj"/>
+	<mesh name="link6_vis_10" file="obj_meshes/link6_vis/link6_vis_10.obj"/>
+	<mesh name="link6_vis_11" file="obj_meshes/link6_vis/link6_vis_11.obj"/>
+	<mesh name="link6_vis_12" file="obj_meshes/link6_vis/link6_vis_12.obj"/>
+	<mesh name="link6_vis_13" file="obj_meshes/link6_vis/link6_vis_13.obj"/>
+	<mesh name="link6_vis_14" file="obj_meshes/link6_vis/link6_vis_14.obj"/>
+	<mesh name="link6_vis_15" file="obj_meshes/link6_vis/link6_vis_15.obj"/>
+	<mesh name="link6_vis_16" file="obj_meshes/link6_vis/link6_vis_16.obj"/>
 
         <!-- link 7 material and mesh -->
 	<material name="Part__Mirroring001_004_002" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
@@ -129,14 +129,14 @@
 	<material name="Part__Mirroring007_004_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
 	<material name="Part__Mirroring_004_001" specular="0.5" shininess="0.45" rgba="0.898039 0.917647 0.929412 1.000000"/>	
 
-	<mesh name="link7_vis_0" file="mtl_meshes/link7_vis/link7_vis_0.obj"/>
-	<mesh name="link7_vis_1" file="mtl_meshes/link7_vis/link7_vis_1.obj"/>
-	<mesh name="link7_vis_2" file="mtl_meshes/link7_vis/link7_vis_2.obj"/>
-	<mesh name="link7_vis_3" file="mtl_meshes/link7_vis/link7_vis_3.obj"/>
-	<mesh name="link7_vis_4" file="mtl_meshes/link7_vis/link7_vis_4.obj"/>
-	<mesh name="link7_vis_5" file="mtl_meshes/link7_vis/link7_vis_5.obj"/>
-	<mesh name="link7_vis_6" file="mtl_meshes/link7_vis/link7_vis_6.obj"/>
-	<mesh name="link7_vis_7" file="mtl_meshes/link7_vis/link7_vis_7.obj"/>
+	<mesh name="link7_vis_0" file="obj_meshes/link7_vis/link7_vis_0.obj"/>
+	<mesh name="link7_vis_1" file="obj_meshes/link7_vis/link7_vis_1.obj"/>
+	<mesh name="link7_vis_2" file="obj_meshes/link7_vis/link7_vis_2.obj"/>
+	<mesh name="link7_vis_3" file="obj_meshes/link7_vis/link7_vis_3.obj"/>
+	<mesh name="link7_vis_4" file="obj_meshes/link7_vis/link7_vis_4.obj"/>
+	<mesh name="link7_vis_5" file="obj_meshes/link7_vis/link7_vis_5.obj"/>
+	<mesh name="link7_vis_6" file="obj_meshes/link7_vis/link7_vis_6.obj"/>
+	<mesh name="link7_vis_7" file="obj_meshes/link7_vis/link7_vis_7.obj"/>
 
     </asset>
     <worldbody>
