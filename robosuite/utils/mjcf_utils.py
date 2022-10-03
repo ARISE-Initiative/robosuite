@@ -275,7 +275,7 @@ def string_to_array(string):
     Returns:
         np.array: Numerical array equivalent of @string
     """
-    return np.array([float(x) for x in string.split(" ")])
+    return np.array([float(x) for x in string.strip().split(" ")])
 
 
 def convert_to_string(inp):

@@ -10,11 +10,8 @@ import os
 from collections import defaultdict
 
 import numpy as np
-from mujoco_py import cymj
-from PIL import Image
-
-import robosuite
 import robosuite.utils.transform_utils as trans
+from robosuite.utils.binding_utils import MjRenderContextOffscreen
 
 
 class BaseModder:
@@ -1250,8 +1247,10 @@ class TextureModder(BaseModder):
             name (str): name of geom
         """
         texture = self.get_texture(name)
+        if self.sim._render_context_offscreen is None:
+            render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
         if not self.sim.render_contexts:
-            cymj.MjRenderContextOffscreen(self.sim)
+            MjRenderContextOffscreen(self.sim)
         for render_context in self.sim.render_contexts:
             render_context.upload_texture(texture.id)
 

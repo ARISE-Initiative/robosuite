@@ -140,10 +140,10 @@ def test_linear_interpolator():
 
                 # Keep track of state of robot eef (pos, ori (euler)) and torques
                 current_torques = np.zeros(7)
-                initial_state = [env.robots[0]._hand_pos, T.mat2euler(env.robots[0]._hand_orn)]
+                initial_state = [env.robots[0]._hand_pos, T.mat2quat(env.robots[0]._hand_orn)]
                 dstate = [
                     env.robots[0]._hand_pos - initial_state[0],
-                    T.mat2euler(env.robots[0]._hand_orn) - initial_state[1],
+                    T.mat2euler(T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn), initial_state[1]))),
                 ]
 
                 # Define the uniform trajectory action
@@ -172,12 +172,12 @@ def test_linear_interpolator():
                     timesteps[j] += 1
                     dstate = [
                         env.robots[0]._hand_pos - initial_state[0],
-                        T.mat2euler(env.robots[0]._hand_orn) - initial_state[1],
+                        T.mat2euler(T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn), initial_state[1]))),
                     ]
 
                 # When finished, print out the timestep results
                 print(
-                    "Completed trajectory. Total summed absolute delta torques: {}".format(summed_abs_delta_torques[j])
+                    "Completed trajectory. Avg per-step absolute delta torques: {}".format(summed_abs_delta_torques[j] / timesteps[j])
                 )
 
                 # Shut down this env before starting the next test

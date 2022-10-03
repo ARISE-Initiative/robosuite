@@ -105,8 +105,12 @@ class MujocoEnv(metaclass=EnvMeta):
     ):
         if not macros.USE_DM_BINDING:
             # First, verify that both the on- and off-screen renderers are not being used simultaneously
-            if has_renderer is True and has_offscreen_renderer is True:
+            if has_renderer and has_offscreen_renderer:
                 raise ValueError("the onscreen and offscreen renderers cannot be used simultaneously.")
+        else:
+            # Otherwise, you should never have has_renderer set and not has_offscreen_render set!
+            if has_renderer and not has_offscreen_renderer:
+                raise ValueError("the onscreen renderer can only be used if the offscreen renderer is also used!")
 
         # Rendering-specific attributes
         self.has_renderer = has_renderer
