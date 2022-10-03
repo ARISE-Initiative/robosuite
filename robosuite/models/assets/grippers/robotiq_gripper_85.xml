@@ -14,14 +14,14 @@
 
     <tendon>
 		<!--finger2 tendons-->
-        <fixed name="finger2_12_cpl" range="-1 1" stiffness="0.4" springlength="0.001" >
+        <fixed name="finger2_12_cpl" range="-1 1" stiffness="0.4" springlength="0.001" limited="true">
 			<joint joint="finger_joint"  coef="1"/>
 			<joint joint="left_inner_finger_joint"  coef="-3"/>
 			<joint joint="left_inner_knuckle_joint"  coef="1"/>
 		</fixed>
 
 		<!--Finger1 tendons-->
-        <fixed name="finger1_12_cpl" range="-1 1" stiffness="0.4" springlength="0.001" >
+        <fixed name="finger1_12_cpl" range="-1 1" stiffness="0.4" springlength="0.001" limited="true">
 			<joint joint="right_outer_knuckle_joint"  coef="1"/>
 			<joint joint="right_inner_finger_joint"  coef="-3"/>
 			<joint joint="right_inner_knuckle_joint"  coef="1"/>
