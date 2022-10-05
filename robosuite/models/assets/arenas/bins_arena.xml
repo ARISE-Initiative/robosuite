@@ -63,9 +63,7 @@
         <geom pos="-0.15 -0.2 -0.4" size="0.01 0.4" type="cylinder" conaffinity="0" contype="0" group="1" name="bin2_leg3_visual" material="table_legs_metal"/>
         <geom pos="0.15 -0.2 -0.4" size="0.01 0.4" type="cylinder" conaffinity="0" contype="0" group="1" name="bin2_leg4_visual" material="table_legs_metal"/>
     </body>
-
-    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light pos="1.0 1.0 1.5" dir="-0.2 -0.2 -1" specular="0.3 0.3 0.3" directional="true" castshadow="false"/>
     <!-- front view -->
     <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
     <!-- bird view -->
