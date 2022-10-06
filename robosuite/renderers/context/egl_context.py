@@ -31,13 +31,15 @@ def create_initialized_egl_device_display(device_id=0):
         candidates = all_devices
         if device_id == -1:
             device_idx = 0
+        else:
+            device_idx = device_id
     else:
         if not selected_device.isdigit():
             device_inds = [int(x) for x in selected_device.split(",")]
             if device_id == -1:
-                device_idx = 0
+                device_idx = device_inds[0]
             else:
-                assert(device_id in device_inds)
+                assert(device_id in device_inds), "specified device id is not made visible in environment variables."
                 device_idx = device_id
         else:
             device_idx = int(selected_device)
