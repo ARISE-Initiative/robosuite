@@ -30,9 +30,11 @@ CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", "")
 if CUDA_VISIBLE_DEVICES != "":
     MUJOCO_EGL_DEVICE_ID = os.environ.get("MUJOCO_EGL_DEVICE_ID", None)
     if MUJOCO_EGL_DEVICE_ID is not None:
-        assert MUJOCO_EGL_DEVICE_ID.isdigit() and (MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES), "MUJOCO_EGL_DEVICE_ID needs to be set to one of the device id specified in CUDA_VISIBLE_DEVICES"
+        assert MUJOCO_EGL_DEVICE_ID.isdigit() and (
+            MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES
+        ), "MUJOCO_EGL_DEVICE_ID needs to be set to one of the device id specified in CUDA_VISIBLE_DEVICES"
 
-if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["osmesa", 'glx']:
+if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["osmesa", "glx"]:
     # If gpu rendering is specified in macros, then we enforce gpu
     # option for rendering
     os.environ["MUJOCO_GL"] = "egl"
@@ -54,6 +56,7 @@ if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
     else:
         from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
 
+
 class MjRenderContext:
     """
     Class that encapsulates rendering functionality for a
@@ -69,9 +72,7 @@ class MjRenderContext:
         self.device_id = device_id
 
         # setup GL context with defaults for now
-        self.gl_ctx = GLContext(max_width=max_width, max_height=max_height,
-                                device_id=self.device_id
-        )
+        self.gl_ctx = GLContext(max_width=max_width, max_height=max_height, device_id=self.device_id)
         self.gl_ctx.make_current()
 
         # Ensure the model data has been updated so that there

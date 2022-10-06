@@ -15,7 +15,9 @@
 """An OSMesa context for software-based OpenGL rendering."""
 
 import os
+
 from mujoco.osmesa import GLContext
+
 
 class OSMesaGLContext(GLContext):
     """An OSMesa context for software-based OpenGL rendering."""

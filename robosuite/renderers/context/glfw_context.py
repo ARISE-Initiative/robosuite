@@ -16,6 +16,7 @@
 
 from mujoco.glfw import GLContext
 
+
 class GLFWGLContext(GLContext):
     """An OpenGL context created via GLFW."""
 
