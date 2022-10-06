@@ -27,15 +27,18 @@ def create_initialized_egl_device_display(device_id=0):
         if os.environ.get("MUJOCO_EGL_DEVICE_ID", None) is None
         else os.environ.get("MUJOCO_EGL_DEVICE_ID", None)
     )
-    if device_id == -1:
-        device_id = 0
     if selected_device is None:
         candidates = all_devices
-        device_idx = device_id
+        if device_id == -1:
+            device_idx = 0
     else:
         if not selected_device.isdigit():
             device_inds = [int(x) for x in selected_device.split(",")]
-            device_idx = device_inds[device_id]
+            if device_id == -1:
+                device_idx = 0
+            else:
+                assert(device_id in device_inds)
+                device_idx = device_id
         else:
             device_idx = int(selected_device)
         if not 0 <= device_idx < len(all_devices):
