@@ -54,16 +54,16 @@ if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
 
     if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
         # os.environ["PYOPENGL_PLATFORM"] = "osmesa"
-        from robosuite.utils.osmesa_context import OSMesaGLContext as GLContext
+        from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
         # from mujoco.osmesa import GLContext
 
     elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
         # os.environ["PYOPENGL_PLATFORM"] = "egl"
-        from robosuite.utils.egl_context import EGLGLContext as GLContext
+        from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
         # from mujoco.egl import GLContext
 
     else:
-        from robosuite.utils.glfw_context import GLFWGLContext as GLContext
+        from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
         # from mujoco.glfw import GLContext
 
 class MjRenderContext:
@@ -96,13 +96,6 @@ class MjRenderContext:
 
         # setup GL context with defaults for now
 
-        import time
-
-        # t1 = time.time_ns()
-        # self.gl_ctx = mujoco.GLContext(max_width=max_width, max_height=max_height)
-        # t2 = time.time_ns()
-
-        
         self.gl_ctx = GLContext(max_width=max_width, max_height=max_height,
                                 device_id=self.device_id
         )
