@@ -22,13 +22,9 @@ import subprocess
 
 from robosuite.utils import macros
 
-# pylint: disable=g-import-not-at-top
-
 _SYSTEM = platform.system()
 if _SYSTEM == "Windows":
     ctypes.WinDLL(os.path.join(os.path.dirname(__file__), "mujoco.dll"))
-
-GL_IMPORT = ""
 
 CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", "")
 if CUDA_VISIBLE_DEVICES != "":
@@ -51,20 +47,12 @@ if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
         _VALID_MUJOCO_GL += ("cgl",)
     if _MUJOCO_GL not in _VALID_MUJOCO_GL:
         raise RuntimeError(f"invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}")
-
     if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
-        # os.environ["PYOPENGL_PLATFORM"] = "osmesa"
         from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
-        # from mujoco.osmesa import GLContext
-
     elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
-        # os.environ["PYOPENGL_PLATFORM"] = "egl"
         from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
-        # from mujoco.egl import GLContext
-
     else:
         from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
-        # from mujoco.glfw import GLContext
 
 class MjRenderContext:
     """
@@ -80,26 +68,10 @@ class MjRenderContext:
         self.offscreen = offscreen
         self.device_id = device_id
 
-        # if self.device_id is None:
-        #     import pdb; pdb.set_trace()
-        # if offscreen:
-        #     if self.device_id is not None:
-        #         os.environ["MUJOCO_GL"] = "egl"
-        #         os.environ["MUJOCO_EGL_DEVICE_ID"] = str(self.device_id)
-        #         # os.environ["PYOPENGL_PLATFORM"] = "egl"
-        #     else:
-        #         os.environ["MUJOCO_GL"] = "osmesa"
-        #         GLContext = OSMesaGLContext
-        #         # import pdb; pdb.set_trace()
-        # else:
-        #     os.environ["PYOPENGL_PLATFORM"] = "glfw"
-
         # setup GL context with defaults for now
         self.gl_ctx = GLContext(max_width=max_width, max_height=max_height,
                                 device_id=self.device_id
         )
-        # t3 = time.time_ns()
-        # print((t2 - t1) / (10**9), (t3 - t2) / (10**9))
         self.gl_ctx.make_current()
 
         # Ensure the model data has been updated so that there

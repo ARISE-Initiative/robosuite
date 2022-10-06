@@ -1,3 +1,5 @@
+"""This is a modified EGLContext class that allows programmatic specification of gpu ids"""
+
 import atexit
 import ctypes
 import os
