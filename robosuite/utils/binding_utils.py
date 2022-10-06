@@ -95,7 +95,6 @@ class MjRenderContext:
         #     os.environ["PYOPENGL_PLATFORM"] = "glfw"
 
         # setup GL context with defaults for now
-
         self.gl_ctx = GLContext(max_width=max_width, max_height=max_height,
                                 device_id=self.device_id
         )
