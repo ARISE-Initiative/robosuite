@@ -5,7 +5,7 @@ import numpy as np
 import robosuite.macros as macros
 from robosuite.models.base import MujocoModel
 from robosuite.renderers.base import load_renderer_config
-from robosuite.utils import OpenCVRenderer, PygameRenderer, SimulationError, XMLError
+from robosuite.utils import OpenCVRenderer, SimulationError, XMLError
 from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 
 REGISTERED_ENVS = {}
@@ -289,7 +289,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
-            # self.viewer = PygameRenderer(self.sim)
             self.viewer = OpenCVRenderer(self.sim)
 
             # Set the camera angle for viewing

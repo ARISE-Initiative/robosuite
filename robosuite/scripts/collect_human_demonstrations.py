@@ -18,6 +18,7 @@ import h5py
 import numpy as np
 
 import robosuite as suite
+import robosuite.utils.macros as macros
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
@@ -229,9 +230,10 @@ if __name__ == "__main__":
         from robosuite.devices import Keyboard
 
         device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-        env.viewer.add_keypress_callback("any", device.on_press)
-        env.viewer.add_keyup_callback("any", device.on_release)
-        env.viewer.add_keyrepeat_callback("any", device.on_press)
+        if macros.USE_DM_BINDING is False:
+            env.viewer.add_keypress_callback("any", device.on_press)
+            env.viewer.add_keyup_callback("any", device.on_release)
+            env.viewer.add_keyrepeat_callback("any", device.on_press)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 

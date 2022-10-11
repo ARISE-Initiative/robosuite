@@ -9,10 +9,9 @@ import robosuite.macros as macros
 from robosuite.models.arenas.table_arena import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.world import MujocoWorldBase
-from robosuite.utils import OpenCVRenderer, PygameRenderer
+from robosuite.utils import OpenCVRenderer
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.mjcf_utils import array_to_string, new_actuator, new_joint
-
 
 class GripperTester:
     """
