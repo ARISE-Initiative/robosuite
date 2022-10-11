@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
 from robosuite.models.mounts import mount_factory
 from robosuite.models.robots import create_robot

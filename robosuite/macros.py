@@ -4,7 +4,7 @@ for determining core functionality.
 
 To make sure global reference is maintained, should import these settings as:
 
-`import robosuite.utils.macros as macros`
+`import robosuite.macros as macros`
 """
 
 # Global Mujoco Simulation Parameters
@@ -34,3 +34,14 @@ IMAGE_CONVENTION = "opengl"  # Options are {"opengl", "opencv"}
 # In general, observations are concatenated together by modality. However, image observations are expensive memory-wise,
 # so we skip concatenating all images together by default, unless this flag is set to True
 CONCATENATE_IMAGES = False
+
+
+try:
+    from robosuite.macros_private import *
+except ImportError:
+    from robosuite.utils.log_utils import log_warning
+    log_warning(
+        "No private macro file found!"\
+        "\nIt is recommended to use a private macro file"\
+        "\nTo setup, run: python robosuite/scripts/setup_macros.py"\
+    )

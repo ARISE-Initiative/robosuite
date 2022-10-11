@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.models.arenas.table_arena import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.world import MujocoWorldBase

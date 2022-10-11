@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.models.base import MujocoModel
 from robosuite.renderers.base import load_renderer_config
 from robosuite.utils import SimulationError, XMLError

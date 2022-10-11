@@ -3,7 +3,7 @@ from collections.abc import Iterable
 
 import numpy as np
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 
 if macros.USE_DM_BINDING:
     import mujoco

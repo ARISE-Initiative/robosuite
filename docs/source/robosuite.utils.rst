@@ -44,10 +44,10 @@ robosuite.utils.input\_utils module
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.macros module
+robosuite.macros module
 -----------------------------
 
-.. automodule:: robosuite.utils.macros
+.. automodule:: robosuite.macros
    :members:
    :undoc-members:
    :show-inheritance:
