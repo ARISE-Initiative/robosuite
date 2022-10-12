@@ -22,7 +22,6 @@ import h5py
 import numpy as np
 
 import robosuite
-from robosuite.utils.mjcf_utils import postprocess_model_xml
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -67,7 +66,7 @@ if __name__ == "__main__":
         model_xml = f["data/{}".format(ep)].attrs["model_file"]
 
         env.reset()
-        xml = postprocess_model_xml(model_xml)
+        xml = env.postprocess_model_xml(model_xml)
         env.reset_from_xml_string(xml)
         env.sim.reset()
         env.viewer.set_camera(0)
