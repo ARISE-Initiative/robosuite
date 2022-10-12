@@ -94,7 +94,7 @@ class Keyboard(Device):
             reset=self._reset_state,
         )
 
-    def on_press(self, window, key, scancode, action, mods):
+    def on_press(self, key, window=None, scancode=None, action=None, mods=None):
         """
         Key handler for key presses.
 
@@ -107,44 +107,54 @@ class Keyboard(Device):
         """
 
         # controls for moving position
-        if key == glfw.KEY_W:
+        if key == ord('w'):
             self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
-        elif key == glfw.KEY_S:
+        elif key == ord('s'):
             self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
-        elif key == glfw.KEY_A:
+        elif key == ord('a'):
             self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
-        elif key == glfw.KEY_D:
+        elif key == ord('d'):
             self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
-        elif key == glfw.KEY_F:
+        elif key == ord('f'):
             self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
-        elif key == glfw.KEY_R:
+        elif key == ord('r'):
             self.pos[2] += self._pos_step * self.pos_sensitivity  # inc z
 
         # controls for moving orientation
-        elif key == glfw.KEY_Z:
+        elif key == ord('z'):
             drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates x
             self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
-        elif key == glfw.KEY_X:
+        elif key == ord('x'):
             drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates x
             self.raw_drotation[1] += 0.1 * self.rot_sensitivity
-        elif key == glfw.KEY_T:
+        elif key == ord('t'):
             drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates y
             self.raw_drotation[0] += 0.1 * self.rot_sensitivity
-        elif key == glfw.KEY_G:
+        elif key == ord('g'):
             drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates y
             self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
-        elif key == glfw.KEY_C:
+        elif key == ord('c'):
             drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates z
             self.raw_drotation[2] += 0.1 * self.rot_sensitivity
-        elif key == glfw.KEY_V:
+        elif key == ord('v'):
             drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates z
             self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
+
+        # controls for grasping
+        elif key == ord(' '):
+            self.grasp = not self.grasp  # toggle gripper
+
+        # user-commanded reset
+        elif key == ord('q'):
+            self._reset_state = 1
+            self._enabled = False
+            self._reset_internal_state()
 
     def on_release(self, window, key, scancode, action, mods):
         """

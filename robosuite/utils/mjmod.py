@@ -10,10 +10,12 @@ import os
 from collections import defaultdict
 
 import numpy as np
-from mujoco_py import cymj
+
+from mujoco import MjrContext
 from PIL import Image
 
 import robosuite
+import robosuite.utils.macros as macros
 import robosuite.utils.transform_utils as trans
 
 
@@ -1250,10 +1252,11 @@ class TextureModder(BaseModder):
             name (str): name of geom
         """
         texture = self.get_texture(name)
-        if not self.sim.render_contexts:
-            cymj.MjRenderContextOffscreen(self.sim)
-        for render_context in self.sim.render_contexts:
-            render_context.upload_texture(texture.id)
+        if not macros.USE_DM_BINDING:
+            if not self.sim.render_contexts:
+                MjrContext(self.sim)
+            for render_context in self.sim.render_contexts:
+                render_context.upload_texture(texture.id)
 
     def _check_geom_for_texture(self, name):
         """
