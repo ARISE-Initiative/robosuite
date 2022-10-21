@@ -1,14 +1,10 @@
 import abc
 from collections.abc import Iterable
 
+import mujoco
 import numpy as np
 
 import robosuite.macros as macros
-
-if macros.USE_DM_BINDING:
-    import mujoco
-else:
-    import mujoco_py
 
 
 class Controller(object, metaclass=abc.ABCMeta):
@@ -156,12 +152,8 @@ class Controller(object, metaclass=abc.ABCMeta):
             self.J_ori = np.array(self.sim.data.get_site_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
             self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
-            if macros.USE_DM_BINDING:
-                mass_matrix = np.ndarray(shape=(self.sim.model.nv, self.sim.model.nv), dtype=np.float64, order="C")
-                mujoco.mj_fullM(self.sim.model._model, mass_matrix, self.sim.data.qM)
-            else:
-                mass_matrix = np.ndarray(shape=(len(self.sim.data.qvel) ** 2,), dtype=np.float64, order="C")
-                mujoco_py.cymj._mj_fullM(self.sim.model, mass_matrix, self.sim.data.qM)
+            mass_matrix = np.ndarray(shape=(self.sim.model.nv, self.sim.model.nv), dtype=np.float64, order="C")
+            mujoco.mj_fullM(self.sim.model._model, mass_matrix, self.sim.data.qM)
             mass_matrix = np.reshape(mass_matrix, (len(self.sim.data.qvel), len(self.sim.data.qvel)))
             self.mass_matrix = mass_matrix[self.qvel_index, :][:, self.qvel_index]
 

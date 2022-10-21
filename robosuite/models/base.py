@@ -122,30 +122,6 @@ class MujocoXML(object):
             for one_contact in other.contact:
                 self.contact.append(one_contact)
 
-    def get_model(self, mode="mujoco_py"):
-        """
-        Generates a MjModel instance from the current xml tree.
-
-        Args:
-            mode (str): Mode with which to interpret xml tree
-
-        Returns:
-            MjModel: generated model from xml
-
-        Raises:
-            ValueError: [Invalid mode]
-        """
-
-        available_modes = ["mujoco_py"]
-        with io.StringIO() as string:
-            string.write(ET.tostring(self.root, encoding="unicode"))
-            if mode == "mujoco_py":
-                from mujoco_py import load_model_from_xml
-
-                model = load_model_from_xml(string.getvalue())
-                return model
-            raise ValueError("Unkown model mode: {}. Available options are: {}".format(mode, ",".join(available_modes)))
-
     def get_xml(self):
         """
         Reads a string of the MJCF XML file.
