@@ -7,8 +7,9 @@ If applicable, it creates the private macros at robosuite/macros_private.py
 """
 
 import os
-import robosuite
 import shutil
+
+import robosuite
 
 if __name__ == "__main__":
     base_path = robosuite.__path__[0]

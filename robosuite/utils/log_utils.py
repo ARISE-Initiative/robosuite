@@ -3,6 +3,7 @@ This file contains utility classes and functions for logging to stdout and stder
 Adapted from robomimic: https://github.com/ARISE-Initiative/robomimic/blob/master/robomimic/utils/log_utils.py
 """
 import textwrap
+
 from termcolor import colored
 
 # global list of warning messages can be populated with @log_warning and flushed with @flush_warnings
