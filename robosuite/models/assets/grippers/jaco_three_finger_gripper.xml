@@ -14,19 +14,19 @@
 
     <tendon>
 		<!--Middlefinger tendons-->
-		<fixed name="thumb_cpl" range="-5 5" stiffness="3.0" springlength="0.2" frictionloss="0.4">
+		<fixed name="thumb_cpl" range="-5 5" stiffness="3.0" springlength="0.2" frictionloss="0.4" limited="true">
 			<joint joint="joint_thumb"  coef="0.4"/>
 			<joint joint="joint_thumb_distal"  coef="-0.4"/>
 		</fixed>
 
 		<!--finger2 tendons-->
-        <fixed name="index_12_cpl" range="-5 5" stiffness="3.0" springlength="0.2" frictionloss="0.4">
+        <fixed name="index_12_cpl" range="-5 5" stiffness="3.0" springlength="0.2" frictionloss="0.4" limited="true">
 			<joint joint="joint_index"  coef="0.4"/>
 			<joint joint="joint_index_distal"  coef="-0.4"/>
 		</fixed>
 
 		<!--Finger1 tendons-->
-        <fixed name="pinky_12_cpl" range="-5 5" stiffness="3.0" springlength="0.2" frictionloss="0.4">
+        <fixed name="pinky_12_cpl" range="-5 5" stiffness="3.0" springlength="0.2" frictionloss="0.4" limited="true">
 			<joint joint="joint_pinky"  coef="0.4"/>
 			<joint joint="joint_pinky_distal"  coef="-0.4"/>
 		</fixed>

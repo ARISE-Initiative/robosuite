@@ -37,8 +37,8 @@ def test_camera_transforms():
         reward_shaping=True,
         control_freq=20,
     )
-    sim = env.sim
     obs_dict = env.reset()
+    sim = env.sim
 
     # ground-truth object position
     obj_pos = obs_dict["object-state"][:3]

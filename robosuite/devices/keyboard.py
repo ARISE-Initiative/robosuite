@@ -107,51 +107,51 @@ class Keyboard(Device):
         """
 
         # controls for moving position
-        if key == ord('w'):
+        if key == ord("w"):
             self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
-        elif key == ord('s'):
+        elif key == ord("s"):
             self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
-        elif key == ord('a'):
+        elif key == ord("a"):
             self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
-        elif key == ord('d'):
+        elif key == ord("d"):
             self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
-        elif key == ord('f'):
+        elif key == ord("f"):
             self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
-        elif key == ord('r'):
+        elif key == ord("r"):
             self.pos[2] += self._pos_step * self.pos_sensitivity  # inc z
 
         # controls for moving orientation
-        elif key == ord('z'):
+        elif key == ord("z"):
             drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates x
             self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
-        elif key == ord('x'):
+        elif key == ord("x"):
             drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates x
             self.raw_drotation[1] += 0.1 * self.rot_sensitivity
-        elif key == ord('t'):
+        elif key == ord("t"):
             drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates y
             self.raw_drotation[0] += 0.1 * self.rot_sensitivity
-        elif key == ord('g'):
+        elif key == ord("g"):
             drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates y
             self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
-        elif key == ord('c'):
+        elif key == ord("c"):
             drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates z
             self.raw_drotation[2] += 0.1 * self.rot_sensitivity
-        elif key == ord('v'):
+        elif key == ord("v"):
             drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
             self.rotation = self.rotation.dot(drot)  # rotates z
             self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
 
         # controls for grasping
-        elif key == ord(' '):
+        elif key == ord(" "):
             self.grasp = not self.grasp  # toggle gripper
 
         # user-commanded reset
-        elif key == ord('q'):
+        elif key == ord("q"):
             self._reset_state = 1
             self._enabled = False
             self._reset_internal_state()

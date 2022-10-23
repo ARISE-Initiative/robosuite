@@ -10,15 +10,14 @@ Example:
 
 import xml.etree.ElementTree as ET
 
-# from mujoco import MjSim, MjViewer
-from robosuite.utils import OpenCVRenderer, PygameRenderer
-from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
-
-
 from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas.table_arena import TableArena
 from robosuite.models.grippers import PandaGripper, RethinkGripper
 from robosuite.models.objects import BoxObject
+
+# from mujoco import MjSim, MjViewer
+from robosuite.utils import OpenCVRenderer, PygameRenderer
+from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 from robosuite.utils.mjcf_utils import new_actuator, new_joint
 
 if __name__ == "__main__":
@@ -67,13 +66,13 @@ if __name__ == "__main__":
 
     # start simulation
     model = world.get_model(mode="mujoco_py")
-    
+
     sim = MjSim(model)
     # viewer = MjViewer(sim)
     viewer = PygameRenderer(sim)
     render_context = MjRenderContextOffscreen(sim, device_id=-1)
     sim.add_render_context(render_context)
-    
+
     sim_state = sim.get_state()
 
     # for gravity correction

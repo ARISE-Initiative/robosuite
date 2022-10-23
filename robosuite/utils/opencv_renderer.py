@@ -34,10 +34,10 @@ class OpenCVRenderer:
         key = cv2.waitKey(1)
         if self.keypress_callback:
             self.keypress_callback(key)
-        
+
     def add_keypress_callback(self, keypress_callback):
         self.keypress_callback = keypress_callback
-        
+
     def close(self):
         """
         Any cleanup to close renderer.
