@@ -1,0 +1,20 @@
+<mujoco model="connector_plate">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <material name="Material_001" specular="0.5" shininess="0.25" rgba="0.001651 0.001651 0.001651 1.000000"/>
+    <mesh file="connector_plate.obj"/>
+  </asset>
+  <worldbody>
+    <body name="connector_plate">
+      <geom material="Material_001" mesh="connector_plate" class="visual"/>
+      <geom mesh="connector_plate" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>
