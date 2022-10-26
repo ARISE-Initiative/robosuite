@@ -10,7 +10,6 @@ import os
 from collections import defaultdict
 
 import numpy as np
-from mujoco_py import cymj
 from PIL import Image
 
 import robosuite
@@ -1251,7 +1250,7 @@ class TextureModder(BaseModder):
         """
         texture = self.get_texture(name)
         if not self.sim.render_contexts:
-            cymj.MjRenderContextOffscreen(self.sim)
+            raise NotImplementedError("Need to implement logic for dm binding")
         for render_context in self.sim.render_contexts:
             render_context.upload_texture(texture.id)
 

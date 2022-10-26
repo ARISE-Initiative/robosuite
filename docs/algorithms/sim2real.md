@@ -102,7 +102,7 @@ By default, Mujoco sensors are deterministic and delay-free, which is often an u
 }
 ```
 
-Note that for memory efficiency the `image-state` is not returned by default (this can be toggled in `robosuite/utils/macros.py`).
+Note that for memory efficiency the `image-state` is not returned by default (this can be toggled in `robosuite/macros.py`).
 
 We showcase how the `Observable` functionality can be used to model sensor corruption and delay via [demo_sensor_corruption.py](../demos.html#sensor-realism). We also highlight that each of the `sensor`, `corrupter`, and `filter` functions can be arbitrarily specified to suit the end-user's usage. For example, a common use case for these observables is to keep track of sampled values from a sensor operating at a higher frequency than the environment step (control) frequency. In this case, the `filter` function can be leveraged to keep track of the real-time sensor values as they're being sampled. We provide a minimal script showcasing this ability below:
 

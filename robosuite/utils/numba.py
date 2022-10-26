@@ -3,7 +3,7 @@ Numba utils.
 """
 import numba
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 
 
 def jit_decorator(func):

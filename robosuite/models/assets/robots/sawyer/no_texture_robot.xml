@@ -1,0 +1,121 @@
+<mujoco model="sawyer">
+    <actuator>
+    	<motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="right_j0" name="torq_right_j0"/>
+    	<motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="right_j1" name="torq_right_j1"/>
+    	<motor ctrllimited="true" ctrlrange="-40.0 40.0" joint="right_j2" name="torq_right_j2"/>
+    	<motor ctrllimited="true" ctrlrange="-40.0 40.0" joint="right_j3" name="torq_right_j3"/>
+    	<motor ctrllimited="true" ctrlrange="-9.0 9.0" joint="right_j4" name="torq_right_j4"/>
+    	<motor ctrllimited="true" ctrlrange="-9.0 9.0" joint="right_j5" name="torq_right_j5"/>
+    	<motor ctrllimited="true" ctrlrange="-9.0 9.0" joint="right_j6" name="torq_right_j6"/>
+    </actuator>
+    <asset>
+    	<mesh file="meshes/base.stl" name="base"/>
+    	<mesh file="meshes/l0.stl" name="l0"/>
+    	<mesh file="meshes/head.stl" name="head"/>
+    	<mesh file="meshes/l1.stl" name="l1"/>
+    	<mesh file="meshes/l2.stl" name="l2"/>
+    	<mesh file="meshes/l3.stl" name="l3"/>
+    	<mesh file="meshes/l4.stl" name="l4"/>
+    	<mesh file="meshes/l5.stl" name="l5"/>
+    	<mesh file="meshes/l6.stl" name="l6"/>
+    </asset>
+    <worldbody>
+    	<body name="base" pos="0 0 0">
+			<!-- robot view -->
+			<camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
+    		<inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
+            <!-- mount attached here -->
+    		<body name="right_arm_base_link" pos="0 0 0">
+    			<inertial diaginertia="0.00740351 0.00681776 0.00672942" mass="2.0687" pos="-0.0006241 -2.8025e-05 0.065404" quat="-0.209285 0.674441 0.227335 0.670558"/>
+    			<geom conaffinity="0" contype="0" group="1" mesh="base" type="mesh" name="base_vis" rgba="0.5 0.1 0.1 1"/>
+    			<geom pos="0 0 0.12" rgba="0.5 0.1 0.1 1" size="0.08 0.12" type="cylinder" name="base_col"/>
+    			<body name="right_l0" pos="0 0 0.08">
+    				<inertial diaginertia="0.0651588 0.0510944 0.0186218" mass="5.3213" pos="0.024366 0.010969 0.14363" quat="0.894823 0.00899958 -0.170275 0.412573"/>
+    				<joint axis="0 0 1" limited="true" name="right_j0" pos="0 0 0" range="-3.0503 3.0503"/>
+    				<geom conaffinity="0" contype="0" group="1" mesh="l0" type="mesh" name="link0_visual" rgba="0.5 0.1 0.1 1"/>
+    				<geom pos="0.08 0 0.23" rgba="0.5 0.1 0.1 1" size="0.07" name="link0_collision"/>
+    				<body name="head" pos="0 0 0.2965">
+    					<inertial diaginertia="0.0118334 0.00827089 0.00496574" mass="1.5795" pos="0.0053207 -2.6549e-05 0.1021" quat="0.999993 7.08405e-05 -0.00359857 -0.000626247"/>
+    					<!--Don't want to control the head joint so remove it from the kinematic tree-->
+    					<!--<joint axis="0 0 1" limited="true" name="head_pan" pos="0 0 0" range="-5.0952 0.9064"/>-->
+    					<geom conaffinity="0" contype="0" group="1" mesh="head" type="mesh" name="head_visual" rgba="0.5 0.1 0.1 1"/>
+    					<geom pos="0 0 0.08" rgba="0.5 0.1 0.1 1" size="0.018" name="head_collision"/>
+    					<body name="screen" pos="0.03 0 0.105" quat="0.5 0.5 0.5 0.5">
+    						<inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
+    						<geom conaffinity="0" contype="0" group="1" size="0.12 0.07 0.001" type="box" name="screen_visual" rgba="0.2 0.2 0.2 1"/>
+    						<geom rgba="0.2 0.2 0.2 1" size="0.001" name="screen_collision"/>
+    					</body>
+    					<body name="head_camera" pos="0.0228027 0 0.216572" quat="0.342813 -0.618449 0.618449 -0.342813">
+    						<inertial diaginertia="0 0 0" mass="0" pos="0.0228027 0 0.216572" quat="0.342813 -0.618449 0.618449 -0.342813"/>
+    					</body>
+    				</body>
+    				<body name="right_torso_itb" pos="-0.055 0 0.22" quat="0.707107 0 -0.707107 0">
+    					<inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
+    				</body>
+    				<body name="right_l1" pos="0.081 0.05 0.237" quat="0.5 -0.5 0.5 0.5">
+    					<inertial diaginertia="0.0224339 0.0221624 0.0097097" mass="4.505" pos="-0.0030849 -0.026811 0.092521" quat="0.424888 0.891987 0.132364 -0.0794296"/>
+    					<joint axis="0 0 1" limited="true" name="right_j1" pos="0 0 0" range="-3.8095 2.2736"/>
+    					<geom conaffinity="0" contype="0" group="1" mesh="l1" type="mesh" name="link1_visual" rgba="0.5 0.1 0.1 1"/>
+    					<geom pos="0 0 0.1225" rgba="0.5 0.1 0.1 1" size="0.07" name="link1_collision"/>
+    					<body name="right_l2" pos="0 -0.14 0.1425" quat="0.707107 0.707107 0 0">
+    						<inertial diaginertia="0.0257928 0.025506 0.00292515" mass="1.745" pos="-0.00016044 -0.014967 0.13582" quat="0.707831 -0.0524761 0.0516007 0.702537"/>
+    						<joint axis="0 0 1" limited="true" name="right_j2" pos="0 0 0" range="-3.0426 3.0426"/>
+    						<geom conaffinity="0" contype="0" group="1" mesh="l2" type="mesh" name="link2_visual" rgba="0.5 0.1 0.1 1"/>
+    						<geom pos="0 0 0.08" rgba="0.5 0.1 0.1 1" size="0.06 0.17" type="cylinder" name="link2_collision"/>
+    						<body name="right_l3" pos="0 -0.042 0.26" quat="0.707107 -0.707107 0 0">
+    							<inertial diaginertia="0.0102404 0.0096997 0.00369622" mass="2.5097" pos="-0.0048135 -0.0281 -0.084154" quat="0.902999 0.385391 -0.0880901 0.168247"/>
+    							<joint axis="0 0 1" limited="true" name="right_j3" pos="0 0 0" range="-3.0439 3.0439"/>
+    							<geom conaffinity="0" contype="0" group="1" mesh="l3" type="mesh" name="link3_visual" rgba="0.5 0.1 0.1 1"/>
+    							<geom pos="0 -0.01 -0.12" rgba="0.5 0.1 0.1 1" size="0.06" name="link3_collision"/>
+    							<body name="right_l4" pos="0 -0.125 -0.1265" quat="0.707107 0.707107 0 0">
+    								<inertial diaginertia="0.0136549 0.0135493 0.00127353" mass="1.1136" pos="-0.0018844 0.0069001 0.1341" quat="0.803612 0.031257 -0.0298334 0.593582"/>
+    								<joint axis="0 0 1" limited="true" name="right_j4" pos="0 0 0" range="-2.9761 2.9761"/>
+    								<geom conaffinity="0" contype="0" group="1" mesh="l4" type="mesh" name="link4_visual" rgba="0.5 0.1 0.1 1"/>
+    								<geom pos="0 0 0.11" rgba="0.5 0.1 0.1 1" size="0.045 0.15" type="cylinder" name="link4_collision"/>
+    								<body name="right_arm_itb" pos="-0.055 0 0.075" quat="0.707107 0 -0.707107 0">
+    									<inertial diaginertia="1e-08 1e-08 1e-08" mass="0.0001" pos="0 0 0"/>
+    								</body>
+    								<body name="right_l5" pos="0 0.031 0.275" quat="0.707107 -0.707107 0 0">
+    									<inertial diaginertia="0.00474131 0.00422857 0.00190672" mass="1.5625" pos="0.0061133 -0.023697 0.076416" quat="0.404076 0.9135 0.0473125 0.00158335"/>
+    									<joint axis="0 0 1" limited="true" name="right_j5" pos="0 0 0" range="-2.9761 2.9761" damping="0.2"/>
+    									<geom conaffinity="0" contype="0" group="1" mesh="l5" type="mesh" name="link5_visual" rgba="0.5 0.1 0.1 1"/>
+    									<geom pos="0 0 0.1" rgba="0.5 0.1 0.1 1" size="0.06" name="link5_collision"/>
+    									<body name="right_hand_camera" pos="0.039552 -0.033 0.0695" quat="0.707107 0 0.707107 0">
+    										<inertial diaginertia="0 0 0" mass="0" pos="0.039552 -0.033 0.0695" quat="0.707107 0 0.707107 0"/>
+    									</body>
+    									<body name="right_wrist" pos="0 0 0.10541" quat="0.707107 0.707107 0 0">
+    										<inertial diaginertia="0 0 0" mass="0" pos="0 0 0.10541" quat="0.707107 0.707107 0 0"/>
+    									</body>
+    									<body name="right_l6" pos="0 -0.11 0.1053" quat="0.0616248 0.06163 -0.704416 0.704416">
+    										<inertial diaginertia="0.000360258 0.000311068 0.000214974" mass="0.3292" pos="-8.0726e-06 0.0085838 -0.0049566" quat="0.479044 0.515636 -0.513069 0.491322"/>
+    										<joint axis="0 0 1" limited="true" name="right_j6" pos="0 0 0" range="-4.7124 4.7124" damping="0.1"/>
+    										<geom conaffinity="0" contype="0" group="1" mesh="l6" type="mesh" name="link6_visual" rgba="0.5 0.1 0.1 1"/>
+    										<geom pos="0 0.015 -0.01" rgba="0.5 0.1 0.1 1" size="0.055 0.025" type="cylinder" name="link6_collision"/>
+    										<body name="right_hand" pos="0 0 0.024" quat="0.707105 0 0 0.707108">
+												<!-- This camera points out from the eef. -->
+                								<camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
+    											<!-- To add gripper -->
+    										</body>
+    									</body>
+    								</body>
+    								<body name="right_l4_2" pos="0 0 0">
+    									<inertial diaginertia="1e-08 1e-08 1e-08" mass="1e-08" pos="1e-08 1e-08 1e-08" quat="0.820473 0.339851 -0.17592 0.424708"/>
+    									<geom pos="0 0.01 0.26" size="0.06" name="right_l4_2"/>
+    								</body>
+    							</body>
+    						</body>
+    						<body name="right_l2_2" pos="0 0 0">
+    							<inertial diaginertia="1e-08 1e-08 1e-08" mass="1e-08" pos="1e-08 1e-08 1e-08" quat="0.820473 0.339851 -0.17592 0.424708"/>
+    							<geom pos="0 0 0.26" size="0.06" name="right_l2_2"/>
+    						</body>
+    					</body>
+    					<body name="right_l1_2" pos="0 0 0">
+    						<inertial diaginertia="1e-08 1e-08 1e-08" mass="1e-08" pos="1e-08 1e-08 1e-08" quat="0.820473 0.339851 -0.17592 0.424708"/>
+    						<geom pos="0 0 0.035" size="0.07 0.07" type="cylinder" name="right_l1_2"/>
+    					</body>
+    				</body>
+    			</body>
+    		</body>
+    	</body>
+    </worldbody>
+</mujoco>
