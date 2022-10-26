@@ -4,14 +4,11 @@ for determining core functionality.
 
 To make sure global reference is maintained, should import these settings as:
 
-`import robosuite.utils.macros as macros`
+`import robosuite.macros as macros`
 """
 
 # Global Mujoco Simulation Parameters
 SIMULATION_TIMESTEP = 0.002  # Internal simulation timestep (in seconds)
-
-# Whether to use the new DeepMind MuJoCo python binding instead of OpenAI mujoco-py binding (default)
-USE_DM_BINDING = True
 
 # Instance Randomization
 # Used if we want to randomize geom groups uniformly per instance -- e.g.: entire robot arm, vs. per-joint geom
@@ -34,3 +31,15 @@ IMAGE_CONVENTION = "opengl"  # Options are {"opengl", "opencv"}
 # In general, observations are concatenated together by modality. However, image observations are expensive memory-wise,
 # so we skip concatenating all images together by default, unless this flag is set to True
 CONCATENATE_IMAGES = False
+
+
+try:
+    from robosuite.macros_private import *
+except ImportError:
+    from robosuite.utils.log_utils import log_warning
+
+    log_warning(
+        "No private macro file found!"
+        "\nIt is recommended to use a private macro file"
+        "\nTo setup, run: python robosuite/scripts/setup_macros.py"
+    )
