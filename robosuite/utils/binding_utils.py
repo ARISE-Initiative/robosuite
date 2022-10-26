@@ -20,7 +20,7 @@ import os
 import platform
 import subprocess
 
-from robosuite.utils import macros
+import robosuite.macros as macros
 
 _SYSTEM = platform.system()
 if _SYSTEM == "Windows":
