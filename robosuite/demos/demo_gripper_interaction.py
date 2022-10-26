@@ -65,11 +65,11 @@ if __name__ == "__main__":
     world.worldbody.append(y_ref)
 
     # start simulation
-    model = world.get_model(mode="mujoco_py")
+    model = world.get_model(mode="mujoco")
 
     sim = MjSim(model)
     # viewer = MjViewer(sim)
-    viewer = PygameRenderer(sim)
+    viewer = OpenCVRenderer(sim)
     render_context = MjRenderContextOffscreen(sim, device_id=-1)
     sim.add_render_context(render_context)
 
