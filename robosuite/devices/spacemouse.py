@@ -1,6 +1,6 @@
 """Driver class for SpaceMouse controller.
 
-This class provides a driver support to SpaceMouse on Mac OS X.
+This class provides a driver support to SpaceMouse on macOS.
 In particular, we assume you are using a SpaceMouse Wireless by default.
 
 To set up a new SpaceMouse controller:
@@ -27,7 +27,7 @@ try:
 except ModuleNotFoundError as exc:
     raise ImportError(
         "Unable to load module hid, required to interface with SpaceMouse. "
-        "Only Mac OS X is officially supported. Install the additional "
+        "Only macOS is officially supported. Install the additional "
         "requirements with `pip install -r requirements-extra.txt`"
     ) from exc
 

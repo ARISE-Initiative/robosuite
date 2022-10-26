@@ -21,11 +21,11 @@ from igibson.render.mesh_renderer.mesh_renderer_settings import MeshRendererSett
 from igibson.render.mesh_renderer.mesh_renderer_tensor import MeshRendererG2G
 from igibson.render.viewer import Viewer
 from igibson.utils.constants import MAX_CLASS_COUNT
-from igibson.utils.mesh_util import ortho, quat2rotmat, xyzw2wxyz, xyz2mat
+from igibson.utils.mesh_util import ortho, quat2rotmat, xyz2mat, xyzw2wxyz
 
 from robosuite.renderers import load_renderer_config
 from robosuite.renderers.base import Renderer
-from robosuite.renderers.igibson.igibson_utils import TensorObservable, adjust_convention, MujocoRobot
+from robosuite.renderers.igibson.igibson_utils import MujocoRobot, TensorObservable, adjust_convention
 from robosuite.renderers.igibson.parser import Parser
 from robosuite.utils import macros
 from robosuite.utils import transform_utils as T
@@ -472,6 +472,10 @@ class iGibsonRenderer(Renderer):
         for instance in self.renderer.instances:
             if instance.dynamic:
                 self._update_position(instance, self.env)
+
+        # Update camera pose
+        self.camera_position, self.view_direction, fov = self._get_camera_pose(self.camera_name)
+        self.renderer.set_camera(self.camera_position, self.camera_position + self.view_direction, [0, 0, 1])
 
     @staticmethod
     def _update_position(instance, env):

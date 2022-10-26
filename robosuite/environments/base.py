@@ -1,13 +1,19 @@
 from collections import OrderedDict
 
 import numpy as np
-from mujoco_py import MjRenderContextOffscreen, MjSim, load_model_from_xml
 
 import robosuite.utils.macros as macros
 from robosuite.models.base import MujocoModel
 from robosuite.renderers.base import load_renderer_config
-from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
 from robosuite.utils import SimulationError, XMLError
+
+if macros.USE_DM_BINDING:
+    from robosuite.utils import OpenCVRenderer, PygameRenderer
+    from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
+else:
+    from mujoco_py import MjRenderContextOffscreen, MjSim, load_model_from_xml
+
+    from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
 
 REGISTERED_ENVS = {}
 
@@ -97,13 +103,18 @@ class MujocoEnv(metaclass=EnvMeta):
         renderer="mujoco",
         renderer_config=None,
     ):
-        # First, verify that both the on- and off-screen renderers are not being used simultaneously
-        if has_renderer is True and has_offscreen_renderer is True:
-            raise ValueError("the onscreen and offscreen renderers cannot be used simultaneously.")
+        if not macros.USE_DM_BINDING:
+            # First, verify that both the on- and off-screen renderers are not being used simultaneously
+            if has_renderer is True and has_offscreen_renderer is True:
+                raise ValueError("the onscreen and offscreen renderers cannot be used simultaneously.")
 
         # Rendering-specific attributes
         self.has_renderer = has_renderer
-        self.has_offscreen_renderer = has_offscreen_renderer
+        if macros.USE_DM_BINDING:
+            # offscreen renderer needed for on-screen rendering
+            self.has_offscreen_renderer = has_renderer or has_offscreen_renderer
+        else:
+            self.has_offscreen_renderer = has_offscreen_renderer
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
@@ -232,11 +243,18 @@ class MujocoEnv(metaclass=EnvMeta):
         Args:
             xml_string (str): If specified, creates MjSim object from this filepath
         """
-        # if we have an xml string, use that to create the sim. Otherwise, use the local model
-        self.mjpy_model = load_model_from_xml(xml_string) if xml_string else self.model.get_model(mode="mujoco_py")
+        if macros.USE_DM_BINDING:
+            xml = xml_string if xml_string else self.model.get_xml()
+            # Create the simulation instance
+            self.sim = MjSim.from_xml_string(xml)
+        else:
+            # if we have an xml string, use that to create the sim. Otherwise, use the local model
+            self.mjpy_model = load_model_from_xml(xml_string) if xml_string else self.model.get_model(mode="mujoco_py")
 
-        # Create the simulation instance and run a single step to make sure changes have propagated through sim state
-        self.sim = MjSim(self.mjpy_model)
+            # Create the simulation instance
+            self.sim = MjSim(self.mjpy_model)
+
+        # run a single step to make sure changes have propagated through sim state
         self.sim.forward()
 
         # Setup sim time based on control frequency
@@ -254,6 +272,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.hard_reset and not self.deterministic_reset:
             if self.renderer == "mujoco" or self.renderer == "default":
                 self._destroy_viewer()
+                self._destroy_sim()
             self._load_model()
             self._postprocess_model()
             self._initialize_sim()
@@ -291,25 +310,32 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
-            self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
+            if macros.USE_DM_BINDING:
+                # self.viewer = PygameRenderer(self.sim)
+                self.viewer = OpenCVRenderer(self.sim)
+            else:
+                self.viewer = MujocoPyRenderer(self.sim)
+                self.viewer.viewer.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
+                self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
 
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
+                # hiding the overlay speeds up rendering significantly
+                self.viewer.viewer._hide_overlay = True
 
-            # make sure mujoco-py doesn't block rendering frames
-            # (see https://github.com/StanfordVL/robosuite/issues/39)
-            self.viewer.viewer._render_every_frame = True
+                # make sure mujoco-py doesn't block rendering frames
+                # (see https://github.com/StanfordVL/robosuite/issues/39)
+                self.viewer.viewer._render_every_frame = True
 
             # Set the camera angle for viewing
             if self.render_camera is not None:
-                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
+                camera_id = self.sim.model.camera_name2id(self.render_camera)
+                self.viewer.set_camera(camera_id)
 
-        elif self.has_offscreen_renderer:
+        if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
-                self.sim.add_render_context(render_context)
+                if not macros.USE_DM_BINDING:
+                    # TODO: we kept this line for consistency with old code with old binding, but should probably remove it
+                    self.sim.add_render_context(render_context)
             self.sim._render_context_offscreen.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
             self.sim._render_context_offscreen.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
 
@@ -666,9 +692,18 @@ class MujocoEnv(metaclass=EnvMeta):
             self.viewer.close()  # change this to viewer.finish()?
             self.viewer = None
 
+    def _destroy_sim(self):
+        """
+        Destroys the current MjSim instance if it exists
+        """
+        if macros.USE_DM_BINDING and (self.sim is not None):
+            self.sim.free()
+            self.sim = None
+
     def close(self):
         """Do any cleanup necessary here."""
         self._destroy_viewer()
+        self._destroy_sim()
 
     @property
     def observation_modalities(self):

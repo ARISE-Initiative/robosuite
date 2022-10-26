@@ -98,7 +98,7 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
     solver from Bullet physics.
 
     **Note:**
-        To run this script with Mac OS X, you must run it with root access.
+        To run this script with macOS, you must run it with root access.
 
 * **SpaceMouse**
     We use the SpaceMouse 3D mouse from [3Dconnexion](https://www.3dconnexion.com/spacemouse_wireless/en/) to control the end-effector of the robot. The mouse provides 6-DoF control commands.
@@ -114,11 +114,11 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
     ```
 
     **Note:**
-        This current implementation only supports Mac OS X (Linux support can be added).
+        This current implementation only supports macOS (Linux support can be added).
         Download and install the [driver](https://www.3dconnexion.com/service/drivers.html) before running the script.
 
 Additionally, `--pos_sensitivity` and `--rot_sensitivity` provide relative gains for increasing / decreasing the user input
-device sensitivity. The `--controller` argument determines the choice of using either inverse kinematics controller (`ik`) or operational space controller (`osc`). The main difference is that user inputs with `ik`'s rotations are always taken relative to eef coordinate frame, whereas user inputs with `osc`'s rotations are taken relative to global frame (i.e., static / camera frame of reference). `osc` also tends to be more computationally efficient since `ik` relies on the backend [pybullet](https://github.com/bulletphysics/bullet3) IK solver.
+device sensitivity. The `--controller` argument determines the choice of using either inverse kinematics controller (`ik`) or operational space controller (`osc`). The main difference is that user inputs with `ik`'s rotations are always taken relative to eef coordinate frame, whereas user inputs with `osc`'s rotations are taken relative to global frame (i.e., static / camera frame of reference). `osc` also tends to be more computationally efficient since `ik` relies on the backend [pybullet](https://github.com/StanfordVL/bullet3) IK solver.
 
 
 Furthermore, please choose environment specifics with the following arguments:

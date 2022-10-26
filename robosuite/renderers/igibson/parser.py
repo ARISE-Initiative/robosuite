@@ -135,8 +135,7 @@ class Parser(BaseParser):
                 parent_body_name, pos, quat, active=False, mujoco_env=self.env, camera_name=camera_name, fov=fov
             )
             robot.cameras.append(camera)
-
-        #self.renderer.add_robot([], [], [], [], None, 0, dynamic=False, robot=robot)
+            
         self.renderer.add_instance_group([], ig_object=robot)
 
     def parse_meshes(self):
@@ -155,7 +154,7 @@ class Parser(BaseParser):
         element_id = 0
         for geom_index, geom in enumerate(self.xml_root.iter("geom")):
             geom_name = geom.get("name", "NONAME")
-            geom_type = geom.get("type")
+            geom_type = geom.get("type", "sphere")
 
             if (geom.get("group") != "1" and geom_type != "plane") or ("collision" in geom_name):
                 continue
