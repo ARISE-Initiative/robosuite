@@ -120,7 +120,7 @@ class DataCollectionWrapper(Wrapper):
             state_path,
             states=np.array(self.states),
             action_infos=self.action_infos,
-            successful = self.successful,
+            successful=self.successful,
             env=env_name,
         )
         self.states = []
@@ -168,7 +168,7 @@ class DataCollectionWrapper(Wrapper):
             info = {}
             info["actions"] = np.array(action)
             self.action_infos.append(info)
-            
+
         # check if the demonstration is successful
         if self.env._check_success():
             self.successful = True
