@@ -37,7 +37,10 @@ if CUDA_VISIBLE_DEVICES != "":
 if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["osmesa", "glx"]:
     # If gpu rendering is specified in macros, then we enforce gpu
     # option for rendering
-    os.environ["MUJOCO_GL"] = "egl"
+    if _SYSTEM == "Darwin":
+        os.environ["MUJOCO_GL"] = "cgl"
+    else:
+        os.environ["MUJOCO_GL"] = "egl"
 _MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
 if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
     _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
