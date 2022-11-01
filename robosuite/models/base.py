@@ -3,7 +3,7 @@ import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.utils import XMLError
 from robosuite.utils.mjcf_utils import (
     _element_filter,
@@ -121,30 +121,6 @@ class MujocoXML(object):
                 self.equality.append(one_equality)
             for one_contact in other.contact:
                 self.contact.append(one_contact)
-
-    def get_model(self, mode="mujoco_py"):
-        """
-        Generates a MjModel instance from the current xml tree.
-
-        Args:
-            mode (str): Mode with which to interpret xml tree
-
-        Returns:
-            MjModel: generated model from xml
-
-        Raises:
-            ValueError: [Invalid mode]
-        """
-
-        available_modes = ["mujoco_py"]
-        with io.StringIO() as string:
-            string.write(ET.tostring(self.root, encoding="unicode"))
-            if mode == "mujoco_py":
-                from mujoco_py import load_model_from_xml
-
-                model = load_model_from_xml(string.getvalue())
-                return model
-            raise ValueError("Unkown model mode: {}. Available options are: {}".format(mode, ",".join(available_modes)))
 
     def get_xml(self):
         """

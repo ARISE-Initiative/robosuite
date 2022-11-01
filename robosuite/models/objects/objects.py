@@ -2,7 +2,7 @@ import copy
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.models.base import MujocoModel, MujocoXML
 from robosuite.utils.mjcf_utils import (
     OBJECT_COLLISION_COLOR,

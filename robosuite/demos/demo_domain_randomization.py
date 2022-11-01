@@ -2,7 +2,7 @@
 Script to showcase domain randomization functionality.
 """
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 from robosuite.wrappers import DomainRandomizationWrapper

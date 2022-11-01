@@ -1,8 +1,8 @@
 """
 opencv renderer class.
 """
-import numpy as np
 import cv2
+import numpy as np
 
 
 class OpenCVRenderer:
@@ -28,7 +28,7 @@ class OpenCVRenderer:
 
         # write frame to window
         im = np.flip(im, axis=0)
-        cv2.imshow('offscreen render', im)
+        cv2.imshow("offscreen render", im)
         cv2.waitKey(1)
 
     def close(self):
