@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import numpy as np
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.controllers import reset_controllers
 from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING

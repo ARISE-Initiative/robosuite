@@ -15,31 +15,31 @@
     </asset>
     <tendon>
 		<!--Middlefinger tendons-->
-		<fixed name="middle12_cpl" range="0 1">
+		<fixed name="middle12_cpl" range="0 1" limited="true">
 			<joint joint="finger_middle_joint_1"  coef="0.5"/>
 			<joint joint="finger_middle_joint_2"  coef="0.5"/>
 		</fixed>
-		<fixed name="middle23_cpl" range="0 1">
+		<fixed name="middle23_cpl" range="0 1" limited="true">
 			<joint joint="finger_middle_joint_2"  coef="0.5"/>
 			<joint joint="finger_middle_joint_3"  coef="-1"/>
 		</fixed>
 
 		<!--finger2 tendons-->
-        <fixed name="finger2_12_cpl" range="0 1">
+        <fixed name="finger2_12_cpl" range="0 1" limited="true">
 			<joint joint="finger_2_joint_1"  coef="0.5"/>
 			<joint joint="finger_2_joint_2"  coef="0.5"/>
 		</fixed>
-		<fixed name="finger2_23_cpl" range="0 1">
+		<fixed name="finger2_23_cpl" range="0 1" limited="true">
 			<joint joint="finger_2_joint_2"  coef="0.5"/>
 			<joint joint="finger_2_joint_3"  coef="-1"/>
 		</fixed>
 
 		<!--Finger1 tendons-->
-        <fixed name="finger1_12_cpl" range="0 1">
+        <fixed name="finger1_12_cpl" range="0 1" limited="true">
 			<joint joint="finger_1_joint_1"  coef="0.5"/>
 			<joint joint="finger_1_joint_2"  coef="0.5"/>
 		</fixed>
-		<fixed name="finger1_23_cpl" range="0 1">
+		<fixed name="finger1_23_cpl" range="0 1" limited="true">
 			<joint joint="finger_1_joint_2"  coef="0.5"/>
 			<joint joint="finger_1_joint_3"  coef="-1"/>
 		</fixed>

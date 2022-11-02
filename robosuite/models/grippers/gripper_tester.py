@@ -5,18 +5,13 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.models.arenas.table_arena import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.world import MujocoWorldBase
+from robosuite.utils import OpenCVRenderer, PygameRenderer
+from robosuite.utils.binding_utils import MjSim, MjRenderContextOffscreen
 from robosuite.utils.mjcf_utils import array_to_string, new_actuator, new_joint
-
-if macros.USE_DM_BINDING:
-    from robosuite.utils import OpenCVRenderer, PygameRenderer
-    from robosuite.utils.binding_utils import MjSim, MjRenderContextOffscreen
-else:
-    from mujoco_py import MjSim, MjViewer
-
 
 class GripperTester:
     """
@@ -116,23 +111,15 @@ class GripperTester:
         """
         Starts simulation of the test world
         """
-        if macros.USE_DM_BINDING:
-            model_xml = self.world.get_xml()
-            self.sim = MjSim.from_xml_string(model_xml)
-        else:
-            model = self.world.get_model(mode="mujoco_py")
-            self.sim = MjSim(model)
+        model_xml = self.world.get_xml()
+        self.sim = MjSim.from_xml_string(model_xml)
 
         if self.render:
-            if macros.USE_DM_BINDING:
-                self.viewer = OpenCVRenderer(self.sim)
-                # We also need to add the offscreen context
-                if self.sim._render_context_offscreen is None:
-                    render_context = MjRenderContextOffscreen(self.sim, device_id=-1)
-                    # TODO: we kept this line for consistency with old code with old binding, but should probably remove it
-                    self.sim.add_render_context(render_context)
-            else:
-                self.viewer = MjViewer(self.sim)
+            self.viewer = OpenCVRenderer(self.sim)
+            # We also need to add the offscreen context
+            if self.sim._render_context_offscreen is None:
+                render_context = MjRenderContextOffscreen(self.sim, device_id=-1)
+                self.sim.add_render_context(render_context)
         self.sim_state = self.sim.get_state()
 
         # For gravity correction

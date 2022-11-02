@@ -14,6 +14,48 @@ import numpy as np
 
 _MjSim_render_lock = Lock()
 
+import ctypes
+import ctypes.util
+import os
+import platform
+import subprocess
+
+import robosuite.macros as macros
+
+_SYSTEM = platform.system()
+if _SYSTEM == "Windows":
+    ctypes.WinDLL(os.path.join(os.path.dirname(__file__), "mujoco.dll"))
+
+CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", "")
+if CUDA_VISIBLE_DEVICES != "":
+    MUJOCO_EGL_DEVICE_ID = os.environ.get("MUJOCO_EGL_DEVICE_ID", None)
+    if MUJOCO_EGL_DEVICE_ID is not None:
+        assert MUJOCO_EGL_DEVICE_ID.isdigit() and (
+            MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES
+        ), "MUJOCO_EGL_DEVICE_ID needs to be set to one of the device id specified in CUDA_VISIBLE_DEVICES"
+
+if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["osmesa", "glx"]:
+    # If gpu rendering is specified in macros, then we enforce gpu
+    # option for rendering
+    os.environ["MUJOCO_GL"] = "egl"
+_MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
+if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
+    _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
+    if _SYSTEM == "Linux":
+        _VALID_MUJOCO_GL += ("glx", "egl", "osmesa")
+    elif _SYSTEM == "Windows":
+        _VALID_MUJOCO_GL += ("wgl",)
+    elif _SYSTEM == "Darwin":
+        _VALID_MUJOCO_GL += ("cgl",)
+    if _MUJOCO_GL not in _VALID_MUJOCO_GL:
+        raise RuntimeError(f"invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}")
+    if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
+        from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
+    elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
+        from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
+    else:
+        from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
+
 
 class MjRenderContext:
     """
@@ -23,21 +65,14 @@ class MjRenderContext:
     See https://github.com/openai/mujoco-py/blob/4830435a169c1f3e3b5f9b58a7c3d9c39bdf4acb/mujoco_py/mjrendercontext.pyx
     """
 
-    def __init__(self, sim, offscreen=True, device_id=-1):
+    def __init__(self, sim, offscreen=True, device_id=-1, max_width=640, max_height=480):
         assert offscreen, "only offscreen supported for now"
         self.sim = sim
         self.offscreen = offscreen
         self.device_id = device_id
 
-        if offscreen:
-            if self.device_id is not None and self.device_id >= 0:
-                os.environ["MUJOCO_GL"] = "egl"
-                os.environ["MUJOCO_EGL_DEVICE_ID"] = str(self.device_id)
-            else:
-                os.environ["MUJOCO_GL"] = "osmesa"
-
         # setup GL context with defaults for now
-        self.gl_ctx = mujoco.GLContext(max_width=640, max_height=480)
+        self.gl_ctx = GLContext(max_width=max_width, max_height=max_height, device_id=self.device_id)
         self.gl_ctx.make_current()
 
         # Ensure the model data has been updated so that there
@@ -168,8 +203,8 @@ class MjRenderContext:
 
 
 class MjRenderContextOffscreen(MjRenderContext):
-    def __init__(self, sim, device_id):
-        super().__init__(sim, offscreen=True, device_id=device_id)
+    def __init__(self, sim, device_id, max_width=640, max_height=480):
+        super().__init__(sim, offscreen=True, device_id=device_id, max_width=max_width, max_height=max_height)
 
 
 class MjSimState:
