@@ -31,10 +31,9 @@ except ModuleNotFoundError as exc:
         "requirements with `pip install -r requirements-extra.txt`"
     ) from exc
 
+import robosuite.utils.macros as macros
 from robosuite.devices import Device
 from robosuite.utils.transform_utils import rotation_matrix
-
-import robosuite.utils.macros as macros
 
 AxisSpec = namedtuple("AxisSpec", ["channel", "byte1", "byte2", "scale"])
 
@@ -220,7 +219,7 @@ class SpaceMouse(Device):
 
                 if macros.SPACEMOUSE_PRODUCT_ID == 50741:
                     ## logic for older spacemouse model
-                    
+
                     if d[0] == 1:  ## readings from 6-DoF sensor
                         self.y = convert(d[1], d[2])
                         self.x = convert(d[3], d[4])

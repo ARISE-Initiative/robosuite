@@ -13,6 +13,7 @@ from robosuite.utils import OpenCVRenderer
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.mjcf_utils import array_to_string, new_actuator, new_joint
 
+
 class GripperTester:
     """
     A class that is used to test gripper
