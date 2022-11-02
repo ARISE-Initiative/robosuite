@@ -18,7 +18,7 @@ import h5py
 import numpy as np
 
 import robosuite as suite
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper

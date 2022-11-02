@@ -48,7 +48,7 @@ class Keyboard(Device):
         print("")
         print_command("Keys", "Command")
         print_command("q", "reset simulation")
-        print_command("b", "toggle gripper (open/close)")
+        print_command("spacebar", "toggle gripper (open/close)")
         print_command("w-a-s-d", "move arm horizontally in x-y plane")
         print_command("r-f", "move arm vertically")
         print_command("z-x", "rotate arm about x-axis")
@@ -158,7 +158,7 @@ class Keyboard(Device):
 
         try:
             # controls for grasping
-            if key.char == "b":
+            if key == Key.space:
                 self.grasp = not self.grasp  # toggle gripper
 
             # user-commanded reset

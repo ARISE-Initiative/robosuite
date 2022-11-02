@@ -31,7 +31,7 @@ except ModuleNotFoundError as exc:
         "requirements with `pip install -r requirements-extra.txt`"
     ) from exc
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.devices import Device
 from robosuite.utils.transform_utils import rotation_matrix
 
@@ -240,7 +240,7 @@ class SpaceMouse(Device):
                             self.yaw,
                         ]
                 else:
-                    ## default logic for all other models
+                    ## default logic for all other spacemouse models
 
                     if d[0] == 1:  ## readings from 6-DoF sensor
                         self.y = convert(d[1], d[2])
