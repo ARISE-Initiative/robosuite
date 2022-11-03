@@ -3,7 +3,7 @@ import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.utils import XMLError
 from robosuite.utils.mjcf_utils import (
     _element_filter,

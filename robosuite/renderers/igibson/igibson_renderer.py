@@ -23,11 +23,11 @@ from igibson.render.viewer import Viewer
 from igibson.utils.constants import MAX_CLASS_COUNT
 from igibson.utils.mesh_util import ortho, quat2rotmat, xyz2mat, xyzw2wxyz
 
+import robosuite.macros as macros
 from robosuite.renderers import load_renderer_config
 from robosuite.renderers.base import Renderer
 from robosuite.renderers.igibson.igibson_utils import MujocoRobot, TensorObservable, adjust_convention
 from robosuite.renderers.igibson.parser import Parser
-from robosuite.utils import macros
 from robosuite.utils import transform_utils as T
 from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
 from robosuite.utils.observables import sensor

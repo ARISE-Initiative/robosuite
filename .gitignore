@@ -112,3 +112,6 @@ mjkey.txt
 .idea
 
 .pytest_cache/
+
+# private macros
+macros_private.py

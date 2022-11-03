@@ -121,7 +121,7 @@ def load_object(
     use_pbr_mapping = mesh_file_name not in ROBOTS_WITH_MATERIALS_DEFINED_IN_MTL
 
     renderer.add_instance_group(
-        [len(renderer.visual_objects) - 1],  # len(renderer.visual_objects) - 1,
+        [len(renderer.visual_objects) - 1],
         pybullet_uuid=0,
         class_id=class_id,
         dynamic=True,
