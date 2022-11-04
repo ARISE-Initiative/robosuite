@@ -32,6 +32,13 @@ IMAGE_CONVENTION = "opengl"  # Options are {"opengl", "opencv"}
 # so we skip concatenating all images together by default, unless this flag is set to True
 CONCATENATE_IMAGES = False
 
+MUJOCO_GPU_RENDERING = True
+
+# Spacemouse settings. Used by SpaceMouse class in robosuite/devices/spacemouse.py
+SPACEMOUSE_VENDOR_ID = 9583
+SPACEMOUSE_PRODUCT_ID = 50735
+
+
 try:
     from robosuite.macros_private import *
 except ImportError:
@@ -42,5 +49,3 @@ except ImportError:
         "\nIt is recommended to use a private macro file"
         "\nTo setup, run: python robosuite/scripts/setup_macros.py"
     )
-
-MUJOCO_GPU_RENDERING = True
