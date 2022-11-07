@@ -42,10 +42,11 @@ SPACEMOUSE_PRODUCT_ID = 50735
 try:
     from robosuite.macros_private import *
 except ImportError:
+    import robosuite
     from robosuite.utils.log_utils import log_warning
 
     log_warning(
         "No private macro file found!"
         "\nIt is recommended to use a private macro file"
-        "\nTo setup, run: python robosuite/scripts/setup_macros.py"
+        "\nTo setup, run: python {}/scripts/setup_macros.py".format(robosuite.__path__[0])
     )
