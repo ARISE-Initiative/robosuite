@@ -9,9 +9,9 @@ import matplotlib.cm
 import numpy as np
 
 import robosuite as suite
+import robosuite.macros as macros
 from robosuite.controllers import load_controller_config
 from robosuite.renderers import load_renderer_config
-from robosuite.utils import macros
 from robosuite.utils.input_utils import *
 
 if __name__ == "__main__":

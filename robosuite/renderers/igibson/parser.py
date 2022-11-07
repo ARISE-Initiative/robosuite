@@ -135,7 +135,7 @@ class Parser(BaseParser):
                 parent_body_name, pos, quat, active=False, mujoco_env=self.env, camera_name=camera_name, fov=fov
             )
             robot.cameras.append(camera)
-            
+
         self.renderer.add_instance_group([], ig_object=robot)
 
     def parse_meshes(self):

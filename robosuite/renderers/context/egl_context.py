@@ -53,7 +53,7 @@ def create_initialized_egl_device_display(device_id=0):
             if device_id == -1:
                 device_idx = device_inds[0]
             else:
-                assert(device_id in device_inds), "specified device id is not made visible in environment variables."
+                assert device_id in device_inds, "specified device id is not made visible in environment variables."
                 device_idx = device_id
         else:
             device_idx = int(selected_device)
