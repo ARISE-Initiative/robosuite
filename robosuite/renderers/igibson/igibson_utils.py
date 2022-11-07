@@ -170,7 +170,7 @@ def get_texture_id(intensity, name, self, resolution=1):
         im = intensity
         im = np.tile(im, (resolution, resolution, 1))
     else:
-        im = np.array([intensity] * (resolution ** 2)).reshape(resolution, resolution)
+        im = np.array([intensity] * (resolution**2)).reshape(resolution, resolution)
 
     if not self.renderer.rendering_settings.optimized:
         tmpdirname = tempfile.TemporaryDirectory().name
