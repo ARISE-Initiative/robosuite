@@ -518,9 +518,10 @@ class InverseKinematicsController(JointVelocityController):
         """
         pose_in_base = T.pose2mat(pose_in_base)
 
-        base_pos_in_world, base_orn_in_world = np.array(
-            p.getBasePositionAndOrientation(self.ik_robot, physicsClientId=self.bullet_server_id)
+        base_pos_in_world, base_orn_in_world = p.getBasePositionAndOrientation(
+            self.ik_robot, physicsClientId=self.bullet_server_id
         )
+        base_pos_in_world, base_orn_in_world = np.array(base_pos_in_world), np.array(base_orn_in_world)
 
         base_pose_in_world = T.pose2mat((base_pos_in_world, base_orn_in_world))
 

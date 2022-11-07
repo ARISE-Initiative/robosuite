@@ -96,6 +96,9 @@ class MujocoEnv(metaclass=EnvMeta):
         renderer="mujoco",
         renderer_config=None,
     ):
+        # If you're using an onscreen renderer, you must be also using an offscreen renderer!
+        if has_renderer and not has_offscreen_renderer:
+            has_offscreen_renderer = True
 
         # Rendering-specific attributes
         self.has_renderer = has_renderer

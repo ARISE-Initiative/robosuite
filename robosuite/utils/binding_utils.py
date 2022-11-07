@@ -120,6 +120,11 @@ class MjRenderContext:
             del self.con
             self._set_mujoco_context_and_buffers()
 
+    def upload_texture(self, tex_id):
+        """Uploads given texture to the GPU"""
+        self.gl_ctx.make_current()
+        mujoco.mjr_uploadTexture(self.model, self.con, tex_id)
+
     def render(self, width, height, camera_id=None, segmentation=False):
         viewport = mujoco.MjrRect(0, 0, width, height)
 

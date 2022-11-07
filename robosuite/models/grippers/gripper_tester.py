@@ -117,6 +117,10 @@ class GripperTester:
 
         if self.render:
             self.viewer = OpenCVRenderer(self.sim)
+            # We also need to add the offscreen context
+            if self.sim._render_context_offscreen is None:
+                render_context = MjRenderContextOffscreen(self.sim, device_id=-1)
+                self.sim.add_render_context(render_context)
         self.sim_state = self.sim.get_state()
 
         # For gravity correction
