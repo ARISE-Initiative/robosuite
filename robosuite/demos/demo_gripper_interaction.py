@@ -16,7 +16,7 @@ from robosuite.models.grippers import PandaGripper, RethinkGripper
 from robosuite.models.objects import BoxObject
 
 # from mujoco import MjSim, MjViewer
-from robosuite.utils import OpenCVRenderer, PygameRenderer
+from robosuite.utils import OpenCVRenderer
 from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 from robosuite.utils.mjcf_utils import new_actuator, new_joint
 

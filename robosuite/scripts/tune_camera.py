@@ -9,8 +9,8 @@ import argparse
 import time
 import xml.etree.ElementTree as ET
 
-import glfw
 import numpy as np
+from pynput.keyboard import Controller, Key, Listener
 
 import robosuite
 import robosuite.utils.transform_utils as T
@@ -33,67 +33,70 @@ class KeyboardHandler:
         """
         self.camera_mover = camera_mover
 
-    def on_press(self, window, key, scancode, action, mods):
+        # make a thread to listen to keyboard and register our callback functions
+        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
+
+        # start listening
+        self.listener.start()
+
+    def on_press(self, key):
         """
         Key handler for key presses.
 
         Args:
-            window: [NOT USED]
             key (int): keycode corresponding to the key that was pressed
-            scancode: [NOT USED]
-            action: [NOT USED]
-            mods: [NOT USED]
         """
-        # controls for moving position
-        if key == glfw.KEY_W:
-            # move forward
-            self.camera_mover.move_camera(direction=[0.0, 0.0, -1.0], scale=DELTA_POS_KEY_PRESS)
-        elif key == glfw.KEY_S:
-            # move backward
-            self.camera_mover.move_camera(direction=[0.0, 0.0, 1.0], scale=DELTA_POS_KEY_PRESS)
-        elif key == glfw.KEY_A:
-            # move left
-            self.camera_mover.move_camera(direction=[-1.0, 0.0, 0.0], scale=DELTA_POS_KEY_PRESS)
-        elif key == glfw.KEY_D:
-            # move right
-            self.camera_mover.move_camera(direction=[1.0, 0.0, 0.0], scale=DELTA_POS_KEY_PRESS)
-        elif key == glfw.KEY_R:
-            # move up
-            self.camera_mover.move_camera(direction=[0.0, 1.0, 0.0], scale=DELTA_POS_KEY_PRESS)
-        elif key == glfw.KEY_F:
-            # move down
-            self.camera_mover.move_camera(direction=[0.0, -1.0, 0.0], scale=DELTA_POS_KEY_PRESS)
 
-        # controls for moving rotation
-        elif key == glfw.KEY_UP:
-            # rotate up
-            self.camera_mover.rotate_camera(point=None, axis=[1.0, 0.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
-        elif key == glfw.KEY_DOWN:
-            # rotate down
-            self.camera_mover.rotate_camera(point=None, axis=[-1.0, 0.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
-        elif key == glfw.KEY_LEFT:
-            # rotate left
-            self.camera_mover.rotate_camera(point=None, axis=[0.0, 1.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
-        elif key == glfw.KEY_RIGHT:
-            # rotate right
-            self.camera_mover.rotate_camera(point=None, axis=[0.0, -1.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
-        elif key == glfw.KEY_PERIOD:
-            # rotate counterclockwise
-            self.camera_mover.rotate_camera(point=None, axis=[0.0, 0.0, 1.0], angle=DELTA_ROT_KEY_PRESS)
-        elif key == glfw.KEY_SLASH:
-            # rotate clockwise
-            self.camera_mover.rotate_camera(point=None, axis=[0.0, 0.0, -1.0], angle=DELTA_ROT_KEY_PRESS)
+        try:
+            # controls for moving rotation
+            if key == Key.up:
+                # rotate up
+                self.camera_mover.rotate_camera(point=None, axis=[1.0, 0.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
+            elif key == Key.down:
+                # rotate down
+                self.camera_mover.rotate_camera(point=None, axis=[-1.0, 0.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
+            elif key == Key.left:
+                # rotate left
+                self.camera_mover.rotate_camera(point=None, axis=[0.0, 1.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
+            elif key == Key.right:
+                # rotate right
+                self.camera_mover.rotate_camera(point=None, axis=[0.0, -1.0, 0.0], angle=DELTA_ROT_KEY_PRESS)
 
-    def on_release(self, window, key, scancode, action, mods):
+            # controls for moving position
+            elif key.char == "w":
+                # move forward
+                self.camera_mover.move_camera(direction=[0.0, 0.0, -1.0], scale=DELTA_POS_KEY_PRESS)
+            elif key.char == "s":
+                # move backward
+                self.camera_mover.move_camera(direction=[0.0, 0.0, 1.0], scale=DELTA_POS_KEY_PRESS)
+            elif key.char == "a":
+                # move left
+                self.camera_mover.move_camera(direction=[-1.0, 0.0, 0.0], scale=DELTA_POS_KEY_PRESS)
+            elif key.char == "d":
+                # move right
+                self.camera_mover.move_camera(direction=[1.0, 0.0, 0.0], scale=DELTA_POS_KEY_PRESS)
+            elif key.char == "r":
+                # move up
+                self.camera_mover.move_camera(direction=[0.0, 1.0, 0.0], scale=DELTA_POS_KEY_PRESS)
+            elif key.char == "f":
+                # move down
+                self.camera_mover.move_camera(direction=[0.0, -1.0, 0.0], scale=DELTA_POS_KEY_PRESS)
+            elif key.char == ".":
+                # rotate counterclockwise
+                self.camera_mover.rotate_camera(point=None, axis=[0.0, 0.0, 1.0], angle=DELTA_ROT_KEY_PRESS)
+            elif key.char == "/":
+                # rotate clockwise
+                self.camera_mover.rotate_camera(point=None, axis=[0.0, 0.0, -1.0], angle=DELTA_ROT_KEY_PRESS)
+
+        except AttributeError as e:
+            pass
+
+    def on_release(self, key):
         """
         Key handler for key releases.
 
         Args:
-            window: [NOT USED]
             key: [NOT USED]
-            scancode: [NOT USED]
-            action: [NOT USED]
-            mods: [NOT USED]
         """
         pass
 
@@ -200,11 +203,8 @@ if __name__ == "__main__":
 
     # register callbacks to handle key presses in the viewer
     key_handler = KeyboardHandler(camera_mover=camera_mover)
-    env.viewer.add_keypress_callback("any", key_handler.on_press)
-    env.viewer.add_keyup_callback("any", key_handler.on_release)
-    env.viewer.add_keyrepeat_callback("any", key_handler.on_press)
 
-    # just spin to let user interact with glfw window
+    # just spin to let user interact with window
     spin_count = 0
     while True:
         action = np.zeros(env.action_dim)

@@ -48,11 +48,12 @@ def test_camera_transforms():
 
     # unnormalized depth map
     depth_map = obs_dict["{}_depth".format(camera_name)][::-1]
-    depth_map = CU.get_real_depth_map(sim=sim, depth_map=depth_map)
+
+    depth_map = CU.get_real_depth_map(sim=env.sim, depth_map=depth_map)
 
     # get camera matrices
     world_to_camera = CU.get_camera_transform_matrix(
-        sim=sim,
+        sim=env.sim,
         camera_name=camera_name,
         camera_height=camera_height,
         camera_width=camera_width,

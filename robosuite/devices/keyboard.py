@@ -2,8 +2,8 @@
 Driver class for Keyboard controller.
 """
 
-import glfw
 import numpy as np
+from pynput.keyboard import Controller, Key, Listener
 
 from robosuite.devices import Device
 from robosuite.utils.transform_utils import rotation_matrix
@@ -12,7 +12,6 @@ from robosuite.utils.transform_utils import rotation_matrix
 class Keyboard(Device):
     """
     A minimalistic driver class for a Keyboard.
-
     Args:
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
@@ -29,6 +28,12 @@ class Keyboard(Device):
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
+
+        # make a thread to listen to keyboard and register our callback functions
+        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
+
+        # start listening
+        self.listener.start()
 
     @staticmethod
     def _display_controls():
@@ -75,7 +80,6 @@ class Keyboard(Device):
     def get_controller_state(self):
         """
         Grabs the current state of the keyboard.
-
         Returns:
             dict: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
         """
@@ -94,86 +98,74 @@ class Keyboard(Device):
             reset=self._reset_state,
         )
 
-    def on_press(self, key, window=None, scancode=None, action=None, mods=None):
+    def on_press(self, key):
         """
         Key handler for key presses.
-
         Args:
-            window: [NOT USED]
-            key (int): keycode corresponding to the key that was pressed
-            scancode: [NOT USED]
-            action: [NOT USED]
-            mods: [NOT USED]
+            key (str): key that was pressed
         """
 
-        # controls for moving position
-        if key == ord("w"):
-            self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
-        elif key == ord("s"):
-            self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
-        elif key == ord("a"):
-            self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
-        elif key == ord("d"):
-            self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
-        elif key == ord("f"):
-            self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
-        elif key == ord("r"):
-            self.pos[2] += self._pos_step * self.pos_sensitivity  # inc z
+        try:
+            # controls for moving position
+            if key.char == "w":
+                self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
+            elif key.char == "s":
+                self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
+            elif key.char == "a":
+                self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
+            elif key.char == "d":
+                self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
+            elif key.char == "f":
+                self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
+            elif key.char == "r":
+                self.pos[2] += self._pos_step * self.pos_sensitivity  # inc z
 
-        # controls for moving orientation
-        elif key == ord("z"):
-            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
-            self.rotation = self.rotation.dot(drot)  # rotates x
-            self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
-        elif key == ord("x"):
-            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
-            self.rotation = self.rotation.dot(drot)  # rotates x
-            self.raw_drotation[1] += 0.1 * self.rot_sensitivity
-        elif key == ord("t"):
-            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
-            self.rotation = self.rotation.dot(drot)  # rotates y
-            self.raw_drotation[0] += 0.1 * self.rot_sensitivity
-        elif key == ord("g"):
-            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
-            self.rotation = self.rotation.dot(drot)  # rotates y
-            self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
-        elif key == ord("c"):
-            drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
-            self.rotation = self.rotation.dot(drot)  # rotates z
-            self.raw_drotation[2] += 0.1 * self.rot_sensitivity
-        elif key == ord("v"):
-            drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
-            self.rotation = self.rotation.dot(drot)  # rotates z
-            self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
+            # controls for moving orientation
+            elif key.char == "z":
+                drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
+                self.rotation = self.rotation.dot(drot)  # rotates x
+                self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
+            elif key.char == "x":
+                drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
+                self.rotation = self.rotation.dot(drot)  # rotates x
+                self.raw_drotation[1] += 0.1 * self.rot_sensitivity
+            elif key.char == "t":
+                drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
+                self.rotation = self.rotation.dot(drot)  # rotates y
+                self.raw_drotation[0] += 0.1 * self.rot_sensitivity
+            elif key.char == "g":
+                drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
+                self.rotation = self.rotation.dot(drot)  # rotates y
+                self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
+            elif key.char == "c":
+                drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
+                self.rotation = self.rotation.dot(drot)  # rotates z
+                self.raw_drotation[2] += 0.1 * self.rot_sensitivity
+            elif key.char == "v":
+                drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
+                self.rotation = self.rotation.dot(drot)  # rotates z
+                self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
 
-        # controls for grasping
-        elif key == ord(" "):
-            self.grasp = not self.grasp  # toggle gripper
+        except AttributeError as e:
+            pass
 
-        # user-commanded reset
-        elif key == ord("q"):
-            self._reset_state = 1
-            self._enabled = False
-            self._reset_internal_state()
-
-    def on_release(self, window, key, scancode, action, mods):
+    def on_release(self, key):
         """
         Key handler for key releases.
-
         Args:
-            window: [NOT USED]
-            key (int): keycode corresponding to the key that was pressed
-            scancode: [NOT USED]
-            action: [NOT USED]
-            mods: [NOT USED]
+            key (str): key that was pressed
         """
 
-        # controls for grasping
-        if key == glfw.KEY_SPACE:
-            self.grasp = not self.grasp  # toggle gripper
+        try:
+            # controls for grasping
+            if key == Key.space:
+                self.grasp = not self.grasp  # toggle gripper
 
-        # user-commanded reset
-        elif key == glfw.KEY_Q:
-            self._reset_state = 1
-            self._enabled = False
-            self._reset_internal_state()
+            # user-commanded reset
+            elif key.char == "q":
+                self._reset_state = 1
+                self._enabled = False
+                self._reset_internal_state()
+
+        except AttributeError as e:
+            pass
