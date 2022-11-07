@@ -218,7 +218,7 @@ class DemoSamplerWrapper(Wrapper):
 
         if self.need_xml:
             model_xml = self._xml_for_episode_index(ep_ind)
-            xml = self.env.postprocess_model_xml(model_xml)
+            xml = self.env.edit_model_xml(model_xml)
             return state, xml
         return state
 
@@ -254,7 +254,7 @@ class DemoSamplerWrapper(Wrapper):
 
         if self.need_xml:
             model_xml = self._xml_for_episode_index(ep_ind)
-            xml = self.env.postprocess_model_xml(model_xml)
+            xml = self.env.edit_model_xml(model_xml)
             return state, xml
 
         return state
@@ -291,7 +291,7 @@ class DemoSamplerWrapper(Wrapper):
 
         if self.need_xml:
             model_xml = self._xml_for_episode_index(ep_ind)
-            xml = self.env.postprocess_model_xml(model_xml)
+            xml = self.env.edit_model_xml(model_xml)
             return state, xml
 
         return state

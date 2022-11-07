@@ -541,7 +541,7 @@ class DemoPlaybackCameraMover(CameraMover):
 
         # Reset environment
         self.env.reset()
-        xml = self.env.postprocess_model_xml(model_xml)
+        xml = self.env.edit_model_xml(model_xml)
         xml = self.modify_xml_for_camera_movement(xml, camera_name=self.camera)
         self.env.reset_from_xml_string(xml)
         self.env.sim.reset()

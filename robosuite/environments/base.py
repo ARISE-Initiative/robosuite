@@ -1,11 +1,10 @@
+import os
+import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
 import numpy as np
-import os
-import xml.etree.ElementTree as ET
 
 import robosuite
-
 import robosuite.macros as macros
 from robosuite.models.base import MujocoModel
 from robosuite.renderers.base import load_renderer_config
@@ -121,7 +120,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
-        self._model_postprocessor = None  # Function to post-process model after load_model() call
+        self._xml_processor = None  # Function to process model xml in _initialize_sim() call
         self.model = None
         self.cur_time = None
         self.model_timestep = None
@@ -133,9 +132,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Load the model
         self._load_model()
-
-        # Post-process model
-        self._postprocess_model()
 
         # Initialize the simulation
         self._initialize_sim()
@@ -191,26 +187,18 @@ class MujocoEnv(metaclass=EnvMeta):
             raise SimulationError("Control frequency {} is invalid".format(control_freq))
         self.control_timestep = 1.0 / control_freq
 
-    def set_model_postprocessor(self, postprocessor):
+    def set_xml_processor(self, processor):
         """
-        Sets the post-processor function that self.model will be passed to after load_model() is called during resets.
+        Sets the processor function that xml string will be passed to inside _initialize_sim() calls.
         Args:
-            postprocessor (None or function): If set, postprocessing method should take in a Task-based instance and
+            processor (None or function): If set, processing method should take in a xml string and
                 return no arguments.
         """
-        self._model_postprocessor = postprocessor
+        self._xml_processor = processor
 
     def _load_model(self):
         """Loads an xml model, puts it in self.model"""
         pass
-
-    def _postprocess_model(self):
-        """
-        Post-processes model after load_model() call. Useful for external objects (e.g.: wrappers) to
-        be able to modify the sim model before it is actually loaded into the simulation
-        """
-        if self._model_postprocessor is not None:
-            self._model_postprocessor(self.model)
 
     def _setup_references(self):
         """
@@ -237,6 +225,11 @@ class MujocoEnv(metaclass=EnvMeta):
             xml_string (str): If specified, creates MjSim object from this filepath
         """
         xml = xml_string if xml_string else self.model.get_xml()
+
+        # process the xml before initializing sim
+        if self._xml_processor is not None:
+            xml = self._xml_processor(xml)
+
         # Create the simulation instance
         self.sim = MjSim.from_xml_string(xml)
 
@@ -260,7 +253,6 @@ class MujocoEnv(metaclass=EnvMeta):
                 self._destroy_viewer()
                 self._destroy_sim()
             self._load_model()
-            self._postprocess_model()
             self._initialize_sim()
         # Else, we only reset the sim internally
         else:
@@ -514,14 +506,14 @@ class MujocoEnv(metaclass=EnvMeta):
         else:
             raise AttributeError("setting camera position and quat requires renderer to be either NVISII or iGibson.")
 
-    def postprocess_model_xml(self, xml_str):
+    def edit_model_xml(self, xml_str):
         """
-        This function postprocesses the model.xml collected from a MuJoCo demonstration
+        This function edits the model.xml collected from a MuJoCo demonstration
         for retrospective model changes.
         Args:
             xml_str (str): Mujoco sim demonstration XML file as string
         Returns:
-            str: Post-processed xml file as string
+            str: Edited xml file as string
         """
 
         path = os.path.split(robosuite.__file__)[0]
@@ -546,7 +538,7 @@ class MujocoEnv(metaclass=EnvMeta):
             elem.set("file", new_path)
 
         return ET.tostring(root, encoding="utf8").decode("utf8")
-    
+
     def reset_from_xml_string(self, xml_string):
         """
         Reloads the environment from an XML description of the environment.
