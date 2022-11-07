@@ -70,6 +70,15 @@ def load_object(
             material=nvisii.material.create(geom_name),
         )
 
+    elif geom_type == "sphere":
+
+        component = nvisii.entity.create(
+            name=geom_name,
+            mesh=nvisii.mesh.create_sphere(name=geom_name, radius=geom_size[0]),
+            transform=nvisii.transform.create(geom_name),
+            material=nvisii.material.create(geom_name),
+        )
+
     elif geom_type == "mesh":
         filename = meshes[geom.attrib["mesh"]]["file"]
         filename = os.path.splitext(filename)[0] + ".obj"
