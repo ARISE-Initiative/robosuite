@@ -508,8 +508,8 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def edit_model_xml(self, xml_str):
         """
-        This function edits the model.xml collected from a MuJoCo demonstration
-        for retrospective model changes.
+        This function edits the model xml with custom changes, including resolving relative paths,
+        applying changes retroactively to existing demonstration files, and other custom scripts.
         Args:
             xml_str (str): Mujoco sim demonstration XML file as string
         Returns:
