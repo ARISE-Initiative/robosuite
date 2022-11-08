@@ -26,14 +26,14 @@ if __name__ == "__main__":
     world = MujocoWorldBase()
 
     # add a table
-    arena = TableArena(table_full_size=(0.4, 0.4, 0.05), table_offset=(0, 0, 0.1), has_legs=False)
+    arena = TableArena(table_full_size=(0.4, 0.4, 0.05), table_offset=(0, 0, 1.1), has_legs=False)
     world.merge(arena)
 
     # add a gripper
     gripper = RethinkGripper()
     # Create another body with a slider joint to which we'll add this gripper
     gripper_body = ET.Element("body", name="gripper_base")
-    gripper_body.set("pos", "0 0 0.3")
+    gripper_body.set("pos", "0 0 1.3")
     gripper_body.set("quat", "0 0 1 0")  # flip z
     gripper_body.append(new_joint(name="gripper_z_joint", type="slide", axis="0 0 1", damping="50"))
     # Add the dummy body with the joint to the global worldbody
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         name="box", size=[0.02, 0.02, 0.02], rgba=[1, 0, 0, 1], friction=[1, 0.005, 0.0001]
     ).get_obj()
     # Set the position of this object
-    mujoco_object.set("pos", "0 0 0.11")
+    mujoco_object.set("pos", "0 0 1.11")
     # Add our object to the world body
     world.worldbody.append(mujoco_object)
 
@@ -56,12 +56,12 @@ if __name__ == "__main__":
     x_ref = BoxObject(
         name="x_ref", size=[0.01, 0.01, 0.01], rgba=[0, 1, 0, 1], obj_type="visual", joints=None
     ).get_obj()
-    x_ref.set("pos", "0.2 0 0.105")
+    x_ref.set("pos", "0.2 0 1.105")
     world.worldbody.append(x_ref)
     y_ref = BoxObject(
         name="y_ref", size=[0.01, 0.01, 0.01], rgba=[0, 0, 1, 1], obj_type="visual", joints=None
     ).get_obj()
-    y_ref.set("pos", "0 0.2 0.105")
+    y_ref.set("pos", "0 0.2 1.105")
     world.worldbody.append(y_ref)
 
     # start simulation
