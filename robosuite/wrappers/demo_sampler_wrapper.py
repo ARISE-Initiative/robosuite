@@ -12,7 +12,6 @@ import time
 import h5py
 import numpy as np
 
-from robosuite.utils.mjcf_utils import postprocess_model_xml
 from robosuite.wrappers import Wrapper
 
 
@@ -219,7 +218,7 @@ class DemoSamplerWrapper(Wrapper):
 
         if self.need_xml:
             model_xml = self._xml_for_episode_index(ep_ind)
-            xml = postprocess_model_xml(model_xml)
+            xml = self.env.edit_model_xml(model_xml)
             return state, xml
         return state
 
@@ -255,7 +254,7 @@ class DemoSamplerWrapper(Wrapper):
 
         if self.need_xml:
             model_xml = self._xml_for_episode_index(ep_ind)
-            xml = postprocess_model_xml(model_xml)
+            xml = self.env.edit_model_xml(model_xml)
             return state, xml
 
         return state
@@ -292,7 +291,7 @@ class DemoSamplerWrapper(Wrapper):
 
         if self.need_xml:
             model_xml = self._xml_for_episode_index(ep_ind)
-            xml = postprocess_model_xml(model_xml)
+            xml = self.env.edit_model_xml(model_xml)
             return state, xml
 
         return state

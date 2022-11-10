@@ -14,7 +14,6 @@ import numpy as np
 
 import robosuite
 import robosuite.utils.transform_utils as T
-from robosuite.utils.mjcf_utils import postprocess_model_xml
 from robosuite.wrappers import DomainRandomizationWrapper, VisualizationWrapper
 
 
@@ -542,7 +541,7 @@ class DemoPlaybackCameraMover(CameraMover):
 
         # Reset environment
         self.env.reset()
-        xml = postprocess_model_xml(model_xml)
+        xml = self.env.edit_model_xml(model_xml)
         xml = self.modify_xml_for_camera_movement(xml, camera_name=self.camera)
         self.env.reset_from_xml_string(xml)
         self.env.sim.reset()
