@@ -82,7 +82,7 @@ class Parser(BaseParser):
             parent_body_name = parent_body.get("name", "worldbody")
 
             geom_name = geom.get("name")
-            geom_type = geom.get("type")
+            geom_type = geom.get("type", "sphere")
 
             rgba_str = geom.get("rgba")
             geom_rgba = string_to_array(rgba_str) if rgba_str is not None else None

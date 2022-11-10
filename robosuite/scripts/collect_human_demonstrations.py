@@ -124,6 +124,7 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
         state_paths = os.path.join(directory, ep_directory, "state_*.npz")
         states = []
         actions = []
+        success = False
 
         for state_file in sorted(glob(state_paths)):
             dic = np.load(state_file, allow_pickle=True)
@@ -132,28 +133,34 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
             states.extend(dic["states"])
             for ai in dic["action_infos"]:
                 actions.append(ai["actions"])
+            success = success or dic["successful"]
 
         if len(states) == 0:
             continue
 
-        # Delete the last state. This is because when the DataCollector wrapper
-        # recorded the states and actions, the states were recorded AFTER playing that action,
-        # so we end up with an extra state at the end.
-        del states[-1]
-        assert len(states) == len(actions)
+        # Add only the successful demonstration to dataset
+        if success:
+            print("Demonstration is successful and has been saved")
+            # Delete the last state. This is because when the DataCollector wrapper
+            # recorded the states and actions, the states were recorded AFTER playing that action,
+            # so we end up with an extra state at the end.
+            del states[-1]
+            assert len(states) == len(actions)
 
-        num_eps += 1
-        ep_data_grp = grp.create_group("demo_{}".format(num_eps))
+            num_eps += 1
+            ep_data_grp = grp.create_group("demo_{}".format(num_eps))
 
-        # store model xml as an attribute
-        xml_path = os.path.join(directory, ep_directory, "model.xml")
-        with open(xml_path, "r") as f:
-            xml_str = f.read()
-        ep_data_grp.attrs["model_file"] = xml_str
+            # store model xml as an attribute
+            xml_path = os.path.join(directory, ep_directory, "model.xml")
+            with open(xml_path, "r") as f:
+                xml_str = f.read()
+            ep_data_grp.attrs["model_file"] = xml_str
 
-        # write datasets for states and actions
-        ep_data_grp.create_dataset("states", data=np.array(states))
-        ep_data_grp.create_dataset("actions", data=np.array(actions))
+            # write datasets for states and actions
+            ep_data_grp.create_dataset("states", data=np.array(states))
+            ep_data_grp.create_dataset("actions", data=np.array(actions))
+        else:
+            print("Demonstration is unsuccessful and has NOT been saved")
 
     # write dataset attributes (metadata)
     now = datetime.datetime.now()
