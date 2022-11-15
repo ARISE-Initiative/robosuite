@@ -14,6 +14,8 @@ class OpenCVRenderer:
         self.sim = sim
         self.camera_name = self.sim.model.camera_id2name(0)
 
+        self.keypress_callback = None
+
     def set_camera(self, camera_id):
         """
         Set the camera view to the specified camera ID.
@@ -29,7 +31,12 @@ class OpenCVRenderer:
         # write frame to window
         im = np.flip(im, axis=0)
         cv2.imshow("offscreen render", im)
-        cv2.waitKey(1)
+        key = cv2.waitKey(1)
+        if self.keypress_callback:
+            self.keypress_callback(key)
+
+    def add_keypress_callback(self, keypress_callback):
+        self.keypress_callback = keypress_callback
 
     def close(self):
         """

@@ -1242,7 +1242,7 @@ class TextureModder(BaseModder):
 
         self.set_texture(name, new_bitmap, perturb=perturb)
 
-    def upload_texture(self, name):
+    def upload_texture(self, name, device_id=0):
         """
         Uploads the texture to the GPU so it's available in the rendering.
 
@@ -1251,10 +1251,7 @@ class TextureModder(BaseModder):
         """
         texture = self.get_texture(name)
         if self.sim._render_context_offscreen is None:
-            render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
-        if not self.sim.render_contexts:
-            MjRenderContextOffscreen(self.sim)
-        for render_context in self.sim.render_contexts:
+            render_context = MjRenderContextOffscreen(self.sim, device_id)
             render_context.upload_texture(texture.id)
 
     def _check_geom_for_texture(self, name):

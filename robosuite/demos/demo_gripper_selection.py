@@ -11,6 +11,9 @@ if __name__ == "__main__":
 
     for gripper in ALL_GRIPPERS:
 
+        # Notify user which gripper we're currently using
+        print("Using gripper {}...".format(gripper))
+
         # create environment with selected grippers
         env = suite.make(
             "Lift",
@@ -28,9 +31,6 @@ if __name__ == "__main__":
 
         # Get action limits
         low, high = env.action_spec
-
-        # Notify user which gripper we're currently using
-        print("Using gripper {}...".format(gripper))
 
         # Run random policy
         for t in range(100):
