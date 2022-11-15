@@ -45,8 +45,6 @@ if __name__ == "__main__":
     parser.add_argument("--height", type=int, default=384)
     args = parser.parse_args()
 
-    # screen = pygame.display.set_mode((args.width, args.height))
-
     # Import controller config for EE IK or OSC (pos/ori)
     if args.controller == "ik":
         controller_name = "IK_POSE"

@@ -56,10 +56,6 @@ Using iGibson's PBR requires Linux or Windows machines; you can still use the iG
 
 Other system configurations may work, but have not been extensively tested.
 
-## PyGame
-
-[PyGame](https://www.pygame.org/news) is a simple renderer that serves also as an alternative to MjViewer for rendering onscreen. A limitation of PyGame is that it can only render on-screen, limiting its applicability to train on computing clusters. This is because PyGame still relies on the MjRenderContextOffscreen to render frames offscreen, from which PyGame then maps to its native onscreen renderer. However, it is useful for visualizing the robots' behaviors in the system runtime where MjViewer is not supported. Check out this [demo script](../demos.html#pygame-renderer) for an example of using the PyGame renderer.
-
 ## Renderer Profiling
 The following table shows the estimated frame rate of each renderer in frames per second (FPS). The profiling was conducted on a machine with Ubuntu 18.04, Intel Core i9-900K CPU@3.60GHz, and Nvidia RTX. The FPS numbers of each rendering option are reported below. These numbers are estimated on the Door environment with IIWA robot and Joint Velocity controller and 256x256 image size. In the table, R2T means render2tensor and R2N means render2numpy, which are two modes offered by the iGibson renderer.
 

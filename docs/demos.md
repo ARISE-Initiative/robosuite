@@ -170,13 +170,6 @@ $ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer 
 In **robosuite**, we use this teleoperation script extensively for debugging environment designs, tuning reward functions, and collecting human demonstration data.
 
 
-### PyGame Renderer
-This `demo_pygame_renderer.py` script provides an example of using the `pygame` library for rendering camera observations as an alternative to the default `mujoco_py` renderer. This is useful for running **robosuite** on operating systems where `mujoco_py` is incompatible. Example:
-```
-$ python demo_pygame_renderer.py --environment Stack --width 1000 --height 1000
-```
-
-
 ### Video Recording
 The `demo_video_recording.py` script shows how to record a video of robot roll-out with the `imageio` library. This script uses offscreen rendering. This is useful for generating qualitative videos of robot policy behaviors. The generated video is in the mp4 format. Example:
 ```sh
