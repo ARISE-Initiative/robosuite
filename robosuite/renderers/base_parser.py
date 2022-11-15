@@ -18,7 +18,7 @@ class BaseParser(object):
 
         self.renderer = renderer
         self.env = env
-        self.xml_root = ET.fromstring(self.env.mjpy_model.get_xml())
+        self.xml_root = ET.fromstring(self.env.sim.model.get_xml())
         self.parent_map = {c: p for p in self.xml_root.iter() for c in p}
         self.visual_objects = {}
 
