@@ -4,7 +4,7 @@ Devices are used to read user input and teleoperate simulated robots in real-tim
 
 ## Keyboard
 
-We support keyboard input through the GLFW window created by the mujoco-py renderer. 
+We support keyboard input through the OpenCV2 window created by the mujoco renderer. 
 
 **Keyboard controls**
 

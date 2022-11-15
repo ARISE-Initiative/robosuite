@@ -84,18 +84,13 @@ world.worldbody.append(sphere)
 
 **Step 5: Running Simulation.** Once we have created the object, we can obtain a `mujoco_py` model by running
 ```python
-model = world.get_model(mode="mujoco_py")
+model = world.get_model(mode="mujoco")
 ```
 This is an `MjModel` instance that can then be used for simulation. For example,
-```
-from mujoco_py import MjSim, MjViewer
+```python
+import mujoco
 
-sim = MjSim(model)
-viewer = MjViewer(sim)
-viewer.vopt.geomgroup[0] = 0 # disable visualization of collision mesh
-
-for i in range(10000):
-  sim.data.ctrl[:] = 0
-  sim.step()
-  viewer.render()
+data = mujoco.MjData(model)
+while data.time < 1:
+    mujoco.mj_step(model, data)
 ```

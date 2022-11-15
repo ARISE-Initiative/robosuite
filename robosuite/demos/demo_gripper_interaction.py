@@ -14,8 +14,6 @@ from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas.table_arena import TableArena
 from robosuite.models.grippers import PandaGripper, RethinkGripper
 from robosuite.models.objects import BoxObject
-
-# from mujoco import MjSim, MjViewer
 from robosuite.utils import OpenCVRenderer
 from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 from robosuite.utils.mjcf_utils import new_actuator, new_joint
@@ -68,7 +66,6 @@ if __name__ == "__main__":
     model = world.get_model(mode="mujoco")
 
     sim = MjSim(model)
-    # viewer = MjViewer(sim)
     viewer = OpenCVRenderer(sim)
     render_context = MjRenderContextOffscreen(sim, device_id=-1)
     sim.add_render_context(render_context)

@@ -122,7 +122,7 @@ class MujocoXML(object):
             for one_contact in other.contact:
                 self.contact.append(one_contact)
 
-    def get_model(self, mode="mujoco_py"):
+    def get_model(self, mode="mujoco"):
         """
         Generates a MjModel instance from the current xml tree.
 
