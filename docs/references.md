@@ -11,7 +11,7 @@ A list of references of projects and papers that use **robosuite**. If you would
 - [Monte Carlo Augmented Actor-Critic for Sparse Reward Deep Reinforcement Learning from Suboptimal Demonstrations](https://arxiv.org/abs/2210.07432). Albert Wilcox, Ashwin Balakrishna, Jules Dedieu, Wyame Benslimane, Daniel S. Brown, Ken Goldberg
 - [ASPiRe: Adaptive Skill Priors for Reinforcement Learning](https://arxiv.org/abs/2209.15205). Mengda Xu, Manuela Veloso, Shuran Song
 - [Active Predicting Coding: Brain-Inspired Reinforcement Learning for Sparse Reward Robotic Control Problems](https://arxiv.org/abs/2209.09174). Alexander Ororbia, Ankur Mali
-- [Spatial and temporal features unified self-supervised representation learning networks](https://www.sciencedirect.com/science/article/pii/S0921889022001506). Rahul Choudhary, Rahee Walambe, Ketan Kotecha
+- [Spatial and Temporal Features Unified Self-Supervised Representation Learning Network](https://www.sciencedirect.com/science/article/pii/S0921889022001506). Rahul Choudhary, Rahee Walambe, Ketan Kotecha
 - [HERD: Continuous Human-to-Robot Evolution for Learning from Human Demonstration](https://openreview.net/forum?id=VHia4Cint7). Xingyu Liu, Deepak Pathak, Kris M. Kitani
 - [A Dual Representation Framework for Robot Learning with Human Guidance](https://openreview.net/forum?id=H6rr_CGzV9y). Ruohan Zhang, Dhruva Bansal, Yilun Hao, Ayano Hiranaka, Jialu Gao, Chen Wang, Roberto Martín-Martín, Li Fei-Fei, Jiajun Wu
 - [CompoSuite: A Compositional Reinforcement Learning Benchmark](https://arxiv.org/abs/2207.04136). Jorge A. Mendez, Marcel Hussing, Meghna Gummadi, Eric Eaton
