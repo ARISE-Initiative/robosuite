@@ -55,7 +55,7 @@ class Renderer:
 
     @abc.abstractmethod
     def update(self):
-        """Updates the states in the renderer (for NVISII and iGibson)"""
+        """Updates the states in the renderer (for NVISII)"""
         raise NotImplementedError
 
     @abc.abstractmethod
