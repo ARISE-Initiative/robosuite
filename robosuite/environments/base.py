@@ -163,13 +163,9 @@ class MujocoEnv(metaclass=EnvMeta):
             from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
 
             self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
-        elif self.renderer == "igibson":
-            from robosuite.renderers.igibson.igibson_renderer import iGibsonRenderer
-
-            self.viewer = iGibsonRenderer(env=self, **self.renderer_config)
         else:
             raise ValueError(
-                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson"
+                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
             )
 
     def initialize_time(self, control_freq):
@@ -501,7 +497,7 @@ class MujocoEnv(metaclass=EnvMeta):
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
 
     def set_camera_pos_quat(self, camera_pos, camera_quat):
-        if self.renderer in ["nvisii", "igibson"]:
+        if self.renderer in ["nvisii"]:
             self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
         else:
             raise AttributeError("setting camera position and quat requires renderer to be either NVISII or iGibson.")
