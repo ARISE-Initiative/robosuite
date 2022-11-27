@@ -111,11 +111,17 @@ class SpaceMouse(Device):
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
-    def __init__(self, pos_sensitivity=1.0, rot_sensitivity=1.0):
+    def __init__(
+        self,
+        vendor_id=macros.SPACEMOUSE_VENDOR_ID,
+        product_id=macros.SPACEMOUSE_PRODUCT_ID,
+        pos_sensitivity=1.0,
+        rot_sensitivity=1.0,
+    ):
 
         print("Opening SpaceMouse device")
         self.device = hid.device()
-        self.device.open(macros.SPACEMOUSE_VENDOR_ID, macros.SPACEMOUSE_PRODUCT_ID)  # SpaceMouse
+        self.device.open(vendor_id, product_id)  # SpaceMouse
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
