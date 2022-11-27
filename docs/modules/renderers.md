@@ -2,7 +2,7 @@
 
 [Renderers](../source/robosuite.renderers) are used to visualize the simulation, and can be used either in on-screen mode or headless (off-screen) mode. Renderers are also responsible for generating image-based observations that are returned from a given environment, and compute virtual images of the environment based on the properties defined in the cameras.
 
-Currently, the following ground-truth vision modalities are supported across the three renderers, MuJoCo, NVISII, and iGibson:
+Currently, the following ground-truth vision modalities are supported across the two renderers, MuJoCo, and NVISII:
 
 - **RGB**: Standard 3-channel color frames with values in range `[0, 255]`. This is set during environment construction with the `use_camera_obs` argument.
 - **Depth**: 1-channel frame with normalized values in range `[0, 1]`. This is set during environment construction with the `camera_depths` argument.
@@ -26,7 +26,7 @@ NVISIIRenderer is a ray tracing-based renderer. It is primarily used for trainin
 Installing NVISII can be done using the command `pip install nvisii`. Note that NVISII requires users' drivers to be up to date. Please refer [here](https://github.com/owl-project/NVISII) for more information. You can try the NVISII renderer with the `demo_renderers.py` [script](../demos.html#rendering-options) and learn about the APIs for obtaining vision modalities with `demo_nvisii_modalities.py`.
 
 ## Renderer Profiling
-The following table shows the estimated frame rate of each renderer in frames per second (FPS). The profiling was conducted on a machine with Ubuntu 18.04, Intel Core i9-900K CPU@3.60GHz, and Nvidia RTX. The FPS numbers of each rendering option are reported below. These numbers are estimated on the Door environment with IIWA robot and Joint Velocity controller and 256x256 image size. In the table, R2T means render2tensor and R2N means render2numpy, which are two modes offered by the iGibson renderer.
+The following table shows the estimated frame rate of each renderer in frames per second (FPS). The profiling was conducted on a machine with Ubuntu 18.04, Intel Core i9-900K CPU@3.60GHz, and Nvidia RTX. The FPS numbers of each rendering option are reported below. These numbers are estimated on the Door environment with IIWA robot and Joint Velocity controller and 256x256 image size.
 
 |                   | mujoco | NVISII |
 |-------------------|:---------:|:---------------------------------:|:-----------------------:|:----------------------:|:------:|
