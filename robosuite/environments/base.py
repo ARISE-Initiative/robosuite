@@ -500,7 +500,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer in ["nvisii"]:
             self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
         else:
-            raise AttributeError("setting camera position and quat requires renderer to be either NVISII or iGibson.")
+            raise AttributeError("setting camera position and quat requires renderer to be NVISII.")
 
     def edit_model_xml(self, xml_str):
         """
