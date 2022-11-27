@@ -41,14 +41,4 @@ SPACEMOUSE_PRODUCT_ID = 50735
 # If LOGGING LEVEL is set to None, the logger will be turned off
 CONSOLE_LOGGING_LEVEL = "WARN"
 # File logging is written to /tmp/robosuite.log by default
-FILE_LOGGING_LEVEL = None
-
-try:
-    from robosuite.macros_private import *
-except ImportError:
-    import robosuite
-    from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
-
-    ROBOSUITE_DEFAULT_LOGGER.warn("No private macro file found!")
-    ROBOSUITE_DEFAULT_LOGGER.warn("It is recommended to use a private macro file")
-    ROBOSUITE_DEFAULT_LOGGER.warn("To setup, run: python {}/scripts/setup_macros.py".format(robosuite.__path__[0]))
+FILE_LOGGING_LEVEL = "DEBUG"

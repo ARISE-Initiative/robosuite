@@ -8,33 +8,23 @@ from termcolor import colored
 
 import robosuite.macros as macros
 
+LEVEL_COLORS = {
+    logging.DEBUG: "green",
+    logging.INFO: "green",
+    logging.WARNING: "yellow",
+    logging.ERROR: "red",
+    logging.CRITICAL: "red",
+}
 
-class RobosuiteColorFormatter(logging.Formatter):
-    format_str = "[robosuite %(levelname)s] "
-    message_str = "%(message)s (%(filename)s:%(lineno)d)"
+FORMAT_STR = {"file": "[robosuite %(levelname)s - %(asctime)s] ", "console": "[robosuite %(levelname)s] "}
+
+MESSAGE_STR = "%(message)s (%(filename)s:%(lineno)d)"
+
+
+class FileFormatter(logging.Formatter):
     FORMATS = {
-        logging.DEBUG: format_str + message_str,
-        logging.INFO: "%(message)s",
-        logging.WARNING: colored(format_str, "yellow", attrs=["bold"]) + message_str,
-        logging.ERROR: colored(format_str, "red", attrs=["bold"]) + message_str,
-        logging.CRITICAL: colored(format_str, "red", attrs=["bold", "reverse"]) + message_str,
-    }
-
-    def format(self, record):
-        log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
-        return formatter.format(record)
-
-
-class RobosuiteFileFormatter(logging.Formatter):
-    format_str = "[robosuite %(levelname)s - %(asctime)s] "
-    message_str = "%(message)s (%(filename)s:%(lineno)d)"
-    FORMATS = {
-        logging.DEBUG: format_str + message_str,
-        logging.INFO: format_str + message_str,
-        logging.WARNING: colored(format_str, "yellow", attrs=["bold"]) + message_str,
-        logging.ERROR: colored(format_str, "red", attrs=["bold"]) + message_str,
-        logging.CRITICAL: colored(format_str, "red", attrs=["bold", "reverse"]) + message_str,
+        levelno: colored(FORMAT_STR["file"], color, attrs=["bold"]) + MESSAGE_STR
+        for (levelno, color) in LEVEL_COLORS.items()
     }
 
     def format(self, record):
@@ -43,15 +33,13 @@ class RobosuiteFileFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-class RobosuiteConsoleFormatter(logging.Formatter):
-    format_str = "[robosuite %(levelname)s] "
-    message_str = "%(message)s (%(filename)s:%(lineno)d)"
+class ConsoleFormatter(logging.Formatter):
     FORMATS = {
-        logging.DEBUG: format_str + message_str,
+        logging.DEBUG: FORMAT_STR["console"] + MESSAGE_STR,
         logging.INFO: "%(message)s",
-        logging.WARNING: colored(format_str, "yellow", attrs=["bold"]) + message_str,
-        logging.ERROR: colored(format_str, "red", attrs=["bold"]) + message_str,
-        logging.CRITICAL: colored(format_str, "red", attrs=["bold", "reverse"]) + message_str,
+        logging.WARNING: colored(FORMAT_STR["console"], "yellow", attrs=["bold"]) + MESSAGE_STR,
+        logging.ERROR: colored(FORMAT_STR["console"], "red", attrs=["bold"]) + MESSAGE_STR,
+        logging.CRITICAL: colored(FORMAT_STR["console"], "red", attrs=["bold", "reverse"]) + MESSAGE_STR,
     }
 
     def format(self, record):
@@ -68,14 +56,14 @@ class RobosuiteDefaultLogger:
         if file_logging_level is not None:
             fh = logging.FileHandler("/tmp/robosuite.log")
             fh.setLevel(logging.getLevelName(file_logging_level))
-            file_formatter = RobosuiteFileFormatter()
+            file_formatter = FileFormatter()
             fh.setFormatter(file_formatter)
             logger.addHandler(fh)
 
         if console_logging_level is not None:
             ch = logging.StreamHandler()
             ch.setLevel(logging.getLevelName(console_logging_level))
-            console_formatter = RobosuiteConsoleFormatter()
+            console_formatter = ConsoleFormatter()
             ch.setFormatter(console_formatter)
             logger.addHandler(ch)
 
