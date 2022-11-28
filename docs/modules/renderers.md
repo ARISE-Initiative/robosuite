@@ -29,7 +29,7 @@ Installing NVISII can be done using the command `pip install nvisii`. Note that 
 The following table shows the estimated frame rate of each renderer in frames per second (FPS). The profiling was conducted on a machine with Ubuntu 18.04, Intel Core i9-900K CPU@3.60GHz, and Nvidia RTX. The FPS numbers of each rendering option are reported below. These numbers are estimated on the Door environment with IIWA robot and Joint Velocity controller and 256x256 image size.
 
 |                   | mujoco | NVISII |
-|-------------------|:---------:|:---------------------------------:|:-----------------------:|:----------------------:|:------:|
+|-------------------|:---------:|:---------------------------------:|
 | Simulation + rendering | 62 | 0.5 |
 | Rendering only         | 508 | 0.5 |
 
@@ -38,7 +38,7 @@ For the same environment setup, we profiled the renderer on a machine with Ubunt
 and Nvidia GTX 1080ti.
 
 |                   | mujoco | NVISII |
-|-------------------|:---------:|:---------------------------------:|:-----------------------:|:----------------------:|:------:|
+|-------------------|:---------:|:---------------------------------:|
 | Simulation + rendering | 65 | 0.4 |
 | Rendering only         | 1000 | 0.4 |
 

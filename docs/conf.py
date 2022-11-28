@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath("."))
 
-import sphinx_rtd_theme
+import sphinx_book_theme
 
 import robosuite
 
@@ -36,7 +36,6 @@ import robosuite
 # ones.
 extensions = [
     "sphinx.ext.napoleon",
-    "sphinx_rtd_theme",
     "sphinx_markdown_tables",
     "sphinx.ext.mathjax",
     "sphinx.ext.githubpages",
@@ -45,6 +44,19 @@ extensions = [
     "nbsphinx",
 ]
 
+mathjax_config = {
+    'tex2jax': {
+        'inlineMath': [ ["\\(","\\)"] ],
+        'displayMath': [["\\[","\\]"] ],
+    },
+}
+
+mathjax3_config = {
+  "tex": {
+    "inlineMath": [['\\(', '\\)']],
+    "displayMath": [["\\[", "\\]"]],
+  }
+}
 
 # Sphinx-apidoc variables
 apidoc_module_dir = "../robosuite"
@@ -103,7 +115,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -116,13 +128,14 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_context = {
-    "css_files": [
-        "_static/css/theme.css",
-        "_static/pygments.css",
-        "_static/theme_overrides.css",  # override wide tables in RTD theme
-    ],
-}
+html_css_files = [
+    "css/theme.css",
+]
+
+html_js_files = [
+    "js/custom.js"
+]
+
 
 # -- Options for HTMLHelp output ------------------------------------------
 

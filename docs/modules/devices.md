@@ -11,7 +11,7 @@ We support keyboard input through the OpenCV2 window created by the mujoco rende
 Note that the rendering window must be active for these commands to work.
 
 |   Keys   |              Command               |
-| :------: | :--------------------------------: |
+| :------- | :--------------------------------- |
 |    q     |          reset simulation          |
 | spacebar |    toggle gripper (open/close)     |
 | w-a-s-d  | move arm horizontally in x-y plane |
@@ -28,7 +28,7 @@ We support the use of a [SpaceMouse](https://www.3dconnexion.com/spacemouse_comp
 **3Dconnexion SpaceMouse controls**
 
 |          Control          |                Command                |
-| :-----------------------: | :-----------------------------------: |
+| :------------------------ | :------------------------------------ |
 |       Right button        |           reset simulation            |
 |    Left button (hold)     |             close gripper             |
 |   Move mouse laterally    |  move arm horizontally in x-y plane   |
