@@ -20,10 +20,8 @@ def load_renderer_config(renderer):
     """
     if renderer == "nvisii":
         fname = "config/nvisii_config.json"
-    elif renderer == "igibson":
-        fname = "config/igibson_config.json"
     else:
-        raise ValueError(f"renderer type can only be  'nvisii', or 'igibson' got '{renderer}'")
+        raise ValueError(f"renderer type can only be 'nvisii' got '{renderer}'")
 
     dir_path = os.path.dirname(__file__)
     with open(os.path.join(dir_path, fname)) as f:
@@ -57,7 +55,7 @@ class Renderer:
 
     @abc.abstractmethod
     def update(self):
-        """Updates the states in the renderer (for NVISII and iGibson)"""
+        """Updates the states in the renderer (for NVISII)"""
         raise NotImplementedError
 
     @abc.abstractmethod

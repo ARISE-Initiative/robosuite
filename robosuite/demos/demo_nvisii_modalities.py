@@ -1,5 +1,5 @@
 """
-Dumps video of the modality specified from iGibson renderer.
+Dumps video of the modality specified from the renderer.
 """
 
 import argparse
