@@ -38,15 +38,7 @@ MUJOCO_GPU_RENDERING = True
 SPACEMOUSE_VENDOR_ID = 9583
 SPACEMOUSE_PRODUCT_ID = 50735
 
-
-try:
-    from robosuite.macros_private import *
-except ImportError:
-    import robosuite
-    from robosuite.utils.log_utils import log_warning
-
-    log_warning(
-        "No private macro file found!"
-        "\nIt is recommended to use a private macro file"
-        "\nTo setup, run: python {}/scripts/setup_macros.py".format(robosuite.__path__[0])
-    )
+# If LOGGING LEVEL is set to None, the logger will be turned off
+CONSOLE_LOGGING_LEVEL = "WARN"
+# File logging is written to /tmp/robosuite.log by default
+FILE_LOGGING_LEVEL = "DEBUG"
