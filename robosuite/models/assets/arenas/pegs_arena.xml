@@ -1,7 +1,7 @@
 <mujoco model="pegs_arena">
   <asset>
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
-    <texture file="../textures/wood-tiles.png" type="2d" name="texplane"/>
+    <texture file="../textures/light-gray-floor-tile.png" type="2d" name="texplane"/>
     <material name="floorplane" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
     <texture file="../textures/steel-scratched.png" type="cube" name="steel-metal"/>
     <texture file="../textures/brass-ambra.png" type="cube" name="brass-metal"/>
@@ -14,8 +14,8 @@
     <texture file="../textures/steel-brushed.png" type="cube" name="tex-steel-brushed"/>
     <material name="table_legs_metal" reflectance="0.8" shininess="0.8" texrepeat="1 1" texture="tex-steel-brushed" />
     <!-- plaster walls -->
-    <texture file="../textures/cream-plaster.png" type="2d" name="tex-cream-plaster"/>
-    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-cream-plaster" texuniform="true" />
+    <texture file="../textures/light-gray-plaster.png" type="2d" name="tex-light-gray-plaster"/>
+    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-light-gray-plaster" texuniform="true" />
     <!-- added table texture and material for domain randomization -->
     <texture  name="textable" builtin="flat" height="512" width="512" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
     <material name="table_mat" texture="textable" />
