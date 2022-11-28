@@ -23,6 +23,7 @@ MESSAGE_STR = "%(message)s (%(filename)s:%(lineno)d)"
 
 class FileFormatter(logging.Formatter):
     """Formatter class of logging for file logging."""
+
     FORMATS = {
         levelno: colored(FORMAT_STR["file"], color, attrs=["bold"]) + MESSAGE_STR
         for (levelno, color) in LEVEL_COLORS.items()
@@ -37,6 +38,7 @@ class FileFormatter(logging.Formatter):
 
 class ConsoleFormatter(logging.Formatter):
     """Formatter class of logging for console logging."""
+
     FORMATS = {
         logging.DEBUG: FORMAT_STR["console"] + MESSAGE_STR,
         logging.INFO: "%(message)s",
@@ -54,6 +56,7 @@ class ConsoleFormatter(logging.Formatter):
 
 class DefaultLogger:
     """Default logger class in robosuite codebase."""
+
     def __init__(self, logger_name="robosuite_logs", console_logging_level="INFO", file_logging_level=None):
         """
         Args:

@@ -574,7 +574,7 @@ class _MjDataMeta(type):
 class MjData(metaclass=_MjDataMeta):
     """Wrapper class for a MuJoCo 'mjData' instance.
     MjData contains all of the dynamic variables and intermediate results produced
-    by the simulation. These are expected to change on each simulation timestep. 
+    by the simulation. These are expected to change on each simulation timestep.
     The properties without docstrings are defined in mujoco source code from https://github.com/deepmind/mujoco/blob/062cb53a4a14b2a7a900453613a7ce498728f9d8/include/mujoco/mjdata.h#L126.
     """
 
@@ -760,7 +760,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco geom
         Returns:
             jacr (np.ndarray): The jacr value of the mujoco geom
-        """        
+        """
         gid = self.model.geom_name2id(name)
         jacv = np.zeros((3, self.model.nv))
         mujoco.mj_jacGeom(self.model._model, self._data, None, jacv, gid)
@@ -774,7 +774,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco geom
         Returns:
             xvelp (np.ndarray): The translational velocity of the mujoco geom
-        """ 
+        """
         jacp = self.get_geom_jacp(name)
         xvelp = np.dot(jacp, self.qvel)
         return xvelp
@@ -787,7 +787,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco geom
         Returns:
             xvelr (np.ndarray): The rotational velocity of the mujoco geom
-        """        
+        """
         jacr = self.get_geom_jacr(name)
         xvelr = np.dot(jacr, self.qvel)
         return xvelr
@@ -800,7 +800,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco site
         Returns:
             site_xpos (np.ndarray): The carteisan position of the mujoco site
-        """          
+        """
         sid = self.model.site_name2id(name)
         return self.site_xpos[sid]
 
@@ -812,7 +812,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco site
         Returns:
             site_xmat (np.ndarray): The 3x3 rotation matrix of the mujoco site.
-        """        
+        """
         sid = self.model.site_name2id(name)
         return self.site_xmat[sid].reshape((3, 3))
 
@@ -824,7 +824,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco site
         Returns:
             jacp (np.ndarray): The jacp value of the mujoco site
-        """        
+        """
         sid = self.model.site_name2id(name)
         jacp = np.zeros((3, self.model.nv))
         mujoco.mj_jacSite(self.model._model, self._data, jacp, None, sid)
@@ -852,7 +852,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco site
         Returns:
             xvelp (np.ndarray): The translational velocity of the mujoco site
-        """         
+        """
         jacp = self.get_site_jacp(name)
         xvelp = np.dot(jacp, self.qvel)
         return xvelp
@@ -865,7 +865,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a mujoco site
         Returns:
             xvelr (np.ndarray): The rotational velocity of the mujoco site
-        """           
+        """
         jacr = self.get_site_jacr(name)
         xvelr = np.dot(jacr, self.qvel)
         return xvelr
@@ -878,7 +878,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a camera
         Returns:
             cam_xpos (np.ndarray): The cartesian position of a camera
-        """        
+        """
         cid = self.model.camera_name2id(name)
         return self.cam_xpos[cid]
 
@@ -890,7 +890,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a camera
         Returns:
             cam_xmat (np.ndarray): The 3x3 rotation matrix of a camera
-        """          
+        """
         cid = self.model.camera_name2id(name)
         return self.cam_xmat[cid].reshape((3, 3))
 
@@ -902,7 +902,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a lighting source
         Returns:
             light_xpos (np.ndarray): The cartesian position of the light source
-        """        
+        """
         lid = self.model.light_name2id(name)
         return self.light_xpos[lid]
 
@@ -950,7 +950,7 @@ class MjData(metaclass=_MjDataMeta):
         Args:
             name (str): The name of a joint
             value (float): The desired joint position of a mocap body.
-        """        
+        """
         body_id = self.model.body_name2id(name)
         mocap_id = self.model.body_mocapid[body_id]
         self.mocap_pos[mocap_id] = value
@@ -963,7 +963,7 @@ class MjData(metaclass=_MjDataMeta):
             name (str): The name of a joint
         Returns:
             mocap_quat (np.ndarray): The current quaternion of a mocap body.
-        """        
+        """
         body_id = self.model.body_name2id(name)
         mocap_id = self.model.body_mocapid[body_id]
         return self.mocap_quat[mocap_id]
