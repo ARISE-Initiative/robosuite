@@ -177,7 +177,9 @@ def test_linear_interpolator():
 
                 # When finished, print out the timestep results
                 print(
-                    "Completed trajectory. Avg per-step absolute delta torques: {}".format(summed_abs_delta_torques[j] / timesteps[j])
+                    "Completed trajectory. Avg per-step absolute delta torques: {}".format(
+                        summed_abs_delta_torques[j] / timesteps[j]
+                    )
                 )
 
                 # Shut down this env before starting the next test
