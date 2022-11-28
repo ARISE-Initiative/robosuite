@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--renderer", type=str, default="mujoco", help="Valid options include mujoco, nvisii, and igibson"
+        "--renderer", type=str, default="mujoco", help="Valid options include mujoco, and nvisii"
     )
 
     args = parser.parse_args()

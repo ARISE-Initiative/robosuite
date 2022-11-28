@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   robosuite.renderers.igibson
    robosuite.renderers.mujoco
    robosuite.renderers.nvisii
 
