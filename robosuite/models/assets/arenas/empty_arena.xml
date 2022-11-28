@@ -1,11 +1,11 @@
 <mujoco model="empty_arena">
   <asset>
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
-    <texture file="../textures/gray-floor-tile.png" type="2d" name="texplane"/>
+    <texture file="../textures/light-gray-floor-tile.png" type="2d" name="texplane"/>
     <material name="floorplane" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
     <!-- plaster walls -->
-    <texture file="../textures/dark-green-plaster.png" type="2d" name="tex-dark-green-plaster"/>
-    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-dark-green-plaster" texuniform="true" />
+    <texture file="../textures/light-gray-plaster.png" type="2d" name="tex-light-gray-plaster"/>
+    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-light-gray-plaster" texuniform="true" />
 
   </asset>
   <worldbody>
