@@ -48,7 +48,7 @@ class ConsoleFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-class RobosuiteDefaultLogger:
+class DefaultLogger:
     def __init__(self, logger_name="robosuite_logs", console_logging_level="INFO", file_logging_level=None):
         self.logger_name = logger_name
         logger = logging.getLogger(self.logger_name)
@@ -72,7 +72,7 @@ class RobosuiteDefaultLogger:
         return logger
 
 
-ROBOSUITE_DEFAULT_LOGGER = RobosuiteDefaultLogger(
+ROBOSUITE_DEFAULT_LOGGER = DefaultLogger(
     console_logging_level=macros.CONSOLE_LOGGING_LEVEL,
     file_logging_level=macros.FILE_LOGGING_LEVEL,
 ).get_logger()
