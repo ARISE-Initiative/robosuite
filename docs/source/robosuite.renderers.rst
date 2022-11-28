@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   robosuite.renderers.mujoco
+   robosuite.renderers.context
    robosuite.renderers.nvisii
 
 Submodules
