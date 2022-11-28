@@ -358,61 +358,73 @@ class MjModel(metaclass=_MjModelMeta):
         )
 
     def body_id2name(self, id):
+        """Get body name from mujoco body id."""
         if id not in self._body_id2name:
             raise ValueError("No body with id %d exists." % id)
         return self._body_id2name[id]
 
     def body_name2id(self, name):
+        """Get body id from mujoco body name."""
         if name not in self._body_name2id:
             raise ValueError('No "body" with name %s exists. Available "body" names = %s.' % (name, self.body_names))
         return self._body_name2id[name]
 
     def joint_id2name(self, id):
+        """Get joint name from mujoco joint id."""
         if id not in self._joint_id2name:
             raise ValueError("No joint with id %d exists." % id)
         return self._joint_id2name[id]
 
     def joint_name2id(self, name):
+        """Get joint id from joint name."""
         if name not in self._joint_name2id:
             raise ValueError('No "joint" with name %s exists. Available "joint" names = %s.' % (name, self.joint_names))
         return self._joint_name2id[name]
 
     def geom_id2name(self, id):
+        """Get geom name from  geom id."""
         if id not in self._geom_id2name:
             raise ValueError("No geom with id %d exists." % id)
         return self._geom_id2name[id]
 
     def geom_name2id(self, name):
+        """Get geom id from  geom name."""
         if name not in self._geom_name2id:
             raise ValueError('No "geom" with name %s exists. Available "geom" names = %s.' % (name, self.geom_names))
         return self._geom_name2id[name]
 
     def site_id2name(self, id):
+        """Get site name from site id."""
         if id not in self._site_id2name:
             raise ValueError("No site with id %d exists." % id)
         return self._site_id2name[id]
 
     def site_name2id(self, name):
+        """Get site id from site name."""
         if name not in self._site_name2id:
             raise ValueError('No "site" with name %s exists. Available "site" names = %s.' % (name, self.site_names))
         return self._site_name2id[name]
 
     def light_id2name(self, id):
+        """Get light name from light id."""
         if id not in self._light_id2name:
             raise ValueError("No light with id %d exists." % id)
         return self._light_id2name[id]
 
     def light_name2id(self, name):
+        """Get light id from light name."""
         if name not in self._light_name2id:
             raise ValueError('No "light" with name %s exists. Available "light" names = %s.' % (name, self.light_names))
         return self._light_name2id[name]
 
     def camera_id2name(self, id):
+        """Get camera name from camera id."""
         if id not in self._camera_id2name:
             raise ValueError("No camera with id %d exists." % id)
         return self._camera_id2name[id]
 
     def camera_name2id(self, name):
+        """Get camera id from  camera name."""
         if name not in self._camera_name2id:
             raise ValueError(
                 'No "camera" with name %s exists. Available "camera" names = %s.' % (name, self.camera_names)
@@ -420,11 +432,13 @@ class MjModel(metaclass=_MjModelMeta):
         return self._camera_name2id[name]
 
     def actuator_id2name(self, id):
+        """Get actuator name from actuator id."""
         if id not in self._actuator_id2name:
             raise ValueError("No actuator with id %d exists." % id)
         return self._actuator_id2name[id]
 
     def actuator_name2id(self, name):
+        """Get actuator id from actuator name."""
         if name not in self._actuator_name2id:
             raise ValueError(
                 'No "actuator" with name %s exists. Available "actuator" names = %s.' % (name, self.actuator_names)
@@ -432,11 +446,13 @@ class MjModel(metaclass=_MjModelMeta):
         return self._actuator_name2id[name]
 
     def sensor_id2name(self, id):
+        """Get sensor name from sensor id."""
         if id not in self._sensor_id2name:
             raise ValueError("No sensor with id %d exists." % id)
         return self._sensor_id2name[id]
 
     def sensor_name2id(self, name):
+        """Get sensor id from sensor name."""
         if name not in self._sensor_name2id:
             raise ValueError(
                 'No "sensor" with name %s exists. Available "sensor" names = %s.' % (name, self.sensor_names)
@@ -444,11 +460,13 @@ class MjModel(metaclass=_MjModelMeta):
         return self._sensor_name2id[name]
 
     def tendon_id2name(self, id):
+        """Get tendon name from tendon id."""
         if id not in self._tendon_id2name:
             raise ValueError("No tendon with id %d exists." % id)
         return self._tendon_id2name[id]
 
     def tendon_name2id(self, name):
+        """Get tendon id from tendon name."""
         if name not in self._tendon_name2id:
             raise ValueError(
                 'No "tendon" with name %s exists. Available "tendon" names = %s.' % (name, self.tendon_names)
@@ -456,11 +474,13 @@ class MjModel(metaclass=_MjModelMeta):
         return self._tendon_name2id[name]
 
     def mesh_id2name(self, id):
+        """Get mesh name from  mesh id."""
         if id not in self._mesh_id2name:
             raise ValueError("No mesh with id %d exists." % id)
         return self._mesh_id2name[id]
 
     def mesh_name2id(self, name):
+        """Get mesh id from mesh name."""
         if name not in self._mesh_name2id:
             raise ValueError('No "mesh" with name %s exists. Available "mesh" names = %s.' % (name, self.mesh_names))
         return self._mesh_name2id[name]
@@ -554,7 +574,8 @@ class _MjDataMeta(type):
 class MjData(metaclass=_MjDataMeta):
     """Wrapper class for a MuJoCo 'mjData' instance.
     MjData contains all of the dynamic variables and intermediate results produced
-    by the simulation. These are expected to change on each simulation timestep.
+    by the simulation. These are expected to change on each simulation timestep. 
+    The properties without docstrings are defined in mujoco source code from https://github.com/deepmind/mujoco/blob/062cb53a4a14b2a7a900453613a7ce498728f9d8/include/mujoco/mjdata.h#L126.
     """
 
     def __init__(self, model):
@@ -604,140 +625,371 @@ class MjData(metaclass=_MjDataMeta):
         return self._data.xmat
 
     def get_body_xpos(self, name):
+        """
+        Query cartesian position of a mujoco body using a name string.
+
+        Args:
+            name (str): The name of a mujoco body
+        Returns:
+            xpos (np.ndarray): The xpos value of the mujoco body
+        """
         bid = self.model.body_name2id(name)
         return self.xpos[bid]
 
     def get_body_xquat(self, name):
+        """
+        Query the rotation of a mujoco body in quaternion (in wxyz convention) using a name string.
+
+        Args:
+            name (str): The name of a mujoco body
+        Returns:
+            xquat (np.ndarray): The xquat value of the mujoco body
+        """
         bid = self.model.body_name2id(name)
         return self.xquat[bid]
 
     def get_body_xmat(self, name):
+        """
+        Query the rotation of a mujoco body in a rotation matrix using a name string.
+
+        Args:
+            name (str): The name of a mujoco body
+        Returns:
+            xmat (np.ndarray): The xmat value of the mujoco body
+        """
         bid = self.model.body_name2id(name)
         return self.xmat[bid].reshape((3, 3))
 
     def get_body_jacp(self, name):
+        """
+        Query the position jacobian of a mujoco body using a name string.
+
+        Args:
+            name (str): The name of a mujoco body
+        Returns:
+            jacp (np.ndarray): The jacp value of the mujoco body
+        """
         bid = self.model.body_name2id(name)
         jacp = np.zeros((3, self.model.nv))
         mujoco.mj_jacBody(self.model._model, self._data, jacp, None, bid)
         return jacp
 
     def get_body_jacr(self, name):
+        """
+        Query the rotation jacobian of a mujoco body using a name string.
+
+        Args:
+            name (str): The name of a mujoco body
+        Returns:
+            jacr (np.ndarray): The jacr value of the mujoco body
+        """
         bid = self.model.body_name2id(name)
         jacr = np.zeros((3, self.model.nv))
         mujoco.mj_jacBody(self.model._model, self._data, None, jacr, bid)
         return jacr
 
     def get_body_xvelp(self, name):
+        """
+        Query the translational velocity of a mujoco body using a name string.
+
+        Args:
+            name (str): The name of a mujoco body
+        Returns:
+            xvelp (np.ndarray): The translational velocity of the mujoco body.
+        """
         jacp = self.get_body_jacp(name)
         xvelp = np.dot(jacp, self.qvel)
         return xvelp
 
     def get_body_xvelr(self, name):
+        """
+        Query the rotational velocity of a mujoco body using a name string.
+
+        Args:
+            name (str): The name of a mujoco body
+        Returns:
+            xvelr (np.ndarray): The rotational velocity of the mujoco body.
+        """
         jacr = self.get_body_jacr(name)
         xvelr = np.dot(jacr, self.qvel)
         return xvelr
 
     def get_geom_xpos(self, name):
+        """
+        Query the cartesian position of a mujoco geom using a name string.
+
+        Args:
+            name (str): The name of a mujoco geom
+        Returns:
+            geom_xpos (np.ndarray): The cartesian position of the mujoco body.
+        """
         gid = self.model.geom_name2id(name)
         return self.geom_xpos[gid]
 
     def get_geom_xmat(self, name):
+        """
+        Query the rotation of a mujoco geom in a rotation matrix using a name string.
+
+        Args:
+            name (str): The name of a mujoco geom
+        Returns:
+            geom_xmat (np.ndarray): The 3x3 rotation matrix of the mujoco geom.
+        """
         gid = self.model.geom_name2id(name)
         return self.geom_xmat[gid].reshape((3, 3))
 
     def get_geom_jacp(self, name):
+        """
+        Query the position jacobian of a mujoco geom using a name string.
+
+        Args:
+            name (str): The name of a mujoco geom
+        Returns:
+            jacp (np.ndarray): The jacp value of the mujoco geom
+        """
         gid = self.model.geom_name2id(name)
         jacp = np.zeros((3, self.model.nv))
         mujoco.mj_jacGeom(self.model._model, self._data, jacp, None, gid)
         return jacp
 
     def get_geom_jacr(self, name):
+        """
+        Query the rotation jacobian of a mujoco geom using a name string.
+
+        Args:
+            name (str): The name of a mujoco geom
+        Returns:
+            jacr (np.ndarray): The jacr value of the mujoco geom
+        """        
         gid = self.model.geom_name2id(name)
         jacv = np.zeros((3, self.model.nv))
         mujoco.mj_jacGeom(self.model._model, self._data, None, jacv, gid)
         return jacr
 
     def get_geom_xvelp(self, name):
+        """
+        Query the translational velocity of a mujoco geom using a name string.
+
+        Args:
+            name (str): The name of a mujoco geom
+        Returns:
+            xvelp (np.ndarray): The translational velocity of the mujoco geom
+        """ 
         jacp = self.get_geom_jacp(name)
         xvelp = np.dot(jacp, self.qvel)
         return xvelp
 
     def get_geom_xvelr(self, name):
+        """
+        Query the rotational velocity of a mujoco geom using a name string.
+
+        Args:
+            name (str): The name of a mujoco geom
+        Returns:
+            xvelr (np.ndarray): The rotational velocity of the mujoco geom
+        """        
         jacr = self.get_geom_jacr(name)
         xvelr = np.dot(jacr, self.qvel)
         return xvelr
 
     def get_site_xpos(self, name):
+        """
+        Query the cartesian position of a mujoco site using a name string.
+
+        Args:
+            name (str): The name of a mujoco site
+        Returns:
+            site_xpos (np.ndarray): The carteisan position of the mujoco site
+        """          
         sid = self.model.site_name2id(name)
         return self.site_xpos[sid]
 
     def get_site_xmat(self, name):
+        """
+        Query the rotation of a mujoco site in a rotation matrix using a name string.
+
+        Args:
+            name (str): The name of a mujoco site
+        Returns:
+            site_xmat (np.ndarray): The 3x3 rotation matrix of the mujoco site.
+        """        
         sid = self.model.site_name2id(name)
         return self.site_xmat[sid].reshape((3, 3))
 
     def get_site_jacp(self, name):
+        """
+        Query the position jacobian of a mujoco site using a name string.
+
+        Args:
+            name (str): The name of a mujoco site
+        Returns:
+            jacp (np.ndarray): The jacp value of the mujoco site
+        """        
         sid = self.model.site_name2id(name)
         jacp = np.zeros((3, self.model.nv))
         mujoco.mj_jacSite(self.model._model, self._data, jacp, None, sid)
         return jacp
 
     def get_site_jacr(self, name):
+        """
+        Query the rotation jacobian of a mujoco site using a name string.
+
+        Args:
+            name (str): The name of a mujoco site
+        Returns:
+            jacr (np.ndarray): The jacr value of the mujoco site
+        """
         sid = self.model.site_name2id(name)
         jacr = np.zeros((3, self.model.nv))
         mujoco.mj_jacSite(self.model._model, self._data, None, jacr, sid)
         return jacr
 
     def get_site_xvelp(self, name):
+        """
+        Query the translational velocity of a mujoco site using a name string.
+
+        Args:
+            name (str): The name of a mujoco site
+        Returns:
+            xvelp (np.ndarray): The translational velocity of the mujoco site
+        """         
         jacp = self.get_site_jacp(name)
         xvelp = np.dot(jacp, self.qvel)
         return xvelp
 
     def get_site_xvelr(self, name):
+        """
+        Query the rotational velocity of a mujoco site using a name string.
+
+        Args:
+            name (str): The name of a mujoco site
+        Returns:
+            xvelr (np.ndarray): The rotational velocity of the mujoco site
+        """           
         jacr = self.get_site_jacr(name)
         xvelr = np.dot(jacr, self.qvel)
         return xvelr
 
     def get_camera_xpos(self, name):
+        """
+        Get the cartesian position of a camera using name
+
+        Args:
+            name (str): The name of a camera
+        Returns:
+            cam_xpos (np.ndarray): The cartesian position of a camera
+        """        
         cid = self.model.camera_name2id(name)
         return self.cam_xpos[cid]
 
     def get_camera_xmat(self, name):
+        """
+        Get the rotation of a camera in a rotation matrix using name
+
+        Args:
+            name (str): The name of a camera
+        Returns:
+            cam_xmat (np.ndarray): The 3x3 rotation matrix of a camera
+        """          
         cid = self.model.camera_name2id(name)
         return self.cam_xmat[cid].reshape((3, 3))
 
     def get_light_xpos(self, name):
+        """
+        Get cartesian position of a light source
+
+        Args:
+            name (str): The name of a lighting source
+        Returns:
+            light_xpos (np.ndarray): The cartesian position of the light source
+        """        
         lid = self.model.light_name2id(name)
         return self.light_xpos[lid]
 
     def get_light_xdir(self, name):
+        """
+        Get the direction of a light source using name
+
+        Args:
+            name (str): The name of a light
+        Returns:
+            light_xdir (np.ndarray): The direction vector of the lightsource
+        """
         lid = self.model.light_name2id(name)
         return self.light_xdir[lid]
 
     def get_sensor(self, name):
+        """
+        Get the data of a sensor using name
+
+        Args:
+            name (str): The name of a sensor
+        Returns:
+            sensordata (np.ndarray): The sensor data vector
+        """
         sid = self.model.sensor_name2id(name)
         return self.sensordata[sid]
 
     def get_mocap_pos(self, name):
+        """
+        Get the position of a mocap body using name.
+
+        Args:
+            name (str): The name of a joint
+        Returns:
+            mocap_pos (np.ndarray): The current position of a mocap body.
+        """
         body_id = self.model.body_name2id(name)
         mocap_id = self.model.body_mocapid[body_id]
         return self.mocap_pos[mocap_id]
 
     def set_mocap_pos(self, name, value):
+        """
+        Set the quaternion of a mocap body using name.
+
+        Args:
+            name (str): The name of a joint
+            value (float): The desired joint position of a mocap body.
+        """        
         body_id = self.model.body_name2id(name)
         mocap_id = self.model.body_mocapid[body_id]
         self.mocap_pos[mocap_id] = value
 
     def get_mocap_quat(self, name):
+        """
+        Get the quaternion of a mocap body using name.
+
+        Args:
+            name (str): The name of a joint
+        Returns:
+            mocap_quat (np.ndarray): The current quaternion of a mocap body.
+        """        
         body_id = self.model.body_name2id(name)
         mocap_id = self.model.body_mocapid[body_id]
         return self.mocap_quat[mocap_id]
 
     def set_mocap_quat(self, name, value):
+        """
+        Set the quaternion of a mocap body using name.
+
+        Args:
+            name (str): The name of a joint
+            value (float): The desired joint quaternion of a mocap body.
+        """
         body_id = self.model.body_name2id(name)
         mocap_id = self.model.body_mocapid[body_id]
         self.mocap_quat[mocap_id] = value
 
     def get_joint_qpos(self, name):
+        """
+        Get the position of a joint using name.
+
+        Args:
+            name (str): The name of a joint
+
+        Returns:
+            qpos (np.ndarray): The current position of a joint.
+        """
         addr = self.model.get_joint_qpos_addr(name)
         if isinstance(addr, (int, np.int32, np.int64)):
             return self.qpos[addr]
@@ -747,7 +999,11 @@ class MjData(metaclass=_MjDataMeta):
 
     def set_joint_qpos(self, name, value):
         """
-        See https://github.com/openai/mujoco-py/blob/ab86d331c9a77ae412079c6e58b8771fe63747fc/mujoco_py/generated/wrappers.pxi#L2821
+        Set the velocities of a joint using name.
+
+        Args:
+            name (str): The name of a joint
+            value (float): The desired joint velocity of a joint.
         """
         addr = self.model.get_joint_qpos_addr(name)
         if isinstance(addr, (int, np.int32, np.int64)):
@@ -759,6 +1015,15 @@ class MjData(metaclass=_MjDataMeta):
             self.qpos[start_i:end_i] = value
 
     def get_joint_qvel(self, name):
+        """
+        Get the velocity of a joint using name.
+
+        Args:
+            name (str): The name of a joint
+
+        Returns:
+            qvel (np.ndarray): The current velocity of a joint.
+        """
         addr = self.model.get_joint_qvel_addr(name)
         if isinstance(addr, (int, np.int32, np.int64)):
             return self.qvel[addr]
@@ -767,6 +1032,13 @@ class MjData(metaclass=_MjDataMeta):
             return self.qvel[start_i:end_i]
 
     def set_joint_qvel(self, name, value):
+        """
+        Set the velocities of a mjo using name.
+
+        Args:
+            name (str): The name of a joint
+            value (float): The desired joint velocity of a joint.
+        """
         addr = self.model.get_joint_qvel_addr(name)
         if isinstance(addr, (int, np.int32, np.int64)):
             self.qvel[addr] = value
