@@ -10,7 +10,7 @@ Arguments:
     --visualize-gripper (optional): If set, will visualize the gripper site
 
 Example:
-    $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/SawyerPickPlace/
+    $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/lift/
 """
 
 import argparse
