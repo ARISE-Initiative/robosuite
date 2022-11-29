@@ -59,7 +59,7 @@ if __name__ == "__main__":
     while True:
         print("Playing back random episode... (press ESC to quit)")
 
-        # # select an episode randomly
+        # select an episode randomly
         ep = random.choice(demos)
 
         # read the model xml, using the metadata stored in the attribute for this episode

@@ -3,13 +3,12 @@
 Loads MJCF XML models from file and renders it on screen.
 
 Example:
-    $ python browse_arena_model.py --filepath ../models/assets/arenas/table_arena.xml
+    $ python browse_mjcf_model.py --filepath ../models/assets/arenas/table_arena.xml
 """
 
 import argparse
 import os
 
-# from mujoco import MjSim, MjViewer, load_model_from_path
 import mujoco
 
 import robosuite as suite

@@ -1,9 +1,7 @@
 """
-A script to collect a batch of human demonstrations that can be used
-to generate a learning curriculum (see `demo_learning_curriculum.py`).
+A script to collect a batch of human demonstrations.
 
-The demonstrations can be played back using the `playback_demonstrations_from_pkl.py`
-script.
+The demonstrations can be played back using the `playback_demonstrations_from_hdf5.py` script.
 """
 
 import argparse
