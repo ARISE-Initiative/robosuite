@@ -180,7 +180,7 @@ class KeyboardHandler:
         Toggle between arms in the environment to set as current active arm
         """
         if isinstance(self.active_robot, SingleArm):
-            self.active_robot_num = (self.active_robot_num + 1) // self.num_robots
+            self.active_robot_num = (self.active_robot_num + 1) % self.num_robots
             robot = self.active_robot_num
         else:  # Bimanual case
             self.active_arm = "left" if self.active_arm == "right" else "right"
