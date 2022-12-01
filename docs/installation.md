@@ -1,44 +1,27 @@
 # Installation
 **robosuite** officially supports macOS and Linux on Python 3. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
 
-The base installation requires the MuJoCo physics engine (with [mujoco-py](https://github.com/nimrod-gileadi/mujoco-py), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate`.
-
-For Linux, you will need to install some packages to build `mujoco-py` (sourced from [here](https://github.com/openai/mujoco-py/blob/master/Dockerfile), with a couple missing packages added). If using `apt`, the required installation command is:
-   ```sh
-   $ sudo apt install curl git libgl1-mesa-dev libgl1-mesa-glx libglew-dev \
-            libosmesa6-dev software-properties-common net-tools unzip vim \
-            virtualenv wget xpra xserver-xorg-dev libglfw3-dev patchelf
-   ```
-   Note that for older versions of Ubuntu (e.g., 14.04) there's no libglfw3 package, in which case you need to `export LD_LIBRARY_PATH=$HOME/.mujoco/mujoco210/bin` before proceeding to the next step.
-
-For macOS, compiling `mujoco-py` requires specific versions of [GCC](https://github.com/nimrod-gileadi/mujoco-py/blob/master/mujoco_py/builder.py#L311). We have verified that the following compiling procedure works on macOS Big Sur:
-   ```sh
-   $ brew install gcc@7 # make sure homebrew is installed
-   $ git clone https://github.com/ARISE-Initiative/robosuite.git
-   $ conda create -n robosuite python=3.7 # make sure Anaconda is installed
-   $ conda activate robosuite
-   $ cd robosuite # go to the robosuite root folder
-   $ pip install -e .
-   $ CC=gcc-7 python -c "import robosuite"  # this will trigger mujoco_py to compile
-   ```
+The base installation requires the MuJoCo physics engine (with [mujoco](https://github.com/deepmind/mujoco), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate` or setting up a Conda environment by installing [Anaconda](https://www.anaconda.com/) and running `conda create -n robosuite python=3.8`.
 
 ### Install from pip
+
 1. After setting up mujoco, robosuite can be installed with
-```sh
-$ pip install robosuite
-```
+   ```sh
+   $ pip install robosuite
+   ```
 
 2. Test your installation with
-```sh
-$ python -m robosuite.demos.demo_random_action
-```
+   ```sh
+   $ python -m robosuite.demos.demo_random_action
+   ```
 
 ### Install from source
+
 1. Clone the robosuite repository
-```sh 
-$ git clone https://github.com/StanfordVL/robosuite.git
-$ cd robosuite
-```
+   ```sh 
+   $ git clone https://github.com/ARISE-Initiative/robosuite.git
+   $ cd robosuite
+   ```
 
 2. Install the base requirements with
    ```sh
@@ -52,6 +35,6 @@ $ cd robosuite
    ```
 
 4. Test your installation with
-```sh
-$ python robosuite/demos/demo_random_action.py
-```
+   ```sh
+   $ python robosuite/demos/demo_random_action.py
+   ```

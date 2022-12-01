@@ -18,14 +18,126 @@
         <mesh name="link5" file="meshes/link5.stl" />
         <mesh name="link6" file="meshes/link6.stl" />
         <mesh name="link7" file="meshes/link7.stl" />
-        <mesh name="link0_vis" file="meshes/link0_vis.stl" />
-        <mesh name="link1_vis" file="meshes/link1_vis.stl" />
-        <mesh name="link2_vis" file="meshes/link2_vis.stl" />
-        <mesh name="link3_vis" file="meshes/link3_vis.stl" />
-        <mesh name="link4_vis" file="meshes/link4_vis.stl" />
-        <mesh name="link5_vis" file="meshes/link5_vis.stl" />
-        <mesh name="link6_vis" file="meshes/link6_vis.stl" />
-        <mesh name="link7_vis" file="meshes/link7_vis.stl" />
+
+        <!-- link 0 material and mesh -->
+	<material name="Face636_001" specular="0.5" shininess="0.45" rgba="0.901961 0.921569 0.929412 1.000000"/>
+	<material name="Part__Feature017_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature018_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature019_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature022_001" specular="0.5" shininess="0.45" rgba="0.901961 0.921569 0.929412 1.000000"/>
+	<material name="Part__Feature023_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Shell001_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Shell002_001" specular="0.5" shininess="0.45" rgba="0.901961 0.921569 0.929412 1.000000"/>
+	<material name="Shell003_001" specular="0.5" shininess="0.45" rgba="0.901961 0.921569 0.929412 1.000000"/>
+	<material name="Shell009_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Shell010_001" specular="0.5" shininess="0.45" rgba="0.901961 0.921569 0.929412 1.000000"/>
+	<material name="Shell_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<mesh name="link0_vis_0" file="obj_meshes/link0_vis/link0_vis_0.obj"/>
+	<mesh name="link0_vis_1" file="obj_meshes/link0_vis/link0_vis_1.obj"/>
+	<mesh name="link0_vis_2" file="obj_meshes/link0_vis/link0_vis_2.obj"/>
+	<mesh name="link0_vis_3" file="obj_meshes/link0_vis/link0_vis_3.obj"/>
+	<mesh name="link0_vis_4" file="obj_meshes/link0_vis/link0_vis_4.obj"/>
+	<mesh name="link0_vis_5" file="obj_meshes/link0_vis/link0_vis_5.obj"/>
+	<mesh name="link0_vis_6" file="obj_meshes/link0_vis/link0_vis_6.obj"/>
+	<mesh name="link0_vis_7" file="obj_meshes/link0_vis/link0_vis_7.obj"/>
+	<mesh name="link0_vis_8" file="obj_meshes/link0_vis/link0_vis_8.obj"/>
+	<mesh name="link0_vis_9" file="obj_meshes/link0_vis/link0_vis_9.obj"/>
+	<mesh name="link0_vis_10" file="obj_meshes/link0_vis/link0_vis_10.obj"/>
+	<mesh name="link0_vis_11" file="obj_meshes/link0_vis/link0_vis_11.obj"/>
+
+        <!-- link 1 material and mesh -->
+	<material name="Part__Feature_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<mesh name="link1_vis" file="obj_meshes/link1_vis/link1_vis.obj"/>
+
+
+        <!-- link 2 material and mesh -->
+	<material name="Part__Feature024" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<mesh name="link2_vis" file="obj_meshes/link2_vis/link2_vis.obj"/>
+
+        <!-- link 3 material and mesh -->
+	<material name="Part__Feature001_010_001_002" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature002_007_001_002" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature003_004_001_002" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature_001_001_001_002" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<mesh name="link3_vis_0" file="obj_meshes/link3_vis/link3_vis_0.obj"/>
+	<mesh name="link3_vis_1" file="obj_meshes/link3_vis/link3_vis_1.obj"/>
+	<mesh name="link3_vis_2" file="obj_meshes/link3_vis/link3_vis_2.obj"/>
+	<mesh name="link3_vis_3" file="obj_meshes/link3_vis/link3_vis_3.obj"/>
+
+
+        <!-- link 4 material and mesh -->
+	<material name="Part__Feature001_001_003_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature002_001_003_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Feature003_001_003_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Feature_002_003_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<mesh name="link4_vis_0" file="obj_meshes/link4_vis/link4_vis_0.obj"/>
+	<mesh name="link4_vis_1" file="obj_meshes/link4_vis/link4_vis_1.obj"/>
+	<mesh name="link4_vis_2" file="obj_meshes/link4_vis/link4_vis_2.obj"/>
+	<mesh name="link4_vis_3" file="obj_meshes/link4_vis/link4_vis_3.obj"/>
+
+        <!-- link 5 material and mesh -->
+	<material name="Part__Feature_002_004_003" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Shell001_001_001_003" specular="0.5" shininess="0.45" rgba="0.250000 0.250000 0.250000 1.000000"/>
+	<material name="Shell_001_001_003" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<mesh name="link5_vis_0" file="obj_meshes/link5_vis/link5_vis_0.obj"/>
+	<mesh name="link5_vis_1" file="obj_meshes/link5_vis/link5_vis_1.obj"/>
+	<mesh name="link5_vis_2" file="obj_meshes/link5_vis/link5_vis_2.obj"/>
+
+        <!-- link 6 material and mesh -->
+	<material name="Face064_002_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 0.000000 0.000000 1.000000"/>
+	<material name="Face065_002_001_002_001" specular="0.5" shininess="0.45" rgba="0.000000 1.000000 0.000000 1.000000"/>
+	<material name="Face374_002_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Face539_002_001_002_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Feature001_009_001_002_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Feature002_006_001_002_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Shell002_002_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Shell003_002_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Shell004_001_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Shell005_001_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Shell006_003_002_001" specular="0.5" shininess="0.45" rgba="0.901961 0.921569 0.929412 1.000000"/>
+	<material name="Shell007_002_002_001" specular="0.5" shininess="0.45" rgba="0.250000 0.250000 0.250000 1.000000"/>
+	<material name="Shell011_002_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Shell012_002_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Shell_003_001_002_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Union001_001_001_002_001" specular="0.5" shininess="0.45" rgba="0.039216 0.541176 0.780392 1.000000"/>
+	<material name="Union_001_001_002_001" specular="0.5" shininess="0.45" rgba="0.039216 0.541176 0.780392 1.000000"/>	
+	<mesh name="link6_vis_0" file="obj_meshes/link6_vis/link6_vis_0.obj"/>
+	<mesh name="link6_vis_1" file="obj_meshes/link6_vis/link6_vis_1.obj"/>
+	<mesh name="link6_vis_2" file="obj_meshes/link6_vis/link6_vis_2.obj"/>
+	<mesh name="link6_vis_3" file="obj_meshes/link6_vis/link6_vis_3.obj"/>
+	<mesh name="link6_vis_4" file="obj_meshes/link6_vis/link6_vis_4.obj"/>
+	<mesh name="link6_vis_5" file="obj_meshes/link6_vis/link6_vis_5.obj"/>
+	<mesh name="link6_vis_6" file="obj_meshes/link6_vis/link6_vis_6.obj"/>
+	<mesh name="link6_vis_7" file="obj_meshes/link6_vis/link6_vis_7.obj"/>
+	<mesh name="link6_vis_8" file="obj_meshes/link6_vis/link6_vis_8.obj"/>
+	<mesh name="link6_vis_9" file="obj_meshes/link6_vis/link6_vis_9.obj"/>
+	<mesh name="link6_vis_10" file="obj_meshes/link6_vis/link6_vis_10.obj"/>
+	<mesh name="link6_vis_11" file="obj_meshes/link6_vis/link6_vis_11.obj"/>
+	<mesh name="link6_vis_12" file="obj_meshes/link6_vis/link6_vis_12.obj"/>
+	<mesh name="link6_vis_13" file="obj_meshes/link6_vis/link6_vis_13.obj"/>
+	<mesh name="link6_vis_14" file="obj_meshes/link6_vis/link6_vis_14.obj"/>
+	<mesh name="link6_vis_15" file="obj_meshes/link6_vis/link6_vis_15.obj"/>
+	<mesh name="link6_vis_16" file="obj_meshes/link6_vis/link6_vis_16.obj"/>
+
+        <!-- link 7 material and mesh -->
+	<material name="Part__Mirroring001_004_002" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Mirroring002_004_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Mirroring003_004_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Mirroring004_004_002" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+	<material name="Part__Mirroring005_004_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Mirroring006_004_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Mirroring007_004_001" specular="0.5" shininess="0.45" rgba="0.250980 0.250980 0.250980 1.000000"/>
+	<material name="Part__Mirroring_004_001" specular="0.5" shininess="0.45" rgba="0.898039 0.917647 0.929412 1.000000"/>	
+
+	<mesh name="link7_vis_0" file="obj_meshes/link7_vis/link7_vis_0.obj"/>
+	<mesh name="link7_vis_1" file="obj_meshes/link7_vis/link7_vis_1.obj"/>
+	<mesh name="link7_vis_2" file="obj_meshes/link7_vis/link7_vis_2.obj"/>
+	<mesh name="link7_vis_3" file="obj_meshes/link7_vis/link7_vis_3.obj"/>
+	<mesh name="link7_vis_4" file="obj_meshes/link7_vis/link7_vis_4.obj"/>
+	<mesh name="link7_vis_5" file="obj_meshes/link7_vis/link7_vis_5.obj"/>
+	<mesh name="link7_vis_6" file="obj_meshes/link7_vis/link7_vis_6.obj"/>
+	<mesh name="link7_vis_7" file="obj_meshes/link7_vis/link7_vis_7.obj"/>
+
     </asset>
     <worldbody>
         <body name="base" pos="0 0 0">
@@ -35,43 +147,90 @@
             <!-- mount attached here -->
             <body name="link0" pos="0 0 0">
                 <inertial pos="0 0 0.05" mass="4" diaginertia="0.4 0.4 0.4" />
-                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link0_vis" name="link0_visual" rgba="1 1 1 1" />
+		<geom mesh="link0_vis_0" material="Shell010_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_1" material="Shell009_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_2" material="Shell003_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_3" material="Shell_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_4" material="Shell002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_5" material="Shell001_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_6" material="Face636_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_7" material="Part__Feature018_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_8" material="Part__Feature019_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_9" material="Part__Feature023_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_10" material="Part__Feature022_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+		<geom mesh="link0_vis_11" material="Part__Feature017_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+
                 <geom type="mesh" group="0" mesh="link0" name="link0_collision"/>
                 <body name="link1" pos="0 0 0.333">
                     <inertial pos="0 0 -0.07" mass="3" diaginertia="0.3 0.3 0.3" />
                     <joint name="joint1" pos="0 0 0" axis="0 0 1" limited="true" range="-2.8973 2.8973" damping="0.1"/>
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link1_vis" name="link1_visual" rgba="1 1 1 1" />
+		    <geom material="Part__Feature_001" mesh="link1_vis" type="mesh" contype="0" conaffinity="0" group="1"/>
+
                     <geom type="mesh" group="0" mesh="link1" name="link1_collision"/>
                     <body name="link2" pos="0 0 0" quat="0.707107 -0.707107 0 0">
                         <inertial pos="0 -0.1 0" mass="3" diaginertia="0.3 0.3 0.3" />
                         <joint name="joint2" pos="0 0 0" axis="0 0 1" limited="true" range="-1.7628 1.7628" damping="0.1"/>
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link2_vis" name="link2_visual" rgba="1 1 1 1" />
+			<geom material="Part__Feature024" mesh="link2_vis" type="mesh" contype="0" conaffinity="0" group="1"/>
+
                         <geom type="mesh" group="0" mesh="link2" name="link2_collision"/>
                         <body name="link3" pos="0 -0.316 0" quat="0.707107 0.707107 0 0">
                             <inertial pos="0.04 0 -0.05" mass="2" diaginertia="0.2 0.2 0.2" />
                             <joint name="joint3" pos="0 0 0" axis="0 0 1" limited="true" range="-2.8973 2.8973" damping="0.1"/>
-                            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link3_vis" name="link3_visual" rgba="1 1 1 1" />
+			    <geom mesh="link3_vis_0" material="Part__Feature003_004_001_002" type="mesh" contype="0" conaffinity="0" group="1"/>
+			    <geom mesh="link3_vis_1" material="Part__Feature002_007_001_002" type="mesh" contype="0" conaffinity="0" group="1"/>
+			    <geom mesh="link3_vis_2" material="Part__Feature001_010_001_002" type="mesh" contype="0" conaffinity="0" group="1"/>
+			    <geom mesh="link3_vis_3" material="Part__Feature_001_001_001_002" type="mesh" contype="0" conaffinity="0" group="1"/>
                             <geom type="mesh" group="0" mesh="link3" name="link3_collision"/>
                             <body name="link4" pos="0.0825 0 0" quat="0.707107 0.707107 0 0">
                                 <inertial pos="-0.04 0.05 0" mass="2" diaginertia="0.2 0.2 0.2" />
                                 <joint name="joint4" pos="0 0 0" axis="0 0 1" limited="true" range="-3.0718 -0.0698" damping="0.1"/>
-                                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link4_vis" name="link4_visual" rgba="1 1 1 1" />
+				<geom mesh="link4_vis_0" material="Part__Feature001_001_003_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+				<geom mesh="link4_vis_1" material="Part__Feature003_001_003_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+				<geom mesh="link4_vis_2" material="Part__Feature002_001_003_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+				<geom mesh="link4_vis_3" material="Part__Feature_002_003_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+
                                 <geom type="mesh" group="0" mesh="link4" name="link4_collision"/>
                                 <body name="link5" pos="-0.0825 0.384 0" quat="0.707107 -0.707107 0 0">
                                     <inertial pos="0 0 -0.15" mass="2" diaginertia="0.2 0.2 0.2" />
                                     <joint name="joint5" pos="0 0 0" axis="0 0 1" limited="true" range="-2.8973 2.8973" damping="0.1"/>
-                                    <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link5_vis" name="link5_visual" rgba="1 1 1 1" />
+				    <geom mesh="link5_vis_0" material="Shell001_001_001_003" type="mesh" contype="0" conaffinity="0" group="1"/>
+				    <geom mesh="link5_vis_1" material="Shell_001_001_003" type="mesh" contype="0" conaffinity="0" group="1"/>
+				    <geom mesh="link5_vis_2" material="Part__Feature_002_004_003" type="mesh" contype="0" conaffinity="0" group="1"/>
+
                                     <geom type="mesh" group="0" mesh="link5" name="link5_collision"/>
                                     <body name="link6" pos="0 0 0" quat="0.707107 0.707107 0 0">
                                         <inertial pos="0.06 0 0" mass="1.5" diaginertia="0.1 0.1 0.1" />
                                         <joint name="joint6" pos="0 0 0" axis="0 0 1" limited="true" range="-0.0175 3.7525" damping="0.01"/>
-                                        <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link6_vis" name="link6_visual" rgba="1 1 1 1" />
+					<geom mesh="link6_vis_0" material="Shell006_003_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_1" material="Shell011_002_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_2" material="Shell007_002_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_3" material="Shell005_001_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_4" material="Shell004_001_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_5" material="Shell003_002_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_6" material="Shell002_002_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_7" material="Union001_001_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_8" material="Union_001_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_9" material="Face539_002_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_10" material="Shell_003_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_11" material="Face374_002_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_12" material="Face065_002_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_13" material="Face064_002_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_14" material="Part__Feature002_006_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_15" material="Part__Feature001_009_001_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+					<geom mesh="link6_vis_16" material="Shell012_002_002_001" type="mesh" contype="0" conaffinity="0" group="1"/>
+
                                         <geom type="mesh" group="0" mesh="link6" name="link6_collision"/>
                                         <body name="link7" pos="0.088 0 0" quat="0.707107 0.707107 0 0">
                                             <inertial pos="0 0 0.08" mass="0.5" diaginertia="0.05 0.05 0.05" />
                                             <joint name="joint7" pos="0 0 0" axis="0 0 1" limited="true" range="-2.8973 2.8973" damping="0.01"/>
-                                            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link7_vis" name="link7_visual" rgba="1. 1. 1. 1." />
-                                            <geom type="mesh" group="0" mesh="link7" name="link7_collision"/>
+					    <geom mesh="link7_vis_0" material="Part__Mirroring004_004_002" type="mesh" contype="0" conaffinity="0" group="1"/>
+					    <geom mesh="link7_vis_1" material="Part__Mirroring001_004_002" type="mesh" contype="0" conaffinity="0" group="1" />
+					    <geom mesh="link7_vis_2" material="Part__Mirroring007_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
+					    <geom mesh="link7_vis_3" material="Part__Mirroring006_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
+					    <geom mesh="link7_vis_4" material="Part__Mirroring005_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
+					    <geom mesh="link7_vis_5" material="Part__Mirroring003_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
+					    <geom mesh="link7_vis_6" material="Part__Mirroring002_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
+					    <geom mesh="link7_vis_7" material="Part__Mirroring_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
                                             <!-- rotate 135deg to align physically to the tool-->
                                             <body name="right_hand" pos="0 0 0.1065" quat="0.924 0 0 -0.383">
                                                 <inertial pos="0 0 0" mass="0.5" diaginertia="0.05 0.05 0.05" />

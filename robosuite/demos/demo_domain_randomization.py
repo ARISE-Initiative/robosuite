@@ -2,7 +2,7 @@
 Script to showcase domain randomization functionality.
 """
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 from robosuite.wrappers import DomainRandomizationWrapper
@@ -49,10 +49,6 @@ if __name__ == "__main__":
 
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
-
-    # Help message to user
-    print()
-    print('Press "H" to show the viewer control panel.')
 
     # initialize the task
     env = suite.make(

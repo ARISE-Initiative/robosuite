@@ -16,6 +16,17 @@ Subpackages
    robosuite.utils
    robosuite.wrappers
 
+Submodules
+----------
+
+robosuite.macros module
+-----------------------
+
+.. automodule:: robosuite.macros
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

@@ -1,11 +1,12 @@
 from collections import OrderedDict
 
 import numpy as np
-from mujoco_py import MjSim
 
+import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
 from robosuite.models.mounts import mount_factory
 from robosuite.models.robots import create_robot
+from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer
 from robosuite.utils.observables import Observable, sensor
 

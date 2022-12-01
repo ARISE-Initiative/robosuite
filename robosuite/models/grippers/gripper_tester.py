@@ -4,11 +4,13 @@ Defines GripperTester that is used to test the physical properties of various gr
 import xml.etree.ElementTree as ET
 
 import numpy as np
-from mujoco_py import MjSim, MjViewer
 
+import robosuite.macros as macros
 from robosuite.models.arenas.table_arena import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.world import MujocoWorldBase
+from robosuite.utils import OpenCVRenderer
+from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.mjcf_utils import array_to_string, new_actuator, new_joint
 
 
@@ -110,11 +112,15 @@ class GripperTester:
         """
         Starts simulation of the test world
         """
-        model = self.world.get_model(mode="mujoco_py")
+        model_xml = self.world.get_xml()
+        self.sim = MjSim.from_xml_string(model_xml)
 
-        self.sim = MjSim(model)
         if self.render:
-            self.viewer = MjViewer(self.sim)
+            self.viewer = OpenCVRenderer(self.sim)
+            # We also need to add the offscreen context
+            if self.sim._render_context_offscreen is None:
+                render_context = MjRenderContextOffscreen(self.sim, device_id=-1)
+                self.sim.add_render_context(render_context)
         self.sim_state = self.sim.get_state()
 
         # For gravity correction

@@ -1,13 +1,15 @@
+import os
+import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
 import numpy as np
-from mujoco_py import MjRenderContextOffscreen, MjSim, load_model_from_xml
 
-import robosuite.utils.macros as macros
+import robosuite
+import robosuite.macros as macros
 from robosuite.models.base import MujocoModel
 from robosuite.renderers.base import load_renderer_config
-from robosuite.renderers.mujoco.mujoco_py_renderer import MujocoPyRenderer
-from robosuite.utils import SimulationError, XMLError
+from robosuite.utils import OpenCVRenderer, SimulationError, XMLError
+from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 
 REGISTERED_ENVS = {}
 
@@ -97,13 +99,14 @@ class MujocoEnv(metaclass=EnvMeta):
         renderer="mujoco",
         renderer_config=None,
     ):
-        # First, verify that both the on- and off-screen renderers are not being used simultaneously
-        if has_renderer is True and has_offscreen_renderer is True:
-            raise ValueError("the onscreen and offscreen renderers cannot be used simultaneously.")
+        # If you're using an onscreen renderer, you must be also using an offscreen renderer!
+        if has_renderer and not has_offscreen_renderer:
+            has_offscreen_renderer = True
 
         # Rendering-specific attributes
         self.has_renderer = has_renderer
-        self.has_offscreen_renderer = has_offscreen_renderer
+        # offscreen renderer needed for on-screen rendering
+        self.has_offscreen_renderer = has_renderer or has_offscreen_renderer
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
@@ -117,7 +120,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
-        self._model_postprocessor = None  # Function to post-process model after load_model() call
+        self._xml_processor = None  # Function to process model xml in _initialize_sim() call
         self.model = None
         self.cur_time = None
         self.model_timestep = None
@@ -129,9 +132,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Load the model
         self._load_model()
-
-        # Post-process model
-        self._postprocess_model()
 
         # Initialize the simulation
         self._initialize_sim()
@@ -163,13 +163,9 @@ class MujocoEnv(metaclass=EnvMeta):
             from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
 
             self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
-        elif self.renderer == "igibson":
-            from robosuite.renderers.igibson.igibson_renderer import iGibsonRenderer
-
-            self.viewer = iGibsonRenderer(env=self, **self.renderer_config)
         else:
             raise ValueError(
-                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson"
+                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
             )
 
     def initialize_time(self, control_freq):
@@ -187,26 +183,18 @@ class MujocoEnv(metaclass=EnvMeta):
             raise SimulationError("Control frequency {} is invalid".format(control_freq))
         self.control_timestep = 1.0 / control_freq
 
-    def set_model_postprocessor(self, postprocessor):
+    def set_xml_processor(self, processor):
         """
-        Sets the post-processor function that self.model will be passed to after load_model() is called during resets.
+        Sets the processor function that xml string will be passed to inside _initialize_sim() calls.
         Args:
-            postprocessor (None or function): If set, postprocessing method should take in a Task-based instance and
+            processor (None or function): If set, processing method should take in a xml string and
                 return no arguments.
         """
-        self._model_postprocessor = postprocessor
+        self._xml_processor = processor
 
     def _load_model(self):
         """Loads an xml model, puts it in self.model"""
         pass
-
-    def _postprocess_model(self):
-        """
-        Post-processes model after load_model() call. Useful for external objects (e.g.: wrappers) to
-        be able to modify the sim model before it is actually loaded into the simulation
-        """
-        if self._model_postprocessor is not None:
-            self._model_postprocessor(self.model)
 
     def _setup_references(self):
         """
@@ -232,11 +220,16 @@ class MujocoEnv(metaclass=EnvMeta):
         Args:
             xml_string (str): If specified, creates MjSim object from this filepath
         """
-        # if we have an xml string, use that to create the sim. Otherwise, use the local model
-        self.mjpy_model = load_model_from_xml(xml_string) if xml_string else self.model.get_model(mode="mujoco_py")
+        xml = xml_string if xml_string else self.model.get_xml()
 
-        # Create the simulation instance and run a single step to make sure changes have propagated through sim state
-        self.sim = MjSim(self.mjpy_model)
+        # process the xml before initializing sim
+        if self._xml_processor is not None:
+            xml = self._xml_processor(xml)
+
+        # Create the simulation instance
+        self.sim = MjSim.from_xml_string(xml)
+
+        # run a single step to make sure changes have propagated through sim state
         self.sim.forward()
 
         # Setup sim time based on control frequency
@@ -254,8 +247,8 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.hard_reset and not self.deterministic_reset:
             if self.renderer == "mujoco" or self.renderer == "default":
                 self._destroy_viewer()
+                self._destroy_sim()
             self._load_model()
-            self._postprocess_model()
             self._initialize_sim()
         # Else, we only reset the sim internally
         else:
@@ -291,25 +284,16 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
-            self.viewer = MujocoPyRenderer(self.sim)
-            self.viewer.viewer.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
-            self.viewer.viewer.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
-
-            # hiding the overlay speeds up rendering significantly
-            self.viewer.viewer._hide_overlay = True
-
-            # make sure mujoco-py doesn't block rendering frames
-            # (see https://github.com/StanfordVL/robosuite/issues/39)
-            self.viewer.viewer._render_every_frame = True
+            self.viewer = OpenCVRenderer(self.sim)
 
             # Set the camera angle for viewing
             if self.render_camera is not None:
-                self.viewer.set_camera(camera_id=self.sim.model.camera_name2id(self.render_camera))
+                camera_id = self.sim.model.camera_name2id(self.render_camera)
+                self.viewer.set_camera(camera_id)
 
-        elif self.has_offscreen_renderer:
+        if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
                 render_context = MjRenderContextOffscreen(self.sim, device_id=self.render_gpu_device_id)
-                self.sim.add_render_context(render_context)
             self.sim._render_context_offscreen.vopt.geomgroup[0] = 1 if self.render_collision_mesh else 0
             self.sim._render_context_offscreen.vopt.geomgroup[1] = 1 if self.render_visual_mesh else 0
 
@@ -513,10 +497,44 @@ class MujocoEnv(metaclass=EnvMeta):
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
 
     def set_camera_pos_quat(self, camera_pos, camera_quat):
-        if self.renderer in ["nvisii", "igibson"]:
+        if self.renderer in ["nvisii"]:
             self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
         else:
-            raise AttributeError("setting camera position and quat requires renderer to be either NVISII or iGibson.")
+            raise AttributeError("setting camera position and quat requires renderer to be NVISII.")
+
+    def edit_model_xml(self, xml_str):
+        """
+        This function edits the model xml with custom changes, including resolving relative paths,
+        applying changes retroactively to existing demonstration files, and other custom scripts.
+        Environment subclasses should modify this function to add environment-specific xml editing features.
+        Args:
+            xml_str (str): Mujoco sim demonstration XML file as string
+        Returns:
+            str: Edited xml file as string
+        """
+
+        path = os.path.split(robosuite.__file__)[0]
+        path_split = path.split("/")
+
+        # replace mesh and texture file paths
+        tree = ET.fromstring(xml_str)
+        root = tree
+        asset = root.find("asset")
+        meshes = asset.findall("mesh")
+        textures = asset.findall("texture")
+        all_elements = meshes + textures
+
+        for elem in all_elements:
+            old_path = elem.get("file")
+            if old_path is None:
+                continue
+            old_path_split = old_path.split("/")
+            ind = max(loc for loc, val in enumerate(old_path_split) if val == "robosuite")  # last occurrence index
+            new_path_split = path_split + old_path_split[ind + 1 :]
+            new_path = "/".join(new_path_split)
+            elem.set("file", new_path)
+
+        return ET.tostring(root, encoding="utf8").decode("utf8")
 
     def reset_from_xml_string(self, xml_string):
         """
@@ -666,9 +684,18 @@ class MujocoEnv(metaclass=EnvMeta):
             self.viewer.close()  # change this to viewer.finish()?
             self.viewer = None
 
+    def _destroy_sim(self):
+        """
+        Destroys the current MjSim instance if it exists
+        """
+        if self.sim is not None:
+            self.sim.free()
+            self.sim = None
+
     def close(self):
         """Do any cleanup necessary here."""
         self._destroy_viewer()
+        self._destroy_sim()
 
     @property
     def observation_modalities(self):

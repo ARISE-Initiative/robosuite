@@ -1,9 +1,7 @@
 """
-A script to collect a batch of human demonstrations that can be used
-to generate a learning curriculum (see `demo_learning_curriculum.py`).
+A script to collect a batch of human demonstrations.
 
-The demonstrations can be played back using the `playback_demonstrations_from_pkl.py`
-script.
+The demonstrations can be played back using the `playback_demonstrations_from_hdf5.py` script.
 """
 
 import argparse
@@ -18,6 +16,7 @@ import h5py
 import numpy as np
 
 import robosuite as suite
+import robosuite.macros as macros
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
@@ -236,9 +235,6 @@ if __name__ == "__main__":
         from robosuite.devices import Keyboard
 
         device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-        env.viewer.add_keypress_callback("any", device.on_press)
-        env.viewer.add_keyup_callback("any", device.on_release)
-        env.viewer.add_keyrepeat_callback("any", device.on_press)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 

@@ -1,4 +1,4 @@
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite.models.base import MujocoXML
 from robosuite.utils.mjcf_utils import convert_to_string, find_elements, xml_path_completion
 

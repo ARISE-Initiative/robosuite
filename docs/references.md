@@ -2,6 +2,31 @@
 
 A list of references of projects and papers that use **robosuite**. If you would like to add your work to this list, please send the paper information to Yuke Zhu ([yukez@cs.utexas.edu](mailto:yukez@cs.utexas.edu)).
 
+## 2022
+
+- [Robot Learning on the Job: Human-in-the-Loop Autonomy and Learning During Deployment](https://arxiv.org/abs/2211.08416). Huihan Liu, Soroush Nasiriany, Lance Zhang, Zhiyao Bao, Yuke Zhu
+- [Geometric Impedance Control on SE(3) for Robotic Manipulators](https://arxiv.org/abs/2211.07945). Joohwan Seo, Nikhil Potu, Surya Prakash, Alexander Rose, Roberto Horowitz
+- [Guided Skill Learning and Abstraction for Long-Horizon Manipulation](https://arxiv.org/abs/2210.12631). Shuo Cheng, Danfei Xu
+- [VIOLA: Imitation Learning for Vision-Based Manipulation with Object Proposal Priors](https://arxiv.org/abs/2210.11339). Yifeng Zhu, Abhishek Joshi, Peter Stone, Yuke Zhu
+- [Monte Carlo Augmented Actor-Critic for Sparse Reward Deep Reinforcement Learning from Suboptimal Demonstrations](https://arxiv.org/abs/2210.07432). Albert Wilcox, Ashwin Balakrishna, Jules Dedieu, Wyame Benslimane, Daniel S. Brown, Ken Goldberg
+- [ASPiRe: Adaptive Skill Priors for Reinforcement Learning](https://arxiv.org/abs/2209.15205). Mengda Xu, Manuela Veloso, Shuran Song
+- [Active Predicting Coding: Brain-Inspired Reinforcement Learning for Sparse Reward Robotic Control Problems](https://arxiv.org/abs/2209.09174). Alexander Ororbia, Ankur Mali
+- [Spatial and Temporal Features Unified Self-Supervised Representation Learning Network](https://www.sciencedirect.com/science/article/pii/S0921889022001506). Rahul Choudhary, Rahee Walambe, Ketan Kotecha
+- [HERD: Continuous Human-to-Robot Evolution for Learning from Human Demonstration](https://openreview.net/forum?id=VHia4Cint7). Xingyu Liu, Deepak Pathak, Kris M. Kitani
+- [A Dual Representation Framework for Robot Learning with Human Guidance](https://openreview.net/forum?id=H6rr_CGzV9y). Ruohan Zhang, Dhruva Bansal, Yilun Hao, Ayano Hiranaka, Jialu Gao, Chen Wang, Roberto Martín-Martín, Li Fei-Fei, Jiajun Wu
+- [CompoSuite: A Compositional Reinforcement Learning Benchmark](https://arxiv.org/abs/2207.04136). Jorge A. Mendez, Marcel Hussing, Meghna Gummadi, Eric Eaton
+- [Causal Dynamics Learning for Task-Independent State Abstraction](https://arxiv.org/abs/2206.13452). Zizhao Wang, Xuesu Xiao, Zifan Xu, Yuke Zhu, Peter Stone
+- [Latent Policies for Adversarial Imitation Learning](https://arxiv.org/abs/2206.11299). Tianyu Wang, Nikhil Karnwal, Nikolay Atanasov
+- [Play it by Ear: Learning Skills amidst Occlusion through Audio-Visual Imitation Learning](https://arxiv.org/abs/2205.14850). Maximilian Du, Olivia Y. Lee, Suraj Nair, Chelsea Finn
+- [Visuotactile-RL: Learning Multimodal Manipulation Policies with Deep Reinforcement Learning](https://ieeexplore.ieee.org/abstract/document/9812019). Johanna Hansen, Francois Hogan, Dmitriy Rivkin, David Meger, Michael Jenkin, Gregory Dudek
+- [DreamingV2: Reinforcement Learning with Discrete World Models without Reconstruction](https://arxiv.org/abs/2203.00494). Masashi Okada, Tadahiro Taniguchi
+- [Ditto: Building Digital Twins of Articulated Objects from Interaction](https://arxiv.org/abs/2202.08227). Zhenyu Jiang, Cheng-Chun Hsu, Yuke Zhu
+- [A Ranking Game for Imitation Learning](https://arxiv.org/abs/2202.03481). Harshit Sikchi, Akanksha Saran, Wonjoon Goo, Scott Niekum
+- [Learning to Grasp the Ungraspable with Emergent Extrinsic Dexterity](https://arxiv.org/abs/2211.01500). Wenxuan Zhou, David Held
+- [Efficiently Learning Recoveries from Failures Under Partial Observability](https://arxiv.org/abs/2209.13605). Shivam Vats, Maxim Likhachev, Oliver Kroemer
+- [Learning Representations via a Robust Behavioral Metric for Deep Reinforcement Learning](https://openreview.net/forum?id=7YXXt9lRls). Jianda Chen, Sinno Pan
+- [Synthesizing Adversarial Visual Scenarios for Model-Based Robotic Control](https://openreview.net/forum?id=WJbw_C-pCox). Shubhankar Agarwal, Sandeep P. Chinchali
+
 ## 2021
 
 - [Guided Imitation of Task and Motion Planning](https://arxiv.org/abs/2112.03386). Michael McDonald, Dylan Hadfield-Menell
@@ -28,6 +53,12 @@ A list of references of projects and papers that use **robosuite**. If you would
 - [Generalization Through Hand-Eye Coordination: An Action Space for Learning Spatially-Invariant Visuomotor Control](https://arxiv.org/abs/2103.00375). Chen Wang, Rui Wang, Ajay Mandlekar, Li Fei-Fei, Silvio Savarese, Danfei Xu
 - [Interpreting Contact Interactions to Overcome Failure in Robot Assembly Tasks](https://arxiv.org/abs/2101.02725). Peter A. Zachares, Michelle A. Lee, Wenzhao Lian, Jeannette Bohg
 - [Learning Contact-Rich Assembly Skills Using Residual Admittance Policy](https://ieeexplore.ieee.org/document/9636547). Oren Spector, Miriam Zacksenhouse
+- [Learning Multi-Arm Manipulation Through Collaborative Teleoperation](https://arxiv.org/abs/2012.06738). Albert Tung, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín, Yuke Zhu, Li Fei-Fei, Silvio Savarese
+- [OSCAR: Data-Driven Operational Space Control for Adaptive and Robust Robot Manipulation](https://arxiv.org/abs/2110.00704). Josiah Wong, Viktor Makoviychuk, Anima Anandkumar, Yuke Zhu 
+- [OPIRL: Sample Efficient Off-Policy Inverse Reinforcement Learning via Distribution Matching](https://arxiv.org/abs/2109.04307). Hana Hoshino, Kei Ota, Asako Kanezaki, Rio Yokota 
+- [RLDS: an Ecosystem to Generate, Share and Use Datasets in Reinforcement Learning](https://arxiv.org/abs/2111.02767). Sabela Ramos, Sertan Girgin, Léonard Hussenot, Damien Vincent, Hanna Yakubovich, Daniel Toyama, Anita Gergely, Piotr Stanczyk, Raphael Marinier, Jeremiah Harmsen, Olivier Pietquin, Nikola Momchev
+- [RMPs for Safe Impedance Control in Contact-Rich Manipulation](https://arxiv.org/abs/2109.12103). Seiji Shaw, Ben Abbatematteo, George Konidaris
+- [Learning Robotic Manipulation Skills Using an Adaptive Force-Impedance Action Space](https://arxiv.org/abs/2110.09904). Maximilian Ulmer, Elie Aljalbout, Sascha Schwarz, Sami Haddadin
 
 ## 2020
 
