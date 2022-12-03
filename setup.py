@@ -21,6 +21,8 @@ setup(
         "mujoco>=2.3.0",
         "Pillow",
         "opencv-python",
+        "pynput",
+        "termcolor"
     ],
     eager_resources=["*"],
     include_package_data=True,
