@@ -232,6 +232,7 @@
 					    <geom mesh="link7_vis_6" material="Part__Mirroring002_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
 					    <geom mesh="link7_vis_7" material="Part__Mirroring_004_001" type="mesh" contype="0" conaffinity="0" group="1" />
                                             <!-- rotate 135deg to align physically to the tool-->
+                                            <geom type="mesh" group="0" mesh="link7" name="link7_collision"/>
                                             <body name="right_hand" pos="0 0 0.1065" quat="0.924 0 0 -0.383">
                                                 <inertial pos="0 0 0" mass="0.5" diaginertia="0.05 0.05 0.05" />
                                                 <!-- This camera points out from the eef. -->
