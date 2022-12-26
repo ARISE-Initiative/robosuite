@@ -385,7 +385,7 @@ def new_site(name, rgba=RED, pos=(0, 0, 0), size=(0.005,), **kwargs):
         name (str): Name for this site
         rgba (4-array): (r,g,b,a) color and transparency. Defaults to solid red.
         pos (3-array): (x,y,z) 3d position of the site.
-        size (array of float): site size (sites are spherical by default).
+        size (n-array of float): site size (sites are spherical by default).
         **kwargs: Any additional specified attributes for the new site
 
     Returns:
