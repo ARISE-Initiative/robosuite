@@ -158,10 +158,10 @@ class OperationalSpaceController(Controller):
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio
 
         # kp and kd limits
-        self.kp_min = self.nums2array(kp_limits[0], 6)
-        self.kp_max = self.nums2array(kp_limits[1], 6)
-        self.damping_ratio_min = self.nums2array(damping_ratio_limits[0], 6)
-        self.damping_ratio_max = self.nums2array(damping_ratio_limits[1], 6)
+        self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
+        self.kp_max = self.nums2array(kp_limits[1], self.control_dim)
+        self.damping_ratio_min = self.nums2array(damping_ratio_limits[0], self.control_dim)
+        self.damping_ratio_max = self.nums2array(damping_ratio_limits[1], self.control_dim)
 
         # Verify the proposed impedance mode is supported
         assert impedance_mode in IMPEDANCE_MODES, (
