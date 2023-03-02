@@ -1,6 +1,6 @@
 """
 This script shows how to adapt an environment to be compatible
-with the OpenAI Gym-style API. This is useful when using
+with the Gymnasium API. This is useful when using
 learning pipelines that require supporting these APIs.
 
 For instance, this can be used with OpenAI Baselines
@@ -9,23 +9,20 @@ with RL.
 
 
 We base this script off of some code snippets found
-in the "Getting Started with Gym" section of the OpenAI 
-gym documentation.
+in the "Basic Usage" section of the Gymnasium documentation
 
 The following snippet was used to demo basic functionality.
 
-    import gym
-    env = gym.make('CartPole-v0')
-    for i_episode in range(20):
-        observation = env.reset()
-        for t in range(100):
-            env.render()
-            print(observation)
-            action = env.action_space.sample()
-            observation, reward, done, info = env.step(action)
-            if done:
-                print("Episode finished after {} timesteps".format(t+1))
-                break
+    import gymnasium as gym
+    env = gym.make("LunarLander-v2", render_mode="human")
+    observation, info = env.reset()
+
+    for _ in range(1000):
+        action = env.action_space.sample()  # agent policy that uses the observation and info
+        observation, reward, terminated, truncated, info = env.step(action)
+        if terminated or truncated:
+            observation, info = env.reset()
+            env.close()
 
 To adapt our APIs to be compatible with OpenAI Gym's style, this script
 demonstrates how this can be easily achieved by using the GymWrapper.
@@ -49,12 +46,16 @@ if __name__ == "__main__":
         )
     )
 
+    env.reset(seed=0)
+
     for i_episode in range(20):
         observation = env.reset()
         for t in range(500):
             env.render()
             action = env.action_space.sample()
-            observation, reward, done, info = env.step(action)
-            if done:
+            observation, reward, terminated, truncated, info = env.step(action)
+            if terminated or truncated:
                 print("Episode finished after {} timesteps".format(t + 1))
+                observation, info = env.reset()
+                env.close()
                 break
