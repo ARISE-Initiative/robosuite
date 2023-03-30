@@ -175,10 +175,12 @@ class SingleArm(Manipulator):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
 
-        if not deterministic:
-            # Now, reset the gripper if necessary
-            if self.has_gripper:
+        # Now, reset the gripper if necessary
+        if self.has_gripper:
+            if not deterministic:
                 self.sim.data.qpos[self._ref_gripper_joint_pos_indexes] = self.gripper.init_qpos
+
+            self.gripper.current_action = np.zeros(self.gripper.dof)
 
         # Update base pos / ori references in controller
         self.controller.update_base_pose(self.base_pos, self.base_ori)
