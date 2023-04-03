@@ -92,9 +92,9 @@ class GymWrapper(Wrapper, gym.Env):
             np.array: Flattened environment observation space after reset occurs
         """
         if seed is not None:
-            try:
+            if isinstance(seed, int):
                 np.random.seed(seed)
-            except:
+            else:
                 TypeError("Seed must be an integer type!")
         ob_dict = self.env.reset()
         return self._flatten_obs(ob_dict), {}
