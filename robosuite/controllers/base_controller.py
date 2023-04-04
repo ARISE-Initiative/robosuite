@@ -136,7 +136,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
-            if macros.OPTIMIZE_PHYSICS:
+            if macros.LITE_PHYSICS:
                 pass
             else:
                 self.sim.forward()

@@ -44,4 +44,4 @@ CONSOLE_LOGGING_LEVEL = "WARN"
 FILE_LOGGING_LEVEL = "DEBUG"
 
 # whether to use mj_step1/mj_step2
-OPTIMIZE_PHYSICS = True
+LITE_PHYSICS = True
