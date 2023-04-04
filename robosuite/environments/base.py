@@ -386,9 +386,15 @@ class MujocoEnv(metaclass=EnvMeta):
         # Loop through the simulation at the model timestep rate until we're ready to take the next policy step
         # (as defined by the control frequency specified at the environment level)
         for i in range(int(self.control_timestep / self.model_timestep)):
-            self.sim.forward()
+            if macros.OPTIMIZE_PHYSICS:
+                self.sim.step1()
+            else:
+                self.sim.forward()
             self._pre_action(action, policy_step)
-            self.sim.step()
+            if macros.OPTIMIZE_PHYSICS:
+                self.sim.step2()
+            else:
+                self.sim.step()
             self._update_observables()
             policy_step = False
 

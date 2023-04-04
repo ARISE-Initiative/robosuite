@@ -42,3 +42,6 @@ SPACEMOUSE_PRODUCT_ID = 50735
 CONSOLE_LOGGING_LEVEL = "WARN"
 # File logging is written to /tmp/robosuite.log by default
 FILE_LOGGING_LEVEL = "DEBUG"
+
+# whether to use mj_step1/mj_step2
+OPTIMIZE_PHYSICS = True

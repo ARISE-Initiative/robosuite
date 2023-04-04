@@ -1091,6 +1091,14 @@ class MjSim:
         """Step simulation."""
         mujoco.mj_step(self.model._model, self.data._data)
 
+    def step1(self):
+        """Step1 (before actions are set)."""
+        mujoco.mj_step1(self.model._model, self.data._data)
+
+    def step2(self):
+        """Step2 (after actions are set)."""
+        mujoco.mj_step2(self.model._model, self.data._data)
+
     def render(
         self,
         width=None,
