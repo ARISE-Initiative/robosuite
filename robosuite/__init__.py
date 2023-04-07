@@ -1,8 +1,9 @@
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+
 try:
     from robosuite.macros_private import *
 except ImportError:
     import robosuite
-    from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
     ROBOSUITE_DEFAULT_LOGGER.warn("No private macro file found!")
     ROBOSUITE_DEFAULT_LOGGER.warn("It is recommended to use a private macro file")
