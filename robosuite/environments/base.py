@@ -261,7 +261,10 @@ class MujocoEnv(metaclass=EnvMeta):
         self._obs_cache = {}
         if self.hard_reset:
             # If we're using hard reset, must re-update sensor object references
-            _observables = self._setup_observables()
+            if hasattr(self.viewer, "_setup_observables"):
+                _observables = self.viewer._setup_observables()
+            else:
+                _observables = self._setup_observables()
             for obs_name, obs in _observables.items():
                 self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
         # Make sure that all sites are toggled OFF by default
