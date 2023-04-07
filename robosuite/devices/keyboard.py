@@ -54,7 +54,6 @@ class Keyboard(Device):
         print_command("z-x", "rotate arm about x-axis")
         print_command("t-g", "rotate arm about y-axis")
         print_command("c-v", "rotate arm about z-axis")
-        print_command("ESC", "quit")
         print("")
 
     def _reset_internal_state(self):

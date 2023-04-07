@@ -36,9 +36,20 @@ MUJOCO_GPU_RENDERING = True
 
 # Spacemouse settings. Used by SpaceMouse class in robosuite/devices/spacemouse.py
 SPACEMOUSE_VENDOR_ID = 9583
-SPACEMOUSE_PRODUCT_ID = 50735
+SPACEMOUSE_PRODUCT_ID = 50734
 
 # If LOGGING LEVEL is set to None, the logger will be turned off
 CONSOLE_LOGGING_LEVEL = "WARN"
 # File logging is written to /tmp/robosuite.log by default
 FILE_LOGGING_LEVEL = "DEBUG"
+
+# Override with macros from macros_private.py file, if it exists
+try:
+    from robosuite.macros_private import *
+except ImportError:
+    import robosuite
+    from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+
+    ROBOSUITE_DEFAULT_LOGGER.warn("No private macro file found!")
+    ROBOSUITE_DEFAULT_LOGGER.warn("It is recommended to use a private macro file")
+    ROBOSUITE_DEFAULT_LOGGER.warn("To setup, run: python {}/scripts/setup_macros.py".format(robosuite.__path__[0]))
