@@ -71,7 +71,7 @@ class DefaultLogger:
 
         if file_logging_level is not None:
             time_str = str(time.time()).replace(".", "_")
-            log_file_path = "/tmp/robosuite{}_{}.log".format(time_str, os.getpid())
+            log_file_path = "/tmp/robosuite_{}_{}.log".format(time_str, os.getpid())
             fh = logging.FileHandler(log_file_path)
             print(colored("[robosuite]: Saving logs to {}".format(log_file_path), "yellow"))
             fh.setLevel(logging.getLevelName(file_logging_level))
