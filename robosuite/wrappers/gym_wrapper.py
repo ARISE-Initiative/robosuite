@@ -1,17 +1,19 @@
 """
 This file implements a wrapper for facilitating compatibility with OpenAI gym.
-This is useful when using these environments with code that assumes a gym-like 
+This is useful when using these environments with code that assumes a gym-like
 interface.
 """
 
 import numpy as np
-from gym import spaces
-from gym.core import Env
+import gymnasium as gym
+from gymnasium import spaces, Env
 
 from robosuite.wrappers import Wrapper
 
 
-class GymWrapper(Wrapper, Env):
+class GymWrapper(Wrapper, gym.Env):
+    metadata = None
+    render_mode = None
     """
     Initializes the Gym wrapper. Mimics many of the required functionalities of the Wrapper class
     found in the gym.core module
@@ -51,7 +53,6 @@ class GymWrapper(Wrapper, Env):
 
         # Gym specific attributes
         self.env.spec = None
-        self.metadata = None
 
         # set up observation and action spaces
         obs = self.env.reset()
@@ -60,9 +61,9 @@ class GymWrapper(Wrapper, Env):
         self.obs_dim = flat_ob.size
         high = np.inf * np.ones(self.obs_dim)
         low = -high
-        self.observation_space = spaces.Box(low=low, high=high)
+        self.observation_space = spaces.Box(low, high)
         low, high = self.env.action_spec
-        self.action_space = spaces.Box(low=low, high=high)
+        self.action_space = spaces.Box(low, high)
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """
@@ -83,15 +84,20 @@ class GymWrapper(Wrapper, Env):
                 ob_lst.append(np.array(obs_dict[key]).flatten())
         return np.concatenate(ob_lst)
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
         """
-        Extends env reset method to return flattened observation instead of normal OrderedDict.
+        Extends env reset method to return flattened observation instead of normal OrderedDict and optionally resets seed
 
         Returns:
             np.array: Flattened environment observation space after reset occurs
         """
+        if seed is not None:
+            if isinstance(seed, int):
+                np.random.seed(seed)
+            else:
+                raise TypeError("Seed must be an integer type!")
         ob_dict = self.env.reset()
-        return self._flatten_obs(ob_dict)
+        return self._flatten_obs(ob_dict), {}
 
     def step(self, action):
         """
@@ -105,28 +111,12 @@ class GymWrapper(Wrapper, Env):
 
                 - (np.array) flattened observations from the environment
                 - (float) reward from the environment
-                - (bool) whether the current episode is completed or not
+                - (bool) episode ending after reaching an env terminal state
+                - (bool) episode ending after an externally defined condition
                 - (dict) misc information
         """
-        ob_dict, reward, done, info = self.env.step(action)
-        return self._flatten_obs(ob_dict), reward, done, info
-
-    def seed(self, seed=None):
-        """
-        Utility function to set numpy seed
-
-        Args:
-            seed (None or int): If specified, numpy seed to set
-
-        Raises:
-            TypeError: [Seed must be integer]
-        """
-        # Seed the generator
-        if seed is not None:
-            try:
-                np.random.seed(seed)
-            except:
-                TypeError("Seed must be an integer type!")
+        ob_dict, reward, terminated, info = self.env.step(action)
+        return self._flatten_obs(ob_dict), reward, terminated, False, info
 
     def compute_reward(self, achieved_goal, desired_goal, info):
         """
