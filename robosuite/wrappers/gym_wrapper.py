@@ -95,7 +95,7 @@ class GymWrapper(Wrapper, gym.Env):
             if isinstance(seed, int):
                 np.random.seed(seed)
             else:
-                TypeError("Seed must be an integer type!")
+                raise TypeError("Seed must be an integer type!")
         ob_dict = self.env.reset()
         return self._flatten_obs(ob_dict), {}
 
