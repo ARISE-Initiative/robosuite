@@ -120,8 +120,10 @@ class SpaceMouse(Device):
     ):
 
         print("Opening SpaceMouse device")
+        self.vendor_id = vendor_id
+        self.product_id = product_id
         self.device = hid.device()
-        self.device.open(vendor_id, product_id)  # SpaceMouse
+        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -164,7 +166,6 @@ class SpaceMouse(Device):
         print_command("Move mouse laterally", "move arm horizontally in x-y plane")
         print_command("Move mouse vertically", "move arm vertically")
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
-        print_command("ESC", "quit")
         print("")
 
     def _reset_internal_state(self):
@@ -223,7 +224,7 @@ class SpaceMouse(Device):
             d = self.device.read(13)
             if d is not None and self._enabled:
 
-                if macros.SPACEMOUSE_PRODUCT_ID == 50741:
+                if self.product_id == 50741:
                     ## logic for older spacemouse model
 
                     if d[0] == 1:  ## readings from 6-DoF sensor
