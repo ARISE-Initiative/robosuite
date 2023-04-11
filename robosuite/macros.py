@@ -40,8 +40,8 @@ SPACEMOUSE_PRODUCT_ID = 50734
 
 # If LOGGING LEVEL is set to None, the logger will be turned off
 CONSOLE_LOGGING_LEVEL = "WARN"
-# File logging is written to /tmp/robosuite.log by default
-FILE_LOGGING_LEVEL = "DEBUG"
+# File logging is written to /tmp/robosuite_{time}_{pid}.log by default
+FILE_LOGGING_LEVEL = None
 
 # Override with macros from macros_private.py file, if it exists
 try:

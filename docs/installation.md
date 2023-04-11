@@ -5,6 +5,8 @@ The base installation requires the MuJoCo physics engine (with [mujoco](https://
 
 ### Install from pip
 
+**Note**: For users looking to use the most up-to-date code and develop customized features, it is recommended to install from source.
+
 1. After setting up mujoco, robosuite can be installed with
    ```sh
    $ pip install robosuite
