@@ -1,9 +1,8 @@
 import numpy as np
 
-from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import add_to_dict
-from robosuite.utils.mjcf_utils import CustomMaterial, RED, GREEN, BLUE
 import robosuite.utils.transform_utils as T
+from robosuite.models.objects import CompositeObject
+from robosuite.utils.mjcf_utils import BLUE, GREEN, RED, CustomMaterial, add_to_dict
 
 
 class HookFrame(CompositeObject):
@@ -19,7 +18,7 @@ class HookFrame(CompositeObject):
         grip_size ([float]): (R, H) radius and half-height for the cylindrical grip. Set to None
             to not add a grip.
         tip_size ([float]): if not None, adds a cone tip to the end of the hook for easier insertion, with the
-            provided (CH, LR, UR, H) where CH is the base cylinder height, LR and UR are the lower and upper radius 
+            provided (CH, LR, UR, H) where CH is the base cylinder height, LR and UR are the lower and upper radius
             of the cone tip, and H is the half-height of the cone tip
         friction (3-array or None): If specified, sets friction values for this object. None results in default values
         density (float): Density value to use for all geoms. Defaults to 1000
@@ -38,8 +37,8 @@ class HookFrame(CompositeObject):
         grip_size=None,
         tip_size=None,
         friction=None,
-        density=1000.,
-        solref=(0.02, 1.),
+        density=1000.0,
+        solref=(0.02, 1.0),
         solimp=(0.9, 0.95, 0.001),
         use_texture=True,
         rgba=(0.2, 0.1, 0.0, 1.0),
@@ -48,7 +47,7 @@ class HookFrame(CompositeObject):
         self._name = name
 
         # Set object attributes
-        self.size = None                      # Filled in automatically
+        self.size = None  # Filled in automatically
         self.frame_length = frame_length
         self.frame_height = frame_height
         self.frame_thickness = frame_thickness
@@ -119,7 +118,7 @@ class HookFrame(CompositeObject):
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
         self.size = np.array((self.frame_length, self.frame_thickness, self.frame_height))
         if self.tip_size is not None:
-            self.size[2] += 2. * (self.tip_size[0] + (2. * self.tip_size[3]))
+            self.size[2] += 2.0 * (self.tip_size[0] + (2.0 * self.tip_size[3]))
         base_args = {
             "total_size": self.size / 2,
             "name": self.name,
@@ -137,7 +136,8 @@ class HookFrame(CompositeObject):
             geom_types="box",
             geom_locations=((self.frame_length - self.frame_thickness) / 2, 0, -self.frame_thickness / 2),
             geom_quats=(1, 0, 0, 0),
-            geom_sizes=np.array((self.frame_thickness, self.frame_thickness, self.frame_height - self.frame_thickness)) / 2,
+            geom_sizes=np.array((self.frame_thickness, self.frame_thickness, self.frame_height - self.frame_thickness))
+            / 2,
             geom_names="vertical_frame",
             geom_rgbas=None if self.use_texture else self.rgba,
             geom_materials=self.mat_name if self.use_texture else None,
@@ -162,7 +162,11 @@ class HookFrame(CompositeObject):
             add_to_dict(
                 dic=obj_args,
                 geom_types="box",
-                geom_locations=((-self.frame_length + self.frame_thickness) / 2, 0, (self.frame_height + self.hook_height) / 2),
+                geom_locations=(
+                    (-self.frame_length + self.frame_thickness) / 2,
+                    0,
+                    (self.frame_height + self.hook_height) / 2,
+                ),
                 geom_quats=(1, 0, 0, 0),
                 geom_sizes=np.array((self.frame_thickness, self.frame_thickness, self.hook_height)) / 2,
                 geom_names="hook_frame",
@@ -177,7 +181,11 @@ class HookFrame(CompositeObject):
             add_to_dict(
                 dic=obj_args,
                 geom_types="box",
-                geom_locations=((self.frame_length - self.frame_thickness) / 2, 0, (-self.frame_thickness / 2) + self.grip_location),
+                geom_locations=(
+                    (self.frame_length - self.frame_thickness) / 2,
+                    0,
+                    (-self.frame_thickness / 2) + self.grip_location,
+                ),
                 geom_quats=(1, 0, 0, 0),
                 geom_sizes=(self.grip_size[0], self.grip_size[0], self.grip_size[1]),
                 geom_names="grip_frame",
@@ -185,13 +193,14 @@ class HookFrame(CompositeObject):
                 geom_rgbas=(0.13, 0.13, 0.13, 1.0),
                 geom_materials=self.grip_mat_name if self.use_texture else None,
                 # geom_frictions=self.friction,
-                geom_frictions=(1., 0.005, 0.0001), # use default friction
+                geom_frictions=(1.0, 0.005, 0.0001),  # use default friction
             )
 
         # optionally add cone tip
         if self.tip_size is not None:
             from robosuite.models.objects import ConeObject
-            cone =  ConeObject(
+
+            cone = ConeObject(
                 name="cone",
                 outer_radius=self.tip_size[2],
                 inner_radius=self.tip_size[1],
@@ -216,17 +225,19 @@ class HookFrame(CompositeObject):
 
             # location of mount site is the translation we need
             cylinder_offset = (
-                (self.frame_length - self.frame_thickness) / 2, 
-                0, 
-                -self.frame_height / 2 - self.tip_size[0], # account for half-height of cylinder
+                (self.frame_length - self.frame_thickness) / 2,
+                0,
+                -self.frame_height / 2 - self.tip_size[0],  # account for half-height of cylinder
             )
             cone_offset = (
-                cylinder_offset[0], 
-                cylinder_offset[1], 
-                cylinder_offset[2] - self.tip_size[0] - self.tip_size[3] / 2., # need to move below cylinder, and account for half-height
+                cylinder_offset[0],
+                cylinder_offset[1],
+                cylinder_offset[2]
+                - self.tip_size[0]
+                - self.tip_size[3] / 2.0,  # need to move below cylinder, and account for half-height
             )
 
-            # first add cylinder            
+            # first add cylinder
             add_to_dict(
                 dic=obj_args,
                 geom_types="cylinder",
@@ -275,7 +286,11 @@ class HookFrame(CompositeObject):
             },
             {
                 "name": f"intersection_site",
-                "pos": ((self.frame_length - self.frame_thickness) / 2, 0, (self.frame_height - self.frame_thickness) / 2),
+                "pos": (
+                    (self.frame_length - self.frame_thickness) / 2,
+                    0,
+                    (self.frame_height - self.frame_thickness) / 2,
+                ),
                 "size": "0.002",
                 "rgba": BLUE,
                 "type": "sphere",
@@ -288,8 +303,8 @@ class HookFrame(CompositeObject):
                     "name": f"tip_site",
                     "pos": (
                         ((self.frame_length - self.frame_thickness) / 2),
-                        0, 
-                        (-self.frame_height / 2) - 2. * self.tip_size[0] - self.tip_size[3],
+                        0,
+                        (-self.frame_height / 2) - 2.0 * self.tip_size[0] - self.tip_size[3],
                     ),
                     "size": "0.002",
                     "rgba": RED,
@@ -312,6 +327,6 @@ class HookFrame(CompositeObject):
         """
         # Rotate 90 degrees about two consecutive axes to make the hook lie on the table instead of being upright.
         return T.quat_multiply(
-                np.array([0, 0., np.sqrt(2) / 2., np.sqrt(2) / 2.]),
-                np.array([-np.sqrt(2) / 2., 0., 0., np.sqrt(2) / 2.]),
-            )
+            np.array([0, 0.0, np.sqrt(2) / 2.0, np.sqrt(2) / 2.0]),
+            np.array([-np.sqrt(2) / 2.0, 0.0, 0.0, np.sqrt(2) / 2.0]),
+        )

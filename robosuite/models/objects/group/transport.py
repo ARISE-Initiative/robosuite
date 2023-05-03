@@ -1,7 +1,8 @@
-from robosuite.models.objects import ObjectGroup, Bin, Lid
-import robosuite.utils.transform_utils as T
-import robosuite.utils.sim_utils as SU
 import numpy as np
+
+import robosuite.utils.sim_utils as SU
+import robosuite.utils.transform_utils as T
+from robosuite.models.objects import Bin, Lid, ObjectGroup
 
 
 class TransportGroup(ObjectGroup):
@@ -22,9 +23,9 @@ class TransportGroup(ObjectGroup):
         self.bin_size = bin_size
 
         # Create bins and lid
-        self.start_bin = Bin(name=f"{name}_start_bin", bin_size=bin_size, density=10000.)
-        self.target_bin = Bin(name=f"{name}_target_bin", bin_size=bin_size, density=10000.)
-        self.trash_bin = Bin(name=f"{name}_trash_bin", bin_size=bin_size, density=10000.)
+        self.start_bin = Bin(name=f"{name}_start_bin", bin_size=bin_size, density=10000.0)
+        self.target_bin = Bin(name=f"{name}_target_bin", bin_size=bin_size, density=10000.0)
+        self.trash_bin = Bin(name=f"{name}_trash_bin", bin_size=bin_size, density=10000.0)
         self.lid = Lid(name=f"{name}_start_bin_lid", lid_size=(*bin_size[:2], 0.01))
 
         # Relevant geom ids

@@ -1,17 +1,16 @@
 from collections import OrderedDict
+
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.utils.mjcf_utils import CustomMaterial
-from robosuite.utils.sim_utils import check_contact
-
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
-
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import StandWithMount, HookFrame, RatchetingWrenchObject
+from robosuite.models.objects import HookFrame, RatchetingWrenchObject, StandWithMount
 from robosuite.models.tasks import ManipulationTask
-from robosuite.utils.placement_samplers import UniformRandomSampler, SequentialCompositeSampler
+from robosuite.utils.mjcf_utils import CustomMaterial
 from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
+from robosuite.utils.sim_utils import check_contact
 
 
 class ToolHang(SingleArmEnv):
@@ -139,7 +138,7 @@ class ToolHang(SingleArmEnv):
         gripper_types="default",
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
-        table_friction=(1., 5e-3, 1e-4),
+        table_friction=(1.0, 5e-3, 1e-4),
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
@@ -211,7 +210,7 @@ class ToolHang(SingleArmEnv):
         Returns:
             float: reward value
         """
-        reward = 0.
+        reward = 0.0
 
         # sparse completion reward
         if self._check_success():
@@ -254,60 +253,74 @@ class ToolHang(SingleArmEnv):
         mujoco_arena.set_camera(
             camera_name="agentview",
             pos=[0.4837275266036987, 0.2505579098815722, 1.2639379055124524],
-            quat=[0.39713290333747864, 0.27807527780532837, 0.5016612410545349, 0.7164464592933655]
+            quat=[0.39713290333747864, 0.27807527780532837, 0.5016612410545349, 0.7164464592933655],
         )
 
         # Add sideview
         mujoco_arena.set_camera(
             camera_name="sideview",
             pos=[0.4837275266036987, 0.2505579098815722, 1.2139379055124524],
-            quat=[0.39713290333747864, 0.27807527780532837, 0.5016612410545349, 0.7164464592933655]
+            quat=[0.39713290333747864, 0.27807527780532837, 0.5016612410545349, 0.7164464592933655],
         )
 
         # Create stand, frame, and tool
         self.stand_args = dict(
             name="stand",
-            size=((12. / 100.), (14. / 100.), (16. / 100.)), # 14 cm x 12 cm base, with 16 cm height (in real world we cut the 32 cm height stand in half as well)
-            mount_location=(0., (4.5 / 100.)), # 2.5 cm from right edge, so 4.5 cm to the right
-            mount_width=(1.2 / 100.), # 1.2 cm thickness for rod cavity
-            wall_thickness=(0.1 / 100.), # about 0.1-0.2 cm thickness for walls
-            base_thickness=(1 / 100.), # increased thickness to 1 cm (different from real)
+            size=(
+                (12.0 / 100.0),
+                (14.0 / 100.0),
+                (16.0 / 100.0),
+            ),  # 14 cm x 12 cm base, with 16 cm height (in real world we cut the 32 cm height stand in half as well)
+            mount_location=(0.0, (4.5 / 100.0)),  # 2.5 cm from right edge, so 4.5 cm to the right
+            mount_width=(1.2 / 100.0),  # 1.2 cm thickness for rod cavity
+            wall_thickness=(0.1 / 100.0),  # about 0.1-0.2 cm thickness for walls
+            base_thickness=(1 / 100.0),  # increased thickness to 1 cm (different from real)
             initialize_on_side=False,
             add_hole_vis=True,
-            density=50000.,
-            solref=(0.02, 1.),
+            density=50000.0,
+            solref=(0.02, 1.0),
             solimp=(0.998, 0.998, 0.001),
         )
         self.stand = StandWithMount(**self.stand_args)
 
         self.frame_args = dict(
             name="frame",
-            frame_length=(9.5 / 100.), # 9.5 cm wide
-            frame_height=(18. / 100.), # 18 cm tall (in real world we cut the physical 36 cm rod in half as well)
-            frame_thickness=(0.75 / 100.), # 0.75 cm thick
-            hook_height=(1.2 / 100.), # lowered to 1.2 cm tall (instead of 1.7 cm in real world)
-            grip_location=((9. - 3.) / 100.) - (0.75 / 200.), # move up by half height of frame minus half height of grip minus half thickness
-            grip_size=((2.54 / 200.), (6.35 / 200.)), # 6.35 cm length, 2.54 cm thick
-            tip_size=((2.54 / 200.), (0.2 / 200.), (0.65 / 200.), (1.905 / 100.)), # 1-inch cylinder, 0.65 inch solder tip
-            density=500.,
-            solref=(0.02, 1.),
+            frame_length=(9.5 / 100.0),  # 9.5 cm wide
+            frame_height=(18.0 / 100.0),  # 18 cm tall (in real world we cut the physical 36 cm rod in half as well)
+            frame_thickness=(0.75 / 100.0),  # 0.75 cm thick
+            hook_height=(1.2 / 100.0),  # lowered to 1.2 cm tall (instead of 1.7 cm in real world)
+            grip_location=((9.0 - 3.0) / 100.0)
+            - (0.75 / 200.0),  # move up by half height of frame minus half height of grip minus half thickness
+            grip_size=((2.54 / 200.0), (6.35 / 200.0)),  # 6.35 cm length, 2.54 cm thick
+            tip_size=(
+                (2.54 / 200.0),
+                (0.2 / 200.0),
+                (0.65 / 200.0),
+                (1.905 / 100.0),
+            ),  # 1-inch cylinder, 0.65 inch solder tip
+            density=500.0,
+            solref=(0.02, 1.0),
             solimp=(0.998, 0.998, 0.001),
         )
         self.frame = HookFrame(**self.frame_args)
 
         self.real_tool_args = dict(
             name="tool",
-            handle_size=((16.5 / 200.), (1.75 / 200.), (0.32 / 200.)), # 16.5 cm length, 1.75 cm width, 0.32 cm thick (1.5 cm with foam)
-            outer_radius_1=(3.5 / 200.), # larger hole 3.5 cm outer diameter
-            inner_radius_1=(2.1 / 200.), # reduced larger hole 2.1 cm inner diameter (from real world 2.3 cm)
-            height_1=(0.7 / 200.), # 0.7 cm height
-            outer_radius_2=(3. / 200.), # smaller hole 3 cm outer diameter
-            inner_radius_2=(2. / 200.), # smaller hole 2 cm outer diameter
-            height_2=(0.7 / 200.), # 0.7 cm height
+            handle_size=(
+                (16.5 / 200.0),
+                (1.75 / 200.0),
+                (0.32 / 200.0),
+            ),  # 16.5 cm length, 1.75 cm width, 0.32 cm thick (1.5 cm with foam)
+            outer_radius_1=(3.5 / 200.0),  # larger hole 3.5 cm outer diameter
+            inner_radius_1=(2.1 / 200.0),  # reduced larger hole 2.1 cm inner diameter (from real world 2.3 cm)
+            height_1=(0.7 / 200.0),  # 0.7 cm height
+            outer_radius_2=(3.0 / 200.0),  # smaller hole 3 cm outer diameter
+            inner_radius_2=(2.0 / 200.0),  # smaller hole 2 cm outer diameter
+            height_2=(0.7 / 200.0),  # 0.7 cm height
             ngeoms=8,
-            grip_size=((3 / 200.), (8. / 200.)), # 8 cm length, 3 cm thick
-            density=2000.,
-            solref=(0.02, 1.),
+            grip_size=((3 / 200.0), (8.0 / 200.0)),  # 8 cm length, 3 cm thick
+            density=2000.0,
+            solref=(0.02, 1.0),
             solimp=(0.998, 0.998, 0.001),
             friction=(0.95, 0.3, 0.1),
         )
@@ -321,7 +334,7 @@ class ToolHang(SingleArmEnv):
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
             mujoco_arena=mujoco_arena,
-            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=[self.stand, self.frame, self.tool],
         )
 
@@ -335,21 +348,24 @@ class ToolHang(SingleArmEnv):
         # Pre-define settings for each object's placement
         objects = [self.stand, self.frame, self.tool]
         x_centers = [-self.table_full_size[0] * 0.1, -self.table_full_size[0] * 0.05, self.table_full_size[0] * 0.05]
-        y_centers = [0., -self.table_full_size[1] * 0.3, -self.table_full_size[1] * 0.25]
-        x_tols = [0., 0.02, 0.02]
-        y_tols = [0., 0.02, 0.02]
-        rot_centers = [0, (-np.pi / 2) + (np.pi / 6), (-np.pi / 2) - (np.pi / 9.)]
-        rot_tols = [0., np.pi / 18, np.pi / 18.]
-        rot_axes = ['z', 'y', 'z']
+        y_centers = [0.0, -self.table_full_size[1] * 0.3, -self.table_full_size[1] * 0.25]
+        x_tols = [0.0, 0.02, 0.02]
+        y_tols = [0.0, 0.02, 0.02]
+        rot_centers = [0, (-np.pi / 2) + (np.pi / 6), (-np.pi / 2) - (np.pi / 9.0)]
+        rot_tols = [0.0, np.pi / 18, np.pi / 18.0]
+        rot_axes = ["z", "y", "z"]
         z_offsets = [
-            0.001, 
-            (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2. + 0.001 + (self.stand_args["base_thickness"] / 2.) + (self.frame_args["grip_size"][1]),
+            0.001,
+            (self.frame_args["frame_thickness"] - self.frame_args["frame_height"]) / 2.0
+            + 0.001
+            + (self.stand_args["base_thickness"] / 2.0)
+            + (self.frame_args["grip_size"][1]),
             0.001,
         ]
         if ("tip_size" in self.frame_args) and (self.frame_args["tip_size"] is not None):
-            z_offsets[1] -= (self.frame_args["tip_size"][0] + 2. * self.frame_args["tip_size"][3])
+            z_offsets[1] -= self.frame_args["tip_size"][0] + 2.0 * self.frame_args["tip_size"][3]
         for obj, x, y, x_tol, y_tol, r, r_tol, r_axis, z_offset in zip(
-                objects, x_centers, y_centers, x_tols, y_tols, rot_centers, rot_tols, rot_axes, z_offsets
+            objects, x_centers, y_centers, x_tols, y_tols, rot_centers, rot_tols, rot_axes, z_offsets
         ):
             # Create sampler for this object and add it to the sequential sampler
             self.placement_initializer.append_sampler(
@@ -382,27 +398,31 @@ class ToolHang(SingleArmEnv):
             tool=self.sim.model.body_name2id(self.tool.root_body),
         )
 
-        # Important sites: 
+        # Important sites:
         #   tool_hole1_center - for checking hanging
         #   frame_hang_site, frame_mount_site, frame_intersection_site - for orienting the hook, and checking hanging
         #   stand_mount_site - for checking that stand base is upright
         self.obj_site_id = dict(
-            tool_hole1_center=self.sim.model.site_name2id("tool_hole1_center"), # center of one end of wrench
+            tool_hole1_center=self.sim.model.site_name2id("tool_hole1_center"),  # center of one end of wrench
             # tool_hole2_center=self.sim.model.site_name2id("tool_hole2_center"), # center of other end of wrench
-            frame_hang_site=self.sim.model.site_name2id("frame_hang_site"), # end of frame where hanging takes place
-            frame_mount_site=self.sim.model.site_name2id("frame_mount_site"), # bottom of frame that needs to be inserted into base
-            frame_intersection_site=self.sim.model.site_name2id("frame_intersection_site"), # corner of frame
-            stand_mount_site=self.sim.model.site_name2id("stand_mount_site"), # where frame needs to be inserted into stand
+            frame_hang_site=self.sim.model.site_name2id("frame_hang_site"),  # end of frame where hanging takes place
+            frame_mount_site=self.sim.model.site_name2id(
+                "frame_mount_site"
+            ),  # bottom of frame that needs to be inserted into base
+            frame_intersection_site=self.sim.model.site_name2id("frame_intersection_site"),  # corner of frame
+            stand_mount_site=self.sim.model.site_name2id(
+                "stand_mount_site"
+            ),  # where frame needs to be inserted into stand
         )
         if ("tip_size" in self.frame_args) and (self.frame_args["tip_size"] is not None):
-            self.obj_site_id["frame_tip_site"] = self.sim.model.site_name2id("frame_tip_site") # tip site for insertion
+            self.obj_site_id["frame_tip_site"] = self.sim.model.site_name2id("frame_tip_site")  # tip site for insertion
 
-        # Important geoms: 
+        # Important geoms:
         #   stand_base - for checking that stand base is upright
         #   stand wall geoms - for checking rod insertion into stand
         #   tool hole geoms - for checking insertion
         self.obj_geom_id = dict(
-            stand_base=self.sim.model.geom_name2id("stand_base"), # bottom of stand
+            stand_base=self.sim.model.geom_name2id("stand_base"),  # bottom of stand
         )
         for i in range(4):
             self.obj_geom_id["stand_wall_{}".format(i)] = self.sim.model.geom_name2id("stand_wall{}".format(i))
@@ -427,8 +447,12 @@ class ToolHang(SingleArmEnv):
             # for conversion to relative gripper frame
             @sensor(modality=modality)
             def world_pose_in_gripper(obs_cache):
-                return T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"]))) if\
-                    f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache else np.eye(4)
+                return (
+                    T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"])))
+                    if f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache
+                    else np.eye(4)
+                )
+
             sensors = [world_pose_in_gripper]
             names = ["world_pose_in_gripper"]
             actives = [False]
@@ -439,7 +463,8 @@ class ToolHang(SingleArmEnv):
             query_types = ["geom", "site", "body"]
             for i in range(len(obj_names)):
                 obj_sensors, obj_sensor_names = self._create_obj_sensors(
-                    obj_name=obj_names[i], modality=modality, query_name=query_names[i], query_type=query_types[i])
+                    obj_name=obj_names[i], modality=modality, query_name=query_names[i], query_type=query_types[i]
+                )
                 sensors += obj_sensors
                 names += obj_sensor_names
                 actives += [True] * len(obj_sensors)
@@ -515,8 +540,9 @@ class ToolHang(SingleArmEnv):
         @sensor(modality=modality)
         def obj_to_eef_pos(obs_cache):
             # Immediately return default value if cache is empty
-            if any([name not in obs_cache for name in
-                    [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]):
+            if any(
+                [name not in obs_cache for name in [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]
+            ):
                 return np.zeros(3)
             obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
             rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
@@ -526,8 +552,9 @@ class ToolHang(SingleArmEnv):
 
         @sensor(modality=modality)
         def obj_to_eef_quat(obs_cache):
-            return obs_cache[f"{obj_name}_to_{pf}eef_quat"] if \
-                f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
+            return (
+                obs_cache[f"{obj_name}_to_{pf}eef_quat"] if f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
+            )
 
         sensors = [obj_pos, obj_quat, obj_to_eef_pos, obj_to_eef_quat]
         names = [f"{obj_name}_pos", f"{obj_name}_quat", f"{obj_name}_to_{pf}eef_pos", f"{obj_name}_to_{pf}eef_quat"]
@@ -571,7 +598,7 @@ class ToolHang(SingleArmEnv):
         Check if tool is hung on frame correctly and frame is assembled coorectly as well.
 
         Returns:
-            bool: True if tool is hung on frame correctly 
+            bool: True if tool is hung on frame correctly
         """
         return self._check_frame_assembled() and self._check_tool_on_frame()
 
@@ -592,8 +619,7 @@ class ToolHang(SingleArmEnv):
         vec_along_base_shaft = self.sim.data.site_xpos[self.obj_site_id["stand_mount_site"]] - base_pos
         vec_along_base_shaft = vec_along_base_shaft / np.linalg.norm(vec_along_base_shaft)
         angle_to_z_axis = np.abs(np.arccos(vec_along_base_shaft[2]))
-        base_shaft_is_vertical = (angle_to_z_axis < np.pi / 18.) # less than 10 degrees
-
+        base_shaft_is_vertical = angle_to_z_axis < np.pi / 18.0  # less than 10 degrees
 
         # check (2): the end of the hook frame is close enough to the base. Just check the distance
         if "frame_tip_site" in self.obj_site_id:
@@ -602,28 +628,32 @@ class ToolHang(SingleArmEnv):
             bottom_hook_pos = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
         insertion_dist = np.linalg.norm(bottom_hook_pos - base_pos)
         # insertion_tolerance = (self.frame_args["frame_thickness"] / 2.)
-        insertion_tolerance = 0.05 # NOTE: this was manually tuned
-        bottom_is_close_enough = (insertion_dist < insertion_tolerance)
+        insertion_tolerance = 0.05  # NOTE: this was manually tuned
+        bottom_is_close_enough = insertion_dist < insertion_tolerance
 
         # check (3): the hook frame is in between the walls of the base. Take the geom positions of opposing base walls
         #            and check that they are on opposite sides of the line defined by the hook frame.
 
-        # normalized vector that points along the frame hook 
+        # normalized vector that points along the frame hook
         hook_endpoint = self.sim.data.site_xpos[self.obj_site_id["frame_mount_site"]]
         frame_hook_vec = self.sim.data.site_xpos[self.obj_site_id["frame_intersection_site"]] - hook_endpoint
         frame_hook_length = np.linalg.norm(frame_hook_vec)
         frame_hook_vec = frame_hook_vec / frame_hook_length
-        
+
         # geom wall position vectors relative to base position
-        geom_positions = [self.sim.data.geom_xpos[self.obj_geom_id["stand_wall_{}".format(i)]] - hook_endpoint for i in range(4)]
+        geom_positions = [
+            self.sim.data.geom_xpos[self.obj_geom_id["stand_wall_{}".format(i)]] - hook_endpoint for i in range(4)
+        ]
 
         # take cross product of each point against the line, and then dot the result to see if
-        # the sign is positive or negative. If it is positive, then they are on the same side 
+        # the sign is positive or negative. If it is positive, then they are on the same side
         # (visualize with right-hand-rule to see this)
-        rod_is_between_stand_walls = all([
-            np.dot(np.cross(geom_positions[0], frame_hook_vec), np.cross(geom_positions[2], frame_hook_vec)) < 0,
-            np.dot(np.cross(geom_positions[1], frame_hook_vec), np.cross(geom_positions[3], frame_hook_vec)) < 0,
-        ])
+        rod_is_between_stand_walls = all(
+            [
+                np.dot(np.cross(geom_positions[0], frame_hook_vec), np.cross(geom_positions[2], frame_hook_vec)) < 0,
+                np.dot(np.cross(geom_positions[1], frame_hook_vec), np.cross(geom_positions[3], frame_hook_vec)) < 0,
+            ]
+        )
 
         return base_shaft_is_vertical and (bottom_is_close_enough and rod_is_between_stand_walls)
 
@@ -637,25 +667,25 @@ class ToolHang(SingleArmEnv):
             (5) the tool hole is inserted far enough into the frame hook
         """
 
-
         # check (1): robot is not touching the tool
-        robot_grasp_geoms = [self.robots[0].gripper.important_geoms["left_fingerpad"], self.robots[0].gripper.important_geoms["right_fingerpad"]]
+        robot_grasp_geoms = [
+            self.robots[0].gripper.important_geoms["left_fingerpad"],
+            self.robots[0].gripper.important_geoms["right_fingerpad"],
+        ]
         robot_and_tool_contact = False
         for g_group in robot_grasp_geoms:
             if check_contact(self.sim, g_group, self.tool.contact_geoms):
                 robot_and_tool_contact = True
                 break
 
-
         # check (2): the tool hole is making contact with the frame hook
         all_tool_hole_geoms = ["tool_hole1_hc_{}".format(i) for i in range(self.tool_args["ngeoms"])]
         frame_hook_geom = "frame_horizontal_frame"
         frame_and_tool_hole_contact = check_contact(self.sim, all_tool_hole_geoms, frame_hook_geom)
 
-
         # check (3): compute distance from tool hole center to the line defined by the frame hook
 
-        # normalized vector that points along the frame hook 
+        # normalized vector that points along the frame hook
         hook_endpoint = self.sim.data.site_xpos[self.obj_site_id["frame_hang_site"]]
         frame_hook_vec = self.sim.data.site_xpos[self.obj_site_id["frame_intersection_site"]] - hook_endpoint
         frame_hook_length = np.linalg.norm(frame_hook_vec)
@@ -671,32 +701,36 @@ class ToolHang(SingleArmEnv):
         dist_to_frame_hook_line = np.linalg.norm(tool_hole_ortho_proj)
 
         # distance needs to be less than the difference between the inner tool hole radius and the half-length of the frame hook box geom
-        tool_hole_is_close_enough = dist_to_frame_hook_line < (self.tool_args["inner_radius_1"] - (self.frame_args["frame_thickness"] / 2.))
-
+        tool_hole_is_close_enough = dist_to_frame_hook_line < (
+            self.tool_args["inner_radius_1"] - (self.frame_args["frame_thickness"] / 2.0)
+        )
 
         # check (4): take two opposite geoms around the tool hole, and check that they are on opposite sides of the frame hook line
         #            to guarantee that insertion has taken place
-        g2_id = self.tool_args["ngeoms"] // 2 # get geom opposite geom 0
+        g2_id = self.tool_args["ngeoms"] // 2  # get geom opposite geom 0
         g1_pos = self.sim.data.geom_xpos[self.obj_geom_id["tool_hole1_hc_0"]]
         g2_pos = self.sim.data.geom_xpos[self.obj_geom_id["tool_hole1_hc_{}".format(g2_id)]]
 
         # take cross product of each point against the line, and then dot the result to see if
-        # the sign is positive or negative. If it is positive, then they are on the same side 
+        # the sign is positive or negative. If it is positive, then they are on the same side
         # (visualize with right-hand-rule to see this)
         g1_vec = g1_pos - hook_endpoint
         g2_vec = g2_pos - hook_endpoint
         tool_is_between_hook = np.dot(np.cross(g1_vec, frame_hook_vec), np.cross(g2_vec, frame_hook_vec)) < 0
 
-
         # check (5): check if tool insertion is far enough - check this by computing normalized distance of projection along frame hook line.
         #            We ensure that it's at least 5% inserted along the length of the frame hook.
         normalized_dist_along_frame_hook_line = tool_hole_dot / frame_hook_length
-        tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.05) and (normalized_dist_along_frame_hook_line < 1.0)
+        tool_is_inserted_far_enough = (normalized_dist_along_frame_hook_line > 0.05) and (
+            normalized_dist_along_frame_hook_line < 1.0
+        )
 
-        return all([
-            (not robot_and_tool_contact),
-            frame_and_tool_hole_contact,
-            tool_hole_is_close_enough,
-            tool_is_between_hook,
-            tool_is_inserted_far_enough,
-        ])
+        return all(
+            [
+                (not robot_and_tool_contact),
+                frame_and_tool_hole_contact,
+                tool_hole_is_close_enough,
+                tool_is_between_hook,
+                tool_is_inserted_far_enough,
+            ]
+        )

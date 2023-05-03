@@ -524,7 +524,7 @@ class CompositeObject(MujocoGeneratedObject):
                 col_geom_attr["solimp"] = array_to_string(g_solimp)
                 col_geom_attr["rgba"] = OBJECT_COLLISION_COLOR
                 if g_condim is not None:
-                    col_geom_attr['condim'] = str(g_condim)
+                    col_geom_attr["condim"] = str(g_condim)
                 obj.append(new_geom(**col_geom_attr))
 
             # Add visual geom if necessary

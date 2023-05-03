@@ -1,8 +1,8 @@
 import numpy as np
 
-from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import add_to_dict, CustomMaterial, RED
 import robosuite.utils.transform_utils as T
+from robosuite.models.objects import CompositeObject
+from robosuite.utils.mjcf_utils import RED, CustomMaterial, add_to_dict
 
 
 class HollowCylinderObject(CompositeObject):
@@ -27,8 +27,8 @@ class HollowCylinderObject(CompositeObject):
         ngeoms=8,
         rgba=None,
         material=None,
-        density=1000.,
-        solref=(0.02, 1.),
+        density=1000.0,
+        solref=(0.02, 1.0),
         solimp=(0.9, 0.95, 0.001),
         friction=None,
         make_half=False,
@@ -41,9 +41,9 @@ class HollowCylinderObject(CompositeObject):
         self.friction = friction if friction is None else np.array(friction)
         self.solref = solref
         self.solimp = solimp
-        self.make_half = make_half # if True, will only make half the hollow cylinder
+        self.make_half = make_half  # if True, will only make half the hollow cylinder
 
-        self.has_material = (material is not None)
+        self.has_material = material is not None
         if self.has_material:
             assert isinstance(material, CustomMaterial)
             self.material = material
@@ -62,17 +62,17 @@ class HollowCylinderObject(CompositeObject):
         self.height = height
 
         # half-width of each box inferred from triangle of radius + box half-length
-        # since the angle will be (360 / n) / 2 
+        # since the angle will be (360 / n) / 2
         self.unit_box_width = self.r2 * np.sin(np.pi / self.n)
 
         # half-height of each box inferred from the same triangle with inner radius
-        self.unit_box_height = (self.r2 - self.r1) * np.cos(np.pi / self.n) / 2.
+        self.unit_box_height = (self.r2 - self.r1) * np.cos(np.pi / self.n) / 2.0
 
         # each box geom depth will end up defining the height of the cup
         self.unit_box_depth = self.height
 
         # radius of intermediate circle that connects all box centers
-        self.int_r = (self.r1 * np.cos(np.pi / self.n)) + self.unit_box_height 
+        self.int_r = (self.r1 * np.cos(np.pi / self.n)) + self.unit_box_height
 
         # Create dictionary of values to create geoms for composite object and run super init
         super().__init__(**self._get_geom_attrs())
@@ -105,16 +105,12 @@ class HollowCylinderObject(CompositeObject):
             n_make = (self.n // 2) + 1
 
         # infer locations of all geoms with trigonometry
-        angle_step = 2. * np.pi / self.n
+        angle_step = 2.0 * np.pi / self.n
         for i in range(n_make):
             # we start with the top-most box object and proceed clockwise (thus an offset of np.pi)
             geom_angle = np.pi - i * angle_step
-            geom_center = np.array([
-                self.int_r * np.cos(geom_angle),
-                self.int_r * np.sin(geom_angle),
-                0.
-            ])
-            geom_quat = np.array([np.cos(geom_angle / 2.), 0., 0., np.sin(geom_angle / 2.)])
+            geom_center = np.array([self.int_r * np.cos(geom_angle), self.int_r * np.sin(geom_angle), 0.0])
+            geom_quat = np.array([np.cos(geom_angle / 2.0), 0.0, 0.0, np.sin(geom_angle / 2.0)])
             geom_size = np.array([self.unit_box_height, self.unit_box_width, self.unit_box_depth])
 
             # note: set geom condim to 4 for consistency with round-nut.xml

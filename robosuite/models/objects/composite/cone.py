@@ -1,8 +1,8 @@
 import numpy as np
 
-from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import add_to_dict, CustomMaterial, RED
 import robosuite.utils.transform_utils as T
+from robosuite.models.objects import CompositeObject
+from robosuite.utils.mjcf_utils import RED, CustomMaterial, add_to_dict
 
 
 class ConeObject(CompositeObject):
@@ -15,7 +15,7 @@ class ConeObject(CompositeObject):
         height (float): Height of cone
         ngeoms (int): Number of cylinder or box geoms used to approximate the cone. Use
             more geoms to make the approximation better.
-        use_box (bool): If true, use box geoms instead of cylinders, corresponding to a 
+        use_box (bool): If true, use box geoms instead of cylinders, corresponding to a
             square pyramid shape instead of a conical shape.
     """
 
@@ -29,8 +29,8 @@ class ConeObject(CompositeObject):
         use_box=False,
         rgba=None,
         material=None,
-        density=1000.,
-        solref=(0.02, 1.),
+        density=1000.0,
+        solref=(0.02, 1.0),
         solimp=(0.9, 0.95, 0.001),
         friction=None,
     ):
@@ -43,7 +43,7 @@ class ConeObject(CompositeObject):
         self.solref = solref
         self.solimp = solimp
 
-        self.has_material = (material is not None)
+        self.has_material = material is not None
         if self.has_material:
             assert isinstance(material, CustomMaterial)
             self.material = material
@@ -65,7 +65,7 @@ class ConeObject(CompositeObject):
         self.height = height
 
         # unit half-height for geoms
-        self.unit_height = (height / ngeoms) / 2.
+        self.unit_height = (height / ngeoms) / 2.0
 
         # unit radius for geom radius grid
         self.unit_r = (self.r2 - self.r1) / (self.n - 1)
@@ -87,7 +87,7 @@ class ConeObject(CompositeObject):
         """
         # Initialize dict of obj args that we'll pass to the CompositeObject constructor
         base_args = {
-            "total_size": [self.r2, self.r2, self.height / 2.],
+            "total_size": [self.r2, self.r2, self.height / 2.0],
             "name": self.name,
             "locations_relative_to_center": True,
             "obj_types": "all",
@@ -99,19 +99,27 @@ class ConeObject(CompositeObject):
 
         # stack the boxes / cylinders in the z-direction
         ngeoms_each_side = (self.n - 1) // 2
-        geom_locations = [(0., 0., i * self.unit_height * 2.) for i in range(-ngeoms_each_side, ngeoms_each_side + 1)]
+        geom_locations = [
+            (0.0, 0.0, i * self.unit_height * 2.0) for i in range(-ngeoms_each_side, ngeoms_each_side + 1)
+        ]
 
         if self.use_box:
-            geom_sizes = [(
-                self.r1 + i * self.unit_r, 
-                self.r1 + i * self.unit_r,
-                self.unit_height,
-            ) for i in range(self.n)][::-1]
+            geom_sizes = [
+                (
+                    self.r1 + i * self.unit_r,
+                    self.r1 + i * self.unit_r,
+                    self.unit_height,
+                )
+                for i in range(self.n)
+            ][::-1]
         else:
-            geom_sizes = [(
-                self.r1 + i * self.unit_r, 
-                self.unit_height,
-            ) for i in range(self.n)][::-1]
+            geom_sizes = [
+                (
+                    self.r1 + i * self.unit_r,
+                    self.unit_height,
+                )
+                for i in range(self.n)
+            ][::-1]
 
         for i in range(self.n):
             # note: set geom condim to 4 for consistency with round-nut.xml

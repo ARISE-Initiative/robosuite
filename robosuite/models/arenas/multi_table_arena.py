@@ -1,9 +1,17 @@
-import numpy as np
-from robosuite.models.arenas import Arena
-from robosuite.utils.mjcf_utils import xml_path_completion, array_to_string, string_to_array, \
-    new_geom, new_body, new_site
-import robosuite.utils.transform_utils as T
 from collections import Iterable
+
+import numpy as np
+
+import robosuite.utils.transform_utils as T
+from robosuite.models.arenas import Arena
+from robosuite.utils.mjcf_utils import (
+    array_to_string,
+    new_body,
+    new_geom,
+    new_site,
+    string_to_array,
+    xml_path_completion,
+)
 
 
 class MultiTableArena(Arena):
@@ -35,8 +43,9 @@ class MultiTableArena(Arena):
         # Set internal vars
         self.table_offsets = np.array(table_offsets)
         self.n_tables = self.table_offsets.shape[0]
-        self.table_rots = np.array(table_rots) if isinstance(table_rots, Iterable) else \
-            np.ones(self.n_tables) * table_rots
+        self.table_rots = (
+            np.array(table_rots) if isinstance(table_rots, Iterable) else np.ones(self.n_tables) * table_rots
+        )
         self.table_full_sizes = np.array(table_full_sizes)
         if len(self.table_full_sizes.shape) == 1:
             self.table_full_sizes = np.stack([self.table_full_sizes] * self.n_tables, axis=0)
@@ -65,15 +74,16 @@ class MultiTableArena(Arena):
         # Create core attributes for table geoms
         table_attribs = {
             "pos": (0, 0, 0),
-            "quat": T.convert_quat(T.axisangle2quat([0, 0, rot]), to='wxyz'),
+            "quat": T.convert_quat(T.axisangle2quat([0, 0, rot]), to="wxyz"),
             "size": half_size,
             "type": "box",
         }
 
         # Create collision and visual bodies, and add them to the table body
         col_geom = new_geom(name=f"{name}_collision", group=0, friction=friction, **table_attribs)
-        vis_geom = new_geom(name=f"{name}_visual", group=1, conaffinity=0, contype=0,
-                            material="table_ceramic", **table_attribs)
+        vis_geom = new_geom(
+            name=f"{name}_visual", group=1, conaffinity=0, contype=0, material="table_ceramic", **table_attribs
+        )
         table_body.append(col_geom)
         table_body.append(vis_geom)
 
@@ -126,9 +136,9 @@ class MultiTableArena(Arena):
         Runs any necessary post-processing on the imported Arena model
         """
         # Create tables
-        for i, (offset, rot, half_size, friction, legs) in enumerate(zip(
-            self.table_offsets, self.table_rots, self.table_half_sizes, self.table_frictions, self.has_legs
-        )):
+        for i, (offset, rot, half_size, friction, legs) in enumerate(
+            zip(self.table_offsets, self.table_rots, self.table_half_sizes, self.table_frictions, self.has_legs)
+        ):
             self._add_table(
                 name=f"table{i}",
                 offset=offset,

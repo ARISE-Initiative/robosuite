@@ -1,9 +1,8 @@
 import numpy as np
 
-from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import add_to_dict
-from robosuite.utils.mjcf_utils import CustomMaterial
 import robosuite.utils.transform_utils as T
+from robosuite.models.objects import CompositeObject
+from robosuite.utils.mjcf_utils import CustomMaterial, add_to_dict
 
 
 class Lid(CompositeObject):
@@ -27,7 +26,7 @@ class Lid(CompositeObject):
         handle_size=(0.02, 0.08, 0.03),
         transparent=True,
         friction=None,
-        density=250.,
+        density=250.0,
         use_texture=True,
         rgba=(0.2, 0.1, 0.0, 1.0),
     ):

@@ -1,9 +1,8 @@
 import numpy as np
 
-from robosuite.models.objects import CompositeObject
-from robosuite.utils.mjcf_utils import add_to_dict
-from robosuite.utils.mjcf_utils import CustomMaterial, RED
 import robosuite.utils.transform_utils as T
+from robosuite.models.objects import CompositeObject
+from robosuite.utils.mjcf_utils import RED, CustomMaterial, add_to_dict
 
 
 class StandWithMount(CompositeObject):
@@ -27,15 +26,15 @@ class StandWithMount(CompositeObject):
         self,
         name,
         size=(0.3, 0.3, 0.15),
-        mount_location=(0., 0.),
+        mount_location=(0.0, 0.0),
         mount_width=0.05,
         wall_thickness=0.01,
         base_thickness=0.01,
         initialize_on_side=True,
         add_hole_vis=False,
         friction=None,
-        density=1000.,
-        solref=(0.02, 1.),
+        density=1000.0,
+        solref=(0.02, 1.0),
         solimp=(0.9, 0.95, 0.001),
         use_texture=True,
         rgba=(0.2, 0.1, 0.0, 1.0),
@@ -118,10 +117,18 @@ class StandWithMount(CompositeObject):
         )
 
         # Walls
-        x_vals = np.array([0, -(self.mount_width - self.wall_thickness) / 2,
-                           0, (self.mount_width - self.wall_thickness) / 2]) + self.mount_location[0]
-        y_vals = np.array([-(self.mount_width - self.wall_thickness) / 2, 0,
-                           (self.mount_width - self.wall_thickness) / 2, 0]) + self.mount_location[1]
+        x_vals = (
+            np.array(
+                [0, -(self.mount_width - self.wall_thickness) / 2, 0, (self.mount_width - self.wall_thickness) / 2]
+            )
+            + self.mount_location[0]
+        )
+        y_vals = (
+            np.array(
+                [-(self.mount_width - self.wall_thickness) / 2, 0, (self.mount_width - self.wall_thickness) / 2, 0]
+            )
+            + self.mount_location[1]
+        )
         r_vals = np.array([np.pi / 2, 0, -np.pi / 2, np.pi])
         for i, (x, y, r) in enumerate(zip(x_vals, y_vals, r_vals)):
             add_to_dict(
@@ -150,7 +157,7 @@ class StandWithMount(CompositeObject):
                 geom_quats=(1, 0, 0, 0),
                 geom_sizes=vis_geom_size,
                 geom_names="hole_vis",
-                geom_rgbas=(0., 1., 0., 0.5),
+                geom_rgbas=(0.0, 1.0, 0.0, 0.5),
                 geom_materials=None,
                 geom_frictions=self.friction,
                 obj_types="visual",

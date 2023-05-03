@@ -53,8 +53,9 @@ def get_contacts(sim, model):
         AssertionError: [Invalid input type]
     """
     # Make sure model is MujocoModel type
-    assert isinstance(model, MujocoModel), \
-        "Inputted model must be of type MujocoModel; got type {} instead!".format(type(model))
+    assert isinstance(model, MujocoModel), "Inputted model must be of type MujocoModel; got type {} instead!".format(
+        type(model)
+    )
     contact_set = set()
     for contact in sim.data.contact[: sim.data.ncon]:
         # check contact geom in geoms; add to contact set if match is found
