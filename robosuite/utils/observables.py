@@ -376,7 +376,10 @@ class Observable:
             _ = self.modality
             self._data_shape = np.array(self._sensor({})).shape
             self._is_number = len(self._data_shape) == 1 and self._data_shape[0] == 1
-        except:
+        except Exception as e:
+            from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+
+            ROBOSUITE_DEFAULT_LOGGER.error(e)
             raise ValueError("Current sensor for observable {} is invalid.".format(self.name))
 
     @property

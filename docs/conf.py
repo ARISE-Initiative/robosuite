@@ -45,17 +45,17 @@ extensions = [
 ]
 
 mathjax_config = {
-    'tex2jax': {
-        'inlineMath': [ ["\\(","\\)"] ],
-        'displayMath': [["\\[","\\]"] ],
+    "tex2jax": {
+        "inlineMath": [["\\(", "\\)"]],
+        "displayMath": [["\\[", "\\]"]],
     },
 }
 
 mathjax3_config = {
-  "tex": {
-    "inlineMath": [['\\(', '\\)']],
-    "displayMath": [["\\[", "\\]"]],
-  }
+    "tex": {
+        "inlineMath": [["\\(", "\\)"]],
+        "displayMath": [["\\[", "\\]"]],
+    }
 }
 
 # Sphinx-apidoc variables
@@ -133,9 +133,7 @@ html_css_files = [
     "css/theme.css",
 ]
 
-html_js_files = [
-    "js/custom.js"
-]
+html_js_files = ["js/custom.js"]
 
 
 # -- Options for HTMLHelp output ------------------------------------------
