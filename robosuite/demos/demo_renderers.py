@@ -36,9 +36,7 @@ if __name__ == "__main__":
     print(suite.__logo__)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--renderer", type=str, default="mujoco", help="Valid options include mujoco, nvisii, and igibson"
-    )
+    parser.add_argument("--renderer", type=str, default="mujoco", help="Valid options include mujoco, and nvisii")
 
     args = parser.parse_args()
     renderer = args.renderer

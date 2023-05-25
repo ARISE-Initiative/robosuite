@@ -10,7 +10,7 @@ Arguments:
     --visualize-gripper (optional): If set, will visualize the gripper site
 
 Example:
-    $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/SawyerPickPlace/
+    $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/lift/
 """
 
 import argparse
@@ -22,7 +22,6 @@ import h5py
 import numpy as np
 
 import robosuite
-from robosuite.utils.mjcf_utils import postprocess_model_xml
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -60,14 +59,14 @@ if __name__ == "__main__":
     while True:
         print("Playing back random episode... (press ESC to quit)")
 
-        # # select an episode randomly
+        # select an episode randomly
         ep = random.choice(demos)
 
         # read the model xml, using the metadata stored in the attribute for this episode
         model_xml = f["data/{}".format(ep)].attrs["model_file"]
 
         env.reset()
-        xml = postprocess_model_xml(model_xml)
+        xml = env.edit_model_xml(model_xml)
         env.reset_from_xml_string(xml)
         env.sim.reset()
         env.viewer.set_camera(0)

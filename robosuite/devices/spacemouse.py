@@ -31,6 +31,7 @@ except ModuleNotFoundError as exc:
         "requirements with `pip install -r requirements-extra.txt`"
     ) from exc
 
+import robosuite.macros as macros
 from robosuite.devices import Device
 from robosuite.utils.transform_utils import rotation_matrix
 
@@ -110,11 +111,19 @@ class SpaceMouse(Device):
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
-    def __init__(self, vendor_id=9583, product_id=50735, pos_sensitivity=1.0, rot_sensitivity=1.0):
+    def __init__(
+        self,
+        vendor_id=macros.SPACEMOUSE_VENDOR_ID,
+        product_id=macros.SPACEMOUSE_PRODUCT_ID,
+        pos_sensitivity=1.0,
+        rot_sensitivity=1.0,
+    ):
 
         print("Opening SpaceMouse device")
+        self.vendor_id = vendor_id
+        self.product_id = product_id
         self.device = hid.device()
-        self.device.open(vendor_id, product_id)  # SpaceMouse
+        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -157,7 +166,6 @@ class SpaceMouse(Device):
         print_command("Move mouse laterally", "move arm horizontally in x-y plane")
         print_command("Move mouse vertically", "move arm vertically")
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
-        print_command("ESC", "quit")
         print("")
 
     def _reset_internal_state(self):
@@ -216,25 +224,50 @@ class SpaceMouse(Device):
             d = self.device.read(13)
             if d is not None and self._enabled:
 
-                if d[0] == 1:  ## readings from 6-DoF sensor
-                    self.y = convert(d[1], d[2])
-                    self.x = convert(d[3], d[4])
-                    self.z = convert(d[5], d[6]) * -1.0
+                if self.product_id == 50741:
+                    ## logic for older spacemouse model
 
-                    self.roll = convert(d[7], d[8])
-                    self.pitch = convert(d[9], d[10])
-                    self.yaw = convert(d[11], d[12])
+                    if d[0] == 1:  ## readings from 6-DoF sensor
+                        self.y = convert(d[1], d[2])
+                        self.x = convert(d[3], d[4])
+                        self.z = convert(d[5], d[6]) * -1.0
 
-                    self._control = [
-                        self.x,
-                        self.y,
-                        self.z,
-                        self.roll,
-                        self.pitch,
-                        self.yaw,
-                    ]
+                    elif d[0] == 2:
 
-                elif d[0] == 3:  ## readings from the side buttons
+                        self.roll = convert(d[1], d[2])
+                        self.pitch = convert(d[3], d[4])
+                        self.yaw = convert(d[5], d[6])
+
+                        self._control = [
+                            self.x,
+                            self.y,
+                            self.z,
+                            self.roll,
+                            self.pitch,
+                            self.yaw,
+                        ]
+                else:
+                    ## default logic for all other spacemouse models
+
+                    if d[0] == 1:  ## readings from 6-DoF sensor
+                        self.y = convert(d[1], d[2])
+                        self.x = convert(d[3], d[4])
+                        self.z = convert(d[5], d[6]) * -1.0
+
+                        self.roll = convert(d[7], d[8])
+                        self.pitch = convert(d[9], d[10])
+                        self.yaw = convert(d[11], d[12])
+
+                        self._control = [
+                            self.x,
+                            self.y,
+                            self.z,
+                            self.roll,
+                            self.pitch,
+                            self.yaw,
+                        ]
+
+                if d[0] == 3:  ## readings from the side buttons
 
                     # press left button
                     if d[1] == 1:

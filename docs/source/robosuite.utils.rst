@@ -4,6 +4,14 @@ robosuite.utils package
 Submodules
 ----------
 
+robosuite.utils.binding\_utils module
+-------------------------------------
+
+.. automodule:: robosuite.utils.binding_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.utils.buffers module
 ------------------------------
 
@@ -44,10 +52,10 @@ robosuite.utils.input\_utils module
    :undoc-members:
    :show-inheritance:
 
-robosuite.utils.macros module
------------------------------
+robosuite.utils.log\_utils module
+---------------------------------
 
-.. automodule:: robosuite.utils.macros
+.. automodule:: robosuite.utils.log_utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -80,6 +88,14 @@ robosuite.utils.observables module
 ----------------------------------
 
 .. automodule:: robosuite.utils.observables
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.opencv\_renderer module
+---------------------------------------
+
+.. automodule:: robosuite.utils.opencv_renderer
    :members:
    :undoc-members:
    :show-inheritance:

@@ -11,7 +11,6 @@ Base Environment
 .. autoclass:: robosuite.environments.base.MujocoEnv
 
   .. automethod:: initialize_time
-  .. automethod:: set_model_postprocessor
   .. automethod:: reset
   .. automethod:: step
   .. automethod:: reward

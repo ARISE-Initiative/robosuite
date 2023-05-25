@@ -23,6 +23,9 @@ class Arena(MujocoXML):
         self.bottom_pos = np.zeros(3)
         self.floor = self.worldbody.find("./geom[@name='floor']")
 
+        # Run any necessary post-processing on the model
+        self._postprocess_arena()
+
         # Recolor all geoms
         recolor_collision_geoms(
             root=self.worldbody,
@@ -70,3 +73,9 @@ class Arena(MujocoXML):
             # Otherwise, we edit all specified attributes in that camera
             for attrib, value in camera_attribs.items():
                 camera.set(attrib, value)
+
+    def _postprocess_arena(self):
+        """
+        Runs any necessary post-processing on the imported Arena model
+        """
+        pass

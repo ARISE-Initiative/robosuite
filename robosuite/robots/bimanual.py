@@ -203,14 +203,15 @@ class Bimanual(Manipulator):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
 
-        if not deterministic:
-            # Now, reset the gripper if necessary
-            for arm in self.arms:
-                if self.has_gripper[arm]:
-                    self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[arm]] = self.gripper[arm].init_qpos
-
         # Setup arm-specific values
         for arm in self.arms:
+            # Now, reset the grippers if necessary
+            if self.has_gripper[arm]:
+                if not deterministic:
+                    self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[arm]] = self.gripper[arm].init_qpos
+
+                self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
+
             # Update base pos / ori references in controller (technically only needs to be called once)
             self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
             # Setup buffers for eef values

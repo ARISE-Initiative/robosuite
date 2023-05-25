@@ -13,8 +13,8 @@ Example:
 import argparse
 import sys
 
+import cv2
 import numpy as np
-import pygame
 
 import robosuite as suite
 from robosuite import load_controller_config
@@ -44,8 +44,6 @@ if __name__ == "__main__":
     parser.add_argument("--width", type=int, default=512)
     parser.add_argument("--height", type=int, default=384)
     args = parser.parse_args()
-
-    screen = pygame.display.set_mode((args.width, args.height))
 
     # Import controller config for EE IK or OSC (pos/ori)
     if args.controller == "ik":
@@ -181,11 +179,6 @@ if __name__ == "__main__":
         from robosuite.devices import Keyboard
 
         device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-        # Define wrapper method for keyboard callback that only uses the key
-        pygame.key.set_repeat(20)
-        on_press = lambda key: device.on_press(None, ord(chr(key).capitalize()), None, None, None)
-        on_release = lambda key: device.on_release(None, ord(chr(key).capitalize()), None, None, None)
-
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
@@ -264,18 +257,8 @@ if __name__ == "__main__":
                 f"Delay: {calculate_proprio_delay():.3f} sec"
             )
 
-            # Handle display callbacks
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                # Handle keyboard events if appropriate
-                if args.device == "keyboard":
-                    if event.type == pygame.KEYDOWN:
-                        on_press(event.key)
-                    elif event.type == pygame.KEYUP:
-                        on_release(event.key)
-
             # read camera observation
-            im = np.flip(obs[args.camera + "_image"].transpose((1, 0, 2)), 1).astype(np.int)
-            pygame.pixelcopy.array_to_surface(screen, im)
-            pygame.display.update()
+            im = np.flip(obs[args.camera + "_image"][..., ::-1], 0).astype(np.uint8)
+
+            cv2.imshow("offscreen render", im)
+            cv2.waitKey(1)

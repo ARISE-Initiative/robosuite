@@ -5,6 +5,7 @@ By default, this visualizes all sites possible for the environment. Visualizatio
 for a given environment can be found by calling `get_visualization_settings()`, and can
 be set individually by calling `set_visualization_setting(setting, visible)`.
 """
+import xml.etree.ElementTree as ET
 from copy import deepcopy
 
 import numpy as np
@@ -70,7 +71,7 @@ class VisualizationWrapper(Wrapper):
         self._vis_settings = {vis: True for vis in self.env._visualizations}
 
         # Add the post-processor to make sure indicator objects get added to model before it's actually loaded in sim
-        self.env.set_model_postprocessor(postprocessor=self._add_indicators_to_model)
+        self.env.set_xml_processor(processor=self._add_indicators_to_model)
 
         # Conduct a (hard) reset to make sure visualization changes propagate
         reset_mode = self.env.hard_reset
@@ -163,16 +164,23 @@ class VisualizationWrapper(Wrapper):
 
         return ret
 
-    def _add_indicators_to_model(self, model):
+    def _add_indicators_to_model(self, xml):
         """
         Adds indicators to the mujoco simulation model
 
         Args:
-            model (Task): Task instance including all mujoco models for the current simulation to be loaded
+            xml (string): MJCF model in xml format, for the current simulation to be loaded
         """
         if self.indicator_configs is not None:
+            root = ET.fromstring(xml)
+            worldbody = root.find("worldbody")
+
             for indicator_config in self.indicator_configs:
                 config = deepcopy(indicator_config)
                 indicator_body = new_body(name=config["name"] + "_body", pos=config.pop("pos", (0, 0, 0)))
                 indicator_body.append(new_site(**config))
-                model.worldbody.append(indicator_body)
+                worldbody.append(indicator_body)
+
+            xml = ET.tostring(root, encoding="utf8").decode("utf8")
+
+        return xml

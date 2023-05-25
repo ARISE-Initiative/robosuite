@@ -111,10 +111,6 @@ if __name__ == "__main__":
     steps_per_action = 75
     steps_per_rest = 75
 
-    # Help message to user
-    print()
-    print('Press "H" to show the viewer control panel.')
-
     # initialize the task
     env = suite.make(
         **options,

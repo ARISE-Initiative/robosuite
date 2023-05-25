@@ -12,13 +12,13 @@ class BaseParser(object):
         Parse the mujoco xml and initialize iG renderer objects.
 
         Args:
-            renderer: iGibson renderer
+            renderer: the renderer
             env : Mujoco env
         """
 
         self.renderer = renderer
         self.env = env
-        self.xml_root = ET.fromstring(self.env.mjpy_model.get_xml())
+        self.xml_root = ET.fromstring(self.env.sim.model.get_xml())
         self.parent_map = {c: p for p in self.xml_root.iter() for c in p}
         self.visual_objects = {}
 
@@ -50,6 +50,6 @@ class BaseParser(object):
 
     def parse_geometries(self):
         """
-        Iterate through each goemetry and load it in the iGibson renderer.
+        Iterate through each geometry and load it in the renderer.
         """
         raise NotImplementedError

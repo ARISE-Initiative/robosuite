@@ -14,21 +14,21 @@
 
     <tendon>
 		<!--finger2 tendons-->
-        <fixed name="finger2_12_cpl" range="0 1">
+        <fixed name="finger2_12_cpl" range="0 1" limited="true">
 			<joint joint="finger_joint"  coef="1"/>
 			<joint joint="left_inner_finger_joint"  coef="1.5"/>
 		</fixed>
-		<fixed name="finger2_23_cpl" range="0 1">
+		<fixed name="finger2_23_cpl" range="0 1" limited="true">
 			<joint joint="left_inner_finger_joint"  coef="1"/>
 			<joint joint="left_inner_knuckle_joint"  coef="3.5"/>
 		</fixed>
 
 		<!--Finger1 tendons-->
-        <fixed name="finger1_12_cpl" range="0 1">
+        <fixed name="finger1_12_cpl" range="0 1" limited="true">
 			<joint joint="right_outer_knuckle_joint"  coef="1"/>
 			<joint joint="right_inner_finger_joint"  coef="-1.5"/>
 		</fixed>
-		<fixed name="finger1_23_cpl" range="0 1">
+		<fixed name="finger1_23_cpl" range="0 1" limited="true">
 			<joint joint="right_inner_finger_joint"  coef="1"/>
 			<joint joint="right_inner_knuckle_joint"  coef="3.5"/>
 		</fixed>

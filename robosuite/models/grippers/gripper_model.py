@@ -3,8 +3,9 @@ Defines the base class of all grippers
 """
 import numpy as np
 
+import robosuite.utils.transform_utils as T
 from robosuite.models.base import MujocoXMLModel
-from robosuite.utils.mjcf_utils import GRIPPER_COLLISION_COLOR
+from robosuite.utils.mjcf_utils import GRIPPER_COLLISION_COLOR, find_elements, string_to_array
 
 
 class GripperModel(MujocoXMLModel):
@@ -23,9 +24,15 @@ class GripperModel(MujocoXMLModel):
         self.current_action = np.zeros(self.dof)
 
         # Grab gripper offset (string -> np.array -> elements [1, 2, 3, 0] (x, y, z, w))
-        self.rotation_offset = np.fromstring(
-            self.worldbody[0].attrib.get("quat", "1 0 0 0"), dtype=np.float64, sep=" "
-        )[[1, 2, 3, 0]]
+        # This is the comopunded rotation with the base body and the eef body as well!
+        base_quat = np.fromstring(self.worldbody[0].attrib.get("quat", "1 0 0 0"), dtype=np.float64, sep=" ")[
+            [1, 2, 3, 0]
+        ]
+        eef_element = find_elements(
+            root=self.root, tags="body", attribs={"name": self.correct_naming("eef")}, return_first=True
+        )
+        eef_relative_quat = string_to_array(eef_element.get("quat", "1 0 0 0"))[[1, 2, 3, 0]]
+        self.rotation_offset = T.quat_multiply(eef_relative_quat, base_quat)
 
     def format_action(self, action):
         """

@@ -41,10 +41,6 @@ if __name__ == "__main__":
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
-    # Help message to user
-    print()
-    print('Press "H" to show the viewer control panel.')
-
     # initialize the task
     env = suite.make(
         **options,

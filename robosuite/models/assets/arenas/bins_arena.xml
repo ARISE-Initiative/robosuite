@@ -1,14 +1,14 @@
 <mujoco model="bins_arena">
   <asset>
     <texture builtin="gradient" height="256" rgb1=".9 .9 1." rgb2=".2 .3 .4" type="skybox" width="256"/>
-    <texture file="../textures/wood-tiles.png" type="2d" name="texplane"/>
+    <texture file="../textures/light-gray-floor-tile.png" type="2d" name="texplane"/>
     <material name="floorplane" reflectance="0.01" shininess="0.0" specular="0.0" texrepeat="2 2" texture="texplane" texuniform="true"/>
     <!-- steel legs -->
     <texture file="../textures/steel-brushed.png" type="cube" name="tex-steel-brushed"/>
     <material name="table_legs_metal" reflectance="0.8" shininess="0.8" texrepeat="1 1" texture="tex-steel-brushed" />
     <!-- plaster walls -->
-    <texture file="../textures/cream-plaster.png" type="2d" name="tex-cream-plaster"/>
-    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-cream-plaster" texuniform="true" />
+    <texture file="../textures/light-gray-plaster.png" type="2d" name="tex-light-gray-plaster"/>
+    <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-light-gray-plaster" texuniform="true" />
     <!-- bins -->
     <texture file="../textures/light-wood.png" type="2d" name="tex-light-wood"/>
     <texture file="../textures/dark-wood.png" type="2d" name="tex-dark-wood"/>
@@ -16,7 +16,7 @@
     <material name="dark-wood" reflectance="0" texrepeat="5 5" texture="tex-dark-wood" texuniform="true"/>
   </asset>
   <worldbody>
-    <geom condim="3" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
+    <geom condim="3" group="1" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
     <!-- Walls (visual only) -->
     <geom pos="-1.25 2.25 1.5" quat="0.6532815 0.6532815 0.2705981 0.2705981" size="1.06 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_leftcorner_visual" material="walls_mat"/>
     <geom pos="-1.25 -2.25 1.5" quat="0.6532815 0.6532815 -0.2705981 -0.2705981" size="1.06 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rightcorner_visual" material="walls_mat"/>
@@ -63,9 +63,7 @@
         <geom pos="-0.15 -0.2 -0.4" size="0.01 0.4" type="cylinder" conaffinity="0" contype="0" group="1" name="bin2_leg3_visual" material="table_legs_metal"/>
         <geom pos="0.15 -0.2 -0.4" size="0.01 0.4" type="cylinder" conaffinity="0" contype="0" group="1" name="bin2_leg4_visual" material="table_legs_metal"/>
     </body>
-
-    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
+    <light pos="1.0 1.0 1.5" dir="-0.2 -0.2 -1" specular="0.3 0.3 0.3" directional="true" castshadow="false"/>
     <!-- front view -->
     <camera mode="fixed" name="frontview" pos="1.6 0 1.45" quat="0.56 0.43 0.43 0.56"/>
     <!-- bird view -->

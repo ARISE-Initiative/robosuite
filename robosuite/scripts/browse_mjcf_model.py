@@ -3,15 +3,17 @@
 Loads MJCF XML models from file and renders it on screen.
 
 Example:
-    $ python browse_arena_model.py --filepath ../models/assets/arenas/table_arena.xml
+    $ python browse_mjcf_model.py --filepath ../models/assets/arenas/table_arena.xml
 """
 
 import argparse
 import os
 
-from mujoco_py import MjSim, MjViewer, load_model_from_path
+import mujoco
 
 import robosuite as suite
+from robosuite.utils import OpenCVRenderer
+from robosuite.utils.binding_utils import MjRenderContext, MjSim
 
 if __name__ == "__main__":
 
@@ -21,9 +23,11 @@ if __name__ == "__main__":
     parser.add_argument("--filepath", type=str, default=arena_file)
     args = parser.parse_args()
 
-    model = load_model_from_path(args.filepath)
+    model = mujoco.MjModel.from_xml_path(args.filepath)
     sim = MjSim(model)
-    viewer = MjViewer(sim)
+    render_context = MjRenderContext(sim)
+    sim.add_render_context(render_context)
+    viewer = OpenCVRenderer(sim)
 
     print("Press ESC to exit...")
     while True:

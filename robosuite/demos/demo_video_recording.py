@@ -11,7 +11,7 @@ import argparse
 import imageio
 import numpy as np
 
-import robosuite.utils.macros as macros
+import robosuite.macros as macros
 from robosuite import make
 
 # Set the image convention to opencv so that the images are automatically rendered "right side up" when using imageio
