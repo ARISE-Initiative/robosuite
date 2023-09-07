@@ -125,7 +125,8 @@ class Wrapper:
             def hooked(*args, **kwargs):
                 result = orig_attr(*args, **kwargs)
                 # prevent wrapped_class from becoming unwrapped
-                if result == self.env:
+                # NOTE: had to use "is" to prevent errors when returning numpy arrays from a wrapped method
+                if result is self.env:
                     return self
                 return result
 

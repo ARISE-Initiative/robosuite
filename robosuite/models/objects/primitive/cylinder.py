@@ -90,3 +90,6 @@ class CylinderObject(PrimitiveObject):
     @property
     def horizontal_radius(self):
         return self.size[0]
+
+    def get_bounding_box_size(self):
+        return np.array([self.size[0], self.size[0], self.size[1]])

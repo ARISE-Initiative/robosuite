@@ -54,6 +54,13 @@ class CompositeBodyObject(MujocoGeneratedObject):
             top-level object site will be used. Otherwise, should be a list of dictionaries, where each dictionary
             should specify the appropriate attributes for the given site.
             See http://www.mujoco.org/book/XMLreference.html#site for reference.
+
+        total_size (None or np.array): if provided, use this to describe the bounding box for this composite body
+            object. Can also be used to specify @object_locations relative to the lower left corner of the bounding
+            box defined by @total_size, instead of the center of this body, with @locations_relative_to_corner.
+
+        locations_relative_to_corner (bool): if True, must supply @total_size. All object locations will be
+            relative to the lower left corner of the bounding box.
     """
 
     def __init__(
@@ -66,6 +73,8 @@ class CompositeBodyObject(MujocoGeneratedObject):
         joints="default",
         body_joints=None,
         sites=None,
+        total_size=None,
+        locations_relative_to_corner=False,
     ):
         # Always call superclass first
         super().__init__()
@@ -126,6 +135,11 @@ class CompositeBodyObject(MujocoGeneratedObject):
             if "name" not in site_spec:
                 site_spec["name"] = "site{}".format(s_num)
                 s_num += 1
+
+        self.total_size = np.array(total_size) if total_size is not None else None
+        self.locations_relative_to_corner = locations_relative_to_corner
+        if self.locations_relative_to_corner:
+            assert self.total_size is not None
 
         # Always run sanity check
         self.sanity_check()
@@ -194,6 +208,17 @@ class CompositeBodyObject(MujocoGeneratedObject):
         # Get the object xml element tree, remove its top-level joints, and modify its top-level pos / quat
         child = obj.get_obj()
         self._remove_joints(child)
+
+        if self.locations_relative_to_corner:
+            # use object location to convert to position coordinate (the origin is the
+            # center of the composite object)
+            cartesian_size = obj.get_bounding_box_size()
+            pos = [
+                (-self.total_size[0] + cartesian_size[0]) + pos[0],
+                (-self.total_size[1] + cartesian_size[1]) + pos[1],
+                (-self.total_size[2] + cartesian_size[2]) + pos[2],
+            ]
+
         child.set("pos", array_to_string(pos))
         child.set("quat", array_to_string(quat))
         # Add this object and its assets to this composite object
@@ -258,6 +283,11 @@ class CompositeBodyObject(MujocoGeneratedObject):
     @property
     def horizontal_radius(self):
         return self._horizontal
+
+    def get_bounding_box_size(self):
+        if self.total_size is not None:
+            return np.array(self.total_size)
+        return super().get_bounding_box_size()
 
 
 class CompositeObject(MujocoGeneratedObject):

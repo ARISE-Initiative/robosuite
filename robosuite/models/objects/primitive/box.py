@@ -66,3 +66,6 @@ class BoxObject(PrimitiveObject):
     @property
     def horizontal_radius(self):
         return np.linalg.norm(self.size[0:2], 2)
+
+    def get_bounding_box_size(self):
+        return np.array([self.size[0], self.size[1], self.size[2]])
