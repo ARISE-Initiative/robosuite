@@ -2,6 +2,7 @@ from robosuite.environments.base import make
 
 # Manipulation environments
 from robosuite.environments.manipulation.lift import Lift
+from libero.libero.envs.problems.libero_kitchen_tabletop_manipulation import Libero_Kitchen_Tabletop_Manipulation
 from robosuite.environments.manipulation.stack import Stack
 from robosuite.environments.manipulation.nut_assembly import NutAssembly
 from robosuite.environments.manipulation.pick_place import PickPlace
