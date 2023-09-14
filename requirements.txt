@@ -1,5 +1,5 @@
 numpy>=1.20.0
 numba>=0.52.0
 scipy>=1.2.3
-mujoco-py==2.0.2.13
+mujoco-py==2.1.2.14
 -e .
