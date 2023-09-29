@@ -288,6 +288,15 @@ class MujocoObject(MujocoModel):
             "type": "free",
         }
 
+    def get_bounding_box_half_size(self):
+        raise NotImplementedError
+
+    def get_bounding_box_size(self):
+        """
+        Returns numpy array with dimensions of a bounding box around this object.
+        """
+        return 2. * self.get_bounding_box_half_size()
+
 
 class MujocoXMLObject(MujocoObject, MujocoXML):
     """
@@ -460,7 +469,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
-    def get_bounding_box_size(self):
+    def get_bounding_box_half_size(self):
         horizontal_radius_site = self.worldbody.find(
             "./body/site[@name='{}horizontal_radius_site']".format(self.naming_prefix)
         )
@@ -574,5 +583,5 @@ class MujocoGeneratedObject(MujocoObject):
     def horizontal_radius(self):
         raise NotImplementedError
 
-    def get_bounding_box_size(self):
+    def get_bounding_box_half_size(self):
         return np.array([self.horizontal_radius, self.horizontal_radius, 0.]) - self.bottom_offset

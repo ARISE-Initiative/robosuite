@@ -212,7 +212,7 @@ class CompositeBodyObject(MujocoGeneratedObject):
         if self.locations_relative_to_corner:
             # use object location to convert to position coordinate (the origin is the
             # center of the composite object)
-            cartesian_size = obj.get_bounding_box_size()
+            cartesian_size = obj.get_bounding_box_half_size()
             pos = [
                 (-self.total_size[0] + cartesian_size[0]) + pos[0],
                 (-self.total_size[1] + cartesian_size[1]) + pos[1],
@@ -284,10 +284,10 @@ class CompositeBodyObject(MujocoGeneratedObject):
     def horizontal_radius(self):
         return self._horizontal
 
-    def get_bounding_box_size(self):
+    def get_bounding_box_half_size(self):
         if self.total_size is not None:
             return np.array(self.total_size)
-        return super().get_bounding_box_size()
+        return super().get_bounding_box_half_size()
 
 
 class CompositeObject(MujocoGeneratedObject):
@@ -438,7 +438,7 @@ class CompositeObject(MujocoGeneratedObject):
         # Extract the appropriate private attributes for this
         self._get_object_properties()
 
-    def get_bounding_box_size(self):
+    def get_bounding_box_half_size(self):
         return np.array(self.total_size)
 
     def in_box(self, position, object_position):

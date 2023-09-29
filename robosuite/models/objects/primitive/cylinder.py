@@ -91,5 +91,5 @@ class CylinderObject(PrimitiveObject):
     def horizontal_radius(self):
         return self.size[0]
 
-    def get_bounding_box_size(self):
+    def get_bounding_box_half_size(self):
         return np.array([self.size[0], self.size[0], self.size[1]])
