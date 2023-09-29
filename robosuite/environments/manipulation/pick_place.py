@@ -68,6 +68,11 @@ class PickPlace(SingleArmEnv):
 
         bin2_pos (3-tuple): Absolute cartesian coordinates of the goal bin
 
+        z_offset (float): amount of z offset for initializing objects in bin
+
+        z_rotation (float, tuple, or None): if provided, controls the range of z-rotation initialization
+            for the objects
+
         use_camera_obs (bool): if True, every observation includes rendered image(s)
 
         use_object_obs (bool): if True, include object (cube) information in
@@ -170,6 +175,8 @@ class PickPlace(SingleArmEnv):
         table_friction=(1, 0.005, 0.0001),
         bin1_pos=(0.1, -0.25, 0.8),
         bin2_pos=(0.1, 0.28, 0.8),
+        z_offset=0.,
+        z_rotation=None,
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
@@ -213,6 +220,8 @@ class PickPlace(SingleArmEnv):
         # settings for bin position
         self.bin1_pos = np.array(bin1_pos)
         self.bin2_pos = np.array(bin2_pos)
+        self.z_offset = z_offset # z offset for initializing items in bin
+        self.z_rotation = z_rotation # z rotation for initializing items in bin
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -419,12 +428,12 @@ class PickPlace(SingleArmEnv):
                 mujoco_objects=self.objects,
                 x_range=[-bin_x_half, bin_x_half],
                 y_range=[-bin_y_half, bin_y_half],
-                rotation=None,
+                rotation=self.z_rotation,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=True,
                 ensure_valid_placement=True,
                 reference_pos=self.bin1_pos,
-                z_offset=0.0,
+                z_offset=self.z_offset,
             )
         )
 
@@ -467,6 +476,31 @@ class PickPlace(SingleArmEnv):
             )
             index += 1
 
+    def _construct_visual_objects(self):
+        """
+        Function that can be overriden by subclasses to load different objects.
+        """
+        self.visual_objects = []
+        for vis_obj_cls, obj_name in zip(
+                (MilkVisualObject, BreadVisualObject, CerealVisualObject, CanVisualObject),
+                self.obj_names,
+        ):
+            vis_name = "Visual" + obj_name
+            vis_obj = vis_obj_cls(name=vis_name)
+            self.visual_objects.append(vis_obj)
+
+    def _construct_objects(self):
+        """
+        Function that can be overriden by subclasses to load different objects.
+        """
+        self.objects = []
+        for obj_cls, obj_name in zip(
+                (MilkObject, BreadObject, CerealObject, CanObject),
+                self.obj_names,
+        ):
+            obj = obj_cls(name=obj_name)
+            self.objects.append(obj)
+
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
@@ -488,22 +522,9 @@ class PickPlace(SingleArmEnv):
         # store some arena attributes
         self.bin_size = mujoco_arena.table_full_size
 
-        self.objects = []
-        self.visual_objects = []
-        for vis_obj_cls, obj_name in zip(
-            (MilkVisualObject, BreadVisualObject, CerealVisualObject, CanVisualObject),
-            self.obj_names,
-        ):
-            vis_name = "Visual" + obj_name
-            vis_obj = vis_obj_cls(name=vis_name)
-            self.visual_objects.append(vis_obj)
-
-        for obj_cls, obj_name in zip(
-            (MilkObject, BreadObject, CerealObject, CanObject),
-            self.obj_names,
-        ):
-            obj = obj_cls(name=obj_name)
-            self.objects.append(obj)
+        # make objects
+        self._construct_visual_objects()
+        self._construct_objects()
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
