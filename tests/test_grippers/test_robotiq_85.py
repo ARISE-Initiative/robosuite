@@ -11,8 +11,8 @@ def robotiq_tester(render, total_iters=1, test_y=True):
         gripper=gripper,
         pos="-0.02 0 0.3",
         quat="0 0 1 0",
-        gripper_low_pos=-0.065,
-        gripper_high_pos=0.01,
+        gripper_low_pos=-0.045,
+        gripper_high_pos=0.02,
         box_size=[0.025] * 3,
         render=render,
     )
