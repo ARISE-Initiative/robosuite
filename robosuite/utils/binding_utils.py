@@ -39,7 +39,9 @@ if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["os
     # option for rendering
     if _SYSTEM == "Darwin":
         os.environ["MUJOCO_GL"] = "cgl"
-    else:
+    elif _SYSTEM == "Windows":
+        os.environ["MUJOCO_GL"] = "wgl"
+    elif _SYSTEM == "Linux":
         os.environ["MUJOCO_GL"] = "egl"
 _MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
 if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
