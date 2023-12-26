@@ -13,7 +13,7 @@ long_description = "".join(lines)
 
 setup(
     name="robosuite",
-    packages=[package for package in find_packages() if package.startswith("robosuite")],
+    packages=find_packages(include=['robosuite', 'robosuite.*']),
     install_requires=[
         "numpy>=1.13.3",
         "numba>=0.49.1",
