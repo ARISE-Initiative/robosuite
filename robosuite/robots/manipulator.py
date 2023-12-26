@@ -1,4 +1,5 @@
 from robosuite.robots.robot import Robot
+from robosuite.models.grippers.flex_gripper_model import FlexGripperModel
 
 
 class Manipulator(Robot):
@@ -18,8 +19,11 @@ class Manipulator(Robot):
         Executes @gripper_action for specified @gripper
 
         Args:
-            gripper (GripperModel): Gripper to execute action for
+            if isinstance(gripper, GripperModel): Gripper to execute action for
             gripper_action (float): Value between [-1,1] to send to gripper
+
+            if isinstance(gripper, GripperModel): Gripper to execute action for
+            gripper_action (list): List of values between [-1,1] to send to gripper
         """
         actuator_idxs = [self.sim.model.actuator_name2id(actuator) for actuator in gripper.actuators]
         gripper_action_actual = gripper.format_action(gripper_action)

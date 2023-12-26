@@ -49,6 +49,7 @@ class Keyboard(Device):
         print_command("Keys", "Command")
         print_command("q", "reset simulation")
         print_command("spacebar", "toggle gripper (open/close)")
+        print_command("1", "toggle palm adhesiveness (if available)")
         print_command("w-a-s-d", "move arm horizontally in x-y plane")
         print_command("r-f", "move arm vertically")
         print_command("z-x", "rotate arm about x-axis")
@@ -66,6 +67,7 @@ class Keyboard(Device):
         self.pos = np.zeros(3)  # (x, y, z)
         self.last_pos = np.zeros(3)
         self.grasp = False
+        self.adhesion = False
 
     def start_control(self):
         """
@@ -94,6 +96,7 @@ class Keyboard(Device):
             rotation=self.rotation,
             raw_drotation=raw_drotation,
             grasp=int(self.grasp),
+            adhesion=int(self.adhesion),
             reset=self._reset_state,
         )
 
@@ -159,6 +162,10 @@ class Keyboard(Device):
             # controls for grasping
             if key == Key.space:
                 self.grasp = not self.grasp  # toggle gripper
+
+            # controls for adhesion
+            if key.char == "1":
+                self.adhesion = not self.adhesion  # toggle adhesion
 
             # user-commanded reset
             elif key.char == "q":
