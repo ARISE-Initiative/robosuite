@@ -19,7 +19,7 @@
               activated only at a depth gap of 1cm, leading to a layer of inactive contacts at a 1cm
               distance from the surface. However the contacts can be used by the adhesion actuator.
             -->
-            <geom rgba="0 0 0 1" margin="0.01" gap="0.01"/>
+            <geom rgba="0 0 1 1" margin="0.004" gap="0.004"/>
         </default>
     </default>
 
@@ -47,11 +47,8 @@
 
     <worldbody>
         <body name="robotiq_85_adapter_link" pos="0.0 0 0" >
-            <body name="palm" pos="0 0 0">
-<!--                <geom pos="0 0 0" size="0.01 0.01 0.25" type="box" class="active_adhesion" group="1"/>-->
-                <composite type="box" count="7 7 7" spacing="0.04">
-                    <geom type="capsule" size=".015 0.05" rgba="0 0 0.5 1" name="gripper0_g0_col" />
-                </composite>
+            <body name="palm" pos="0 0 0.08">
+                <geom pos="0 0 0" size="0.01 0.01 0.03" type="box" class="active_adhesion" group="1"/>
                 <inertial pos="0 0 0" quat="0 0 0 1" mass="0.01" diaginertia="0.01 0.01 0.01" />
             </body>
             <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
