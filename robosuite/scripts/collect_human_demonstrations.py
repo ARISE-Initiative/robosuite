@@ -3,7 +3,6 @@ A script to collect a batch of human demonstrations.
 
 The demonstrations can be played back using the `playback_demonstrations_from_hdf5.py` script.
 """
-
 import argparse
 import datetime
 import json
@@ -14,12 +13,46 @@ from glob import glob
 
 import h5py
 import numpy as np
+import threading
 
 import robosuite as suite
 import robosuite.macros as macros
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
+
+# current_timestamps = 0
+
+
+class EnvRunner:
+    def __init__(self, env, freq=20):
+        self.env = env
+        self.freq = freq
+        self.action = None
+        self.lock = threading.Lock()
+        self.stop_event = threading.Event()
+
+    def set_action(self, action):
+        with self.lock:
+            self.action = action
+
+    def run_step(self):
+        # global current_timestamps
+        target_interval = 1 / self.freq
+        while not self.stop_event.is_set():
+            start_time = time.time()
+            with self.lock:
+                if self.action is not None:
+                    self.env.step(self.action)
+                    # current_timestamps += 1
+
+            end_time = time.time()
+            elapsed = end_time - start_time
+
+            sleep_time = target_interval - elapsed
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+            # print(f"Frequency: {1 / (time.time() - start_time)}")
 
 
 def collect_human_trajectory(env, device, arm, env_configuration):
@@ -34,49 +67,70 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         arms (str): which arm to control (eg bimanual) 'right' or 'left'
         env_configuration (str): specified environment configuration
     """
-
+    deadzone = np.array([0, 0, 0, 0.1, 0.1, 0.1])
     env.reset()
 
     # ID = 2 always corresponds to agentview
     env.render()
 
-    is_first = True
+    env_runner = EnvRunner(env)
+    step_thread = threading.Thread(target=env_runner.run_step)
+    step_thread.start()
+    max_steps = 10 * env_runner.freq
+    # global current_timestamps
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
 
     # Loop until we get a reset from the input or the task completes
-    while True:
-        # Set active robot
-        active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
+    try:
+        while True:
+            # Set active robot
+            active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
 
-        # Get the newest action
-        action, grasp = input2action(
-            device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
-        )
+            # Get the newest action
+            action, grasp = input2action(
+                device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
+            )
+            if action is not None:
+                tmp_xyz = action[:6]
+                is_dead = (-deadzone < tmp_xyz) & (tmp_xyz < deadzone)
+                tmp_xyz[is_dead] = 0
+                action[:6] = tmp_xyz
+            # If action is none, then this a reset so we should break
+            if action is None:
+                break
 
-        # If action is none, then this a reset so we should break
-        if action is None:
-            break
+            # Run environment step
+            # env.step(action)
+            env_runner.set_action(action)
+            env.render()
 
-        # Run environment step
-        env.step(action)
-        env.render()
+            # Also break if we complete the task
+            if task_completion_hold_count == 0:
+                break
 
-        # Also break if we complete the task
-        if task_completion_hold_count == 0:
-            break
-
-        # state machine to check for having a success for 10 consecutive timesteps
-        if env._check_success():
-            if task_completion_hold_count > 0:
-                task_completion_hold_count -= 1  # latched state, decrement count
+            # state machine to check for having a success for 10 consecutive timesteps
+            if env._check_success():
+                if task_completion_hold_count > 0:
+                    task_completion_hold_count -= 1  # latched state, decrement count
+                else:
+                    task_completion_hold_count = 10  # reset count on first success timestep
             else:
-                task_completion_hold_count = 10  # reset count on first success timestep
-        else:
-            task_completion_hold_count = -1  # null the counter if there's no success
+                task_completion_hold_count = -1  # null the counter if there's no success
+
+            # fixed timestamp mode
+            # if current_timestamps == max_steps:
+            #     current_timestamps = 0
+            #     break
+    except KeyboardInterrupt as e:
+        env_runner.stop_event.set()
+        step_thread.join()
+        raise e
 
     # cleanup for end of data collection episodes
+    env_runner.stop_event.set()
+    step_thread.join()
     env.close()
 
 
@@ -118,11 +172,10 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
     env_name = None  # will get populated at some point
 
     for ep_directory in os.listdir(directory):
-
         state_paths = os.path.join(directory, ep_directory, "state_*.npz")
         states = []
         actions = []
-        success = False
+        success = True
 
         for state_file in sorted(glob(state_paths)):
             dic = np.load(state_file, allow_pickle=True)
@@ -192,6 +245,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
+    parser.add_argument("--control_freq", type=int, default=30)
     args = parser.parse_args()
 
     # Get controller config
@@ -202,6 +256,7 @@ if __name__ == "__main__":
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
+        "control_freq": args.control_freq,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
@@ -217,7 +272,6 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
-        control_freq=20,
     )
 
     # Wrap this with visualization wrapper
@@ -247,7 +301,18 @@ if __name__ == "__main__":
     new_dir = os.path.join(args.directory, "{}_{}".format(t1, t2))
     os.makedirs(new_dir)
 
+    idx = 0
     # collect demonstrations
     while True:
+        # current_timestamps = 0
+        print(f"----------------Collected {idx} demonstrations----------------")
         collect_human_trajectory(env, device, args.arm, args.config)
+
+        # delete the latest directory or not
+        if input("Save this demonstration? ([y]/n): ").lower() in {"n", "no"}:
+            env.reset()
+            shutil.rmtree(env.ep_directory)
+            continue
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+
+        idx += 1
