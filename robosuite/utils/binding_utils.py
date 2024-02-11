@@ -762,8 +762,8 @@ class MjData(metaclass=_MjDataMeta):
             jacr (np.ndarray): The jacr value of the mujoco geom
         """
         gid = self.model.geom_name2id(name)
-        jacv = np.zeros((3, self.model.nv))
-        mujoco.mj_jacGeom(self.model._model, self._data, None, jacv, gid)
+        jacr = np.zeros((3, self.model.nv))
+        mujoco.mj_jacGeom(self.model._model, self._data, None, jacr, gid)
         return jacr
 
     def get_geom_xvelp(self, name):
