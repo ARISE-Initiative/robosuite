@@ -23,7 +23,7 @@ class Robotiq85GripperBase(GripperModel):
 
     @property
     def init_qpos(self):
-        return np.array([-0.026, -0.267, -0.200, -0.026, -0.267, -0.200])
+        return np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
     @property
     def _important_geoms(self):
