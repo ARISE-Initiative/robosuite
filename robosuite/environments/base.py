@@ -163,6 +163,13 @@ class MujocoEnv(metaclass=EnvMeta):
             from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
 
             self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
+        elif self.renderer == "mjviewer":
+            from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
+            if self.render_camera is not None:
+                camera_id = self.sim.model.camera_name2id(self.render_camera)
+            else:
+                camera_id = None
+            self.viewer = MjviewerRenderer(env=self, camera_id=camera_id)
         else:
             raise ValueError(
                 f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
@@ -402,6 +409,12 @@ class MujocoEnv(metaclass=EnvMeta):
 
         if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.update()
+        elif self.viewer is None and self.renderer == "mjviewer":
+            # need to launch again after it was destroyed
+            self.initialize_renderer()
+            # so that mujoco viewer renders
+            self.viewer.update()
+        
 
         observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
         return observations, reward, done, info

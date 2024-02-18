@@ -22,7 +22,7 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration):
+def collect_human_trajectory(env, device, arm, env_configuration, render=True):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -38,7 +38,8 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     env.reset()
 
     # ID = 2 always corresponds to agentview
-    env.render()
+    if render:
+        env.render()
 
     is_first = True
 
@@ -61,7 +62,8 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
         # Run environment step
         env.step(action)
-        env.render()
+        if render:
+            env.render()
 
         # Also break if we complete the task
         if task_completion_hold_count == 0:
@@ -192,6 +194,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
+    parser.add_argument("--renderer", type=str, default="mujoco")
     args = parser.parse_args()
 
     # Get controller config
@@ -211,13 +214,14 @@ if __name__ == "__main__":
     # Create environment
     env = suite.make(
         **config,
-        has_renderer=True,
+        has_renderer=(args.renderer != "mjviewer"),
         has_offscreen_renderer=False,
         render_camera=args.camera,
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
         control_freq=20,
+        renderer=args.renderer
     )
 
     # Wrap this with visualization wrapper
@@ -249,5 +253,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
+        collect_human_trajectory(env, device, args.arm, args.config, render=(args.renderer != "mjviewer"))
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
