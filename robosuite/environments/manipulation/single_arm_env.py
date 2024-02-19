@@ -70,3 +70,16 @@ class SingleArmEnv(ManipulationEnv):
             np.array: (x,y,z,w) End Effector quaternion
         """
         return mat2quat(self._eef_xmat)
+
+    def _check_grasp2(self, gripper, object_geoms):
+        check_1 = self._check_grasp(gripper=gripper, object_geoms=object_geoms)
+
+        check_2 = self._check_grasp(
+            gripper=["gripper0_finger1_collision", "gripper0_finger2_pad_collision"], object_geoms=object_geoms
+        )
+
+        check_3 = self._check_grasp(
+            gripper=["gripper0_finger2_collision", "gripper0_finger1_pad_collision"], object_geoms=object_geoms
+        )
+
+        return check_1 or check_2 or check_3

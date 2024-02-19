@@ -128,6 +128,7 @@ class OperationalSpaceController(Controller):
         control_ori=True,
         control_delta=True,
         uncouple_pos_ori=True,
+        optimize_physics=False,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -136,6 +137,7 @@ class OperationalSpaceController(Controller):
             eef_name,
             joint_indexes,
             actuator_range,
+            optimize_physics=optimize_physics,
         )
         # Determine whether this is pos ori or just pos
         self.use_ori = control_ori
@@ -275,6 +277,7 @@ class OperationalSpaceController(Controller):
             )  # goal is the total orientation error
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
+    # @profile
     def run_controller(self):
         """
         Calculates the torques required to reach the desired setpoint.

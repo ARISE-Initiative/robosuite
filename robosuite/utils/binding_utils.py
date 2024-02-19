@@ -88,7 +88,8 @@ class MjRenderContext:
         self.data = sim.data
 
         # create default scene
-        self.scn = mujoco.MjvScene(sim.model._model, maxgeom=1000)
+        # set maxgeom to 10k to support large-scale scenes
+        self.scn = mujoco.MjvScene(sim.model._model, maxgeom=10000)
 
         # camera
         self.cam = mujoco.MjvCamera()
@@ -196,7 +197,11 @@ class MjRenderContext:
     def __del__(self):
         # free mujoco rendering context and GL rendering context
         self.con.free()
-        self.gl_ctx.free()
+        try:
+            self.gl_ctx.free()
+        except Exception:
+            # avoid getting OpenGL.error.GLError
+            pass
         del self.con
         del self.gl_ctx
         del self.scn
@@ -1091,6 +1096,14 @@ class MjSim:
         """Step simulation."""
         mujoco.mj_step(self.model._model, self.data._data)
 
+    def step1(self):
+        """Step1 (before actions are set)."""
+        mujoco.mj_step1(self.model._model, self.data._data)
+
+    def step2(self):
+        """Step2 (after actions are set)."""
+        mujoco.mj_step2(self.model._model, self.data._data)
+
     def render(
         self,
         width=None,
@@ -1118,7 +1131,7 @@ class MjSim:
             if depth=True)
         """
         if camera_name is None:
-            camera_id = None
+            camera_id = -1  # was previously None
         else:
             camera_id = self.model.camera_name2id(camera_name)
 

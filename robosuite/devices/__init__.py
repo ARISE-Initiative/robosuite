@@ -3,7 +3,9 @@ from .keyboard import Keyboard
 
 try:
     from .spacemouse import SpaceMouse
-except ImportError:
+except ImportError as e:
+    print(e)
+    print("exception printed")
     print(
         """Unable to load module hid, required to interface with SpaceMouse.\n
            Only macOS is officially supported. Install the additional\n

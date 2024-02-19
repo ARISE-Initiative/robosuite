@@ -64,7 +64,7 @@ def convert_quat(q, to="xyzw"):
     raise Exception("convert_quat: choose a valid `to` argument (xyzw or wxyz)")
 
 
-def quat_multiply(quaternion1, quaternion0):
+def quat_multiply(quaternion1, quaternion0, format="xyzw"):
     """
     Return multiplication of two quaternions (q1 * q0).
 
@@ -80,9 +80,14 @@ def quat_multiply(quaternion1, quaternion0):
     Returns:
         np.array: (x,y,z,w) multiplied quaternion
     """
-    x0, y0, z0, w0 = quaternion0
-    x1, y1, z1, w1 = quaternion1
-    return np.array(
+    if format == "xyzw":
+        x0, y0, z0, w0 = quaternion0
+        x1, y1, z1, w1 = quaternion1
+    elif format == "wxyz":
+        w0, x0, y0, z0 = quaternion0
+        w1, x1, y1, z1 = quaternion1
+
+    result = np.array(
         (
             x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
             -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
@@ -91,6 +96,11 @@ def quat_multiply(quaternion1, quaternion0):
         ),
         dtype=np.float32,
     )
+
+    if format == "wxyz":
+        result = convert_quat(result, to="wxyz")
+
+    return result
 
 
 def quat_conjugate(quaternion):
@@ -927,3 +937,30 @@ def matrix_inverse(matrix):
         np.array: 2d-array representing the matrix inverse
     """
     return np.linalg.inv(matrix)
+
+
+def rotate_2d_point(input, rot):
+    """
+    rotate a 2d vector counterclockwise
+
+    Args:
+        input (np.array): 1d-array representing 2d vector
+        rot (float): rotation value
+
+    Returns:
+        np.array: rotated 1d-array
+    """
+    input_x, input_y = input
+    x = input_x * np.cos(rot) - input_y * np.sin(rot)
+    y = input_x * np.sin(rot) + input_y * np.cos(rot)
+
+    return np.array([x, y])
+
+
+def compute_rel_transform(A_pos, A_mat, B_pos, B_mat):
+    T_WA = np.vstack((np.hstack((A_mat, A_pos[:, None])), [0, 0, 0, 1]))
+    T_WB = np.vstack((np.hstack((B_mat, B_pos[:, None])), [0, 0, 0, 1]))
+
+    T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
+
+    return T_AB[:3, 3], T_AB[:3, :3]

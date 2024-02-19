@@ -149,7 +149,7 @@ def choose_robots(exclude_bimanual=False):
     return list(robots)[k]
 
 
-def input2action(device, robot, active_arm="right", env_configuration=None):
+def input2action(device, robot, active_arm="right", env_configuration=None, mirror_actions=False):
     """
     Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -190,9 +190,20 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         state["reset"],
     )
 
+    if mirror_actions:
+        # dpos[0] *= -1
+        # dpos[1] *= -1
+        # raw_drotation[0] *= -1
+        # raw_drotation[1] *= -1
+        dpos[0], dpos[1] = dpos[1], dpos[0]
+        raw_drotation[0], raw_drotation[1] = raw_drotation[1], raw_drotation[0]
+
+        dpos[1] *= -1
+        raw_drotation[0] *= -1
+
     # If we're resetting, immediately return None
     if reset:
-        return None, None
+        return None, None, None
 
     # Get controller reference
     controller = robot.controller if not isinstance(robot, Bimanual) else robot.controller[active_arm]
@@ -251,5 +262,19 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     else:
         action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
+    if robot.base_type == "mobile":
+        mode = state["mobile_base"]
+        if mode:
+            action = [a if i in [0, 1, 2, 5] else 0 for i, a in enumerate(action)]
+
+        mode = 1 if mode else -1
+
+        action = np.concatenate((action, [mode]))
+
+    # clip actions between -1 and 1
+    action = np.clip(action, -1, 1)
+
+    success = state.get("success", False)
+
     # Return the action and grasp
-    return action, grasp
+    return action, grasp, success

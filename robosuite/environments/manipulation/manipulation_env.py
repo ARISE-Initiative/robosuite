@@ -1,5 +1,9 @@
+import os
+import xml.etree.ElementTree as ET
+
 import numpy as np
 
+import robosuite
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
@@ -122,7 +126,9 @@ class ManipulationEnv(RobotEnv):
         env_configuration="default",
         controller_configs=None,
         mount_types="default",
+        base_types="fixed",
         gripper_types="default",
+        initial_qpos=None,
         initialization_noise=None,
         use_camera_obs=True,
         has_renderer=False,
@@ -132,6 +138,7 @@ class ManipulationEnv(RobotEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        optimize_physics=False,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -142,6 +149,7 @@ class ManipulationEnv(RobotEnv):
         camera_segmentations=None,
         renderer="mujoco",
         renderer_config=None,
+        seed=None,
     ):
         # Robot info
         robots = list(robots) if type(robots) is list or type(robots) is tuple else [robots]
@@ -150,10 +158,15 @@ class ManipulationEnv(RobotEnv):
         # Gripper
         gripper_types = self._input2list(gripper_types, num_robots)
 
+        # base types
+        base_types = self._input2list(base_types, num_robots)
+
         # Robot configurations to pass to super call
         robot_configs = [
             {
                 "gripper_type": gripper_types[idx],
+                "base_type": base_types[idx],
+                "initial_qpos": initial_qpos,
             }
             for idx in range(num_robots)
         ]
@@ -173,6 +186,7 @@ class ManipulationEnv(RobotEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            optimize_physics=optimize_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
@@ -184,6 +198,7 @@ class ManipulationEnv(RobotEnv):
             robot_configs=robot_configs,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     @property

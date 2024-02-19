@@ -131,6 +131,7 @@ class RobotEnv(MujocoEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        optimize_physics=False,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -142,6 +143,7 @@ class RobotEnv(MujocoEnv):
         robot_configs=None,
         renderer="mujoco",
         renderer_config=None,
+        seed=None,
     ):
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
@@ -204,6 +206,7 @@ class RobotEnv(MujocoEnv):
                     "mount_type": mount_types[idx],
                     "initialization_noise": initialization_noise[idx],
                     "control_freq": control_freq,
+                    "optimize_physics": optimize_physics,
                 },
                 **robot_config,
             )
@@ -219,11 +222,13 @@ class RobotEnv(MujocoEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            optimize_physics=optimize_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     def visualize(self, vis_settings):

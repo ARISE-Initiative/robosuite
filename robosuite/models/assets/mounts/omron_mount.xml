@@ -1,0 +1,47 @@
+<mujoco model="omron_mount">
+    <asset>
+        <!-- <mesh name="pedestal" file="meshes/omron_mount/omron.stl" /> -->
+
+        <mesh file="meshes/omron_mount/omron_0.obj" name="omron_0_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mount/omron_1.obj" name="omron_1_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mount/omron_2.obj" name="omron_2_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mount/omron_3.obj" name="omron_3_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mount/omron_4.obj" name="omron_4_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mount/omron_5.obj" name="omron_5_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mount/omron_6.obj" name="omron_6_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mount/omron_7.obj" name="omron_7_vis" scale="1 1 1"/>
+        <material name="Opaque(128,128,128)" specular="0.0" shininess="0.25" rgba="0.501961 0.501961 0.501961 1.000000"/>
+        <material name="Opaque(185,185,185)" specular="0.0" shininess="0.25" rgba="0.725490 0.725490 0.725490 1.000000"/>
+        <material name="Opaque(190,190,190)" specular="0.0" shininess="0.25" rgba="0.745098 0.745098 0.745098 1.000000"/>
+        <material name="Opaque(202,209,236)" specular="0.0" shininess="0.25" rgba="0.792157 0.819608 0.925490 1.000000"/>
+        <material name="Opaque(25,23,27)" specular="0.0" shininess="0.25" rgba="0.098039 0.090196 0.105882 1.000000"/>
+        <material name="Opaque(255,255,255)" specular="0.0" shininess="0.25" rgba="1.000000 1.000000 1.000000 1.000000"/>
+        <material name="Opaque(54,61,65)" specular="0.0" shininess="0.25" rgba="0.211765 0.239216 0.254902 1.000000"/>
+        <material name="Opaque(63,63,63)" specular="0.0" shininess="0.25" rgba="0.250980 0.250980 0.250980 1.000000"/>
+        <material name="Opaque(64,64,64)" specular="0.0" shininess="0.25" rgba="0.250980 0.250980 0.250980 1.000000"/>
+        <material name="Steel_-_Satin" specular="0.0" shininess="0.25" rgba="0.627451 0.627451 0.627451 1.000000"/>
+    </asset>
+    <worldbody>
+        <body name="base" pos="0 0 0.0">
+            <body name="pedestal_feet" pos="-0.20 0 0">
+                <!-- <inertial diaginertia="8.16095 9.59375 15.0785" mass="167.09" pos="-0.1225 0 -0.758"/> -->
+                <geom pos="0 0 0.20" size="0.35 0.25 0.19" type="box" name="pedestal_feet_col" density="10"/>
+            </body>
+
+            <body name="pedestal" pos="-0.20 0 0.20">
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_0_vis" conaffinity="0" contype="0" group="1" material="Steel_-_Satin"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_1_vis" conaffinity="0" contype="0" group="1" material="Opaque(25,23,27)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_2_vis" conaffinity="0" contype="0" group="1" material="Opaque(185,185,185)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_3_vis" conaffinity="0" contype="0" group="1" material="Opaque(128,128,128)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_4_vis" conaffinity="0" contype="0" group="1" material="Opaque(190,190,190)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_5_vis" conaffinity="0" contype="0" group="1" material="Opaque(255,255,255)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_6_vis" conaffinity="0" contype="0" group="1" material="Opaque(202,209,236)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_7_vis" conaffinity="0" contype="0" group="1" material="Opaque(63,63,63)"/>
+            </body>
+
+            <!-- <body name="pedestal" pos="-0.20 0 0">
+                <geom conaffinity="0" contype="0" group="1" mesh="pedestal" type="mesh" name="pedestal_vis" rgba="0.2 0.2 0.2 1" />
+            </body> -->
+        </body>
+    </worldbody>
+</mujoco>

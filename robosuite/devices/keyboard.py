@@ -48,12 +48,13 @@ class Keyboard(Device):
         print("")
         print_command("Keys", "Command")
         print_command("q", "reset simulation")
-        print_command("spacebar", "toggle gripper (open/close)")
+        print_command("b", "toggle gripper (open/close)")
         print_command("w-a-s-d", "move arm horizontally in x-y plane")
         print_command("r-f", "move arm vertically")
         print_command("z-x", "rotate arm about x-axis")
         print_command("t-g", "rotate arm about y-axis")
         print_command("c-v", "rotate arm about z-axis")
+        print_command("ESC", "quit")
         print("")
 
     def _reset_internal_state(self):
@@ -66,6 +67,7 @@ class Keyboard(Device):
         self.pos = np.zeros(3)  # (x, y, z)
         self.last_pos = np.zeros(3)
         self.grasp = False
+        self.mobile_base = False
 
     def start_control(self):
         """
@@ -95,6 +97,7 @@ class Keyboard(Device):
             raw_drotation=raw_drotation,
             grasp=int(self.grasp),
             reset=self._reset_state,
+            mobile_base=int(self.mobile_base),
         )
 
     def on_press(self, key):
@@ -159,6 +162,10 @@ class Keyboard(Device):
             # controls for grasping
             if key == Key.space:
                 self.grasp = not self.grasp  # toggle gripper
+
+            # controls for mobile base (only applicable if mobile base present)
+            elif key.char == "b":
+                self.mobile_base = not self.mobile_base  # toggle mobile base
 
             # user-commanded reset
             elif key.char == "q":

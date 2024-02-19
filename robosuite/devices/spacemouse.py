@@ -31,8 +31,12 @@ except ModuleNotFoundError as exc:
         "requirements with `pip install -r requirements-extra.txt`"
     ) from exc
 
+from pynput.keyboard import Controller, Key, Listener
+
 import robosuite.macros as macros
 from robosuite.devices import Device
+
+# from robosuite.scripts.tune_camera import move_camera, rotate_camera, DELTA_POS_KEY_PRESS, DELTA_ROT_KEY_PRESS
 from robosuite.utils.transform_utils import rotation_matrix
 
 AxisSpec = namedtuple("AxisSpec", ["channel", "byte1", "byte2", "scale"])
@@ -105,25 +109,15 @@ class SpaceMouse(Device):
     You can look up its vendor/product id from this method.
 
     Args:
-        vendor_id (int): HID device vendor id
-        product_id (int): HID device product id
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
-    def __init__(
-        self,
-        vendor_id=macros.SPACEMOUSE_VENDOR_ID,
-        product_id=macros.SPACEMOUSE_PRODUCT_ID,
-        pos_sensitivity=1.0,
-        rot_sensitivity=1.0,
-    ):
+    def __init__(self, pos_sensitivity=1.0, rot_sensitivity=1.0):
 
         print("Opening SpaceMouse device")
-        self.vendor_id = vendor_id
-        self.product_id = product_id
         self.device = hid.device()
-        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        self.device.open(macros.SPACEMOUSE_VENDOR_ID, macros.SPACEMOUSE_PRODUCT_ID)  # SpaceMouse
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -149,6 +143,12 @@ class SpaceMouse(Device):
         self.thread.daemon = True
         self.thread.start()
 
+        # also add a keyboard for aux controls
+        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
+
+        # start listening
+        self.listener.start()
+
     @staticmethod
     def _display_controls():
         """
@@ -166,6 +166,8 @@ class SpaceMouse(Device):
         print_command("Move mouse laterally", "move arm horizontally in x-y plane")
         print_command("Move mouse vertically", "move arm vertically")
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
+        print_command("B", "Toggle arm/base mode (if applicable)")
+        print_command("Control+C", "quit")
         print("")
 
     def _reset_internal_state(self):
@@ -180,6 +182,8 @@ class SpaceMouse(Device):
         self._control = np.zeros(6)
         # Reset grasp
         self.single_click_and_hold = False
+        # Reset base mode
+        self.mobile_base = False
 
     def start_control(self):
         """
@@ -213,6 +217,7 @@ class SpaceMouse(Device):
             raw_drotation=np.array([roll, pitch, yaw]),
             grasp=self.control_gripper,
             reset=self._reset_state,
+            mobile_base=int(self.mobile_base),
         )
 
     def run(self):
@@ -224,7 +229,7 @@ class SpaceMouse(Device):
             d = self.device.read(13)
             if d is not None and self._enabled:
 
-                if self.product_id == 50741:
+                if macros.SPACEMOUSE_PRODUCT_ID == 50741:
                     ## logic for older spacemouse model
 
                     if d[0] == 1:  ## readings from 6-DoF sensor
@@ -307,6 +312,28 @@ class SpaceMouse(Device):
         if self.single_click_and_hold:
             return 1.0
         return 0
+
+    def on_press(self, key):
+        """
+        Key handler for key presses.
+        Args:
+            key (str): key that was pressed
+        """
+        pass
+
+    def on_release(self, key):
+        """
+        Key handler for key releases.
+        Args:
+            key (str): key that was pressed
+        """
+        try:
+            # controls for mobile base (only applicable if mobile base present)
+            if key.char == "b":
+                self.mobile_base = not self.mobile_base  # toggle mobile base
+
+        except AttributeError as e:
+            pass
 
 
 if __name__ == "__main__":

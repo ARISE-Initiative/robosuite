@@ -34,6 +34,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         eef_name,
         joint_indexes,
         actuator_range,
+        optimize_physics=False,
     ):
 
         # Actuator range
@@ -55,6 +56,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         # mujoco simulator state
         self.sim = sim
         self.model_timestep = macros.SIMULATION_TIMESTEP
+        self.optimize_physics = optimize_physics
         self.eef_name = eef_name
         self.joint_index = joint_indexes["joints"]
         self.qpos_index = joint_indexes["qpos"]
@@ -136,7 +138,10 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
-            self.sim.forward()
+            if self.optimize_physics:
+                pass
+            else:
+                self.sim.forward()  # do we need this? commenting out for now
 
             self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
             self.ee_ori_mat = np.array(

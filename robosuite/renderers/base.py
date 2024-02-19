@@ -20,8 +20,10 @@ def load_renderer_config(renderer):
     """
     if renderer == "nvisii":
         fname = "config/nvisii_config.json"
+    elif renderer == "mjviewer":
+        return None
     else:
-        raise ValueError(f"renderer type can only be 'nvisii' got '{renderer}'")
+        raise ValueError(f"renderer type can only be  'nvisii', or 'mjviewer' got '{renderer}'")
 
     dir_path = os.path.dirname(__file__)
     with open(os.path.join(dir_path, fname)) as f:
