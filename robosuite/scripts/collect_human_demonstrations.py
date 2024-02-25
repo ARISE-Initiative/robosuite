@@ -194,7 +194,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
-    parser.add_argument("--renderer", type=str, default="mujoco")
+    parser.add_argument("--renderer", type=str, default="mujoco", help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)")
     args = parser.parse_args()
 
     # Get controller config
