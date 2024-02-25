@@ -186,7 +186,7 @@ class MujocoEnv(metaclass=EnvMeta):
             self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
         else:
             raise ValueError(
-                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), nvisii, and igibson"
+                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
             )
 
     def initialize_time(self, control_freq):
@@ -282,13 +282,16 @@ class MujocoEnv(metaclass=EnvMeta):
         self._obs_cache = {}
         if self.hard_reset:
             # If we're using hard reset, must re-update sensor object references
-            # _observables = self._setup_observables()
-            # for obs_name, obs in _observables.items():
-            #     self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
-
-            ### why do we need to use modify_observable function? ###
-            # directly updating the observables here, not sure if it will break things...
-            self._observables = self._setup_observables()
+            if hasattr(self.viewer, "_setup_observables"):
+                _observables = self.viewer._setup_observables()
+            else:
+                _observables = self._setup_observables()
+            for obs_name, obs in _observables.items():
+                # modify observable if already exists
+                if obs_name in self._observables:
+                    self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
+                else:
+                    self._observables[obs_name] = obs
 
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
@@ -555,7 +558,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer in ["nvisii"]:
             self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
         else:
-            raise AttributeError("setting camera position and quat requires renderer to be either NVISII.")
+            raise AttributeError("setting camera position and quat requires renderer to be NVISII.")
 
     def edit_model_xml(self, xml_str):
         """
