@@ -141,7 +141,7 @@ class Controller(object, metaclass=abc.ABCMeta):
             if self.optimize_physics:
                 pass
             else:
-                self.sim.forward()  # do we need this? commenting out for now
+                self.sim.forward()
 
             self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
             self.ee_ori_mat = np.array(

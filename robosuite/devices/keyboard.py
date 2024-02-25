@@ -48,13 +48,13 @@ class Keyboard(Device):
         print("")
         print_command("Keys", "Command")
         print_command("q", "reset simulation")
-        print_command("b", "toggle gripper (open/close)")
+        print_command("spacebar", "toggle gripper (open/close)")
+        print_command("b", "toggle arm/base mode (if applicable)")
         print_command("w-a-s-d", "move arm horizontally in x-y plane")
         print_command("r-f", "move arm vertically")
         print_command("z-x", "rotate arm about x-axis")
         print_command("t-g", "rotate arm about y-axis")
         print_command("c-v", "rotate arm about z-axis")
-        print_command("ESC", "quit")
         print("")
 
     def _reset_internal_state(self):

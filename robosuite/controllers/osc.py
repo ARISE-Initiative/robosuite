@@ -277,7 +277,6 @@ class OperationalSpaceController(Controller):
             )  # goal is the total orientation error
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
-    # @profile
     def run_controller(self):
         """
         Calculates the torques required to reach the desired setpoint.
