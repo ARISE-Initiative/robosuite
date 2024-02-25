@@ -1131,7 +1131,7 @@ class MjSim:
             if depth=True)
         """
         if camera_name is None:
-            camera_id = -1  # was previously None
+            camera_id = None
         else:
             camera_id = self.model.camera_name2id(camera_name)
 

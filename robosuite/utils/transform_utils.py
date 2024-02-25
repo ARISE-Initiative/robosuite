@@ -64,7 +64,7 @@ def convert_quat(q, to="xyzw"):
     raise Exception("convert_quat: choose a valid `to` argument (xyzw or wxyz)")
 
 
-def quat_multiply(quaternion1, quaternion0, format="xyzw"):
+def quat_multiply(quaternion1, quaternion0):
     """
     Return multiplication of two quaternions (q1 * q0).
 
@@ -80,14 +80,9 @@ def quat_multiply(quaternion1, quaternion0, format="xyzw"):
     Returns:
         np.array: (x,y,z,w) multiplied quaternion
     """
-    if format == "xyzw":
-        x0, y0, z0, w0 = quaternion0
-        x1, y1, z1, w1 = quaternion1
-    elif format == "wxyz":
-        w0, x0, y0, z0 = quaternion0
-        w1, x1, y1, z1 = quaternion1
-
-    result = np.array(
+    x0, y0, z0, w0 = quaternion0
+    x1, y1, z1, w1 = quaternion1
+    return np.array(
         (
             x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
             -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
@@ -96,11 +91,6 @@ def quat_multiply(quaternion1, quaternion0, format="xyzw"):
         ),
         dtype=np.float32,
     )
-
-    if format == "wxyz":
-        result = convert_quat(result, to="wxyz")
-
-    return result
 
 
 def quat_conjugate(quaternion):
@@ -955,12 +945,3 @@ def rotate_2d_point(input, rot):
     y = input_x * np.sin(rot) + input_y * np.cos(rot)
 
     return np.array([x, y])
-
-
-def compute_rel_transform(A_pos, A_mat, B_pos, B_mat):
-    T_WA = np.vstack((np.hstack((A_mat, A_pos[:, None])), [0, 0, 0, 1]))
-    T_WB = np.vstack((np.hstack((B_mat, B_pos[:, None])), [0, 0, 0, 1]))
-
-    T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
-
-    return T_AB[:3, 3], T_AB[:3, :3]

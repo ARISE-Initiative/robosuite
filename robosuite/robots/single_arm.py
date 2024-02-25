@@ -529,7 +529,7 @@ class SingleArm(Manipulator):
             root_body_id = self.sim.model.body_name2id(self.robot_model.root_body)
             root_body_quat = T.convert_quat(self.sim.data.body_xquat[root_body_id], to="xyzw")
             rot_quat = np.array([0, 0, 0.7071068, -0.7071068])
-            return T.quat_multiply(root_body_quat, rot_quat, format="xyzw")
+            return T.quat_multiply(root_body_quat, rot_quat)
 
         @sensor(modality=modality)
         def mount_pos(obs_cache):
