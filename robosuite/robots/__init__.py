@@ -13,6 +13,7 @@ ROBOT_CLASS_MAPPING = {
     "Jaco": SingleArm,
     "Kinova3": SingleArm,
     "Panda": SingleArm,
+    "PandaMobile": SingleArm,
     "Sawyer": SingleArm,
     "UR5e": SingleArm,
 }
