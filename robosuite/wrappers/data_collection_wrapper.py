@@ -69,12 +69,9 @@ class DataCollectionWrapper(Wrapper):
 
         # save the task instance (will be saved on the first env interaction)
 
-        # NOTE: fixed with mujoco >= 2.2
-        # # NOTE: we changed this to the robosuite implementation (instead of mujoco binding) because of
-        # #       an issue with the DM mujoco binding where .obj meshes dump vertices and increase the
-        # #       size of the xml substantially, and also cause some simulation issues when reloading
-        # #       from xml (such as slippage during grasping the obj meshes)
-        # self._current_task_instance_xml = self.env.model.get_xml()
+        # NOTE: was previously self.env.model.get_xml(). Was causing the following issue in rare cases:
+        # ValueError: Error: eigenvalues of mesh inertia violate A + B >= C
+        # switching to self.env.sim.model.get_xml() does not create this issue
         self._current_task_instance_xml = self.env.sim.model.get_xml()
         self._current_task_instance_state = np.array(self.env.sim.get_state().flatten())
 
@@ -180,8 +177,12 @@ class DataCollectionWrapper(Wrapper):
 
             info = {}
             info["actions"] = np.array(action)
-            if "action_abs" in ret[3].keys():
-                info["actions_abs"] = ret[3]["action_abs"]
+
+            # (if applicable) store absolute actions
+            step_info = ret[3]
+            if "action_abs" in step_info.keys():
+                info["actions_abs"] = np.array(step_info["action_abs"])
+
             self.action_infos.append(info)
 
         # check if the demonstration is successful

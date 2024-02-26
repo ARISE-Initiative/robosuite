@@ -169,6 +169,9 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
             correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
             {bimanual, single-arm-parallel, single-arm-opposed}
 
+        mirror_actions (bool): actions corresponding to viewing robot from behind.
+            first axis: left/right. second axis: back/forward. third axis: down/up.
+
     Returns:
         2-tuple:
 
@@ -191,10 +194,6 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
     )
 
     if mirror_actions:
-        # dpos[0] *= -1
-        # dpos[1] *= -1
-        # raw_drotation[0] *= -1
-        # raw_drotation[1] *= -1
         dpos[0], dpos[1] = dpos[1], dpos[0]
         raw_drotation[0], raw_drotation[1] = raw_drotation[1], raw_drotation[0]
 
@@ -203,7 +202,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
 
     # If we're resetting, immediately return None
     if reset:
-        return None, None, None
+        return None, None
 
     # Get controller reference
     controller = robot.controller if not isinstance(robot, Bimanual) else robot.controller[active_arm]
@@ -274,7 +273,5 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
     # clip actions between -1 and 1
     action = np.clip(action, -1, 1)
 
-    success = state.get("success", False)
-
     # Return the action and grasp
-    return action, grasp, success
+    return action, grasp
