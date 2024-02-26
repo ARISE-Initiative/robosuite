@@ -1,4 +1,4 @@
-from .objects import MujocoObject, MujocoXMLObject, MujocoGeneratedObject, MJCFObject
+from .objects import MujocoObject, MujocoXMLObject, MujocoGeneratedObject
 from .generated_objects import CompositeBodyObject, CompositeObject, PrimitiveObject
 from .object_groups import ObjectGroup
 
