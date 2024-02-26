@@ -1,14 +1,10 @@
 import copy
-import os
-import time
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 
 import numpy as np
 
-import robosuite
 import robosuite.macros as macros
-import robosuite.utils.transform_utils as T
 from robosuite.models.base import MujocoModel, MujocoXML
 from robosuite.utils.mjcf_utils import (
     OBJECT_COLLISION_COLOR,
@@ -327,6 +323,8 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
             visual geom copy
+
+        scale (float): 3D scale factor
     """
 
     def __init__(self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True, scale=None):
@@ -358,6 +356,10 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         # Lastly, parse XML tree appropriately
         self._obj = self._get_object_subtree()
 
+        # scale
+        if self._scale is not None:
+            self.set_scale(self._scale)
+
         # Extract the appropriate private attributes for this
         self._get_object_properties()
 
@@ -386,7 +388,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
                 g_name = element.get("name")
                 g_name = g_name if g_name is not None else f"g{i}"
                 element.set("name", g_name)
-
                 # Also optionally duplicate collision geoms if requested (and this is a collision geom)
                 if self.duplicate_collision_geoms and element.get("group") in {None, "0"}:
                     parent.append(self._duplicate_visual_from_collision(element))
@@ -402,10 +403,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         template["rgba"] = "1 0 0 0"
         template["name"] = "default_site"
         obj.append(ET.Element("site", attrib=template))
-
-        # scale
-        if self._scale is not None:
-            self.set_scale(self._scale, obj=obj)
 
         return obj
 
@@ -486,15 +483,19 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
     def set_pos(self, pos):
         """
-        set position of object
-        position is defined as center of bounding box
-        add support for relative object placement
+        Set position of object position is defined as center of bounding box
+
+        Args:
+            pos (list of floats): 3D position to set object (should be 3 dims)
         """
         self._obj.set("pos", array_to_string(pos))
 
     def set_euler(self, euler):
         """
-        set (z) rotation of object
+        Set Euler value object position
+
+        Args:
+            euler (list of floats): 3D Euler values (should be 3 dims)
         """
         self._obj.set("euler", array_to_string(euler))
 
@@ -505,8 +506,12 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
     def set_scale(self, scale, obj=None):
         """
-        scales each geom, mesh, site, and body
-        called during initialization but can also be used externally
+        Scales each geom, mesh, site, and body.
+        Called during initialization but can also be used externally
+
+        Args:
+            scale (float or list of floats): Scale factor (1 or 3 dims)
+            obj (ET.Element) Root object to apply. Defaults to root object of model
         """
         if obj is None:
             obj = self._obj
