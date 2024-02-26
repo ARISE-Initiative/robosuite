@@ -294,6 +294,15 @@ class MujocoObject(MujocoModel):
             "type": "free",
         }
 
+    def get_bounding_box_half_size(self):
+        raise NotImplementedError
+
+    def get_bounding_box_size(self):
+        """
+        Returns numpy array with dimensions of a bounding box around this object.
+        """
+        return 2.0 * self.get_bounding_box_half_size()
+
 
 class MujocoXMLObject(MujocoObject, MujocoXML):
     """
@@ -320,9 +329,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
             visual geom copy
     """
 
-    def __init__(
-        self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True, rgba=None, scale=None
-    ):
+    def __init__(self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True, scale=None):
         MujocoXML.__init__(self, fname)
         # Set obj type and duplicate args
         assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
@@ -331,9 +338,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         # Set name
         self._name = name
-
-        # set color
-        self._rgba = rgba
 
         # set scale
         self._scale = scale
@@ -359,8 +363,8 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
     def _get_object_subtree(self):
         # Parse object
-        # remove this deepcopy line. creates discrepancies between obj and self.worldbody!
-        # obj = copy.deepcopy(self.worldbody.find("./body/body[@name='object']"))
+        # this line used to be wrapped in deepcopy.
+        # removed this deepcopy line, as it creates discrepancies between obj and self.worldbody!
         obj = self.worldbody.find("./body/body[@name='object']")
         # Rename this top level object body (will have self.naming_prefix added later)
         obj.attrib["name"] = "main"
@@ -383,10 +387,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
                 g_name = g_name if g_name is not None else f"g{i}"
                 element.set("name", g_name)
 
-                # set color of all geoms, if applicable
-                if self._rgba is not None:
-                    element.set("rgba", array_to_string(self._rgba))
-
                 # Also optionally duplicate collision geoms if requested (and this is a collision geom)
                 if self.duplicate_collision_geoms and element.get("group") in {None, "0"}:
                     parent.append(self._duplicate_visual_from_collision(element))
@@ -394,7 +394,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
                     element.set("rgba", array_to_string(OBJECT_COLLISION_COLOR))
                     if element.get("material") is not None:
                         del element.attrib["material"]
-
         # add joint(s)
         for joint_spec in self.joint_specs:
             obj.append(new_joint(**joint_spec))
@@ -493,12 +492,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         """
         self._obj.set("pos", array_to_string(pos))
 
-    def set_rot(self, rot):
-        """
-        set (z) rotation of object
-        """
-        self._obj.set("euler", array_to_string([0, 0, rot]))
-
     def set_euler(self, euler):
         """
         set (z) rotation of object
@@ -518,7 +511,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         if obj is None:
             obj = self._obj
 
-        # TODO: investigate if scales compound when set_scales is called multiple times
         self._scale = scale
 
         # scale geoms
@@ -577,8 +569,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
                 j_pos = string_to_array(j_pos) * self._scale
                 elem.set("pos", array_to_string(j_pos))
 
-        # important: get all sites, both in worldbody and obj
-        # previously also included self._get_elements(obj, "site"), but bc I removed the deepcopy, no longer applicable
+        # scale sites
         site_pairs = self._get_elements(self.worldbody, "site")
         for (_, elem) in site_pairs:
             s_pos = elem.get("pos")
@@ -625,7 +616,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         )
         return string_to_array(horizontal_radius_site.get("pos"))[0]
 
-    def get_bounding_box_size(self):
+    def get_bounding_box_half_size(self):
         horizontal_radius_site = self.worldbody.find(
             "./body/site[@name='{}horizontal_radius_site']".format(self.naming_prefix)
         )
@@ -776,7 +767,7 @@ class MujocoGeneratedObject(MujocoObject):
     def horizontal_radius(self):
         raise NotImplementedError
 
-    def get_bounding_box_size(self):
+    def get_bounding_box_half_size(self):
         return np.array([self.horizontal_radius, self.horizontal_radius, 0.0]) - self.bottom_offset
 
 
@@ -824,41 +815,6 @@ class MJCFObject(MujocoXMLObject):
         tree = ET.parse(xml_path)
         root = tree.getroot()
 
-        # # modify mesh scales
-        # asset = root.find("asset")
-        # meshes = asset.findall("mesh")
-        # for mesh in meshes:
-        #     # if a scale already exists, multiply the scales
-        #     scale_to_set = scale
-        #     existing_scale = mesh.get("scale")
-        #     if existing_scale is not None:
-        #         scale_to_set = string_to_array(existing_scale) * scale
-        #     mesh.set("scale", array_to_string(scale_to_set))
-
-        # # modify sites for collision (assumes we can just scale up the locations - may or may not work)
-        # for n in ["bottom_site", "top_site", "horizontal_radius_site"]:
-        #     site = root.find("worldbody/body/site[@name='{}']".format(n))
-        #     pos = string_to_array(site.get("pos"))
-        #     pos = scale * pos
-        #     site.set("pos", array_to_string(pos))
-
-        """
-        # disable collision geoms
-        worldbody = root.find("worldbody")
-        from robosuite.utils.mjcf_utils import find_elements
-        geoms = find_elements(
-            root=worldbody,
-            tags="geom",
-            attribs={"group": "0"},
-            return_first=False
-        )
-        for g in geoms:
-            # g.set("group", "1")
-            g.set("mass", "0.0001")
-            g.set("conaffinity", "2")
-            g.set("contype", "2")
-        """
-
         # write modified xml (and make sure to postprocess any paths just in case)
         xml_str = ET.tostring(root, encoding="utf8").decode("utf8")
         xml_str = self.postprocess_model_xml(xml_str)
@@ -867,15 +823,12 @@ class MJCFObject(MujocoXMLObject):
         f = open(new_xml_path, "w")
         f.write(xml_str)
         f.close()
-        # print(f"Write to {new_xml_path}")
 
         # initialize object with new xml we wrote
         super().__init__(
-            # xml_path_completion("objects/{}.xml".format(obj_name)),
             fname=new_xml_path,
             name=name,
             joints=[dict(type="free", damping="0.0005")],
-            # joints=None,
             obj_type="all",
             duplicate_collision_geoms=False,
             scale=scale,
@@ -888,8 +841,7 @@ class MJCFObject(MujocoXMLObject):
     def postprocess_model_xml(self, xml_str):
         """
         New version of postprocess model xml that only replaces robosuite file paths if necessary (otherwise
-        there is an error with the "max" operation), and also replaces robosuite-model-zoo file paths
-        if necessary.
+        there is an error with the "max" operation)
         """
 
         path = os.path.split(robosuite.__file__)[0]
@@ -916,14 +868,6 @@ class MJCFObject(MujocoXMLObject):
                 new_path_split = path_split + old_path_split[ind + 1 :]
                 new_path = "/".join(new_path_split)
                 elem.set("file", new_path)
-
-            # # maybe replace all paths to robosuite model zoo assets
-            # check_lst = [loc for loc, val in enumerate(old_path_split) if val == "robosuite-model-zoo-dev"]
-            # if len(check_lst) > 0:
-            #     ind = max(check_lst) # last occurrence index
-            #     new_path_split = os.path.split(robosuite_model_zoo.__file__)[0].split("/")[:-1] + old_path_split[ind + 1 :]
-            #     new_path = "/".join(new_path_split)
-            #     elem.set("file", new_path)
 
         return ET.tostring(root, encoding="utf8").decode("utf8")
 
@@ -984,9 +928,6 @@ class MJCFObject(MujocoXMLObject):
 
         center = np.mean([bottom_offset, top_offset], axis=0)
         half_size = [horiz_radius[0], horiz_radius[1], top_offset[2] - center[2]]
-
-        # center = np.array([0, 0, 0])
-        # half_size = np.array([0.01, 0.01, 0.01])
 
         bbox_offsets = [
             center + half_size * np.array([-1, -1, -1]),  # p0
