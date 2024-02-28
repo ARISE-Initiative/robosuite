@@ -20,9 +20,14 @@ class OmronMount(MountModel):
 
     @property
     def top_offset(self):
-        return np.array((0, 0, 0.922 - 0.10))
+        # return np.array((0, 0, 0.922 - 0.10))
+        return np.array((0, 0, 0))
 
     @property
     def horizontal_radius(self):
         # TODO: This may be inaccurate; just a placeholder for now
         return 0.25
+
+    @property
+    def is_mobile(self):
+        return True

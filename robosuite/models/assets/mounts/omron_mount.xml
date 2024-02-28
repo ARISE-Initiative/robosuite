@@ -29,7 +29,7 @@
 	</actuator>
     <worldbody>
         <body name="base" pos="0 0 0">
-            <body name="fixed_support" pos="-0.05 0 0.59">
+            <body name="fixed_support" pos="-0.05 0 0.582">
 				<geom type="cylinder" pos="0 0 0" size="0.12 0.2 0" group="0" material="Shell005_001_001_002_001"/>
 				<geom name="fixed_support" type="cylinder" pos="0 0 0" size="0.12 0.2 0" group="1" material="Shell005_001_001_002_001"/>
 				<body name="support" pos="0 0 0.05">
@@ -40,7 +40,7 @@
                 </body>
             </body>
 
-            <body name="wheeled_base" pos="-0.20 0 0.20">
+            <body name="wheeled_base" pos="-0.20 0 0.192">
                 <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_0_vis" conaffinity="0" contype="0" group="1" material="Steel_-_Satin"/>
                 <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_1_vis" conaffinity="0" contype="0" group="1" material="Opaque(25,23,27)"/>
                 <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_2_vis" conaffinity="0" contype="0" group="1" material="Opaque(185,185,185)"/>

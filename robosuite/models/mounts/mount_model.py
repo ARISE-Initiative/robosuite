@@ -90,3 +90,7 @@ class MountModel(MujocoXMLModel):
             float: radius
         """
         raise NotImplementedError
+
+    @property
+    def is_mobile(self):
+        return False

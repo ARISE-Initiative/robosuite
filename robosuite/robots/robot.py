@@ -260,6 +260,9 @@ class Robot(object):
         """
         self.robot_model.set_sites_visibility(sim=self.sim, visible=vis_settings["robots"])
 
+    def is_mobile(self):
+        return self.mount_type == "OmronMount"
+
     @property
     def action_limits(self):
         """

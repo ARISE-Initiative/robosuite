@@ -261,7 +261,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
     else:
         action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
-    if robot.base_type == "mobile":
+    if robot.is_mobile:
         mode = state["mobile_base"]
         if mode:
             action = [a if i in [0, 1, 2, 5] else 0 for i, a in enumerate(action)]

@@ -62,7 +62,6 @@ class SingleArm(Manipulator):
         initialization_noise=None,
         mount_type="default",
         gripper_type="default",
-        base_type="fixed",
         control_freq=20,
         optimize_physics=False,
     ):
@@ -71,9 +70,6 @@ class SingleArm(Manipulator):
         self.controller_config = copy.deepcopy(controller_config)
         self.gripper_type = gripper_type
         self.has_gripper = self.gripper_type is not None
-
-        assert base_type in ["fixed", "mobile"]
-        self.base_type = base_type
 
         self.gripper = None  # Gripper class
         self.gripper_joints = None  # xml joint names for gripper
@@ -187,10 +183,12 @@ class SingleArm(Manipulator):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
 
-        if not deterministic:
-            # Now, reset the gripper if necessary
-            if self.has_gripper:
+        # Now, reset the gripper if necessary
+        if self.has_gripper:
+            if not deterministic:
                 self.sim.data.qpos[self._ref_gripper_joint_pos_indexes] = self.gripper.init_qpos
+
+            self.gripper.current_action = np.zeros(self.gripper.dof)
 
         ### removing this line: as base_pos and base_ori are not fixed and can change over time;
         ### also this line currently is a placeholder and doesn't do anything
@@ -269,7 +267,7 @@ class SingleArm(Manipulator):
         if self._init_base_ang is None:
             self._init_base_ang = base_ang
 
-        if self.base_type == "mobile":
+        if self.is_mobile:
             if action[-1] <= 0:
                 mode = "arm"
             else:
@@ -562,7 +560,7 @@ class SingleArm(Manipulator):
                 - (np.array) maximum (high) action values
         """
         # Action limits based on controller limits
-        low_m, high_m = ([-1], [1]) if self.base_type == "mobile" else ([], [])
+        low_m, high_m = ([-1], [1]) if self.is_mobile else ([], [])
         low_g, high_g = ([-1] * self.gripper.dof, [1] * self.gripper.dof) if self.has_gripper else ([], [])
         low_c, high_c = self.controller.control_limits
         low = np.concatenate([low_c, low_m, low_g])

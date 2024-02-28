@@ -4,7 +4,7 @@ from robosuite.models.robots.manipulators.manipulator_model import ManipulatorMo
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class Panda(ManipulatorModel):
+class PandaMobile(ManipulatorModel):
     """
     Panda is a sensitive single-arm robot designed by Franka.
 
@@ -13,10 +13,12 @@ class Panda(ManipulatorModel):
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("robots/panda/robot.xml"), idn=idn)
+        super().__init__(xml_path_completion("robots/panda/robot_mobile.xml"), idn=idn)
 
         # Set joint damping
-        self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
+        self.set_joint_attribute(
+            attrib="damping", values=np.array((0.0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01, 0.01, 0.1, 0.0))
+        )
 
     @property
     def default_mount(self):

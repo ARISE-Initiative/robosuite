@@ -1,9 +1,5 @@
-import os
-import xml.etree.ElementTree as ET
-
 import numpy as np
 
-import robosuite
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
@@ -126,7 +122,6 @@ class ManipulationEnv(RobotEnv):
         env_configuration="default",
         controller_configs=None,
         mount_types="default",
-        base_types="fixed",
         gripper_types="default",
         initial_qpos=None,
         initialization_noise=None,
@@ -158,14 +153,10 @@ class ManipulationEnv(RobotEnv):
         # Gripper
         gripper_types = self._input2list(gripper_types, num_robots)
 
-        # base types
-        base_types = self._input2list(base_types, num_robots)
-
         # Robot configurations to pass to super call
         robot_configs = [
             {
                 "gripper_type": gripper_types[idx],
-                "base_type": base_types[idx],
                 "initial_qpos": initial_qpos,
             }
             for idx in range(num_robots)

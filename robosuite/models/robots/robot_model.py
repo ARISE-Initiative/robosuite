@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy as np
 
 from robosuite.models.base import MujocoXML, MujocoXMLModel
@@ -135,34 +137,31 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         offset = self.base_offset - mount.top_offset
         mount._elements["root_body"].set("pos", array_to_string(offset))
 
-        # self.merge(mount, merge_body=self.root_body)
-
-        merge_body = self.root_body
-
-        root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
-        for body in mount.worldbody:
-            root.append(body)
-
-        link0 = find_elements(root=self.worldbody, tags="body", attribs={"name": "robot0_link0"}, return_first=True)
-        mount_support = find_elements(
-            root=self.worldbody, tags="body", attribs={"name": "mount0_support"}, return_first=True
-        )
-        import copy
-
-        mount_support.append(copy.deepcopy(link0))
-        root.remove(link0)
-
-        self.merge_assets(mount)
-        for one_actuator in mount.actuator:
-            self.actuator.append(one_actuator)
-        for one_sensor in mount.sensor:
-            self.sensor.append(one_sensor)
-        for one_tendon in mount.tendon:
-            self.tendon.append(one_tendon)
-        for one_equality in mount.equality:
-            self.equality.append(one_equality)
-        for one_contact in mount.contact:
-            self.contact.append(one_contact)
+        if mount.is_mobile:
+            merge_body = self.root_body
+            root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
+            for body in mount.worldbody:
+                root.append(body)
+            link0 = find_elements(root=self.worldbody, tags="body", attribs={"name": "robot0_link0"}, return_first=True)
+            link0.set("pos", "0.05 0.0 0.20")
+            mount_support = find_elements(
+                root=self.worldbody, tags="body", attribs={"name": "mount0_support"}, return_first=True
+            )
+            mount_support.append(deepcopy(link0))
+            root.remove(link0)
+            self.merge_assets(mount)
+            for one_actuator in mount.actuator:
+                self.actuator.append(one_actuator)
+            for one_sensor in mount.sensor:
+                self.sensor.append(one_sensor)
+            for one_tendon in mount.tendon:
+                self.tendon.append(one_tendon)
+            for one_equality in mount.equality:
+                self.equality.append(one_equality)
+            for one_contact in mount.contact:
+                self.contact.append(one_contact)
+        else:
+            self.merge(mount, merge_body=self.root_body)
 
         self.mount = mount
 
