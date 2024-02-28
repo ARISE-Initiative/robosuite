@@ -173,12 +173,6 @@ class Robot(object):
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.actuators
         ]
 
-        # don't consider mobile base joints for reference
-        self._ref_joint_pos_indexes = self._ref_joint_pos_indexes[1:-3]
-        self._ref_joint_vel_indexes = self._ref_joint_vel_indexes[1:-3]
-        self._ref_joint_indexes = self._ref_joint_indexes[1:-3]
-        self._ref_joint_actuator_indexes = self._ref_joint_actuator_indexes[:-4]
-
     def setup_observables(self):
         """
         Sets up observables to be used for this robot

@@ -261,8 +261,8 @@ class SingleArm(Manipulator):
 
         action = np.copy(action)  # copy the action, in case modified later in code
         base_ang = np.arctan2(
-            self.sim.data.geom_xmat[self.sim.model.geom_name2id("robot0_support")][1],
-            self.sim.data.geom_xmat[self.sim.model.geom_name2id("robot0_support")][0],
+            self.sim.data.geom_xmat[self.sim.model.geom_name2id("mount0_support")][1],
+            self.sim.data.geom_xmat[self.sim.model.geom_name2id("mount0_support")][0],
         )
         base_ang = base_ang + np.pi / 2  # this offset is needed to make things work...
 
@@ -325,7 +325,7 @@ class SingleArm(Manipulator):
                 if self._prev_mode == "arm":
                     self.controller.update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes])
 
-                base_pos = np.array(self.sim.data.geom_xpos[self.sim.model.joint_name2id("robot0_base_joint_rot")])
+                base_pos = np.array(self.sim.data.geom_xpos[self.sim.model.joint_name2id("mount0_base_joint_rot")])
                 if self.old_pos is None:
                     self.old_pos = base_pos
                 base_vel = base_pos - self.old_pos
@@ -395,14 +395,14 @@ class SingleArm(Manipulator):
 
         actuator_idxs = [
             self.sim.model.actuator_name2id(actuator)
-            for actuator in ["robot0_mobile_base_joint_x", "robot0_mobile_base_joint_y", "robot0_mobile_base_joint_rot"]
+            for actuator in ["mount0_mobile_base_joint_x", "mount0_mobile_base_joint_y", "mount0_mobile_base_joint_rot"]
         ]
-        height_actuator_idx = self.sim.model.actuator_name2id("robot0_mobile_base_joint_z")
+        height_actuator_idx = self.sim.model.actuator_name2id("mount0_mobile_base_joint_z")
 
         if self._target_height is None or self._controlling_height:
-            self._target_height = self.sim.data.get_joint_qpos("robot0_base_joint_z")
+            self._target_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
 
-        current_height = self.sim.data.get_joint_qpos("robot0_base_joint_z")
+        current_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
 
         if not self._controlling_height:
             z_error = self._target_height - current_height

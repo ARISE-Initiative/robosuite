@@ -57,9 +57,7 @@ class Panda(ManipulatorModel):
 
 class PandaMobile(Panda):
     def __init__(self, idn=0):
-        ManipulatorModel.__init__(self, xml_path_completion("robots/panda/robot_mobile.xml"), idn=idn)
+        ManipulatorModel.__init__(self, xml_path_completion("robots/panda/robot.xml"), idn=idn)
 
         # Set joint damping
-        self.set_joint_attribute(
-            attrib="damping", values=np.array((0.0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01, 0.01, 0.1, 0.0))
-        )
+        self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
