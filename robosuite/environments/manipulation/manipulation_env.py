@@ -34,6 +34,9 @@ class ManipulationEnv(RobotEnv):
             overrides the default gripper. Should either be single str if same gripper type is to be used for all
             robots or else it should be a list of the same length as "robots" param
 
+        initial_qpos (None or tuple or list of tuples): If set, sets custom initial qpos values for robot models.
+            Default of None corresponds to defalt initial qpos values defined by robot model.
+
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -152,6 +155,13 @@ class ManipulationEnv(RobotEnv):
 
         # Gripper
         gripper_types = self._input2list(gripper_types, num_robots)
+
+        # Initial qpos
+        if initial_qpos is not None:
+            if initial_qpos[0] is None or type(initial_qpos[0]) is list or type(initial_qpos[0]) is tuple:
+                initial_qpos = list(initial_qpos)
+            else:
+                initial_qpos = [initial_qpos for _ in range(num_robots)]
 
         # Robot configurations to pass to super call
         robot_configs = [

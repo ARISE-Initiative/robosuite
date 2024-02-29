@@ -42,7 +42,7 @@ class Keyboard(Device):
         """
 
         def print_command(char, info):
-            char += " " * (10 - len(char))
+            char += " " * (30 - len(char))
             print("{}\t{}".format(char, info))
 
         print("")
@@ -50,7 +50,7 @@ class Keyboard(Device):
         print_command("q", "reset simulation")
         print_command("spacebar", "toggle gripper (open/close)")
         print_command("b", "toggle arm/base mode (if applicable)")
-        print_command("w-a-s-d", "move arm horizontally in x-y plane")
+        print_command("w-a-s-d / up-right-down-left", "move arm horizontally in x-y plane")
         print_command("r-f", "move arm vertically")
         print_command("z-x", "rotate arm about x-axis")
         print_command("t-g", "rotate arm about y-axis")
@@ -109,7 +109,15 @@ class Keyboard(Device):
 
         try:
             # controls for moving position
-            if key.char == "w":
+            if key == Key.up:
+                self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
+            elif key == Key.down:
+                self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
+            elif key == Key.left:
+                self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
+            elif key == Key.right:
+                self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
+            elif key.char == "w":
                 self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
             elif key.char == "s":
                 self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
