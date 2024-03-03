@@ -73,8 +73,8 @@ class Robot(object):
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
 
         self.robot_joints = None  # xml joint names for robot
-        # self.base_pos = None  # Base position in world coordinates (x,y,z)
-        # self.base_ori = None  # Base rotation in world coordinates (x,y,z,w quat)
+        self.base_pos = None  # Base position in world coordinates (x,y,z)
+        self.base_ori = None  # Base rotation in world coordinates (x,y,z,w quat)
         self._ref_joint_indexes = None  # xml joint indexes for robot in mjsim
         self._ref_joint_pos_indexes = None  # xml joint position indexes in mjsim
         self._ref_joint_vel_indexes = None  # xml joint velocity indexes in mjsim
@@ -143,13 +143,9 @@ class Robot(object):
         # Load controllers
         self._load_controller()
 
-        # # Update base pos / ori references
-        # self.base_pos = self.sim.data.get_body_xpos(self.robot_model.root_body)
-        # # self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3)))
-        # robot_id = self.sim.model.body_name2id(self.robot_model.root_body)
-        # root_body_quat = T.convert_quat(self.sim.data.body_xquat[robot_id], to="xyzw")
-        # rot_quat = np.array([0, 0, 0.7071068, -0.7071068])
-        # self.base_ori = T.quat_multiply(root_body_quat, rot_quat, format="xyzw")
+        # Update base pos / ori references
+        self.base_pos = self.sim.data.get_body_xpos(self.robot_model.root_body)
+        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3)))
 
         # Setup buffers to hold recent values
         self.recent_qpos = DeltaBuffer(dim=len(self.joint_indexes))

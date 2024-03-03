@@ -190,10 +190,8 @@ class SingleArm(Manipulator):
 
             self.gripper.current_action = np.zeros(self.gripper.dof)
 
-        ### removing this line: as base_pos and base_ori are not fixed and can change over time;
-        ### also this line currently is a placeholder and doesn't do anything
-        # # Update base pos / ori references in controller
-        # self.controller.update_base_pose(self.base_pos, self.base_ori)
+        # Update base pos / ori references in controller
+        self.controller.update_base_pose(self.base_pos, self.base_ori)
 
         # # Setup buffers to hold recent values
         self.recent_ee_forcetorques = DeltaBuffer(dim=6)
@@ -236,7 +234,6 @@ class SingleArm(Manipulator):
         self.eef_site_id = self.sim.model.site_name2id(self.gripper.important_sites["grip_site"])
         self.eef_cylinder_id = self.sim.model.site_name2id(self.gripper.important_sites["grip_cylinder"])
 
-    # @profile
     def control(self, action, policy_step=False):
         """
         Actuate the robot with the

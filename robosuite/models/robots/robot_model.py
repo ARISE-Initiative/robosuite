@@ -2,9 +2,8 @@ from copy import deepcopy
 
 import numpy as np
 
-from robosuite.models.base import MujocoXML, MujocoXMLModel
-from robosuite.utils import XMLError
-from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, string_to_array
+from robosuite.models.base import MujocoXMLModel
+from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 REGISTERED_ROBOTS = {}
@@ -138,6 +137,8 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         mount._elements["root_body"].set("pos", array_to_string(offset))
 
         if mount.is_mobile:
+            # if the mount is mobile, the robot should be "merged" into the mount,
+            # so that when the mount moves the robot moves along with it
             merge_body = self.root_body
             root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
             for body in mount.worldbody:
