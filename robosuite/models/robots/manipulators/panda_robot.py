@@ -53,3 +53,7 @@ class Panda(ManipulatorModel):
     @property
     def arm_type(self):
         return "single"
+
+
+class PandaMobile(Panda):
+    pass

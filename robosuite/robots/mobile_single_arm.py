@@ -3,16 +3,17 @@ import os
 from collections import OrderedDict
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
 from robosuite.models.grippers import gripper_factory
-from robosuite.robots.manipulator import Manipulator
+from robosuite.robots.mobile_manipulator import MobileManipulator
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.observables import Observable, sensor
 
 
-class SingleArm(Manipulator):
+class MobileSingleArm(MobileManipulator):
     """
     Initializes a single-armed robot simulation object.
 
@@ -189,12 +190,24 @@ class SingleArm(Manipulator):
         # Update base pos / ori references in controller
         self.controller.update_base_pose(self.base_pos, self.base_ori)
 
-        # # Setup buffers to hold recent values
+        # Setup buffers to hold recent values
         self.recent_ee_forcetorques = DeltaBuffer(dim=6)
         self.recent_ee_pose = DeltaBuffer(dim=7)
         self.recent_ee_vel = DeltaBuffer(dim=6)
         self.recent_ee_vel_buffer = RingBuffer(dim=6, length=10)
         self.recent_ee_acc = DeltaBuffer(dim=6)
+
+        # Book-keeping for mobile manipulation
+        self._eef_base_offset = None
+        self._eef_base_rot = None
+        self._last_base_rot = None
+        self._init_base_rot = self.base_rot
+        self._eef_height_offset = None
+        self._target_height = None
+        self._controlling_height = False
+        self._prev_mode = None
+        self._prev_base_pos = None
+        self._prev_base_rot = None
 
     def setup_references(self):
         """
@@ -215,9 +228,27 @@ class SingleArm(Manipulator):
                 self.sim.model.actuator_name2id(actuator) for actuator in self.gripper.actuators
             ]
 
+        self._ref_base_actuator_indexes = [
+            self.sim.model.actuator_name2id(actuator)
+            for actuator in [
+                "mount0_mobile_base_joint_x",
+                "mount0_mobile_base_joint_y",
+                "mount0_mobile_base_joint_rot",
+            ]
+        ]
+        self._ref_base_height_actuator_index = self.sim.model.actuator_name2id("mount0_mobile_base_joint_z")
+
         # IDs of sites for eef visualization
         self.eef_site_id = self.sim.model.site_name2id(self.gripper.important_sites["grip_site"])
         self.eef_cylinder_id = self.sim.model.site_name2id(self.gripper.important_sites["grip_cylinder"])
+
+    @property
+    def base_rot(self):
+        base_rot = np.arctan2(
+            -self.sim.data.geom_xmat[self.sim.model.geom_name2id("mount0_support")][1],
+            self.sim.data.geom_xmat[self.sim.model.geom_name2id("mount0_support")][0],
+        )
+        return base_rot
 
     def control(self, action, policy_step=False):
         """
@@ -239,16 +270,121 @@ class SingleArm(Manipulator):
             self.action_dim, len(action)
         )
 
-        gripper_action = None
-        if self.has_gripper:
-            gripper_action = action[self.controller.control_dim :]  # all indexes past controller dimension indexes
-            arm_action = action[: self.controller.control_dim]
-        else:
-            arm_action = action
+        action = np.copy(action)  # copy the action, in case modified later in code
+        base_rot = self.base_rot
 
-        # Update the controller goal if this is a new policy step
+        mode = "base" if (self.is_mobile and action[-1] > 0) else "arm"
+
+        base_action = None
+
         if policy_step:
-            self.controller.set_goal(arm_action)
+            if mode == "arm":
+                if self._prev_mode == "base":
+                    # update initial joints since last time
+                    self.controller.update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes])
+
+                raw_arm_action = np.copy(action[: self.controller.control_dim])
+                if self.controller.use_delta:
+                    arm_action = np.zeros(len(raw_arm_action))
+                    theta = base_rot - np.pi / 2
+                    x, y = raw_arm_action[0:2]
+                    arm_action[0] = x * np.cos(theta) - y * np.sin(theta)
+                    arm_action[1] = x * np.sin(theta) + y * np.cos(theta)
+                    arm_action[2] = raw_arm_action[2]
+
+                    roll, pitch = raw_arm_action[3:5]
+                    arm_action[3] = roll * np.cos(theta) - pitch * np.sin(theta)
+                    arm_action[4] = roll * np.sin(theta) + pitch * np.cos(theta)
+                    arm_action[5] = raw_arm_action[5]
+                else:
+                    # global action. the input is in the base coordinate frame, transform to be with respect to world coordinates
+                    base_pos, base_ori = self.get_base_pose()
+
+                    # base position, in world coordinates
+                    T_WB = np.vstack((np.hstack((base_ori, base_pos[:, None])), [0, 0, 0, 1]))
+
+                    # target end-effector position, in base coordinates
+                    T_BE = np.vstack(
+                        (
+                            np.hstack(
+                                (Rotation.from_rotvec(raw_arm_action[3:6]).as_matrix(), raw_arm_action[0:3][:, None])
+                            ),
+                            [0, 0, 0, 1],
+                        )
+                    )
+
+                    # compute end-effector position, in world coordinates
+                    T_WE = np.matmul(T_WB, T_BE)
+
+                    # extract action to pass to controller
+                    goal_pos = T_WE[:3, 3]
+                    goal_ori = Rotation.from_matrix(T_WE[:3, :3]).as_rotvec()
+                    arm_action = np.concatenate((goal_pos, goal_ori))
+
+                self.controller.set_goal(arm_action)
+            elif mode == "base":
+                # update initial joints since last time
+                if self._prev_mode == "arm":
+                    self.controller.update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes])
+
+                base_pos = np.array(self.sim.data.geom_xpos[self.sim.model.joint_name2id("mount0_base_joint_rot")])
+
+                # get base position and rotation velocity
+                if self._prev_base_pos is None:
+                    self._prev_base_pos = base_pos
+                base_vel = base_pos - self._prev_base_pos
+                self._prev_base_pos = base_pos
+                if self._prev_base_rot is None:
+                    self._prev_base_rot = base_rot
+                rot_vel = base_rot - self._prev_base_rot
+                self._prev_base_rot = base_rot
+
+                if self._eef_base_offset is None or self._prev_mode == "arm":
+                    eef_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("gripper0_grip_site")])
+                    # Distance between eef and base
+                    self._eef_base_offset = np.sqrt((eef_pos[0] - base_pos[0]) ** 2 + (eef_pos[1] - base_pos[1]) ** 2)
+                    # Angle between eef and base (converted to front being 0 deg and cw rotation is positive)
+                    # self._eef_base_rot = -np.pi / 2 + np.arctan2(eef_pos[0] - base_pos[0], eef_pos[1] - base_pos[1])
+                    self._eef_base_rot = np.arctan2(eef_pos[1] - base_pos[1], eef_pos[0] - base_pos[0])
+                    # orig angle of base
+                    self._last_base_rot = base_rot
+                    # Height Offset
+                    self._eef_height_offset = eef_pos[2] - base_pos[2]
+                    # Initial eef rotation
+                    self._eef_init_mat = np.copy(self.controller.ee_ori_mat)
+
+                # compute global target pose for arm (to move in sync with base)
+                dtheta = base_rot + 3 * rot_vel - self._last_base_rot
+                goal_eef_pos = [
+                    base_pos[0] + 3.5 * base_vel[0] + self._eef_base_offset * np.cos(self._eef_base_rot + dtheta),
+                    base_pos[1] + 3.5 * base_vel[1] + self._eef_base_offset * np.sin(self._eef_base_rot + dtheta),
+                    base_pos[2] + self._eef_height_offset,
+                ]
+                rz = np.array([[np.cos(dtheta), -np.sin(dtheta), 0], [np.sin(dtheta), np.cos(dtheta), 0], [0, 0, 1]])
+                goal_eef_ori = np.matmul(rz, self._eef_init_mat)
+
+                self.controller.set_goal(
+                    action=np.zeros(self.controller.control_dim), set_pos=goal_eef_pos, set_ori=goal_eef_ori
+                )
+
+                raw_base_action = np.copy(
+                    action[
+                        self.controller.control_dim
+                        + self.gripper.dof : self.controller.control_dim
+                        + self.gripper.dof
+                        + 4
+                    ]
+                )
+                base_action = np.copy(raw_base_action)
+                # input raw base action is delta relative to current pose of base
+                # controller expects deltas relative to initial pose of base at start of episode
+                # transform deltas from current base pose coordinates to initial base pose coordinates
+                x, y = base_action[0:2]
+                theta = base_rot - self._init_base_rot
+                base_action[0] = x * np.cos(theta) - y * np.sin(theta)
+                base_action[1] = x * np.sin(theta) + y * np.cos(theta)
+            else:
+                raise ValueError
 
         # Now run the controller for a step
         torques = self.controller.run_controller()
@@ -259,10 +395,19 @@ class SingleArm(Manipulator):
 
         # Get gripper action, if applicable
         if self.has_gripper:
+            gripper_action = action[
+                self.controller.control_dim : self.controller.control_dim + self.gripper.dof
+            ]  # all indexes past controller dimension indexes
             self.grip_action(gripper=self.gripper, gripper_action=gripper_action)
 
         # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_actuator_indexes] = self.torques
+
+        # Apply torques for mobile base (if applicable)
+        if self.is_mobile:
+            self._set_mobile_base_ctrls(mode, base_action, policy_step)
+
+        self._prev_mode = mode
 
         # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:
@@ -281,6 +426,42 @@ class SingleArm(Manipulator):
             )
             ee_acc = np.array([np.convolve(col, np.ones(10) / 10.0, mode="valid")[0] for col in diffs.transpose()])
             self.recent_ee_acc.push(ee_acc)
+
+    def _set_mobile_base_ctrls(self, mode, base_action, policy_step):
+        if self._target_height is None or self._controlling_height:
+            self._target_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
+        current_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
+        if not self._controlling_height:
+            z_error = self._target_height - current_height
+            self.sim.data.ctrl[self._ref_base_height_actuator_index] = 100 * z_error
+
+        if mode == "base":
+            if policy_step:
+                self.base_action_actual = [base_action[i] for i in [0, 1, 3]]
+
+                if abs(base_action[2]) < 0.1:
+                    self._controlling_height = False
+                else:
+                    self.sim.data.ctrl[self._ref_base_height_actuator_index] = base_action[2]
+                    self._controlling_height = True
+
+            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_base_actuator_indexes]
+            bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+            weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+            applied_base_action = bias + weight * self.base_action_actual
+
+            applied_base_action[0] *= -1
+
+            self.sim.data.ctrl[self._ref_base_actuator_indexes] = applied_base_action
+        else:
+            self.sim.data.ctrl[self._ref_base_actuator_indexes] = 0.0
+
+    def get_base_pose(self):
+        base_pos = np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("mount0_pedestal_feet_col")])
+        root_body_name = self.robot_model.root_body
+        base_rot = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(root_body_name)].reshape([3, 3]))
+        base_rot = np.matmul(np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]]), base_rot)
+        return base_pos, base_rot
 
     def _visualize_grippers(self, visible):
         """
@@ -342,6 +523,23 @@ class SingleArm(Manipulator):
             names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
             actives += [True, True]
 
+        if self.is_mobile:
+            # add sensors for position and orientation of mobile base
+            @sensor(modality=modality)
+            def base_pos(obs_cache):
+                return np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("mount0_pedestal_feet_col")])
+
+            @sensor(modality=modality)
+            def base_quat(obs_cache):
+                root_body_id = self.sim.model.body_name2id(self.robot_model.root_body)
+                root_body_quat = T.convert_quat(self.sim.data.body_xquat[root_body_id], to="xyzw")
+                rot_quat = np.array([0, 0, 0.7071068, -0.7071068])
+                return T.quat_multiply(root_body_quat, rot_quat)
+
+            sensors += [base_pos, base_quat]
+            names += [f"{pf}base_pos", f"{pf}base_quat"]
+            actives += [True, True]
+
         # Create observables for this robot
         for name, s, active in zip(names, sensors, actives):
             observables[name] = Observable(
@@ -365,10 +563,11 @@ class SingleArm(Manipulator):
                 - (np.array) maximum (high) action values
         """
         # Action limits based on controller limits
-        low, high = ([-1] * self.gripper.dof, [1] * self.gripper.dof) if self.has_gripper else ([], [])
+        low_g, high_g = ([-1] * self.gripper.dof, [1] * self.gripper.dof) if self.has_gripper else ([], [])
         low_c, high_c = self.controller.control_limits
-        low = np.concatenate([low_c, low])
-        high = np.concatenate([high_c, high])
+        low_m, high_m = ([-1] * 5, [1] * 5) if self.is_mobile else ([], [])
+        low = np.concatenate([low_c, low_g, low_m])
+        high = np.concatenate([high_c, high_g, high_m])
 
         return low, high
 

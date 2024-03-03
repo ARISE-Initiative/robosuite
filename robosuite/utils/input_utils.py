@@ -262,13 +262,19 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
         action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
     if robot.is_mobile:
-        mode = state["mobile_base"]
-        if mode:
-            action = [a if i in [0, 1, 2, 5] else 0 for i, a in enumerate(action)]
+        assert controller.name == "OSC_POSE"
+        base_mode = bool(state["mobile_base"])
+        if base_mode is True:
+            arm_ac = np.zeros(6)
+            base_ac = np.array([action[0], action[1], action[2], action[5]])
+            mode_ac = np.array([1])
+        else:
+            arm_ac = action[0:6]
+            base_ac = np.zeros(4)
+            mode_ac = np.array([-1])
+        gripper_ac = np.array([action[-1]])
 
-        mode = 1 if mode else -1
-
-        action = np.concatenate((action, [mode]))
+        action = np.concatenate((arm_ac, gripper_ac, base_ac, mode_ac))
 
     # clip actions between -1 and 1
     action = np.clip(action, -1, 1)
