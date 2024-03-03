@@ -123,7 +123,9 @@ class MujocoEnv(metaclass=EnvMeta):
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
-        self._xml_processors = []  # Function to process model xml in _initialize_sim() call
+        # Function to process model xml in _initialize_sim() call
+        # include edit_model_xml function by default
+        self._xml_processors = [self.edit_model_xml]
         self.model = None
         self.cur_time = None
         self.model_timestep = None
