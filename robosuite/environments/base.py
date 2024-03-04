@@ -348,18 +348,19 @@ class MujocoEnv(metaclass=EnvMeta):
 
     def get_ep_meta(self):
         """
-        Returns a dictionary containing episode meta data
+        Returns a dictionary containing episode metadata
+        Returns:
+            dict: episode metadata
         """
-        return {}
+        return self._ep_meta
 
     def set_ep_meta(self, meta):
         """
-        set env attributes from meta data
+        Set episode meta data
+        Args:
+            meta (dict): containing episode metadata
         """
         self._ep_meta = meta
-
-    def unset_up_meta(self, meta):
-        self._ep_meta = {}
 
     def _update_observables(self, force=False):
         """
@@ -629,7 +630,6 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         update internal state of environment (can be called after resetting simulation or after step)
         """
-
         pass
 
     def check_contact(self, geoms_1, geoms_2=None):
