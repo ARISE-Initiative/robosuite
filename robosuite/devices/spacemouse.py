@@ -189,7 +189,7 @@ class SpaceMouse(Device):
         # Reset grasp
         self.single_click_and_hold = False
         # Reset base mode
-        self.mobile_base = False
+        self.base_mode = False
 
     def start_control(self):
         """
@@ -223,7 +223,7 @@ class SpaceMouse(Device):
             raw_drotation=np.array([roll, pitch, yaw]),
             grasp=self.control_gripper,
             reset=self._reset_state,
-            mobile_base=int(self.mobile_base),
+            base_mode=int(self.base_mode),
         )
 
     def run(self):
@@ -336,7 +336,7 @@ class SpaceMouse(Device):
         try:
             # controls for mobile base (only applicable if mobile base present)
             if key.char == "b":
-                self.mobile_base = not self.mobile_base  # toggle mobile base
+                self.base_mode = not self.base_mode  # toggle mobile base
 
         except AttributeError as e:
             pass

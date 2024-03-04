@@ -141,6 +141,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
+            # no need to call sim.forward if using lite_physics
             if self.lite_physics:
                 pass
             else:

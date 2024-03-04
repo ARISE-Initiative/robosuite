@@ -263,7 +263,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
 
     if robot.is_mobile:
         assert controller.name == "OSC_POSE"
-        base_mode = bool(state["mobile_base"])
+        base_mode = bool(state["base_mode"])
         if base_mode is True:
             arm_ac = np.zeros(6)
             base_ac = np.array([action[0], action[1], action[2], action[5]])
