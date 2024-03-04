@@ -324,7 +324,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
             visual geom copy
 
-        scale (float): 3D scale factor
+        scale (float or list of floats): 3D scale factor
     """
 
     def __init__(self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True, scale=None):

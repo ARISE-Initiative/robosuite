@@ -56,4 +56,8 @@ class Panda(ManipulatorModel):
 
 
 class PandaMobile(Panda):
+    """
+    Variant of Panda robot with mobile base. Currently serves as placeholder class.
+    """
+
     pass
