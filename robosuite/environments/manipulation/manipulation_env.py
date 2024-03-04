@@ -117,6 +117,8 @@ class ManipulationEnv(RobotEnv):
             [multiple / a single] segmentation(s) to use for all cameras. A list of list of str specifies per-camera
             segmentation setting(s) to use.
 
+        seed (int): environment seed. Default is None, where environment is unseeded, ie. random
+
     Raises:
         ValueError: [Camera obs require offscreen renderer]
         ValueError: [Camera name must be specified to use camera obs]

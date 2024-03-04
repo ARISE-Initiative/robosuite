@@ -82,6 +82,7 @@ class MujocoEnv(metaclass=EnvMeta):
             only calls sim.reset and resets all robosuite-internal variables
         renderer (str): string for the renderer to use
         renderer_config (dict): dictionary for the renderer configurations
+        seed (int): environment seed. Default is None, where environment is unseeded, ie. random
     Raises:
         ValueError: [Invalid renderer selection]
     """
@@ -168,12 +169,6 @@ class MujocoEnv(metaclass=EnvMeta):
         # check if viewer has get observations method and set a flag for future use.
         self.viewer_get_obs = hasattr(self.viewer, "_get_observations")
 
-    def get_mjviewer_cam_config(self):
-        """
-        mjviewer camera settings. see robosuite/renderers/mjviewer/mjviewer_renderer.py for list of values
-        """
-        return {}
-
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
 
@@ -189,8 +184,7 @@ class MujocoEnv(metaclass=EnvMeta):
                 camera_id = self.sim.model.camera_name2id(self.render_camera)
             else:
                 camera_id = None
-            camera_config = self.get_mjviewer_cam_config()
-            self.viewer = MjviewerRenderer(env=self, camera_id=camera_id, camera_config=camera_config)
+            self.viewer = MjviewerRenderer(env=self, camera_id=camera_id, **self.renderer_config)
         elif self.renderer == "nvisii":
             from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
 

@@ -114,6 +114,8 @@ class RobotEnv(MujocoEnv):
 
         robot_configs (list of dict): Per-robot configurations set from any subclass initializers.
 
+        seed (int): environment seed. Default is None, where environment is unseeded, ie. random
+
     Raises:
         ValueError: [Camera obs require offscreen renderer]
         ValueError: [Camera name must be specified to use camera obs]
