@@ -255,14 +255,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
     # map 0 to -1 (open) and map 1 to 1 (closed)
     grasp = 1 if grasp else -1
 
-    # Create action based on action space of individual robot
-    if controller.name == "OSC_POSITION":
-        action = np.concatenate([dpos, [grasp] * gripper_dof])
-    else:
-        action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
-
     if robot.is_mobile:
-        assert controller.name == "OSC_POSE"
+        assert controller.name == "OSC_POSE", "Mobile robots only currently supported by OSC_POSE controller"
         base_mode = bool(state["base_mode"])
         if base_mode is True:
             arm_ac = np.zeros(6)
@@ -275,6 +269,12 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
         gripper_ac = np.array([action[-1]])
 
         action = np.concatenate((arm_ac, gripper_ac, base_ac, mode_ac))
+    else:
+        # Create action based on action space of individual robot
+        if controller.name == "OSC_POSITION":
+            action = np.concatenate([dpos, [grasp] * gripper_dof])
+        else:
+            action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
     # clip actions between -1 and 1
     action = np.clip(action, -1, 1)
