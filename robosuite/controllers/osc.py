@@ -98,6 +98,9 @@ class OperationalSpaceController(Controller):
 
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
 
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            This feature is set to False by default to preserve backward compatibility.
+
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
 
@@ -128,7 +131,7 @@ class OperationalSpaceController(Controller):
         control_ori=True,
         control_delta=True,
         uncouple_pos_ori=True,
-        optimize_physics=False,
+        lite_physics=False,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -137,7 +140,7 @@ class OperationalSpaceController(Controller):
             eef_name,
             joint_indexes,
             actuator_range,
-            optimize_physics=optimize_physics,
+            lite_physics=lite_physics,
         )
         # Determine whether this is pos ori or just pos
         self.use_ori = control_ori

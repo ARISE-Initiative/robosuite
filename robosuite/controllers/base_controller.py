@@ -26,6 +26,9 @@ class Controller(object, metaclass=abc.ABCMeta):
             :`'qvel'`: list of indexes to relevant robot joint velocities
 
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
+
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            This feature is set to False by default to preserve backward compatibility.
     """
 
     def __init__(
@@ -34,7 +37,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         eef_name,
         joint_indexes,
         actuator_range,
-        optimize_physics=False,
+        lite_physics=False,
     ):
 
         # Actuator range
@@ -56,7 +59,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         # mujoco simulator state
         self.sim = sim
         self.model_timestep = macros.SIMULATION_TIMESTEP
-        self.optimize_physics = optimize_physics
+        self.lite_physics = lite_physics
         self.eef_name = eef_name
         self.joint_index = joint_indexes["joints"]
         self.qpos_index = joint_indexes["qpos"]
@@ -138,7 +141,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
-            if self.optimize_physics:
+            if self.lite_physics:
                 pass
             else:
                 self.sim.forward()

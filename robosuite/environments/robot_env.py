@@ -69,6 +69,9 @@ class RobotEnv(MujocoEnv):
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
 
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            This feature is set to False by default to preserve backward compatibility.
+
         horizon (int): Every episode lasts for exactly @horizon timesteps.
 
         ignore_done (bool): True if never terminating the environment (ignore @horizon).
@@ -131,7 +134,7 @@ class RobotEnv(MujocoEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
-        optimize_physics=False,
+        lite_physics=False,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -206,7 +209,7 @@ class RobotEnv(MujocoEnv):
                     "mount_type": mount_types[idx],
                     "initialization_noise": initialization_noise[idx],
                     "control_freq": control_freq,
-                    "optimize_physics": optimize_physics,
+                    "lite_physics": lite_physics,
                 },
                 **robot_config,
             )
@@ -222,7 +225,7 @@ class RobotEnv(MujocoEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
-            optimize_physics=optimize_physics,
+            lite_physics=lite_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,

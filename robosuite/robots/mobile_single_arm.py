@@ -15,7 +15,7 @@ from robosuite.utils.observables import Observable, sensor
 
 class MobileSingleArm(MobileManipulator):
     """
-    Initializes a single-armed robot simulation object.
+    Initializes a single-armed robot simulation object with mobile base.
 
     Args:
         robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
@@ -51,6 +51,9 @@ class MobileSingleArm(MobileManipulator):
         control_freq (float): how many control signals to receive
             in every second. This sets the amount of simulation time
             that passes between every action input.
+
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            This feature is set to False by default to preserve backward compatibility.
     """
 
     def __init__(
@@ -63,7 +66,7 @@ class MobileSingleArm(MobileManipulator):
         mount_type="default",
         gripper_type="default",
         control_freq=20,
-        optimize_physics=False,
+        lite_physics=False,
     ):
 
         self.controller = None
@@ -87,7 +90,7 @@ class MobileSingleArm(MobileManipulator):
         self.recent_ee_vel_buffer = None  # RingBuffer holding prior 10 values of velocity values
         self.recent_ee_acc = None  # Current and last eef acceleration
 
-        self.optimize_physics = optimize_physics
+        self.lite_physics = lite_physics
 
         super().__init__(
             robot_type=robot_type,
@@ -134,7 +137,7 @@ class MobileSingleArm(MobileManipulator):
         self.controller_config["actuator_range"] = self.torque_limits
         self.controller_config["policy_freq"] = self.control_freq
         self.controller_config["ndim"] = len(self.robot_joints)
-        self.controller_config["optimize_physics"] = self.optimize_physics
+        self.controller_config["lite_physics"] = self.lite_physics
 
         # Instantiate the relevant controller
         self.controller = controller_factory(self.controller_config["type"], self.controller_config)

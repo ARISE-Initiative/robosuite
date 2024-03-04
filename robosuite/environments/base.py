@@ -74,6 +74,8 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq (float): how many control signals to receive
             in every simulated second. This sets the amount of simulation time
             that passes between every action input.
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            This feature is set to False by default to preserve backward compatibility.
         horizon (int): Every episode lasts for exactly @horizon timesteps.
         ignore_done (bool): True if never terminating the environment (ignore @horizon).
         hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
@@ -93,7 +95,7 @@ class MujocoEnv(metaclass=EnvMeta):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
-        optimize_physics=False,
+        lite_physics=False,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -119,7 +121,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self._observables = {}  # Maps observable names to observable objects
         self._obs_cache = {}  # Maps observable names to pre-/partially-computed observable values
         self.control_freq = control_freq
-        self.optimize_physics = optimize_physics
+        self.lite_physics = lite_physics
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
@@ -442,12 +444,12 @@ class MujocoEnv(metaclass=EnvMeta):
         # Loop through the simulation at the model timestep rate until we're ready to take the next policy step
         # (as defined by the control frequency specified at the environment level)
         for i in range(int(self.control_timestep / self.model_timestep)):
-            if self.optimize_physics:
+            if self.lite_physics:
                 self.sim.step1()
             else:
                 self.sim.forward()
             self._pre_action(action, policy_step)
-            if self.optimize_physics:
+            if self.lite_physics:
                 self.sim.step2()
             else:
                 self.sim.step()
