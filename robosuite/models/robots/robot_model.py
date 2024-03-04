@@ -143,13 +143,14 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
             for body in mount.worldbody:
                 root.append(body)
-            link0 = find_elements(root=self.worldbody, tags="body", attribs={"name": "robot0_link0"}, return_first=True)
-            link0.set("pos", "0.05 0.0 0.20")
+
+            arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
+            arm_root.set("pos", "0.05 0.0 0.20")
             mount_support = find_elements(
                 root=self.worldbody, tags="body", attribs={"name": "mount0_support"}, return_first=True
             )
-            mount_support.append(deepcopy(link0))
-            root.remove(link0)
+            mount_support.append(deepcopy(arm_root))
+            root.remove(arm_root)
             self.merge_assets(mount)
             for one_actuator in mount.actuator:
                 self.actuator.append(one_actuator)

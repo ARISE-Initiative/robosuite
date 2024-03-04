@@ -273,9 +273,7 @@ class MobileSingleArm(MobileManipulator):
         action = np.copy(action)  # copy the action, in case modified later in code
         base_rot = self.base_rot
 
-        mode = "base" if (self.is_mobile and action[-1] > 0) else "arm"
-
-        base_action = None
+        mode = "base" if action[-1] > 0 else "arm"
 
         if policy_step:
             if mode == "arm":
@@ -404,8 +402,33 @@ class MobileSingleArm(MobileManipulator):
         self.sim.data.ctrl[self._ref_joint_actuator_indexes] = self.torques
 
         # Apply torques for mobile base (if applicable)
-        if self.is_mobile:
-            self._set_mobile_base_ctrls(mode, base_action, policy_step)
+        if self._target_height is None or self._controlling_height:
+            self._target_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
+        current_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
+        if not self._controlling_height:
+            z_error = self._target_height - current_height
+            self.sim.data.ctrl[self._ref_base_height_actuator_index] = 100 * z_error
+
+        if mode == "base":
+            if policy_step:
+                self.base_action_actual = [base_action[i] for i in [0, 1, 3]]
+
+                if abs(base_action[2]) < 0.1:
+                    self._controlling_height = False
+                else:
+                    self.sim.data.ctrl[self._ref_base_height_actuator_index] = base_action[2]
+                    self._controlling_height = True
+
+            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_base_actuator_indexes]
+            bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+            weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+            applied_base_action = bias + weight * self.base_action_actual
+
+            applied_base_action[0] *= -1
+
+            self.sim.data.ctrl[self._ref_base_actuator_indexes] = applied_base_action
+        else:
+            self.sim.data.ctrl[self._ref_base_actuator_indexes] = 0.0
 
         self._prev_mode = mode
 
@@ -523,22 +546,21 @@ class MobileSingleArm(MobileManipulator):
             names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
             actives += [True, True]
 
-        if self.is_mobile:
-            # add sensors for position and orientation of mobile base
-            @sensor(modality=modality)
-            def base_pos(obs_cache):
-                return np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("mount0_pedestal_feet_col")])
+        # add sensors for position and orientation of mobile base
+        @sensor(modality=modality)
+        def base_pos(obs_cache):
+            return np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("mount0_pedestal_feet_col")])
 
-            @sensor(modality=modality)
-            def base_quat(obs_cache):
-                root_body_id = self.sim.model.body_name2id(self.robot_model.root_body)
-                root_body_quat = T.convert_quat(self.sim.data.body_xquat[root_body_id], to="xyzw")
-                rot_quat = np.array([0, 0, 0.7071068, -0.7071068])
-                return T.quat_multiply(root_body_quat, rot_quat)
+        @sensor(modality=modality)
+        def base_quat(obs_cache):
+            root_body_id = self.sim.model.body_name2id(self.robot_model.root_body)
+            root_body_quat = T.convert_quat(self.sim.data.body_xquat[root_body_id], to="xyzw")
+            rot_quat = np.array([0, 0, 0.7071068, -0.7071068])
+            return T.quat_multiply(root_body_quat, rot_quat)
 
-            sensors += [base_pos, base_quat]
-            names += [f"{pf}base_pos", f"{pf}base_quat"]
-            actives += [True, True]
+        sensors += [base_pos, base_quat]
+        names += [f"{pf}base_pos", f"{pf}base_quat"]
+        actives += [True, True]
 
         # Create observables for this robot
         for name, s, active in zip(names, sensors, actives):
@@ -565,7 +587,7 @@ class MobileSingleArm(MobileManipulator):
         # Action limits based on controller limits
         low_g, high_g = ([-1] * self.gripper.dof, [1] * self.gripper.dof) if self.has_gripper else ([], [])
         low_c, high_c = self.controller.control_limits
-        low_m, high_m = ([-1] * 5, [1] * 5) if self.is_mobile else ([], [])
+        low_m, high_m = ([-1] * 5, [1] * 5)
         low = np.concatenate([low_c, low_g, low_m])
         high = np.concatenate([high_c, high_g, high_m])
 

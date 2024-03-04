@@ -29,10 +29,10 @@
 	</actuator>
     <worldbody>
         <body name="base" pos="0 0 0">
-            <body name="fixed_support" pos="-0.05 0 0.582">
+            <body name="fixed_support" pos="-0.05 0 0.50">
 				<geom type="cylinder" pos="0 0 0" size="0.12 0.2 0" group="0" material="Shell005_001_001_002_001"/>
 				<geom name="fixed_support" type="cylinder" pos="0 0 0" size="0.12 0.2 0" group="1" material="Shell005_001_001_002_001"/>
-				<body name="support" pos="0 0 0.05">
+				<body name="support" pos="0 0 0">
                     <!-- add robot here -->
 					<joint name="base_joint_z" pos="0 0 0" axis="0 0 1" type="slide" limited="true" range="0 0.34" damping="0.01" armature="0.0" frictionloss="1000" ref="0"/>
 					<geom type="cylinder" pos="0 0 0" size="0.1125 0.2 0" group="0" material="Shell005_001_001_002_001"/>
