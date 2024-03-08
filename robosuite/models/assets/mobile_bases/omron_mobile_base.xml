@@ -1,13 +1,13 @@
-<mujoco model="omron_mount">
+<mujoco model="omron_mobile_base">
     <asset>
-        <mesh file="meshes/omron_mount/omron_0.obj" name="omron_0_vis" scale="1 1 1"/>
-        <mesh file="meshes/omron_mount/omron_1.obj" name="omron_1_vis" scale="1 1 1"/>
-        <mesh file="meshes/omron_mount/omron_2.obj" name="omron_2_vis" scale="1 1 1"/>
-        <mesh file="meshes/omron_mount/omron_3.obj" name="omron_3_vis" scale="1 1 1"/>
-        <mesh file="meshes/omron_mount/omron_4.obj" name="omron_4_vis" scale="1 1 1"/>
-        <mesh file="meshes/omron_mount/omron_5.obj" name="omron_5_vis" scale="1 1 1"/>
-        <mesh file="meshes/omron_mount/omron_6.obj" name="omron_6_vis" scale="1 1 1"/>
-        <mesh file="meshes/omron_mount/omron_7.obj" name="omron_7_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_0.obj" name="omron_0_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_1.obj" name="omron_1_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_2.obj" name="omron_2_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_3.obj" name="omron_3_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_4.obj" name="omron_4_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_5.obj" name="omron_5_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_6.obj" name="omron_6_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_7.obj" name="omron_7_vis" scale="1 1 1"/>
         <material name="Opaque(128,128,128)" specular="0.0" shininess="0.25" rgba="0.501961 0.501961 0.501961 1.000000"/>
         <material name="Opaque(185,185,185)" specular="0.0" shininess="0.25" rgba="0.725490 0.725490 0.725490 1.000000"/>
         <material name="Opaque(190,190,190)" specular="0.0" shininess="0.25" rgba="0.745098 0.745098 0.745098 1.000000"/>

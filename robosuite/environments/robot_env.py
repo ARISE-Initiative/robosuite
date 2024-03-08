@@ -126,6 +126,7 @@ class RobotEnv(MujocoEnv):
         robots,
         env_configuration="default",
         mount_types="default",
+        mobile_base_types="default",
         controller_configs=None,
         initialization_noise=None,
         use_camera_obs=True,
@@ -163,6 +164,9 @@ class RobotEnv(MujocoEnv):
 
         # Mount
         mount_types = self._input2list(mount_types, self.num_robots)
+
+        # Mobile base
+        mobile_base_types = self._input2list(mobile_base_types, self.num_robots)
 
         # Controller
         controller_configs = self._input2list(controller_configs, self.num_robots)
@@ -209,6 +213,7 @@ class RobotEnv(MujocoEnv):
                 **{
                     "controller_config": controller_configs[idx],
                     "mount_type": mount_types[idx],
+                    "mobile_base_type": mobile_base_types[idx],
                     "initialization_noise": initialization_noise[idx],
                     "control_freq": control_freq,
                     "lite_physics": lite_physics,

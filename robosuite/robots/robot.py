@@ -50,6 +50,7 @@ class Robot(object):
         initial_qpos=None,
         initialization_noise=None,
         mount_type="default",
+        mobile_base_type="default",
         control_freq=20,
     ):
         # Set relevant attributes
@@ -59,6 +60,7 @@ class Robot(object):
         self.robot_model = None  # object holding robot model-specific info
         self.control_freq = control_freq  # controller Hz
         self.mount_type = mount_type  # Type of mount to use
+        self.mobile_base_type = mobile_base_type  # Type of mobile base to use
 
         # Scaling of Gaussian initial noise applied to robot joints
         self.initialization_noise = initialization_noise
@@ -258,7 +260,7 @@ class Robot(object):
 
     @property
     def is_mobile(self):
-        return self.mount_type == "OmronMount"
+        return False
 
     @property
     def action_limits(self):

@@ -7,3 +7,7 @@ class MobileManipulator(Manipulator):
     """
 
     pass
+
+    @property
+    def is_mobile(self):
+        return True
