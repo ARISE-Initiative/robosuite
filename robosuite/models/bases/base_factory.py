@@ -3,7 +3,7 @@ Defines a string based method of initializing mounts
 """
 
 
-def mount_factory(name, idn=0):
+def base_factory(name, idn=0):
     """
     Generator for grippers
 
@@ -20,6 +20,6 @@ def mount_factory(name, idn=0):
         XMLError: [invalid XML]
     """
     # Import MOUNT_MAPPING at runtime so we avoid circular imports
-    from robosuite.models.mounts import MOUNT_MAPPING
+    from robosuite.models.bases import BASE_MAPPING
 
-    return MOUNT_MAPPING.get(name, "Unknown mount name: {}".format(name))(idn=idn)
+    return BASE_MAPPING.get(name, "Unknown base name: {}".format(name))(idn=idn)

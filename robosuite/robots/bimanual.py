@@ -65,7 +65,7 @@ class Bimanual(Manipulator):
         controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
-        mount_type="default",
+        base_type="default",
         gripper_type="default",
         control_freq=20,
     ):
@@ -98,7 +98,7 @@ class Bimanual(Manipulator):
             idn=idn,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
-            mount_type=mount_type,
+            base_type=base_type,
             control_freq=control_freq,
         )
 

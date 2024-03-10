@@ -1,26 +1,26 @@
 """
-Rethink's Alternative Mount (Officially used on Baxter).
+Rethink's Generic Mount (Officially used on Sawyer).
 """
 import numpy as np
 
-from robosuite.models.mounts.mount_model import MountModel
+from robosuite.models.bases.mount_model import MountModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class RethinkMinimalMount(MountModel):
+class RethinkMount(MountModel):
     """
-    Mount officially used for Rethink's Baxter Robot. Includes only a wheeled pedestal.
+    Mount officially used for Rethink's Sawyer Robot. Includes a controller box and wheeled pedestal.
 
     Args:
         idn (int or str): Number or some other unique identification string for this mount instance
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("mounts/rethink_minimal_mount.xml"), idn=idn)
+        super().__init__(xml_path_completion("bases/rethink_mount.xml"), idn=idn)
 
     @property
     def top_offset(self):
-        return np.array((0, 0, -0.062))
+        return np.array((0, 0, -0.01))
 
     @property
     def horizontal_radius(self):

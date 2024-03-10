@@ -3,7 +3,7 @@ Omron LD-60 Mobile Base.
 """
 import numpy as np
 
-from robosuite.models.mobile_bases.mobile_base_model import MobileBaseModel
+from robosuite.models.bases.mobile_base_model import MobileBaseModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
@@ -16,7 +16,7 @@ class OmronMobileBase(MobileBaseModel):
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("mobile_bases/omron_mobile_base.xml"), idn=idn)
+        super().__init__(xml_path_completion("bases/omron_mobile_base.xml"), idn=idn)
 
     @property
     def top_offset(self):

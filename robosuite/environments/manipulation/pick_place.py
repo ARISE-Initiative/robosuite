@@ -175,7 +175,7 @@ class PickPlace(SingleArmEnv):
         table_friction=(1, 0.005, 0.0001),
         bin1_pos=(0.1, -0.25, 0.8),
         bin2_pos=(0.1, 0.28, 0.8),
-        z_offset=0.,
+        z_offset=0.0,
         z_rotation=None,
         use_camera_obs=True,
         use_object_obs=True,
@@ -220,8 +220,8 @@ class PickPlace(SingleArmEnv):
         # settings for bin position
         self.bin1_pos = np.array(bin1_pos)
         self.bin2_pos = np.array(bin2_pos)
-        self.z_offset = z_offset # z offset for initializing items in bin
-        self.z_rotation = z_rotation # z rotation for initializing items in bin
+        self.z_offset = z_offset  # z offset for initializing items in bin
+        self.z_rotation = z_rotation  # z rotation for initializing items in bin
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -234,7 +234,7 @@ class PickPlace(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -482,8 +482,8 @@ class PickPlace(SingleArmEnv):
         """
         self.visual_objects = []
         for vis_obj_cls, obj_name in zip(
-                (MilkVisualObject, BreadVisualObject, CerealVisualObject, CanVisualObject),
-                self.obj_names,
+            (MilkVisualObject, BreadVisualObject, CerealVisualObject, CanVisualObject),
+            self.obj_names,
         ):
             vis_name = "Visual" + obj_name
             vis_obj = vis_obj_cls(name=vis_name)
@@ -495,8 +495,8 @@ class PickPlace(SingleArmEnv):
         """
         self.objects = []
         for obj_cls, obj_name in zip(
-                (MilkObject, BreadObject, CerealObject, CanObject),
-                self.obj_names,
+            (MilkObject, BreadObject, CerealObject, CanObject),
+            self.obj_names,
         ):
             obj = obj_cls(name=obj_name)
             self.objects.append(obj)

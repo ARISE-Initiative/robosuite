@@ -4,7 +4,7 @@ import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.models.mounts import mount_factory
+from robosuite.models.bases import base_factory
 from robosuite.models.robots import create_robot
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer
@@ -49,8 +49,7 @@ class Robot(object):
         idn=0,
         initial_qpos=None,
         initialization_noise=None,
-        mount_type="default",
-        mobile_base_type="default",
+        base_type="default",
         control_freq=20,
     ):
         # Set relevant attributes
@@ -59,8 +58,7 @@ class Robot(object):
         self.idn = idn  # Unique ID of this robot
         self.robot_model = None  # object holding robot model-specific info
         self.control_freq = control_freq  # controller Hz
-        self.mount_type = mount_type  # Type of mount to use
-        self.mobile_base_type = mobile_base_type  # Type of mobile base to use
+        self.base_type = base_type  # Type of robot base to use
 
         # Scaling of Gaussian initial noise applied to robot joints
         self.initialization_noise = initialization_noise
@@ -99,10 +97,10 @@ class Robot(object):
         self.robot_model = create_robot(self.name, idn=self.idn)
 
         # Add mount if specified
-        if self.mount_type == "default":
-            self.robot_model.add_mount(mount=mount_factory(self.robot_model.default_mount, idn=self.idn))
+        if self.base_type == "default":
+            self.robot_model.add_base(base=base_factory(self.robot_model.default_base, idn=self.idn))
         else:
-            self.robot_model.add_mount(mount=mount_factory(self.mount_type, idn=self.idn))
+            self.robot_model.add_base(base=base_factory(self.base_type, idn=self.idn))
 
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:

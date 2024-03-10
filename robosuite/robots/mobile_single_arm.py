@@ -7,8 +7,8 @@ from scipy.spatial.transform import Rotation
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
-from robosuite.models.mobile_bases import mobile_base_factory
 from robosuite.models.robots import create_robot
 from robosuite.robots.mobile_manipulator import MobileManipulator
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
@@ -65,8 +65,7 @@ class MobileSingleArm(MobileManipulator):
         controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
-        mount_type="default",
-        mobile_base_type="default",
+        base_type="default",
         gripper_type="default",
         control_freq=20,
         lite_physics=False,
@@ -100,8 +99,7 @@ class MobileSingleArm(MobileManipulator):
             idn=idn,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
-            mount_type=mount_type,
-            mobile_base_type=mobile_base_type,
+            base_type=base_type,
             control_freq=control_freq,
         )
 
@@ -154,12 +152,12 @@ class MobileSingleArm(MobileManipulator):
         self.robot_model = create_robot(self.name, idn=self.idn)
 
         # Add mount if specified
-        if self.mobile_base_type == "default":
+        if self.base_type == "default":
             self.robot_model.add_mobile_base(
-                mobile_base=mobile_base_factory(self.robot_model.default_mobile_base, idn=self.idn)
+                mobile_base=base_factory(self.robot_model.default_mobile_base, idn=self.idn)
             )
         else:
-            self.robot_model.add_mobile_base(mobile_base=mobile_base_factory(self.mobile_base_type, idn=self.idn))
+            self.robot_model.add_mobile_base(mobile_base=base_factory(self.base_type, idn=self.idn))
 
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:
