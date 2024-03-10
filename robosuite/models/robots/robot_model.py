@@ -171,9 +171,9 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             root.append(body)
 
         arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
-        arm_root.set("pos", "0.05 0.0 0.20")
+
         mount_support = find_elements(
-            root=self.worldbody, tags="body", attribs={"name": "mount0_support"}, return_first=True
+            root=self.worldbody, tags="body", attribs={"name": "mobile_base0_support"}, return_first=True
         )
         mount_support.append(deepcopy(arm_root))
         root.remove(arm_root)

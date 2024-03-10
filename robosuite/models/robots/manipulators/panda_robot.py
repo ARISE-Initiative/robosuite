@@ -60,4 +60,6 @@ class PandaMobile(Panda):
     Variant of Panda robot with mobile base. Currently serves as placeholder class.
     """
 
-    pass
+    @property
+    def default_mobile_base(self):
+        return "OmronMobileBase"

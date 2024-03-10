@@ -29,5 +29,5 @@ class OmronMobileBase(MobileBaseModel):
         return 0.25
 
     @property
-    def is_mobile(self):
-        return True
+    def height_actuator(self):
+        return "{}mobile_base_joint_z".format(self.naming_prefix)

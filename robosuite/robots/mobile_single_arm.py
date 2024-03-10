@@ -250,12 +250,16 @@ class MobileSingleArm(MobileManipulator):
         self._ref_base_actuator_indexes = [
             self.sim.model.actuator_name2id(actuator)
             for actuator in [
-                "mount0_mobile_base_joint_x",
-                "mount0_mobile_base_joint_y",
-                "mount0_mobile_base_joint_rot",
+                "mobile_base0_mobile_base_joint_x",
+                "mobile_base0_mobile_base_joint_y",
+                "mobile_base0_mobile_base_joint_rot",
             ]
         ]
-        self._ref_base_height_actuator_index = self.sim.model.actuator_name2id("mount0_mobile_base_joint_z")
+        height_actuator = self.robot_model.mobile_base.height_actuator
+        if height_actuator is not None:
+            self._ref_base_height_actuator_index = self.sim.model.actuator_name2id(height_actuator)
+        else:
+            self._ref_base_height_actuator_index = None
 
         # IDs of sites for eef visualization
         self.eef_site_id = self.sim.model.site_name2id(self.gripper.important_sites["grip_site"])
@@ -264,8 +268,8 @@ class MobileSingleArm(MobileManipulator):
     @property
     def base_rot(self):
         base_rot = np.arctan2(
-            -self.sim.data.geom_xmat[self.sim.model.geom_name2id("mount0_support")][1],
-            self.sim.data.geom_xmat[self.sim.model.geom_name2id("mount0_support")][0],
+            -self.sim.data.site_xmat[self.sim.model.site_name2id("mobile_base0_center")][1],
+            self.sim.data.site_xmat[self.sim.model.site_name2id("mobile_base0_center")][0],
         )
         return base_rot
 
@@ -344,7 +348,9 @@ class MobileSingleArm(MobileManipulator):
                 if self._prev_mode == "arm":
                     self.controller.update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes])
 
-                base_pos = np.array(self.sim.data.geom_xpos[self.sim.model.joint_name2id("mount0_base_joint_rot")])
+                base_pos = np.array(
+                    self.sim.data.geom_xpos[self.sim.model.joint_name2id("mobile_base0_base_joint_rot")]
+                )
 
                 # get base position and rotation velocity
                 if self._prev_base_pos is None:
@@ -421,22 +427,24 @@ class MobileSingleArm(MobileManipulator):
         self.sim.data.ctrl[self._ref_joint_actuator_indexes] = self.torques
 
         # Apply torques for mobile base (if applicable)
-        if self._target_height is None or self._controlling_height:
-            self._target_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
-        current_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
-        if not self._controlling_height:
-            z_error = self._target_height - current_height
-            self.sim.data.ctrl[self._ref_base_height_actuator_index] = 100 * z_error
+        if self._ref_base_height_actuator_index is not None:
+            if self._target_height is None or self._controlling_height:
+                self._target_height = self.sim.data.get_joint_qpos("mobile_base0_base_joint_z")
+            current_height = self.sim.data.get_joint_qpos("mobile_base0_base_joint_z")
+            if not self._controlling_height:
+                z_error = self._target_height - current_height
+                self.sim.data.ctrl[self._ref_base_height_actuator_index] = 100 * z_error
 
         if mode == "base":
             if policy_step:
                 self.base_action_actual = [base_action[i] for i in [0, 1, 3]]
 
-                if abs(base_action[2]) < 0.1:
-                    self._controlling_height = False
-                else:
-                    self.sim.data.ctrl[self._ref_base_height_actuator_index] = base_action[2]
-                    self._controlling_height = True
+                if self._ref_base_height_actuator_index is not None:
+                    if abs(base_action[2]) < 0.1:
+                        self._controlling_height = False
+                    else:
+                        self.sim.data.ctrl[self._ref_base_height_actuator_index] = base_action[2]
+                        self._controlling_height = True
 
             ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_base_actuator_indexes]
             bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
@@ -469,37 +477,8 @@ class MobileSingleArm(MobileManipulator):
             ee_acc = np.array([np.convolve(col, np.ones(10) / 10.0, mode="valid")[0] for col in diffs.transpose()])
             self.recent_ee_acc.push(ee_acc)
 
-    def _set_mobile_base_ctrls(self, mode, base_action, policy_step):
-        if self._target_height is None or self._controlling_height:
-            self._target_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
-        current_height = self.sim.data.get_joint_qpos("mount0_base_joint_z")
-        if not self._controlling_height:
-            z_error = self._target_height - current_height
-            self.sim.data.ctrl[self._ref_base_height_actuator_index] = 100 * z_error
-
-        if mode == "base":
-            if policy_step:
-                self.base_action_actual = [base_action[i] for i in [0, 1, 3]]
-
-                if abs(base_action[2]) < 0.1:
-                    self._controlling_height = False
-                else:
-                    self.sim.data.ctrl[self._ref_base_height_actuator_index] = base_action[2]
-                    self._controlling_height = True
-
-            ctrl_range = self.sim.model.actuator_ctrlrange[self._ref_base_actuator_indexes]
-            bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-            weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-            applied_base_action = bias + weight * self.base_action_actual
-
-            applied_base_action[0] *= -1
-
-            self.sim.data.ctrl[self._ref_base_actuator_indexes] = applied_base_action
-        else:
-            self.sim.data.ctrl[self._ref_base_actuator_indexes] = 0.0
-
     def get_base_pose(self):
-        base_pos = np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("mount0_pedestal_feet_col")])
+        base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("mobile_base0_center")])
         root_body_name = self.robot_model.root_body
         base_rot = np.array(self.sim.data.body_xmat[self.sim.model.body_name2id(root_body_name)].reshape([3, 3]))
         base_rot = np.matmul(np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]]), base_rot)
@@ -568,7 +547,7 @@ class MobileSingleArm(MobileManipulator):
         # add sensors for position and orientation of mobile base
         @sensor(modality=modality)
         def base_pos(obs_cache):
-            return np.array(self.sim.data.geom_xpos[self.sim.model.geom_name2id("mount0_pedestal_feet_col")])
+            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("mobile_base0_center")])
 
         @sensor(modality=modality)
         def base_quat(obs_cache):
