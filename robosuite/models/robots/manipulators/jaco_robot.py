@@ -16,7 +16,7 @@ class Jaco(ManipulatorModel):
         super().__init__(xml_path_completion("robots/jaco/robot.xml"), idn=idn)
 
     @property
-    def default_mount(self):
+    def default_base(self):
         return "RethinkMount"
 
     @property

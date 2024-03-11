@@ -165,7 +165,7 @@ class ManipulatorModel(RobotModel):
         raise NotImplementedError
 
     @property
-    def default_mount(self):
+    def default_base(self):
         raise NotImplementedError
 
     @property

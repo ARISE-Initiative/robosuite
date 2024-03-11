@@ -19,7 +19,7 @@ class Panda(ManipulatorModel):
         self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
 
     @property
-    def default_mount(self):
+    def default_base(self):
         return "RethinkMount"
 
     @property
@@ -61,5 +61,5 @@ class PandaMobile(Panda):
     """
 
     @property
-    def default_mobile_base(self):
+    def default_base(self):
         return "OmronMobileBase"

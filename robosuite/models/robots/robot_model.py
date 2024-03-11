@@ -3,6 +3,7 @@ from copy import deepcopy
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
+from robosuite.models.bases import MobileBaseModel, MountModel
 from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
@@ -117,6 +118,14 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         for i, joint in enumerate(self._elements["joints"]):
             if force or joint.get(attrib, None) is None:
                 joint.set(attrib, array_to_string(np.array([values[i]])))
+
+    def add_base(self, base):
+        if isinstance(base, MountModel):
+            self.add_mount(base)
+        elif isinstance(base, MobileBaseModel):
+            self.add_mobile_base(base)
+        else:
+            raise ValueError
 
     def add_mount(self, mount):
         """
@@ -259,12 +268,12 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def default_mount(self):
+    def default_base(self):
         """
         Defines the default mount type for this robot that gets added to root body (base)
 
         Returns:
-            str: Default mount name to add to this robot
+            str: Default base name to add to this robot
         """
         raise NotImplementedError
 

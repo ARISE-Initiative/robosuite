@@ -19,12 +19,8 @@ class GoogleRobot(ManipulatorModel):
         # self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
 
     @property
-    def default_mobile_base(self):
+    def default_base(self):
         return "NullMobileBase"
-
-    @property
-    def default_mount(self):
-        return "NullMount"
 
     @property
     def default_gripper(self):

@@ -149,19 +149,7 @@ class MobileSingleArm(MobileManipulator):
         Loads robot and optionally add grippers.
         """
         # First, run the superclass method to load the relevant model
-        self.robot_model = create_robot(self.name, idn=self.idn)
-
-        # Add mount if specified
-        if self.base_type == "default":
-            self.robot_model.add_mobile_base(
-                mobile_base=base_factory(self.robot_model.default_mobile_base, idn=self.idn)
-            )
-        else:
-            self.robot_model.add_mobile_base(mobile_base=base_factory(self.base_type, idn=self.idn))
-
-        # Use default from robot model for initial joint positions if not specified
-        if self.init_qpos is None:
-            self.init_qpos = self.robot_model.init_qpos
+        super().load_model()
 
         # Verify that the loaded model is of the correct type for this robot
         if self.robot_model.arm_type != "single":
