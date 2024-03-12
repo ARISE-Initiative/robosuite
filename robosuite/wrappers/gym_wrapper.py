@@ -4,9 +4,9 @@ This is useful when using these environments with code that assumes a gym-like
 interface.
 """
 
-import numpy as np
 import gymnasium as gym
-from gymnasium import spaces, Env
+import numpy as np
+from gymnasium import Env, spaces
 
 from robosuite.wrappers import Wrapper
 

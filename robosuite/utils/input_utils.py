@@ -103,30 +103,28 @@ def choose_multi_arm_config():
     return list(env_configs.values())[k]
 
 
-def choose_robots(exclude_bimanual=False):
+def choose_robots(exclude_bimanual=False, use_humanoids=False):
     """
     Prints out robot options, and returns the requested robot. Restricts options to single-armed robots if
-    @exclude_bimanual is set to True (False by default)
+    @exclude_bimanual is set to True (False by default). Restrict options to humanoids if @use_humanoids is set to True (Flase by default).
 
     Args:
         exclude_bimanual (bool): If set, excludes bimanual robots from the robot options
+        use_humanoids (bool): If set, use humanoid robots
 
     Returns:
         str: Requested robot name
     """
     # Get the list of robots
-    robots = {
-        "Sawyer",
-        "Panda",
-        "Jaco",
-        "Kinova3",
-        "IIWA",
-        "UR5e",
-    }
+    robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e"}
 
     # Add Baxter if bimanual robots are not excluded
     if not exclude_bimanual:
         robots.add("Baxter")
+        robots.add("GR1")
+        robots.add("GR1UpperBody")
+    if use_humanoids:
+        robots = {"GR1", "GR1UpperBody"}
 
     # Make sure set is deterministically sorted
     robots = sorted(robots)
