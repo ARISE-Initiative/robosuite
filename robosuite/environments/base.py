@@ -164,12 +164,13 @@ class MujocoEnv(metaclass=EnvMeta):
 
             self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
         elif self.renderer == "mjviewer":
-            from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
-            if self.render_camera is not None:
-                camera_id = self.sim.model.camera_name2id(self.render_camera)
-            else:
-                camera_id = None
-            self.viewer = MjviewerRenderer(env=self, camera_id=camera_id)
+            if self.has_renderer:
+                from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
+                if self.render_camera is not None:
+                    camera_id = self.sim.model.camera_name2id(self.render_camera)
+                else:
+                    camera_id = None
+                self.viewer = MjviewerRenderer(env=self, camera_id=camera_id)
         else:
             raise ValueError(
                 f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
@@ -293,7 +294,8 @@ class MujocoEnv(metaclass=EnvMeta):
         """Resets simulation internal configurations."""
 
         # create visualization screen or renderer
-        if self.has_renderer and self.viewer is None:
+        # only want opencv viewer when renderer is mujoco
+        if self.has_renderer and self.viewer is None and (self.renderer == "mujoco" or self.renderer == "default"):
             self.viewer = OpenCVRenderer(self.sim)
 
             # Set the camera angle for viewing
@@ -409,7 +411,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.update()
-        elif self.viewer is None and self.renderer == "mjviewer":
+        elif self.viewer is None and self.renderer == "mjviewer" and self.has_renderer:
             # need to launch again after it was destroyed
             self.initialize_renderer()
             # so that mujoco viewer renders
