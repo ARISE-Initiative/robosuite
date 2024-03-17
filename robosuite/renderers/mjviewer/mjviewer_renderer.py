@@ -41,8 +41,7 @@ class MjviewerRenderer:
                 self.viewer.cam.azimuth = self.camera_config["azimuth"]
                 self.viewer.cam.elevation = self.camera_config["elevation"]
 
-        # temporary fix for "M" key conflict
-        self.viewer.opt.flags[-5] = 0
+
         self.viewer.sync()
 
     def reset(self):

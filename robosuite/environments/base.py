@@ -294,14 +294,17 @@ class MujocoEnv(metaclass=EnvMeta):
         """Resets simulation internal configurations."""
 
         # create visualization screen or renderer
-        # only want opencv viewer when renderer is mujoco
-        if self.has_renderer and self.viewer is None and (self.renderer == "mujoco" or self.renderer == "default"):
-            self.viewer = OpenCVRenderer(self.sim)
+        if self.has_renderer and self.viewer is None:
+            if self.renderer == "mujoco" or self.renderer == "default":
+                self.viewer = OpenCVRenderer(self.sim)
 
-            # Set the camera angle for viewing
-            if self.render_camera is not None:
-                camera_id = self.sim.model.camera_name2id(self.render_camera)
-                self.viewer.set_camera(camera_id)
+                # Set the camera angle for viewing
+                if self.render_camera is not None:
+                    camera_id = self.sim.model.camera_name2id(self.render_camera)
+                    self.viewer.set_camera(camera_id)
+
+            elif self.renderer == "mjviewer":
+                self.initialize_renderer()
 
         if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
@@ -410,11 +413,6 @@ class MujocoEnv(metaclass=EnvMeta):
         reward, done, info = self._post_action(action)
 
         if self.viewer is not None and self.renderer != "mujoco":
-            self.viewer.update()
-        elif self.viewer is None and self.renderer == "mjviewer" and self.has_renderer:
-            # need to launch again after it was destroyed
-            self.initialize_renderer()
-            # so that mujoco viewer renders
             self.viewer.update()
         
 
