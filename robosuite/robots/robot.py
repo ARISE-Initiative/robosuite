@@ -4,7 +4,7 @@ import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.models.mounts import mount_factory
+from robosuite.models.bases import base_factory
 from robosuite.models.robots import create_robot
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer
@@ -98,9 +98,9 @@ class Robot(object):
 
         # Add mount if specified
         if self.mount_type == "default":
-            self.robot_model.add_mount(mount=mount_factory(self.robot_model.default_mount, idn=self.idn))
+            self.robot_model.add_base(base=base_factory(self.robot_model.default_base, idn=self.idn))
         else:
-            self.robot_model.add_mount(mount=mount_factory(self.mount_type, idn=self.idn))
+            self.robot_model.add_base(base=base_factory(self.mount_type, idn=self.idn))
 
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:

@@ -68,6 +68,10 @@ class Manipulator(Robot):
         return dof
 
     @property
+    def is_mobile(self):
+        return False
+
+    @property
     def ee_ft_integral(self):
         """
         Returns:

@@ -195,8 +195,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         return None, None
 
     # Get controller reference
-    controller = robot.controller if not isinstance(robot, Bimanual) else robot.controller[active_arm]
-    gripper_dof = robot.gripper.dof if not isinstance(robot, Bimanual) else robot.gripper[active_arm].dof
+    controller = robot.controller[active_arm]
+    gripper_dof = robot.gripper[active_arm].dof
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
@@ -245,11 +245,26 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     # map 0 to -1 (open) and map 1 to 1 (closed)
     grasp = 1 if grasp else -1
 
-    # Create action based on action space of individual robot
-    if controller.name == "OSC_POSITION":
-        action = np.concatenate([dpos, [grasp] * gripper_dof])
+    if robot.is_mobile:
+        assert controller.name == "OSC_POSE", "Mobile robots only currently supported by OSC_POSE controller"
+        base_mode = bool(state["base_mode"])
+        if base_mode is True:
+            arm_ac = np.zeros(6)
+            base_ac = np.array([dpos[0], dpos[1], dpos[2], drotation[2]])
+            mode_ac = np.array([1])
+        else:
+            arm_ac = np.concatenate([dpos, drotation])
+            base_ac = np.zeros(4)
+            mode_ac = np.array([-1])
+        gripper_ac = np.array([grasp] * gripper_dof)
+
+        action = np.concatenate((arm_ac, gripper_ac, base_ac, mode_ac))
     else:
-        action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
+        # Create action based on action space of individual robot
+        if controller.name == "OSC_POSITION":
+            action = np.concatenate([dpos, [grasp] * gripper_dof])
+        else:
+            action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
     # Return the action and grasp
     return action, grasp

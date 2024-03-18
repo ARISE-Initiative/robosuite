@@ -21,6 +21,7 @@ import time
 from collections import namedtuple
 
 import numpy as np
+from pynput.keyboard import Controller, Key, Listener
 
 try:
     import hid
@@ -149,6 +150,12 @@ class SpaceMouse(Device):
         self.thread.daemon = True
         self.thread.start()
 
+        # also add a keyboard for aux controls
+        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
+
+        # start listening
+        self.listener.start()
+
     @staticmethod
     def _display_controls():
         """
@@ -180,6 +187,8 @@ class SpaceMouse(Device):
         self._control = np.zeros(6)
         # Reset grasp
         self.single_click_and_hold = False
+        # Reset base mode
+        self.base_mode = False
 
     def start_control(self):
         """
@@ -213,6 +222,7 @@ class SpaceMouse(Device):
             raw_drotation=np.array([roll, pitch, yaw]),
             grasp=self.control_gripper,
             reset=self._reset_state,
+            base_mode=int(self.base_mode),
         )
 
     def run(self):
@@ -307,6 +317,28 @@ class SpaceMouse(Device):
         if self.single_click_and_hold:
             return 1.0
         return 0
+
+    def on_press(self, key):
+        """
+        Key handler for key presses.
+        Args:
+            key (str): key that was pressed
+        """
+        pass
+
+    def on_release(self, key):
+        """
+        Key handler for key releases.
+        Args:
+            key (str): key that was pressed
+        """
+        try:
+            # controls for mobile base (only applicable if mobile base present)
+            if key.char == "b":
+                self.base_mode = not self.base_mode  # toggle mobile base
+
+        except AttributeError as e:
+            pass
 
 
 if __name__ == "__main__":

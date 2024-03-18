@@ -1,7 +1,10 @@
+from copy import deepcopy
+
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, string_to_array
+from robosuite.models.bases import MobileBaseModel, MountModel
+from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, string_to_array
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 REGISTERED_ROBOTS = {}
@@ -62,7 +65,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         super().__init__(fname, idn=idn)
 
         # Define other variables that get filled later
-        self.mount = None
+        self.base = None
 
         # Get camera names for this robot
         self.cameras = self.get_element_names(self.worldbody, "camera")
@@ -115,6 +118,14 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             if force or joint.get(attrib, None) is None:
                 joint.set(attrib, array_to_string(np.array([values[i]])))
 
+    def add_base(self, base):
+        if isinstance(base, MountModel):
+            self.add_mount(base)
+        elif isinstance(base, MobileBaseModel):
+            self.add_mobile_base(base)
+        else:
+            raise ValueError
+
     def add_mount(self, mount):
         """
         Mounts @mount to arm.
@@ -127,7 +138,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Raises:
             ValueError: [mount already added]
         """
-        if self.mount is not None:
+        if self.base is not None:
             raise ValueError("Mount already added for this robot!")
 
         # First adjust mount's base position
@@ -136,7 +147,57 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
 
         self.merge(mount, merge_body=self.root_body)
 
-        self.mount = mount
+        self.base = mount
+
+        # Update cameras in this model
+        self.cameras = self.get_element_names(self.worldbody, "camera")
+
+    def add_mobile_base(self, mobile_base):
+        """
+        Mounts @mobile_base to arm.
+
+        Throws error if robot already has a mobile base or if mobile base type is incorrect.
+
+        Args:
+            mobile base (MobileBaseModel): mount MJCF model
+
+        Raises:
+            ValueError: [mobile base already added]
+        """
+        if self.base is not None:
+            raise ValueError("Mobile base already added for this robot!")
+
+        # First adjust mount's base position
+        offset = self.base_offset - mobile_base.top_offset
+        mobile_base._elements["root_body"].set("pos", array_to_string(offset))
+
+        # if the mount is mobile, the robot should be "merged" into the mount,
+        # so that when the mount moves the robot moves along with it
+        merge_body = self.root_body
+        root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
+        for body in mobile_base.worldbody:
+            root.append(body)
+
+        arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
+
+        mount_support = find_elements(
+            root=self.worldbody, tags="body", attribs={"name": "mobile_base0_support"}, return_first=True
+        )
+        mount_support.append(deepcopy(arm_root))
+        root.remove(arm_root)
+        self.merge_assets(mobile_base)
+        for one_actuator in mobile_base.actuator:
+            self.actuator.append(one_actuator)
+        for one_sensor in mobile_base.sensor:
+            self.sensor.append(one_sensor)
+        for one_tendon in mobile_base.tendon:
+            self.tendon.append(one_tendon)
+        for one_equality in mobile_base.equality:
+            self.equality.append(one_equality)
+        for one_contact in mobile_base.contact:
+            self.contact.append(one_contact)
+
+        self.base = mobile_base
 
         # Update cameras in this model
         self.cameras = self.get_element_names(self.worldbody, "camera")
@@ -170,8 +231,8 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             np.array: (dx, dy, dz) offset vector
         """
         return (
-            (self.mount.bottom_offset - self.mount.top_offset) + self._base_offset
-            if self.mount is not None
+            (self.base.bottom_offset - self.base.top_offset) + self._base_offset
+            if self.base is not None
             else self._base_offset
         )
 
@@ -184,7 +245,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Returns:
             float: radius
         """
-        return max(self._horizontal_radius, self.mount.horizontal_radius)
+        return max(self._horizontal_radius, self.base.horizontal_radius)
 
     @property
     def models(self):
@@ -195,7 +256,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Returns:
             list: models owned by this object
         """
-        return [self.mount] if self.mount is not None else []
+        return [self.base] if self.base is not None else []
 
     @property
     def contact_geom_rgba(self):

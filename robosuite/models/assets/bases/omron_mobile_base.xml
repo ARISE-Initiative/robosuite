@@ -1,0 +1,63 @@
+<mujoco model="omron_mobile_base">
+    <asset>
+        <mesh file="meshes/omron_mobile_base/omron_0.obj" name="omron_0_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_1.obj" name="omron_1_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_2.obj" name="omron_2_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_3.obj" name="omron_3_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_4.obj" name="omron_4_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_5.obj" name="omron_5_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_6.obj" name="omron_6_vis" scale="1 1 1"/>
+        <mesh file="meshes/omron_mobile_base/omron_7.obj" name="omron_7_vis" scale="1 1 1"/>
+        <material name="Opaque(128,128,128)" specular="0.0" shininess="0.25" rgba="0.501961 0.501961 0.501961 1.000000"/>
+        <material name="Opaque(185,185,185)" specular="0.0" shininess="0.25" rgba="0.725490 0.725490 0.725490 1.000000"/>
+        <material name="Opaque(190,190,190)" specular="0.0" shininess="0.25" rgba="0.745098 0.745098 0.745098 1.000000"/>
+        <material name="Opaque(202,209,236)" specular="0.0" shininess="0.25" rgba="0.792157 0.819608 0.925490 1.000000"/>
+        <material name="Opaque(25,23,27)" specular="0.0" shininess="0.25" rgba="0.098039 0.090196 0.105882 1.000000"/>
+        <material name="Opaque(255,255,255)" specular="0.0" shininess="0.25" rgba="1.000000 1.000000 1.000000 1.000000"/>
+        <material name="Opaque(54,61,65)" specular="0.0" shininess="0.25" rgba="0.211765 0.239216 0.254902 1.000000"/>
+        <material name="Opaque(63,63,63)" specular="0.0" shininess="0.25" rgba="0.250980 0.250980 0.250980 1.000000"/>
+        <material name="Opaque(64,64,64)" specular="0.0" shininess="0.25" rgba="0.250980 0.250980 0.250980 1.000000"/>
+        <material name="Steel_-_Satin" specular="0.0" shininess="0.25" rgba="0.627451 0.627451 0.627451 1.000000"/>
+        <material name="Shell005_001_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
+    </asset>
+    <actuator>
+		<!-- Physical limits of the actuator. -->
+		<velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="base_joint_x" kv="1000" name="mobile_base_joint_x" forcelimited="true" forcerange="-600 600"/>
+		<velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="base_joint_y" kv="1000" name="mobile_base_joint_y" forcelimited="true" forcerange="-600 600"/>
+		<velocity ctrllimited="true" ctrlrange="-0.75 1.00" joint="base_joint_z" kv="1500" name="mobile_base_joint_z" forcelimited="false"/>
+		<velocity ctrllimited="true" ctrlrange="-4.00 4.00" joint="base_joint_rot" kv="1000" name="mobile_base_joint_rot" forcelimited="true" forcerange="-600 600"/>
+	</actuator>
+    <worldbody>
+        <body name="base" pos="0 0 0">
+            <body name="fixed_support" pos="-0.05 0 0.50">
+				<geom type="cylinder" pos="0 0 0" size="0.12 0.2 0" group="0" material="Shell005_001_001_002_001"/>
+				<geom name="fixed_support" type="cylinder" pos="0 0 0" size="0.12 0.2 0" group="1" material="Shell005_001_001_002_001"/>
+				<body name="support" pos="0.05 0.0 0.20">
+                    <!-- add robot here -->
+					<joint name="base_joint_z" pos="0 0 0" axis="0 0 1" type="slide" limited="true" range="0 0.34" damping="0.01" armature="0.0" frictionloss="1000" ref="0"/>
+					<geom type="cylinder" pos="-0.05 0.0 -0.20" size="0.1125 0.2 0" group="0" material="Shell005_001_001_002_001"/>
+					<geom name="support" type="cylinder" pos="-0.05 0.0 -0.20" size="0.1125 0.2 0" group="1" material="Shell005_001_001_002_001"/>
+
+                    <site name="center" type="sphere" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
+                </body>
+            </body>
+
+            <body name="wheeled_base" pos="-0.20 0 0.192">
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_0_vis" conaffinity="0" contype="0" group="1" material="Steel_-_Satin"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_1_vis" conaffinity="0" contype="0" group="1" material="Opaque(25,23,27)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_2_vis" conaffinity="0" contype="0" group="1" material="Opaque(185,185,185)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_3_vis" conaffinity="0" contype="0" group="1" material="Opaque(128,128,128)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_4_vis" conaffinity="0" contype="0" group="1" material="Opaque(190,190,190)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_5_vis" conaffinity="0" contype="0" group="1" material="Opaque(255,255,255)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_6_vis" conaffinity="0" contype="0" group="1" material="Opaque(202,209,236)"/>
+                <geom friction="0.95 0.3 0.1" type="mesh" mesh="omron_7_vis" conaffinity="0" contype="0" group="1" material="Opaque(63,63,63)"/>
+
+                <geom pos="0 0 0" size="0.35 0.25 0.19" type="box" name="pedestal_feet_col" density="10"/>
+            </body>
+
+            <joint name="base_joint_x" pos="0 0 0" axis="0 1 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
+			<joint name="base_joint_y" pos="0 0 0" axis="1 0 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
+			<joint name="base_joint_rot" pos="-0.21 0 0" axis="0 0 1" type="hinge" limited="false" damping="0" armature="0.0" frictionloss="250"/>
+        </body>
+    </worldbody>
+</mujoco>

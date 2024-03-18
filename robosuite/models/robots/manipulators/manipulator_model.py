@@ -22,20 +22,24 @@ class ManipulatorModel(RobotModel):
         # key: gripper name and value: gripper model
         self.grippers = OrderedDict()
 
-        # Grab hand's offset from final robot link (string -> np.array -> elements [1, 2, 3, 0] (x, y, z, w))
-        # Different case based on whether we're dealing with single or bimanual armed robot
+        # # Grab hand's offset from final robot link (string -> np.array -> elements [1, 2, 3, 0] (x, y, z, w))
+        # # Different case based on whether we're dealing with single or bimanual armed robot
+        # if self.arm_type == "single":
+        #     hand_element = find_elements(
+        #         root=self.root, tags="body", attribs={"name": self.eef_name}, return_first=True
+        #     )
+        #     self.hand_rotation_offset = string_to_array(hand_element.get("quat", "1 0 0 0"))[[1, 2, 3, 0]]
+        # else:  # "bimanual" case
         if self.arm_type == "single":
+            arms = ["right"]
+        elif self.arm_type == "bimanual":
+            arms = ["right", "left"]
+        self.hand_rotation_offset = {}
+        for arm in arms:
             hand_element = find_elements(
-                root=self.root, tags="body", attribs={"name": self.eef_name}, return_first=True
+                root=self.root, tags="body", attribs={"name": self.eef_name[arm]}, return_first=True
             )
-            self.hand_rotation_offset = string_to_array(hand_element.get("quat", "1 0 0 0"))[[1, 2, 3, 0]]
-        else:  # "bimanual" case
-            self.hand_rotation_offset = {}
-            for arm in ("right", "left"):
-                hand_element = find_elements(
-                    root=self.root, tags="body", attribs={"name": self.eef_name[arm]}, return_first=True
-                )
-                self.hand_rotation_offset[arm] = string_to_array(hand_element.get("quat", "1 0 0 0"))[[1, 2, 3, 0]]
+            self.hand_rotation_offset[arm] = string_to_array(hand_element.get("quat", "1 0 0 0"))[[1, 2, 3, 0]]
 
         # Get camera names for this robot
         self.cameras = self.get_element_names(self.worldbody, "camera")
@@ -113,7 +117,7 @@ class ManipulatorModel(RobotModel):
         Returns:
             str: Raw XML eef name for this robot (default is "right_hand")
         """
-        return "right_hand"
+        return {"right": "right_hand"}
 
     # -------------------------------------------------------------------------------------- #
     # All subclasses must implement the following properties                                 #

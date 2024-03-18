@@ -66,6 +66,7 @@ class Keyboard(Device):
         self.pos = np.zeros(3)  # (x, y, z)
         self.last_pos = np.zeros(3)
         self.grasp = False
+        self.base_mode = False
 
     def start_control(self):
         """
@@ -95,6 +96,7 @@ class Keyboard(Device):
             raw_drotation=raw_drotation,
             grasp=int(self.grasp),
             reset=self._reset_state,
+            base_mode=int(self.base_mode),
         )
 
     def on_press(self, key):
@@ -159,6 +161,10 @@ class Keyboard(Device):
             # controls for grasping
             if key == Key.space:
                 self.grasp = not self.grasp  # toggle gripper
+
+            # controls for mobile base (only applicable if mobile base present)
+            elif key.char == "b":
+                self.base_mode = not self.base_mode  # toggle mobile base
 
             # user-commanded reset
             elif key.char == "q":

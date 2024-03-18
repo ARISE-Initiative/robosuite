@@ -19,16 +19,16 @@ class Panda(ManipulatorModel):
         self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
 
     @property
-    def default_mount(self):
+    def default_base(self):
         return "RethinkMount"
 
     @property
     def default_gripper(self):
-        return "PandaGripper"
+        return {"right": "PandaGripper"}
 
     @property
     def default_controller_config(self):
-        return "default_panda"
+        return {"right", "default_panda"}
 
     @property
     def init_qpos(self):
@@ -53,3 +53,13 @@ class Panda(ManipulatorModel):
     @property
     def arm_type(self):
         return "single"
+
+
+class PandaMobile(Panda):
+    """
+    Variant of Panda robot with mobile base. Currently serves as placeholder class.
+    """
+
+    @property
+    def default_base(self):
+        return "OmronMobileBase"

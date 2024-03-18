@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.tasks import ManipulationTask
@@ -12,7 +12,7 @@ from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
 
 
-class Lift(SingleArmEnv):
+class Lift(ManipulationEnv):
     """
     This class corresponds to the lifting task for a single robot arm.
 
@@ -243,7 +243,7 @@ class Lift(SingleArmEnv):
 
             # reaching reward
             cube_pos = self.sim.data.body_xpos[self.cube_body_id]
-            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]]
             dist = np.linalg.norm(gripper_site_pos - cube_pos)
             reaching_reward = 1 - np.tanh(10.0 * dist)
             reward += reaching_reward
