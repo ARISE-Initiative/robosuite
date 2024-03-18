@@ -1,6 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from copy import deepcopy
 
 import numpy as np
 
@@ -352,7 +353,7 @@ class MujocoEnv(metaclass=EnvMeta):
         Returns:
             dict: episode metadata
         """
-        return self._ep_meta
+        return deepcopy(self._ep_meta)
 
     def set_ep_meta(self, meta):
         """
