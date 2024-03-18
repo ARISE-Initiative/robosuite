@@ -177,9 +177,11 @@ class CustomMaterial(object):
         if type(texture) is str:
             default = False
             # Verify that requested texture is valid
-            assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
-                texture, ALL_TEXTURES
-            )
+            texture_is_path = "/" in texture
+            if not texture_is_path:
+                assert (
+                    texture in ALL_TEXTURES
+                ), "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(texture, ALL_TEXTURES)
         else:
             default = True
             # If specified, this is an rgba value and a default texture is desired; make sure length of rgba array is 4
@@ -212,7 +214,11 @@ class CustomMaterial(object):
         # Handle default and non-default cases separately for linking texture patch file locations
         if not default:
             # Add in the filepath to texture patch
-            self.tex_attrib["file"] = xml_path_completion(TEXTURES[texture])
+            texture_is_path = "/" in texture
+            if texture_is_path:
+                self.tex_attrib["file"] = xml_path_completion(texture)
+            else:
+                self.tex_attrib["file"] = xml_path_completion(TEXTURES[texture])
         else:
             if texture is not None:
                 # Create a texture patch
@@ -227,7 +233,7 @@ class CustomMaterial(object):
                 self.tex_attrib["file"] = fpath
 
 
-def xml_path_completion(xml_path):
+def xml_path_completion(xml_path, root=None):
     """
     Takes in a local xml path and returns a full path.
         if @xml_path is absolute, do nothing
@@ -235,6 +241,7 @@ def xml_path_completion(xml_path):
 
     Args:
         xml_path (str): local xml path
+        root (str): root folder for xml path. If not specified defaults to robosuite.models.assets_root
 
     Returns:
         str: Full (absolute) xml path
@@ -242,7 +249,9 @@ def xml_path_completion(xml_path):
     if xml_path.startswith("/"):
         full_path = xml_path
     else:
-        full_path = os.path.join(robosuite.models.assets_root, xml_path)
+        if root is None:
+            root = robosuite.models.assets_root
+        full_path = os.path.join(root, xml_path)
     return full_path
 
 
@@ -275,7 +284,7 @@ def string_to_array(string):
     Returns:
         np.array: Numerical array equivalent of @string
     """
-    return np.array([float(x) for x in string.strip().split(" ")])
+    return np.array([float(x) if x != "None" else None for x in string.strip().split(" ")])
 
 
 def convert_to_string(inp):
