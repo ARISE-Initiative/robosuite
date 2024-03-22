@@ -6,6 +6,7 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.controllers.mobile_base_controller import MobileBaseController
 from robosuite.models.grippers import gripper_factory
 from robosuite.robots.manipulator import Manipulator
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
@@ -115,7 +116,7 @@ class MobileBaseRobot(Manipulator):
             # Instantiate the relevant controller
             self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
 
-        self.mobile_base_controller = None
+        self.mobile_base_controller = MobileBaseController(self.sim)
 
     def load_model(self):
         """
@@ -179,6 +180,8 @@ class MobileBaseRobot(Manipulator):
             self.recent_ee_vel[arm] = DeltaBuffer(dim=6)
             self.recent_ee_vel_buffer[arm] = RingBuffer(dim=6, length=10)
             self.recent_ee_acc[arm] = DeltaBuffer(dim=6)
+
+        self.mobile_base_controller.reset()
 
     def setup_references(self):
         """
@@ -247,6 +250,12 @@ class MobileBaseRobot(Manipulator):
         )
 
         mode = "base" if action[-1] > 0 else "arm"
+
+        self.base_pos, self.base_ori = self.mobile_base_controller.get_base_pose()
+        for arm in self.arms:
+            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+            # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
+            self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
 
         if mode == "base":
             base_action = np.copy(action[-5:-1])
@@ -383,8 +392,12 @@ class MobileBaseRobot(Manipulator):
         def eef_quat(obs_cache):
             return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
 
-        sensors = [eef_pos, eef_quat]
-        names = [f"{pf}{arm}_eef_pos", f"{pf}{arm}_eef_quat"]
+        @sensor(modality=modality)
+        def base_pos(obs_cache):
+            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("mobile_base0_center")])
+
+        sensors = [eef_pos, eef_quat, base_pos]
+        names = [f"{pf}{arm}_eef_pos", f"{pf}{arm}_eef_quat", f"{pf}base_pos"]
 
         # add in gripper sensors if this robot has a gripper
         if self.has_gripper[arm]:
