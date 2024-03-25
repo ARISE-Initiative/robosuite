@@ -168,7 +168,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         Args:
             base_pos (3-tuple): x,y,z position of robot base in mujoco world coordinates
-            base_ori (4-tuple): x,y,z,w orientation or robot base in mujoco world coordinates
+            base_ori (np.array): 3x3 rotation matrix orientation of robot base in mujoco world coordinates
         """
         pass
 

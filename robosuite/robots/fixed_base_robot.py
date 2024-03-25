@@ -229,6 +229,11 @@ class FixedBaseRobot(Manipulator):
             self.action_dim, len(action)
         )
 
+        for arm in self.arms:
+            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+            # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
+            self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
+
         self.torques = np.array([])
         # Now execute actions for each arm
         for arm in self.arms:

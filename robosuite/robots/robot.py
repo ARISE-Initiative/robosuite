@@ -145,7 +145,7 @@ class Robot(object):
 
         # Update base pos / ori references
         self.base_pos = self.sim.data.get_body_xpos(self.robot_model.root_body)
-        self.base_ori = T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3)))
+        self.base_ori = self.sim.data.get_body_xmat(self.robot_model.root_body).reshape((3, 3))
 
         # Setup buffers to hold recent values
         self.recent_qpos = DeltaBuffer(dim=len(self.joint_indexes))

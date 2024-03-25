@@ -618,8 +618,9 @@ class InverseKinematicsController(JointVelocityController):
 
     def update_base_pose(self, base_pos, base_ori):
         # Update pybullet robot base and orientation according to values
+        base_ori_quat = T.mat2quat(base_ori)
         p.resetBasePositionAndOrientation(
-            bodyUniqueId=self.ik_robot, posObj=base_pos, ornObj=base_ori, physicsClientId=self.bullet_server_id
+            bodyUniqueId=self.ik_robot, posObj=base_pos, ornObj=base_ori_quat, physicsClientId=self.bullet_server_id
         )
 
         # Re-sync pybullet state

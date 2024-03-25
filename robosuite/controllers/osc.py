@@ -199,8 +199,13 @@ class OperationalSpaceController(Controller):
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
 
-        self.goal_eef_base_pos_offset = None
-        self.goal_eef_base_ori_offset = None
+        self.goal_base_to_eef_pos = None
+        self.goal_base_to_eef_ori = None
+
+        self.base_pos = None
+        self.prev_base_pos = None
+        self.base_ori = None
+        self.prev_base_ori = None
 
     def set_goal(self, action, set_pos=None, set_ori=None):
         """
@@ -257,17 +262,10 @@ class OperationalSpaceController(Controller):
             # No scaling of values since these are absolute values
             scaled_delta = delta
 
-        # We only want to update goal orientation if there is a valid delta ori value OR if we're using absolute ori
-        # use math.isclose instead of numpy because numpy is slow
-        bools = [0.0 if math.isclose(elem, 0.0) else 1.0 for elem in scaled_delta[3:]]
-        # if sum(bools) > 0.0 or set_ori is not None:
-        # if set_ori is not None:
-        self.goal_ori = self.compute_goal_orientation(  # set_goal_orientation
-            scaled_delta[3:], self.ee_ori_mat, orientation_limit=self.orientation_limits, set_ori=set_ori
+        self.goal_base_to_eef_ori = self.compute_goal_orientation(  # set_goal_orientation
+            scaled_delta[3:], set_ori=set_ori
         )
-        self.goal_pos = self.compute_goal_pos(  # set_goal_position(
-            scaled_delta[:3], self.ee_pos, position_limit=self.position_limits, set_pos=set_pos
-        )
+        self.goal_base_to_eef_pos = self.compute_goal_pos(scaled_delta[:3], set_pos=set_pos)  # set_goal_position(
 
         if self.interpolator_pos is not None:
             self.interpolator_pos.set_goal(self.goal_pos)
@@ -279,23 +277,30 @@ class OperationalSpaceController(Controller):
             )  # goal is the total orientation error
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
-    def compute_goal_pos(self, delta, current_position, position_limit=None, set_pos=None):
+    def world_to_base_frame(self, vec):
+        """
+        transform vector from world to base coordinate frame
+        """
+        return np.matmul(self.base_ori.T, vec - self.base_pos)
+
+    def compute_goal_pos(self, delta, set_pos=None):
         if set_pos is not None:
             raise NotImplementedError
 
-        if self.goal_eef_base_pos_offset is None:
-            self.goal_eef_base_pos_offset = np.array(current_position) - np.array(self.base_pos)
+        if self.goal_base_to_eef_pos is None:
+            self.goal_base_to_eef_pos = self.world_to_base_frame(self.ee_pos)
 
-        self.goal_eef_base_pos_offset += np.matmul(self.base_ori, delta)
+        if self.base_updated:
+            goal_base_to_eef_pos = self.goal_base_to_eef_pos + delta
+        else:
+            goal_base_to_eef_pos = self.world_to_base_frame(self.ee_pos) + delta
 
-        goal_position = self.base_pos + np.matmul(self.base_ori, self.goal_eef_base_pos_offset)
-
-        if position_limit is not None:
+        if self.position_limits is not None:
             raise NotImplementedError
 
-        return goal_position
+        return goal_base_to_eef_pos
 
-    def compute_goal_orientation(self, delta, current_orientation, orientation_limit=None, set_ori=None):
+    def compute_goal_orientation(self, delta, set_ori=None):
         """
         Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
         @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
@@ -313,9 +318,8 @@ class OperationalSpaceController(Controller):
         Raises:
             ValueError: [Invalid orientation_limit shape]
         """
-        if self.goal_eef_base_ori_offset is None:
-            # self.goal_eef_base_ori_offset = np.array(current_orientation) - np.array(self.base_ori)
-            self.goal_eef_base_ori_offset = np.dot(current_orientation.T, self.base_ori)
+        if self.goal_base_to_eef_ori is None:
+            self.goal_base_to_eef_ori = np.dot(self.base_ori.T, self.ee_ori_mat)
 
         # directly set orientation
         if set_ori is not None:
@@ -325,15 +329,16 @@ class OperationalSpaceController(Controller):
             # convert axis-angle value to rotation matrix
             quat_error = T.axisangle2quat(delta)
             rotation_mat_error = T.quat2mat(quat_error)
-            # goal_orientation = np.dot(rotation_mat_error, current_orientation)
 
-            self.goal_eef_base_ori_offset = np.dot(rotation_mat_error, self.goal_eef_base_ori_offset)
-            goal_orientation = np.dot(self.base_ori, self.goal_eef_base_ori_offset)
+            if self.base_updated:
+                goal_base_to_eef_ori = np.dot(rotation_mat_error, self.goal_base_to_eef_ori)
+            else:
+                goal_base_to_eef_ori = np.dot(rotation_mat_error, np.dot(self.base_ori.T, self.ee_ori_mat))
 
         # check for orientation limits
-        if np.array(orientation_limit).any():
+        if np.array(self.orientation_limits).any():
             raise NotImplementedError
-        return goal_orientation
+        return goal_base_to_eef_ori
 
     def run_controller(self):
         """
@@ -360,7 +365,7 @@ class OperationalSpaceController(Controller):
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_pos = np.array(self.goal_pos)
+            desired_pos = self.base_pos + np.dot(self.base_ori, self.goal_base_to_eef_pos)
 
         if self.interpolator_ori is not None:
             # relative orientation based on difference between current ori and ref
@@ -368,7 +373,7 @@ class OperationalSpaceController(Controller):
 
             ori_error = self.interpolator_ori.get_interpolated_goal()
         else:
-            desired_ori = np.array(self.goal_ori)
+            desired_ori = np.dot(self.base_ori, self.goal_base_to_eef_ori)
             ori_error = orientation_error(desired_ori, self.ee_ori_mat)
 
         # Compute desired force and torque based on errors
@@ -424,10 +429,18 @@ class OperationalSpaceController(Controller):
 
         Args:
             base_pos (3-tuple): x,y,z position of robot base in mujoco world coordinates
-            base_ori (4-tuple): x,y,z,w orientation or robot base in mujoco world coordinates
+            base_ori (np.array): 3x3 rotation matrix orientation of robot base in mujoco world coordinates
         """
+        from copy import deepcopy
+
+        self._prev_base_pos = deepcopy(self.base_pos)
+        self._prev_base_ori = deepcopy(self.base_ori)
+
         self.base_pos = base_pos
         self.base_ori = base_ori
+
+        # keep track of whether base pos updated since last time
+        self.base_updated = (self._prev_base_pos is None) or np.any(np.abs(self._prev_base_pos - self.base_pos) > 1e-5)
 
     def update_initial_joints(self, initial_joints):
         # First, update from the superclass method
@@ -442,8 +455,6 @@ class OperationalSpaceController(Controller):
         """
         self.goal_ori = np.array(self.ee_ori_mat)
         self.goal_pos = np.array(self.ee_pos)
-        self.goal_eef_base_pos_offset = None
-        self.goal_eef_base_ori_offset = None
 
         # Also reset interpolators if required
 
