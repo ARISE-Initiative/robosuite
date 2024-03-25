@@ -18,6 +18,28 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
+def display_mjv_options():
+        
+
+        def print_command(char, info):
+            char += " " * (30 - len(char))
+            print("{}\t{}".format(char, info))
+
+        print("")
+        print("Quick list of some of the interactive keyboard options:")
+        print("")
+        print_command("Keyboard Input", "Functionality")
+        print_command("Esc", "switch to free camera")
+        print_command("]", "toggle between camera views")
+        print_command("Shift + Tab", "visualize joints and control values")
+        print_command("W", "visualize wireframe")
+        print_command("C", "visualize contact points")
+        print_command("F1", "basic GUI help")
+        print_command("Tab", "view more toggleable options")
+        print_command("Tab + Right Hold", "view keyboard shortcuts for more toggleable options")
+        print("")
+        print("")
+
 
 if __name__ == "__main__":
 
@@ -96,6 +118,8 @@ if __name__ == "__main__":
                 env.render()
 
     else:
+        if renderer == "mjviewer":
+            display_mjv_options()
 
         # do visualization
         for i in range(10000):
