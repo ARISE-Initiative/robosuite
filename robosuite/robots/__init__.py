@@ -18,6 +18,7 @@ ROBOT_CLASS_MAPPING = {
     "PandaMobile": MobileBaseRobot,
     "Sawyer": FixedBaseRobot,
     "UR5e": FixedBaseRobot,
+    "GoogleRobot": MobileBaseRobot,
 }
 
 BIMANUAL_ROBOTS = {k.lower() for k, v in ROBOT_CLASS_MAPPING.items() if v == Bimanual}
