@@ -22,7 +22,7 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration, render=True):
+def collect_human_trajectory(env, device, arm, env_configuration):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -36,10 +36,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, render=True):
     """
 
     env.reset()
-
-    # ID = 2 always corresponds to agentview
-    if render:
-        env.render()
+    env.render()
 
     is_first = True
 
@@ -62,8 +59,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, render=True):
 
         # Run environment step
         env.step(action)
-        if render:
-            env.render()
+        env.render()
 
         # Also break if we complete the task
         if task_completion_hold_count == 0:
@@ -194,7 +190,12 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
-    parser.add_argument("--renderer", type=str, default="mujoco", help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)")
+    parser.add_argument(
+        "--renderer",
+        type=str,
+        default="mujoco",
+        help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)",
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -215,13 +216,13 @@ if __name__ == "__main__":
     env = suite.make(
         **config,
         has_renderer=True,
+        renderer=args.renderer,
         has_offscreen_renderer=False,
         render_camera=args.camera,
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
         control_freq=20,
-        renderer=args.renderer
     )
 
     # Wrap this with visualization wrapper
@@ -253,5 +254,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config, render=(args.renderer != "mjviewer"))
+        collect_human_trajectory(env, device, args.arm, args.config)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

@@ -99,14 +99,10 @@ class MujocoEnv(metaclass=EnvMeta):
         renderer="mujoco",
         renderer_config=None,
     ):
-        # If you're using an onscreen renderer, you must be also using an offscreen renderer!
-        if has_renderer and not has_offscreen_renderer:
-            has_offscreen_renderer = True
-
         # Rendering-specific attributes
         self.has_renderer = has_renderer
         # offscreen renderer needed for on-screen rendering
-        self.has_offscreen_renderer = has_renderer or has_offscreen_renderer
+        self.has_offscreen_renderer = (has_renderer and renderer != "mjviewer") or has_offscreen_renderer
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
@@ -164,13 +160,13 @@ class MujocoEnv(metaclass=EnvMeta):
 
             self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
         elif self.renderer == "mjviewer":
-            if self.has_renderer:
-                from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
-                if self.render_camera is not None:
-                    camera_id = self.sim.model.camera_name2id(self.render_camera)
-                else:
-                    camera_id = None
-                self.viewer = MjviewerRenderer(env=self, camera_id=camera_id)
+            from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
+
+            if self.render_camera is not None:
+                camera_id = self.sim.model.camera_name2id(self.render_camera)
+            else:
+                camera_id = None
+            self.viewer = MjviewerRenderer(env=self, camera_id=camera_id)
         else:
             raise ValueError(
                 f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
@@ -414,7 +410,6 @@ class MujocoEnv(metaclass=EnvMeta):
 
         if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.update()
-        
 
         observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
         return observations, reward, done, info
