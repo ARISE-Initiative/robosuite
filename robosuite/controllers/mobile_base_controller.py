@@ -1,5 +1,7 @@
 import numpy as np
 
+import robosuite.utils.transform_utils as T
+
 
 class MobileBaseController:
     def __init__(
@@ -30,16 +32,18 @@ class MobileBaseController:
         curr_pos, curr_ori = self.get_base_pose()
 
         # transform the action relative to initial base orientation
-        init_theta = np.arctan2(self.init_pos[1], self.init_pos[0])
-        curr_theta = np.arctan2(curr_pos[1], curr_pos[0])
+        init_theta = T.mat2euler(self.init_ori)[2]  # np.arctan2(self.init_pos[1], self.init_pos[0])
+        curr_theta = T.mat2euler(curr_ori)[2]  # np.arctan2(curr_pos[1], curr_pos[0])
+        theta = curr_theta - init_theta
 
         base_action = np.copy([action[i] for i in [1, 0, 3]])
         # input raw base action is delta relative to current pose of base
         # controller expects deltas relative to initial pose of base at start of episode
         # transform deltas from current base pose coordinates to initial base pose coordinates
         x, y = base_action[0:2]
-        theta = curr_theta - init_theta
-        base_action[0] = x * np.cos(theta) - y * np.sin(theta)
-        base_action[1] = x * np.sin(theta) + y * np.cos(theta)
+
+        # do the reverse of theta rotation
+        base_action[0] = x * np.cos(theta) + y * np.sin(theta)
+        base_action[1] = -x * np.sin(theta) + y * np.cos(theta)
 
         self.base_action_actual = base_action
