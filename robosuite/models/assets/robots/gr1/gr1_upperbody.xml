@@ -1,0 +1,300 @@
+<mujoco model="gr1_upperbody">
+    <compiler angle="radian" autolimits="true"/>
+    <default>
+    <motor ctrlrange="-1 1" ctrllimited="true"/>
+        <default class="body">
+            <geom type="box" condim="1" friction="1.0 0.05 0.05" solimp=".9 .99 .003" solref=".015 1"/>
+            <joint type="hinge" armature=".007" limited="true" solimplimit="0 .99 .01"/>
+            <site size="10" group="3"/>
+        </default>
+    </default>
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+        <texture name="body" type="cube" builtin="flat" mark="cross" width="128" height="128" rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" random="0.01"/>
+        <material name="body" texture="body" texuniform="true" rgba="0.8 0.6 .4 1"/>
+        <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+        <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance="0.02"/>
+        <mesh name="base" file="./meshes/base.STL"/>
+        <mesh name="l_thigh_roll" file="./meshes/l_thigh_roll.STL"/>
+        <mesh name="l_thigh_yaw" file="./meshes/l_thigh_yaw.STL"/>
+        <mesh name="l_thigh_pitch" file="./meshes/l_thigh_pitch.STL"/>
+        <mesh name="l_shank_pitch" file="./meshes/l_shank_pitch.STL"/>
+        <mesh name="l_foot_pitch" file="./meshes/l_foot_pitch.STL"/>
+        <mesh name="l_foot_roll" file="./meshes/l_foot_roll.STL"/>
+        <mesh name="r_thigh_roll" file="./meshes/r_thigh_roll.STL"/>
+        <mesh name="r_thigh_yaw" file="./meshes/r_thigh_yaw.STL"/>
+        <mesh name="r_thigh_pitch" file="./meshes/r_thigh_pitch.STL"/>
+        <mesh name="r_shank_pitch" file="./meshes/r_shank_pitch.STL"/>
+        <mesh name="r_foot_pitch" file="./meshes/r_foot_pitch.STL"/>
+        <mesh name="r_foot_roll" file="./meshes/r_foot_roll.STL"/>
+        <mesh name="waist_yaw" file="./meshes/waist_yaw.STL"/>
+        <mesh name="waist_pitch" file="./meshes/waist_pitch.STL"/>
+        <mesh name="waist_roll" file="./meshes/waist_roll.STL"/>
+        <mesh name="head_yaw" file="./meshes/head_yaw.STL"/>
+        <mesh name="head_roll" file="./meshes/head_roll.STL"/>
+        <mesh name="head_pitch" file="./meshes/head_pitch.STL"/>
+        <mesh name="l_upper_arm_pitch" file="./meshes/l_upper_arm_pitch.STL"/>
+        <mesh name="l_upper_arm_roll" file="./meshes/l_upper_arm_roll.STL"/>
+        <mesh name="l_upper_arm_yaw" file="./meshes/l_upper_arm_yaw.STL"/>
+        <mesh name="l_lower_arm_pitch" file="./meshes/l_lower_arm_pitch.STL"/>
+        <mesh name="l_hand_yaw" file="./meshes/l_hand_yaw.STL"/>
+        <mesh name="l_hand_roll" file="./meshes/l_hand_roll.STL"/>
+        <mesh name="l_hand_pitch" file="./meshes/l_hand_pitch.STL"/>
+        <mesh name="r_upper_arm_pitch" file="./meshes/r_upper_arm_pitch.STL"/>
+        <mesh name="r_upper_arm_roll" file="./meshes/r_upper_arm_roll.STL"/>
+        <mesh name="r_upper_arm_yaw" file="./meshes/r_upper_arm_yaw.STL"/>
+        <mesh name="r_lower_arm_pitch" file="./meshes/r_lower_arm_pitch.STL"/>
+        <mesh name="r_hand_yaw" file="./meshes/r_hand_yaw.STL"/>
+        <mesh name="r_hand_roll" file="./meshes/r_hand_roll.STL"/>
+        <mesh name="r_hand_pitch" file="./meshes/r_hand_pitch.STL"/>
+    </asset>
+    <worldbody>
+        <!-- Base -->
+        <body name="base">
+            <inertial pos="-0.0508888 0.000109183 -0.0455794" quat="0.706855 0.707166 0.0123661 -0.0109307" mass="6.45117" diaginertia="0.0149302 0.0127972 0.00640923"/>
+            <!-- Base mesh -->
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="base"/>
+            <geom size="0.04 0.04 0.04" pos="0 0 -0.06" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+            <!-- <freejoint/> -->
+            <!-- Torso center of mass -->
+            <body name="torso_link">
+                <body name="base_com" />
+            </body>
+
+            <!-- Torso -->
+
+            <!-- Waist yaw -->
+            <body name="waist_yaw" pos="0 0 0.0065">
+                <inertial pos="-0.010388 -0.00169636 0.0224709" quat="8.03475e-05 0.752953 -6.91813e-06 0.658075" mass="0.37886" diaginertia="0.000387148 0.000354992 0.000193448"/>
+                <!-- <joint name="waist_yaw" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="-1.221e-05 -6.8349e-05 1" range="-1.05 1.05"/> -->
+
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="waist_yaw"/>
+                <geom size="0.04 0.04 0.04" pos="0 0 -0.06" quat="0.707388 0.706825 0 0" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                <!-- Waist pitch -->
+                <body name="waist_pitch" pos="0 0 0.055">
+                    <inertial pos="0.00229173 -0.00229364 0.0425378" quat="0.998452 -0.0194486 0.0162447 0.0495079" mass="4.40328" diaginertia="0.00487449 0.00487146 0.00355351"/>
+                    <!-- <joint name="waist_pitch" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="0 1 -6.8349e-05" range="-0.52 1.22"/> -->
+
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="waist_pitch"/>
+                    <geom size="0.04 0.04 0.06" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                    <!-- Waist roll -->
+                    <body name="waist_roll" pos="0 0 0.085">
+                        <inertial pos="-0.00982804 -1.2954e-05 0.160653" quat="0.999997 1.84368e-05 -0.00260593 -4.00255e-05" mass="7.34393" diaginertia="0.0305266 0.0217567 0.0136783"/>
+                        <!-- <joint name="waist_roll" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="1 0 1.221e-05" range="-0.7 0.7"/> -->
+
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="waist_roll"/>
+                        <geom size="0.09 0.09 0.09" pos="0 0 0.15" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                        <!-- Head yaw -->
+                        <body name="head_yaw" pos="0 -2.3548e-05 0.34453">
+                            <inertial pos="0.000255273 -1.43143e-05 0.0571737" quat="0.698659 0.111628 0.112302 0.697713" mass="0.168425" diaginertia="0.00013241 0.000126266 6.86988e-05"/>
+                            <!-- <joint name="head_yaw" pos="0 0 0" damping="1" stiffness="10" axis="-1.221e-05 -6.8349e-05 1" range="-2.71 2.71"/> -->
+
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="head_yaw"/>
+                            <geom size="0.02 0.02 0.02" pos="0 0 -0.03" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                            <!-- Head roll -->
+                            <body name="head_roll" pos="0 0 0.1225">
+                                <inertial pos="-0.000539717 0.00299723 -0.00194711" quat="0.498775 0.509039 0.50481 0.487104" mass="0.0189574" diaginertia="5.66154e-06 3.71917e-06 3.07146e-06"/>
+                                <!-- <joint name="head_roll" pos="0 0 0" damping="1" stiffness="10" axis="1 0 1.221e-05" range="-0.35 0.35"/> -->
+
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="head_roll"/>
+                                <geom size="0.02 0.02 0.02" pos="0 0 -0.1" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                <!-- Head pitch -->
+                                <body name="head_pitch">
+                                    <inertial pos="0.0179937 0.000157203 -0.0107884" quat="-0.00317787 0.890883 0.0047882 0.454197" mass="0.315067" diaginertia="0.00129389 0.00105273 0.000852366"/>
+                                    <!-- <joint name="head_pitch" pos="0 0 0" damping="1" stiffness="10" axis="0 1 6.8349e-05" range="-0.52 0.35"/> -->
+
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="head_pitch"/>
+                                    <geom size="0.05 0.05 0.05" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                </body>
+                                <!-- End of Head pitch -->
+                            </body>
+                            <!-- End of Head roll -->
+                        </body>
+                        <!-- End of Head yaw -->
+
+                    <!-- Left arm -->
+                    <!-- l upper arm pitch -->
+                    <body name="l_upper_arm_pitch" pos="0 0.12661 0.21727" quat="0.976289 0.216473 0 0">
+                        <inertial pos="0.00515733 0.0588337 0.000122944" quat="0.999793 0.0203364 -0.000117253 0.0011083" mass="0.777394" diaginertia="0.000546411 0.000340581 0.000319359"/>
+                        <joint name="l_shoulder_pitch" pos="0 0 0" damping="2.575" stiffness="92.85" axis="0 1 0" range="-2.79 1.92"/>
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_upper_arm_pitch"/>
+                        <geom size="0.02 0.02 0.02" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                        <!-- l upper arm roll -->
+                        <body name="l_upper_arm_roll" pos="0 0.067 0" quat="0.976289 -0.216473 0 0">
+                            <inertial pos="0.0260055 0.0238305 -0.0272078" quat="0.906707 0.298574 0.228734 -0.190834" mass="0.084111" diaginertia="9.66711e-05 8.99184e-05 2.54726e-05"/>
+                            <joint name="l_shoulder_roll" pos="0 0 0" damping="2.575" stiffness="92.85" axis="1 0 -1.221e-05" range="-0.57 3.27"/>
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_upper_arm_roll"/>
+                            <geom size="0.02 0.02 0.02" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                            <!-- l upper arm yaw -->
+                            <body name="l_upper_arm_yaw" pos="0 0.040004 -0.057502">
+                                <inertial pos="-4.12427e-05 0.00135031 -0.101007" quat="0.706543 0.0248514 -0.0268343 0.706724" mass="0.78993" diaginertia="0.000480863 0.000420363 0.000315608"/>
+                                <joint name="l_shoulder_yaw" pos="0 0 0" damping="3.1" stiffness="112.06" axis="1.221e-05 6.8349e-05 1" range="-2.97 2.97"/>
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_upper_arm_yaw"/>
+                                <geom size="0.025 0.025 0.06" pos="0 0 -0.05" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                <!-- l lower arm pitch -->
+                                <body name="l_lower_arm_pitch" pos="0 1.28869e-05 -0.188546">
+                                    <inertial pos="2.60519e-07 0.0196937 -0.0210902" quat="0.675254 -0.209845 0.209837 0.675252" mass="0.0553958" diaginertia="2.92256e-05 2.63267e-05 1.3293e-05"/>
+                                    <joint name="l_elbow_pitch" pos="0 0 0" damping="3.1" stiffness="112.06" axis="0 1 6.83491e-05" range="-2.27 2.27"/>
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_lower_arm_pitch"/>
+                                    <geom size="0.02 0.02 0.02" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                    <!-- l hand yaw -->
+                                    <body name="l_hand_yaw" pos="0 0 -0.0405043">
+                                        <inertial pos="-4.20996e-05 0.000336116 -0.0559829" quat="0.999784 -0.0189715 -0.00676208 0.00509819" mass="0.606076" diaginertia="0.000747266 0.000709257 0.000280769"/>
+                                        <joint name="l_wrist_yaw" pos="0 0 0" damping="1" stiffness="10" axis="1.221e-05 6.83491e-05 1" range="-2.97 2.97"/>
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="l_hand_yaw"/>
+                                        <geom size="0.03 0.03 0.085" pos="0 0 -0.1" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                        <!-- l hand roll -->
+                                        <body name="l_hand_roll" pos="0 1.3775e-05 -0.20155">
+                                            <inertial pos="-1.5483e-08 -0.00044846 -1.9394e-08" quat="0 0.7071 0 0.707114" mass="0.0054473" diaginertia="3.6036e-07 3.5527e-07 7.344e-08"/>
+                                            <joint name="l_wrist_roll" pos="0 0 0" damping="1" stiffness="10" axis="1 0 -1.2211e-05" range="-0.61 0.61"/>
+                                            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="l_hand_roll"/>
+                                            <geom size="0.01 0.01 0.01" type="box" rgba="0.75294 0.75294 0.75294 1"/>
+
+                                            <!-- l hand pitch -->
+                                            <body name="l_hand_pitch">
+                                                <inertial pos="0.0071289 -0.0026192 -0.078567" quat="0.298548 0.646339 0.631172 0.307795" mass="0.5239" diaginertia="0.000345825 0.000211684 0.000195941"/>
+                                                <joint name="l_wrist_pitch" pos="0 0 0" damping="1" stiffness="10" axis="0 1 6.8349e-05" range="-0.61 0.61"/>
+
+                                                <geom size="0.02 0.02 0.02" pos="0 0 -0.07" type="box" rgba="0.75294 0.75294 0.75294 1"/>
+
+                                                <!-- left eef -->
+                                                <body name="left_eef" pos="0 0 0">
+                                                    <body name="left_mount" quat="0 0 1 0"/>
+                                                    <body name="left_hand_eef" pos="0 0 0"/>
+                                                </body>
+                                                <!-- End of left eef -->
+                                            </body>
+                                            <!-- End of l hand pitch -->
+                                        </body>
+                                        <!-- End of l hand roll -->
+                                    </body>
+                                    <!-- End of l hand yaw -->
+                                </body>
+                                <!-- End of l lower arm pitch -->
+                            </body>
+                            <!-- End of l upper arm yaw -->
+                        </body>
+                        <!-- End of l upper arm roll -->
+                    </body>
+                    <!-- End of l upper arm pitch -->
+
+                    <!-- End of Left arm -->
+
+                    <!-- Right arm -->
+
+                    <!-- r upper arm pitch -->
+                    <body name="r_upper_arm_pitch" pos="0 -0.12664 0.21725" quat="0.976303 -0.216409 0 0">
+                        <inertial pos="0.00515735 -0.0587916 0.000122944" quat="0.999675 -0.0254775 -0.000125407 -0.000494276" mass="0.777391" diaginertia="0.00054641 0.000340601 0.00031934"/>
+                        <joint name="r_shoulder_pitch" pos="0 0 0" damping="2.575" stiffness="92.85" axis="0 1 0" range="-2.79 1.92"/>
+
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_upper_arm_pitch"/>
+                        <geom size="0.02 0.02 0.02" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                        <!-- r upper arm roll -->
+                        <body name="r_upper_arm_roll" pos="0 -0.067 0" quat="0.976303 0.216409 0 0">
+                            <inertial pos="0.0260059 -0.0238264 -0.0272109" quat="0.906733 -0.298529 0.228698 0.190821" mass="0.0840989" diaginertia="9.66585e-05 8.99068e-05 2.54689e-05"/>
+                            <joint name="r_shoulder_roll" pos="0 0 0" damping="2.575" stiffness="92.85" axis="1 0 -1.221e-05" range="-3.27 0.57"/>
+
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_upper_arm_roll"/>
+                            <geom size="0.02 0.02 0.02" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                            <!-- r upper arm yaw -->
+                            <body name="r_upper_arm_yaw" pos="0 -0.039996 -0.057473">
+                                <inertial pos="0.00017083 -0.00124148 -0.100981" quat="0.712176 -0.02561 0.0250075 0.701088" mass="0.78993" diaginertia="0.000481112 0.000420147 0.000315576"/>
+                                <joint name="r_shoulder_yaw" pos="0 0 0" damping="3.1" stiffness="112.06" axis="1.221e-05 6.8349e-05 1" range="-2.97 2.97"/>
+
+                                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_upper_arm_yaw"/>
+                                <geom size="0.025 0.025 0.06" pos="0 0 -0.05" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                <!-- r lower arm pitch -->
+                                <body name="r_lower_arm_pitch" pos="0 1.28859e-05 -0.18853">
+                                    <inertial pos="2.54538e-07 -0.0196908 -0.0210929" quat="0.675237 0.209883 -0.209892 0.67524" mass="0.0553958" diaginertia="2.92256e-05 2.63267e-05 1.3293e-05"/>
+                                    <joint name="r_elbow_pitch" pos="0 0 0" damping="3.1" stiffness="112.06" axis="0 1 -6.835e-05" range="-2.27 2.27"/>
+
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_lower_arm_pitch"/>
+                                    <geom size="0.02 0.02 0.02" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                    <!-- r hand yaw -->
+                                    <body name="r_hand_yaw" pos="0 0 -0.0405">
+                                        <inertial pos="0.000158044 -0.000478822 -0.0559415" quat="0.999772 0.019131 0.00724385 -0.00608553" mass="0.606076" diaginertia="0.000748132 0.000708413 0.000280748"/>
+                                        <joint name="r_wrist_yaw" pos="0 0 0" damping="1" stiffness="10" axis="1.221e-05 6.835e-05 1" range="-2.97 2.97"/>
+
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_hand_yaw"/>
+                                        <geom size="0.03 0.03 0.085" pos="0 0 -0.1" type="box" rgba="0.752941 0.752941 0.752941 1"/>
+
+                                        <!-- r hand roll -->
+                                        <body name="r_hand_roll" pos="0 1.3775e-05 -0.20153">
+                                            <inertial pos="1.5545e-08 0.00044846 4.1938e-08" quat="0 0.707105 0 0.707108" mass="0.0054473" diaginertia="3.6036e-07 3.5527e-07 7.344e-08"/>
+                                            <joint name="r_wrist_roll" pos="0 0 0" damping="1" stiffness="10" axis="1 0 1.221e-05" range="-0.61 0.61"/>
+
+                                            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="r_hand_roll"/>
+                                            <geom size="0.01 0.01 0.01" type="box" rgba="0.75294 0.75294 0.75294 1"/>
+
+                                            <!-- r hand pitch -->
+                                            <body name="r_hand_pitch">
+                                                <inertial pos="0.0060733 0.0018907 -0.084578" quat="0.647336 -0.27161 -0.257721 0.6639" mass="0.53221" diaginertia="0.000319947 0.000196296 0.000182477"/>
+                                                <joint name="r_wrist_pitch" pos="0 0 0" damping="1" stiffness="10" axis="0 1 -6.835e-05" range="-0.61 0.61"/>
+
+                                                <geom size="0.02 0.02 0.04" pos="0 0 -0.07" type="box" rgba="0.75294 0.75294 0.75294 1"/>
+
+                                                <!-- right eef -->
+                                                <body name="right_eef" pos="0 0 0">
+                                                    <body name="right_mount" quat="0 0 1 0"/>
+                                                    <body name="right_hand_eef" pos="0 0 0"/>
+                                                </body>
+                                                <!-- End of right eef -->
+                                            </body>
+                                            <!-- End of r hand pitch -->
+                                        </body>
+                                        <!-- End of r hand roll -->
+                                    </body>
+                                    <!-- End of r hand yaw -->
+                                </body>
+                                <!-- End of r lower arm pitch -->
+                            </body>
+                            <!-- End of r upper arm yaw -->
+                        </body>
+                        <!-- End of r upper arm roll -->
+                    </body>
+                    <!-- End of r upper arm pitch -->
+                    <!-- End of Right arm -->
+
+                    </body>
+                    <!-- End of Waist roll -->
+                </body>
+                <!-- End of Waist pitch -->
+            </body>
+            <!-- End of Waist yaw -->
+            <!-- End of Torso -->
+        </body>
+        <!-- End of Base -->
+    </worldbody>
+    <actuator>
+        <motor name='l_shoulder_pitch' ctrllimited="true" ctrlrange="-20000 20000" joint='l_shoulder_pitch'/>
+        <motor name='l_shoulder_roll'  ctrllimited="true" ctrlrange="-20000 20000" joint='l_shoulder_roll'/>
+        <motor name='l_shoulder_yaw'  ctrllimited="true" ctrlrange="-20000 20000" joint='l_shoulder_yaw'/>
+        <motor name='l_elbow_pitch'  ctrllimited="true" ctrlrange="-20000 20000" joint='l_elbow_pitch'/>
+        <motor name='l_wrist_yaw'  ctrllimited="true" ctrlrange="-20000 20000" joint='l_wrist_yaw'/>
+        <motor name='l_wrist_roll'  ctrllimited="true" ctrlrange="-20000 20000" joint='l_wrist_roll'/>
+        <motor name='l_wrist_pitch'  ctrllimited="true" ctrlrange="-20000 20000" joint='l_wrist_pitch'/>
+
+        <motor name='r_shoulder_pitch'  ctrllimited="true" ctrlrange="-20000 20000" joint='r_shoulder_pitch'/>
+        <motor name='r_shoulder_roll'  ctrllimited="true" ctrlrange="-20000 20000" joint='r_shoulder_roll'/>
+        <motor name='r_shoulder_yaw'  ctrllimited="true" ctrlrange="-20000 20000" joint='r_shoulder_yaw'/>
+        <motor name='r_elbow_pitch'  ctrllimited="true" ctrlrange="-20000 20000" joint='r_elbow_pitch'/>
+        <motor name='r_wrist_yaw'  ctrllimited="true" ctrlrange="-20000 20000" joint='r_wrist_yaw'/>
+        <motor name='r_wrist_roll'  ctrllimited="true" ctrlrange="-20000 20000" joint='r_wrist_roll'/>
+        <motor name='r_wrist_pitch'  ctrllimited="true" ctrlrange="-20000 20000" joint='r_wrist_pitch'/>
+    </actuator>
+</mujoco>

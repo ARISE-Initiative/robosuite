@@ -295,7 +295,7 @@ class MujocoObject(MujocoModel):
         """
         Returns numpy array with dimensions of a bounding box around this object.
         """
-        return 2. * self.get_bounding_box_half_size()
+        return 2.0 * self.get_bounding_box_half_size()
 
 
 class MujocoXMLObject(MujocoObject, MujocoXML):
@@ -584,4 +584,4 @@ class MujocoGeneratedObject(MujocoObject):
         raise NotImplementedError
 
     def get_bounding_box_half_size(self):
-        return np.array([self.horizontal_radius, self.horizontal_radius, 0.]) - self.bottom_offset
+        return np.array([self.horizontal_radius, self.horizontal_radius, 0.0]) - self.bottom_offset

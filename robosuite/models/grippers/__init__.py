@@ -26,9 +26,14 @@ GRIPPER_MAPPING = {
     "Robotiq140Gripper": Robotiq140Gripper,
     "RobotiqThreeFingerGripper": RobotiqThreeFingerGripper,
     "RobotiqThreeFingerDexterousGripper": RobotiqThreeFingerDexterousGripper,
+<<<<<<< variant A
     "GoogleGripper": GoogleGripper,
     "Z1Gripper": Z1Gripper,
     "AlohaGripper": AlohaGripper,
+>>>>>>> variant B
+    "InspireLeftHand": InspireLeftHand,
+    "InspireRightHand": InspireRightHand,
+======= end
     None: NullGripper,
 }
 
