@@ -400,26 +400,25 @@ class FixedBaseRobot(Manipulator):
         # Now, convert list to dict and return
         return {key: value for key, value in zip(self.arms, inp)}
 
-    @property
-    def arms(self):
-        """
-        Returns name of arms used as naming convention throughout this module
+    # @property
+    # def arms(self):
+    #     """
+    #     Returns name of arms used as naming convention throughout this module
 
-        Returns:
-            2-tuple: ('right', 'left')
-        """
-        # if self.robot_model.arm_type == "single":
-        #     return ("right",)
-        # return ("right",)
-        # elif self.robot_model.arm_type == "bimanual":
-        #     return ("right", "left")
+    #     Returns:
+    #         2-tuple: ('right', 'left')
+    #     """
+    #     # if self.robot_model.arm_type == "single":
+    #     #     return ("right",)
+    #     # return ("right",)
+    #     # elif self.robot_model.arm_type == "bimanual":
+    #     #     return ("right", "left")
 
-        """
-        TODO: determine depending on if arm type if single or bimanual
-        """
-
-        return ("right",)
-        # return ("right", "left")
+    #     """
+    #     TODO: determine depending on if arm type if single or bimanual
+    #     """
+    #     # return ("right",)
+    #     return ("right", "left")
 
     @property
     def action_limits(self):
@@ -594,3 +593,20 @@ class FixedBaseRobot(Manipulator):
             int: the index that correctly splits the right arm from the left arm joints
         """
         return int(len(self.robot_joints) / len(self.arms))
+
+
+class SingleArmFixedBaseRobot(FixedBaseRobot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def arms(self):
+        return ("right",)
+    
+class BimanualFixedBaseRobot(FixedBaseRobot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def arms(self):
+        return ("right", "left")

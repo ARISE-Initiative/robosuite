@@ -12,10 +12,10 @@ from .null_mobile_base import NullMobileBase
 BASE_MAPPING = {
     "RethinkMount": RethinkMount,
     "RethinkMinimalMount": RethinkMinimalMount,
-    None: NullMount,
+    "NullMount": NullMount,
     "OmronMobileBase": OmronMobileBase,
     "NullMobileBase": NullMobileBase,
-    None: NullMobileBase,
+    "NullMobileBase": NullMobileBase,
 }
 
 ALL_BASES = BASE_MAPPING.keys()

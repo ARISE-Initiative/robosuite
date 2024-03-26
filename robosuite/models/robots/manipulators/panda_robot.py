@@ -53,13 +53,3 @@ class Panda(ManipulatorModel):
     @property
     def arm_type(self):
         return "single"
-
-
-class PandaMobile(Panda):
-    """
-    Variant of Panda robot with mobile base. Currently serves as placeholder class.
-    """
-
-    @property
-    def default_base(self):
-        return "OmronMobileBase"
