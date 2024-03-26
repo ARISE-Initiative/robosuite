@@ -314,9 +314,9 @@ class Lift(SingleArmEnv):
                 y_range=[-0.03, 0.03],
                 rotation=None,
                 ensure_object_boundary_in_range=False,
-                ensure_valid_placement=True,
+                ensure_valid_placement=False,
                 reference_pos=self.table_offset,
-                z_offset=0.01,
+                z_offset=1
             )
 
         # task includes arena, robot, and objects of interest
@@ -388,6 +388,8 @@ class Lift(SingleArmEnv):
         """
         super()._reset_internal()
 
+        self.sim.model.opt.gravity[-1] = -0.1
+
         # Reset all object positions using initializer sampler if we're not directly loading from an xml
         if not self.deterministic_reset:
 
@@ -425,4 +427,7 @@ class Lift(SingleArmEnv):
         table_height = self.model.mujoco_arena.table_offset[2]
 
         # cube is higher than the table top above a margin
-        return cube_height > table_height + 0.04
+        # return cube_height > table_height + 0.04
+
+        # TODO: check for collision between robot and hand
+        return False
