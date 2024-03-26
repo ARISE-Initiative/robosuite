@@ -14,6 +14,7 @@ from .google_gripper import GoogleGripper
 from .z1_gripper import Z1Gripper
 from .null_gripper import NullGripper
 from .aloha_gripper import AlohaGripper
+from .inspire_hands import InspireLeftHand, InspireRightHand
 
 
 GRIPPER_MAPPING = {
@@ -26,14 +27,11 @@ GRIPPER_MAPPING = {
     "Robotiq140Gripper": Robotiq140Gripper,
     "RobotiqThreeFingerGripper": RobotiqThreeFingerGripper,
     "RobotiqThreeFingerDexterousGripper": RobotiqThreeFingerDexterousGripper,
-<<<<<<< variant A
     "GoogleGripper": GoogleGripper,
     "Z1Gripper": Z1Gripper,
     "AlohaGripper": AlohaGripper,
->>>>>>> variant B
     "InspireLeftHand": InspireLeftHand,
     "InspireRightHand": InspireRightHand,
-======= end
     None: NullGripper,
 }
 

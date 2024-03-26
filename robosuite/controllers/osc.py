@@ -408,7 +408,6 @@ class OperationalSpaceController(Controller):
 
         # Gamma (without null torques) = J^T * F + gravity compensations
         self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
-
         # Calculate and add nullspace torques (nullspace_matrix^T * Gamma_null) to final torques
         # Note: Gamma_null = desired nullspace pose torques, assumed to be positional joint control relative
         #                     to the initial joint positions
