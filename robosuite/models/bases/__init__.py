@@ -9,6 +9,8 @@ from .mobile_base_model import MobileBaseModel
 from .omron_mobile_base import OmronMobileBase
 from .null_mobile_base import NullMobileBase
 
+from .aloha_mount import AlohaMount
+
 BASE_MAPPING = {
     "RethinkMount": RethinkMount,
     "RethinkMinimalMount": RethinkMinimalMount,
@@ -16,6 +18,7 @@ BASE_MAPPING = {
     "OmronMobileBase": OmronMobileBase,
     "NullMobileBase": NullMobileBase,
     "NullMobileBase": NullMobileBase,
+    "AlohaMount": AlohaMount,
 }
 
 ALL_BASES = BASE_MAPPING.keys()

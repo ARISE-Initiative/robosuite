@@ -21,6 +21,7 @@ ROBOT_CLASS_MAPPING = {
     "GoogleRobot": MobileBaseRobot,
     "Z1": SingleArmFixedBaseRobot, # FixedBaseRobot,
     "Aloha": BimanualFixedBaseRobot, # FixedBaseRobot,
+    "VX300S": SingleArmFixedBaseRobot, # FixedBaseRobot,
 }
 
 BIMANUAL_ROBOTS = {k.lower() for k, v in ROBOT_CLASS_MAPPING.items() if v == Bimanual}

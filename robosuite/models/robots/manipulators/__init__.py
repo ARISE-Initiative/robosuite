@@ -9,3 +9,4 @@ from .ur5e_robot import UR5e
 from .google_robot import GoogleRobot
 from .z1_robot import Z1
 from .aloha_robot import Aloha
+from .vx300s_robot import VX300S

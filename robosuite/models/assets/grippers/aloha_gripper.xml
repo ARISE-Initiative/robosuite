@@ -11,8 +11,8 @@
     </asset>
 
     <actuator>
-        <position class="finger" name="left_finger" joint="left_finger" ctrlrange="0.002 0.037" kp="2000" kv="124"/>
-        <position class="finger" name="right_finger" joint="right_finger" ctrlrange="0.002 0.037" kp="2000" kv="124"/>
+        <position class="finger" name="left_finger" joint="left_finger" ctrlrange="0.002 0.037" forcelimited="true" forcerange="-20 20"/>
+        <position class="finger" name="right_finger" joint="right_finger" ctrlrange="0.002 0.037" forcelimited="true" forcerange="-20 20"/>
     </actuator>
 
     <default>
@@ -42,7 +42,7 @@
 
     <worldbody>
       <body name="gripper_base">
-          <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+          <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="1"/>
           <inertial pos="0.000182154 -0.0341589 -0.0106026" quat="0.435286 0.557074 -0.551539 0.442718" mass="0.42158" diaginertia="0.00110438 0.000790537 0.000469727" />
           <geom class="visual" mesh="vx300s_7_gripper_prop" />
           <geom class="collision" mesh="vx300s_7_gripper_prop" />
@@ -54,7 +54,7 @@
           <geom class="collision" pos="0 -0.0824748 -0.0095955" quat="0 0 -0.21644 -0.976296" type="mesh" mesh="d405_solid" />
           <camera name="wrist_cam_right" pos="0 -0.0824748 -0.0095955" fovy="58" mode="fixed" quat="0.21643999811115602 0.9762959219507387 0.0 0.0" />
 
-          <body name="eef" pos="0 0 0.0" quat="1 0 0 0">
+          <body name="eef" pos="0 0 0.04" quat="1 0 0 0">
               <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
               <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
               <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
