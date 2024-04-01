@@ -7,7 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
 from robosuite.models.grippers import gripper_factory
-from robosuite.robots.manipulator import Manipulator
+from robosuite.robots.legacy.manipulator import Manipulator
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.observables import Observable, sensor
 
