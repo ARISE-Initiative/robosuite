@@ -12,6 +12,7 @@ class MobileBaseController:
         self.init_pos, self.init_ori = self.get_base_pose()
 
     def get_base_pose(self):
+        # YifengTODO: change them to not-hardcoded values
         base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("mobile_base0_center")])
         base_rot = np.array(self.sim.data.site_xmat[self.sim.model.site_name2id("mobile_base0_center")].reshape([3, 3]))
         return base_pos, base_rot

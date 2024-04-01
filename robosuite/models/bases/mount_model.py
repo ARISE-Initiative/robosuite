@@ -32,7 +32,8 @@ class MountModel(MujocoXMLModel):
 
     @property
     def naming_prefix(self):
-        return "mount{}_".format(self.idn)
+        # return "mount{}_".format(self.idn)
+        return "fixed_base{}_".format(self.idn)
 
     @property
     def _important_sites(self):

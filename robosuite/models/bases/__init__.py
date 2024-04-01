@@ -14,11 +14,13 @@ from .aloha_mount import AlohaMount
 BASE_MAPPING = {
     "RethinkMount": RethinkMount,
     "RethinkMinimalMount": RethinkMinimalMount,
+    "AlohaMount": AlohaMount,
     "NullMount": NullMount,
     "OmronMobileBase": OmronMobileBase,
     "NullMobileBase": NullMobileBase,
-    "NullMobileBase": NullMobileBase,
-    "AlohaMount": AlohaMount,
+    # "Z1Base": Z1Base,
+    # "SpotBase": SpotBase,
+    # "NullLeggedBase": NullLeggedBase,
 }
 
 ALL_BASES = BASE_MAPPING.keys()

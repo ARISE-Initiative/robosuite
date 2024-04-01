@@ -213,11 +213,11 @@ class MobileBaseRobot(Manipulator):
 
         # set up references for mobile base
         self._ref_base_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator)
+            self.sim.model.actuator_name2id(self.robot_model.base.correct_naming(actuator))
             for actuator in [
-                "mobile_base0_mobile_base_joint_x",
-                "mobile_base0_mobile_base_joint_y",
-                "mobile_base0_mobile_base_joint_rot",
+                "mobile_base_joint_x",
+                "mobile_base_joint_y",
+                "mobile_base_joint_rot", # yaw angle
             ]
         ]
         height_actuator = self.robot_model.base.height_actuator

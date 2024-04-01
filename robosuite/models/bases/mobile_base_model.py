@@ -1,5 +1,5 @@
 """
-Defines the base class of all mounts
+Defines the base class of all mobile bases
 """
 import numpy as np
 
