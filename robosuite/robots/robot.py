@@ -271,6 +271,13 @@ class Robot(object):
         # We don't want to include the direct joint pos sensor outputs
         actives = [False, True, True, True]
 
+        for arm in self.arms:
+            # Add in eef info
+            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm=arm, modality=modality)
+            sensors += arm_sensors
+            names += arm_sensor_names
+            actives += [True]
+
         # Create observables for this robot
         observables = OrderedDict()
         for name, s, active in zip(names, sensors, actives):

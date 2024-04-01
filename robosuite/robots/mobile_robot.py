@@ -5,6 +5,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
+from robosuite.robots.robot import Robot
 
 
 class MobileRobot(Robot):
@@ -102,3 +103,7 @@ class MobileRobot(Robot):
     @property
     def is_mobile(self):
         return True
+
+    @property
+    def base(self):
+        return "base"

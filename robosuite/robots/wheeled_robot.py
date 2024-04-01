@@ -93,7 +93,7 @@ class WheeledRobot(MobileRobot):
             # Instantiate the relevant controller
             self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
 
-        self.mobile_base_controller = MobileBaseController(self.sim)
+        self.controller[self.base] = MobileBaseController(self.sim)
 
     def load_model(self):
         """
@@ -112,7 +112,7 @@ class WheeledRobot(MobileRobot):
         """
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
-        self.mobile_base_controller.reset()
+        self.controller[self.base].reset()
 
     def setup_references(self):
         """
@@ -144,12 +144,7 @@ class WheeledRobot(MobileRobot):
 
         # set up references for mobile base
         self._ref_base_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator)
-            for actuator in [
-                "mobile_base0_mobile_base_joint_x",
-                "mobile_base0_mobile_base_joint_y",
-                "mobile_base0_mobile_base_joint_rot",
-            ]
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.actuators
         ]
         height_actuator = self.robot_model.base.height_actuator
         if height_actuator is not None:
@@ -182,17 +177,18 @@ class WheeledRobot(MobileRobot):
 
         mode = "base" if action[-1] > 0 else "arm"
 
-        self.base_pos, self.base_ori = self.mobile_base_controller.get_base_pose()
+        self.base_pos, self.base_ori = self.controller[self.base].get_base_pose()
         for arm in self.arms:
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
             self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
 
+        mobile_base_dims = self.controller[self.base].control_dim
         if mode == "base":
-            base_action = np.copy(action[-5:-1])
+            base_action = np.copy(action[-mobile_base_dims - 1 : -1])
             ### TODO: update base action ###
-            self.mobile_base_controller.set_goal(base_action)
-            mobile_base_torques = self.mobile_base_controller.run_controller()
+            self.controller[self.base].set_goal(base_action)
+            mobile_base_torques = self.controller[self.base].run_controller()
             self.sim.data.ctrl[self._ref_base_actuator_indexes] = mobile_base_torques
 
         self.torques = np.array([])
@@ -266,26 +262,6 @@ class WheeledRobot(MobileRobot):
         # Get general robot observables first
         observables = super().setup_observables()
 
-        # Get prefix from robot model to avoid naming clashes for multiple robots and define observables modality
-        pf = self.robot_model.naming_prefix
-        modality = f"{pf}proprio"
-        sensors = []
-        names = []
-
-        for arm in self.arms:
-            # Add in eef info
-            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm=arm, modality=modality)
-            sensors += arm_sensors
-            names += arm_sensor_names
-
-        # Create observables for this robot
-        for name, s in zip(names, sensors):
-            observables[name] = Observable(
-                name=name,
-                sensor=s,
-                sampling_rate=self.control_freq,
-            )
-
         return observables
 
     def _create_arm_sensors(self, arm, modality):
@@ -356,9 +332,11 @@ class WheeledRobot(MobileRobot):
             low_c, high_c = self.controller[arm].control_limits
             low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
 
-        low_m, high_m = ([-1] * 5, [1] * 5)  # 3 dimensions for position, 1 for yaw, 1 for base mode
-        low = np.concatenate([low, low_m])
-        high = np.concatenate([low, high_m])
+        mobile_base_dims = self.controller[self.base].control_dim
+        low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
+        low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
+        low = np.concatenate([low, low_b, low_m])
+        high = np.concatenate([high, high_b, high_m])
         return low, high
 
     @property

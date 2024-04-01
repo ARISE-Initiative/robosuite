@@ -9,6 +9,7 @@ class MobileBaseController:
         sim,
     ):
         self.sim = sim
+        self.control_dim = 4
 
     def reset(self):
         self.init_pos, self.init_ori = self.get_base_pose()

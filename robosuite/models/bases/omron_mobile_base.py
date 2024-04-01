@@ -20,7 +20,6 @@ class OmronMobileBase(MobileBaseModel):
 
     @property
     def top_offset(self):
-        # return np.array((0, 0, 0.922 - 0.10))
         return np.array((0, 0, 0))
 
     @property
@@ -29,5 +28,14 @@ class OmronMobileBase(MobileBaseModel):
         return 0.25
 
     @property
+    def actuators(self):
+        pf = self.naming_prefix
+        return [
+            f"{pf}actuator_x",
+            f"{pf}actuator_y",
+            f"{pf}actuator_rot",
+        ]
+
+    @property
     def height_actuator(self):
-        return "{}mobile_base_joint_z".format(self.naming_prefix)
+        return "{}actuator_z".format(self.naming_prefix)

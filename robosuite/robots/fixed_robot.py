@@ -237,26 +237,6 @@ class FixedRobot(Robot):
         # Get general robot observables first
         observables = super().setup_observables()
 
-        # Get prefix from robot model to avoid naming clashes for multiple robots and define observables modality
-        pf = self.robot_model.naming_prefix
-        modality = f"{pf}proprio"
-        sensors = []
-        names = []
-
-        for arm in self.arms:
-            # Add in eef info
-            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm=arm, modality=modality)
-            sensors += arm_sensors
-            names += arm_sensor_names
-
-        # Create observables for this robot
-        for name, s in zip(names, sensors):
-            observables[name] = Observable(
-                name=name,
-                sensor=s,
-                sampling_rate=self.control_freq,
-            )
-
         return observables
 
     def _create_arm_sensors(self, arm, modality):
