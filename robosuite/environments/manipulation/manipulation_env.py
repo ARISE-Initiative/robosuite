@@ -3,7 +3,7 @@ import numpy as np
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
-from robosuite.robots import ROBOT_CLASS_MAPPING, Manipulator
+from robosuite.robots import ROBOT_CLASS_MAPPING  # ,Manipulator
 
 
 class ManipulationEnv(RobotEnv):
@@ -311,10 +311,11 @@ class ManipulationEnv(RobotEnv):
         Args:
             robots (str or list of str): Inputted requested robots at the task-level environment
         """
-        # Make sure all inputted robots are a manipulation robot
-        if type(robots) is str:
-            robots = [robots]
-        for robot in robots:
-            assert issubclass(
-                ROBOT_CLASS_MAPPING[robot], Manipulator
-            ), "Only manipulator robots supported for manipulation environment!"
+        # # Make sure all inputted robots are a manipulation robot
+        # if type(robots) is str:
+        #     robots = [robots]
+        # for robot in robots:
+        #     assert issubclass(
+        #         ROBOT_CLASS_MAPPING[robot], Manipulator
+        #     ), "Only manipulator robots supported for manipulation environment!"
+        pass

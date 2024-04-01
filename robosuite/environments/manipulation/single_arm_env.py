@@ -1,7 +1,7 @@
 import numpy as np
 
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
-from robosuite.robots import SingleArm
+from robosuite.robots.legacy import SingleArm
 from robosuite.utils.transform_utils import mat2quat
 
 

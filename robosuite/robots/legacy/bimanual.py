@@ -7,14 +7,55 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
 from robosuite.models.grippers import gripper_factory
-from robosuite.robots.manipulator import Manipulator
+from robosuite.robots.legacy.manipulator import Manipulator
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.observables import Observable, sensor
 
 
-class FixedBaseRobot(Manipulator):
+class Bimanual(Manipulator):
     """
-    Initializes a robot with a fixed base.
+    Initializes a bimanual robot simulation object.
+
+    Args:
+        robot_type (str): Specification for specific robot arm to be instantiated within this env (e.g: "Panda")
+
+        idn (int or str): Unique ID of this robot. Should be different from others
+
+        controller_config (dict or list of dict --> dict of dict): If set, contains relevant controller parameters
+            for creating custom controllers. Else, uses the default controller for this specific task. Should either
+            be single dict if same controller is to be used for both robot arms or else it should be a list of length 2.
+
+            :NOTE: In the latter case, assumes convention of [right, left]
+
+        initial_qpos (sequence of float): If set, determines the initial joint positions of the robot to be
+            instantiated for the task
+
+        initialization_noise (dict): Dict containing the initialization noise parameters. The expected keys and
+            corresponding value types are specified below:
+
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to "None" or 0.0 results in no noise being applied.
+                If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
+                If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
+
+            :Note: Specifying None will automatically create the required dict with "magnitude" set to 0.0
+
+        mount_type (str): type of mount, used to instantiate mount models from mount factory.
+            Default is "default", which is the default mount associated with this robot's corresponding model.
+            None results in no mount, and any other (valid) model overrides the default mount.
+
+        gripper_type (str or list of str --> dict): type of gripper, used to instantiate
+            gripper models from gripper factory. Default is "default", which is the default gripper associated
+            within the 'robot' specification. None removes the gripper, and any other (valid) model overrides the
+            default gripper. Should either be single str if same gripper type is to be used for both arms or else
+            it should be a list of length 2
+
+            :NOTE: In the latter case, assumes convention of [right, left]
+
+        control_freq (float): how many control signals to receive
+            in every second. This sets the amount of simulation time
+            that passes between every action input.
     """
 
     def __init__(
@@ -28,6 +69,7 @@ class FixedBaseRobot(Manipulator):
         gripper_type="default",
         control_freq=20,
     ):
+
         self.controller = self._input2dict(None)
         self.controller_config = self._input2dict(copy.deepcopy(controller_config))
         self.gripper = self._input2dict(None)
@@ -122,20 +164,21 @@ class FixedBaseRobot(Manipulator):
         # First, run the superclass method to load the relevant model
         super().load_model()
 
-        # # Verify that the loaded model is of the correct type for this robot
-        # if self.robot_model.arm_type != "bimanual":
-        #     raise TypeError(
-        #         "Error loading robot model: Incompatible arm type specified for this robot. "
-        #         "Requested model arm type: {}, robot arm type: {}".format(self.robot_model.arm_type, type(self))
-        #     )
+        # Verify that the loaded model is of the correct type for this robot
+        if self.robot_model.arm_type != "bimanual":
+            raise TypeError(
+                "Error loading robot model: Incompatible arm type specified for this robot. "
+                "Requested model arm type: {}, robot arm type: {}".format(self.robot_model.arm_type, type(self))
+            )
 
         # Now, load the gripper if necessary
         for arm in self.arms:
             if self.has_gripper[arm]:
                 if self.gripper_type[arm] == "default":
                     # Load the default gripper from the robot file
-                    idn = "_".join((str(self.idn), arm))
-                    self.gripper[arm] = gripper_factory(self.robot_model.default_gripper[arm], idn=idn)
+                    self.gripper[arm] = gripper_factory(
+                        self.robot_model.default_gripper[arm], idn="_".join((str(self.idn), arm))
+                    )
                 else:
                     # Load user-specified gripper
                     self.gripper[arm] = gripper_factory(self.gripper_type[arm], idn="_".join((str(self.idn), arm)))
@@ -228,11 +271,6 @@ class FixedBaseRobot(Manipulator):
         assert len(action) == self.action_dim, "environment got invalid action dimension -- expected {}, got {}".format(
             self.action_dim, len(action)
         )
-
-        for arm in self.arms:
-            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-            # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
-            self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
 
         self.torques = np.array([])
         # Now execute actions for each arm
@@ -400,25 +438,15 @@ class FixedBaseRobot(Manipulator):
         # Now, convert list to dict and return
         return {key: value for key, value in zip(self.arms, inp)}
 
-    # @property
-    # def arms(self):
-    #     """
-    #     Returns name of arms used as naming convention throughout this module
+    @property
+    def arms(self):
+        """
+        Returns name of arms used as naming convention throughout this module
 
-    #     Returns:
-    #         2-tuple: ('right', 'left')
-    #     """
-    #     # if self.robot_model.arm_type == "single":
-    #     #     return ("right",)
-    #     # return ("right",)
-    #     # elif self.robot_model.arm_type == "bimanual":
-    #     #     return ("right", "left")
-
-    #     """
-    #     TODO: determine depending on if arm type if single or bimanual
-    #     """
-    #     # return ("right",)
-    #     return ("right", "left")
+        Returns:
+            2-tuple: ('right', 'left')
+        """
+        return "right", "left"
 
     @property
     def action_limits(self):
@@ -592,21 +620,4 @@ class FixedBaseRobot(Manipulator):
         Returns:
             int: the index that correctly splits the right arm from the left arm joints
         """
-        return int(len(self.robot_joints) / len(self.arms))
-
-
-class SingleArmFixedBaseRobot(FixedBaseRobot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    @property
-    def arms(self):
-        return ("right",)
-    
-class BimanualFixedBaseRobot(FixedBaseRobot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    @property
-    def arms(self):
-        return ("right", "left")
+        return int(len(self.robot_joints) / 2)

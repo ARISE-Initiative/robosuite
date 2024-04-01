@@ -27,5 +27,14 @@ class NullMobileBase(MobileBaseModel):
         return 0
 
     @property
-    def height_actuator(self):
-        return None
+    def actuators(self):
+        pf = self.naming_prefix
+        return [
+            f"{pf}actuator_x",
+            f"{pf}actuator_y",
+            f"{pf}actuator_rot",
+        ]
+
+    @property
+    def torso_actuators(self):
+        return []

@@ -67,6 +67,10 @@ class MobileBaseModel(MujocoXMLModel):
     # -------------------------------------------------------------------------------------- #
 
     @property
+    def actuators(self):
+        raise NotImplementedError
+
+    @property
     def height_actuator(self):
         raise NotImplementedError
 

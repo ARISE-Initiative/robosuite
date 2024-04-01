@@ -12,6 +12,8 @@ class Panda(ManipulatorModel):
         idn (int or str): Number or some other unique identification string for this robot instance
     """
 
+    arms = ["right"]
+
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/panda/robot.xml"), idn=idn)
 
@@ -53,3 +55,15 @@ class Panda(ManipulatorModel):
     @property
     def arm_type(self):
         return "single"
+
+
+class PandaMobile(Panda):
+    """
+    Variant of Panda robot with mobile base. Currently serves as placeholder class.
+    """
+
+    arms = ["right"]
+
+    @property
+    def default_base(self):
+        return "OmronMobileBase"

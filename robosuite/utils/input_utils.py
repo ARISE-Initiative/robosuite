@@ -248,7 +248,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         base_mode = bool(state["base_mode"])
         if base_mode is True:
             arm_ac = np.zeros(6)
-            base_ac = np.array([dpos[0], dpos[1], dpos[2], drotation[2]])
+            base_ac = np.array([dpos[0], dpos[1], drotation[2], dpos[2]])
             mode_ac = np.array([1])
         else:
             arm_ac = np.concatenate([dpos, drotation])
