@@ -113,6 +113,8 @@ class WheeledRobot(MobileRobot):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
         self.controller[self.base].reset()
+        self._target_height = None
+        self._controlling_height = False
 
     def setup_references(self):
         """
@@ -183,6 +185,15 @@ class WheeledRobot(MobileRobot):
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
             self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
 
+        # Apply torques for height control (if applicable)
+        if self._ref_base_height_actuator_index is not None:
+            if self._target_height is None or self._controlling_height:
+                self._target_height = self.sim.data.get_joint_qpos("mobile_base0_joint_z")
+            current_height = self.sim.data.get_joint_qpos("mobile_base0_joint_z")
+            if not self._controlling_height:
+                z_error = self._target_height - current_height
+                self.sim.data.ctrl[self._ref_base_height_actuator_index] = 100 * z_error
+
         mobile_base_dims = self.controller[self.base].control_dim
         if mode == "base":
             base_action = np.copy(action[-mobile_base_dims - 1 : -1])
@@ -190,6 +201,15 @@ class WheeledRobot(MobileRobot):
             self.controller[self.base].set_goal(base_action)
             mobile_base_torques = self.controller[self.base].run_controller()
             self.sim.data.ctrl[self._ref_base_actuator_indexes] = mobile_base_torques
+
+            if policy_step:
+                height_action = action[-3]
+                if self._ref_base_height_actuator_index is not None:
+                    if abs(height_action) < 0.1:
+                        self._controlling_height = False
+                    else:
+                        self.sim.data.ctrl[self._ref_base_height_actuator_index] = height_action
+                        self._controlling_height = True
 
         self.torques = np.array([])
         # Now execute actions for each arm
