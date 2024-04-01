@@ -37,5 +37,8 @@ class OmronMobileBase(MobileBaseModel):
         ]
 
     @property
-    def height_actuator(self):
-        return "{}actuator_z".format(self.naming_prefix)
+    def torso_actuators(self):
+        pf = self.naming_prefix
+        return [
+            f"{pf}actuator_z",
+        ]

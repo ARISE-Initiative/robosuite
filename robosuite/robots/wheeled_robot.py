@@ -7,6 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
 from robosuite.controllers.mobile_base_controller import MobileBaseController
+from robosuite.controllers.torso_height_controller import TorsoHeightController
 from robosuite.robots.mobile_robot import MobileRobot
 from robosuite.utils.observables import Observable, sensor
 
@@ -93,7 +94,8 @@ class WheeledRobot(MobileRobot):
             # Instantiate the relevant controller
             self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
 
-        self.controller[self.base] = MobileBaseController(self.sim)
+        self.controller[self.base] = MobileBaseController(self.sim, self.robot_model.base.naming_prefix)
+        self.controller[self.torso] = TorsoHeightController(self.sim, self.robot_model.base.naming_prefix)
 
     def load_model(self):
         """
@@ -113,8 +115,7 @@ class WheeledRobot(MobileRobot):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
         self.controller[self.base].reset()
-        self._target_height = None
-        self._controlling_height = False
+        self.controller[self.torso].reset()
 
     def setup_references(self):
         """
@@ -148,11 +149,11 @@ class WheeledRobot(MobileRobot):
         self._ref_base_actuator_indexes = [
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.actuators
         ]
-        height_actuator = self.robot_model.base.height_actuator
-        if height_actuator is not None:
-            self._ref_base_height_actuator_index = self.sim.model.actuator_name2id(height_actuator)
-        else:
-            self._ref_base_height_actuator_index = None
+
+        # set up references for torso
+        self._ref_torso_actuator_indexes = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.torso_actuators
+        ]
 
     def control(self, action, policy_step=False):
         """
@@ -185,31 +186,21 @@ class WheeledRobot(MobileRobot):
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
             self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
 
-        # Apply torques for height control (if applicable)
-        if self._ref_base_height_actuator_index is not None:
-            if self._target_height is None or self._controlling_height:
-                self._target_height = self.sim.data.get_joint_qpos("mobile_base0_joint_z")
-            current_height = self.sim.data.get_joint_qpos("mobile_base0_joint_z")
-            if not self._controlling_height:
-                z_error = self._target_height - current_height
-                self.sim.data.ctrl[self._ref_base_height_actuator_index] = 100 * z_error
-
-        mobile_base_dims = self.controller[self.base].control_dim
         if mode == "base":
-            base_action = np.copy(action[-mobile_base_dims - 1 : -1])
-            ### TODO: update base action ###
-            self.controller[self.base].set_goal(base_action)
+            mobile_base_dims = self.controller[self.base].control_dim
+            torso_dims = self.controller[self.torso].control_dim
+            base_action = np.copy(action[-mobile_base_dims - torso_dims - 1 : -torso_dims - 1])
+            torso_action = np.copy(action[-torso_dims - 1 : -1])
+            if policy_step:
+                self.controller[self.base].set_goal(base_action)
+                self.controller[self.torso].set_goal(torso_action)
+
             mobile_base_torques = self.controller[self.base].run_controller()
             self.sim.data.ctrl[self._ref_base_actuator_indexes] = mobile_base_torques
 
-            if policy_step:
-                height_action = action[-3]
-                if self._ref_base_height_actuator_index is not None:
-                    if abs(height_action) < 0.1:
-                        self._controlling_height = False
-                    else:
-                        self.sim.data.ctrl[self._ref_base_height_actuator_index] = height_action
-                        self._controlling_height = True
+        # Apply torques for height control (if applicable)
+        if len(self._ref_torso_actuator_indexes) > 0:
+            self.sim.data.ctrl[self._ref_torso_actuator_indexes] = self.controller[self.torso].run_controller()
 
         self.torques = np.array([])
         # Now execute actions for each arm
@@ -353,10 +344,12 @@ class WheeledRobot(MobileRobot):
             low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
 
         mobile_base_dims = self.controller[self.base].control_dim
+        torso_dims = self.controller[self.torso].control_dim
         low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
+        low_t, high_t = ([-1] * torso_dims, [1] * torso_dims)  # base control dims
         low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
-        low = np.concatenate([low, low_b, low_m])
-        high = np.concatenate([high, high_b, high_m])
+        low = np.concatenate([low, low_b, low_t, low_m])
+        high = np.concatenate([high, high_b, high_t, high_m])
         return low, high
 
     @property
