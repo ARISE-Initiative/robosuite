@@ -14,7 +14,7 @@ class FixedRobot(Robot):
     """
     Initializes a robot with a fixed base.
     """
-
+ 
     def __init__(
         self,
         robot_type: str,

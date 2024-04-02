@@ -269,7 +269,7 @@ class Robot(object):
         sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
         names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
         # We don't want to include the direct joint pos sensor outputs
-        actives = [False, True, True, True]
+        actives = [True, True, True, True]
 
         for arm in self.arms:
             # Add in eef info

@@ -166,3 +166,16 @@ def controller_factory(name, params):
         return JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))
+
+
+def arm_controller_factory(name, params):
+    raise NotImplementedError
+
+def base_controller_factory(name, params):
+    raise NotImplementedError
+
+def torso_controller_factory(name, params):
+    raise NotImplementedError
+
+def head_controller_factory(name, params):
+    raise NotImplementedError

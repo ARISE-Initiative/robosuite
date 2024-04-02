@@ -347,6 +347,8 @@ class WheeledRobot(MobileRobot):
         torso_dims = self.controller[self.torso].control_dim
         low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
         low_t, high_t = ([-1] * torso_dims, [1] * torso_dims)  # base control dims
+
+        # TODO: This mode thing should be removed and put into the controller manager
         low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
         low = np.concatenate([low, low_b, low_t, low_m])
         high = np.concatenate([high, high_b, high_t, high_m])

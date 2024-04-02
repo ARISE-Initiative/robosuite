@@ -18,4 +18,6 @@ ROBOT_CLASS_MAPPING = {
     "Sawyer": FixedRobot,
     "UR5e": FixedRobot,
     "GoogleRobot": WheeledRobot,
+    "VX300S": FixedRobot,
+    "VX300SMobile": WheeledRobot,
 }

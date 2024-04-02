@@ -1,8 +1,5 @@
 from .controller_factory import controller_factory, load_controller_config, reset_controllers, get_pybullet_server
-from .osc import OperationalSpaceController
-from .joint_pos import JointPositionController
-from .joint_vel import JointVelocityController
-from .joint_tor import JointTorqueController
+from .arm import *
 
 
 CONTROLLER_INFO = {
