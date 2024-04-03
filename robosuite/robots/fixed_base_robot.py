@@ -10,7 +10,7 @@ from robosuite.robots.robot import Robot
 from robosuite.utils.observables import Observable, sensor
 
 
-class FixedRobot(Robot):
+class FixedBaseRobot(Robot):
     """
     Initializes a robot with a fixed base.
     """
