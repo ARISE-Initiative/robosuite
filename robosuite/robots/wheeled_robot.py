@@ -8,13 +8,13 @@ import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
 from robosuite.controllers.mobile_base_controller import MobileBaseController
 from robosuite.controllers.torso_height_controller import TorsoHeightController
-from robosuite.robots.mobile_robot import MobileRobot
+from robosuite.robots.mobile_base_robot import MobileBaseRobot
 from robosuite.utils.observables import Observable, sensor
 
 
-class WheeledRobot(MobileRobot):
+class WheeledRobot(MobileBaseRobot):
     """
-    Initializes a robot with a fixed base.
+    Initializes a robot with a wheeled base.
     """
 
     def __init__(
@@ -149,6 +149,7 @@ class WheeledRobot(MobileRobot):
         self._ref_base_actuator_indexes = [
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.actuators
         ]
+        # import pdb; pdb.set_trace()
 
         # set up references for torso
         self._ref_torso_actuator_indexes = [
@@ -184,7 +185,8 @@ class WheeledRobot(MobileRobot):
         for arm in self.arms:
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
-            self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
+            # TODO: This line should be removed for arms, and change it to internal computation of base. 
+            self.controller[arm].update_base_pose()
 
         if mode == "base":
             mobile_base_dims = self.controller[self.base].control_dim

@@ -420,7 +420,14 @@ class OperationalSpaceController(Controller):
 
         return self.torques
 
-    def update_base_pose(self, base_pos, base_ori):
+    def get_base_pose(self):
+        base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{self.naming_prefix}{self.part_name}_center")])
+        base_ori = np.array(
+            self.sim.data.site_xmat[self.sim.model.site_name2id(f"{self.naming_prefix}{self.part_name}_center")].reshape([3, 3])
+        )
+        return base_pos, base_ori
+
+    def update_base_pose(self):
         """
         Optional function to implement in subclass controllers that will take in @base_pos and @base_ori and update
         internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
@@ -434,6 +441,8 @@ class OperationalSpaceController(Controller):
 
         self._prev_base_pos = deepcopy(self.base_pos)
         self._prev_base_ori = deepcopy(self.base_ori)
+
+        base_pos, base_ori = self.get_base_pose()
 
         self.base_pos = base_pos
         self.base_ori = base_ori

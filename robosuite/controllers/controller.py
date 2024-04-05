@@ -34,6 +34,8 @@ class Controller(object, metaclass=abc.ABCMeta):
         eef_name,
         joint_indexes,
         actuator_range,
+        part_name=None,
+        naming_prefix=None,
     ):
 
         # Actuator range
@@ -56,6 +58,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.sim = sim
         self.model_timestep = macros.SIMULATION_TIMESTEP
         self.eef_name = eef_name
+        self.part_name = part_name
+        self.naming_prefix = naming_prefix
+
         self.joint_index = joint_indexes["joints"]
         self.qpos_index = joint_indexes["qpos"]
         self.qvel_index = joint_indexes["qvel"]
@@ -161,17 +166,14 @@ class Controller(object, metaclass=abc.ABCMeta):
             # Clear self.new_update
             self.new_update = False
 
-    def update_base_pose(self, base_pos, base_ori):
+    def update_base_pose(self):
         """
         Optional function to implement in subclass controllers that will take in @base_pos and @base_ori and update
         internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
         is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
 
-        Args:
-            base_pos (3-tuple): x,y,z position of robot base in mujoco world coordinates
-            base_ori (np.array): 3x3 rotation matrix orientation of robot base in mujoco world coordinates
         """
-        pass
+        raise NotImplementedError
 
     def update_initial_joints(self, initial_joints):
         """

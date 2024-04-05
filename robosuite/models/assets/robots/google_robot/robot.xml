@@ -149,6 +149,7 @@
         <geom class="collision" pos="0.07181 0 1.2875" mesh="link_head_tilt"/>
         <!-- arm -->
         <body name="link_torso" pos="0 0 0.5945">
+          <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
           <inertial pos="0 0 0.108398" diaginertia="0.0184592 0.0154173 0.0102031" mass="2.46883"/>
           <joint name="joint_torso" axis="0 0 1" range="-4.49 1.35"/>
           <geom class="visual" mesh="link_torso_v"/>

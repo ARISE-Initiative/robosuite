@@ -77,6 +77,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             attrib="armature", values=np.array([5.0 / (i + 1) for i in range(self.dof)]), force=False
         )
 
+
     def set_base_xpos(self, pos):
         """
         Places the robot on position @pos.
@@ -357,3 +358,13 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             dict: (Default is no sensors; i.e.: empty dict)
         """
         return {}
+    
+    @property
+    def base_actuators(self):
+        """
+        Returns:
+            dict: (Default is no actuators; i.e.: empty dict)
+        """
+        return []
+    
+    

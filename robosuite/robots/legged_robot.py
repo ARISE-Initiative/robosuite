@@ -1,14 +1,14 @@
 import os
 import numpy as np
 
-from robosuite.robots.mobile_robot import MobileRobot
+from robosuite.robots.mobile_base_robot import MobileBaseRobot
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import controller_factory, load_controller_config
 from robosuite.utils.observables import Observable, sensor
 
 
 
-class LeggedRobot(MobileRobot):
+class LeggedRobot(MobileBaseRobot):
     """
     Initializes a robot with a legged base.
     """

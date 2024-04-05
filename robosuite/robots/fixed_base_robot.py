@@ -71,6 +71,10 @@ class FixedBaseRobot(Robot):
             self.controller_config[arm]["robot_name"] = self.name
             self.controller_config[arm]["sim"] = self.sim
             self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+
+            self.controller_config[arm]["part_name"] = arm
+            self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
+
             self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
             self.controller_config[arm]["ndim"] = self._joint_split_idx
             self.controller_config[arm]["policy_freq"] = self.control_freq
@@ -164,7 +168,7 @@ class FixedBaseRobot(Robot):
         for arm in self.arms:
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
-            self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
+            self.controller[arm].update_base_pose()
 
         self.torques = np.array([])
         # Now execute actions for each arm

@@ -146,6 +146,7 @@
             <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
             <!-- mount attached here -->
             <body name="link0" pos="0 0 0">
+			    <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
                 <inertial pos="0 0 0.05" mass="4" diaginertia="0.4 0.4 0.4" />
 		<geom mesh="link0_vis_0" material="Shell010_001" type="mesh" contype="0" conaffinity="0" group="1"/>
 		<geom mesh="link0_vis_1" material="Shell009_001" type="mesh" contype="0" conaffinity="0" group="1"/>

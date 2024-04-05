@@ -1,5 +1,5 @@
 from .fixed_base_robot import FixedBaseRobot
-from .mobile_robot import MobileRobot
+from .mobile_base_robot import MobileBaseRobot
 from .wheeled_robot import WheeledRobot
 from .legged_robot import LeggedRobot
 
@@ -18,6 +18,6 @@ ROBOT_CLASS_MAPPING = {
     "Sawyer": FixedBaseRobot,
     "UR5e": FixedBaseRobot,
     "GoogleRobot": WheeledRobot,
-    "VX300S": FixedRobot,
+    "VX300S": FixedBaseRobot,
     "VX300SMobile": WheeledRobot,
 }

@@ -212,7 +212,7 @@ class Robot(object):
                 self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
 
             # Update base pos / ori references in controller (technically only needs to be called once)
-            self.controller[arm].update_base_pose(self.base_pos, self.base_ori)
+            self.controller[arm].update_base_pose()
             # Setup buffers for eef values
             self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
             self.recent_ee_pose[arm] = DeltaBuffer(dim=7)

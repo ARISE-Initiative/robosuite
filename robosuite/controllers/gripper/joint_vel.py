@@ -10,10 +10,10 @@ class GripperJointVelcityController(GripperController):
         gripper,
         joint_indexes,
         actuator_range,
-        # input_max=1,
-        # input_min=-1,
-        # output_max=0.05,
-        # output_min=-0.05,
+        input_max=1,
+        input_min=-1,
+        output_max=1,
+        output_min=-1,
         policy_freq=20,
         torque_limits=None,
         interpolator=None,
@@ -32,10 +32,10 @@ class GripperJointVelcityController(GripperController):
         # self.control_dim = len(joint_indexes["joints"])
 
         # input and output max and min (allow for either explicit lists or single numbers)
-        # self.input_max = self.nums2array(input_max, self.control_dim)
-        # self.input_min = self.nums2array(input_min, self.control_dim)
-        # self.output_max = self.nums2array(output_max, self.control_dim)
-        # self.output_min = self.nums2array(output_min, self.control_dim)
+        self.input_max = self.nums2array(input_max, self.control_dim)
+        self.input_min = self.nums2array(input_min, self.control_dim)
+        self.output_max = self.nums2array(output_max, self.control_dim)
+        self.output_min = self.nums2array(output_min, self.control_dim)
 
         # limits (if not specified, set them to actuator limits by default)
         self.torque_limits = np.array(torque_limits) if torque_limits is not None else self.actuator_limits

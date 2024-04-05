@@ -137,6 +137,7 @@
           </body>
         </body>
         <body name="right_arm_mount" pos="0.024645 -0.219645 0.118588" quat="0.923879 0 0 -0.382684">
+          <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
           <inertial pos="0 0 0" mass="0.0001" diaginertia="1e-008 1e-008 1e-008" />
           <body name="right_upper_shoulder" pos="0.055695 0 0.011038">
             <inertial pos="0.01783 0.00086 0.19127" quat="0.975667 0.0673303 -0.206117 0.0325173" mass="5.70044" diaginertia="0.0498344 0.0377511 0.0331351" />
@@ -204,6 +205,7 @@
           </body>
         </body>
         <body name="left_arm_mount" pos="0.024645 0.219645 0.118588" quat="0.923879 0 0 0.382684">
+          <site name="left_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
           <inertial pos="0 0 0" mass="0.0001" diaginertia="1e-008 1e-008 1e-008" />
           <body name="left_upper_shoulder" pos="0.055695 0 0.011038">
             <inertial pos="0.01783 0.00086 0.19127" quat="0.975667 0.0673303 -0.206117 0.0325173" mass="5.70044" diaginertia="0.0498344 0.0377511 0.0331351" />
