@@ -136,10 +136,11 @@ class OperationalSpaceController(Controller):
             eef_name,
             joint_indexes,
             actuator_range,
+            part_name=kwargs.get("part_name", None),
+            naming_prefix=kwargs.get("naming_prefix", None),
         )
         # Determine whether this is pos ori or just pos
         self.use_ori = control_ori
-
         # Determine whether we want to use delta or absolute values as inputs
         self.use_delta = control_delta
 

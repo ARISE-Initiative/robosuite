@@ -115,3 +115,8 @@ class MobileBaseRobot(Robot):
     @property
     def head(self):
         return "head"
+
+
+    @property
+    def legs(self):
+        return "legs"

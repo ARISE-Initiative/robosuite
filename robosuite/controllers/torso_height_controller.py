@@ -7,11 +7,15 @@ class TorsoHeightController:
     def __init__(
         self,
         sim,
-        base_name,
+        joint_indexes,
+        **kwargs
     ):
         self.sim = sim
-        self.base_name = base_name
-        self.control_dim = 1
+
+        self.joint_index = joint_indexes["joints"]
+        self.qpos_index = joint_indexes["qpos"]
+        self.qvel_index = joint_indexes["qvel"]
+        self.control_dim = len(self.joint_index)
 
     def reset(self):
         self._target_height = None
@@ -27,9 +31,11 @@ class TorsoHeightController:
             self.height_action_actual = height_action
 
     def run_controller(self):
-        joint_name = f"{self.base_name}joint_z"
-        if self._target_height is None or self._controlling_height:
-            self._target_height = self.sim.data.get_joint_qpos(joint_name)
+        # joint_name = f"{self.base_name}joint_torso_height"
+        joint_name = self.sim.model.joint_id2name(self.joint_index[0])
+        # if self._target_height is None or self._controlling_height:
+        #     self._target_height = self.sim.data.get_joint_qpos(joint_name)
+        #     self._target_height = 
         current_height = self.sim.data.get_joint_qpos(joint_name)
         if not self._controlling_height:
             z_error = self._target_height - current_height

@@ -1,3 +1,4 @@
+import os
 import copy
 from collections import OrderedDict
 
@@ -5,6 +6,7 @@ import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
+from robosuite.controllers import controller_factory, load_controller_config
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -114,6 +116,11 @@ class Robot(object):
         self.recent_actions = None  # Current and last action applied
         self.recent_torques = None  # Current and last torques applied
 
+        self._ref_actuators_indexes_dict = {}
+        self._ref_joints_indexes_dict = {}
+
+        self._enabled_parts = {}
+
     def _load_controller(self):
         """
         Loads controller to be used for dynamic trajectories.
@@ -132,6 +139,8 @@ class Robot(object):
         else:
             self.robot_model.add_base(base=base_factory(self.mount_type, idn=self.idn))
 
+        self.robot_model.update_joints()
+        self.robot_model.update_actuators()
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:
             self.init_qpos = self.robot_model.init_qpos
@@ -227,15 +236,20 @@ class Robot(object):
         # indices for joints in qpos, qvel
         self.robot_joints = self.robot_model.joints
         self._ref_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_joints]
-        self._ref_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_joints]
+        self._ref_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_joints] 
 
         # indices for joint indexes
-        self._ref_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_model.joints]
+        self._ref_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_joints]
 
         # indices for joint pos actuation, joint vel actuation, gripper actuation
         self._ref_joint_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.actuators
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.arm_actuators
         ]
+
+        self.robot_arm_joints = self.robot_model.arm_joints
+        self._ref_arm_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_arm_joints]
+        self._ref_arm_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_arm_joints]
+        self._ref_arm_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_arm_joints]
 
     def setup_observables(self):
         """
@@ -454,6 +468,14 @@ class Robot(object):
             list: mujoco internal indexes for the robot joints
         """
         return self._ref_joint_indexes
+    
+    @property
+    def arm_joint_indexes(self):
+        """
+        Returns:
+            list: mujoco internal indexes for the robot arm joints
+        """
+        return self._ref_arm_joint_indexes
 
     def get_sensor_measurement(self, sensor_name):
         """
@@ -655,3 +677,60 @@ class Robot(object):
         for arm in self.arms:
             vels[arm] = vels[arm][3:]
         return vels
+    
+    def _load_arm_controllers(self):
+        urdf_loaded = False
+
+        # Load controller configs for both left and right arm
+        for arm in self.arms:
+            # First, load the default controller if none is specified
+            if not self.controller_config[arm]:
+                # Need to update default for a single agent
+                controller_path = os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
+                )
+                self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
+
+            # Assert that the controller config is a dict file:
+            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
+            assert (
+                type(self.controller_config[arm]) == dict
+            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
+                type(self.controller_config[arm])
+            )
+
+            # Add to the controller dict additional relevant params:
+            #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
+            #   policy (control) freq, and ndim (# joints)
+            self.controller_config[arm]["robot_name"] = self.name
+            self.controller_config[arm]["sim"] = self.sim
+            self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+            self.controller_config[arm]["part_name"] = arm
+            self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
+
+            self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
+            self.controller_config[arm]["ndim"] = self._joint_split_idx
+            self.controller_config[arm]["policy_freq"] = self.control_freq
+            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+            self.controller_config[arm]["joint_indexes"] = {
+                "joints": self.arm_joint_indexes[start:end],
+                "qpos": self._ref_arm_joint_pos_indexes[start:end],
+                "qvel": self._ref_arm_joint_vel_indexes[start:end],
+            }
+            self.controller_config[arm]["actuator_range"] = (
+                self.torque_limits[0][start:end],
+                self.torque_limits[1][start:end],
+            )
+
+            # Only load urdf the first time this controller gets called
+            self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
+            urdf_loaded = True
+
+            # Instantiate the relevant controller
+            self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
+
+    def enable_parts(self, right_arm=True, left_arm=True):
+        self._enabled_parts = {"right": right_arm, "left": left_arm}

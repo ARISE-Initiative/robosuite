@@ -77,6 +77,8 @@ class JointTorqueController(Controller):
             eef_name,
             joint_indexes,
             actuator_range,
+            part_name=kwargs.get("part_name", None),
+            naming_prefix=kwargs.get("naming_prefix", None),
         )
 
         # Control dimension

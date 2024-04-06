@@ -26,19 +26,3 @@ class OmronMobileBase(MobileBaseModel):
     def horizontal_radius(self):
         # TODO: This may be inaccurate; just a placeholder for now
         return 0.25
-
-    @property
-    def actuators(self):
-        pf = self.naming_prefix
-        return [
-            f"{pf}actuator_x",
-            f"{pf}actuator_y",
-            f"{pf}actuator_rot",
-        ]
-
-    @property
-    def torso_actuators(self):
-        pf = self.naming_prefix
-        return [
-            f"{pf}actuator_z",
-        ]

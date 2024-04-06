@@ -30,7 +30,7 @@ class GoogleRobot(ManipulatorModel):
 
     @property
     def default_controller_config(self):
-        return {"right", "default_panda"}
+        return {"right", "default_google"}
 
     @property
     def init_qpos(self):

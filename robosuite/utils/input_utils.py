@@ -255,8 +255,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
             base_ac = np.zeros(4)
             mode_ac = np.array([-1])
         gripper_ac = np.array([grasp] * gripper_dof)
-
         action = np.concatenate((arm_ac, gripper_ac, base_ac, mode_ac))
+        return action, {"grasp": grasp, "mode": base_mode}
     else:
         # Create action based on action space of individual robot
         if controller.name == "OSC_POSITION":
@@ -264,5 +264,5 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         else:
             action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
-    # Return the action and grasp
-    return action, grasp
+        # Return the action and grasp
+        return action, grasp

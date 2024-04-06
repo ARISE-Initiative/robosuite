@@ -56,7 +56,8 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         # If action is none, then this a reset so we should break
         if action is None:
             break
-        action = np.concatenate([action, action])
+        # action = np.concatenate([action[:-5], action])
+        # action = np.concatenate([action[:7], action[:7], [0.] * 2, [0]*1, action[-4:]])
         # Run environment step
         env.step(action)
         env.render()

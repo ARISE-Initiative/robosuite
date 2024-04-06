@@ -180,6 +180,8 @@
                             <!-- Right arm of the robot -->
                             <body name="right_arm_mount" pos="0 0 0.597">
                                 <!-- Right arm link 1 -->
+                                <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+
                                 <body name="arm_right_1_link" pos="0.02556 -0.19 -0.171" euler="0 0 -1.57079632679">
                                     <joint name="arm_right_1_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-1.1780972451 1.57079632679"/>
 
@@ -249,6 +251,8 @@
 
                             <!-- left arm of the robot -->
                             <body name="left_arm_mount" pos="0 0 0.597">
+                                <site name="left_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+
                                 <!-- left arm link 1 -->
                                 <body name="arm_left_1_link" pos="0.02556 0.19 -0.171" quat="0 0.7071067811882787 0.7071067811848163 0">
                                     <joint name="arm_left_1_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-1.1780972451 1.57079632679"/>
@@ -342,6 +346,6 @@
     <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_6_joint" name="torq_left_j6"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_1_joint" name="torq_head_pitch"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_2_joint" name="torq_head_yaw"/>
-    <motor ctrllimited="true" ctrlrange="-1000 1000" joint="torso_lift_joint" name="torq_lift"/>
+    <motor ctrllimited="true" ctrlrange="-1000 1000" joint="torso_lift_joint" name="torq_torso_lift"/>
     </actuator>
 </mujoco>

@@ -26,15 +26,15 @@ class NullMobileBase(MobileBaseModel):
     def horizontal_radius(self):
         return 0
 
-    @property
-    def actuators(self):
-        pf = self.naming_prefix
-        return [
-            f"{pf}actuator_x",
-            f"{pf}actuator_y",
-            f"{pf}actuator_rot",
-        ]
+    # @property
+    # def actuators(self):
+    #     pf = self.naming_prefix
+    #     return [
+    #         f"{pf}actuator_x",
+    #         f"{pf}actuator_y",
+    #         f"{pf}actuator_rot",
+    #     ]
 
-    @property
-    def torso_actuators(self):
-        return []
+    # @property
+    # def torso_actuators(self):
+    #     return []
