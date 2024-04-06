@@ -42,59 +42,59 @@ class FixedBaseRobot(Robot):
         Loads controller to be used for dynamic trajectories
         """
         # Flag for loading urdf once (only applicable for IK controllers)
-        urdf_loaded = False
+        self._load_arm_controllers()
+        # urdf_loaded = False
 
-        # Load controller configs for both left and right arm
-        for arm in self.arms:
-            # First, load the default controller if none is specified
-            if not self.controller_config[arm]:
-                # Need to update default for a single agent
-                controller_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
-                )
-                self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
+        # # Load controller configs for both left and right arm
+        # for arm in self.arms:
+        #     # First, load the default controller if none is specified
+        #     if not self.controller_config[arm]:
+        #         # Need to update default for a single agent
+        #         controller_path = os.path.join(
+        #             os.path.dirname(__file__),
+        #             "..",
+        #             "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
+        #         )
+        #         self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
 
-            # Assert that the controller config is a dict file:
-            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
-            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
-            assert (
-                type(self.controller_config[arm]) == dict
-            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-                type(self.controller_config[arm])
-            )
+        #     # Assert that the controller config is a dict file:
+        #     #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+        #     #                                           OSC_POSITION, OSC_POSE, IK_POSE}
+        #     assert (
+        #         type(self.controller_config[arm]) == dict
+        #     ), "Inputted controller config must be a dict! Instead, got type: {}".format(
+        #         type(self.controller_config[arm])
+        #     )
 
-            # Add to the controller dict additional relevant params:
-            #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
-            #   policy (control) freq, and ndim (# joints)
-            self.controller_config[arm]["robot_name"] = self.name
-            self.controller_config[arm]["sim"] = self.sim
-            self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+        #     # Add to the controller dict additional relevant params:
+        #     #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
+        #     #   policy (control) freq, and ndim (# joints)
+        #     self.controller_config[arm]["robot_name"] = self.name
+        #     self.controller_config[arm]["sim"] = self.sim
+        #     self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+        #     self.controller_config[arm]["part_name"] = arm
+        #     self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
 
-            self.controller_config[arm]["part_name"] = arm
-            self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
+        #     self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
+        #     self.controller_config[arm]["ndim"] = self._joint_split_idx
+        #     self.controller_config[arm]["policy_freq"] = self.control_freq
+        #     (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+        #     self.controller_config[arm]["joint_indexes"] = {
+        #         "joints": self.joint_indexes[start:end],
+        #         "qpos": self._ref_joint_pos_indexes[start:end],
+        #         "qvel": self._ref_joint_vel_indexes[start:end],
+        #     }
+        #     self.controller_config[arm]["actuator_range"] = (
+        #         self.torque_limits[0][start:end],
+        #         self.torque_limits[1][start:end],
+        #     )
 
-            self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
-            self.controller_config[arm]["ndim"] = self._joint_split_idx
-            self.controller_config[arm]["policy_freq"] = self.control_freq
-            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-            self.controller_config[arm]["joint_indexes"] = {
-                "joints": self.joint_indexes[start:end],
-                "qpos": self._ref_joint_pos_indexes[start:end],
-                "qvel": self._ref_joint_vel_indexes[start:end],
-            }
-            self.controller_config[arm]["actuator_range"] = (
-                self.torque_limits[0][start:end],
-                self.torque_limits[1][start:end],
-            )
+        #     # Only load urdf the first time this controller gets called
+        #     self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
+        #     urdf_loaded = True
 
-            # Only load urdf the first time this controller gets called
-            self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
-            urdf_loaded = True
-
-            # Instantiate the relevant controller
-            self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
+        #     # Instantiate the relevant controller
+        #     self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
 
     def load_model(self):
         """
@@ -166,7 +166,7 @@ class FixedBaseRobot(Robot):
         )
 
         for arm in self.arms:
-            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+            # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
             self.controller[arm].update_base_pose()
 

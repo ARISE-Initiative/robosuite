@@ -39,63 +39,82 @@ class WheeledRobot(MobileBaseRobot):
             control_freq=control_freq,
         )
 
+    def _load_torso_controller(self):
+        """
+        Load torso controller
+        """
+        # if not self.controller_config[self.torso]:
+        #         # Need to update default for a single agent
+        #         controller_path = os.path.join(
+        #             os.path.dirname(__file__),
+        #             "..",
+        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
+        #         )
+        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
+        # TODO: Add a default controller config for torso
+        self.controller_config[self.torso] = {}
+        self.controller_config[self.torso]["type"] = "JOINT_POSITION"
+        self.controller_config[self.torso]["interpolation"] = "linear"
+        self.controller_config[self.torso]["ramp_ratio"] = 1.0
+        self.controller_config[self.torso]["robot_name"] = self.name
+        self.controller_config[self.torso]["sim"] = self.sim
+        self.controller_config[self.torso]["part_name"] = self.torso
+        self.controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
+        self.controller_config[self.torso]["ndim"] = self._joint_split_idx
+        self.controller_config[self.torso]["policy_freq"] = self.control_freq
+
+        ref_torso_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.torso_joints]
+        ref_torso_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.torso_joints]
+        ref_torso_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.torso_joints]
+        self.controller_config[self.torso]["joint_indexes"] = {
+            "joints": ref_torso_joint_indexes,
+            "qpos": ref_torso_joint_pos_indexes,
+            "qvel": ref_torso_joint_vel_indexes,
+        }
+
+        self.controller_config[self.torso]["actuator_range"] = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso][0]]
+        import pdb; pdb.set_trace()
+
+        # self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
+        self.controller[self.torso] = controller_factory(self.controller_config[self.torso]["type"], self.controller_config[self.torso])
+        # self.controller_config[self.torso]["actuator_range"] = (
+            
+        # )
+
     def _load_controller(self):
         """
         Loads controller to be used for dynamic trajectories
         """
         # Flag for loading urdf once (only applicable for IK controllers)
-        urdf_loaded = False
 
-        # Load controller configs for both left and right arm
-        for arm in self.arms:
-            # First, load the default controller if none is specified
-            if not self.controller_config[arm]:
-                # Need to update default for a single agent
-                controller_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
-                )
-                self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
-
-            # Assert that the controller config is a dict file:
-            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
-            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
-            assert (
-                type(self.controller_config[arm]) == dict
-            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-                type(self.controller_config[arm])
-            )
-
-            # Add to the controller dict additional relevant params:
-            #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
-            #   policy (control) freq, and ndim (# joints)
-            self.controller_config[arm]["robot_name"] = self.name
-            self.controller_config[arm]["sim"] = self.sim
-            self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
-            self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
-            self.controller_config[arm]["ndim"] = self._joint_split_idx
-            self.controller_config[arm]["policy_freq"] = self.control_freq
-            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-            self.controller_config[arm]["joint_indexes"] = {
-                "joints": self.joint_indexes[start:end],
-                "qpos": self._ref_joint_pos_indexes[start:end],
-                "qvel": self._ref_joint_vel_indexes[start:end],
-            }
-            self.controller_config[arm]["actuator_range"] = (
-                self.torque_limits[0][start:end],
-                self.torque_limits[1][start:end],
-            )
-
-            # Only load urdf the first time this controller gets called
-            self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
-            urdf_loaded = True
-
-            # Instantiate the relevant controller
-            self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
+        self._load_arm_controllers()
 
         self.controller[self.base] = MobileBaseController(self.sim, self.robot_model.base.naming_prefix)
-        self.controller[self.torso] = TorsoHeightController(self.sim, self.robot_model.base.naming_prefix)
+
+        self._load_torso_controller()
+
+        # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
+
+        # Set up split indices for arm actions
+        self._action_split_indexes = OrderedDict()
+        previous_idx = None
+        last_idx = 0
+        for arm in self.arms:
+            last_idx += self.controller[arm].control_dim
+            last_idx += self.gripper[arm].dof if self.has_gripper[arm] else 0
+            self._action_split_indexes[arm] = (previous_idx, last_idx)
+            previous_idx = last_idx
+
+        previous_idx = self._action_split_indexes[self.arms[-1]][1]
+        last_idx = previous_idx
+        for part_name in [self.base, self.head, self.torso]:
+            if part_name == self.head:
+                last_idx += 2
+            else:
+                last_idx += self.controller[part_name].control_dim
+            self._action_split_indexes[part_name] = (previous_idx, last_idx)
+            previous_idx = last_idx
+
 
     def load_model(self):
         """
@@ -114,6 +133,12 @@ class WheeledRobot(MobileBaseRobot):
         """
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
+        
+        for part_name in [self.base, self.head, self.torso]:
+            if part_name == self.head:
+                continue
+            self.controller[part_name].reset()
+
         self.controller[self.base].reset()
         self.controller[self.torso].reset()
 
@@ -145,15 +170,39 @@ class WheeledRobot(MobileBaseRobot):
             self.eef_site_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_site"])
             self.eef_cylinder_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_cylinder"])
 
-        # set up references for mobile base
-        self._ref_base_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.actuators
-        ]
-        # import pdb; pdb.set_trace()
+        # # set up references for mobile base
+        # self._ref_base_actuator_indexes = [
+        #     self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.actuators
+        # ]
 
-        # set up references for torso
-        self._ref_torso_actuator_indexes = [
-            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.torso_actuators
+        # # set up references for torso
+        # self._ref_torso_actuator_indexes = [
+        #     self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.torso_actuators
+        # ]
+
+
+        self._ref_actuators_indexes_dict[self.base] = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base_actuators
+        ]
+
+        self._ref_actuators_indexes_dict[self.torso] = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.torso_actuators
+        ]
+
+        self._ref_actuators_indexes_dict[self.head] = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.head_actuators
+        ]
+
+        self._ref_joints_indexes_dict[self.base] = [
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.base_joints
+        ]
+
+        self._ref_joints_indexes_dict[self.torso] = [
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.torso_joints
+        ]
+        
+        self._ref_joints_indexes_dict[self.head] = [
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.head_joints
         ]
 
     def control(self, action, policy_step=False):
@@ -183,7 +232,7 @@ class WheeledRobot(MobileBaseRobot):
 
         self.base_pos, self.base_ori = self.controller[self.base].get_base_pose()
         for arm in self.arms:
-            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+            # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
             # TODO: This line should be removed for arms, and change it to internal computation of base. 
             self.controller[arm].update_base_pose()
@@ -191,24 +240,30 @@ class WheeledRobot(MobileBaseRobot):
         if mode == "base":
             mobile_base_dims = self.controller[self.base].control_dim
             torso_dims = self.controller[self.torso].control_dim
-            base_action = np.copy(action[-mobile_base_dims - torso_dims - 1 : -torso_dims - 1])
-            torso_action = np.copy(action[-torso_dims - 1 : -1])
+
+            (base_start, base_end) = self._action_split_indexes[self.base]
+            (torso_start, torso_end) = self._action_split_indexes[self.torso]
+            base_action = action[base_start:base_end]
+            torso_action = action[torso_start:torso_end]
+            # base_action = np.copy(action[-mobile_base_dims - torso_dims - 1 : -torso_dims - 1])
+            # torso_action = np.copy(action[-torso_dims - 1 : -1])
             if policy_step:
                 self.controller[self.base].set_goal(base_action)
                 self.controller[self.torso].set_goal(torso_action)
 
             mobile_base_torques = self.controller[self.base].run_controller()
-            self.sim.data.ctrl[self._ref_base_actuator_indexes] = mobile_base_torques
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.base]] = mobile_base_torques
 
-        # Apply torques for height control (if applicable)
-        if len(self._ref_torso_actuator_indexes) > 0:
-            self.sim.data.ctrl[self._ref_torso_actuator_indexes] = self.controller[self.torso].run_controller()
+            # Apply torques for height control (if applicable)
+            if len(self._ref_actuators_indexes_dict[self.torso]) > 0:
+                self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.torso]] = self.controller[self.torso].run_controller()
 
         self.torques = np.array([])
         # Now execute actions for each arm
         for arm in self.arms:
             # Make sure to split action space correctly
-            (start, end) = (None, self._action_split_idx) if arm == "right" else (self._action_split_idx, None)
+            # (start, end) = (None, self._action_split_idx) if arm == "right" else (self._action_split_idx, None)
+            (start, end) = self._action_split_indexes[arm]
             sub_action = action[start:end]
 
             gripper_action = None
@@ -227,8 +282,7 @@ class WheeledRobot(MobileBaseRobot):
             # Get gripper action, if applicable
             if self.has_gripper[arm]:
                 self.grip_action(gripper=self.gripper[arm], gripper_action=gripper_action)
-
-        # Clip the torques
+        # Clip the torques'
         low, high = self.torque_limits
         self.torques = np.clip(self.torques, low, high)
 
@@ -345,15 +399,18 @@ class WheeledRobot(MobileBaseRobot):
             low_c, high_c = self.controller[arm].control_limits
             low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
 
-        mobile_base_dims = self.controller[self.base].control_dim
-        torso_dims = self.controller[self.torso].control_dim
+        mobile_base_dims = self.controller[self.base].control_dim if self.base in self.controller else 0
+        torso_dims = self.controller[self.torso].control_dim if self.torso in self.controller else 0
+        head_dims = 0 # self.controller[self.head].control_dim if self.head in self.controller else 0
         low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
         low_t, high_t = ([-1] * torso_dims, [1] * torso_dims)  # base control dims
+        low_h, high_h = ([-1] * head_dims, [1] * head_dims)  # base control dims
 
         # TODO: This mode thing should be removed and put into the controller manager
         low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
-        low = np.concatenate([low, low_b, low_t, low_m])
-        high = np.concatenate([high, high_b, high_t, high_m])
+
+        low = np.concatenate([low, low_b, low_t, low_h, low_m])
+        high = np.concatenate([high, high_b, high_t, high_h, high_m])
         return low, high
 
     @property
@@ -379,4 +436,4 @@ class WheeledRobot(MobileBaseRobot):
         Returns:
             int: the index that correctly splits the right arm from the left arm joints
         """
-        return int(len(self.robot_joints) / len(self.arms))
+        return int(len(self.robot_arm_joints) / len(self.arms))

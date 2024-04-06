@@ -32,7 +32,7 @@ class MobileBaseModel(MujocoXMLModel):
 
     @property
     def naming_prefix(self):
-        return "mobile_base{}_".format(self.idn)
+        return "base{}_".format(self.idn)
 
     @property
     def _important_sites(self):
@@ -65,10 +65,6 @@ class MobileBaseModel(MujocoXMLModel):
     # -------------------------------------------------------------------------------------- #
     # All subclasses must implement the following properties                                 #
     # -------------------------------------------------------------------------------------- #
-
-    @property
-    def actuators(self):
-        raise NotImplementedError
 
     @property
     def height_actuator(self):

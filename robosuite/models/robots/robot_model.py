@@ -182,7 +182,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
 
         mount_support = find_elements(
-            root=self.worldbody, tags="body", attribs={"name": "mobile_base0_support"}, return_first=True
+            root=self.worldbody, tags="body", attribs={"name": mobile_base.correct_naming("support")}, return_first=True
         )
         mount_support.append(deepcopy(arm_root))
         root.remove(arm_root)
@@ -360,11 +360,25 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return {}
     
     @property
-    def base_actuators(self):
+    def all_joints(self):
         """
         Returns:
-            dict: (Default is no actuators; i.e.: empty dict)
+            list: (Default is no joints; i.e.: empty dict)
         """
-        return []
+        all_joints = []
+        all_joints += self.joints
+        if self.base is not None:
+            all_joints += self.base.joints
+        return all_joints
     
-    
+    @property
+    def all_actuators(self):
+        """
+        Returns:
+            list: (Default is no actuators; i.e.: empty dict)
+        """
+        all_actuators = []
+        all_actuators += self.actuators
+        if self.base is not None:
+            all_actuators += self.base.actuators
+        return all_actuators

@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.models.robots import RobotModel
-from robosuite.utils.mjcf_utils import find_elements, string_to_array
+from robosuite.utils.mjcf_utils import find_elements, find_elements_by_substring, string_to_array
 
 
 class ManipulatorModel(RobotModel):
@@ -44,6 +44,22 @@ class ManipulatorModel(RobotModel):
         # Get camera names for this robot
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
+        self._base_actuators = []
+        self._torso_actuators = []
+        self._head_actuators = []
+        self._legs_actuators = []
+
+        self._arms_actuators = []
+        # specify arm actuators by excluding overallpy actuators from previous ones
+
+        self._base_joints = []
+        self._torso_joints = []
+        self._head_joints = []
+        self._legs_joints = []
+
+        self._arms_joints = []
+
+
     def add_gripper(self, gripper, arm_name=None):
         """
         Mounts @gripper to arm.
@@ -69,6 +85,35 @@ class ManipulatorModel(RobotModel):
         # Update cameras in this model
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
+    def update_joints(self):
+        for joint in self.all_joints:
+            if "mobile" in joint:
+                self.base_joints.append(joint)
+            elif "torso" in joint:
+                self.torso_joints.append(joint)
+            elif "head" in joint:
+                self.head_joints.append(joint)
+            elif "leg" in joint:
+                self.legs_joints.append(joint)
+
+        for joint in self.all_joints:
+            if joint not in self._base_joints and joint not in self._torso_joints and joint not in self._head_joints and joint not in self._legs_joints:
+                self._arms_joints.append(joint)
+
+    def update_actuators(self):
+        for actuator in self.all_actuators:
+            if "mobile" in actuator:
+                self.base_actuators.append(actuator)
+            elif "torso" in actuator:
+                self.torso_actuators.append(actuator)
+            elif "head" in actuator:
+                self.head_actuators.append(actuator)
+            elif "leg" in actuator:
+                self.legs_actuators.append(actuator)
+
+        for actuator in self.all_actuators:
+            if actuator not in self._base_actuators and actuator not in self._torso_actuators and actuator not in self._head_actuators and actuator not in self._legs_actuators:
+                self._arms_actuators.append(actuator)
     # -------------------------------------------------------------------------------------- #
     # Public Properties: In general, these are the name-adjusted versions from the private   #
     #                    attributes pulled from their respective raw xml files               #
@@ -179,3 +224,104 @@ class ManipulatorModel(RobotModel):
     @property
     def init_qpos(self):
         raise NotImplementedError
+
+
+    @property
+    def arm_actuators(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no actuators; i.e.: empty dict)
+        """
+        return self._arms_actuators
+
+    @property
+    def base_actuators(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no actuators; i.e.: empty dict)
+        """
+        return self._base_actuators
+    
+    @property
+    def torso_actuators(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no actuators; i.e.: empty dict)
+        """
+        return self._torso_actuators
+    
+    @property
+    def head_actuators(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no actuators; i.e.: empty dict)
+        """
+        return self._head_actuators
+    
+    @property
+    def legs_actuators(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no actuators; i.e.: empty dict)
+        """
+        return self._legs_actuators
+
+    @property
+    def arm_joints(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no joints; i.e.: empty dict)
+        """
+        return self._arms_joints
+    
+    @property
+    def base_joints(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no joints; i.e.: empty dict)
+        """
+        return self._base_joints
+    
+    @property
+    def torso_joints(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no joints; i.e.: empty dict)
+        """
+        return self._torso_joints
+    
+    @property
+    def head_joints(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no joints; i.e.: empty dict)
+        """
+        return self._head_joints
+    
+    @property
+    def legs_joints(self):
+        """
+        No need for name correcting because the prefix has been added during creation.
+
+        Returns:
+            list: (Default is no joints; i.e.: empty dict)
+        """
+        return self._legs_joints
