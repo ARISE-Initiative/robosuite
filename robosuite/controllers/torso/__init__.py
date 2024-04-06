@@ -1,3 +1,3 @@
-from .joint_pos import JointPositionController
-# from .joint_vel import JointVelocityController
+from .joint_pos import TorsoJointPositionController
+from .joint_vel import TorsoJointVelocityController
 # from .joint_tor import JointTorqueController

@@ -113,6 +113,7 @@
         <geom name="collision_head_link_2_col1" margin="0.001" type="sphere" size="0.22" rgba="0.8 0.3 0.3 0.3" pos="-0.07 0.04 0" />
       </body>
       <body name="torso" pos="0 0 0">
+          <site name="center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
         <inertial pos="0 0 0" quat="0.997433 0.00167178 0.0715546 -0.00209003" mass="35.3365" diaginertia="1.87139 1.66268 0.779991" />
 	<geom mesh="base_link_0" material="Material_005" class="visual"/>
 	<geom mesh="base_link_1" material="Material_007" class="visual"/>

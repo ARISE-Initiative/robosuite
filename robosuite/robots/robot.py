@@ -736,12 +736,14 @@ class Robot(object):
     def enable_parts(self, 
                      right_arm=True, 
                      left_arm=True):
+        # TBC
         self._enabled_parts = {
             "right": right_arm,
             "left": left_arm
         }
 
     def enabled(self, part_name):
+        # TBC
         return self._enabled_parts[part_name]
 
 

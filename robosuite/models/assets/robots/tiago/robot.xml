@@ -138,6 +138,7 @@
                 <!-- End of wheeled base of the robot -->
                 <!-- Torso of the robot -->
                 <body name="torso">
+                     <site name="center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
                     <body name="torso_fixed_link" pos="-0.062 0.0 0.193">
                         <inertial pos="0.02435 -0.00464 0.15900" mass="14.01360" diaginertia="0.4 0.4 0.4"/>
                         <geom type="mesh" material="LightGrey" contype="0" conaffinity="0" group="1" mesh="torso_fix"/>

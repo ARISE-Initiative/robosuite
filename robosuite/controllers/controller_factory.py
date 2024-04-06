@@ -14,6 +14,7 @@ from .interpolators.linear_interpolator import LinearInterpolator
 # from .osc import OperationalSpaceController
 from . import arm as arm_controllers
 from . import torso as torso_controllers
+from . import base as base_controllers
 
 # Global var for linking pybullet server to multiple ik controller instances if necessary
 pybullet_server = None
@@ -171,13 +172,27 @@ def arm_controller_factory(name, params):
 
 
 def controller_factory(name, params):
-    if params["part_name"] in ["left", "right"]:
+    if params["part_name"] in ["right", "left"]:
         return arm_controller_factory(name, params)
+    elif params["part_name"] == "base":
+        return base_controller_factory(name, params)
     elif params["part_name"] == "torso":
         return torso_controller_factory(name, params)
 
 def base_controller_factory(name, params):
-    raise NotImplementedError
+    interpolator = None
+    # if params["interpolation"] == "linear":
+    #     interpolator = LinearInterpolator(
+    #         ndim=params["ndim"],
+    #         controller_freq=(1 / params["sim"].model.opt.timestep),
+    #         policy_freq=params["policy_freq"],
+    #         ramp_ratio=params["ramp_ratio"],
+    #     )
+
+    if name == "JOINT_VELOCITY":
+        return base_controllers.BaseJointVelocityController(interpolator=interpolator, **params)
+    raise ValueError("Unknown controller name: {}".format(name))
+
 
 def torso_controller_factory(name, params):
     interpolator = None
@@ -189,15 +204,10 @@ def torso_controller_factory(name, params):
             ramp_ratio=params["ramp_ratio"],
         )
 
-    # if name == "JOINT_VELOCITY":
-    #     return torso_controllers.JointVelocityController(interpolator=interpolator, **params)
-
-    if name == "JOINT_POSITION":
-        return torso_controllers.JointPositionController(interpolator=interpolator, **params)
-
-    # if name == "JOINT_TORQUE":
-    #     return torso_controllers.JointTorqueController(interpolator=interpolator, **params)
-
+    if name == "JOINT_VELOCITY":
+        return torso_controllers.TorsoJointVelocityController(interpolator=interpolator, **params)
+    # if name == "JOINT_POSITION":
+    #     return torso_controllers.JointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 def head_controller_factory(name, params):

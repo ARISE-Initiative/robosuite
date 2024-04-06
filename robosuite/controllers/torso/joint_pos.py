@@ -1,13 +1,13 @@
 import numpy as np
 
-from robosuite.controllers.torso.torso_base_controller import TorsoBaseController
+from robosuite.controllers.torso.torso_controller import TorsoController
 from robosuite.utils.control_utils import *
 
 # Supported impedance modes
 IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
 
 
-class JointPositionController(TorsoBaseController):
+class TorsoJointPositionController(TorsoController):
     """
     Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
 
@@ -86,6 +86,7 @@ class JointPositionController(TorsoBaseController):
     def __init__(
         self,
         sim,
+        eef_name,
         joint_indexes,
         actuator_range,
         input_max=1,
@@ -102,8 +103,10 @@ class JointPositionController(TorsoBaseController):
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
+
         super().__init__(
             sim,
+            eef_name,
             joint_indexes,
             actuator_range,
             part_name=kwargs.get("part_name", None),

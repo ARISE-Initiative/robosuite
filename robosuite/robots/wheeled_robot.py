@@ -39,6 +39,51 @@ class WheeledRobot(MobileBaseRobot):
             control_freq=control_freq,
         )
 
+    def _load_base_controller(self):
+        """
+        Load base controller
+        """
+        if len(self._ref_actuators_indexes_dict[self.base]) == 0:
+            return None
+        # if not self.controller_config[self.torso]:
+        #         # Need to update default for a single agent
+        #         controller_path = os.path.join(
+        #             os.path.dirname(__file__),
+        #             "..",
+        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
+        #         )
+        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
+        # TODO: Add a default controller config for torso
+        self.controller_config[self.base] = {}
+        self.controller_config[self.base]["type"] = "JOINT_VELOCITY"
+        self.controller_config[self.base]["interpolation"] = None
+        self.controller_config[self.base]["ramp_ratio"] = 1.0
+        self.controller_config[self.base]["robot_name"] = self.name
+
+        self.controller_config[self.base]["sim"] = self.sim
+        self.controller_config[self.base]["part_name"] = self.base
+        self.controller_config[self.base]["naming_prefix"] = self.robot_model.base.naming_prefix
+        self.controller_config[self.base]["ndim"] = self._joint_split_idx
+        self.controller_config[self.base]["policy_freq"] = self.control_freq
+
+        ref_base_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.base_joints]
+        ref_base_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.base_joints]
+        ref_base_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.base_joints]
+        self.controller_config[self.base]["joint_indexes"] = {
+            "joints": ref_base_joint_indexes,
+            "qpos": ref_base_joint_pos_indexes,
+            "qvel": ref_base_joint_vel_indexes,
+        }
+
+        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 1]
+
+        self.controller_config[self.base]["actuator_range"] = (
+            low,
+            high
+        )
+        self.controller[self.base] = controller_factory(self.controller_config[self.base]["type"], self.controller_config[self.base])
+
     def _load_torso_controller(self):
         """
         Load torso controller
@@ -55,8 +100,8 @@ class WheeledRobot(MobileBaseRobot):
         #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
         # TODO: Add a default controller config for torso
         self.controller_config[self.torso] = {}
-        self.controller_config[self.torso]["type"] = "JOINT_POSITION"
-        self.controller_config[self.torso]["interpolation"] = "linear"
+        self.controller_config[self.torso]["type"] = "JOINT_VELOCITY"
+        self.controller_config[self.torso]["interpolation"] = None
         self.controller_config[self.torso]["ramp_ratio"] = 1.0
         self.controller_config[self.torso]["robot_name"] = self.name
         self.controller_config[self.torso]["sim"] = self.sim
@@ -82,13 +127,10 @@ class WheeledRobot(MobileBaseRobot):
             high
         )
 
-        self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
+        # self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
         # import pdb; pdb.set_trace()
 
-        # self.controller[self.torso] = controller_factory(self.controller_config[self.torso]["type"], self.controller_config[self.torso])
-        # self.controller_config[self.torso]["actuator_range"] = (
-            
-        # )
+        self.controller[self.torso] = controller_factory(self.controller_config[self.torso]["type"], self.controller_config[self.torso])
 
     def _load_controller(self):
         """
@@ -98,8 +140,9 @@ class WheeledRobot(MobileBaseRobot):
 
         self._load_arm_controllers()
 
-        self.controller[self.base] = MobileBaseController(self.sim, self.robot_model.base.naming_prefix)
+        # self.controller[self.base] = MobileBaseController(self.sim, self.robot_model.base.naming_prefix)
 
+        self._load_base_controller()
         self._load_torso_controller()
 
         # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
@@ -150,7 +193,7 @@ class WheeledRobot(MobileBaseRobot):
         for part_name in [self.base, self.head, self.torso]:
             if part_name not in self.controller:
                 continue
-            self.controller[part_name].reset()
+            self.controller[part_name].reset_goal()
 
     def setup_references(self):
         """
