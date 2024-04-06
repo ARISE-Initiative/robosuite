@@ -1,0 +1,80 @@
+<mujoco model="z1">
+    <actuator>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_j1"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint2" name="torq_j2"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint3" name="torq_j3"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint4" name="torq_j4"/>
+        <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint5" name="torq_j5"/>
+        <motor ctrllimited="true" ctrlrange="-12.0 12.0" joint="joint6" name="torq_j6"/>
+    </actuator>
+
+    <asset>
+        <mesh name="link0" file="meshes/z1_Link00.obj" />
+        <mesh name="link1" file="meshes/z1_Link01.obj" />
+        <mesh name="link2" file="meshes/z1_Link02.obj" />
+        <mesh name="link3" file="meshes/z1_Link03.obj" />
+        <mesh name="link4" file="meshes/z1_Link04.obj" />
+        <mesh name="link5" file="meshes/z1_Link05.obj" />
+        <mesh name="link6" file="meshes/z1_Link06.obj" />
+    </asset>
+    <worldbody>
+        <body name="base" pos="0 0 0">
+            <!-- robot view -->
+            <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
+            <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
+            <body name="link0" pos="0 0 0">
+                <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+                <inertial pos="0 0 0" mass="0.47247481" fullinertia="0.00037937 0.00041521 0.00053066 3.5e-07 1.037e-05 9.9e-07"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link0" name="link0_visual" rgba="1 1 1 1" />
+                <geom type="mesh" group="0" mesh="link0" name="link0_collision"/>
+                <body name="link1" pos="0 0 0.0585">
+                    <inertial pos="0 0 0" mass="0.47247481" fullinertia="0.00037937 0.00041521 0.00053066 3.5e-07 1.037e-05 9.9e-07"/>
+                    <joint name="joint1" pos="0 0 0" axis="0 0 1" type="hinge" limited="true" range="-2.6179938779914944 2.6179938779914944" damping="1" armature="1.0" frictionloss="0.2"/>
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link1" name="link1" rgba="1 1 1 1" />
+                    <geom type="mesh" group="0" mesh="link1" name="link1_collision"/>
+                   <body name="link2" pos="0 0 0.045">
+                        <inertial pos="-0.11012601 0.00240029 0.00158266" mass="1.19132258" fullinertia="0.00102138 0.02429457 0.02466114 -0.00062358 -5.13e-06 2.1e-06"/>
+                        <joint name="joint2" pos="0 0 0" axis="0 1 0" type="hinge" limited="true" range="0.0 3.141592653589793" damping="2" armature="1.0" frictionloss="2.0"/>
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link2" name="link2" rgba="1 1 1 1" />
+                        <geom type="mesh" group="0" mesh="link2" name="link2_collision"/>
+                        <body name="link3" pos="-0.35 0 0">
+                            <inertial pos="0.10609208 -0.00541815 0.03476383" mass="0.83940874" fullinertia="0.00108061 0.00954238 0.00886621 8.669e-05 0.00208102 1.332e-05"/>
+                            <joint name="joint3" pos="0 0 0" axis="0 1 0" type="hinge" limited="true" range="-4.782202150464463 0.0" damping="1" armature="1.0" frictionloss="0.2"/>
+                            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link3" name="link3" rgba="1 1 1 1" />
+                            <geom type="mesh" group="0" mesh="link3" name="link3_collision"/>
+                                <body name="link4" pos="0.218 0 0.057">
+                                    <inertial pos="0.04366681 0.00364738 -0.00170192" mass="0.56404563" fullinertia="0.00031576 0.00092996 0.00097912 -8.13e-05 -4.091e-05 5.96e-06"/>
+                                    <joint name="joint4" pos="0 0 0" axis="0 1 0" type="hinge" limited="true" range="-1.7453292519943295 1.5707963267948966" damping="1" armature="1.0" frictionloss="0.2"/>
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link4" name="link4" rgba="1 1 1 1" />
+                                    <geom type="mesh" group="0" mesh="link4" name="link4_collision"/>
+
+                                    <body name="link5" pos="0.07 0.0 0.0">
+                                        <inertial pos="0.03121533 0.0 0.00646316" mass="0.38938492" fullinertia="0.00017605 0.00055896 0.0005386 -4e-07 -5.689e-05 1.3e-07"/>
+                                        <joint name="joint5" pos="0 0 0" axis="0 0 1" type="hinge" limited="true" range="-1.7278759594743864 1.7278759594743864" damping="1" armature="1.0" frictionloss="1.0"/>
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link5" name="link5" rgba="1 1 1 1" />
+                                        <geom type="mesh" group="0" mesh="link5" name="link5_collision"/>
+                                        <body name="link6" pos="0.0492 0.0 0.0">
+                                            <inertial pos="0.0241569 -0.00017355 -0.00143876" mass="0.28875807" fullinertia="0.00018328 0.0001475 0.0001468 -1.22e-06 -5.4e-07 -8e-08"/>
+                                            <joint name="joint6" pos="0 0 0" axis="1 0 0" type="hinge" limited="true" range="-2.792526803190927 2.792526803190927" damping="1" armature="1.0" frictionloss="1.0"/>
+                                            <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="link6" name="link6" rgba="1 1 1 1" />
+                                            <geom type="mesh" group="0" mesh="link6" name="link6_collision"/>
+                                                <body name="right_hand" pos="0 0 0" quat="1 0 0 0">
+                                                <inertial pos="0 0 0" mass="0.5" diaginertia="0.05 0.05 0.05" />
+                                                <!-- This camera points out from the eef. -->
+                                                <camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
+                                                <!-- to add gripper -->
+                                                </body>
+                                        </body>
+                                    </body>
+                                </body>
+                            </body>
+                        </body> 
+                    </body>     
+                </body>                                     
+            </body>
+
+    </worldbody>
+
+</mujoco>
+
+
