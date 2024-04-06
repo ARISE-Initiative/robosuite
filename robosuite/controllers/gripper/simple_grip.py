@@ -1,0 +1,1 @@
+"""This is a controller that controls the fingers / grippers to do naive gripping. No matter how many fingers the gripper has, they all move in the same direction."""
