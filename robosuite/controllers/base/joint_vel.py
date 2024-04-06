@@ -92,8 +92,8 @@ class BaseJointVelocityController(BaseController):
         actuator_range,
         input_max=1,
         input_min=-1,
-        output_max=0.05,
-        output_min=-0.05,
+        output_max=1,
+        output_min=-1,
         kp=50,
         damping_ratio=1,
         impedance_mode="fixed",
@@ -156,6 +156,8 @@ class BaseJointVelocityController(BaseController):
 
         # initialize
         self.goal_qvel = None
+        self.init_pos = None
+        self.init_ori = None
 
     def set_goal(self, action, set_qpos=None):
         """
@@ -200,8 +202,6 @@ class BaseJointVelocityController(BaseController):
         else:
             scaled_delta = None
 
-        if scaled_delta < 0.1:
-            scaled_delta = 0
 
         curr_pos, curr_ori = self.get_base_pose()
 
@@ -250,25 +250,27 @@ class BaseJointVelocityController(BaseController):
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_qvel = np.array(self.goal_qpos)
+            desired_qvel = np.array(self.goal_qvel)
             
         self.vels = desired_qvel
 
-        ctrl_range = np.array([self.actuator_min, self.actuator_max])
+        ctrl_range = np.stack([self.actuator_min, self.actuator_max], axis=-1)
         bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
         weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-        final_vel = bias + weight * self.vels
+        self.vels = bias + weight * self.vels
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
 
-        return final_vel
+        return self.vels
 
     def reset_goal(self):
         """
         Resets joint position goal to be current position
         """
         self.goal_qvel = self.joint_vel
+
+        self.init_pos, self.init_ori = self.get_base_pose()
 
         # Reset interpolator if required
         if self.interpolator is not None:

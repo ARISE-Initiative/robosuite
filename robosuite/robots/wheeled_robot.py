@@ -292,25 +292,25 @@ class WheeledRobot(MobileBaseRobot):
 
         if self.enabled(self.base):
             mobile_base_dims = self.controller[self.base].control_dim
-            torso_dims = self.controller[self.torso].control_dim
-
             (base_start, base_end) = self._action_split_indexes[self.base]
-            (torso_start, torso_end) = self._action_split_indexes[self.torso]
             base_action = action[base_start:base_end]
-            torso_action = action[torso_start:torso_end]
-            # base_action = np.copy(action[-mobile_base_dims - torso_dims - 1 : -torso_dims - 1])
-            # torso_action = np.copy(action[-torso_dims - 1 : -1])
+
+
             if policy_step:
                 self.controller[self.base].set_goal(base_action)
-                self.controller[self.torso].set_goal(torso_action)
 
             mobile_base_torques = self.controller[self.base].run_controller()
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.base]] = mobile_base_torques
 
             # Apply torques for height control (if applicable)
-            if len(self._ref_actuators_indexes_dict[self.torso]) > 0:
-                self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.torso]] = self.controller[self.torso].run_controller()
-
+        if len(self._ref_actuators_indexes_dict[self.torso]) > 0:
+            torso_dims = self.controller[self.torso].control_dim
+            (torso_start, torso_end) = self._action_split_indexes[self.torso]
+            torso_action = action[torso_start:torso_end]
+            if policy_step:
+                self.controller[self.torso].set_goal(torso_action)
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.torso]] = self.controller[self.torso].run_controller()
+        
         self.torques = np.array([])
         # Now execute actions for each arm
         for arm in self.arms:

@@ -94,6 +94,7 @@ class TorsoController(object, metaclass=abc.ABCMeta):
         self.initial_joint = self.joint_pos
         self.initial_ee_pos = self.ee_pos
         self.initial_ee_ori_mat = self.ee_ori_mat
+        self.previous_qpos = None
 
     @abc.abstractmethod
     def run_controller(self):

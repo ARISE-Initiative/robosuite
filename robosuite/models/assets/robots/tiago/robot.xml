@@ -228,7 +228,7 @@
                                                         <geom type="mesh" material="LightGrey" name="arm_6_collision" group="0" friction="1 0 0" mesh="arm_6_collision-wrist-2017"/>
                                                         
                                                         <!-- Right hand -->
-                                                        <body name="right_hand" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
+                                                        <body name="right_hand" pos="0.05 0 0" quat="0.5 0.5 0.5 0.5">
                                                         </body>
 
                                                     <!-- End of right hand -->
@@ -300,7 +300,7 @@
                                                         <geom type="mesh" material="LightGrey" name="arm_6_left_collision" group="0" friction="1 0 0" mesh="arm_6_left_collision-wrist-2017"/>
                                                         
                                                         <!-- left hand -->
-                                                        <body name="left_hand" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
+                                                        <body name="left_hand" pos="-0.05 0 0" quat="0.5 -0.5 -0.5 0.5">
                                                         </body>
 
                                                     <!-- End of left hand -->
@@ -347,6 +347,7 @@
     <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_6_joint" name="torq_left_j6"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_1_joint" name="torq_head_pitch"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_2_joint" name="torq_head_yaw"/>
-    <motor ctrllimited="true" ctrlrange="-1000 1000" joint="torso_lift_joint" name="torq_torso_lift"/>
+    <!-- <motor ctrllimited="true" ctrlrange="-1000 1000" joint="torso_lift_joint" name="torq_torso_lift"/> -->
+    <velocity ctrllimited="true" ctrlrange="-0.75 1.00" joint="torso_lift_joint" kv="1500" name="torq_torso_lift" forcelimited="false"/>
     </actuator>
 </mujoco>

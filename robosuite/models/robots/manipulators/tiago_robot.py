@@ -54,14 +54,14 @@ class Tiago(ManipulatorModel):
         # [right, left]
         # Arms half extended
         return np.array(
-            [0, 0, 0, 0.952475, -0.944335, 2.91383, 1.84749, 1.8846, -0.5656, 0.60885, -0.46326, 1.90067, 1.84749, 0.75384, 0]
+            [0, 0, 0, 0.952475, -0.944335, 2.91383, 1.84749, 1.8846, -0.5656, 0.60885, -0.46326, 1.90067, 1.84749, 0.75384, 2.4]
         )
     @property
     def base_xpos_offset(self):
         return {
             "bins": (-0.5, -0.1, 0),
             "empty": (-0.29, 0, 0),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0),
+            "table": lambda table_length: (-0.35 - table_length / 2, 0, 0),
         }
 
     @property

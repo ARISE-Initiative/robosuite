@@ -90,9 +90,9 @@ class TorsoJointVelocityController(TorsoController):
         actuator_range,
         input_max=1,
         input_min=-1,
-        output_max=0.05,
-        output_min=-0.05,
-        kp=50,
+        output_max=1,
+        output_min=-1,
+        kp=200,
         damping_ratio=1,
         impedance_mode="fixed",
         kp_limits=(0, 300),
@@ -156,6 +156,9 @@ class TorsoJointVelocityController(TorsoController):
         # initialize
         self.goal_qvel = None
 
+        self.is_controlled = False
+
+
     def set_goal(self, action, set_qpos=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
@@ -199,9 +202,13 @@ class TorsoJointVelocityController(TorsoController):
         else:
             scaled_delta = None
 
-        if scaled_delta < 0.1:
-            scaled_delta = 0
+        self.is_controlled = True
+        if np.max(np.abs(scaled_delta)) < 0.1:
+            self.is_controlled = False
+            scaled_delta = scaled_delta * 0
 
+        if self.is_controlled:
+            self.previous_qpos = np.array(self.sim.data.qpos[self.qpos_index])
         self.goal_qvel = scaled_delta
 
         if self.interpolator is not None:
@@ -232,13 +239,18 @@ class TorsoJointVelocityController(TorsoController):
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_qvel = np.array(self.goal_qpos)
+            desired_qvel = np.array(self.goal_qvel)
             
         self.vels = desired_qvel
 
+
+        if not self.is_controlled:
+            current_joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
+            vel_compensate = self.kp * (self.previous_qpos - current_joint_pos)
+            self.vels += vel_compensate 
+
         # Always run superclass call for any cleanups at the end
         super().run_controller()
-
         return self.vels
 
     def reset_goal(self):
@@ -246,6 +258,7 @@ class TorsoJointVelocityController(TorsoController):
         Resets joint position goal to be current position
         """
         self.goal_qvel = self.joint_vel
+        self.previous_qpos = np.array(self.sim.data.qpos[self.qpos_index])
 
         # Reset interpolator if required
         if self.interpolator is not None:
