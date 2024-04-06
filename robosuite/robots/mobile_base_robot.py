@@ -120,3 +120,21 @@ class MobileBaseRobot(Robot):
     @property
     def legs(self):
         return "legs"
+    
+
+    def enable_parts(self,
+                    right_arm=True,
+                    left_arm=False,
+                    torso=False,
+                    head=False,
+                    base=True,
+                    legs=False
+                     ):
+        self._enabled_parts = {
+            "right": right_arm, 
+            "left": left_arm,
+            self.torso: torso,
+            self.head: head,
+            self.base: base,
+            self.legs: legs
+        }

@@ -120,6 +120,7 @@ class Robot(object):
         self._ref_joints_indexes_dict = {}
 
         self._enabled_parts = {}
+        self._action_split_indexes = OrderedDict()
 
     def _load_controller(self):
         """
@@ -732,5 +733,44 @@ class Robot(object):
             # Instantiate the relevant controller
             self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
 
-    def enable_parts(self, right_arm=True, left_arm=True):
-        self._enabled_parts = {"right": right_arm, "left": left_arm}
+    def enable_parts(self, 
+                     right_arm=True, 
+                     left_arm=True):
+        self._enabled_parts = {
+            "right": right_arm,
+            "left": left_arm
+        }
+
+    def enabled(self, part_name):
+        return self._enabled_parts[part_name]
+
+
+    def create_action_vector(self, action_dict):
+        """
+        A helper function that creates the action vector given a dictionary
+        """
+
+        full_action_vector = np.zeros(self.action_dim)
+        for (part_name, action_vector) in action_dict.items():
+            # if self._enabled_parts[part_name]:
+            assert(part_name in self._action_split_indexes), f"{part_name} is not specified in the action space"
+            start_idx, end_idx = self._action_split_indexes[part_name]
+            if end_idx - start_idx == 0:
+                # skipping not controlling actions
+                continue
+            assert(len(action_vector) == (end_idx - start_idx)), f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx}, got {len(action_vector)}"
+            full_action_vector[start_idx:end_idx] = action_vector
+        return full_action_vector
+
+    def print_action_info(self):
+        action_index_info = []
+        action_dim_info = []
+        for part_name, (start_idx, end_idx) in self._action_split_indexes.items():
+            action_dim_info.append(f"{part_name}: {(end_idx - start_idx)} dim")
+            action_index_info.append(f"{part_name}: {start_idx}:{end_idx}")
+
+        action_dim_info_str = ", ".join(action_dim_info) 
+        print(f"[{action_dim_info_str}]")
+
+        action_index_info_str = ", ".join(action_index_info)
+        print(f"[{action_index_info_str}]")

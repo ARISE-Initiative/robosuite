@@ -43,6 +43,8 @@ class WheeledRobot(MobileBaseRobot):
         """
         Load torso controller
         """
+        if len(self._ref_actuators_indexes_dict[self.torso]) == 0:
+            return None
         # if not self.controller_config[self.torso]:
         #         # Need to update default for a single agent
         #         controller_path = os.path.join(
@@ -72,11 +74,18 @@ class WheeledRobot(MobileBaseRobot):
             "qvel": ref_torso_joint_vel_indexes,
         }
 
-        self.controller_config[self.torso]["actuator_range"] = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso][0]]
-        import pdb; pdb.set_trace()
+        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 1]
 
-        # self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
-        self.controller[self.torso] = controller_factory(self.controller_config[self.torso]["type"], self.controller_config[self.torso])
+        self.controller_config[self.torso]["actuator_range"] = (
+            low,
+            high
+        )
+
+        self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
+        # import pdb; pdb.set_trace()
+
+        # self.controller[self.torso] = controller_factory(self.controller_config[self.torso]["type"], self.controller_config[self.torso])
         # self.controller_config[self.torso]["actuator_range"] = (
             
         # )
@@ -96,8 +105,8 @@ class WheeledRobot(MobileBaseRobot):
         # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
 
         # Set up split indices for arm actions
-        self._action_split_indexes = OrderedDict()
-        previous_idx = None
+        self._action_split_indexes.clear()
+        previous_idx = 0
         last_idx = 0
         for arm in self.arms:
             last_idx += self.controller[arm].control_dim
@@ -108,8 +117,12 @@ class WheeledRobot(MobileBaseRobot):
         previous_idx = self._action_split_indexes[self.arms[-1]][1]
         last_idx = previous_idx
         for part_name in [self.base, self.head, self.torso]:
+            if part_name not in self.controller:
+                self._action_split_indexes[part_name] = (last_idx, last_idx)
+                continue
+
             if part_name == self.head:
-                last_idx += 2
+                last_idx += 0 # 2
             else:
                 last_idx += self.controller[part_name].control_dim
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
@@ -135,12 +148,9 @@ class WheeledRobot(MobileBaseRobot):
         super().reset(deterministic)
         
         for part_name in [self.base, self.head, self.torso]:
-            if part_name == self.head:
+            if part_name not in self.controller:
                 continue
             self.controller[part_name].reset()
-
-        self.controller[self.base].reset()
-        self.controller[self.torso].reset()
 
     def setup_references(self):
         """
@@ -237,7 +247,7 @@ class WheeledRobot(MobileBaseRobot):
             # TODO: This line should be removed for arms, and change it to internal computation of base. 
             self.controller[arm].update_base_pose()
 
-        if mode == "base":
+        if self.enabled(self.base):
             mobile_base_dims = self.controller[self.base].control_dim
             torso_dims = self.controller[self.torso].control_dim
 
@@ -407,10 +417,10 @@ class WheeledRobot(MobileBaseRobot):
         low_h, high_h = ([-1] * head_dims, [1] * head_dims)  # base control dims
 
         # TODO: This mode thing should be removed and put into the controller manager
-        low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
+        # low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
 
-        low = np.concatenate([low, low_b, low_t, low_h, low_m])
-        high = np.concatenate([high, high_b, high_t, high_h, high_m])
+        low = np.concatenate([low, low_b, low_t, low_h])
+        high = np.concatenate([high, high_b, high_t, high_h])
         return low, high
 
     @property

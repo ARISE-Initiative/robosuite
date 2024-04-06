@@ -42,23 +42,48 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
-
+    env.robots[0].print_action_info()
     # Loop until we get a reset from the input or the task completes
     while True:
         # Set active robot
         active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
 
         # Get the newest action
-        action, grasp = input2action(
+        input_action, grasp = input2action(
             device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
         )
 
         # If action is none, then this a reset so we should break
-        if action is None:
+        if input_action is None:
             break
         # action = np.concatenate([action[:-5], action])
         # action = np.concatenate([action[:7], action[:7], [0.] * 2, [0]*1, action[-4:]])
         # Run environment step
+
+        if env.robots[0].is_mobile:
+            arm_actions = input_action[:-5]
+            base_action = input_action[-5:-2]
+            torso_action = input_action[-2:-1]
+            action = env.robots[0].create_action_vector(
+            {
+                "right": arm_actions, 
+                "base": base_action,
+                "torso": torso_action
+            }
+            )
+            mode_action = input_action[-1]
+            if mode_action > 0:
+                env.robots[0].enable_parts(base=True, torso=True)
+            else:
+                env.robots[0].enable_parts(base=False, torso=False)
+        else:
+            arm_actions = input_action
+            action = env.robots[0].create_action_vector(
+                {
+                    "right": arm_actions, 
+                }
+            )
+        # action[-1] = input_action[-1]
         env.step(action)
         env.render()
 

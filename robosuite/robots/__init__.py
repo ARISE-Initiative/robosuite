@@ -14,11 +14,14 @@ ROBOT_CLASS_MAPPING = {
     "Jaco": FixedBaseRobot,
     "Kinova3": FixedBaseRobot,
     "Panda": FixedBaseRobot,
-    "PandaMobile": WheeledRobot,
     "Sawyer": FixedBaseRobot,
     "UR5e": FixedBaseRobot,
-    "GoogleRobot": WheeledRobot,
     "VX300S": FixedBaseRobot,
+    "Z1": FixedBaseRobot,
+    "PandaMobile": WheeledRobot,
+    "GoogleRobot": WheeledRobot,
     "VX300SMobile": WheeledRobot,
     "Tiago": WheeledRobot,
+    # "B1Z1": LeggedRobot,
+    # "GR1": LeggedRobot
 }

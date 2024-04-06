@@ -43,58 +43,14 @@ class FixedBaseRobot(Robot):
         """
         # Flag for loading urdf once (only applicable for IK controllers)
         self._load_arm_controllers()
-        # urdf_loaded = False
-
-        # # Load controller configs for both left and right arm
-        # for arm in self.arms:
-        #     # First, load the default controller if none is specified
-        #     if not self.controller_config[arm]:
-        #         # Need to update default for a single agent
-        #         controller_path = os.path.join(
-        #             os.path.dirname(__file__),
-        #             "..",
-        #             "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
-        #         )
-        #         self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
-
-        #     # Assert that the controller config is a dict file:
-        #     #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
-        #     #                                           OSC_POSITION, OSC_POSE, IK_POSE}
-        #     assert (
-        #         type(self.controller_config[arm]) == dict
-        #     ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-        #         type(self.controller_config[arm])
-        #     )
-
-        #     # Add to the controller dict additional relevant params:
-        #     #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
-        #     #   policy (control) freq, and ndim (# joints)
-        #     self.controller_config[arm]["robot_name"] = self.name
-        #     self.controller_config[arm]["sim"] = self.sim
-        #     self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
-        #     self.controller_config[arm]["part_name"] = arm
-        #     self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
-
-        #     self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
-        #     self.controller_config[arm]["ndim"] = self._joint_split_idx
-        #     self.controller_config[arm]["policy_freq"] = self.control_freq
-        #     (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-        #     self.controller_config[arm]["joint_indexes"] = {
-        #         "joints": self.joint_indexes[start:end],
-        #         "qpos": self._ref_joint_pos_indexes[start:end],
-        #         "qvel": self._ref_joint_vel_indexes[start:end],
-        #     }
-        #     self.controller_config[arm]["actuator_range"] = (
-        #         self.torque_limits[0][start:end],
-        #         self.torque_limits[1][start:end],
-        #     )
-
-        #     # Only load urdf the first time this controller gets called
-        #     self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
-        #     urdf_loaded = True
-
-        #     # Instantiate the relevant controller
-        #     self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
+        self._action_split_indexes.clear()
+        previous_idx = 0
+        last_idx = 0
+        for arm in self.arms:
+            last_idx += self.controller[arm].control_dim
+            last_idx += self.gripper[arm].dof if self.has_gripper[arm] else 0
+            self._action_split_indexes[arm] = (previous_idx, last_idx)
+            previous_idx = last_idx
 
     def load_model(self):
         """
@@ -174,7 +130,7 @@ class FixedBaseRobot(Robot):
         # Now execute actions for each arm
         for arm in self.arms:
             # Make sure to split action space correctly
-            (start, end) = (None, self._action_split_idx) if arm == "right" else (self._action_split_idx, None)
+            (start, end) = self._action_split_indexes[arm]
             sub_action = action[start:end]
 
             gripper_action = None
