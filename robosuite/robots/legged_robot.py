@@ -303,9 +303,10 @@ class LeggedRobot(MobileBaseRobot):
             if policy_step:
                 self.controller[self.base].set_goal(base_action)
 
-            mobile_base_torques = self.controller[self.base].run_controller()
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.base]] = mobile_base_torques
+            applied_base_action = self.controller[self.base].run_controller()
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.base]] = applied_base_action
 
+            print(applied_base_action)
             # Apply torques for height control (if applicable)
         if len(self._ref_actuators_indexes_dict[self.torso]) > 0:
             torso_dims = self.controller[self.torso].control_dim

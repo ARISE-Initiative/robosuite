@@ -57,9 +57,9 @@ class GR1(LeggedManipulatorModel):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.5, -0.1, 0),
-            "empty": (-0.29, 0, 0),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.9),
+            "bins": (-0.5, -0.1, 0.95),
+            "empty": (-0.29, 0, 0.95),
+            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.95),
         }
 
     @property
@@ -106,7 +106,42 @@ class GR1FixedLowerBody(GR1):
         """
         init_qpos = np.array([0.0] * 20)
         return init_qpos
-    
+    @property
+    def default_base(self):
+        return "NoActuationBase"
+
+class GR1FloatingBody(GR1):
+    def __init__(self, idn=0):
+        super().__init__(idn=idn)
+
+        # fix lower body
+        self._remove_joint_actuation("leg")
+        self._remove_free_joint()
+
+    @property
+    def init_qpos(self):
+        """
+        Since this is bimanual robot, returns [right, left] array corresponding to respective values
+
+        Note that this is a pose such that the arms are half extended
+
+        Returns:
+            np.array: default initial qpos for the right, left arms
+        """
+        init_qpos = np.array([0.0] * 20)
+        return init_qpos
+    @property
+    def default_base(self):
+        return "FloatingLeggedBase"
+
+    @property
+    def base_xpos_offset(self):
+        return {
+            "bins": (-0.5, -0.1, 0.97),
+            "empty": (-0.29, 0,  0.97),
+            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.97),
+        }
+
 class GR1ArmsOnly(GR1):
     def __init__(self, idn=0):
         super().__init__(idn=idn)

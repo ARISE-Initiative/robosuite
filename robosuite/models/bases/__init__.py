@@ -9,6 +9,7 @@ from .mobile_base_model import MobileBaseModel
 from .omron_mobile_base import OmronMobileBase
 from .null_mobile_base import NullMobileBase
 from .no_actuation_base import NoActuationBase
+from .floating_legged_base import FloatingLeggedBase
 
 from .aloha_mount import AlohaMount
 
@@ -20,6 +21,8 @@ BASE_MAPPING = {
     "OmronMobileBase": OmronMobileBase,
     "NullMobileBase": NullMobileBase,
     "NoActuationBase": NoActuationBase,
+    "FloatingLeggedBase": FloatingLeggedBase,
+
     # "Z1Base": Z1Base,
     # "SpotBase": SpotBase,
     # "NullLeggedBase": NullLeggedBase,
