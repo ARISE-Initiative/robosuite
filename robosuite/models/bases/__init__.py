@@ -8,6 +8,7 @@ from .null_mount import NullMount
 from .mobile_base_model import MobileBaseModel
 from .omron_mobile_base import OmronMobileBase
 from .null_mobile_base import NullMobileBase
+from .no_actuation_base import NoActuationBase
 
 from .aloha_mount import AlohaMount
 
@@ -18,6 +19,7 @@ BASE_MAPPING = {
     "NullMount": NullMount,
     "OmronMobileBase": OmronMobileBase,
     "NullMobileBase": NullMobileBase,
+    "NoActuationBase": NoActuationBase,
     # "Z1Base": Z1Base,
     # "SpotBase": SpotBase,
     # "NullLeggedBase": NullLeggedBase,

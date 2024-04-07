@@ -275,7 +275,14 @@ class LeggedRobot(MobileBaseRobot):
 
         mode = "base" if action[-1] > 0 else "arm"
 
-        self.base_pos, self.base_ori = self.controller[self.base].get_base_pose()
+        if self.base in self.controller:
+            self.base_pos, self.base_ori = self.controller[self.base].get_base_pose()
+        else:
+            base_site_name = f"{self.robot_model.base.naming_prefix}center"
+            self.base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(base_site_name)])
+            self.base_ori = np.array(
+                self.sim.data.site_xmat[self.sim.model.site_name2id(base_site_name)].reshape([3, 3])
+            )            
         for arm in self.arms:
             # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
             # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
