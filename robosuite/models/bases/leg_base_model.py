@@ -7,7 +7,7 @@ from robosuite.models.base import MujocoXMLModel
 from robosuite.utils.mjcf_utils import MOUNT_COLLISION_COLOR
 
 
-class LeggedBaseModel(MujocoXMLModel):
+class LegBaseModel(MujocoXMLModel):
     """
     Base class for mounts that will be attached to robots. Note that this model's root body will be directly
     appended to the robot's root body, so all offsets should be taken relative to that.
@@ -36,7 +36,7 @@ class LeggedBaseModel(MujocoXMLModel):
 
     @property
     def naming_prefix(self):
-        return "base{}_".format(self.idn)
+        return "leg{}_".format(self.idn)
 
     @property
     def _important_sites(self):

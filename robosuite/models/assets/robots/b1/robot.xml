@@ -75,8 +75,7 @@
   </asset>
 
   <worldbody>
-    <light name="spotlight" mode="targetbodycom" target="trunk" pos="0 -1 2"/>
-    <body name="trunk" pos="0 0 0.43">
+    <body name="base" pos="0 0 0">
       <freejoint/>
       <inertial mass="9.041" pos="0.008465 0.004045 -0.000763"
 	  fullinertia="0.033260231 0.16117211 0.17460442 -0.000451628
@@ -84,131 +83,160 @@
           <!-- fullinertia="0.0158533 0.0377999 0.0456542 -3.66e-05 -6.11e-05 -2.75e-05"/> -->
       <geom class="visual" mesh="trunk" material="default_material"/>
       <geom class="collision" size="0.47 0.15 0.075" type="box"/>
-      <body name="FR_hip" pos="0.3455 -0.072 0">
-        <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
-            diaginertia="0.000807752 0.00055293 0.000468983"/>
-            <!-- quat="0.507528 0.506268 0.491507 0.494499" -->
-        <joint class="abduction" name="FR_hip_joint" pos="0 0 0"/>
-        <geom class="visual" mesh="hip" quat="0 1 0 0"/>
-        <geom class="hip_right"/>
-        <body name="FR_thigh" pos="0 -0.12675 0">
-          <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
-              quat="1 0 0 0"
-              diaginertia="0.005666803 0.005847229 0.000369811"/>
-          <joint class="hip" name="FR_thigh_joint"/>
-          <geom class="visual" mesh="thigh_mirror"/>
-          <geom class="thigh1"/>
-          <body name="FR_calf" pos="0 0 -0.35">
-            <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+      <body name="fixed_support" pos="0.15 0 0.08">
+				<body name="support" pos="0.0 0.0 0.0">
+                    <!-- add robot here -->
+                    <site name="center" type="sphere" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
+                </body>
+            </body>
+
+      <!-- FR leg -->
+      <body name="FR_leg">
+        <site name="FR_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>        
+        <body name="FR_hip" pos="0.3455 -0.072 0">
+          <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
+              diaginertia="0.000807752 0.00055293 0.000468983"/>
+              <!-- quat="0.507528 0.506268 0.491507 0.494499" -->
+          <joint class="abduction" name="FR_hip_leg_joint" pos="0 0 0"/>
+          <geom class="visual" mesh="hip" quat="0 1 0 0"/>
+          <geom class="hip_right"/>
+          <body name="FR_thigh" pos="0 -0.12675 0">
+            <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
                 quat="1 0 0 0"
-                diaginertia="0.006341369 0.006355157 3.9188e-05"/>
-            <joint class="knee" name="FR_calf_joint"/>
-            <geom class="visual" mesh="calf"/>
-            <geom class="calf1"/>
-	    <body name="FR_foot" pos="0 0 -0.35">
-              <geom class="foot"/>
-	    </body>
+                diaginertia="0.005666803 0.005847229 0.000369811"/>
+            <joint class="hip" name="FR_thigh_leg_joint"/>
+            <geom class="visual" mesh="thigh_mirror"/>
+            <geom class="thigh1"/>
+            <body name="FR_calf" pos="0 0 -0.35">
+              <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+                  quat="1 0 0 0"
+                  diaginertia="0.006341369 0.006355157 3.9188e-05"/>
+              <joint class="knee" name="FR_calf_leg_joint"/>
+              <geom class="visual" mesh="calf"/>
+              <geom class="calf1"/>
+            <body name="FR_foot" pos="0 0 -0.35">
+                    <geom class="foot"/>
+            </body>
+            </body>
           </body>
         </body>
       </body>
+      <!-- End of FR leg -->
 
-      <body name="FL_hip" pos="0.3455 0.072 0">
-        <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
-            diaginertia="0.000807752 0.00055293 0.000468983"/>
-        <joint class="abduction" name="FL_hip_joint" pos="0 0 0"/>
-        <geom class="visual" mesh="hip" quat="0 1 0 0"/>
-        <geom class="hip_right"/>
-        <body name="FL_thigh" pos="0 0.12675 0">
-          <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
-              quat="1 0 0 0"
-               diaginertia="0.005666803 0.005847229 0.000369811"/>
-          <joint class="hip" name="FL_thigh_joint"/>
-          <geom class="visual" mesh="thigh"/>
-          <geom class="thigh1"/>
-          <body name="FL_calf" pos="0 0 -0.35">
-            <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+
+      <!-- FL leg -->
+      <body name="FL_leg">
+        <site name="FL_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>        
+        <body name="FL_hip" pos="0.3455 0.072 0">
+          <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
+              diaginertia="0.000807752 0.00055293 0.000468983"/>
+          <joint class="abduction" name="FL_hip_leg_joint" pos="0 0 0"/>
+          <geom class="visual" mesh="hip" quat="0 1 0 0"/>
+          <geom class="hip_right"/>
+          <body name="FL_thigh" pos="0 0.12675 0">
+            <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
                 quat="1 0 0 0"
-                diaginertia="0.006341369 0.006355157 3.9188e-05"/>
-            <joint class="knee" name="FL_calf_joint"/>
-            <geom class="visual" mesh="calf"/>
-            <geom class="calf1"/>
-	    <body name="FL_foot" pos="0 0 -0.35">
-              <geom class="foot"/>
-	    </body>
+                diaginertia="0.005666803 0.005847229 0.000369811"/>
+            <joint class="hip" name="FL_thigh_leg_joint"/>
+            <geom class="visual" mesh="thigh"/>
+            <geom class="thigh1"/>
+            <body name="FL_calf" pos="0 0 -0.35">
+              <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+                  quat="1 0 0 0"
+                  diaginertia="0.006341369 0.006355157 3.9188e-05"/>
+              <joint class="knee" name="FL_calf_leg_joint"/>
+              <geom class="visual" mesh="calf"/>
+              <geom class="calf1"/>
+              <body name="FL_foot" pos="0 0 -0.35">
+                      <geom class="foot"/>
+              </body>
+            </body>
           </body>
         </body>
       </body>
+      <!-- End of FL leg -->
 
-      <body name="RR_hip" pos="-0.3455 -0.072 0">
-        <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
-            diaginertia="0.000807752 0.00055293 0.000468983"/>
-            <!-- quat="0.507528 0.506268 0.491507 0.494499" -->
-        <joint class="abduction" name="RR_hip_joint" pos="0 0 0"/>
-        <geom class="visual" mesh="hip" quat="0 1 0 0"/>
-        <geom class="hip_right"/>
-        <body name="RR_thigh" pos="0 -0.12675 0">
-          <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
-              quat="1 0 0 0"
-              diaginertia="0.005666803 0.005847229 0.000369811"/>
-          <joint class="hip" name="RR_thigh_joint"/>
-          <geom class="visual" mesh="thigh_mirror"/>
-          <geom class="thigh1"/>
-          <body name="RR_calf" pos="0 0 -0.35">
-            <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+      <!-- RR leg -->
+      <body name="RR_leg">
+        <site name="RR_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+        <body name="RR_hip" pos="-0.3455 -0.072 0">
+          <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
+              diaginertia="0.000807752 0.00055293 0.000468983"/>
+              <!-- quat="0.507528 0.506268 0.491507 0.494499" -->
+          <joint class="abduction" name="RR_hip_leg_joint" pos="0 0 0"/>
+          <geom class="visual" mesh="hip" quat="0 1 0 0"/>
+          <geom class="hip_right"/>
+          <body name="RR_thigh" pos="0 -0.12675 0">
+            <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
                 quat="1 0 0 0"
-                diaginertia="0.006341369 0.006355157 3.9188e-05"/>
-            <joint class="knee" name="RR_calf_joint"/>
-            <geom class="visual" mesh="calf"/>
-            <geom class="calf1"/>
-	    <body name="RR_foot" pos="0 0 -0.35">
-              <geom class="foot"/>
-	    </body>
+                diaginertia="0.005666803 0.005847229 0.000369811"/>
+            <joint class="hip" name="RR_thigh_leg_joint"/>
+            <geom class="visual" mesh="thigh_mirror"/>
+            <geom class="thigh1"/>
+            <body name="RR_calf" pos="0 0 -0.35">
+              <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+                  quat="1 0 0 0"
+                  diaginertia="0.006341369 0.006355157 3.9188e-05"/>
+              <joint class="knee" name="RR_calf_leg_joint"/>
+              <geom class="visual" mesh="calf"/>
+              <geom class="calf1"/>
+              <body name="RR_foot" pos="0 0 -0.35">
+                      <geom class="foot"/>
+              </body>
+            </body>
           </body>
         </body>
       </body>
+      <!-- End of RR leg -->
 
-      <body name="RL_hip" pos="-0.3455 0.072 0">
-        <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
-            diaginertia="0.000807752 0.00055293 0.000468983"/>
-        <joint class="abduction" name="RL_hip_joint" pos="0 0 0"/>
-        <geom class="visual" mesh="hip" quat="0 1 0 0"/>
-        <geom class="hip_right"/>
-        <body name="RL_thigh" pos="0 0.12675 0">
-          <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
-              quat="1 0 0 0"
-               diaginertia="0.005666803 0.005847229 0.000369811"/>
-          <joint class="hip" name="RL_thigh_joint"/>
-          <geom class="visual" mesh="thigh"/>
-          <geom class="thigh1"/>
-          <body name="RL_calf" pos="0 0 -0.35">
-            <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+      <!-- RL leg -->
+      <body name="RL_leg">
+        <site name="RL_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+        <body name="RL_hip" pos="-0.3455 0.072 0">
+          <inertial mass="1.993" pos="-0.022191 -0.015144 -1.5e-05"
+              diaginertia="0.000807752 0.00055293 0.000468983"/>
+          <joint class="abduction" name="RL_hip_leg_joint" pos="0 0 0"/>
+          <geom class="visual" mesh="hip" quat="0 1 0 0"/>
+          <geom class="hip_right"/>
+          <body name="RL_thigh" pos="0 0.12675 0">
+            <inertial mass="0.639" pos="-0.005607 0.003877 -0.048199"
                 quat="1 0 0 0"
-                diaginertia="0.006341369 0.006355157 3.9188e-05"/>
-            <joint class="knee" name="RL_calf_joint"/>
-            <geom class="visual" mesh="calf"/>
-            <geom class="calf1"/>
-	    <body name="RL_foot" pos="0 0 -0.35">
-              <geom class="foot"/>
-	    </body>
+                diaginertia="0.005666803 0.005847229 0.000369811"/>
+            <joint class="hip" name="RL_thigh_leg_joint"/>
+            <geom class="visual" mesh="thigh"/>
+            <geom class="thigh1"/>
+            <body name="RL_calf" pos="0 0 -0.35">
+              <inertial mass="0.207" pos="0.002781 6.3e-05 -0.142518"
+                  quat="1 0 0 0"
+                  diaginertia="0.006341369 0.006355157 3.9188e-05"/>
+              <joint class="knee" name="RL_calf_leg_joint"/>
+              <geom class="visual" mesh="calf"/>
+              <geom class="calf1"/>
+              <body name="RL_foot" pos="0 0 -0.35">
+                      <geom class="foot"/>
+              </body>
+            </body>
           </body>
-        </body>
-      </body>      
+        </body>   
+      </body>
+      <!-- End of RL leg -->   
     </body>
+  
   </worldbody>
 
   <actuator>
-    <motor class="abduction" name="FR_hip" joint="FR_hip_joint"/>
-    <motor class="hip" name="FR_thigh" joint="FR_thigh_joint"/>
-    <motor class="knee" name="FR_calf" joint="FR_calf_joint"/>
-    <motor class="abduction" name="FL_hip" joint="FL_hip_joint"/>
-    <motor class="hip" name="FL_thigh" joint="FL_thigh_joint"/>
-    <motor class="knee" name="FL_calf" joint="FL_calf_joint"/>
-    <motor class="abduction" name="RR_hip" joint="RR_hip_joint"/>
-    <motor class="hip" name="RR_thigh" joint="RR_thigh_joint"/>
-    <motor class="knee" name="RR_calf" joint="RR_calf_joint"/>
-    <motor class="abduction" name="RL_hip" joint="RL_hip_joint"/>
-    <motor class="hip" name="RL_thigh" joint="RL_thigh_joint"/>
-    <motor class="knee" name="RL_calf" joint="RL_calf_joint"/>    
+    <motor class="abduction" name="FR_hip_leg" joint="FR_hip_leg_joint"/>
+    <motor class="hip" name="FR_thigh_leg" joint="FR_thigh_leg_joint"/>
+    <motor class="knee" name="FR_calf_leg" joint="FR_calf_leg_joint"/>
+    <motor class="abduction" name="FL_hip_leg" joint="FL_hip_leg_joint"/>
+    <motor class="hip" name="FL_thigh_leg" joint="FL_thigh_leg_joint"/>
+    <motor class="knee" name="FL_calf_leg" joint="FL_calf_leg_joint"/>
+    <motor class="abduction" name="RR_hip_leg" joint="RR_hip_leg_joint"/>
+    <motor class="hip" name="RR_thigh_leg" joint="RR_thigh_leg_joint"/>
+    <motor class="knee" name="RR_calf_leg" joint="RR_calf_leg_joint"/>
+    <motor class="abduction" name="RL_hip_leg" joint="RL_hip_leg_joint"/>
+    <motor class="hip" name="RL_thigh_leg" joint="RL_thigh_leg_joint"/>
+    <motor class="knee" name="RL_calf_leg" joint="RL_calf_leg_joint"/>    
   </actuator>
 
   <keyframe>

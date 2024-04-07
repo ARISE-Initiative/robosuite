@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.models.bases import MobileBaseModel, MountModel
+from robosuite.models.bases import MobileBaseModel, MountModel, LegBaseModel
 from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, string_to_array
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
@@ -125,8 +125,8 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             self.add_mount(base)
         elif isinstance(base, MobileBaseModel):
             self.add_mobile_base(base)
-        elif isinstance(base, LeggedBaseModel):
-            self.add_legged_base(base)
+        elif isinstance(base, LegBaseModel):
+            self.add_leg_base(base)
         else:
             raise ValueError
 
@@ -202,6 +202,56 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             self.contact.append(one_contact)
 
         self.base = mobile_base
+
+        # Update cameras in this model
+        self.cameras = self.get_element_names(self.worldbody, "camera")
+
+    def add_leg_base(self, leg_base):
+        """
+        Mounts @mobile_base to arm.
+
+        Throws error if robot already has a mobile base or if mobile base type is incorrect.
+
+        Args:
+            mobile base (MobileBaseModel): mount MJCF model
+
+        Raises:
+            ValueError: [mobile base already added]
+        """
+        if self.base is not None:
+            raise ValueError("Mobile base already added for this robot!")
+
+        # First adjust mount's base position
+        offset = self.base_offset - leg_base.top_offset
+        leg_base._elements["root_body"].set("pos", array_to_string(offset))
+
+        # if the mount is mobile, the robot should be "merged" into the mount,
+        # so that when the mount moves the robot moves along with it
+        merge_body = self.root_body
+        root = find_elements(root=self.worldbody, tags="body", return_first=True)
+        for body in leg_base.worldbody:
+            root.append(body)
+
+        arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
+
+        mount_support = find_elements(
+            root=leg_base.worldbody, tags="body", attribs={"name": leg_base.correct_naming("support")}, return_first=True
+        )
+        mount_support.append(deepcopy(arm_root))
+        root.remove(arm_root)
+        self.merge_assets(leg_base)
+        for one_actuator in leg_base.actuator:
+            self.actuator.append(one_actuator)
+        for one_sensor in leg_base.sensor:
+            self.sensor.append(one_sensor)
+        for one_tendon in leg_base.tendon:
+            self.tendon.append(one_tendon)
+        for one_equality in leg_base.equality:
+            self.equality.append(one_equality)
+        for one_contact in leg_base.contact:
+            self.contact.append(one_contact)
+
+        self.base = leg_base
 
         # Update cameras in this model
         self.cameras = self.get_element_names(self.worldbody, "camera")

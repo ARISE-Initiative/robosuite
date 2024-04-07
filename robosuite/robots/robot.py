@@ -492,22 +492,22 @@ class Robot(object):
         sensor_dim = self.sim.model.sensor_dim[self.sim.model.sensor_name2id(sensor_name)]
         return np.array(self.sim.data.sensordata[sensor_idx : sensor_idx + sensor_dim])
 
-    def grip_action(self, gripper, gripper_action):
-        """
-        Executes @gripper_action for specified @gripper
+    # def grip_action(self, gripper, gripper_action):
+    #     """
+    #     Executes @gripper_action for specified @gripper
 
-        Args:
-            gripper (GripperModel): Gripper to execute action for
-            gripper_action (float): Value between [-1,1] to send to gripper
-        """
-        actuator_idxs = [self.sim.model.actuator_name2id(actuator) for actuator in gripper.actuators]
-        gripper_action_actual = gripper.format_action(gripper_action)
-        # rescale normalized gripper action to control ranges
-        ctrl_range = self.sim.model.actuator_ctrlrange[actuator_idxs]
-        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-        applied_gripper_action = bias + weight * gripper_action_actual
-        return applied_gripper_action
+    #     Args:
+    #         gripper (GripperModel): Gripper to execute action for
+    #         gripper_action (float): Value between [-1,1] to send to gripper
+    #     """
+    #     actuator_idxs = [self.sim.model.actuator_name2id(actuator) for actuator in gripper.actuators]
+    #     gripper_action_actual = gripper.format_action(gripper_action)
+    #     # rescale normalized gripper action to control ranges
+    #     ctrl_range = self.sim.model.actuator_ctrlrange[actuator_idxs]
+    #     bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+    #     weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+    #     applied_gripper_action = bias + weight * gripper_action_actual
+    #     return applied_gripper_action
 
     def visualize(self, vis_settings):
         """

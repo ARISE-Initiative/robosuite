@@ -22,7 +22,7 @@ ROBOT_CLASS_MAPPING = {
     "GoogleRobot": WheeledRobot,
     "VX300SMobile": WheeledRobot,
     "Tiago": WheeledRobot,
-    # "B1Z1": LeggedRobot,
+    "B1Z1": LeggedRobot,
     "GR1": LeggedRobot,
     "GR1FixedLowerBody": LeggedRobot,
     "GR1ArmsOnly": LeggedRobot,
