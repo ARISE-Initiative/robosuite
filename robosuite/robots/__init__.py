@@ -23,5 +23,5 @@ ROBOT_CLASS_MAPPING = {
     "VX300SMobile": WheeledRobot,
     "Tiago": WheeledRobot,
     # "B1Z1": LeggedRobot,
-    # "GR1": LeggedRobot
+    "GR1": LeggedRobot
 }

@@ -82,7 +82,7 @@ class SimpleGripController(GripperController):
         )
 
         # Control dimension
-        self.control_dim = len(joint_indexes["joints"])
+        self.control_dim = len(joint_indexes["actuators"])
 
         # input and output max and min (allow for either explicit lists or single numbers)
         self.input_max = self.nums2array(input_max, self.control_dim)
@@ -127,11 +127,10 @@ class SimpleGripController(GripperController):
         self.update()
 
         # Parse action based on the impedance mode, and update kp / kd as necessary
-        jnt_dim = len(self.qpos_index)
         delta = action
 
         # Check to make sure delta is size self.joint_dim
-        assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
+        assert len(delta) == self.control_dim, "Delta qpos must be equal to the control dimension of the robot!"
 
         scaled_delta = self.scale_action(delta)
 

@@ -27,7 +27,7 @@ class InspireLeftHand(GripperModel):
 
     @property
     def speed(self):
-        return 0.01
+        return 0.15
 
     @property
     def dof(self):
@@ -54,7 +54,7 @@ class InspireRightHand(GripperModel):
 
     @property
     def speed(self):
-        return 0.01
+        return 0.15
 
     @property
     def dof(self):

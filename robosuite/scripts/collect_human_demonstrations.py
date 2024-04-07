@@ -46,7 +46,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     # Loop until we get a reset from the input or the task completes
     while True:
         # Set active robot
-        active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
+        active_robot = env.robots[0] # if env_configuration == "bimanual" else env.robots[arm == "left"]
 
         # Get the newest action
         input_action, grasp = input2action(
@@ -66,9 +66,9 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             torso_action = input_action[-2:-1]
             action = env.robots[0].create_action_vector(
             {
-                "right": arm_actions, 
-                "base": base_action,
-                "torso": torso_action
+                arm: arm_actions, 
+                env.robots[0].base: base_action,
+                env.robots[0].torso: torso_action
             }
             )
             mode_action = input_action[-1]

@@ -60,6 +60,7 @@ class GripperController(object, metaclass=abc.ABCMeta):
         self.naming_prefix = naming_prefix
 
         self.joint_index = joint_indexes["joints"]
+        self.actuator_index = joint_indexes["actuators"]
         self.qpos_index = joint_indexes["qpos"]
         self.qvel_index = joint_indexes["qvel"]
 

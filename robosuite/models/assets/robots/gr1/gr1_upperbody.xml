@@ -29,9 +29,9 @@
     <mesh name="r_shank_pitch" file="./meshes/r_shank_pitch.STL"/>
     <mesh name="r_foot_pitch" file="./meshes/r_foot_pitch.STL"/>
     <mesh name="r_foot_roll" file="./meshes/r_foot_roll.STL"/>
-    <mesh name="waist_yaw" file="./meshes/waist_yaw.STL"/>
-    <mesh name="waist_pitch" file="./meshes/waist_pitch.STL"/>
-    <mesh name="waist_roll" file="./meshes/waist_roll.STL"/>
+    <mesh name="torso_waist_yaw" file="./meshes/waist_yaw.STL"/>
+    <mesh name="torso_waist_pitch" file="./meshes/waist_pitch.STL"/>
+    <mesh name="torso_waist_roll" file="./meshes/waist_roll.STL"/>
     <mesh name="head_yaw" file="./meshes/head_yaw.STL"/>
     <mesh name="head_roll" file="./meshes/head_roll.STL"/>
     <mesh name="head_pitch" file="./meshes/head_pitch.STL"/>
@@ -56,42 +56,43 @@
         <!-- <camera name="obs_hands" pos="0.035 0.000 1.535" xyaxes="0.000 1.000 0.000 -0.707 0.000 0.707"/> -->
     <!-- Base -->
     <body name="base">
-        <inertial pos="-0.0508888 0.000109183 -0.0455794" quat="0.706855 0.707166 0.0123661 -0.0109307" mass="6.45117" diaginertia="0.0149302 0.0127972 0.00640923"/>
+        <!-- <inertial pos="-0.0508888 0.000109183 -0.0455794" quat="0.706855 0.707166 0.0123661 -0.0109307" mass="6.45117" diaginertia="0.0149302 0.0127972 0.00640923"/> -->
+        <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
         <!-- Base mesh -->
         <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="base"/>
         <geom size="0.04 0.04 0.04" pos="0 0 -0.06" type="box" rgba="0 0 0 1"/>
         <!-- <joint armature="0" damping="0" limited="false" name="root" pos="0 0 0" stiffness="0" type="free"/> -->
         <!-- Torso center of mass -->
-        <body name="torso_link">
+        <!-- <body name="torso_link">
             <body name="base_com" />
-        </body>
+        </body> -->
 
         <!-- Torso -->
 
         <!-- Waist yaw -->
-        <body name="waist_yaw" pos="0 0 0.0065">
+        <body name="torso_waist_yaw" pos="0 0 0.0065">
             <site name="waist" pos="0 0 0" size="0.06 0.06 0.06" rgba="1 0 0 0" type="sphere" group="1"/>
             <inertial pos="-0.010388 -0.00169636 0.0224709" quat="8.03475e-05 0.752953 -6.91813e-06 0.658075" mass="0.37886" diaginertia="0.000387148 0.000354992 0.000193448"/>
-            <!-- <joint name="waist_yaw" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="-1.221e-05 -6.8349e-05 1" range="-1.05 1.05"/> -->
+            <!-- <joint name="torso_waist_yaw" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="-1.221e-05 -6.8349e-05 1" range="-1.05 1.05"/> -->
 
-            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="waist_yaw"/>
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="torso_waist_yaw"/>
             <geom size="0.04 0.04 0.04" pos="0 0 -0.06" quat="0.707388 0.706825 0 0" type="box" rgba="0 0 0 1"/>
 
             <!-- Waist pitch -->
-            <body name="waist_pitch" pos="0 0 0.055">
+            <body name="torso_waist_pitch" pos="0 0 0.055">
                 <inertial pos="0.00229173 -0.00229364 0.0425378" quat="0.998452 -0.0194486 0.0162447 0.0495079" mass="4.40328" diaginertia="0.00487449 0.00487146 0.00355351"/>
-                <!-- <joint name="waist_pitch" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="0 1 -6.8349e-05" range="-0.52 1.22"/> -->
+                <!-- <joint name="torso_waist_pitch" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="0 1 -6.8349e-05" range="-0.52 1.22"/> -->
 
-                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="waist_pitch"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="torso_waist_pitch"/>
                 <geom size="0.04 0.04 0.06" type="box" rgba="0 0 0 1"/>
 
                 <!-- Waist roll -->
-                <body name="waist_roll" pos="0 0 0.085">
+                <body name="torso_waist_roll" pos="0 0 0.085">
                     <site name="chest" pos="0 0 0.2" size="0.06 0.06 0.06" rgba="1 0 0 0" type="sphere" group="1"/>
                     <inertial pos="-0.00982804 -1.2954e-05 0.160653" quat="0.999997 1.84368e-05 -0.00260593 -4.00255e-05" mass="7.34393" diaginertia="0.0305266 0.0217567 0.0136783"/>
-                    <!-- <joint name="waist_roll" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="1 0 1.221e-05" range="-0.7 0.7"/> -->
+                    <!-- <joint name="torso_waist_roll" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="1 0 1.221e-05" range="-0.7 0.7"/> -->
 
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="waist_roll"/>
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="torso_waist_roll"/>
                     <geom size="0.09 0.09 0.09" pos="0 0 0.15" type="box" rgba="0 0 0 1"/>
 
                     <!-- Head yaw -->
@@ -131,6 +132,7 @@
 
                 <!-- r upper arm pitch -->
                 <body name="r_upper_arm_pitch" pos="0 -0.12664 0.21725" quat="0.976303 -0.216409 0 0">
+                    <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
                     <site name="r_shoulder_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                     <inertial pos="0.00515735 -0.0587916 0.000122944" quat="0.999675 -0.0254775 -0.000125407 -0.000494276" mass="0.777391" diaginertia="0.00054641 0.000340601 0.00031934"/>
                     <joint name="r_shoulder_pitch" pos="0 0 0" axis="0 1 0" range="-2.6179938779914944 1.0471975511965976"/>
@@ -213,6 +215,7 @@
                 <!-- Left arm -->
                 <!-- l upper arm pitch -->
                 <body name="l_upper_arm_pitch" pos="0 0.12661 0.21727" quat="0.976289 0.216473 0 0">
+                    <site name="left_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
                     <site name="l_shoulder_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                     <inertial pos="0.00515733 0.0588337 0.000122944" quat="0.999793 0.0203364 -0.000117253 0.0011083" mass="0.777394" diaginertia="0.000546411 0.000340581 0.000319359"/>
                     <joint name="l_shoulder_pitch" pos="0 0 0" axis="0 -1 0" range="-1.0471975511965976 2.6179938779914944"/>

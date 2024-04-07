@@ -256,20 +256,20 @@
     </equality>
 
   <actuator>
-      <motor joint="joint_l_thumb_proximal_1"  ctrllimited="true" ctrlrange="-1 1" name="l_thumb_proximal_1_drive"/>
+      <!-- <motor joint="joint_l_thumb_proximal_1"  ctrllimited="true" ctrlrange="-1 1" name="l_thumb_proximal_1_drive"/>
       <motor joint="joint_l_thumb_proximal_2" ctrllimited="true" ctrlrange="-1 1" name="l_thumb_proximal_2_drive"/>
       <motor joint="joint_l_index_proximal" ctrllimited="true" ctrlrange="-1 1" name="l_index_proximal_drive"/>
       <motor joint="joint_l_middle_proximal" ctrllimited="true" ctrlrange="-1 1" name="l_middle_proximal_drive"/>
       <motor joint="joint_l_ring_proximal"  ctrllimited="true" ctrlrange="-1 1" name="l_ring_proximal_drive"/>
-      <motor joint="joint_l_pinky_proximal" ctrllimited="true" ctrlrange="-1 1" name="l_pinky_proximal_drive"/>
+      <motor joint="joint_l_pinky_proximal" ctrllimited="true" ctrlrange="-1 1" name="l_pinky_proximal_drive"/> -->
 
 
-      <!-- <position joint="joint_l_thumb_proximal_1" name="thumb_proximal_1_drive" ctrlrange="0 1.3"/>
-      <position joint="joint_l_thumb_proximal_2" name="thumb_proximal_2_drive" ctrlrange="0 0.68" kp="100"/>
-      <position joint="joint_l_index_proximal" name="index_proximal_drive" ctrlrange="0 1.62"/>
-      <position joint="joint_l_middle_proximal" name="middle_proximal_drive" ctrlrange="0 1.62"/>
-      <position joint="joint_l_ring_proximal" name="ring_proximal_drive" ctrlrange="0 1.62"/>
-      <position joint="joint_l_pinky_proximal" name="pinky_proximal_drive" ctrlrange="0 1.62"/> -->
+      <position joint="joint_l_thumb_proximal_1" name="thumb_proximal_1_drive" ctrlrange="0 1.3" kp="100" forcelimited="true" forcerange="-20 20"/>
+      <position joint="joint_l_thumb_proximal_2" name="thumb_proximal_2_drive" ctrlrange="0 0.68" kp="100" forcelimited="true" forcerange="-20 20"/>
+      <position joint="joint_l_index_proximal" name="index_proximal_drive" ctrlrange="0 1.62" kp="100" forcelimited="true" forcerange="-20 20"/>
+      <position joint="joint_l_middle_proximal" name="middle_proximal_drive" ctrlrange="0 1.62" kp="100" forcelimited="true" forcerange="-20 20"/>
+      <position joint="joint_l_ring_proximal" name="ring_proximal_drive" ctrlrange="0 1.62" kp="100" forcelimited="true" forcerange="-20 20"/>
+      <position joint="joint_l_pinky_proximal" name="pinky_proximal_drive" ctrlrange="0 1.62" kp="100" forcelimited="true" forcerange="-20 20"/>
 
 
   </actuator>

@@ -747,6 +747,7 @@ class Robot(object):
                 self.controller_config[gripper_name]["policy_freq"] = self.control_freq
                 self.controller_config[gripper_name]["joint_indexes"] = {
                     "joints": self.gripper_joints[arm],
+                    "actuators": self._ref_joint_gripper_actuator_indexes[arm],
                     "qpos": self._ref_gripper_joint_pos_indexes[arm],
                     "qvel": self._ref_gripper_joint_vel_indexes[arm],
                 }
@@ -757,7 +758,6 @@ class Robot(object):
                     low,
                     high
                 )
-
                 self.controller[gripper_name] = controller_factory(
                     self.controller_config[gripper_name]["type"],
                     self.controller_config[gripper_name],

@@ -29,9 +29,9 @@
         <mesh name="r_shank_pitch" file="./meshes/r_shank_pitch.STL"/>
         <mesh name="r_foot_pitch" file="./meshes/r_foot_pitch.STL"/>
         <mesh name="r_foot_roll" file="./meshes/r_foot_roll.STL"/>
-        <mesh name="waist_yaw" file="./meshes/waist_yaw.STL"/>
-        <mesh name="waist_pitch" file="./meshes/waist_pitch.STL"/>
-        <mesh name="waist_roll" file="./meshes/waist_roll.STL"/>
+        <mesh name="torso_waist_yaw" file="./meshes/waist_yaw.STL"/>
+        <mesh name="torso_waist_pitch" file="./meshes/waist_pitch.STL"/>
+        <mesh name="torso_waist_roll" file="./meshes/waist_roll.STL"/>
         <mesh name="head_yaw" file="./meshes/head_yaw.STL"/>
         <mesh name="head_roll" file="./meshes/head_roll.STL"/>
         <mesh name="head_pitch" file="./meshes/head_pitch.STL"/>
@@ -68,27 +68,27 @@
             <!-- Torso -->
 
             <!-- Waist yaw -->
-            <body name="waist_yaw" pos="0 0 0.0065">
+            <body name="torso_waist_yaw" pos="0 0 0.0065">
                 <inertial pos="-0.010388 -0.00169636 0.0224709" quat="8.03475e-05 0.752953 -6.91813e-06 0.658075" mass="0.37886" diaginertia="0.000387148 0.000354992 0.000193448"/>
-                <joint name="waist_yaw" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="-1.221e-05 -6.8349e-05 1" range="-1.05 1.05"/>
+                <joint name="torso_waist_yaw" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="-1.221e-05 -6.8349e-05 1" range="-1.05 1.05"/>
 
-                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="waist_yaw"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="torso_waist_yaw"/>
                 <geom size="0.04 0.04 0.04" pos="0 0 -0.06" quat="0.707388 0.706825 0 0" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                 <!-- Waist pitch -->
-                <body name="waist_pitch" pos="0 0 0.055">
+                <body name="torso_waist_pitch" pos="0 0 0.055">
                     <inertial pos="0.00229173 -0.00229364 0.0425378" quat="0.998452 -0.0194486 0.0162447 0.0495079" mass="4.40328" diaginertia="0.00487449 0.00487146 0.00355351"/>
-                    <joint name="waist_pitch" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="0 1 -6.8349e-05" range="-0.52 1.22"/>
+                    <joint name="torso_waist_pitch" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="0 1 -6.8349e-05" range="-0.52 1.22"/>
 
-                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="waist_pitch"/>
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="torso_waist_pitch"/>
                     <geom size="0.04 0.04 0.06" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                     <!-- Waist roll -->
-                    <body name="waist_roll" pos="0 0 0.085">
+                    <body name="torso_waist_roll" pos="0 0 0.085">
                         <inertial pos="-0.00982804 -1.2954e-05 0.160653" quat="0.999997 1.84368e-05 -0.00260593 -4.00255e-05" mass="7.34393" diaginertia="0.0305266 0.0217567 0.0136783"/>
-                        <joint name="waist_roll" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="1 0 1.221e-05" range="-0.7 0.7"/>
+                        <joint name="torso_waist_roll" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="1 0 1.221e-05" range="-0.7 0.7"/>
 
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="waist_roll"/>
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="torso_waist_roll"/>
                         <geom size="0.09 0.09 0.09" pos="0 0 0.15" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                         <!-- Head yaw -->
@@ -288,42 +288,42 @@
             <!-- l thigh roll -->
             <body name="l_thigh_roll" pos="-0.047999 0.105 -0.057493">
                 <inertial pos="0.04163 3.4568e-05 -0.0021382" quat="0.575529 0.581908 -0.40597 0.406619" mass="1.1437" diaginertia="0.00117548 0.00100413 0.000943892"/>
-                <joint name="l_hip_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.09 0.79"/>
+                <joint name="l_leg_hip_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.09 0.79"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="l_thigh_roll"/>
                 <geom size="0.04 0.04 0.04" pos="-0.046 0 0" type="box" rgba="0.75294 0.75294 0.75294 1"/>
 
                 <!-- l thigh yaw -->
                 <body name="l_thigh_yaw" pos="0.048 0 -0.030499">
                     <inertial pos="0.00018348 0.046462 -0.10389" quat="0.704251 -0.0226446 -0.0453749 0.708138" mass="3.9888" diaginertia="0.0163385 0.0100158 0.00924336"/>
-                    <joint name="l_hip_yaw" pos="0 0 0" axis="1.2209e-05 6.8349e-05 1" range="-0.7 0.7"/>
+                    <joint name="l_leg_hip_yaw" pos="0 0 0" axis="1.2209e-05 6.8349e-05 1" range="-0.7 0.7"/>
                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="l_thigh_yaw"/>
                     <geom size="0.04 0.04 0.04" pos="0 0 0.01" type="box" rgba="0.75294 0.75294 0.75294 1"/>
 
                     <!-- l thigh pitch -->
                     <body name="l_thigh_pitch" pos="0 0 -0.11">
                         <inertial pos="0.0028493 -0.021688 -0.090886" quat="0.707411 -0.0125435 -0.0111264 0.706604" mass="6.369" diaginertia="0.0532352 0.0425096 0.0134363"/>
-                        <joint name="l_hip_pitch" pos="0 0 0" axis="0 1 -6.8349e-05" range="-1.75 0.7"/>
+                        <joint name="l_leg_hip_pitch" pos="0 0 0" axis="0 1 -6.8349e-05" range="-1.75 0.7"/>
                         <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="l_thigh_pitch"/>
                         <geom size="0.04 0.04 0.175" pos="0 0 -0.15" type="box" rgba="0.75294 0.75294 0.75294 1"/>
 
                         <!-- l shank pitch -->
                         <body name="l_shank_pitch" pos="0 2.4606e-05 -0.36">
                             <inertial pos="0.0024312 -2.9945e-05 -0.11554" quat="0.692137 0.00134576 0.00140217 0.721764" mass="2.1895" diaginertia="0.0162703 0.016117 0.00113627"/>
-                            <joint name="l_knee_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-0.09 1.92"/>
+                            <joint name="l_leg_knee_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-0.09 1.92"/>
                             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="l_shank_pitch"/>
                             <geom size="0.04 0.04 0.1" pos="0 0 -0.15" type="box" rgba="0.75294 0.75294 0.75294 1"/>
 
                             <!-- l foot pitch -->
                             <body name="l_foot_pitch" pos="0 2.3239e-05 -0.34">
                                 <inertial pos="1.748e-11 4.3804e-11 0" quat="1 3.42295e-05 -6.07362e-06 -2.07897e-10" mass="0.080335" diaginertia="5.1022e-06 4.3976e-06 4.188e-06"/>
-                                <joint name="l_ankle_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-1.05 0.52"/>
+                                <joint name="l_leg_ankle_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-1.05 0.52"/>
                                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="l_foot_pitch"/>
                                 <geom size="0.015 0.015 0.015" pos="0 0 0.01" type="box" rgba="0.75294 0.75294 0.75294 1"/>
 
                                 <!-- l foot roll -->
                                 <body name="l_foot_roll">
                                     <inertial pos="0.039446 0.00035757 -0.038101" quat="-0.00087198 0.709539 -0.00177594 0.704664" mass="0.584" diaginertia="0.00271032 0.0024027 0.000369145"/>
-                                    <joint name="l_ankle_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.44 0.44"/>
+                                    <joint name="l_leg_ankle_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.44 0.44"/>
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="l_foot_roll"/>
                                     <geom name="l_foot_1" size="0.015 0.015 0.12" pos="0.05 0.02 -0.035" quat="0.707105 0 0.707108 0" type="box" rgba="0.75294 0.75294 0.75294 1"/>
                                     <geom name="l_foot_2" size="0.015 0.015 0.12" pos="0.05 -0.02 -0.035" quat="0.707105 0 0.707108 0" type="box" rgba="0.75294 0.75294 0.75294 1"/>
@@ -348,42 +348,42 @@
             <!-- r thigh roll -->
             <body name="r_thigh_roll" pos="-0.047999 -0.105 -0.057508">
                 <inertial pos="0.0416295 3.45678e-05 -0.00213824" quat="0.57555 0.581927 -0.405942 0.406589" mass="1.14367" diaginertia="0.00117548 0.00100417 0.000943891"/>
-                <joint name="r_hip_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.79 0.09"/>
+                <joint name="r_leg_hip_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.79 0.09"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_thigh_roll"/>
                 <geom size="0.04 0.04 0.04" pos="-0.046 0 0" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                 <!-- r thigh yaw -->
                 <body name="r_thigh_yaw" pos="0.048 0 -0.030499">
                     <inertial pos="-0.00159762 -0.0464482 -0.103899" quat="0.709186 -0.0420808 -0.0194028 0.703497" mass="3.98882" diaginertia="0.0163388 0.0100142 0.00924469"/>
-                    <joint name="r_hip_yaw" pos="0 0 0" axis="1.2209e-05 6.8349e-05 1" range="-0.7 0.7"/>
+                    <joint name="r_leg_hip_yaw" pos="0 0 0" axis="1.2209e-05 6.8349e-05 1" range="-0.7 0.7"/>
                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_thigh_yaw"/>
                     <geom size="0.04 0.04 0.04" pos="0 0 0.01" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                     <!-- r thigh pitch -->
                     <body name="r_thigh_pitch" pos="0 0 -0.11">
                         <inertial pos="0.002842 0.0217009 -0.0919987" quat="0.706586 -0.0113774 -0.0126258 0.707423" mass="6.36895" diaginertia="0.0532349 0.0424818 0.0134641"/>
-                        <joint name="r_hip_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-1.75 0.7"/>
+                        <joint name="r_leg_hip_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-1.75 0.7"/>
                         <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_thigh_pitch"/>
                         <geom size="0.04 0.04 0.175" pos="0 0 -0.15" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                         <!-- r shank pitch -->
                         <body name="r_shank_pitch" pos="0 2.4606e-05 -0.36">
                             <inertial pos="0.00236658 4.56188e-05 -0.115532" quat="0.71872 0.00154106 0.00120241 0.695296" mass="2.18947" diaginertia="0.0162708 0.0161183 0.00113536"/>
-                            <joint name="r_knee_pitch" pos="0 0 0" axis="0 1 -6.8349e-05" range="-0.09 1.92"/>
+                            <joint name="r_leg_knee_pitch" pos="0 0 0" axis="0 1 -6.8349e-05" range="-0.09 1.92"/>
                             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_shank_pitch"/>
                             <geom size="0.04 0.04 0.1" pos="0 0 -0.15" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                             <!-- r foot pitch -->
                             <body name="r_foot_pitch" pos="0 2.3239e-05 -0.34">
                                 <inertial pos="1.75705e-11 4.40342e-11 0" quat="1 3.42336e-05 -6.07409e-06 -2.07938e-10" mass="0.0799219" diaginertia="5.11122e-06 4.40004e-06 4.17954e-06"/>
-                                <joint name="r_ankle_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-1.05 0.52"/>
+                                <joint name="r_leg_ankle_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-1.05 0.52"/>
                                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.752941 0.752941 0.752941 1" mesh="r_foot_pitch"/>
                                 <geom size="0.015 0.015 0.015" pos="0 0 0.01" type="box" rgba="0.752941 0.752941 0.752941 1"/>
 
                                 <!-- r foot roll -->
                                 <body name="r_foot_roll">
                                     <inertial pos="0.043909 -0.00032475 -0.039419" quat="0.000727105 0.710094 0.00155959 0.704104" mass="0.58089" diaginertia="0.00280098 0.0024886 0.000368482"/>
-                                    <joint name="r_ankle_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.44 0.44"/>
+                                    <joint name="r_leg_ankle_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.44 0.44"/>
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.75294 0.75294 0.75294 1" mesh="r_foot_roll"/>
                                     <geom name="r_foot_1" size="0.015 0.015 0.12" pos="0.05 0.02 -0.035" quat="0.707105 0 0.707108 0" type="box" rgba="0.75294 0.75294 0.75294 1"/>
                                     <geom name="r_foot_2" size="0.015 0.015 0.12" pos="0.05 -0.02 -0.035" quat="0.707105 0 0.707108 0" type="box" rgba="0.75294 0.75294 0.75294 1"/>
@@ -411,26 +411,26 @@
 
 
         <!-- Left leg motors -->
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_hip_roll" name="l_hip_roll"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_hip_yaw" name="l_hip_yaw"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_hip_pitch" name="l_hip_pitch"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_knee_pitch" name="l_knee_pitch"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_ankle_pitch" name="l_ankle_pitch"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_ankle_roll" name="l_ankle_roll"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_leg_hip_roll" name="l_leg_hip_roll"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_leg_hip_yaw" name="l_leg_hip_yaw"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_leg_hip_pitch" name="l_leg_hip_pitch"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_leg_knee_pitch" name="l_leg_knee_pitch"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_leg_ankle_pitch" name="l_leg_ankle_pitch"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="l_leg_ankle_roll" name="l_leg_ankle_roll"/>
         <!-- End of Left leg motors -->
 
         <!-- Right leg motors -->
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_hip_roll" name="r_hip_roll"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_hip_yaw" name="r_hip_yaw"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_hip_pitch" name="r_hip_pitch"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_knee_pitch" name="r_knee_pitch"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_ankle_pitch" name="r_ankle_pitch"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_ankle_roll" name="r_ankle_roll"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_leg_hip_roll" name="r_leg_hip_roll"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_leg_hip_yaw" name="r_leg_hip_yaw"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_leg_hip_pitch" name="r_leg_hip_pitch"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_leg_knee_pitch" name="r_leg_knee_pitch"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_leg_ankle_pitch" name="r_leg_ankle_pitch"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_leg_ankle_roll" name="r_leg_ankle_roll"/>
         <!-- End of Right leg motors -->
 
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="waist_yaw" name="waist_yaw"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="waist_pitch" name="waist_pitch"/>
-        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="waist_roll" name="waist_roll"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="torso_waist_yaw" name="torso_waist_yaw"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="torso_waist_pitch" name="torso_waist_pitch"/>
+        <motor ctrllimited="true" ctrlrange="-20000 20000" joint="torso_waist_roll" name="torso_waist_roll"/>
         <motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_yaw" name="head_yaw"/>
         <motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_pitch" name="head_pitch"/>
         <motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_roll" name="head_roll"/>

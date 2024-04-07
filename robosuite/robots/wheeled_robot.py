@@ -226,17 +226,6 @@ class WheeledRobot(MobileBaseRobot):
             self.eef_site_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_site"])
             self.eef_cylinder_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_cylinder"])
 
-        # # set up references for mobile base
-        # self._ref_base_actuator_indexes = [
-        #     self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base.actuators
-        # ]
-
-        # # set up references for torso
-        # self._ref_torso_actuator_indexes = [
-        #     self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.torso_actuators
-        # ]
-
-
         self._ref_actuators_indexes_dict[self.base] = [
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base_actuators
         ]
