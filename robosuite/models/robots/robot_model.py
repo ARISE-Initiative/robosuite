@@ -120,10 +120,13 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
                 joint.set(attrib, array_to_string(np.array([values[i]])))
 
     def add_base(self, base):
+        # import pdb; pdb.set_trace()
         if isinstance(base, MountModel):
             self.add_mount(base)
         elif isinstance(base, MobileBaseModel):
             self.add_mobile_base(base)
+        elif isinstance(base, LeggedBaseModel):
+            self.add_legged_base(base)
         else:
             raise ValueError
 
@@ -131,7 +134,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         """
         Mounts @mount to arm.
 
-        Throws error if robot already has a mount or if mount type is incorrect.
+        Throws error if robot already has a mount or if mount type i\s incorrect.
 
         Args:
             mount (MountModel): mount MJCF model

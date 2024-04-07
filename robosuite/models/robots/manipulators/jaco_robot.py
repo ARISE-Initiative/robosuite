@@ -22,11 +22,11 @@ class Jaco(ManipulatorModel):
 
     @property
     def default_gripper(self):
-        return "JacoThreeFingerGripper"
+        return {"right": "JacoThreeFingerGripper"}
 
     @property
     def default_controller_config(self):
-        return "default_jaco"
+        return {"right": "default_jaco"}
 
     @property
     def init_qpos(self):

@@ -68,9 +68,10 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             {
                 arm: arm_actions, 
                 env.robots[0].base: base_action,
-                env.robots[0].torso: torso_action
+                # env.robots[0].torso: torso_action
             }
             )
+            # import pdb; pdb.set_trace()
             mode_action = input_action[-1]
             if mode_action > 0:
                 env.robots[0].enable_parts(base=True, torso=True)

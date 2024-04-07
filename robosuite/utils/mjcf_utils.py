@@ -835,6 +835,18 @@ def find_elements_by_substring(root, tags, substrings, attribs=None, return_firs
     return new_elements if len(new_elements) > 0 else None
 
 
+def find_parent(element, target):
+    """
+    Find the parent element of the target.
+    """
+    for child in element:
+        if child == target:
+            return element  # Found the parent
+        parent = find_parent(child, target)
+        if parent is not None:
+            return parent
+    return None
+
 def save_sim_model(sim, fname):
     """
     Saves the current model xml from @sim at file location @fname.

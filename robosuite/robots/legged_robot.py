@@ -10,6 +10,7 @@ from robosuite.controllers.mobile_base_controller import MobileBaseController
 from robosuite.controllers.torso_height_controller import TorsoHeightController
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
 from robosuite.utils.observables import Observable, sensor
+from robosuite.models.bases.legged_base_model import LeggedBaseModel
 
 
 class LeggedRobot(MobileBaseRobot):
@@ -197,6 +198,10 @@ class LeggedRobot(MobileBaseRobot):
             if part_name not in self.controller:
                 continue
             self.controller[part_name].reset_goal()
+
+        # Set initial q pos of the legged base
+        if isinstance(self.robot_model.base, LeggedBaseModel):
+            self.sim.data.qpos[self._ref_joint_pos_indexes[self.legs]] = self.robot_model.base.init_qpos
 
     def setup_references(self):
         """

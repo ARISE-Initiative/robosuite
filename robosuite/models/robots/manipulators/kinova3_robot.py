@@ -22,11 +22,11 @@ class Kinova3(ManipulatorModel):
 
     @property
     def default_gripper(self):
-        return "Robotiq85Gripper"
+        return {"right": "Robotiq85Gripper"}
 
     @property
     def default_controller_config(self):
-        return "default_kinova3"
+        return {"right": "default_kinova3"}
 
     @property
     def init_qpos(self):

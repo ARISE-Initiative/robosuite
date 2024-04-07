@@ -67,10 +67,6 @@ class MobileBaseModel(MujocoXMLModel):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def height_actuator(self):
-        raise NotImplementedError
-
-    @property
     def top_offset(self):
         """
         Returns vector from model root body to model top.

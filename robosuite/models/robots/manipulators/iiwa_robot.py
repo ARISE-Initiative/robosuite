@@ -22,11 +22,11 @@ class IIWA(ManipulatorModel):
 
     @property
     def default_gripper(self):
-        return "Robotiq140Gripper"
+        return {"right" : "Robotiq140Gripper"}
 
     @property
     def default_controller_config(self):
-        return "default_iiwa"
+        return {"right": "default_iiwa"}
 
     @property
     def init_qpos(self):

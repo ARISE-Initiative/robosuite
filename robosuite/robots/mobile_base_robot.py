@@ -7,6 +7,9 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.robots.robot import Robot
 
+from robosuite.controllers import controller_factory, load_controller_config
+
+
 
 class MobileBaseRobot(Robot):
     """
@@ -40,6 +43,103 @@ class MobileBaseRobot(Robot):
         Loads controller to be used for dynamic trajectories
         """
         pass
+
+
+    def _load_base_controller(self):
+        """
+        Load base controller
+        """
+        if len(self._ref_actuators_indexes_dict[self.base]) == 0:
+            return None
+        # if not self.controller_config[self.torso]:
+        #         # Need to update default for a single agent
+        #         controller_path = os.path.join(
+        #             os.path.dirname(__file__),
+        #             "..",
+        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
+        #         )
+        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
+        # TODO: Add a default controller config for torso
+        self.controller_config[self.base] = {}
+        self.controller_config[self.base]["type"] = "JOINT_VELOCITY"
+        self.controller_config[self.base]["interpolation"] = None
+        self.controller_config[self.base]["ramp_ratio"] = 1.0
+        self.controller_config[self.base]["robot_name"] = self.name
+
+        self.controller_config[self.base]["sim"] = self.sim
+        self.controller_config[self.base]["part_name"] = self.base
+        self.controller_config[self.base]["naming_prefix"] = self.robot_model.base.naming_prefix
+        self.controller_config[self.base]["ndim"] = self._joint_split_idx
+        self.controller_config[self.base]["policy_freq"] = self.control_freq
+
+        ref_base_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.base_joints]
+        ref_base_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.base_joints]
+        ref_base_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.base_joints]
+        self.controller_config[self.base]["joint_indexes"] = {
+            "joints": ref_base_joint_indexes,
+            "qpos": ref_base_joint_pos_indexes,
+            "qvel": ref_base_joint_vel_indexes,
+        }
+
+        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 1]
+
+        self.controller_config[self.base]["actuator_range"] = (
+            low,
+            high
+        )
+        self.controller[self.base] = controller_factory(self.controller_config[self.base]["type"], self.controller_config[self.base])
+
+    def _load_torso_controller(self):
+        """
+        Load torso controller
+        """
+        if len(self._ref_actuators_indexes_dict[self.torso]) == 0:
+            return None
+        # if not self.controller_config[self.torso]:
+        #         # Need to update default for a single agent
+        #         controller_path = os.path.join(
+        #             os.path.dirname(__file__),
+        #             "..",
+        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
+        #         )
+        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
+        # TODO: Add a default controller config for torso
+        self.controller_config[self.torso] = {}
+        self.controller_config[self.torso]["type"] = "JOINT_VELOCITY"
+        self.controller_config[self.torso]["interpolation"] = None
+        self.controller_config[self.torso]["ramp_ratio"] = 1.0
+        self.controller_config[self.torso]["robot_name"] = self.name
+        self.controller_config[self.torso]["sim"] = self.sim
+        self.controller_config[self.torso]["part_name"] = self.torso
+        self.controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
+        self.controller_config[self.torso]["ndim"] = self._joint_split_idx
+        self.controller_config[self.torso]["policy_freq"] = self.control_freq
+
+        ref_torso_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.torso_joints]
+        ref_torso_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.torso_joints]
+        ref_torso_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.torso_joints]
+        self.controller_config[self.torso]["joint_indexes"] = {
+            "joints": ref_torso_joint_indexes,
+            "qpos": ref_torso_joint_pos_indexes,
+            "qvel": ref_torso_joint_vel_indexes,
+        }
+
+        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 1]
+
+        self.controller_config[self.torso]["actuator_range"] = (
+            low,
+            high
+        )
+
+        # self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
+        # import pdb; pdb.set_trace()
+
+        self.controller[self.torso] = controller_factory(
+            self.controller_config[self.torso]["type"],
+            self.controller_config[self.torso]
+        )
 
     def load_model(self):
         """
