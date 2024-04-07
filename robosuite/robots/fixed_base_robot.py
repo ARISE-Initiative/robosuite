@@ -148,7 +148,17 @@ class FixedBaseRobot(Robot):
 
             # Get gripper action, if applicable
             if self.has_gripper[arm]:
-                self.grip_action(gripper=self.gripper[arm], gripper_action=gripper_action)
+                gripper_name = self.get_gripper_name(arm)
+                # if policy_step:
+                formatted_gripper_action = self.gripper[arm].format_action(gripper_action)
+                self.controller[gripper_name].set_goal(formatted_gripper_action)
+                applied_gripper_action = self.controller[gripper_name].run_controller()
+                self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
+
+            # # Get gripper action, if applicable
+            # if self.has_gripper[arm]:
+            #     applied_gripper_action = self.grip_action(gripper=self.gripper[arm], gripper_action=gripper_action)
+            #     self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
 
         # Clip the torques
         low, high = self.torque_limits

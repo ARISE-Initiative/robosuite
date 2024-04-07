@@ -11,7 +11,7 @@ class TorsoController(object, metaclass=abc.ABCMeta):
     """
     General controller interface.
 
-    Requires reference to mujoco sim object, eef_name of specific robot, relevant joint_indexes to that robot, and
+    Requires reference to mujoco sim object, relevant joint_indexes to that robot, and
     whether an initial_joint is used for nullspace torques or not
 
     Args:

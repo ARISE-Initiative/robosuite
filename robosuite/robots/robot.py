@@ -507,7 +507,7 @@ class Robot(object):
         bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
         weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
         applied_gripper_action = bias + weight * gripper_action_actual
-        self.sim.data.ctrl[actuator_idxs] = applied_gripper_action
+        return applied_gripper_action
 
     def visualize(self, vis_settings):
         """
@@ -732,6 +732,36 @@ class Robot(object):
 
             # Instantiate the relevant controller
             self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
+            
+            if self.has_gripper[arm]:
+                # Load gripper controllers
+                gripper_name = self.get_gripper_name(arm)
+                self.controller_config[gripper_name] = {}
+                self.controller_config[gripper_name]["type"] = "GRIP"
+                self.controller_config[gripper_name]["robot_name"] = self.name
+                self.controller_config[gripper_name]["sim"] = self.sim
+                self.controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+                self.controller_config[gripper_name]["part_name"] = gripper_name
+                self.controller_config[gripper_name]["naming_prefix"] = self.robot_model.naming_prefix
+                self.controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
+                self.controller_config[gripper_name]["policy_freq"] = self.control_freq
+                self.controller_config[gripper_name]["joint_indexes"] = {
+                    "joints": self.gripper_joints[arm],
+                    "qpos": self._ref_gripper_joint_pos_indexes[arm],
+                    "qvel": self._ref_gripper_joint_vel_indexes[arm],
+                }
+                low =  self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm], 0]
+                high = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm], 1]
+
+                self.controller_config[gripper_name]["actuator_range"] = (
+                    low,
+                    high
+                )
+
+                self.controller[gripper_name] = controller_factory(
+                    self.controller_config[gripper_name]["type"],
+                    self.controller_config[gripper_name],
+                )
 
     def enable_parts(self, 
                      right_arm=True, 
@@ -776,3 +806,6 @@ class Robot(object):
 
         action_index_info_str = ", ".join(action_index_info)
         print(f"[{action_index_info_str}]")
+
+    def get_gripper_name(self, arm):
+        return f"{arm}_gripper"
