@@ -286,18 +286,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.sim.forward()
         # Setup observables, reloading if
         self._obs_cache = {}
-        if self.hard_reset:
-            # If we're using hard reset, must re-update sensor object references
-            if hasattr(self.viewer, "_setup_observables"):
-                _observables = self.viewer._setup_observables()
-            else:
-                _observables = self._setup_observables()
-            for obs_name, obs in _observables.items():
-                # modify observable if already exists
-                if obs_name in self._observables:
-                    self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
-                else:
-                    self._observables[obs_name] = obs
+        self._reset_observables()
 
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
@@ -316,6 +305,16 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Return new observations
         return observations
+
+    def _reset_observables(self):
+        if self.hard_reset:
+            # If we're using hard reset, must re-update sensor object references
+            if hasattr(self.viewer, "_setup_observables"):
+                _observables = self.viewer._setup_observables()
+            else:
+                _observables = self._setup_observables()
+            for obs_name, obs in _observables.items():
+                self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
 
     def _reset_internal(self):
         """Resets simulation internal configurations."""
