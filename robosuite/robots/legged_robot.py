@@ -40,9 +40,36 @@ class LeggedRobot(MobileBaseRobot):
             control_freq=control_freq,
         )
 
-    # def _load_leg_controllers(self):
+    def _load_leg_controllers(self):
+        self.controller_config[self.legs] = {}
+        self.controller_config[self.legs]["type"] = "JOINT_POSITION"
+        self.controller_config[self.legs]["interpolation"] = "linear"
+        self.controller_config[self.legs]["ramp_ratio"] = 1.0
+        self.controller_config[self.legs]["robot_name"] = self.name
 
+        self.controller_config[self.legs]["sim"] = self.sim
+        self.controller_config[self.legs]["part_name"] = self.legs
+        self.controller_config[self.legs]["naming_prefix"] = self.robot_model.base.naming_prefix
+        self.controller_config[self.legs]["ndim"] = self._joint_split_idx
+        self.controller_config[self.legs]["policy_freq"] = self.control_freq
 
+        ref_legs_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.legs_joints]
+        ref_legs_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.legs_joints]
+        ref_legs_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.legs_joints]
+        self.controller_config[self.legs]["joint_indexes"] = {
+            "joints": ref_legs_joint_indexes,
+            "qpos": ref_legs_joint_pos_indexes,
+            "qvel": ref_legs_joint_vel_indexes,
+        }
+
+        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.legs], 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.legs], 1]
+
+        self.controller_config[self.legs]["actuator_range"] = (
+            low,
+            high
+        )
+        self.controller[self.legs] = controller_factory(self.controller_config[self.legs]["type"], self.controller_config[self.legs])
 
     def _load_controller(self):
         """
@@ -59,7 +86,7 @@ class LeggedRobot(MobileBaseRobot):
         self._load_base_controller()
         self._load_torso_controller()
 
-        # self._load_leg_controllers()
+        self._load_leg_controllers()
 
         # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
 
@@ -75,7 +102,7 @@ class LeggedRobot(MobileBaseRobot):
 
         previous_idx = self._action_split_indexes[self.arms[-1]][1]
         last_idx = previous_idx
-        for part_name in [self.base, self.head, self.torso]:
+        for part_name in [self.base, self.legs, self.head, self.torso,]:
             if part_name not in self.controller:
                 self._action_split_indexes[part_name] = (last_idx, last_idx)
                 continue
@@ -229,8 +256,16 @@ class LeggedRobot(MobileBaseRobot):
             applied_base_action = self.controller[self.base].run_controller()
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.base]] = applied_base_action
 
-            print(applied_base_action)
             # Apply torques for height control (if applicable)
+
+        if self.enabled(self.legs) and len(self._ref_actuators_indexes_dict[self.legs]) > 0:
+            legs_dims = self.controller[self.legs].control_dim
+            (legs_start, legs_end) = self._action_split_indexes[self.legs]
+            legs_action = action[legs_start:legs_end]
+            if policy_step:
+                self.controller[self.legs].set_goal(legs_action)
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.legs]] = self.controller[self.legs].run_controller()
+
         if len(self._ref_actuators_indexes_dict[self.torso]) > 0:
             torso_dims = self.controller[self.torso].control_dim
             (torso_start, torso_end) = self._action_split_indexes[self.torso]
@@ -238,7 +273,7 @@ class LeggedRobot(MobileBaseRobot):
             if policy_step:
                 self.controller[self.torso].set_goal(torso_action)
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.torso]] = self.controller[self.torso].run_controller()
-        
+
         self.torques = np.array([])
         # Now execute actions for each arm
         for arm in self.arms:
@@ -387,17 +422,16 @@ class LeggedRobot(MobileBaseRobot):
             low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
 
         mobile_base_dims = self.controller[self.base].control_dim if self.base in self.controller else 0
+        legs_dims = self.controller[self.legs].control_dim if self.legs in self.controller else 0
         torso_dims = self.controller[self.torso].control_dim if self.torso in self.controller else 0
         head_dims = 0 # self.controller[self.head].control_dim if self.head in self.controller else 0
         low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
+        low_l, high_l = ([-1] * legs_dims, [1] * legs_dims)  # base control dims
         low_t, high_t = ([-1] * torso_dims, [1] * torso_dims)  # base control dims
         low_h, high_h = ([-1] * head_dims, [1] * head_dims)  # base control dims
 
-        # TODO: This mode thing should be removed and put into the controller manager
-        # low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
-
-        low = np.concatenate([low, low_b, low_t, low_h])
-        high = np.concatenate([high, high_b, high_t, high_h])
+        low = np.concatenate([low, low_b, low_l, low_t, low_h])
+        high = np.concatenate([high, high_b, high_l, high_t, high_h])
         return low, high
 
     @property

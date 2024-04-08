@@ -8,15 +8,12 @@ from copy import deepcopy
 import numpy as np
 
 from .interpolators.linear_interpolator import LinearInterpolator
-# from .joint_pos import JointPositionController
-# from .joint_tor import JointTorqueController
-# from .joint_vel import JointVelocityController
-# from .osc import OperationalSpaceController
+
 from . import arm as arm_controllers
 from . import torso as torso_controllers
 from . import base as base_controllers
 from . import gripper as gripper_controllers
-
+from . import legs as legs_controllers
 # Global var for linking pybullet server to multiple ik controller instances if necessary
 pybullet_server = None
 
@@ -183,8 +180,8 @@ def controller_factory(name, params):
         return torso_controller_factory(name, params)
     elif params["part_name"] == "head":
         return head_controller_factory(name, params)
-    # elif params["part_name"] == "legs":
-    #     return legs_controller_factory(name, params)
+    elif params["part_name"] == "legs":
+        return legs_controller_factory(name, params)
 
 def gripper_controller_factory(name, params):
     interpolator = None
@@ -219,6 +216,22 @@ def head_controller_factory(name, params):
 
 
 def legs_controller_factory(name, params):
-    raise NotImplementedError
+    interpolator = None
+    if params["interpolation"] == "linear":
+        interpolator = LinearInterpolator(
+            ndim=params["ndim"],
+            controller_freq=(1 / params["sim"].model.opt.timestep),
+            policy_freq=params["policy_freq"],
+            ramp_ratio=params["ramp_ratio"],
+        )
+
+    if name == "JOINT_POSITION":
+        return legs_controllers.LegsJointPositionController(interpolator=interpolator, **params)
+
+    if name == "JOINT_TORQUE":
+        return legs_controllers.LegsJointTorqueController(interpolator=interpolator, **params)
+
+    raise ValueError("Unknown controller name: {}".format(name))
+
 
 
