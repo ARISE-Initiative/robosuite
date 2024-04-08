@@ -31,7 +31,7 @@
     <mesh name="r_foot_roll" file="./meshes/r_foot_roll.STL"/>
     <mesh name="torso_waist_yaw" file="./meshes/waist_yaw.STL"/>
     <mesh name="torso_waist_pitch" file="./meshes/waist_pitch.STL"/>
-    <mesh name="torso_waist_roll" file="./meshes/waist_roll.STL"/>
+    <mesh name="torso_waist_roll" file="./meshes/torso.STL"/>
     <mesh name="head_yaw" file="./meshes/head_yaw.STL"/>
     <mesh name="head_roll" file="./meshes/head_roll.STL"/>
     <mesh name="head_pitch" file="./meshes/head_pitch.STL"/>
@@ -94,11 +94,11 @@
                         <inertial pos="-0.00982804 -1.2954e-05 0.160653" quat="0.999997 1.84368e-05 -0.00260593 -4.00255e-05" mass="7.34393" diaginertia="0.0305266 0.0217567 0.0136783"/>
                         <joint name="torso_waist_roll" pos="0 0 0" damping="50.4164" stiffness="453.15" axis="1 0 1.221e-05" range="-0.7 0.7"/>
 
-                        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="torso_waist_roll"/>
+                        <geom pos="0 0 0.15" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="torso_waist_roll"/>
                         <geom size="0.09 0.09 0.09" pos="0 0 0.15" type="box" rgba="0 0 0 1"/>
 
                         <!-- Head yaw -->
-                        <body name="head_yaw" pos="0 -2.3548e-05 0.34453">
+                        <body name="head_yaw" pos="0.001 -0.00022551 0.295">
                             <site name="neck" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                             <inertial pos="0.000255273 -1.43143e-05 0.0571737" quat="0.698659 0.111628 0.112302 0.697713" mass="0.168425" diaginertia="0.00013241 0.000126266 6.86988e-05"/>
                             <joint name="head_yaw" pos="0 0 0" axis="-1.221e-05 -6.8349e-05 1" range="-1.5707963267948966 1.5707963267948966"/>
@@ -107,7 +107,7 @@
                             <geom size="0.02 0.02 0.02" pos="0 0 -0.03" type="box" rgba="0 0 0 1"/>
 
                             <!-- Head roll -->
-                            <body name="head_roll" pos="0 0 0.1225">
+                            <body name="head_roll" pos="0 0 0">
                                 <inertial pos="-0.000539717 0.00299723 -0.00194711" quat="0.498775 0.509039 0.50481 0.487104" mass="0.0189574" diaginertia="5.66154e-06 3.71917e-06 3.07146e-06"/>
                                 <joint name="head_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.2617993877991494 0.2617993877991494"/>
 
@@ -115,12 +115,12 @@
                                 <geom size="0.02 0.02 0.02" pos="0 0 -0.1" type="box" rgba="0 0 0 1"/>
 
                                 <!-- Head pitch -->
-                                <body name="head_pitch">
+                                <body name="head_pitch" pos="0 5.373E-05 0.036">
                                     <site name="head" pos="0 0 0" size="0.06 0.06 0.06" rgba="1 0 0 0" type="sphere" group="1"/>
                                     <inertial pos="0.0179937 0.000157203 -0.0107884" quat="-0.00317787 0.890883 0.0047882 0.454197" mass="0.315067" diaginertia="0.00129389 0.00105273 0.000852366"/>
                                     <joint name="head_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-0.2617993877991494 0.2617993877991494"/>
 
-                                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0 0 0 1" mesh="head_pitch"/>
+                                    <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mass="0.1" rgba="0 0 0 1" mesh="head_pitch"/>
                                     <geom size="0.05 0.05 0.05" type="box" rgba="0 0 0 1"/>
 
                                 </body>
@@ -483,6 +483,11 @@
 
   <contact>
     <exclude name="upper_lower_body" body1="torso_waist_yaw" body2="lower_body"/>
-    
+    <exclude name="torso_head_1" body1="torso_waist_roll" body2="head_yaw"/>
+    <exclude name="torso_head_2" body1="torso_waist_roll" body2="head_roll"/>
+    <exclude name="torso_head_3" body1="torso_waist_roll" body2="head_pitch"/>
+    <exclude name="head_1" body1="head_roll" body2="head_yaw"/>
+    <exclude name="head_2" body1="head_pitch" body2="head_yaw"/>    
+
   </contact>
 </mujoco>
