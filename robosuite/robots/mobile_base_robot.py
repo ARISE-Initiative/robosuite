@@ -133,13 +133,58 @@ class MobileBaseRobot(Robot):
             high
         )
 
-        # self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
-        # import pdb; pdb.set_trace()
-
         self.controller[self.torso] = controller_factory(
             self.controller_config[self.torso]["type"],
             self.controller_config[self.torso]
         )
+
+    def _load_head_controller(self):
+        """
+        Load head controller
+        """
+        if len(self._ref_actuators_indexes_dict[self.head]) == 0:
+            return None
+        # if not self.controller_config[self.head]:
+        #         # Need to update default for a single agent
+        #         controller_path = os.path.join(
+        #             os.path.dirname(__file__),
+        #             "..",
+        #             "controllers/config/head/{}.json".format(self.robot_model.default_controller_config[self.head]),
+        #         )
+        #         self.controller_config[self.head] = load_controller_config(custom_fpath=controller_path)
+        # TODO: Add a default controller config for head
+        self.controller_config[self.head] = {}
+        self.controller_config[self.head]["type"] = "JOINT_VELOCITY" # "JOINT_POSITION"
+        self.controller_config[self.head]["interpolation"] = None
+        self.controller_config[self.head]["ramp_ratio"] = 1.0
+        self.controller_config[self.head]["robot_name"] = self.name
+        self.controller_config[self.head]["sim"] = self.sim
+        self.controller_config[self.head]["part_name"] = self.head
+        self.controller_config[self.head]["naming_prefix"] = self.robot_model.naming_prefix
+        self.controller_config[self.head]["ndim"] = self._joint_split_idx
+        self.controller_config[self.head]["policy_freq"] = self.control_freq
+
+        ref_head_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.head_joints]
+        ref_head_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.head_joints]
+        ref_head_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.head_joints]
+        self.controller_config[self.head]["joint_indexes"] = {
+            "joints": ref_head_joint_indexes,
+            "qpos": ref_head_joint_pos_indexes,
+            "qvel": ref_head_joint_vel_indexes,
+        }
+
+        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.head], 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.head], 1]
+
+        self.controller_config[self.head]["actuator_range"] = (
+            low,
+            high
+        )
+
+        self.controller[self.head] = controller_factory(
+            self.controller_config[self.head]["type"],
+            self.controller_config[self.head]
+        )        
 
     def load_model(self):
         """

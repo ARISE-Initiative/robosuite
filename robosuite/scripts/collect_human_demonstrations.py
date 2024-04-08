@@ -44,6 +44,8 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     device.start_control()
     env.robots[0].print_action_info()
     # Loop until we get a reset from the input or the task completes
+
+    count = 0
     while True:
         # Set active robot
         active_robot = env.robots[0] # if env_configuration == "bimanual" else env.robots[arm == "left"]
@@ -68,13 +70,19 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             {
                 arm: arm_actions, 
                 env.robots[0].base: base_action,
+                # env.robots[0].head: base_action
                 # env.robots[0].torso: torso_action
             }
             )
             # import pdb; pdb.set_trace()
             mode_action = input_action[-1]
+            # if mode_action > 0:
+            #     env.robots[0].enable_parts(base=False, head=True, torso=False)
+            # else:
+            #     env.robots[0].enable_parts(base=False, torso=False)
+
             if mode_action > 0:
-                env.robots[0].enable_parts(base=True, torso=True)
+                env.robots[0].enable_parts(base=True, torso=False)
             else:
                 env.robots[0].enable_parts(base=False, torso=False)
         else:

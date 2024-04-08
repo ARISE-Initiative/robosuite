@@ -9,15 +9,13 @@ IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
 
 class TorsoJointPositionController(TorsoController):
     """
-    Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
+    Controller for controlling robot torso via impedance control. Allows position control of the robot's joints.
 
     NOTE: Control input actions assumed to be taken relative to the current joint positions. A given action to this
     controller is assumed to be of the form: (dpos_j0, dpos_j1, ... , dpos_jn-1) for an n-joint robot
 
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
-
-        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
 
@@ -86,7 +84,6 @@ class TorsoJointPositionController(TorsoController):
     def __init__(
         self,
         sim,
-        eef_name,
         joint_indexes,
         actuator_range,
         input_max=1,
@@ -106,7 +103,6 @@ class TorsoJointPositionController(TorsoController):
 
         super().__init__(
             sim,
-            eef_name,
             joint_indexes,
             actuator_range,
             part_name=kwargs.get("part_name", None),

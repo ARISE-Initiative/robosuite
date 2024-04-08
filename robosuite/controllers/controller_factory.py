@@ -12,6 +12,7 @@ from .interpolators.linear_interpolator import LinearInterpolator
 from . import arm as arm_controllers
 from . import torso as torso_controllers
 from . import base as base_controllers
+from . import head as head_controllers
 from . import gripper as gripper_controllers
 from . import legs as legs_controllers
 # Global var for linking pybullet server to multiple ik controller instances if necessary
@@ -212,7 +213,20 @@ def torso_controller_factory(name, params):
     raise ValueError("Unknown controller name: {}".format(name))
 
 def head_controller_factory(name, params):
-    raise NotImplementedError
+    interpolator = None
+    if params["interpolation"] == "linear":
+        interpolator = LinearInterpolator(
+            ndim=params["ndim"],
+            controller_freq=(1 / params["sim"].model.opt.timestep),
+            policy_freq=params["policy_freq"],
+            ramp_ratio=params["ramp_ratio"],
+        )
+
+    if name == "JOINT_VELOCITY":
+        return head_controllers.HeadJointVelocityController(interpolator=interpolator, **params)
+    elif name == "JOINT_POSITION":
+        return head_controllers.HeadJointPositionController(interpolator=interpolator, **params)
+    raise ValueError("Unknown controller name: {}".format(name))
 
 
 def legs_controller_factory(name, params):

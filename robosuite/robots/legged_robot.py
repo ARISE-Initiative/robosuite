@@ -84,9 +84,10 @@ class LeggedRobot(MobileBaseRobot):
 
         # default base, torso, and head controllers are inherited from MobileBaseRobot
         self._load_base_controller()
-        self._load_torso_controller()
-
         self._load_leg_controllers()
+
+        self._load_head_controller()
+        self._load_torso_controller()
 
         # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
 
@@ -102,15 +103,12 @@ class LeggedRobot(MobileBaseRobot):
 
         previous_idx = self._action_split_indexes[self.arms[-1]][1]
         last_idx = previous_idx
-        for part_name in [self.base, self.legs, self.head, self.torso,]:
+        for part_name in [self.base, self.legs, self.head, self.torso]:
             if part_name not in self.controller:
                 self._action_split_indexes[part_name] = (last_idx, last_idx)
                 continue
-
-            if part_name == self.head:
-                last_idx += 0 # 2
-            else:
-                last_idx += self.controller[part_name].control_dim
+        
+            last_idx += self.controller[part_name].control_dim
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
@@ -244,7 +242,7 @@ class LeggedRobot(MobileBaseRobot):
             # TODO: This line should be removed for arms, and change it to internal computation of base. 
             self.controller[arm].update_base_pose()
 
-        if self.enabled(self.base):
+        if self.enabled(self.base) and len(self._ref_actuators_indexes_dict[self.base]) > 0:
             mobile_base_dims = self.controller[self.base].control_dim
             (base_start, base_end) = self._action_split_indexes[self.base]
             base_action = action[base_start:base_end]
@@ -266,7 +264,16 @@ class LeggedRobot(MobileBaseRobot):
                 self.controller[self.legs].set_goal(legs_action)
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.legs]] = self.controller[self.legs].run_controller()
 
-        if len(self._ref_actuators_indexes_dict[self.torso]) > 0:
+        # if self.enabled(self.head) and len(self._ref_actuators_indexes_dict[self.head]) > 0:
+        #     head_dims = self.controller[self.head].control_dim
+        #     (head_start, head_end) = self._action_split_indexes[self.head]
+        #     head_action = action[head_start:head_end]
+        #     if policy_step:
+        #         self.controller[self.head].set_goal(head_action)
+        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.head]] = self.controller[self.head].run_controller()
+
+
+        if self.enabled(self.torso) and len(self._ref_actuators_indexes_dict[self.torso]) > 0:
             torso_dims = self.controller[self.torso].control_dim
             (torso_start, torso_end) = self._action_split_indexes[self.torso]
             torso_action = action[torso_start:torso_end]
@@ -278,7 +285,6 @@ class LeggedRobot(MobileBaseRobot):
         # Now execute actions for each arm
         for arm in self.arms:
             # Make sure to split action space correctly
-            # (start, end) = (None, self._action_split_idx) if arm == "right" else (self._action_split_idx, None)
             (start, end) = self._action_split_indexes[arm]
             sub_action = action[start:end]
 
