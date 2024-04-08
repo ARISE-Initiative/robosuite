@@ -264,13 +264,13 @@ class LeggedRobot(MobileBaseRobot):
                 self.controller[self.legs].set_goal(legs_action)
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.legs]] = self.controller[self.legs].run_controller()
 
-        # if self.enabled(self.head) and len(self._ref_actuators_indexes_dict[self.head]) > 0:
-        #     head_dims = self.controller[self.head].control_dim
-        #     (head_start, head_end) = self._action_split_indexes[self.head]
-        #     head_action = action[head_start:head_end]
-        #     if policy_step:
-        #         self.controller[self.head].set_goal(head_action)
-        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.head]] = self.controller[self.head].run_controller()
+        if self.enabled(self.head) and len(self._ref_actuators_indexes_dict[self.head]) > 0:
+            head_dims = self.controller[self.head].control_dim
+            (head_start, head_end) = self._action_split_indexes[self.head]
+            head_action = action[head_start:head_end]
+            if policy_step:
+                self.controller[self.head].set_goal(head_action)
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.head]] = self.controller[self.head].run_controller()
 
 
         if self.enabled(self.torso) and len(self._ref_actuators_indexes_dict[self.torso]) > 0:

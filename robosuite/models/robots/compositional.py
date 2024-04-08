@@ -45,7 +45,7 @@ class B1Z1(Z1):
         return {
             "bins": (-0.5, -0.1, 0.65),
             "empty": (-0.6, 0, 0.65),
-            "table": lambda table_length: (-0.55 - table_length / 2, 0, 0.65),
+            "table": lambda table_length: (-0.55 - table_length / 2, 0.9, 0.65),
         }
 
 class B1Z1Floating(B1Z1):
