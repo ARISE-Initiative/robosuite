@@ -40,101 +40,9 @@ class LeggedRobot(MobileBaseRobot):
             control_freq=control_freq,
         )
 
-    def _load_base_controller(self):
-        """
-        Load base controller
-        """
-        if len(self._ref_actuators_indexes_dict[self.base]) == 0:
-            return None
-        # if not self.controller_config[self.torso]:
-        #         # Need to update default for a single agent
-        #         controller_path = os.path.join(
-        #             os.path.dirname(__file__),
-        #             "..",
-        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
-        #         )
-        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
-        # TODO: Add a default controller config for torso
-        self.controller_config[self.base] = {}
-        self.controller_config[self.base]["type"] = "JOINT_VELOCITY"
-        self.controller_config[self.base]["interpolation"] = None
-        self.controller_config[self.base]["ramp_ratio"] = 1.0
-        self.controller_config[self.base]["robot_name"] = self.name
+    # def _load_leg_controllers(self):
 
-        self.controller_config[self.base]["sim"] = self.sim
-        self.controller_config[self.base]["part_name"] = self.base
-        self.controller_config[self.base]["naming_prefix"] = self.robot_model.base.naming_prefix
-        self.controller_config[self.base]["ndim"] = self._joint_split_idx
-        self.controller_config[self.base]["policy_freq"] = self.control_freq
 
-        ref_base_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.base_joints]
-        ref_base_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.base_joints]
-        ref_base_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.base_joints]
-        self.controller_config[self.base]["joint_indexes"] = {
-            "joints": ref_base_joint_indexes,
-            "qpos": ref_base_joint_pos_indexes,
-            "qvel": ref_base_joint_vel_indexes,
-        }
-
-        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 0]
-        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 1]
-
-        self.controller_config[self.base]["actuator_range"] = (
-            low,
-            high
-        )
-        self.controller[self.base] = controller_factory(self.controller_config[self.base]["type"], self.controller_config[self.base])
-
-    def _load_torso_controller(self):
-        """
-        Load torso controller
-        """
-        if len(self._ref_actuators_indexes_dict[self.torso]) == 0:
-            return None
-        # if not self.controller_config[self.torso]:
-        #         # Need to update default for a single agent
-        #         controller_path = os.path.join(
-        #             os.path.dirname(__file__),
-        #             "..",
-        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
-        #         )
-        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
-        # TODO: Add a default controller config for torso
-        self.controller_config[self.torso] = {}
-        self.controller_config[self.torso]["type"] = "JOINT_VELOCITY"
-        self.controller_config[self.torso]["interpolation"] = None
-        self.controller_config[self.torso]["ramp_ratio"] = 1.0
-        self.controller_config[self.torso]["robot_name"] = self.name
-        self.controller_config[self.torso]["sim"] = self.sim
-        self.controller_config[self.torso]["part_name"] = self.torso
-        self.controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
-        self.controller_config[self.torso]["ndim"] = self._joint_split_idx
-        self.controller_config[self.torso]["policy_freq"] = self.control_freq
-
-        ref_torso_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.torso_joints]
-        ref_torso_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.torso_joints]
-        ref_torso_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.torso_joints]
-        self.controller_config[self.torso]["joint_indexes"] = {
-            "joints": ref_torso_joint_indexes,
-            "qpos": ref_torso_joint_pos_indexes,
-            "qvel": ref_torso_joint_vel_indexes,
-        }
-
-        low =  self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 0]
-        high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 1]
-
-        self.controller_config[self.torso]["actuator_range"] = (
-            low,
-            high
-        )
-
-        # self.controller[self.torso] = TorsoHeightController(**self.controller_config[self.torso])
-        # import pdb; pdb.set_trace()
-
-        self.controller[self.torso] = controller_factory(
-            self.controller_config[self.torso]["type"],
-            self.controller_config[self.torso]
-        )
 
     def _load_controller(self):
         """
@@ -146,8 +54,12 @@ class LeggedRobot(MobileBaseRobot):
 
         # self.controller[self.base] = MobileBaseController(self.sim, self.robot_model.base.naming_prefix)
 
+
+        # default base, torso, and head controllers are inherited from MobileBaseRobot
         self._load_base_controller()
         self._load_torso_controller()
+
+        # self._load_leg_controllers()
 
         # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
 
@@ -201,7 +113,8 @@ class LeggedRobot(MobileBaseRobot):
 
         # Set initial q pos of the legged base
         if isinstance(self.robot_model.base, LegBaseModel):
-            self.sim.data.qpos[self._ref_joint_pos_indexes[self.legs]] = self.robot_model.base.init_qpos
+            # Set the initial joint positions of the legged base
+            self.sim.data.qpos[self._ref_legs_joint_pos_indexes] = self.robot_model.base.init_qpos
 
     def setup_references(self):
         """
@@ -243,6 +156,10 @@ class LeggedRobot(MobileBaseRobot):
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.head_actuators
         ]
 
+        self._ref_actuators_indexes_dict[self.legs] = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.legs_actuators
+        ]
+
         self._ref_joints_indexes_dict[self.base] = [
             self.sim.model.joint_name2id(joint) for joint in self.robot_model.base_joints
         ]
@@ -254,6 +171,12 @@ class LeggedRobot(MobileBaseRobot):
         self._ref_joints_indexes_dict[self.head] = [
             self.sim.model.joint_name2id(joint) for joint in self.robot_model.head_joints
         ]
+
+        self._ref_joints_indexes_dict[self.legs] = [
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.legs_joints
+        ]
+        self._ref_legs_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.legs_joints]
+        self._ref_legs_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.legs_joints] 
 
     def control(self, action, policy_step=False):
         """

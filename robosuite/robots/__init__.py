@@ -23,6 +23,7 @@ ROBOT_CLASS_MAPPING = {
     "VX300SMobile": WheeledRobot,
     "Tiago": WheeledRobot,
     "B1Z1": LeggedRobot,
+    "B1Z1Floating": LeggedRobot,
     "GR1": LeggedRobot,
     "GR1FixedLowerBody": LeggedRobot,
     "GR1ArmsOnly": LeggedRobot,

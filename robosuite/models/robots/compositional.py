@@ -40,13 +40,13 @@ class B1Z1(Z1):
     def default_arms(self):
         return {"right": "Z1"}
 
-class B1Z1FxiedLowerBody(B1Z1):
+class B1Z1Floating(B1Z1):
     """
     Variant of VX300S robot with mobile base. Currently serves as placeholder class.
     """
     @property
     def default_base(self):
-        return "B1Fixed"
+        return "B1Floating"
 
 
 # class Compositional(ManipulatorModel):

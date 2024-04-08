@@ -14,7 +14,7 @@ from .floating_legged_base import FloatingLeggedBase
 
 from .aloha_mount import AlohaMount
 
-from .b1_base import B1
+from .b1_base import B1, B1Floating
 
 BASE_MAPPING = {
     "RethinkMount": RethinkMount,
@@ -26,6 +26,7 @@ BASE_MAPPING = {
     "NoActuationBase": NoActuationBase,
     "FloatingLeggedBase": FloatingLeggedBase,
     "B1": B1,
+    "B1Floating": B1Floating,
     # "Z1Base": Z1Base,
     # "SpotBase": SpotBase,
     # "NullLeggedBase": NullLeggedBase,

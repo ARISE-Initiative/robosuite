@@ -4,7 +4,7 @@ import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
 from robosuite.models.bases import MobileBaseModel, MountModel, LegBaseModel
-from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, string_to_array
+from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, string_to_array, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 REGISTERED_ROBOTS = {}
@@ -120,7 +120,6 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
                 joint.set(attrib, array_to_string(np.array([values[i]])))
 
     def add_base(self, base):
-        # import pdb; pdb.set_trace()
         if isinstance(base, MountModel):
             self.add_mount(base)
         elif isinstance(base, MobileBaseModel):
@@ -181,7 +180,6 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
         for body in mobile_base.worldbody:
             root.append(body)
-
         arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
 
         mount_support = find_elements(
@@ -231,12 +229,20 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         root = find_elements(root=self.worldbody, tags="body", return_first=True)
         for body in leg_base.worldbody:
             root.append(body)
+        # import pdb; pdb.set_trace()
 
         arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
 
         mount_support = find_elements(
             root=leg_base.worldbody, tags="body", attribs={"name": leg_base.correct_naming("support")}, return_first=True
         )
+
+        free_joint = find_elements(
+            root=leg_base.worldbody, tags="freejoint", return_first=True)
+        if free_joint is not None:
+            root.append(deepcopy(free_joint))
+            free_joint_parent = find_parent(leg_base.worldbody, free_joint)
+            free_joint_parent.remove(free_joint)
         mount_support.append(deepcopy(arm_root))
         root.remove(arm_root)
         self.merge_assets(leg_base)
