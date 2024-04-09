@@ -75,6 +75,9 @@
 
     </worldbody>
 
+    <contact>
+        <exclude name="exclude_two_bodies" body1="link0" body2="link1"/>
+    </contact>
 </mujoco>
 
 

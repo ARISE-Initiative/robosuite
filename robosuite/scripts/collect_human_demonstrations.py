@@ -63,23 +63,23 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         # Run environment step
 
         if env.robots[0].is_mobile:
-            arm_actions = input_action[:-5]
+            arm_actions = input_action[:6]
+            arm_actions = np.concatenate([arm_actions, np.repeat(input_action[6:7], env.robots[0].gripper[arm].dof)])
+
             base_action = input_action[-5:-2]
             torso_action = input_action[-2:-1]
+
+            right_action =  [0.] * 5
+            right_action[0] = 0.0
             action = env.robots[0].create_action_vector(
             {
                 arm: arm_actions, 
                 env.robots[0].base: base_action,
-                # env.robots[0].head: base_action
-                # env.robots[0].torso: torso_action
+                # env.robots[0].head: base_action,
+                # env.robots[0].torso: base_action
             }
             )
-            # import pdb; pdb.set_trace()
             mode_action = input_action[-1]
-            # if mode_action > 0:
-            #     env.robots[0].enable_parts(base=False, head=True, torso=False)
-            # else:
-            #     env.robots[0].enable_parts(base=False, torso=False)
 
             if mode_action > 0:
                 env.robots[0].enable_parts(base=True, torso=False)

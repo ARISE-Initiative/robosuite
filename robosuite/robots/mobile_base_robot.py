@@ -275,7 +275,6 @@ class MobileBaseRobot(Robot):
                     base=True,
                     legs=False
                      ):
-        # TBC
         self._enabled_parts = {
             "right": right_arm, 
             "left": left_arm,

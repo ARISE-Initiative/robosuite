@@ -129,8 +129,6 @@ class GripperController(object, metaclass=abc.ABCMeta):
 
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
-            # BUG: Potential bug here. If there are more than two controlllers, the simulation will be forwarded multiple times. 
-            self.sim.forward()
             
             self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
             self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])

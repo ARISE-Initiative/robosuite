@@ -228,7 +228,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Lastly, map to axis angle form
         drotation = T.quat2axisangle(drotation)
 
-    elif controller.name == "OSC_POSE":
+    elif controller.name == "OSC_POSE" or controller.name == "JOINT_POSITION":
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
@@ -244,14 +244,17 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     grasp = 1 if grasp else -1
 
     if robot.is_mobile:
-        assert controller.name == "OSC_POSE", "Mobile robots only currently supported by OSC_POSE controller"
+        # assert controller.name == "OSC_POSE" or controller.name == "OSC_POSITION", "Mobile robots only currently supported by OSC_POSE controller"
         base_mode = bool(state["base_mode"])
         if base_mode is True:
             arm_ac = np.zeros(6)
             base_ac = np.array([dpos[0], dpos[1], drotation[2], dpos[2]])
             mode_ac = np.array([1])
         else:
-            arm_ac = np.concatenate([dpos, drotation])
+            if controller.name == "OSC_POSITION":
+                arm_ac = dpos
+            else:
+                arm_ac = np.concatenate([dpos, drotation])
             base_ac = np.zeros(4)
             mode_ac = np.array([-1])
         gripper_ac = np.array([grasp] * gripper_dof)

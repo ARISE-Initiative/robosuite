@@ -365,7 +365,7 @@ class Robot(object):
         if type(inp) is not list:
             inp = [inp for _ in range(2)]
         # Now, convert list to dict and return
-        return {key: value for key, value in zip(self.arms, inp)}
+        return {key: copy.deepcopy(value) for key, value in zip(self.arms, inp)}
 
     @property
     def torque_limits(self):
@@ -706,6 +706,7 @@ class Robot(object):
             # Add to the controller dict additional relevant params:
             #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
             #   policy (control) freq, and ndim (# joints)
+
             self.controller_config[arm]["robot_name"] = self.name
             self.controller_config[arm]["sim"] = self.sim
             self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
@@ -766,14 +767,12 @@ class Robot(object):
     def enable_parts(self, 
                      right_arm=True, 
                      left_arm=True):
-        # TBC
         self._enabled_parts = {
             "right": right_arm,
             "left": left_arm
         }
 
     def enabled(self, part_name):
-        # TBC
         return self._enabled_parts[part_name]
 
 
@@ -790,7 +789,7 @@ class Robot(object):
             if end_idx - start_idx == 0:
                 # skipping not controlling actions
                 continue
-            assert(len(action_vector) == (end_idx - start_idx)), f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx}, got {len(action_vector)}"
+            assert(len(action_vector) == (end_idx - start_idx)), f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
             full_action_vector[start_idx:end_idx] = action_vector
         return full_action_vector
 

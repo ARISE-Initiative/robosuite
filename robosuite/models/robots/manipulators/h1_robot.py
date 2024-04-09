@@ -28,7 +28,8 @@ class H1(LeggedManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific gripper names
         """
-        return {"right": "InspireRightHand", "left": "InspireLeftHand"}
+        # return {"right": "InspireRightHand", "left": "InspireLeftHand"}
+        return {"right": "Robotiq85Gripper", "left": "Robotiq85Gripper"}
 
     @property
     def default_controller_config(self):
@@ -83,7 +84,7 @@ class H1(LeggedManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific eef names
         """
-        return {"right": "right_eef", "left": "left_eef"}
+        return {"right": "right_hand", "left": "left_hand"}
 
 
 class H1FixedLowerBody(H1):

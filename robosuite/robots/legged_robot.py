@@ -112,7 +112,6 @@ class LeggedRobot(MobileBaseRobot):
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
-
     def load_model(self):
         """
         Loads robot and optionally add grippers.
@@ -272,7 +271,6 @@ class LeggedRobot(MobileBaseRobot):
                 self.controller[self.head].set_goal(head_action)
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.head]] = self.controller[self.head].run_controller()
 
-
         if self.enabled(self.torso) and len(self._ref_actuators_indexes_dict[self.torso]) > 0:
             torso_dims = self.controller[self.torso].control_dim
             (torso_start, torso_end) = self._action_split_indexes[self.torso]
@@ -313,7 +311,6 @@ class LeggedRobot(MobileBaseRobot):
         # Clip the torques'
         low, high = self.torque_limits
         self.torques = np.clip(self.torques, low, high)
-
         # Apply joint torque control
         self.sim.data.ctrl[self._ref_joint_actuator_indexes] = self.torques
 
@@ -430,7 +427,7 @@ class LeggedRobot(MobileBaseRobot):
         mobile_base_dims = self.controller[self.base].control_dim if self.base in self.controller else 0
         legs_dims = self.controller[self.legs].control_dim if self.legs in self.controller else 0
         torso_dims = self.controller[self.torso].control_dim if self.torso in self.controller else 0
-        head_dims = 0 # self.controller[self.head].control_dim if self.head in self.controller else 0
+        head_dims = self.controller[self.head].control_dim if self.head in self.controller else 0
         low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
         low_l, high_l = ([-1] * legs_dims, [1] * legs_dims)  # base control dims
         low_t, high_t = ([-1] * torso_dims, [1] * torso_dims)  # base control dims
