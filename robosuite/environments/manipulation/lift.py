@@ -316,7 +316,7 @@ class Lift(SingleArmEnv):
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=False,
                 reference_pos=self.table_offset,
-                z_offset=1
+                z_offset=0.1
             )
 
         # task includes arena, robot, and objects of interest
@@ -388,7 +388,7 @@ class Lift(SingleArmEnv):
         """
         super()._reset_internal()
 
-        self.sim.model.opt.gravity[-1] = -0.1
+        self.sim.model.opt.gravity[-1] = 0.0
 
         # Reset all object positions using initializer sampler if we're not directly loading from an xml
         if not self.deterministic_reset:
@@ -417,17 +417,43 @@ class Lift(SingleArmEnv):
             self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cube)
 
     def _check_success(self):
-        """
-        Check if cube has been lifted.
-
-        Returns:
-            bool: True if cube has been lifted
-        """
-        cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
-        table_height = self.model.mujoco_arena.table_offset[2]
-
-        # cube is higher than the table top above a margin
-        # return cube_height > table_height + 0.04
-
+       
+    # Assuming simple distance-based collision detection
+        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id] # position of the gripper
+        cube_pos = self.sim.data.body_xpos[self.cube_body_id] # position of the cube
         # TODO: check for collision between robot and hand
+        distance = (gripper_site_pos - cube_pos) # x y z difference
+        my_val = np.linalg.norm(distance)
+        # print(my_val)
+        return  my_val  < 0.05 # perfect distance
+        # reward_function = 1 - np.tanh(0.1 * distance)
+       
+        # for collision in self.sim.data.contact:# if positions are equal then return True
+        #     if collision.geom == gripper_site_pos and collision.geom == cube_pos: # used physics engines geoms from MoJoCu
+        #         return True
+        #     elif collision.geom == cube_pos and collision.geom == gripper_site_pos:
+        #          return True
+        
         return False
+
+# egl => graphics check
+
+
+# Collision detected
+         
+        # cube is higher than the table top above a margin
+        # return cube_height > table_height + 0.04        ==> completes demonstartion before it started becauuse cube is above the table
+
+
+# # def _check_success(self):
+#         """
+#         Check if cube has been lifted.
+
+#         Returns:
+#             bool: True if cube has been lifted
+#         """
+#         cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
+#         table_height = self.model.mujoco_arena.table_offset[2]
+
+#         # cube is higher than the table top above a margin
+#         return cube_height > table_height + 0.04
