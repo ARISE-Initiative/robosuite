@@ -64,7 +64,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
         if env.robots[0].is_mobile:
             arm_actions = input_action[:6]
-            arm_actions = np.concatenate([arm_actions, np.repeat(input_action[6:7], env.robots[0].gripper[arm].dof)])
+            # arm_actions = np.concatenate([arm_actions, ])
 
             base_action = input_action[-5:-2]
             torso_action = input_action[-2:-1]
@@ -74,6 +74,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             action = env.robots[0].create_action_vector(
             {
                 arm: arm_actions, 
+                f"{arm}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[arm].dof),
                 env.robots[0].base: base_action,
                 # env.robots[0].head: base_action,
                 # env.robots[0].torso: base_action
@@ -82,9 +83,9 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             mode_action = input_action[-1]
 
             if mode_action > 0:
-                env.robots[0].enable_parts(base=True, torso=False)
+                env.robots[0].enable_parts(base=True, right_arm=True, left_arm=True, torso=False)
             else:
-                env.robots[0].enable_parts(base=False, torso=False)
+                env.robots[0].enable_parts(base=False, right_arm=True, left_arm=True, torso=False)
         else:
             arm_actions = input_action
             action = env.robots[0].create_action_vector(

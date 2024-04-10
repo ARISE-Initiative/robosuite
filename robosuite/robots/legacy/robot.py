@@ -78,7 +78,7 @@ class Robot(object):
         self._ref_joint_indexes = None  # xml joint indexes for robot in mjsim
         self._ref_joint_pos_indexes = None  # xml joint position indexes in mjsim
         self._ref_joint_vel_indexes = None  # xml joint velocity indexes in mjsim
-        self._ref_joint_actuator_indexes = None  # xml joint (torq) actuator indexes for robot in mjsim
+        self._ref_arm_joint_actuator_indexes = None  # xml joint (torq) actuator indexes for robot in mjsim
 
         self.recent_qpos = None  # Current and last robot arm qpos
         self.recent_actions = None  # Current and last action applied
@@ -165,7 +165,7 @@ class Robot(object):
         self._ref_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_model.joints]
 
         # indices for joint pos actuation, joint vel actuation, gripper actuation
-        self._ref_joint_actuator_indexes = [
+        self._ref_arm_joint_actuator_indexes = [
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.actuators
         ]
 
@@ -281,8 +281,8 @@ class Robot(object):
                 - (np.array) maximum (high) torque values
         """
         # Torque limit values pulled from relevant robot.xml file
-        low = self.sim.model.actuator_ctrlrange[self._ref_joint_actuator_indexes, 0]
-        high = self.sim.model.actuator_ctrlrange[self._ref_joint_actuator_indexes, 1]
+        low = self.sim.model.actuator_ctrlrange[self._ref_arm_joint_actuator_indexes, 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_arm_joint_actuator_indexes, 1]
 
         return low, high
 

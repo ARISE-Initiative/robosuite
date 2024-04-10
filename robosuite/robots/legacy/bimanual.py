@@ -301,7 +301,7 @@ class Bimanual(Manipulator):
         self.torques = np.clip(self.torques, low, high)
 
         # Apply joint torque control
-        self.sim.data.ctrl[self._ref_joint_actuator_indexes] = self.torques
+        self.sim.data.ctrl[self._ref_arm_joint_actuator_indexes] = self.torques
 
         # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:

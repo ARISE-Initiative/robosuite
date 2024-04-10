@@ -88,7 +88,7 @@ class MobileBaseRobot(Robot):
             low,
             high
         )
-        self.controller[self.base] = controller_factory(self.controller_config[self.base]["type"], self.controller_config[self.base])
+        # self.controller[self.base] = controller_factory(self.controller_config[self.base]["type"], self.controller_config[self.base])
 
     def _load_torso_controller(self):
         """
@@ -133,10 +133,10 @@ class MobileBaseRobot(Robot):
             high
         )
 
-        self.controller[self.torso] = controller_factory(
-            self.controller_config[self.torso]["type"],
-            self.controller_config[self.torso]
-        )
+        # self.controller[self.torso] = controller_factory(
+        #     self.controller_config[self.torso]["type"],
+        #     self.controller_config[self.torso]
+        # )
 
     def _load_head_controller(self):
         """
@@ -181,10 +181,10 @@ class MobileBaseRobot(Robot):
             high
         )
 
-        self.controller[self.head] = controller_factory(
-            self.controller_config[self.head]["type"],
-            self.controller_config[self.head]
-        )        
+        # self.controller[self.head] = controller_factory(
+        #     self.controller_config[self.head]["type"],
+        #     self.controller_config[self.head]
+        # )        
 
     def load_model(self):
         """
@@ -212,6 +212,58 @@ class MobileBaseRobot(Robot):
         """
         # First, run the superclass method to setup references for joint-related values / indexes
         super().setup_references()
+        for arm in self.arms:
+            if self.has_gripper[arm]:
+                self.gripper_joints[arm] = list(self.gripper[arm].joints)
+                self._ref_gripper_joint_pos_indexes[arm] = [
+                    self.sim.model.get_joint_qpos_addr(x) for x in self.gripper_joints[arm]
+                ]
+                self._ref_gripper_joint_vel_indexes[arm] = [
+                    self.sim.model.get_joint_qvel_addr(x) for x in self.gripper_joints[arm]
+                ]
+                self._ref_joint_gripper_actuator_indexes[arm] = [
+                    self.sim.model.actuator_name2id(actuator) for actuator in self.gripper[arm].actuators
+                ]
+                (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+                self._ref_joints_indexes_dict[arm] = [
+                    self.sim.model.joint_name2id(joint) for joint in self.robot_model.arm_joints[start:end]
+                ]
+                self._ref_actuators_indexes_dict[arm] = [
+                    self.sim.model.actuator_name2id(joint) for joint in self.robot_model.arm_actuators[start:end]
+                ]                
+                self._ref_joints_indexes_dict[self.get_gripper_name(arm)] = [
+                    self.sim.model.joint_name2id(joint) for joint in self.gripper_joints[arm]
+                ]
+                self._ref_actuators_indexes_dict[self.get_gripper_name(arm)] = self._ref_joint_gripper_actuator_indexes[arm]
+
+            # IDs of sites for eef visualization
+            self.eef_site_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_site"])
+            self.eef_cylinder_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_cylinder"])
+
+        self._ref_actuators_indexes_dict[self.base] = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.base_actuators
+        ]
+
+        self._ref_actuators_indexes_dict[self.torso] = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.torso_actuators
+        ]
+
+        self._ref_actuators_indexes_dict[self.head] = [
+            self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.head_actuators
+        ]
+
+        self._ref_joints_indexes_dict[self.base] = [
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.base_joints
+        ]
+
+        self._ref_joints_indexes_dict[self.torso] = [
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.torso_joints
+        ]
+        
+        self._ref_joints_indexes_dict[self.head] = [
+            self.sim.model.joint_name2id(joint) for joint in self.robot_model.head_joints
+        ]
+
 
     def control(self, action, policy_step=False):
         """
@@ -274,10 +326,15 @@ class MobileBaseRobot(Robot):
                     head=False,
                     base=True,
                     legs=False
-                     ):
+                    ):
+        if len(self.arms) == 2:
+            left_arm = True
+
         self._enabled_parts = {
             "right": right_arm, 
-            "left": left_arm,
+            "right_gripper": right_arm, 
+            "left": left_arm,            
+            "left_gripper": left_arm,
             self.torso: torso,
             self.head: head,
             self.base: base,

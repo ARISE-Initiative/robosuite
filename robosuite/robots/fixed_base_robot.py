@@ -93,6 +93,17 @@ class FixedBaseRobot(Robot):
                 self._ref_joint_gripper_actuator_indexes[arm] = [
                     self.sim.model.actuator_name2id(actuator) for actuator in self.gripper[arm].actuators
                 ]
+                (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+                self._ref_joints_indexes_dict[arm] = [
+                    self.sim.model.joint_name2id(joint) for joint in self.robot_model.arm_joints[start:end]
+                ]
+                self._ref_actuators_indexes_dict[arm] = [
+                    self.sim.model.actuator_name2id(joint) for joint in self.robot_model.arm_actuators[start:end]
+                ]                
+                self._ref_joints_indexes_dict[self.get_gripper_name(arm)] = [
+                    self.sim.model.joint_name2id(joint) for joint in self.gripper_joints[arm]
+                ]
+                self._ref_actuators_indexes_dict[self.get_gripper_name(arm)] = self._ref_joint_gripper_actuator_indexes[arm]
 
             # IDs of sites for eef visualization
             self.eef_site_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_site"])
@@ -144,7 +155,9 @@ class FixedBaseRobot(Robot):
                 self.controller[arm].set_goal(sub_action)
 
             # Now run the controller for a step and add it to the torques
-            self.torques = np.concatenate((self.torques, self.controller[arm].run_controller()))
+            applied_torque = self.controller[arm].run_controller()
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[arm]] = applied_torque
+            self.torques = np.concatenate((self.torques, applied_torque))
 
             # Get gripper action, if applicable
             if self.has_gripper[arm]:
@@ -153,19 +166,20 @@ class FixedBaseRobot(Robot):
                 formatted_gripper_action = self.gripper[arm].format_action(gripper_action)
                 self.controller[gripper_name].set_goal(formatted_gripper_action)
                 applied_gripper_action = self.controller[gripper_name].run_controller()
-                self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
+                # self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
+                self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.get_gripper_name(arm)]] = applied_gripper_action
 
             # # Get gripper action, if applicable
             # if self.has_gripper[arm]:
             #     applied_gripper_action = self.grip_action(gripper=self.gripper[arm], gripper_action=gripper_action)
             #     self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
 
-        # Clip the torques
-        low, high = self.torque_limits
-        self.torques = np.clip(self.torques, low, high)
+        # # Clip the torques
+        # low, high = self.torque_limits
+        # self.torques = np.clip(self.torques, low, high)
 
-        # Apply joint torque control
-        self.sim.data.ctrl[self._ref_joint_actuator_indexes] = self.torques
+        # # Apply joint torque control
+        # self.sim.data.ctrl[self._ref_arm_joint_actuator_indexes] = self.torques
 
         # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:
@@ -273,31 +287,6 @@ class FixedBaseRobot(Robot):
             low_c, high_c = self.controller[arm].control_limits
             low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
         return low, high
-
-    @property
-    def _action_split_idx(self):
-        """
-        Grabs the index that correctly splits the right arm from the left arm actions
-
-        :NOTE: Assumes inputted actions are of form:
-            [right_arm_control, right_gripper_control, left_arm_control, left_gripper_control]
-
-        Returns:
-            int: Index splitting right from left arm actions
-        """
-        return (
-            self.controller["right"].control_dim + self.gripper["right"].dof
-            if self.has_gripper["right"]
-            else self.controller["right"].control_dim
-        )
-
-    @property
-    def _joint_split_idx(self):
-        """
-        Returns:
-            int: the index that correctly splits the right arm from the left arm joints
-        """
-        return int(len(self.robot_joints) / len(self.arms))
 
     @property
     def is_mobile(self):
