@@ -2,7 +2,9 @@ import numpy as np
 from collections import OrderedDict
 from robosuite.controllers import controller_factory, load_controller_config
 
-class BaseControllerManager():
+class CompositeController():
+    """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller.
+    """
     def __init__(self, 
                 sim,
                 robot_model,
@@ -59,7 +61,7 @@ class BaseControllerManager():
         for part_name, controller in self.controllers.items():
             controller.reset_goal()
 
-    def compute_applied_action(self, enabled_parts):
+    def run_controller(self, enabled_parts):
         self.sim.forward()
         self.update_state()
         self._applied_action_dict.clear()

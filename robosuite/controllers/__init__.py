@@ -1,5 +1,5 @@
 from .controller_factory import controller_factory, load_controller_config, reset_controllers, get_pybullet_server
-from .manager import controller_manager_factory
+from .composite import composite_controller_factory
 from .arm import *
 
 

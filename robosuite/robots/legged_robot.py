@@ -6,7 +6,7 @@ import time
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import controller_manager_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory, load_controller_config
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
 from robosuite.utils.observables import Observable, sensor
 from robosuite.models.bases.leg_base_model import LegBaseModel
@@ -75,7 +75,7 @@ class LeggedRobot(MobileBaseRobot):
         """
         # Flag for loading urdf once (only applicable for IK controllers)
 
-        self.controller_manager = controller_manager_factory(
+        self.composite_controller = composite_controller_factory(
             "BASE",
             self.sim,
             self.robot_model,
@@ -93,7 +93,7 @@ class LeggedRobot(MobileBaseRobot):
         self._load_head_controller()
         self._load_torso_controller()
 
-        self.controller_manager.load_controller_config(self.controller_config)
+        self.composite_controller.load_controller_config(self.controller_config)
         self.enable_parts()
 
     def load_model(self):
@@ -114,8 +114,8 @@ class LeggedRobot(MobileBaseRobot):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
         
-        self.controller_manager.update_state()
-        self.controller_manager.reset()
+        self.composite_controller.update_state()
+        self.composite_controller.reset()
         # Set initial q pos of the legged base
         if isinstance(self.robot_model.base, LegBaseModel):
             # Set the initial joint positions of the legged base
@@ -166,11 +166,11 @@ class LeggedRobot(MobileBaseRobot):
             self.action_dim, len(action)
         )
 
-        self.controller_manager.update_state()
+        self.composite_controller.update_state()
         if policy_step:
-            self.controller_manager.set_goal(action)
+            self.composite_controller.set_goal(action)
 
-        applied_action_dict = self.controller_manager.compute_applied_action(self._enabled_parts)
+        applied_action_dict = self.composite_controller.run_controller(self._enabled_parts)
         for part_name, applied_action in applied_action_dict.items():
             applied_action_low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 0]
             applied_action_high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 1]
@@ -280,7 +280,7 @@ class LeggedRobot(MobileBaseRobot):
                 - (np.array) minimum (low) action values
                 - (np.array) maximum (high) action values
         """
-        return self.controller_manager.action_limits
+        return self.composite_controller.action_limits
 
     @property
     def is_legs_actuated(self):

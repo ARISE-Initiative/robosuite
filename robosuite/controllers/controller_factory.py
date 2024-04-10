@@ -7,7 +7,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from .interpolators.linear_interpolator import LinearInterpolator
+from robosuite.utils.traj_utils import LinearInterpolator
 
 from . import arm as arm_controllers
 from . import torso as torso_controllers

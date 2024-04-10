@@ -1,8 +1,24 @@
+import abc
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.interpolators.base_interpolator import Interpolator
 
+
+# Classes for trajectory interpolation
+class Interpolator(object, metaclass=abc.ABCMeta):
+    """
+    General interpolator interface.
+    """
+
+    @abc.abstractmethod
+    def get_interpolated_goal(self):
+        """
+        Provides the next step in interpolation given the remaining steps.
+
+        Returns:
+            np.array: Next interpolated step
+        """
+        raise NotImplementedError
 
 class LinearInterpolator(Interpolator):
     """

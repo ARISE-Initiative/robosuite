@@ -7,7 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.robots.robot import Robot
 
-from robosuite.controllers import controller_manager_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory, load_controller_config
 
 
 
@@ -311,7 +311,7 @@ class MobileBaseRobot(Robot):
         Returns:
             dict: Dictionary of split indexes for each part of the robot
         """
-        return self.controller_manager._action_split_indexes
+        return self.composite_controller._action_split_indexes
 
     @property
     def controller(self):
@@ -321,4 +321,4 @@ class MobileBaseRobot(Robot):
         Returns:
             dict: Controller dictionary for the robot
         """
-        return self.controller_manager.controllers
+        return self.composite_controller.controllers

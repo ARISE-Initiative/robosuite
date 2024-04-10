@@ -6,7 +6,7 @@ import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import controller_manager_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory, load_controller_config
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -119,7 +119,7 @@ class Robot(object):
         self._ref_joints_indexes_dict = {}
 
         self._enabled_parts = {}
-        self.controller_manager = None
+        self.composite_controller = None
 
     def _load_controller(self):
         """
