@@ -6,7 +6,7 @@ import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.controllers import controller_manager_factory, load_controller_config
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -61,7 +61,6 @@ class Robot(object):
     ):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
-        self.controller = self._input2dict(None)
         self.controller_config = self._input2dict(copy.deepcopy(controller_config))
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
@@ -110,7 +109,7 @@ class Robot(object):
         self._ref_joint_indexes = None  # xml joint indexes for robot in mjsim
         self._ref_joint_pos_indexes = None  # xml joint position indexes in mjsim
         self._ref_joint_vel_indexes = None  # xml joint velocity indexes in mjsim
-        self._ref_joint_actuator_indexes = None  # xml joint (torq) actuator indexes for robot in mjsim
+        self._ref_arm_joint_actuator_indexes = None  # xml joint (torq) actuator indexes for robot in mjsim
 
         self.recent_qpos = None  # Current and last robot arm qpos
         self.recent_actions = None  # Current and last action applied
@@ -120,7 +119,7 @@ class Robot(object):
         self._ref_joints_indexes_dict = {}
 
         self._enabled_parts = {}
-        self._action_split_indexes = OrderedDict()
+        self.controller_manager = None
 
     def _load_controller(self):
         """
@@ -222,7 +221,7 @@ class Robot(object):
                 self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
 
             # Update base pos / ori references in controller (technically only needs to be called once)
-            self.controller[arm].update_base_pose()
+            # self.controller[arm].update_base_pose()
             # Setup buffers for eef values
             self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
             self.recent_ee_pose[arm] = DeltaBuffer(dim=7)
@@ -243,7 +242,7 @@ class Robot(object):
         self._ref_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_joints]
 
         # indices for joint pos actuation, joint vel actuation, gripper actuation
-        self._ref_joint_actuator_indexes = [
+        self._ref_arm_joint_actuator_indexes = [
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.arm_actuators
         ]
 
@@ -251,6 +250,7 @@ class Robot(object):
         self._ref_arm_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_arm_joints]
         self._ref_arm_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_arm_joints]
         self._ref_arm_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_arm_joints]
+
 
     def setup_observables(self):
         """
@@ -379,9 +379,8 @@ class Robot(object):
                 - (np.array) maximum (high) torque values
         """
         # Torque limit values pulled from relevant robot.xml file
-        low = self.sim.model.actuator_ctrlrange[self._ref_joint_actuator_indexes, 0]
-        high = self.sim.model.actuator_ctrlrange[self._ref_joint_actuator_indexes, 1]
-
+        low = self.sim.model.actuator_ctrlrange[self._ref_arm_joint_actuator_indexes, 0]
+        high = self.sim.model.actuator_ctrlrange[self._ref_arm_joint_actuator_indexes, 1]
         return low, high
 
     @property
@@ -491,23 +490,6 @@ class Robot(object):
         sensor_idx = np.sum(self.sim.model.sensor_dim[: self.sim.model.sensor_name2id(sensor_name)])
         sensor_dim = self.sim.model.sensor_dim[self.sim.model.sensor_name2id(sensor_name)]
         return np.array(self.sim.data.sensordata[sensor_idx : sensor_idx + sensor_dim])
-
-    # def grip_action(self, gripper, gripper_action):
-    #     """
-    #     Executes @gripper_action for specified @gripper
-
-    #     Args:
-    #         gripper (GripperModel): Gripper to execute action for
-    #         gripper_action (float): Value between [-1,1] to send to gripper
-    #     """
-    #     actuator_idxs = [self.sim.model.actuator_name2id(actuator) for actuator in gripper.actuators]
-    #     gripper_action_actual = gripper.format_action(gripper_action)
-    #     # rescale normalized gripper action to control ranges
-    #     ctrl_range = self.sim.model.actuator_ctrlrange[actuator_idxs]
-    #     bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-    #     weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-    #     applied_gripper_action = bias + weight * gripper_action_actual
-    #     return applied_gripper_action
 
     def visualize(self, vis_settings):
         """
@@ -731,8 +713,7 @@ class Robot(object):
             self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
             urdf_loaded = True
 
-            # Instantiate the relevant controller
-            self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
+            # # Instantiate the relevant controller
             
             if self.has_gripper[arm]:
                 # Load gripper controllers
@@ -759,17 +740,15 @@ class Robot(object):
                     low,
                     high
                 )
-                self.controller[gripper_name] = controller_factory(
-                    self.controller_config[gripper_name]["type"],
-                    self.controller_config[gripper_name],
-                )
 
     def enable_parts(self, 
-                     right_arm=True, 
-                     left_arm=True):
+                     right=True, 
+                     left=True):
         self._enabled_parts = {
-            "right": right_arm,
-            "left": left_arm
+            "right": right,
+            "right_gripper": right,
+            "left": left,
+            "left_gripper": left,
         }
 
     def enabled(self, part_name):
@@ -783,8 +762,9 @@ class Robot(object):
 
         full_action_vector = np.zeros(self.action_dim)
         for (part_name, action_vector) in action_dict.items():
-            # if self._enabled_parts[part_name]:
-            assert(part_name in self._action_split_indexes), f"{part_name} is not specified in the action space"
+            if part_name not in self._action_split_indexes:
+                print(f"{part_name} is not specified in the action space")
+                continue
             start_idx, end_idx = self._action_split_indexes[part_name]
             if end_idx - start_idx == 0:
                 # skipping not controlling actions
@@ -808,3 +788,11 @@ class Robot(object):
 
     def get_gripper_name(self, arm):
         return f"{arm}_gripper"
+
+    @property
+    def _joint_split_idx(self):
+        """
+        Returns:
+            int: the index that correctly splits the right arm from the left arm joints
+        """
+        return int(len(self.robot_arm_joints) / len(self.arms))

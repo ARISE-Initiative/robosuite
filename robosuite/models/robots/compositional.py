@@ -56,26 +56,6 @@ class B1Z1Floating(B1Z1):
     def default_base(self):
         return "B1Floating"
 
-
-# class Compositional(ManipulatorModel):
-
-# class B1Z1(Compositional):
-#     @property
-#     def default_base(self):
-#         return "B1"
-#     @property
-#     def default_arms(self):
-#         return {"right": "Z1"}
-    
-# class B1VX300S(Compositional):
-#     @property
-#     def default_base(self):
-#         return "B1"
-#     @property
-#     def default_arms(self):
-#         return {"right": "BX300S"}    
-    
-    
 # class SpotArm(Compositional):
 #     @property
 #     def default_base(self):

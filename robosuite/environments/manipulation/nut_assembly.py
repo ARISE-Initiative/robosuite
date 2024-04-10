@@ -631,7 +631,7 @@ class NutAssembly(ManipulationEnv):
             bool: True if all nuts are placed correctly
         """
         # remember objects that are on the correct pegs
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id['right']]
         for i, nut in enumerate(self.nuts):
             obj_str = nut.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]

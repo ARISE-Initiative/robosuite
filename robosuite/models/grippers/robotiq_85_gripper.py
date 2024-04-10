@@ -67,7 +67,7 @@ class Robotiq85Gripper(Robotiq85GripperBase):
 
     @property
     def speed(self):
-        return 0.01
+        return 0.20
 
     @property
     def dof(self):
