@@ -51,15 +51,7 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.base]) == 0:
             return None
-        # if not self.controller_config[self.torso]:
-        #         # Need to update default for a single agent
-        #         controller_path = os.path.join(
-        #             os.path.dirname(__file__),
-        #             "..",
-        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
-        #         )
-        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
-        # TODO: Add a default controller config for torso
+        # TODO: Add a default controller config for base
         self.controller_config[self.base] = {}
         self.controller_config[self.base]["type"] = "JOINT_VELOCITY"
         self.controller_config[self.base]["interpolation"] = None
@@ -88,7 +80,6 @@ class MobileBaseRobot(Robot):
             low,
             high
         )
-        # self.controller[self.base] = controller_factory(self.controller_config[self.base]["type"], self.controller_config[self.base])
 
     def _load_torso_controller(self):
         """
@@ -96,14 +87,6 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.torso]) == 0:
             return None
-        # if not self.controller_config[self.torso]:
-        #         # Need to update default for a single agent
-        #         controller_path = os.path.join(
-        #             os.path.dirname(__file__),
-        #             "..",
-        #             "controllers/config/torso/{}.json".format(self.robot_model.default_controller_config[self.torso]),
-        #         )
-        #         self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
         # TODO: Add a default controller config for torso
         self.controller_config[self.torso] = {}
         self.controller_config[self.torso]["type"] = "JOINT_VELOCITY"
@@ -133,25 +116,12 @@ class MobileBaseRobot(Robot):
             high
         )
 
-        # self.controller[self.torso] = controller_factory(
-        #     self.controller_config[self.torso]["type"],
-        #     self.controller_config[self.torso]
-        # )
-
     def _load_head_controller(self):
         """
         Load head controller
         """
         if len(self._ref_actuators_indexes_dict[self.head]) == 0:
             return None
-        # if not self.controller_config[self.head]:
-        #         # Need to update default for a single agent
-        #         controller_path = os.path.join(
-        #             os.path.dirname(__file__),
-        #             "..",
-        #             "controllers/config/head/{}.json".format(self.robot_model.default_controller_config[self.head]),
-        #         )
-        #         self.controller_config[self.head] = load_controller_config(custom_fpath=controller_path)
         # TODO: Add a default controller config for head
         self.controller_config[self.head] = {}
         self.controller_config[self.head]["type"] = "JOINT_VELOCITY" # "JOINT_POSITION"
@@ -179,12 +149,7 @@ class MobileBaseRobot(Robot):
         self.controller_config[self.head]["actuator_range"] = (
             low,
             high
-        )
-
-        # self.controller[self.head] = controller_factory(
-        #     self.controller_config[self.head]["type"],
-        #     self.controller_config[self.head]
-        # )        
+        )  
 
     def load_model(self):
         """

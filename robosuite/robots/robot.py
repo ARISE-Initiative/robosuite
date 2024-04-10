@@ -61,7 +61,6 @@ class Robot(object):
     ):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
-        # self.controller = self._input2dict(None)
         self.controller_config = self._input2dict(copy.deepcopy(controller_config))
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
@@ -121,13 +120,6 @@ class Robot(object):
 
         self._enabled_parts = {}
         self.controller_manager = None
-        # self._action_split_indexes = OrderedDict()
-
-    #     self.controller_manager = None
-
-    # def load_controller_manager(self, controller_manager_type):
-    #     self.controller_manager = controller_manager_factory(controller_manager_type, self.controller_config)
-    #     self.controller_manager.load_controllers(self.controller_config)
 
     def _load_controller(self):
         """
@@ -499,23 +491,6 @@ class Robot(object):
         sensor_dim = self.sim.model.sensor_dim[self.sim.model.sensor_name2id(sensor_name)]
         return np.array(self.sim.data.sensordata[sensor_idx : sensor_idx + sensor_dim])
 
-    # def grip_action(self, gripper, gripper_action):
-    #     """
-    #     Executes @gripper_action for specified @gripper
-
-    #     Args:
-    #         gripper (GripperModel): Gripper to execute action for
-    #         gripper_action (float): Value between [-1,1] to send to gripper
-    #     """
-    #     actuator_idxs = [self.sim.model.actuator_name2id(actuator) for actuator in gripper.actuators]
-    #     gripper_action_actual = gripper.format_action(gripper_action)
-    #     # rescale normalized gripper action to control ranges
-    #     ctrl_range = self.sim.model.actuator_ctrlrange[actuator_idxs]
-    #     bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-    #     weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-    #     applied_gripper_action = bias + weight * gripper_action_actual
-    #     return applied_gripper_action
-
     def visualize(self, vis_settings):
         """
         Do any necessary visualization for this manipulator
@@ -739,7 +714,6 @@ class Robot(object):
             urdf_loaded = True
 
             # # Instantiate the relevant controller
-            # self.controller[arm] = controller_factory(self.controller_config[arm]["type"], self.controller_config[arm])
             
             if self.has_gripper[arm]:
                 # Load gripper controllers
@@ -766,10 +740,6 @@ class Robot(object):
                     low,
                     high
                 )
-                # self.controller[gripper_name] = controller_factory(
-                #     self.controller_config[gripper_name]["type"],
-                #     self.controller_config[gripper_name],
-                # )
 
     def enable_parts(self, 
                      right=True, 
@@ -792,11 +762,9 @@ class Robot(object):
 
         full_action_vector = np.zeros(self.action_dim)
         for (part_name, action_vector) in action_dict.items():
-            # if self._enabled_parts[part_name]:
             if part_name not in self._action_split_indexes:
                 print(f"{part_name} is not specified in the action space")
                 continue
-            # print(f"{part_name}: ({self._action_split_indexes[part_name]})")
             start_idx, end_idx = self._action_split_indexes[part_name]
             if end_idx - start_idx == 0:
                 # skipping not controlling actions
