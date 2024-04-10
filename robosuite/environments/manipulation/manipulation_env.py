@@ -256,7 +256,7 @@ class ManipulationEnv(RobotEnv):
             np.array or float: (Cartesian or Euclidean) distance from gripper to target
         """
         # Get gripper and target positions
-        gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
+        gripper_pos = self.sim.data.get_site_xpos(gripper["right"].important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
         if isinstance(target, MujocoModel):
             target_pos = self.sim.data.get_body_xpos(target.root_body)

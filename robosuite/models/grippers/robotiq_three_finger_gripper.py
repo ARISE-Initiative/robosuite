@@ -78,7 +78,7 @@ class RobotiqThreeFingerGripper(RobotiqThreeFingerGripperBase):
 
     @property
     def speed(self):
-        return 0.01
+        return 0.2
 
     @property
     def dof(self):
@@ -108,7 +108,7 @@ class RobotiqThreeFingerDexterousGripper(RobotiqThreeFingerGripperBase):
 
     @property
     def speed(self):
-        return 0.01
+        return 0.2
 
     @property
     def dof(self):

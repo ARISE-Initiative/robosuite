@@ -5,7 +5,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.controllers import controller_manager_factory, load_controller_config
 from robosuite.controllers.mobile_base_controller import MobileBaseController
 from robosuite.controllers.torso_height_controller import TorsoHeightController
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
@@ -45,6 +45,13 @@ class WheeledRobot(MobileBaseRobot):
         """
         # Flag for loading urdf once (only applicable for IK controllers)
 
+        self.controller_manager = controller_manager_factory(
+            "BASE",
+            self.sim,
+            self.robot_model,
+            grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
+        )
+
         self._load_arm_controllers()
 
         # self.controller[self.base] = MobileBaseController(self.sim, self.robot_model.base.naming_prefix)
@@ -52,28 +59,31 @@ class WheeledRobot(MobileBaseRobot):
         self._load_base_controller()
         self._load_torso_controller()
 
-        # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
 
-        # Set up split indices for arm actions
-        self._action_split_indexes.clear()
-        previous_idx = 0
-        last_idx = 0
-        for arm in self.arms:
-            last_idx += self.controller[arm].control_dim
-            last_idx += self.gripper[arm].dof if self.has_gripper[arm] else 0
-            self._action_split_indexes[arm] = (previous_idx, last_idx)
-            previous_idx = last_idx
+        self.controller_manager.load_controller_config(self.controller_config)
+        self.enable_parts()
+        # # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
 
-        previous_idx = self._action_split_indexes[self.arms[-1]][1]
-        last_idx = previous_idx
-        for part_name in [self.base, self.head, self.torso]:
-            if part_name not in self.controller:
-                self._action_split_indexes[part_name] = (last_idx, last_idx)
-                continue
+        # # Set up split indices for arm actions
+        # self._action_split_indexes.clear()
+        # previous_idx = 0
+        # last_idx = 0
+        # for arm in self.arms:
+        #     last_idx += self.controller[arm].control_dim
+        #     last_idx += self.gripper[arm].dof if self.has_gripper[arm] else 0
+        #     self._action_split_indexes[arm] = (previous_idx, last_idx)
+        #     previous_idx = last_idx
 
-            last_idx += self.controller[part_name].control_dim
-            self._action_split_indexes[part_name] = (previous_idx, last_idx)
-            previous_idx = last_idx
+        # previous_idx = self._action_split_indexes[self.arms[-1]][1]
+        # last_idx = previous_idx
+        # for part_name in [self.base, self.head, self.torso]:
+        #     if part_name not in self.controller:
+        #         self._action_split_indexes[part_name] = (last_idx, last_idx)
+        #         continue
+
+        #     last_idx += self.controller[part_name].control_dim
+        #     self._action_split_indexes[part_name] = (previous_idx, last_idx)
+        #     previous_idx = last_idx
 
 
     def load_model(self):
@@ -94,10 +104,12 @@ class WheeledRobot(MobileBaseRobot):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
         
-        for part_name in [self.base, self.head, self.torso]:
-            if part_name not in self.controller:
-                continue
-            self.controller[part_name].reset_goal()
+        self.controller_manager.update_state()
+        self.controller_manager.reset()        
+        # for part_name in [self.base, self.head, self.torso]:
+        #     if part_name not in self.controller:
+        #         continue
+        #     self.controller[part_name].reset_goal()
 
     def setup_references(self):
         """
@@ -178,78 +190,91 @@ class WheeledRobot(MobileBaseRobot):
             self.action_dim, len(action)
         )
 
-        mode = "base" if action[-1] > 0 else "arm"
+        self.controller_manager.update_state()
+        if policy_step:
+            self.controller_manager.set_goal(action)
 
-        self.base_pos, self.base_ori = self.controller[self.base].get_base_pose()
-        for arm in self.arms:
-            # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-            # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
-            # TODO: This line should be removed for arms, and change it to internal computation of base. 
-            self.controller[arm].update_base_pose()
+        applied_action_dict = self.controller_manager.compute_applied_action(self._enabled_parts)
+        for part_name, applied_action in applied_action_dict.items():
+            applied_action_low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 0]
+            applied_action_high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 1]
+            applied_action = np.clip(applied_action, applied_action_low, applied_action_high)
+            # if "gripper" in part_name:
+            #     print(f"{part_name} action: {applied_action}")
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[part_name]] = applied_action
 
-        if self.enabled(self.base):
-            mobile_base_dims = self.controller[self.base].control_dim
-            (base_start, base_end) = self._action_split_indexes[self.base]
-            base_action = action[base_start:base_end]
+        # mode = "base" if action[-1] > 0 else "arm"
 
+        # self.base_pos, self.base_ori = self.controller[self.base].get_base_pose()
+        # for arm in self.arms:
+        #     # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+        #     # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
+        #     # TODO: This line should be removed for arms, and change it to internal computation of base. 
+        #     self.controller[arm].update_base_pose()
 
-            if policy_step:
-                self.controller[self.base].set_goal(base_action)
-
-            mobile_base_torques = self.controller[self.base].run_controller()
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.base]] = mobile_base_torques
-
-            # Apply torques for height control (if applicable)
-
-        if self.enabled(self.head) and len(self._ref_actuators_indexes_dict[self.head]) > 0:
-            head_dims = self.controller[self.head].control_dim
-            (head_start, head_end) = self._action_split_indexes[self.head]
-            head_action = action[head_start:head_end]
-            if policy_step:
-                self.controller[self.head].set_goal(head_action)
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.head]] = self.controller[self.head].run_controller()
+        # if self.enabled(self.base):
+        #     mobile_base_dims = self.controller[self.base].control_dim
+        #     (base_start, base_end) = self._action_split_indexes[self.base]
+        #     base_action = action[base_start:base_end]
 
 
-        if self.enabled(self.torso) and len(self._ref_actuators_indexes_dict[self.torso]) > 0:
-            torso_dims = self.controller[self.torso].control_dim
-            (torso_start, torso_end) = self._action_split_indexes[self.torso]
-            torso_action = action[torso_start:torso_end]
-            if policy_step:
-                self.controller[self.torso].set_goal(torso_action)
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.torso]] = self.controller[self.torso].run_controller()
+        #     if policy_step:
+        #         self.controller[self.base].set_goal(base_action)
 
-        self.torques = np.array([])
-        # Now execute actions for each arm
-        for arm in self.arms:
-            # Make sure to split action space correctly
-            # (start, end) = (None, self._action_split_idx) if arm == "right" else (self._action_split_idx, None)
-            (start, end) = self._action_split_indexes[arm]
-            sub_action = action[start:end]
+        #     mobile_base_torques = self.controller[self.base].run_controller()
+        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.base]] = mobile_base_torques
 
-            gripper_action = None
-            if self.has_gripper[arm]:
-                # get all indexes past controller dimension indexes
-                gripper_action = sub_action[self.controller[arm].control_dim :]
-                sub_action = sub_action[: self.controller[arm].control_dim]
+        #     # Apply torques for height control (if applicable)
 
-            # Update the controller goal if this is a new policy step
-            if policy_step:
-                self.controller[arm].set_goal(sub_action)
+        # if self.enabled(self.head) and len(self._ref_actuators_indexes_dict[self.head]) > 0:
+        #     head_dims = self.controller[self.head].control_dim
+        #     (head_start, head_end) = self._action_split_indexes[self.head]
+        #     head_action = action[head_start:head_end]
+        #     if policy_step:
+        #         self.controller[self.head].set_goal(head_action)
+        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.head]] = self.controller[self.head].run_controller()
 
-            # Now run the controller for a step and add it to the torques
-            applied_torque = self.controller[arm].run_controller()
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[arm]] = applied_torque            
-            self.torques = np.concatenate((self.torques, applied_torque))
 
-            # Get gripper action, if applicable
-            if self.has_gripper[arm]:
-                gripper_name = self.get_gripper_name(arm)
-                # if policy_step:
-                formatted_gripper_action = self.gripper[arm].format_action(gripper_action)
-                self.controller[gripper_name].set_goal(formatted_gripper_action)
-                applied_gripper_action = self.controller[gripper_name].run_controller()
-                # self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
-                self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.get_gripper_name(arm)]] = applied_gripper_action
+        # if self.enabled(self.torso) and len(self._ref_actuators_indexes_dict[self.torso]) > 0:
+        #     torso_dims = self.controller[self.torso].control_dim
+        #     (torso_start, torso_end) = self._action_split_indexes[self.torso]
+        #     torso_action = action[torso_start:torso_end]
+        #     if policy_step:
+        #         self.controller[self.torso].set_goal(torso_action)
+        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.torso]] = self.controller[self.torso].run_controller()
+
+        # self.torques = np.array([])
+        # # Now execute actions for each arm
+        # for arm in self.arms:
+        #     # Make sure to split action space correctly
+        #     # (start, end) = (None, self._action_split_idx) if arm == "right" else (self._action_split_idx, None)
+        #     (start, end) = self._action_split_indexes[arm]
+        #     sub_action = action[start:end]
+
+        #     gripper_action = None
+        #     if self.has_gripper[arm]:
+        #         # get all indexes past controller dimension indexes
+        #         gripper_action = sub_action[self.controller[arm].control_dim :]
+        #         sub_action = sub_action[: self.controller[arm].control_dim]
+
+        #     # Update the controller goal if this is a new policy step
+        #     if policy_step:
+        #         self.controller[arm].set_goal(sub_action)
+
+        #     # Now run the controller for a step and add it to the torques
+        #     applied_torque = self.controller[arm].run_controller()
+        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[arm]] = applied_torque            
+        #     self.torques = np.concatenate((self.torques, applied_torque))
+
+        #     # Get gripper action, if applicable
+        #     if self.has_gripper[arm]:
+        #         gripper_name = self.get_gripper_name(arm)
+        #         # if policy_step:
+        #         formatted_gripper_action = self.gripper[arm].format_action(gripper_action)
+        #         self.controller[gripper_name].set_goal(formatted_gripper_action)
+        #         applied_gripper_action = self.controller[gripper_name].run_controller()
+        #         # self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
+        #         self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.get_gripper_name(arm)]] = applied_gripper_action
 
         # # Clip the torques'
         # low, high = self.torque_limits
@@ -266,18 +291,19 @@ class WheeledRobot(MobileBaseRobot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
+                controller = self.controller[arm]
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
                 self.recent_ee_pose[arm].push(
-                    np.concatenate((self.controller[arm].ee_pos, T.mat2quat(self.controller[arm].ee_ori_mat)))
+                    np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat)))
                 )
                 self.recent_ee_vel[arm].push(
-                    np.concatenate((self.controller[arm].ee_pos_vel, self.controller[arm].ee_ori_vel))
+                    np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel))
                 )
 
                 # Estimation of eef acceleration (averaged derivative of recent velocities)
                 self.recent_ee_vel_buffer[arm].push(
-                    np.concatenate((self.controller[arm].ee_pos_vel, self.controller[arm].ee_ori_vel))
+                    np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel))
                 )
                 diffs = np.vstack(
                     [
@@ -359,25 +385,38 @@ class WheeledRobot(MobileBaseRobot):
                 - (np.array) minimum (low) action values
                 - (np.array) maximum (high) action values
         """
-        # Action limits based on controller limits
-        low, high = [], []
-        for arm in self.arms:
-            low_g, high_g = (
-                ([-1] * self.gripper[arm].dof, [1] * self.gripper[arm].dof) if self.has_gripper[arm] else ([], [])
-            )
-            low_c, high_c = self.controller[arm].control_limits
-            low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
+        return self.controller_manager.action_limits
 
-        mobile_base_dims = self.controller[self.base].control_dim if self.base in self.controller else 0
-        torso_dims = self.controller[self.torso].control_dim if self.torso in self.controller else 0
-        head_dims = 0 # self.controller[self.head].control_dim if self.head in self.controller else 0
-        low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
-        low_t, high_t = ([-1] * torso_dims, [1] * torso_dims)  # base control dims
-        low_h, high_h = ([-1] * head_dims, [1] * head_dims)  # base control dims
+    # @property
+    # def action_limits(self):
+    #     """
+    #     Action lower/upper limits per dimension.
 
-        # TODO: This mode thing should be removed and put into the controller manager
-        # low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
+    #     Returns:
+    #         2-tuple:
 
-        low = np.concatenate([low, low_b, low_t, low_h])
-        high = np.concatenate([high, high_b, high_t, high_h])
-        return low, high
+    #             - (np.array) minimum (low) action values
+    #             - (np.array) maximum (high) action values
+    #     """
+    #     # Action limits based on controller limits
+    #     low, high = [], []
+    #     for arm in self.arms:
+    #         low_g, high_g = (
+    #             ([-1] * self.gripper[arm].dof, [1] * self.gripper[arm].dof) if self.has_gripper[arm] else ([], [])
+    #         )
+    #         low_c, high_c = self.controller[arm].control_limits
+    #         low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
+
+    #     mobile_base_dims = self.controller[self.base].control_dim if self.base in self.controller else 0
+    #     torso_dims = self.controller[self.torso].control_dim if self.torso in self.controller else 0
+    #     head_dims = 0 # self.controller[self.head].control_dim if self.head in self.controller else 0
+    #     low_b, high_b = ([-1] * mobile_base_dims, [1] * mobile_base_dims)  # base control dims
+    #     low_t, high_t = ([-1] * torso_dims, [1] * torso_dims)  # base control dims
+    #     low_h, high_h = ([-1] * head_dims, [1] * head_dims)  # base control dims
+
+    #     # TODO: This mode thing should be removed and put into the controller manager
+    #     # low_m, high_m = ([-1] * 1, [1] * 1)  # mode control dims
+
+    #     low = np.concatenate([low, low_b, low_t, low_h])
+    #     high = np.concatenate([high, high_b, high_t, high_h])
+    #     return low, high

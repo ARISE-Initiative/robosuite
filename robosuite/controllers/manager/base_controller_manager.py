@@ -7,6 +7,7 @@ class BaseControllerManager():
                 sim,
                 robot_model,
                 grippers) -> None: 
+        # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
 
@@ -59,12 +60,11 @@ class BaseControllerManager():
             controller.reset_goal()
 
     def compute_applied_action(self, enabled_parts):
-       
         self.sim.forward()
         self.update_state()
         self._applied_action_dict.clear()
         for part_name, controller in self.controllers.items():
-            if part_name in enabled_parts and enabled_parts[part_name]:
+            if enabled_parts.get(part_name, False):
                 self._applied_action_dict[part_name] = controller.run_controller()
 
         return self._applied_action_dict
@@ -85,7 +85,6 @@ class BaseControllerManager():
 
     @property
     def action_limits(self):
-
         low, high = [], []
         for part_name, controller in self.controllers.items():
             if part_name not in self.arms:

@@ -6,7 +6,7 @@ import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.controllers import controller_manager_factory, load_controller_config
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -120,6 +120,7 @@ class Robot(object):
         self._ref_joints_indexes_dict = {}
 
         self._enabled_parts = {}
+        self.controller_manager = None
         # self._action_split_indexes = OrderedDict()
 
     #     self.controller_manager = None
@@ -771,13 +772,13 @@ class Robot(object):
                 # )
 
     def enable_parts(self, 
-                     right_arm=True, 
-                     left_arm=True):
+                     right=True, 
+                     left=True):
         self._enabled_parts = {
-            "right": right_arm,
-            "right_gripper": right_arm,
-            "left": left_arm,
-            "left_gripper": left_arm,
+            "right": right,
+            "right_gripper": right,
+            "left": left,
+            "left_gripper": left,
         }
 
     def enabled(self, part_name):
@@ -795,7 +796,7 @@ class Robot(object):
             if part_name not in self._action_split_indexes:
                 print(f"{part_name} is not specified in the action space")
                 continue
-            print(f"{part_name}: ({self._action_split_indexes[part_name]})")
+            # print(f"{part_name}: ({self._action_split_indexes[part_name]})")
             start_idx, end_idx = self._action_split_indexes[part_name]
             if end_idx - start_idx == 0:
                 # skipping not controlling actions

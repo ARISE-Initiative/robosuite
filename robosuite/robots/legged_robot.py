@@ -6,13 +6,11 @@ import time
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import controller_factory, load_controller_config
-from robosuite.controllers.mobile_base_controller import MobileBaseController
-from robosuite.controllers.torso_height_controller import TorsoHeightController
+from robosuite.controllers import controller_manager_factory, load_controller_config
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
 from robosuite.utils.observables import Observable, sensor
 from robosuite.models.bases.leg_base_model import LegBaseModel
-from robosuite.controllers.manager.base_controller_manager import BaseControllerManager
+
 
 class LeggedRobot(MobileBaseRobot):
     """
@@ -51,7 +49,7 @@ class LeggedRobot(MobileBaseRobot):
         self.controller_config[self.legs]["sim"] = self.sim
         self.controller_config[self.legs]["part_name"] = self.legs
         self.controller_config[self.legs]["naming_prefix"] = self.robot_model.base.naming_prefix
-        self.controller_config[self.legs]["ndim"] = self._joint_split_idx
+        self.controller_config[self.legs]["ndim"] = self.num_leg_joints
         self.controller_config[self.legs]["policy_freq"] = self.control_freq
 
         ref_legs_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.legs_joints]
@@ -78,7 +76,8 @@ class LeggedRobot(MobileBaseRobot):
         """
         # Flag for loading urdf once (only applicable for IK controllers)
 
-        self.controller_manager = BaseControllerManager(
+        self.controller_manager = controller_manager_factory(
+            "BASE",
             self.sim,
             self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
@@ -99,7 +98,7 @@ class LeggedRobot(MobileBaseRobot):
         self._load_torso_controller()
 
         self.controller_manager.load_controller_config(self.controller_config)
-
+        self.enable_parts()
         # # self.controller[self.head] = controller_factory("OSC_POSE", self.controller_config["right"])
 
         # # Set up split indices for arm actions
@@ -207,7 +206,7 @@ class LeggedRobot(MobileBaseRobot):
             applied_action_low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 0]
             applied_action_high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 1]
             applied_action = np.clip(applied_action, applied_action_low, applied_action_high)
-            # print(f"{part_name} action: {self._ref_actuators_indexes_dict[part_name]}")
+
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[part_name]] = applied_action
 
         # mode = "base" if action[-1] > 0 else "arm"
@@ -431,21 +430,5 @@ class LeggedRobot(MobileBaseRobot):
         return len(self.robot_model.legs_actuators) > 0
 
     @property
-    def _action_split_indexes(self):
-        """
-        Dictionary of split indexes for each part of the robot
-
-        Returns:
-            dict: Dictionary of split indexes for each part of the robot
-        """
-        return self.controller_manager._action_split_indexes
-
-    @property
-    def controller(self):
-        """
-        Controller dictionary for the robot
-
-        Returns:
-            dict: Controller dictionary for the robot
-        """
-        return self.controller_manager.controllers
+    def num_leg_joints(self):
+        return len(self.robot_model.legs_joints)

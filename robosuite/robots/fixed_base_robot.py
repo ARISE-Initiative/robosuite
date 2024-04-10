@@ -5,7 +5,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.controllers import controller_manager_factory, load_controller_config
 from robosuite.robots.robot import Robot
 from robosuite.utils.observables import Observable, sensor
 
@@ -42,15 +42,25 @@ class FixedBaseRobot(Robot):
         Loads controller to be used for dynamic trajectories
         """
         # Flag for loading urdf once (only applicable for IK controllers)
+        self.controller_manager = controller_manager_factory(
+            "BASE",
+            self.sim,
+            self.robot_model,
+            grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
+        )
+
         self._load_arm_controllers()
-        self._action_split_indexes.clear()
-        previous_idx = 0
-        last_idx = 0
-        for arm in self.arms:
-            last_idx += self.controller[arm].control_dim
-            last_idx += self.gripper[arm].dof if self.has_gripper[arm] else 0
-            self._action_split_indexes[arm] = (previous_idx, last_idx)
-            previous_idx = last_idx
+        self.controller_manager.load_controller_config(self.controller_config)
+
+        self.enable_parts()
+        # self._action_split_indexes.clear()
+        # previous_idx = 0
+        # last_idx = 0
+        # for arm in self.arms:
+        #     last_idx += self.controller[arm].control_dim
+        #     last_idx += self.gripper[arm].dof if self.has_gripper[arm] else 0
+        #     self._action_split_indexes[arm] = (previous_idx, last_idx)
+        #     previous_idx = last_idx
 
     def load_model(self):
         """
@@ -132,42 +142,53 @@ class FixedBaseRobot(Robot):
             self.action_dim, len(action)
         )
 
-        for arm in self.arms:
-            # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-            # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
-            self.controller[arm].update_base_pose()
+        self.controller_manager.update_state()
+        if policy_step:
+            self.controller_manager.set_goal(action)
 
-        self.torques = np.array([])
-        # Now execute actions for each arm
-        for arm in self.arms:
-            # Make sure to split action space correctly
-            (start, end) = self._action_split_indexes[arm]
-            sub_action = action[start:end]
+        applied_action_dict = self.controller_manager.compute_applied_action(self._enabled_parts)
+        for part_name, applied_action in applied_action_dict.items():
+            applied_action_low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 0]
+            applied_action_high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 1]
+            applied_action = np.clip(applied_action, applied_action_low, applied_action_high)
+            self.sim.data.ctrl[self._ref_actuators_indexes_dict[part_name]] = applied_action
 
-            gripper_action = None
-            if self.has_gripper[arm]:
-                # get all indexes past controller dimension indexes
-                gripper_action = sub_action[self.controller[arm].control_dim :]
-                sub_action = sub_action[: self.controller[arm].control_dim]
+        # for arm in self.arms:
+        #     # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+        #     # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
+        #     self.controller[arm].update_base_pose()
 
-            # Update the controller goal if this is a new policy step
-            if policy_step:
-                self.controller[arm].set_goal(sub_action)
+        # self.torques = np.array([])
+        # # Now execute actions for each arm
+        # for arm in self.arms:
+        #     # Make sure to split action space correctly
+        #     (start, end) = self._action_split_indexes[arm]
+        #     sub_action = action[start:end]
 
-            # Now run the controller for a step and add it to the torques
-            applied_torque = self.controller[arm].run_controller()
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[arm]] = applied_torque
-            self.torques = np.concatenate((self.torques, applied_torque))
+        #     gripper_action = None
+        #     if self.has_gripper[arm]:
+        #         # get all indexes past controller dimension indexes
+        #         gripper_action = sub_action[self.controller[arm].control_dim :]
+        #         sub_action = sub_action[: self.controller[arm].control_dim]
 
-            # Get gripper action, if applicable
-            if self.has_gripper[arm]:
-                gripper_name = self.get_gripper_name(arm)
-                # if policy_step:
-                formatted_gripper_action = self.gripper[arm].format_action(gripper_action)
-                self.controller[gripper_name].set_goal(formatted_gripper_action)
-                applied_gripper_action = self.controller[gripper_name].run_controller()
-                # self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
-                self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.get_gripper_name(arm)]] = applied_gripper_action
+        #     # Update the controller goal if this is a new policy step
+        #     if policy_step:
+        #         self.controller[arm].set_goal(sub_action)
+
+        #     # Now run the controller for a step and add it to the torques
+        #     applied_torque = self.controller[arm].run_controller()
+        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[arm]] = applied_torque
+        #     self.torques = np.concatenate((self.torques, applied_torque))
+
+        #     # Get gripper action, if applicable
+        #     if self.has_gripper[arm]:
+        #         gripper_name = self.get_gripper_name(arm)
+        #         # if policy_step:
+        #         formatted_gripper_action = self.gripper[arm].format_action(gripper_action)
+        #         self.controller[gripper_name].set_goal(formatted_gripper_action)
+        #         applied_gripper_action = self.controller[gripper_name].run_controller()
+        #         # self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
+        #         self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.get_gripper_name(arm)]] = applied_gripper_action
 
             # # Get gripper action, if applicable
             # if self.has_gripper[arm]:
@@ -181,7 +202,6 @@ class FixedBaseRobot(Robot):
         # # Apply joint torque control
         # self.sim.data.ctrl[self._ref_arm_joint_actuator_indexes] = self.torques
 
-        # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:
             # Update proprioceptive values
             self.recent_qpos.push(self._joint_positions)
@@ -189,18 +209,19 @@ class FixedBaseRobot(Robot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
+                controller = self.controller[arm]
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
                 self.recent_ee_pose[arm].push(
-                    np.concatenate((self.controller[arm].ee_pos, T.mat2quat(self.controller[arm].ee_ori_mat)))
+                    np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat)))
                 )
                 self.recent_ee_vel[arm].push(
-                    np.concatenate((self.controller[arm].ee_pos_vel, self.controller[arm].ee_ori_vel))
+                    np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel))
                 )
 
                 # Estimation of eef acceleration (averaged derivative of recent velocities)
                 self.recent_ee_vel_buffer[arm].push(
-                    np.concatenate((self.controller[arm].ee_pos_vel, self.controller[arm].ee_ori_vel))
+                    np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel))
                 )
                 diffs = np.vstack(
                     [
@@ -278,16 +299,48 @@ class FixedBaseRobot(Robot):
                 - (np.array) minimum (low) action values
                 - (np.array) maximum (high) action values
         """
-        # Action limits based on controller limits
-        low, high = [], []
-        for arm in self.arms:
-            low_g, high_g = (
-                ([-1] * self.gripper[arm].dof, [1] * self.gripper[arm].dof) if self.has_gripper[arm] else ([], [])
-            )
-            low_c, high_c = self.controller[arm].control_limits
-            low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
-        return low, high
+        return self.controller_manager.action_limits
+    # @property
+    # def action_limits(self):
+    #     """
+    #     Action lower/upper limits per dimension.
+
+    #     Returns:
+    #         2-tuple:
+
+    #             - (np.array) minimum (low) action values
+    #             - (np.array) maximum (high) action values
+    #     """
+    #     # Action limits based on controller limits
+    #     low, high = [], []
+    #     for arm in self.arms:
+    #         low_g, high_g = (
+    #             ([-1] * self.gripper[arm].dof, [1] * self.gripper[arm].dof) if self.has_gripper[arm] else ([], [])
+    #         )
+    #         low_c, high_c = self.controller[arm].control_limits
+    #         low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
+    #     return low, high
 
     @property
     def is_mobile(self):
         return False
+
+    @property
+    def _action_split_indexes(self):
+        """
+        Dictionary of split indexes for each part of the robot
+
+        Returns:
+            dict: Dictionary of split indexes for each part of the robot
+        """
+        return self.controller_manager._action_split_indexes
+
+    @property
+    def controller(self):
+        """
+        Controller dictionary for the robot
+
+        Returns:
+            dict: Controller dictionary for the robot
+        """
+        return self.controller_manager.controllers

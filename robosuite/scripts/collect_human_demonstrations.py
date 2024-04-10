@@ -78,19 +78,21 @@ def collect_human_trajectory(env, device, arm, env_configuration):
                 env.robots[0].base: base_action,
                 # env.robots[0].head: base_action,
                 # env.robots[0].torso: base_action
+                # env.robots[0].torso: torso_action
             }
             )
             mode_action = input_action[-1]
 
             if mode_action > 0:
-                env.robots[0].enable_parts(base=True, right_arm=True, left_arm=True, torso=False)
+                env.robots[0].enable_parts(base=True, right=True, left=True, torso=False)
             else:
-                env.robots[0].enable_parts(base=False, right_arm=True, left_arm=True, torso=False)
+                env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:
             arm_actions = input_action
             action = env.robots[0].create_action_vector(
                 {
-                    "right": arm_actions, 
+                    arm: arm_actions[:-1], 
+                    f"{arm}_gripper": arm_actions[-1:]
                 }
             )
         # action[-1] = input_action[-1]
@@ -289,6 +291,6 @@ if __name__ == "__main__":
     os.makedirs(new_dir)
 
     # collect demonstrations
-    while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+    # while True:
+    collect_human_trajectory(env, device, args.arm, args.config)
+    gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

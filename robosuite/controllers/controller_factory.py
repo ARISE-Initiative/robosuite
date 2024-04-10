@@ -18,7 +18,6 @@ from . import legs as legs_controllers
 # Global var for linking pybullet server to multiple ik controller instances if necessary
 pybullet_server = None
 
-
 def reset_controllers():
     """
     Global function for doing one-time clears and restarting of any global controller-related
@@ -246,6 +245,3 @@ def legs_controller_factory(name, params):
         return legs_controllers.LegsJointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))
-
-
-

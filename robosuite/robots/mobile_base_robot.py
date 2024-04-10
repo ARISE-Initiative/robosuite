@@ -7,7 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.robots.robot import Robot
 
-from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.controllers import controller_manager_factory, load_controller_config
 
 
 
@@ -297,6 +297,26 @@ class MobileBaseRobot(Robot):
 
         return observables
 
+    def enable_parts(self,
+                    right=True,
+                    left=False,
+                    torso=False,
+                    head=False,
+                    base=True,
+                    legs=False
+                    ):
+
+        self._enabled_parts = {
+            "right": right, 
+            "right_gripper": right, 
+            "left": left,            
+            "left_gripper": left,
+            self.torso: torso,
+            self.head: head,
+            self.base: base,
+            self.legs: legs
+        }
+
     @property
     def is_mobile(self):
         return True
@@ -317,26 +337,23 @@ class MobileBaseRobot(Robot):
     @property
     def legs(self):
         return "legs"
-    
 
-    def enable_parts(self,
-                    right_arm=True,
-                    left_arm=False,
-                    torso=False,
-                    head=False,
-                    base=True,
-                    legs=False
-                    ):
-        if len(self.arms) == 2:
-            left_arm = True
+    @property
+    def _action_split_indexes(self):
+        """
+        Dictionary of split indexes for each part of the robot
 
-        self._enabled_parts = {
-            "right": right_arm, 
-            "right_gripper": right_arm, 
-            "left": left_arm,            
-            "left_gripper": left_arm,
-            self.torso: torso,
-            self.head: head,
-            self.base: base,
-            self.legs: legs
-        }
+        Returns:
+            dict: Dictionary of split indexes for each part of the robot
+        """
+        return self.controller_manager._action_split_indexes
+
+    @property
+    def controller(self):
+        """
+        Controller dictionary for the robot
+
+        Returns:
+            dict: Controller dictionary for the robot
+        """
+        return self.controller_manager.controllers
