@@ -140,7 +140,7 @@
                         <body name="r_upper_arm_pitch">
                             <site name="r_shoulder_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                             <inertial pos="0.00515735 -0.0587916 0.000122944" quat="0.999675 -0.0254775 -0.000125407 -0.000494276" mass="0.777391" diaginertia="0.00054641 0.000340601 0.00031934"/>
-                            <joint name="r_shoulder_pitch" pos="0 0 0" axis="0 1 0" range="-2.6179938779914944 1.0471975511965976"/>
+                            <joint name="r_shoulder_pitch" pos="0 0 0" axis="0 1 0" range="-2.6179938779914944 1.0471975511965976" damping="7" armature="1.0" frictionloss="0.2"/>
 
                             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="r_upper_arm_pitch"/>
                             <geom size="0.02 0.02 0.02" type="box" material="LightGrey"/>
@@ -148,7 +148,7 @@
                             <!-- r upper arm roll -->
                             <body name="r_upper_arm_roll" pos="0 -0.067 0" quat="0.976303 0.216409 0 0">
                                 <inertial pos="0.0260059 -0.0238264 -0.0272109" quat="0.906733 -0.298529 0.228698 0.190821" mass="0.0840989" diaginertia="9.66585e-05 8.99068e-05 2.54689e-05"/>
-                                <joint name="r_shoulder_roll" pos="0 0 0" axis="-1 0 1.221e-05" range="0.0 2.6179938779914944"/>
+                                <joint name="r_shoulder_roll" pos="0 0 0" axis="-1 0 1.221e-05" range="0.0 2.6179938779914944" damping="7" armature="1.0" frictionloss="0.2"/>
 
                                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="r_upper_arm_roll"/>
                                 <geom size="0.02 0.02 0.02" type="box" material="LightGrey"/>
@@ -157,7 +157,7 @@
                                 <body name="r_upper_arm_yaw" pos="0 -0.039996 -0.057473">
                                     <site name="r_collar_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                                     <inertial pos="0.00017083 -0.00124148 -0.100981" quat="0.712176 -0.02561 0.0250075 0.701088" mass="0.78993" diaginertia="0.000481112 0.000420147 0.000315576"/>
-                                    <joint name="r_shoulder_yaw" pos="0 0 0" axis="1.221e-05 6.8349e-05 1" range="-1.5707963267948966 1.5707963267948966"/>
+                                    <joint name="r_shoulder_yaw" pos="0 0 0" axis="1.221e-05 6.8349e-05 1" range="-1.5707963267948966 1.5707963267948966" damping="7" armature="1.0" frictionloss="0.2"/>
 
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="r_upper_arm_yaw"/>
                                     <geom size="0.025 0.025 0.06" pos="0 0 -0.05" type="box" material="LightGrey"/>
@@ -166,7 +166,7 @@
                                     <body name="r_lower_arm_pitch" pos="0 1.28859e-05 -0.18853">
                                         <site name="r_elbow_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                                         <inertial pos="2.54538e-07 -0.0196908 -0.0210929" quat="0.675237 0.209883 -0.209892 0.67524" mass="0.0553958" diaginertia="2.92256e-05 2.63267e-05 1.3293e-05"/>
-                                        <joint name="r_elbow_pitch" pos="0 0 0" axis="0 1 -6.835e-05" range="-1.5707963267948966 0.0"/>
+                                        <joint name="r_elbow_pitch" pos="0 0 0" axis="0 1 -6.835e-05" range="-1.5707963267948966 0.0" damping="7" armature="1.0" frictionloss="0.2"/>
 
                                         <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="r_lower_arm_pitch"/>
                                         <geom size="0.02 0.02 0.02" type="box" material="LightGrey"/>
@@ -174,7 +174,7 @@
                                         <!-- r hand yaw -->
                                         <body name="r_hand_yaw" pos="0 0 -0.0405">
                                             <inertial pos="0.000158044 -0.000478822 -0.0559415" quat="0.999772 0.019131 0.00724385 -0.00608553" mass="0.606076" diaginertia="0.000748132 0.000708413 0.000280748"/>
-                                            <joint name="r_wrist_yaw" pos="0 0 0" axis="1.221e-05 6.835e-05 1" range="-1.5707963267948966 1.5707963267948966"/>
+                                            <joint name="r_wrist_yaw" pos="0 0 0" axis="1.221e-05 6.835e-05 1" range="-1.5707963267948966 1.5707963267948966" damping="7" armature="1.0" frictionloss="0.2"/>
 
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="r_hand_yaw"/>
                                             <geom size="0.03 0.03 0.085" pos="0 0 -0.1" type="box" material="LightGrey"/>
@@ -182,7 +182,7 @@
                                             <!-- r hand roll -->
                                             <body name="r_hand_roll" pos="0 1.3775e-05 -0.20153">
                                                 <inertial pos="1.5545e-08 0.00044846 4.1938e-08" quat="0 0.707105 0 0.707108" mass="0.0054473" diaginertia="3.6036e-07 3.5527e-07 7.344e-08"/>
-                                                <joint name="r_wrist_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.3665191429188092 0.3665191429188092"/>
+                                                <joint name="r_wrist_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.3665191429188092 0.3665191429188092" damping="7" armature="1.0" frictionloss="0.2"/>
 
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="r_hand_roll"/>
                                                 <!-- <geom size="0.01 0.01 0.01" type="box" rgba="0.75294 0.75294 0.75294 1"/> -->
@@ -191,7 +191,7 @@
                                                 <body name="r_hand_pitch">
                                                     <site name="r_wrist_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                                                     <inertial pos="0.0060733 0.0018907 -0.084578" quat="0.647336 -0.27161 -0.257721 0.6639" mass="0.53221" diaginertia="0.000319947 0.000196296 0.000182477"/>
-                                                    <joint name="r_wrist_pitch" pos="0 0 0" axis="0 1 -6.835e-05" range="-0.3665191429188092 0.3665191429188092"/>
+                                                    <joint name="r_wrist_pitch" pos="0 0 0" axis="0 1 -6.835e-05" range="-0.3665191429188092 0.3665191429188092" damping="7" armature="1.0" frictionloss="0.2"/>
 
                                                     <!-- <geom size="0.02 0.02 0.04" pos="0 0 -0.07" type="box" rgba="0.75294 0.75294 0.75294 1"/> -->
 
@@ -226,14 +226,14 @@
                         <body name="l_upper_arm_pitch">
                             <site name="l_shoulder_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                             <inertial pos="0.00515733 0.0588337 0.000122944" quat="0.999793 0.0203364 -0.000117253 0.0011083" mass="0.777394" diaginertia="0.000546411 0.000340581 0.000319359"/>
-                            <joint name="l_shoulder_pitch" pos="0 0 0" axis="0 -1 0" range="-1.0471975511965976 2.6179938779914944"/>
+                            <joint name="l_shoulder_pitch" pos="0 0 0" axis="0 -1 0" range="-1.0471975511965976 2.6179938779914944" damping="7" armature="1.0" frictionloss="0.2"/>
                             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="l_upper_arm_pitch"/>
                             <geom size="0.02 0.02 0.02" type="box" material="LightGrey"/>
 
                             <!-- l upper arm roll -->
                             <body name="l_upper_arm_roll" pos="0 0.067 0" quat="0.976289 -0.216473 0 0">
                                 <inertial pos="0.0260055 0.0238305 -0.0272078" quat="0.906707 0.298574 0.228734 -0.190834" mass="0.084111" diaginertia="9.66711e-05 8.99184e-05 2.54726e-05"/>
-                                <joint name="l_shoulder_roll" pos="0 0 0" axis="-1 0 1.221e-05" range="-2.6179938779914944 0.0"/>
+                                <joint name="l_shoulder_roll" pos="0 0 0" axis="-1 0 1.221e-05" range="-2.6179938779914944 0.0" damping="7" armature="1.0" frictionloss="0.2"/>
                                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="l_upper_arm_roll"/>
                                 <geom size="0.02 0.02 0.02" type="box" material="LightGrey"/>
 
@@ -241,7 +241,7 @@
                                 <body name="l_upper_arm_yaw" pos="0 0.040004 -0.057502">
                                     <site name="l_collar_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                                     <inertial pos="-4.12427e-05 0.00135031 -0.101007" quat="0.706543 0.0248514 -0.0268343 0.706724" mass="0.78993" diaginertia="0.000480863 0.000420363 0.000315608"/>
-                                    <joint name="l_shoulder_yaw" pos="0 0 0" axis="1.221e-05 6.8349e-05 1" range="-1.5707963267948966 1.5707963267948966"/>
+                                    <joint name="l_shoulder_yaw" pos="0 0 0" axis="1.221e-05 6.8349e-05 1" range="-1.5707963267948966 1.5707963267948966" damping="7" armature="1.0" frictionloss="0.2"/>
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="l_upper_arm_yaw"/>
                                     <geom size="0.025 0.025 0.06" pos="0 0 -0.05" type="box" material="LightGrey"/>
 
@@ -249,21 +249,21 @@
                                     <body name="l_lower_arm_pitch" pos="0 1.28869e-05 -0.188546">
                                         <site name="l_elbow_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                                         <inertial pos="2.60519e-07 0.0196937 -0.0210902" quat="0.675254 -0.209845 0.209837 0.675252" mass="0.0553958" diaginertia="2.92256e-05 2.63267e-05 1.3293e-05"/>
-                                        <joint name="l_elbow_pitch" pos="0 0 0" axis="0 -1 -6.83491e-05" range="0.0 1.5707963267948966"/>
+                                        <joint name="l_elbow_pitch" pos="0 0 0" axis="0 -1 -6.83491e-05" range="0.0 1.5707963267948966" damping="7" armature="1.0" frictionloss="0.2"/>
                                         <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="l_lower_arm_pitch"/>
                                         <geom size="0.02 0.02 0.02" type="box" material="LightGrey"/>
 
                                         <!-- l hand yaw -->
                                         <body name="l_hand_yaw" pos="0 0 -0.0405043">
                                             <inertial pos="-4.20996e-05 0.000336116 -0.0559829" quat="0.999784 -0.0189715 -0.00676208 0.00509819" mass="0.606076" diaginertia="0.000747266 0.000709257 0.000280769"/>
-                                            <joint name="l_wrist_yaw" pos="0 0 0" axis="1.221e-05 6.83491e-05 1" range="-1.5707963267948966 1.5707963267948966"/>
+                                            <joint name="l_wrist_yaw" pos="0 0 0" axis="1.221e-05 6.83491e-05 1" range="-1.5707963267948966 1.5707963267948966" damping="7" armature="1.0" frictionloss="0.2"/>
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="l_hand_yaw"/>
                                             <geom size="0.03 0.03 0.085" pos="0 0 -0.1" type="box" material="LightGrey"/>
 
                                             <!-- l hand roll -->
                                             <body name="l_hand_roll" pos="0 1.3775e-05 -0.20155">
                                                 <inertial pos="-1.5483e-08 -0.00044846 -1.9394e-08" quat="0 0.7071 0 0.707114" mass="0.0054473" diaginertia="3.6036e-07 3.5527e-07 7.344e-08"/>
-                                                <joint name="l_wrist_roll" pos="0 0 0" axis="-1 0 1.2211e-05" range="-0.3665191429188092 0.3665191429188092"/>
+                                                <joint name="l_wrist_roll" pos="0 0 0" axis="-1 0 1.2211e-05" range="-0.3665191429188092 0.3665191429188092" damping="7" armature="1.0" frictionloss="0.2"/>
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="l_hand_roll"/>
                                                 <!-- <geom size="0.01 0.01 0.01" type="box" rgba="0.75294 0.75294 0.75294 1"/> -->
 
@@ -271,7 +271,7 @@
                                                 <body name="l_hand_pitch">
                                                     <site name="l_wrist_site" pos="0 0 0" size="0.03 0.03 0.03" rgba="1 0 0 0" type="sphere" group="1"/>
                                                     <inertial pos="0.0071289 -0.0026192 -0.078567" quat="0.298548 0.646339 0.631172 0.307795" mass="0.5239" diaginertia="0.000345825 0.000211684 0.000195941"/>
-                                                    <joint name="l_wrist_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-0.3665191429188092 0.3665191429188092"/>
+                                                    <joint name="l_wrist_pitch" pos="0 0 0" axis="0 1 6.8349e-05" range="-0.3665191429188092 0.3665191429188092" damping="7" armature="1.0" frictionloss="0.2"/>
 
                                                     <!-- <geom size="0.02 0.02 0.02" pos="0 0 -0.07" type="box" rgba="0.75294 0.75294 0.75294 1"/> -->
 
