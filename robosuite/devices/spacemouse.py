@@ -123,7 +123,15 @@ class SpaceMouse(Device):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
-        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        try:
+            self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        except OSError:
+            print(
+                "Failed to open device. "
+                "Check if the device is connected, the vendor/product id is correct, "
+                "there are no other processes using the device and rerun with sudo."
+            )
+            raise
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -312,6 +320,7 @@ class SpaceMouse(Device):
 if __name__ == "__main__":
 
     space_mouse = SpaceMouse()
+    space_mouse.start_control()
     for i in range(100):
         print(space_mouse.control, space_mouse.control_gripper)
         time.sleep(0.02)
