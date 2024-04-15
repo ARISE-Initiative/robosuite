@@ -4,7 +4,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import PegsArena
 from robosuite.models.objects import RoundNutObject, SquareNutObject
 from robosuite.models.tasks import ManipulationTask
@@ -12,7 +12,7 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 
 
-class NutAssembly(SingleArmEnv):
+class NutAssembly(ManipulationEnv):
     """
     This class corresponds to the nut assembly task for a single robot arm.
 
@@ -631,7 +631,7 @@ class NutAssembly(SingleArmEnv):
             bool: True if all nuts are placed correctly
         """
         # remember objects that are on the correct pegs
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]]
         for i, nut in enumerate(self.nuts):
             obj_str = nut.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]

@@ -1,0 +1,353 @@
+<mujoco model="tiago_dual">
+    <asset>
+        <material name="DarkGrey" specular="0.5" shininess="0.45" rgba="0.1 0.1 0.1 1.0"/>
+        <material name="Grey" specular="0.5" shininess="0.45" rgba="0.7 0.7 0.7 1.0"/>
+        <material name="LightGrey" specular="0.5" shininess="0.45" rgba="0.7 0.7 0.7 1.0"/>
+        <material name="White" specular="0.5" shininess="0.45" rgba="1.0 1.0 1.0 1.0"/>
+        <material name="Orange" specular="0.5" shininess="0.45" rgba="1.0 0.35 0.0 1.0"/>
+        <mesh name="base" file="meshes/base/base.stl" />
+        <mesh name="base_collision" file="meshes/base/high_resolution/base_collision.stl" />
+        <mesh name="base_ring" file="meshes/base/base_ring.stl" />
+        <mesh name="wheel" file="meshes/wheels/wheel.stl" />
+        <mesh name="caster_1" file="meshes/wheels/caster_1.stl" />
+        <mesh name="caster_2" file="meshes/wheels/caster_2.stl" />
+        <mesh name="torso_fix" file="meshes/torso/torso_fix.stl" />
+        <mesh name="torso_lift_dual_arm" file="meshes/torso/torso_lift_dual_arm.stl" />
+        <mesh name="torso_lift_collision_core" file="meshes/torso/torso_lift_collision_core.stl" />
+        <mesh name="torso_lift_collision_shoulder" file="meshes/torso/torso_lift_collision_shoulder.stl" />
+        <!-- <mesh name="torso_lift_collision_neck" file="meshes/torso/torso_lift_collision_neck.stl" /> -->
+        <mesh name="head_1" file="meshes/head/head_1.stl" />
+        <mesh name="head_1_collision" file="meshes/head/head_1.stl" />
+        <mesh name="head_2" file="meshes/head/head_2.stl" />
+        <mesh name="head_2_collision" file="meshes/head/head_2.stl" />
+        <mesh name="arm_1" file="meshes/arm/arm_1.stl" />
+        <mesh name="arm_1_collision" file="meshes/arm/arm_1.stl" />
+        <mesh name="arm_2" file="meshes/arm/arm_2.stl" />
+        <mesh name="arm_2_collision" file="meshes/arm/arm_2.stl" />
+        <mesh name="arm_3" file="meshes/arm/arm_3.stl" />
+        <mesh name="arm_3_collision" file="meshes/arm/arm_3.stl" />
+        <mesh name="arm_4" file="meshes/arm/arm_4.stl" />
+        <mesh name="arm_4_collision" file="meshes/arm/arm_4.stl" />
+        <mesh name="arm_5-wrist-2017" file="meshes/arm/arm_5-wrist-2017.stl" />
+        <mesh name="arm_5_collision-wrist-2017" file="meshes/arm/arm_5-wrist-2017.stl" />
+        <mesh name="arm_6-wrist-2017" file="meshes/arm/arm_6-wrist-2017.stl" />
+        <mesh name="arm_6_collision-wrist-2017" file="meshes/arm/arm_6-wrist-2017.stl" />
+
+        <mesh name="arm_1_left" file="meshes/arm/arm_1.stl" scale="1 -1 -1"/>
+        <mesh name="arm_1_left_collision" file="meshes/arm/arm_1.stl" scale="1 -1 -1"/>
+        <mesh name="arm_2_left" file="meshes/arm/arm_2.stl" scale="1 1 -1"/>
+        <mesh name="arm_2_left_collision" file="meshes/arm/arm_2.stl" scale="1 1 -1" />
+        <mesh name="arm_3_left" file="meshes/arm/arm_3.stl" scale="1 1 -1"/>
+        <mesh name="arm_3_left_collision" file="meshes/arm/arm_3.stl" scale="1 1 -1"/>
+        <mesh name="arm_4_left" file="meshes/arm/arm_4.stl" scale="-1 -1 -1"/>
+        <mesh name="arm_4_left_collision" file="meshes/arm/arm_4.stl" scale="-1 -1 -1"/>
+        <mesh name="arm_5_left-wrist-2017" file="meshes/arm/arm_5-wrist-2017.stl" scale="-1 -1 -1"/>
+        <mesh name="arm_5_left_collision-wrist-2017" file="meshes/arm/arm_5-wrist-2017.stl" scale="-1 -1 -1"/>
+        <mesh name="arm_6_left-wrist-2017" file="meshes/arm/arm_6-wrist-2017.stl" scale="-1 1 1"/>
+        <mesh name="arm_6_left_collision-wrist-2017" file="meshes/arm/arm_6-wrist-2017.stl" scale="-1 1 1"/>
+        <mesh name="gripper_link" file="meshes/grippers/gripper_link.stl" />
+        <mesh name="gripper_link_collision" file="meshes/grippers/gripper_link_collision.stl" />
+        <mesh name="gripper_finger_link" file="meshes/grippers/gripper_finger_link.stl" />
+        <mesh name="palm" file="meshes/grippers/palm.stl" />
+        <mesh name="palm_collision" file="meshes/grippers/palm_collision.stl" />
+        <mesh name="thumb_abd_collision" file="meshes/grippers/thumb_abd_collision.stl" />
+        <mesh name="finger_flex_collision" file="meshes/grippers/finger_flex_collision.stl" />
+        <mesh name="finger_flex_tip_collision" file="meshes/grippers/finger_flex_tip_collision.stl" />
+        <mesh name="finger_abd_collision" file="meshes/grippers/finger_abd_collision.stl" />
+    </asset>
+    <worldbody>
+       <!-- Base of robot definition -->
+       <body name="base">
+            <!-- <freejoint/> -->
+            <inertial pos="0 0 0" mass="0.001" diaginertia="0.4 0.4 0.4"/>
+            <body name="base_link" pos="0 0 0.0985">
+                <inertial pos="-0.00000106 0.00000109 0.0000387" mass="28.26649" diaginertia="0.4 0.4 0.4"/>
+                <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="base"/>
+                <geom type="mesh" material="White" name="base_collision" group="0" friction="1 0 0" mesh="base_collision"/>
+                <body name="wheeled_base">
+                    <!-- Wheeled base of the robot -->
+                    <body name="base_cover_link" pos="0 0 0.13">
+                        <inertial pos="0.22414000000 0.00002000000 0.04681000000" mass="0.25821000000" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="Orange" contype="0" conaffinity="0" group="1" mesh="base_ring"/>
+                    </body>
+
+                    <!-- Right wheel -->
+                    <body name="wheel_right_link" pos="0 -0.2022 0" euler="-1.57079632679 0 0" >
+                        <inertial pos="0 0 -0.00207" mass="1.82362" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="wheel"/>
+                        <geom type="cylinder" material="DarkGrey" name="wheel_right_collision" group="0" friction="1 0 0" size="0.0985 0.04"/>
+                    </body>
+                    <!-- End of right wheel -->
+
+                    <!-- Left wheel -->
+                    <body name="wheel_left_link"  pos="0 0.2022 0" euler="-1.57079632679 0 0">
+                        <inertial pos="0 0 0.00207" mass="1.82362" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="wheel"/>
+                        <geom type="cylinder" material="DarkGrey" name="wheel_left_collision" group="0" friction="1 0 0" size="0.0985 0.04"/>
+                    </body>
+                    <!-- End of left wheel -->
+
+                    <!-- Front right caster -->
+                    <body name="ignore_caster_front_right_1_link" pos="0.1695 -0.102 -0.0335">
+                    <inertial pos="-0.00634599 0.00005347 -0.02037519" mass="0.05144761" diaginertia="0.4 0.4 0.4"/>
+                    <geom type="mesh" material="Grey" contype="0" conaffinity="0" group="1" mesh="caster_1"/>
+                        <body name="ignore_caster_front_right_2_link" pos="-0.016 0.0000 -0.040" euler="-1.57079632679 0 0" >
+                        <inertial pos="0 0 0" mass="0.08855784" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="caster_2"/>
+                        <geom type="cylinder" material="DarkGrey" name="front_right_caster_2" group="0" friction="1 0 0" size="0.025 0.015"/>
+                        </body>
+                    </body>
+                    <!-- End of front right caster -->
+
+                    <!-- Front left caster -->
+                    <body name="ignore_caster_front_left_1_link" pos="0.1695 0.102 -0.0335">
+                        <inertial pos="-0.00634599 0.00005347 -0.02037519" mass="0.05144761" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="Grey" contype="0" conaffinity="0" group="1" mesh="caster_1"/>
+                        <body name="ignore_caster_front_left_2_link" pos="-0.016 0.0000 -0.040" euler="-1.57079632679 0 0">
+                            <inertial pos="0 0 0" mass="0.08855784" diaginertia="0.4 0.4 0.4"/>
+                            <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="caster_2"/>
+                            <geom type="cylinder" material="DarkGrey" name="front_left_caster_2" group="0" friction="1 0 0" size="0.025 0.015"/>
+                    </body>
+                    </body>
+                    <!-- End of front left caster -->
+
+                    <!-- Back right caster -->
+                    <body name="ignore_caster_back_right_1_link" pos="-0.1735 -0.102 -0.0335">
+                    <inertial pos="-0.00634599 0.00005347 -0.02037519" mass="0.05144761" diaginertia="0.4 0.4 0.4"/>
+                    <geom type="mesh" material="Grey" contype="0" conaffinity="0" group="1" mesh="caster_1"/>
+                        <body name="ignore_caster_back_right_2_link" pos="-0.016 0.0000 -0.040" euler="-1.57079632679 0 0" >
+                        <inertial pos="0 0 0" mass="0.08855784" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="caster_2"/>
+                        <geom type="cylinder" material="DarkGrey" name="back_right_caster_2" group="0" friction="1 0 0" size="0.025 0.015"/>
+                        </body>
+                    </body>
+                    <!-- End of back right caster -->
+
+                    <!-- Back left caster -->
+                    <body name="ignore_caster_back_left_1_link" pos="-0.1735 0.102 -0.0335">
+                        <inertial pos="-0.00634599 0.00005347 -0.02037519" mass="0.05144761" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="Grey" contype="0" conaffinity="0" group="1" mesh="caster_1"/>
+                        <body name="ignore_caster_back_left_2_link" pos="-0.016 0.0000 -0.040" euler="-1.57079632679 0 0">
+                            <inertial pos="0 0 0" mass="0.08855784" diaginertia="0.4 0.4 0.4"/>
+                            <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="caster_2"/>
+                            <geom type="cylinder" material="DarkGrey" name="back_left_caster_2" group="0" friction="1 0 0" size="0.025 0.015"/>
+                        </body>
+                    </body>
+                    <!-- End of back left caster -->
+                </body>
+                <!-- End of wheeled base of the robot -->
+                <!-- Torso of the robot -->
+                <body name="torso">
+                     <site name="center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+                    <body name="torso_fixed_link" pos="-0.062 0.0 0.193">
+                        <inertial pos="0.02435 -0.00464 0.15900" mass="14.01360" diaginertia="0.4 0.4 0.4"/>
+                        <geom type="mesh" material="LightGrey" contype="0" conaffinity="0" group="1" mesh="torso_fix"/>
+                        <geom type="box" material="LightGrey" name="torso_fixed_collision_box_1" group="0" friction="1 0 0" size="0.4 0.25 0.04" pos="0.085 0.0 0.02"/>
+                        <!-- <geom type="box" material="LightGrey" name="torso_fixed_collision_box_2" group="0" friction="1 0 0" size="0.25 0.25 0.1" pos="0 0 0.05"/> -->
+
+                        <!-- <body name="torso_fixed_column_link" pos="-0.062 0 0.195">
+                            <inertial pos="0 0 0" mass="0.01" diaginertia="0.4 0.4 0.4"/>
+                            <geom type="box" material="DarkGrey" contype="0" conaffinity="0" group="1" size="0.18 0.2 0.55"/>
+                            <geom type="box" material="DarkGrey" name="torso_fixed_column_collision" group="0" friction="1 0 0" size="0.23 0.23 0.55"/>
+                        </body> -->
+
+                        <!-- Torso lift link -->
+                        <body name="torso_lift_link" pos="0.0 0.0 0">
+                            <joint name="torso_lift_joint" type="slide" axis="0 0 1" damping="1000" range="0 0.35"/>
+                            <inertial pos="0.04361 -0.00116 -0.17334" mass="9.594213" diaginertia="0.4 0.4 0.4"/>
+                            <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="torso_lift_dual_arm" pos="0.0 0.0 0.597"/>
+                            <geom type="mesh" material="LightGrey" name="torso_lift_collision" group="0" friction="1 0 0" mesh="torso_lift_collision_core" pos="0.0 0.0 0"/>
+                            <geom type="mesh" material="LightGrey" name="torso_lift_collision_shoulder_right" group="0" friction="1 0 0" mesh="torso_lift_collision_shoulder" pos="0.18 0.17 0.15556"/>
+                            <geom type="mesh" material="LightGrey" name="torso_lift_collision_shoulder_left" group="0" friction="1 0 0" mesh="torso_lift_collision_shoulder" pos="0.18 -0.20 0.15556"/>
+
+                            <!-- Head of the robot -->
+                            <body name="head" pos="0 0 0.597">
+                                <body name="head_1_link" pos="0.182 0.0 0.0" euler="0 0 0">
+                                    <joint name="head_1_joint" type="hinge" limited="true"  axis="0 0 1" damping="20" range="-1.308996939 1.308996939"/>
+                                    <inertial pos="-0.00508 0.00237 0.07229" mass="0.62220" diaginertia="0.4 0.4 0.4"/>
+                                    <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="head_1"/>
+                                    <geom type="mesh" material="White" name="head_1_collision" group="0" friction="1 0 0" mesh="head_1_collision"/>
+                                    <body name="head_2_link" pos="0.005 0.0 0.098" euler="1.57079632679 0 0">
+                                        <joint name="head_2_joint" type="hinge" limited="true" axis="0 0 1" damping="20" range="-1.0471975512 0.785398163397"/>
+                                        <inertial pos="0.04700 0.05542 0.00022" mass="0.66123" diaginertia="0.4 0.4 0.4"/>
+                                        <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="head_2"/>
+                                        <geom type="mesh" material="White" name="head_2_collision" group="0" friction="1 0 0" mesh="head_2_collision"/>
+                                    </body>
+                                </body>
+                            </body>
+                            <!-- End of head of the robot -->
+
+
+                            <!-- Right arm of the robot -->
+                            <body name="right_arm_mount" pos="0 0 0.597">
+                                <!-- Right arm link 1 -->
+                                <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+
+                                <body name="arm_right_1_link" pos="0.02556 -0.19 -0.171" euler="0 0 -1.57079632679">
+                                    <joint name="arm_right_1_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-1.1780972451 1.57079632679"/>
+
+                                    <inertial pos="0.061191 -0.022397 -0.012835" mass="1.563428" diaginertia="0.4 0.4 0.4"/>
+                                    <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="arm_1"/>
+                                    <geom type="mesh" material="White" name="arm_1_collision" group="0" friction="1 0 0" mesh="arm_1_collision"/>
+
+                                    <!-- Right arm link 2 -->
+                                    <body name="arm_right_2_link" pos="0.125 -0.0195 -0.031" euler="-1.57079632679 0.0 0.0">
+                                        <joint name="arm_right_2_joint" type="hinge" limited="true" axis="0 0 1" damping="100.0" range="-1.1780972451 1.57079632679"/>
+                                        <inertial pos="0.030432 0.000229 -0.005942" mass="1.800397" diaginertia="0.4 0.4 0.4"/>
+                                        <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="arm_2"/>
+                                        <geom type="mesh" material="DarkGrey" name="arm_2_collision" group="0" friction="1 0 0" mesh="arm_2_collision"/>
+                                        <!-- Right arm link 3 -->
+                                        <body name="arm_right_3_link" pos="0.0895 0.0 -0.0015" quat="0.5 -0.5 -0.5 0.5">
+                                            <joint name="arm_right_3_joint" type="hinge" limited="true" axis="0 0 1" damping="30.0" range="-0.785398163397 3.92699081699"/>
+
+                                            <inertial pos="0.007418 -0.004361 -0.134194" mass="2.343502" diaginertia="0.4 0.4 0.4"/>
+                                            <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="arm_3"/>
+                                            <geom type="mesh" material="DarkGrey" name="arm_3_collision" group="0" friction="1 0 0" mesh="arm_3_collision"/>
+                                            <!-- Right arm link 4 -->
+                                            <body name="arm_right_4_link" pos="-0.02 -0.027 -0.222" quat="0.5 -0.5 -0.5 -0.5" >
+                                                <joint name="arm_right_4_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-0.392699081699 2.35619449019"/>
+
+                                                <inertial pos="-0.095658 0.014666 0.018133" mass="1.432697" diaginertia="0.4 0.4 0.4"/>
+                                                <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="arm_4"/>
+                                                <geom type="mesh" material="DarkGrey" name="arm_4_collision" group="0" friction="1 0 0" mesh="arm_4_collision"/>
+
+                                                <!-- Right arm link 5 -->
+                                                <body name="arm_right_5_link" pos="-0.162 0.02 0.027" quat="0.7071067811865475 1.7312262734492379e-12 -0.7071067811865475 -1.7311707622980066e-12" >
+                                                    <joint name="arm_right_5_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-2.09439510239 2.09439510239"/>
+
+                                                    <inertial pos="0.001078 -0.000151 -0.077173" mass="1.655819" diaginertia="0.4 0.4 0.4"/>
+                                                    <geom type="mesh" material="LightGrey" contype="0" conaffinity="0" group="1" mesh="arm_5-wrist-2017"/>
+                                                    <geom type="mesh" material="LightGrey" name="arm_5_collision" group="0" friction="1 0 0" mesh="arm_5_collision-wrist-2017"/>
+
+                                                    <!-- Right arm link 6 -->
+                                                    <body name="arm_right_6_link" pos="0 0 0.15" quat="0.5 -0.5 -0.5 -0.5" >
+                                                        <joint name="arm_right_6_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-1.41371669412 1.41371669412"/>
+
+                                                        <inertial pos="-0.000153 -0.003122 0.000183" mass="0.370063" diaginertia="0.4 0.4 0.4"/>
+                                                        <geom type="mesh" material="LightGrey" contype="0" conaffinity="0" group="1" mesh="arm_6-wrist-2017"/>
+                                                        <geom type="mesh" material="LightGrey" name="arm_6_collision" group="0" friction="1 0 0" mesh="arm_6_collision-wrist-2017"/>
+                                                        
+                                                        <!-- Right hand -->
+                                                        <body name="right_hand" pos="0.05 0 0" quat="0.5 0.5 0.5 0.5">
+                                                        </body>
+
+                                                    <!-- End of right hand -->
+                                                    </body>
+                                                    <!-- End of right arm link 6 -->
+                                                </body>
+
+                                                <!-- End of right arm link 5 -->
+                                            </body>
+                                            <!-- End of right arm link 4 -->
+                                        </body>
+                                        <!-- End of right arm link 3 -->
+                                    </body>
+                                    <!-- End of right arm link 2 -->
+
+                                </body>
+                                <!-- End of right arm link 1 -->
+
+                            </body>
+                            <!-- End of right arm of the robot -->
+
+                            <!-- left arm of the robot -->
+                            <body name="left_arm_mount" pos="0 0 0.597">
+                                <site name="left_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+
+                                <!-- left arm link 1 -->
+                                <body name="arm_left_1_link" pos="0.02556 0.19 -0.171" quat="0 0.7071067811882787 0.7071067811848163 0">
+                                    <joint name="arm_left_1_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-1.1780972451 1.57079632679"/>
+
+                                    <inertial pos="0.061191 -0.022397 -0.012835" mass="1.563428" diaginertia="0.4 0.4 0.4"/>
+                                    <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="arm_1_left"/>
+                                    <geom type="mesh" material="White" name="arm_1_left_collision" group="0" friction="1 0 0" mesh="arm_1_left_collision"/>
+
+                                    <!-- left arm link 2 -->
+                                    <body name="arm_left_2_link" pos="0.125 -0.0195 0.031" euler="1.57079632679 0.0 0.0">
+                                        <joint name="arm_left_2_joint" type="hinge" limited="true" axis="0 0 1" damping="100.0" range="-1.1780972451 1.57079632679"/>
+                                        <inertial pos="0.030432 0.000229 -0.005942" mass="1.800397" diaginertia="0.4 0.4 0.4"/>
+                                        <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="arm_2_left"/>
+                                        <geom type="mesh" material="DarkGrey" name="arm_2_left_collision" group="0" friction="1 0 0" mesh="arm_2_left_collision"/>
+                                        <!-- left arm link 3 -->
+                                        <body name="arm_left_3_link" pos="0.0895 0.0 -0.0015" quat="0.5 0.5 0.5 0.5">
+                                            <joint name="arm_left_3_joint" type="hinge" limited="true" axis="0 0 1" damping="30.0" range="-0.785398163397 3.92699081699"/>
+
+                                            <inertial pos="0.007418 -0.004361 -0.134194" mass="2.343502" diaginertia="0.4 0.4 0.4"/>
+                                            <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="arm_3_left"/>
+                                            <geom type="mesh" material="DarkGrey" name="arm_3_left_collision" group="0" friction="1 0 0" mesh="arm_3_left_collision"/>
+                                            <!-- left arm link 4 -->
+                                            <body name="arm_left_4_link" pos="-0.02 -0.027 0.222" quat="0.5 0.5 -0.5 0.5" >
+                                                <joint name="arm_left_4_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-0.392699081699 2.35619449019"/>
+
+                                                <inertial pos="-0.095658 0.014666 0.018133" mass="1.432697" diaginertia="0.4 0.4 0.4"/>
+                                                <geom type="mesh" material="DarkGrey" contype="0" conaffinity="0" group="1" mesh="arm_4_left"/>
+                                                <geom type="mesh" material="DarkGrey" name="arm_4_left_collision" group="0" friction="1 0 0" mesh="arm_4_left_collision"/>
+
+                                                <!-- left arm link 5 -->
+                                                <body name="arm_left_5_link" pos="0.162 -0.02 -0.027" quat="0.7071067811865475 0 -0.7071067811865475 0" >
+                                                    <joint name="arm_left_5_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-2.09439510239 2.09439510239"/>
+
+                                                    <inertial pos="0.001078 -0.000151 -0.077173" mass="1.655819" diaginertia="0.4 0.4 0.4"/>
+                                                    <geom type="mesh" material="LightGrey" contype="0" conaffinity="0" group="1" mesh="arm_5_left-wrist-2017"/>
+                                                    <geom type="mesh" material="LightGrey" name="arm_5_left_collision" group="0" friction="1 0 0" mesh="arm_5_left_collision-wrist-2017"/>
+
+                                                    <!-- left arm link 6 -->
+                                                    <body name="arm_left_6_link" pos="0 0 -0.15" quat="0.5 -0.5 -0.5 -0.5" >
+                                                        <joint name="arm_left_6_joint" type="hinge" limited="true" axis="0 0 1" damping="10.0" range="-1.41371669412 1.41371669412"/>
+
+                                                        <inertial pos="-0.000153 -0.003122 0.000183" mass="0.370063" diaginertia="0.4 0.4 0.4"/>
+                                                        <geom type="mesh" material="LightGrey" contype="0" conaffinity="0" group="1" mesh="arm_6_left-wrist-2017"/>
+                                                        <geom type="mesh" material="LightGrey" name="arm_6_left_collision" group="0" friction="1 0 0" mesh="arm_6_left_collision-wrist-2017"/>
+                                                        
+                                                        <!-- left hand -->
+                                                        <body name="left_hand" pos="-0.05 0 0" quat="0.5 -0.5 -0.5 0.5">
+                                                        </body>
+
+                                                    <!-- End of left hand -->
+                                                    </body>
+                                                    <!-- End of left arm link 6 -->
+                                                </body>
+
+                                                <!-- End of left arm link 5 -->
+                                            </body>
+                                            <!-- End of left arm link 4 -->
+                                        </body>
+                                        <!-- End of left arm link 3 -->
+                                    </body>
+                                    <!-- End of left arm link 2 -->
+
+                                </body>
+                                <!-- End of left arm link 1 -->
+
+                            </body>
+                            <!-- End of left arm of the robot -->
+                        </body>
+                        <!-- End of torso lift link -->
+                    </body>
+                </body>
+                <!-- End of torso -->
+
+            </body>
+        </body>
+        <!-- End of robot definition -->
+    </worldbody>
+    <actuator>
+    <motor ctrllimited="true" ctrlrange="-100 100" joint="arm_right_1_joint" name="torq_right_j1"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_right_2_joint" name="torq_right_j2"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_right_3_joint" name="torq_right_j3"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_right_4_joint" name="torq_right_j4"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_right_5_joint" name="torq_right_j5"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_right_6_joint" name="torq_right_j6"/>
+
+    <motor ctrllimited="true" ctrlrange="-100 100" joint="arm_left_1_joint" name="torq_left_j1"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_left_2_joint" name="torq_left_j2"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_left_3_joint" name="torq_left_j3"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_4_joint" name="torq_left_j4"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_5_joint" name="torq_left_j5"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_6_joint" name="torq_left_j6"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="head_1_joint" name="torq_head_pitch"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="head_2_joint" name="torq_head_yaw"/>
+    <!-- <motor ctrllimited="true" ctrlrange="-1000 1000" joint="torso_lift_joint" name="torq_torso_lift"/> -->
+    <velocity ctrllimited="true" ctrlrange="-0.75 1.00" joint="torso_lift_joint" kv="1500" name="torq_torso_lift" forcelimited="false"/>
+    </actuator>
+</mujoco>

@@ -211,7 +211,7 @@ class RobotEnv(MujocoEnv):
                     "base_type": base_types[idx],
                     "initialization_noise": initialization_noise[idx],
                     "control_freq": control_freq,
-                    "lite_physics": lite_physics,
+                    # "lite_physics": lite_physics,
                 },
                 **robot_config,
             )

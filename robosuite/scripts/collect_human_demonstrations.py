@@ -36,30 +36,66 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     """
 
     env.reset()
-
-    # ID = 2 always corresponds to agentview
     env.render()
 
     is_first = True
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
-
+    env.robots[0].print_action_info()
     # Loop until we get a reset from the input or the task completes
+
+    count = 0
     while True:
         # Set active robot
-        active_robot = env.robots[0] if env_configuration == "bimanual" else env.robots[arm == "left"]
+        active_robot = env.robots[0] # if env_configuration == "bimanual" else env.robots[arm == "left"]
 
         # Get the newest action
-        action, grasp = input2action(
+        input_action, grasp = input2action(
             device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
         )
 
         # If action is none, then this a reset so we should break
-        if action is None:
+        if input_action is None:
             break
-
+        # action = np.concatenate([action[:-5], action])
+        # action = np.concatenate([action[:7], action[:7], [0.] * 2, [0]*1, action[-4:]])
         # Run environment step
+
+        if env.robots[0].is_mobile:
+            arm_actions = input_action[:6]
+            # arm_actions = np.concatenate([arm_actions, ])
+
+            base_action = input_action[-5:-2]
+            torso_action = input_action[-2:-1]
+
+            right_action =  [0.] * 5
+            right_action[0] = 0.0
+            action = env.robots[0].create_action_vector(
+            {
+                arm: arm_actions, 
+                f"{arm}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[arm].dof),
+                env.robots[0].base: base_action,
+                # env.robots[0].head: base_action,
+                # env.robots[0].torso: base_action
+                # env.robots[0].torso: torso_action
+            }
+            )
+            mode_action = input_action[-1]
+
+            if mode_action > 0:
+                env.robots[0].enable_parts(base=True, right=True, left=True, torso=False)
+            else:
+                env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
+        else:
+            arm_actions = input_action
+            action = env.robots[0].create_action_vector(
+                {
+                    arm: arm_actions[:-1], 
+                    f"{arm}_gripper": arm_actions[-1:]
+                }
+            )
+        # action[-1] = input_action[-1]
         env.step(action)
         env.render()
 
@@ -192,6 +228,12 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
+    parser.add_argument(
+        "--renderer",
+        type=str,
+        default="mujoco",
+        help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)",
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -212,6 +254,7 @@ if __name__ == "__main__":
     env = suite.make(
         **config,
         has_renderer=True,
+        renderer=args.renderer,
         has_offscreen_renderer=False,
         render_camera=args.camera,
         ignore_done=True,
@@ -248,6 +291,6 @@ if __name__ == "__main__":
     os.makedirs(new_dir)
 
     # collect demonstrations
-    while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+    # while True:
+    collect_human_trajectory(env, device, args.arm, args.config)
+    gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

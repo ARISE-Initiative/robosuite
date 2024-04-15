@@ -11,6 +11,7 @@ class Sawyer(ManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+    arms = ["right"]
 
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/sawyer/robot.xml"), idn=idn)
@@ -21,11 +22,11 @@ class Sawyer(ManipulatorModel):
 
     @property
     def default_gripper(self):
-        return "RethinkGripper"
+        return {"right": "RethinkGripper"}
 
     @property
     def default_controller_config(self):
-        return "default_sawyer"
+        return {"right": "default_sawyer"}
 
     @property
     def init_qpos(self):

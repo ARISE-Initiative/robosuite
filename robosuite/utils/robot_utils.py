@@ -1,6 +1,6 @@
 # Utilities functions for working with robots
 
-from robosuite.robots import BIMANUAL_ROBOTS
+from robosuite.robots.legacy import BIMANUAL_ROBOTS
 
 
 def check_bimanual(robot_name):

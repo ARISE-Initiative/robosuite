@@ -25,7 +25,3 @@ class NullMobileBase(MobileBaseModel):
     @property
     def horizontal_radius(self):
         return 0
-
-    @property
-    def height_actuator(self):
-        return None

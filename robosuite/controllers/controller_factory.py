@@ -7,15 +7,16 @@ from copy import deepcopy
 
 import numpy as np
 
-from .interpolators.linear_interpolator import LinearInterpolator
-from .joint_pos import JointPositionController
-from .joint_tor import JointTorqueController
-from .joint_vel import JointVelocityController
-from .osc import OperationalSpaceController
+from robosuite.utils.traj_utils import LinearInterpolator
 
+from . import arm as arm_controllers
+from . import torso as torso_controllers
+from . import base as base_controllers
+from . import head as head_controllers
+from . import gripper as gripper_controllers
+from . import legs as legs_controllers
 # Global var for linking pybullet server to multiple ik controller instances if necessary
 pybullet_server = None
-
 
 def reset_controllers():
     """
@@ -91,7 +92,7 @@ def load_controller_config(custom_fpath=None, default_controller=None):
     return controller_config
 
 
-def controller_factory(name, params):
+def arm_controller_factory(name, params):
     """
     Generator for controllers
 
@@ -126,13 +127,13 @@ def controller_factory(name, params):
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.set_states(ori="euler")
         params["control_ori"] = True
-        return OperationalSpaceController(interpolator_pos=interpolator, interpolator_ori=ori_interpolator, **params)
+        return arm_controllers.OperationalSpaceController(interpolator_pos=interpolator, interpolator_ori=ori_interpolator, **params)
 
     if name == "OSC_POSITION":
         if interpolator is not None:
             interpolator.set_states(dim=3)  # EE control uses dim 3 for pos
         params["control_ori"] = False
-        return OperationalSpaceController(interpolator_pos=interpolator, **params)
+        return arm_controllers.OperationalSpaceController(interpolator_pos=interpolator, **params)
 
     if name == "IK_POSE":
         ori_interpolator = None
@@ -143,10 +144,10 @@ def controller_factory(name, params):
 
         # Import pybullet server if necessary
         global pybullet_server
-        from .ik import InverseKinematicsController
+        from .arm.ik import InverseKinematicsController
 
         if pybullet_server is None:
-            from robosuite.controllers.ik import PyBulletServer
+            from robosuite.controllers.arm.ik import PyBulletServer
 
             pybullet_server = PyBulletServer()
         return InverseKinematicsController(
@@ -157,12 +158,90 @@ def controller_factory(name, params):
         )
 
     if name == "JOINT_VELOCITY":
-        return JointVelocityController(interpolator=interpolator, **params)
+        return arm_controllers.JointVelocityController(interpolator=interpolator, **params)
 
     if name == "JOINT_POSITION":
-        return JointPositionController(interpolator=interpolator, **params)
+        return arm_controllers.JointPositionController(interpolator=interpolator, **params)
 
     if name == "JOINT_TORQUE":
-        return JointTorqueController(interpolator=interpolator, **params)
+        return arm_controllers.JointTorqueController(interpolator=interpolator, **params)
+
+    raise ValueError("Unknown controller name: {}".format(name))
+
+
+def controller_factory(name, params):
+    if params["part_name"] in ["right", "left"]:
+        return arm_controller_factory(name, params)
+    elif params["part_name"] in ["right_gripper", "left_gripper"]:
+        return gripper_controller_factory(name, params)
+    elif params["part_name"] == "base":
+        return base_controller_factory(name, params)
+    elif params["part_name"] == "torso":
+        return torso_controller_factory(name, params)
+    elif params["part_name"] == "head":
+        return head_controller_factory(name, params)
+    elif params["part_name"] == "legs":
+        return legs_controller_factory(name, params)
+
+def gripper_controller_factory(name, params):
+    interpolator = None
+    if name == "GRIP":
+        return gripper_controllers.SimpleGripController(interpolator=interpolator, **params)
+    raise ValueError("Unknown controller name: {}".format(name))
+
+
+def base_controller_factory(name, params):
+    interpolator = None
+    if name == "JOINT_VELOCITY":
+        return base_controllers.BaseJointVelocityController(interpolator=interpolator, **params)
+    raise ValueError("Unknown controller name: {}".format(name))
+
+
+def torso_controller_factory(name, params):
+    interpolator = None
+    if params["interpolation"] == "linear":
+        interpolator = LinearInterpolator(
+            ndim=params["ndim"],
+            controller_freq=(1 / params["sim"].model.opt.timestep),
+            policy_freq=params["policy_freq"],
+            ramp_ratio=params["ramp_ratio"],
+        )
+
+    if name == "JOINT_VELOCITY":
+        return torso_controllers.TorsoJointVelocityController(interpolator=interpolator, **params)
+    raise ValueError("Unknown controller name: {}".format(name))
+
+def head_controller_factory(name, params):
+    interpolator = None
+    if params["interpolation"] == "linear":
+        interpolator = LinearInterpolator(
+            ndim=params["ndim"],
+            controller_freq=(1 / params["sim"].model.opt.timestep),
+            policy_freq=params["policy_freq"],
+            ramp_ratio=params["ramp_ratio"],
+        )
+
+    if name == "JOINT_VELOCITY":
+        return head_controllers.HeadJointVelocityController(interpolator=interpolator, **params)
+    elif name == "JOINT_POSITION":
+        return head_controllers.HeadJointPositionController(interpolator=interpolator, **params)
+    raise ValueError("Unknown controller name: {}".format(name))
+
+
+def legs_controller_factory(name, params):
+    interpolator = None
+    if params["interpolation"] == "linear":
+        interpolator = LinearInterpolator(
+            ndim=params["ndim"],
+            controller_freq=(1 / params["sim"].model.opt.timestep),
+            policy_freq=params["policy_freq"],
+            ramp_ratio=params["ramp_ratio"],
+        )
+
+    if name == "JOINT_POSITION":
+        return legs_controllers.LegsJointPositionController(interpolator=interpolator, **params)
+
+    if name == "JOINT_TORQUE":
+        return legs_controllers.LegsJointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))

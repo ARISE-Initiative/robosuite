@@ -37,6 +37,7 @@
             <geom type="mesh" pos="0 0 0" contype="0" conaffinity="0" group="1" rgba="0.4 0.4 0.4 1" name="link_0_visual" mesh="link_0_vis" />
             <geom type="mesh" pos="0 0 0" rgba="0.4 0.4 0.4 1" contype="0" mesh="link_0" name="link_0_collision" />
             <body name="link_1" pos="0 0 0.15">
+                <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
                 <inertial pos="0 -0.03 0.12" quat="0.428904 0.562175 -0.562175 0.428904" mass="3.4525" diaginertia="0.0218946 0.02183 0.00663837" />
                 <joint name="joint_1" pos="0 0 0" axis="0 0 1" limited="true" range="-2.96706 2.96706" damping="0.1" />
                 <geom pos="0 0 0.0075" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.4 0.4 0.4 1" name="link_1_visual" mesh="link_1_vis" />

@@ -810,6 +810,54 @@ def find_elements(root, tags, attribs=None, return_first=True):
     return elements if elements else None
 
 
+def find_elements_by_substring(root, tags, substrings, attribs=None, return_first=False):
+    """
+    Find all element(s) matching the requested @substrings and @attributes. If @return_first is True, then will return the
+    first element found matching the criteria specified. Otherwise, will return a list of elements that match the
+    criteria.
+
+    Args:
+        root (ET.Element): Root of the xml element tree to start recursively searching through.
+        tags (str or list of str or set): Tag(s) to search for in this ElementTree.
+        substrings (str or list of str or set): Substring(s) to search for in this ElementTree.
+        attribs (None or dict of str): Element attribute(s) to check against for a filtered element. A match is
+            considered found only if all attributes match. Each attribute key should have a corresponding value with
+            which to compare against.
+        return_first (bool): Whether to immediately return once the first matching element is found.
+
+    Returns:
+        None or ET.Element or list of ET.Element: Matching element(s) found. Returns None if there was no match.
+    """
+    # Initialize return value
+    elements = None if return_first else []
+
+    # Make sure substrings is list
+    substrings = [substrings] if type(substrings) is str else substrings
+    elements = find_elements(root, tags, attribs=attribs, return_first=return_first)
+
+    new_elements = []
+    if elements is not None:
+        for element in elements:
+            for substring in substrings:
+                if substring in element.get("name"):
+                    new_elements.append(element)
+                    break
+    return new_elements if len(new_elements) > 0 else None
+
+
+def find_parent(element, target):
+    """
+    Find the parent element of the target.
+    """
+    for child in element:
+        if child == target:
+            return element  # Found the parent
+        parent = find_parent(child, target)
+        if parent is not None:
+            return parent
+    return None
+
+
 def save_sim_model(sim, fname):
     """
     Saves the current model xml from @sim at file location @fname.

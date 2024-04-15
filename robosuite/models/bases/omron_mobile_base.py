@@ -20,14 +20,9 @@ class OmronMobileBase(MobileBaseModel):
 
     @property
     def top_offset(self):
-        # return np.array((0, 0, 0.922 - 0.10))
         return np.array((0, 0, 0))
 
     @property
     def horizontal_radius(self):
         # TODO: This may be inaccurate; just a placeholder for now
         return 0.25
-
-    @property
-    def height_actuator(self):
-        return "{}mobile_base_joint_z".format(self.naming_prefix)

@@ -21,6 +21,7 @@ import time
 from collections import namedtuple
 
 import numpy as np
+from pynput.keyboard import Controller, Key, Listener
 
 try:
     import hid
