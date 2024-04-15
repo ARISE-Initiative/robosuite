@@ -1,14 +1,14 @@
-import numpy as np
 from collections import OrderedDict
+
+import numpy as np
+
 from robosuite.controllers import controller_factory, load_controller_config
 
-class CompositeController():
-    """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller.
-    """
-    def __init__(self, 
-                sim,
-                robot_model,
-                grippers) -> None: 
+
+class CompositeController:
+    """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
+
+    def __init__(self, sim, robot_model, grippers) -> None:
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
@@ -34,7 +34,9 @@ class CompositeController():
 
     def _init_controllers(self):
         for part_name in self.controller_config.keys():
-            self.controllers[part_name] = controller_factory(self.controller_config[part_name]["type"], self.controller_config[part_name])
+            self.controllers[part_name] = controller_factory(
+                self.controller_config[part_name]["type"], self.controller_config[part_name]
+            )
 
     def setup_action_split_idx(self):
         previous_idx = 0
@@ -48,7 +50,7 @@ class CompositeController():
             previous_idx = last_idx
 
     def set_goal(self, all_action):
-        self.sim.forward()
+        # self.sim.forward()
 
         for part_name, controller in self.controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
@@ -62,7 +64,7 @@ class CompositeController():
             controller.reset_goal()
 
     def run_controller(self, enabled_parts):
-        self.sim.forward()
+        # self.sim.forward()
         self.update_state()
         self._applied_action_dict.clear()
         for part_name, controller in self.controllers.items():
@@ -84,16 +86,13 @@ class CompositeController():
     def get_controller(self, part_name):
         return self.controllers[part_name]
 
-
     @property
     def action_limits(self):
         low, high = [], []
         for part_name, controller in self.controllers.items():
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():
-                    low_g, high_g = (
-                        ([-1] * self.grippers[part_name].dof, [1] * self.grippers[part_name].dof)
-                    )
+                    low_g, high_g = ([-1] * self.grippers[part_name].dof, [1] * self.grippers[part_name].dof)
                     low, high = np.concatenate([low, low_g]), np.concatenate([high, high_g])
                 else:
                     control_dim = controller.control_dim
