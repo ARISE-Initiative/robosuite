@@ -6,7 +6,6 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory, load_controller_config
-from robosuite.controllers.mobile_base_controller import MobileBaseController
 from robosuite.controllers.torso_height_controller import TorsoHeightController
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
 from robosuite.utils.observables import Observable, sensor
@@ -46,7 +45,7 @@ class WheeledRobot(MobileBaseRobot):
         # Flag for loading urdf once (only applicable for IK controllers)
 
         self.composite_controller = composite_controller_factory(
-            "BASE",
+            "WHEELED_ROBOT_CONTROLLER",
             self.sim,
             self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
@@ -113,7 +112,7 @@ class WheeledRobot(MobileBaseRobot):
             self.action_dim, len(action)
         )
 
-        self.composite_controller.update_state()
+        # self.composite_controller.update_state()
         if policy_step:
             self.composite_controller.set_goal(action)
 

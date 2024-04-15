@@ -213,7 +213,7 @@ class OperationalSpaceController(Controller):
         self.base_ori = None
         self.prev_base_ori = None
 
-    def set_goal(self, action, set_pos=None, set_ori=None):
+    def set_goal(self, action, set_pos=None, set_ori=None, base_updated=False):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
         delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
@@ -267,6 +267,8 @@ class OperationalSpaceController(Controller):
                 )
             # No scaling of values since these are absolute values
             scaled_delta = delta
+
+        self.base_updated = base_updated
 
         self.goal_base_to_eef_ori = self.compute_goal_orientation(  # set_goal_orientation
             scaled_delta[3:], set_ori=set_ori
@@ -371,7 +373,7 @@ class OperationalSpaceController(Controller):
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_pos = self.base_pos + np.dot(self.base_ori, self.goal_base_to_eef_pos)
+            desired_pos = self.base_pos + 75.0 * self.base_vel + np.dot(self.base_ori, self.goal_base_to_eef_pos)
 
         if self.interpolator_ori is not None:
             # relative orientation based on difference between current ori and ref
@@ -457,8 +459,13 @@ class OperationalSpaceController(Controller):
         self.base_pos = base_pos
         self.base_ori = base_ori
 
-        # keep track of whether base pos updated since last time
-        self.base_updated = (self._prev_base_pos is None) or np.any(np.abs(self._prev_base_pos - self.base_pos) > 1e-5)
+        if self._prev_base_pos is None:
+            self.base_vel = np.zeros(3)
+        else:
+            self.base_vel = self.base_pos - self._prev_base_pos
+
+        # # keep track of whether base pos updated since last time
+        # self.base_updated = (self._prev_base_pos is None) or np.any(np.abs(self._prev_base_pos - self.base_pos) > 1e-5)
 
     def update_initial_joints(self, initial_joints):
         # First, update from the superclass method

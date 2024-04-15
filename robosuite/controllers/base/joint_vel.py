@@ -1,9 +1,8 @@
 import numpy as np
 
+import robosuite.utils.transform_utils as T
 from robosuite.controllers.base.base_controller import BaseController
 from robosuite.utils.control_utils import *
-
-import robosuite.utils.transform_utils as T
 
 # Supported impedance modes
 IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
@@ -202,7 +201,6 @@ class BaseJointVelocityController(BaseController):
         else:
             scaled_delta = None
 
-
         curr_pos, curr_ori = self.get_base_pose()
 
         # transform the action relative to initial base orientation
@@ -214,16 +212,20 @@ class BaseJointVelocityController(BaseController):
         # input raw base action is delta relative to current pose of base
         # controller expects deltas relative to initial pose of base at start of episode
         # transform deltas from current base pose coordinates to initial base pose coordinates
-        x, y = base_action[0:2]
+        x, y = base_action[0:2] * 0.025
 
         # do the reverse of theta rotation
         base_action[0] = x * np.cos(theta) + y * np.sin(theta)
         base_action[1] = -x * np.sin(theta) + y * np.cos(theta)
+        base_action[2] *= 0.04
 
+        curr_pos = self.sim.data.qpos[self.joint_index]
         self.goal_qvel = base_action
-        if self.interpolator is not None:
-            self.interpolator.set_goal(self.goal_qvel)
+        self.goal_qpos = curr_pos + base_action
 
+        # self.goal_qvel = base_action
+        # if self.interpolator is not None:
+        #     self.interpolator.set_goal(self.goal_qvel)
 
     def run_controller(self):
         """
@@ -233,13 +235,13 @@ class BaseJointVelocityController(BaseController):
              np.array: Command torques
         """
         # Make sure goal has been set
-        if self.goal_qvel is None:
+        if self.goal_qpos is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state
         self.update()
 
-        desired_qvel = None
+        desired_qpos = None
 
         # Only linear interpolator is currently supported
         if self.interpolator is not None:
@@ -250,19 +252,19 @@ class BaseJointVelocityController(BaseController):
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_qvel = np.array(self.goal_qvel)
-            
-        self.vels = desired_qvel
+            desired_qpos = np.array(self.goal_qpos)
 
-        ctrl_range = np.stack([self.actuator_min, self.actuator_max], axis=-1)
-        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-        self.vels = bias + weight * self.vels
+        self.pos = desired_qpos
+
+        # ctrl_range = np.stack([self.actuator_min, self.actuator_max], axis=-1)
+        # bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+        # weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+        # self.vels = bias + weight * self.vels
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
 
-        return self.vels
+        return self.pos
 
     def reset_goal(self):
         """
