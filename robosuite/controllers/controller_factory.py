@@ -11,11 +11,9 @@ from robosuite.utils.traj_utils import LinearInterpolator
 
 from . import generic
 from . import arm as arm_controllers
-from . import torso as torso_controllers
 from . import base as base_controllers
-from . import head as head_controllers
 from . import gripper as gripper_controllers
-from . import legs as legs_controllers
+# from . import legs as legs_controllers
 # Global var for linking pybullet server to multiple ik controller instances if necessary
 pybullet_server = None
 
@@ -209,7 +207,7 @@ def torso_controller_factory(name, params):
         )
 
     if name == "JOINT_VELOCITY":
-        return torso_controllers.TorsoJointVelocityController(interpolator=interpolator, **params)
+        return generic.JointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
         return generic.JointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
@@ -225,10 +223,9 @@ def head_controller_factory(name, params):
         )
 
     if name == "JOINT_VELOCITY":
-        return head_controllers.HeadJointVelocityController(interpolator=interpolator, **params)
-        # return generic.JointVelocityController(interpolator=interpolator, **params)
+        return generic.JointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
-        return head_controllers.HeadJointPositionController(interpolator=interpolator, **params)
+        return generic.ointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 
@@ -243,11 +240,9 @@ def legs_controller_factory(name, params):
         )
 
     if name == "JOINT_POSITION":
-        # return legs_controllers.LegsJointPositionController(interpolator=interpolator, **params)
         return generic.JointPositionController(interpolator=interpolator, **params)
 
     if name == "JOINT_TORQUE":
-        # return legs_controllers.LegsJointTorqueController(interpolator=interpolator, **params)
         return generic.JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))

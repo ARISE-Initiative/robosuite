@@ -348,6 +348,6 @@
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_1_joint" name="torq_head_pitch"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_2_joint" name="torq_head_yaw"/>
     <!-- <motor ctrllimited="true" ctrlrange="-1000 1000" joint="torso_lift_joint" name="torq_torso_lift"/> -->
-    <velocity ctrllimited="true" ctrlrange="-0.75 1.00" joint="torso_lift_joint" kv="1500" name="torq_torso_lift" forcelimited="false"/>
+    <motor ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="torso_lift_joint" name="torq_torso_lift" forcelimited="false"/>
     </actuator>
 </mujoco>
