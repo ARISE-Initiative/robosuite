@@ -112,7 +112,7 @@ class WheeledRobot(MobileBaseRobot):
             self.action_dim, len(action)
         )
 
-        # self.composite_controller.update_state()
+        # self.composite_controller.update_state() # remove this for now, messes up base velocity calculation
         if policy_step:
             self.composite_controller.set_goal(action)
 
