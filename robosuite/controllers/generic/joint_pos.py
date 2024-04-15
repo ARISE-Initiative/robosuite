@@ -88,7 +88,7 @@ class JointPositionController(Controller):
         sim,
         joint_indexes,
         actuator_range,
-        target_name=None,
+        ref_name=None,
         input_max=1,
         input_min=-1,
         output_max=0.05,
@@ -106,7 +106,7 @@ class JointPositionController(Controller):
 
         super().__init__(
             sim,
-            target_name=target_name,
+            ref_name=ref_name,
             joint_indexes=joint_indexes,
             actuator_range=actuator_range,
             part_name=kwargs.get("part_name", None),
