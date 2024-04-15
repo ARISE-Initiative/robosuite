@@ -1,13 +1,13 @@
 import numpy as np
 
-from robosuite.controllers.torso.torso_controller import TorsoController
+from robosuite.controllers.controller import Controller
 from robosuite.utils.control_utils import *
 
 # Supported impedance modes
 IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
 
 
-class TorsoJointVelocityController(TorsoController):
+class JointPositionController(Controller):
     """
     Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
 
@@ -88,11 +88,12 @@ class TorsoJointVelocityController(TorsoController):
         sim,
         joint_indexes,
         actuator_range,
+        ref_name=None,
         input_max=1,
         input_min=-1,
-        output_max=1,
-        output_min=-1,
-        kp=200,
+        output_max=0.05,
+        output_min=-0.05,
+        kp=50,
         damping_ratio=1,
         impedance_mode="fixed",
         kp_limits=(0, 300),
@@ -102,10 +103,12 @@ class TorsoJointVelocityController(TorsoController):
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
+
         super().__init__(
             sim,
-            joint_indexes,
-            actuator_range,
+            ref_name=ref_name,
+            joint_indexes=joint_indexes,
+            actuator_range=actuator_range,
             part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
         )
@@ -154,10 +157,10 @@ class TorsoJointVelocityController(TorsoController):
         self.interpolator = interpolator
 
         # initialize
-        self.goal_qvel = None
+        self.goal_qpos = None
 
-        self.is_controlled = False
-
+    def update_base_pose(self):
+        pass
 
     def set_goal(self, action, set_qpos=None):
         """
@@ -202,17 +205,12 @@ class TorsoJointVelocityController(TorsoController):
         else:
             scaled_delta = None
 
-        self.is_controlled = True
-        if np.max(np.abs(scaled_delta)) < 0.1:
-            self.is_controlled = False
-            scaled_delta = scaled_delta * 0
-
-        if self.is_controlled:
-            self.previous_qpos = np.array(self.sim.data.qpos[self.qpos_index])
-        self.goal_qvel = scaled_delta
+        self.goal_qpos = set_goal_position(
+            scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
+        )
 
         if self.interpolator is not None:
-            self.interpolator.set_goal(self.goal_qvel)
+            self.interpolator.set_goal(self.goal_qpos)
 
     def run_controller(self):
         """
@@ -222,47 +220,46 @@ class TorsoJointVelocityController(TorsoController):
              np.array: Command torques
         """
         # Make sure goal has been set
-        if self.goal_qvel is None:
+        if self.goal_qpos is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state
         self.update()
 
-        desired_qvel = None
+        desired_qpos = None
 
         # Only linear interpolator is currently supported
         if self.interpolator is not None:
             # Linear case
             if self.interpolator.order == 1:
-                desired_qvel = self.interpolator.get_interpolated_goal()
+                desired_qpos = self.interpolator.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_qvel = np.array(self.goal_qvel)
-            
-        self.vels = desired_qvel
+            desired_qpos = np.array(self.goal_qpos)
 
-
-        if not self.is_controlled:
-            current_joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
-            vel_compensate = self.kp * (self.previous_qpos - current_joint_pos)
-            self.vels += vel_compensate 
+        # torques = pos_err * kp + vel_err * kd
+        position_error = desired_qpos - self.joint_pos
+        vel_pos_error = -self.joint_vel
+        desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
+        # Return desired torques plus gravity compensations
+        self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
-        return self.vels
+
+        return self.torques
 
     def reset_goal(self):
         """
         Resets joint position goal to be current position
         """
-        self.goal_qvel = self.joint_vel
-        self.previous_qpos = np.array(self.sim.data.qpos[self.qpos_index])
+        self.goal_qpos = self.joint_pos
 
         # Reset interpolator if required
         if self.interpolator is not None:
-            self.interpolator.set_goal(self.goal_qvel)
+            self.interpolator.set_goal(self.goal_qpos)
 
     @property
     def control_limits(self):
@@ -292,4 +289,4 @@ class TorsoJointVelocityController(TorsoController):
 
     @property
     def name(self):
-        return "JOINT_VELOCITY"
+        return "JOINT_POSITION"

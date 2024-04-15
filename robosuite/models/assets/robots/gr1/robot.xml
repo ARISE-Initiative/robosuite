@@ -9,9 +9,9 @@
         </default>
   </default>
   <asset>
-    <material name="LightGrey" specular="0.8" shininess="0.8" rgba="0.8 0.8 0.8 1.0"/>
-    <material name="Purple" specular="0.8" shininess="0.8" rgba="0.58 0.42 0.58 1.0"/>
-    <material name="Black" specular="0.8" shininess="0.8" rgba="0.0 0.0 0.0 1.0"/>
+    <material name="LightGrey" specular="0.9" shininess="0.9" rgba="0.4 0.4 0.4 1.0"/>
+    <material name="Purple" specular="0.9" shininess="0.9" rgba="0.58 0.42 0.58 1.0"/>
+    <material name="Black" specular="0.9" shininess="0.9" rgba="0.1 0.1 0.1 1.0"/>
     <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
     <texture name="body" type="cube" builtin="flat" mark="cross" width="128" height="128" rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" random="0.01"/>
     <material name="body" texture="body" texuniform="true" rgba="0.8 0.6 .4 1"/>

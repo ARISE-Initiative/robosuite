@@ -111,7 +111,7 @@ class OperationalSpaceController(Controller):
     def __init__(
         self,
         sim,
-        eef_name,
+        ref_name,
         joint_indexes,
         actuator_range,
         input_max=1,
@@ -137,9 +137,9 @@ class OperationalSpaceController(Controller):
 
         super().__init__(
             sim,
-            eef_name,
-            joint_indexes,
-            actuator_range,
+            ref_name=ref_name,
+            joint_indexes=joint_indexes,
+            actuator_range=actuator_range,
             lite_physics=lite_physics,
             part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
@@ -205,13 +205,13 @@ class OperationalSpaceController(Controller):
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
 
-        self.goal_ref_to_eef_pos = None
-        self.goal_ref_to_eef_ori = None
+        self.goal_origin_to_eef_pos = None
+        self.goal_origin_to_eef_ori = None
 
-        self.ref_pos = None
-        self.ref_ori = None
+        self.origin_pos = None
+        self.origin_ori = None
 
-    def set_goal(self, action, set_pos=None, set_ori=None, ref_updated=False):
+    def set_goal(self, action, set_pos=None, set_ori=None, origin_updated=False):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
         delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
@@ -266,12 +266,12 @@ class OperationalSpaceController(Controller):
             # No scaling of values since these are absolute values
             scaled_delta = delta
 
-        self.ref_updated = ref_updated
+        self.origin_updated = origin_updated
 
-        self.goal_ref_to_eef_ori = self.compute_goal_orientation(  # set_goal_orientation
+        self.goal_origin_to_eef_ori = self.compute_goal_orientation(  # set_goal_orientation
             scaled_delta[3:], set_ori=set_ori
         )
-        self.goal_ref_to_eef_pos = self.compute_goal_pos(scaled_delta[:3], set_pos=set_pos)  # set_goal_position(
+        self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[:3], set_pos=set_pos)  # set_goal_position(
 
         if self.interpolator_pos is not None:
             self.interpolator_pos.set_goal(self.goal_pos)
@@ -283,28 +283,28 @@ class OperationalSpaceController(Controller):
             )  # goal is the total orientation error
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
-    def world_to_ref_frame(self, vec):
+    def world_to_origin_frame(self, vec):
         """
         transform vector from world to reference coordinate frame
         """
-        return np.matmul(self.ref_ori.T, vec - self.ref_pos)
+        return np.matmul(self.origin_ori.T, vec - self.origin_pos)
 
     def compute_goal_pos(self, delta, set_pos=None):
         if set_pos is not None:
             raise NotImplementedError
 
-        if self.goal_ref_to_eef_pos is None:
-            self.goal_ref_to_eef_pos = self.world_to_ref_frame(self.ee_pos)
+        if self.goal_origin_to_eef_pos is None:
+            self.goal_origin_to_eef_pos = self.world_to_origin_frame(self.ee_pos)
 
-        if self.ref_updated:
-            goal_ref_to_eef_pos = self.goal_ref_to_eef_pos + delta
+        if self.origin_updated:
+            goal_origin_to_eef_pos = self.goal_origin_to_eef_pos + delta
         else:
-            goal_ref_to_eef_pos = self.world_to_ref_frame(self.ee_pos) + delta
+            goal_origin_to_eef_pos = self.world_to_origin_frame(self.ee_pos) + delta
 
         if self.position_limits is not None:
             raise NotImplementedError
 
-        return goal_ref_to_eef_pos
+        return goal_origin_to_eef_pos
 
     def compute_goal_orientation(self, delta, set_ori=None):
         """
@@ -324,8 +324,8 @@ class OperationalSpaceController(Controller):
         Raises:
             ValueError: [Invalid orientation_limit shape]
         """
-        if self.goal_ref_to_eef_ori is None:
-            self.goal_ref_to_eef_ori = np.dot(self.ref_ori.T, self.ee_ori_mat)
+        if self.goal_origin_to_eef_ori is None:
+            self.goal_origin_to_eef_ori = np.dot(self.origin_ori.T, self.ee_ori_mat)
 
         # directly set orientation
         if set_ori is not None:
@@ -336,15 +336,15 @@ class OperationalSpaceController(Controller):
             quat_error = T.axisangle2quat(delta)
             rotation_mat_error = T.quat2mat(quat_error)
 
-            if self.ref_updated:
-                goal_ref_to_eef_ori = np.dot(rotation_mat_error, self.goal_ref_to_eef_ori)
+            if self.origin_updated:
+                goal_origin_to_eef_ori = np.dot(rotation_mat_error, self.goal_origin_to_eef_ori)
             else:
-                goal_ref_to_eef_ori = np.dot(rotation_mat_error, np.dot(self.ref_ori.T, self.ee_ori_mat))
+                goal_origin_to_eef_ori = np.dot(rotation_mat_error, np.dot(self.origin_ori.T, self.ee_ori_mat))
 
         # check for orientation limits
         if np.array(self.orientation_limits).any():
             raise NotImplementedError
-        return goal_ref_to_eef_ori
+        return goal_origin_to_eef_ori
 
     def run_controller(self):
         """
@@ -371,7 +371,7 @@ class OperationalSpaceController(Controller):
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_pos = self.ref_pos + np.dot(self.ref_ori, self.goal_ref_to_eef_pos)
+            desired_pos = self.origin_pos + np.dot(self.origin_ori, self.goal_origin_to_eef_pos)
 
         if self.interpolator_ori is not None:
             # relative orientation based on difference between current ori and ref
@@ -379,7 +379,7 @@ class OperationalSpaceController(Controller):
 
             ori_error = self.interpolator_ori.get_interpolated_goal()
         else:
-            desired_ori = np.dot(self.ref_ori, self.goal_ref_to_eef_ori)
+            desired_ori = np.dot(self.origin_ori, self.goal_origin_to_eef_ori)
             ori_error = orientation_error(desired_ori, self.ee_ori_mat)
 
         # Compute desired force and torque based on errors
@@ -426,18 +426,18 @@ class OperationalSpaceController(Controller):
 
         return self.torques
 
-    def update_ref_frame(self, ref_pos, ref_ori):
+    def update_origin(self, origin_pos, origin_ori):
         """
-        Optional function to implement in subclass controllers that will take in @ref_pos and @ref_ori and update
+        Optional function to implement in subclass controllers that will take in @origin_pos and @origin_ori and update
         internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
         is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
 
         Args:
-            ref_pos (3-tuple): x,y,z position of controller reference in mujoco world coordinates
-            ref_ori (np.array): 3x3 rotation matrix orientation of controller reference in mujoco world coordinates
+            origin_pos (3-tuple): x,y,z position of controller reference in mujoco world coordinates
+            origin_ori (np.array): 3x3 rotation matrix orientation of controller reference in mujoco world coordinates
         """
-        self.ref_pos = ref_pos
-        self.ref_ori = ref_ori
+        self.origin_pos = origin_pos
+        self.origin_ori = origin_ori
 
     def update_initial_joints(self, initial_joints):
         # First, update from the superclass method
@@ -494,3 +494,31 @@ class OperationalSpaceController(Controller):
     @property
     def name(self):
         return "OSC_" + self.name_suffix
+
+    @property
+    def eef_name(self):
+        return self.ref_name
+
+    @property
+    def ee_pos(self):
+        return self.ref_pos
+
+    @property
+    def ee_ori_mat(self):
+        return self.ref_ori_mat
+
+    @property
+    def ee_pos_vel(self):
+        return self.ref_pos_vel
+
+    @property
+    def ee_ori_vel(self):
+        return self.ref_ori_vel
+
+    @property
+    def initial_ee_pos(self):
+        return self.initial_ref_pos
+
+    @property
+    def initial_ee_ori_mat(self):
+        return self.initial_ref_ori_mat

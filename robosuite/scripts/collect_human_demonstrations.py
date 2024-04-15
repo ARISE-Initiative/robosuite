@@ -78,13 +78,13 @@ def collect_human_trajectory(env, device, arm, env_configuration):
                 env.robots[0].base: base_action,
                 # env.robots[0].head: base_action,
                 # env.robots[0].torso: base_action
-                # env.robots[0].torso: torso_action
+                env.robots[0].torso: torso_action
             }
             )
             mode_action = input_action[-1]
 
             if mode_action > 0:
-                env.robots[0].enable_parts(base=True, right=True, left=True, torso=False)
+                env.robots[0].enable_parts(base=True, right=True, left=True, torso=True)
             else:
                 env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:

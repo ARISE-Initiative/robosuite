@@ -23,9 +23,9 @@ class WheeledRobotController(CompositeController):
 
         nonzero_arm_action = np.any(all_action[:6] != 0)
         if nonzero_arm_action:
-            ref_updated = False
+            origin_updated = False
         else:
-            ref_updated = True
+            origin_updated = True
 
         for part_name, controller in self.controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
@@ -34,7 +34,7 @@ class WheeledRobotController(CompositeController):
                 action = self.grippers[part_name].format_action(action)
 
             if part_name in ["left", "right"]:
-                controller.set_goal(action, ref_updated=ref_updated)
+                controller.set_goal(action, origin_updated=origin_updated)
             else:
                 controller.set_goal(action)
 
@@ -56,4 +56,4 @@ class WheeledRobotController(CompositeController):
         ref_ori = base_ori
 
         for arm in self.arms:
-            self.controllers[arm].update_ref_frame(ref_pos, ref_ori)
+            self.controllers[arm].update_origin(ref_pos, ref_ori)

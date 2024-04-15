@@ -6,7 +6,6 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory, load_controller_config
-from robosuite.controllers.torso_height_controller import TorsoHeightController
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
 from robosuite.utils.observables import Observable, sensor
 
