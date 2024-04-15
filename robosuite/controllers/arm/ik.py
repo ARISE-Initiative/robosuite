@@ -725,3 +725,33 @@ class InverseKinematicsController(JointVelocityController):
     @property
     def name(self):
         return "IK_POSE"
+
+    @property
+    def eef_name(self):
+        return self.target_name
+
+    @property
+    def ee_pos(self):
+        return self.target_pos
+
+    @property
+    def ee_ori_mat(self):
+        return self.target_ori_mat
+
+
+    @property
+    def ee_pos_vel(self):
+        return self.target_pos_vel
+
+
+    @property
+    def ee_ori_vel(self):
+        return self.target_ori_vel
+
+    @property
+    def initial_ee_pos(self):
+        return self.initial_target_pos
+
+    @property
+    def initial_ee_ori_mat(self):
+        return self.initial_target_ori_mat        

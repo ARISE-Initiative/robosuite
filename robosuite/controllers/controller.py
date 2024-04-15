@@ -11,13 +11,13 @@ class Controller(object, metaclass=abc.ABCMeta):
     """
     General controller interface.
 
-    Requires reference to mujoco sim object, eef_name of specific robot, relevant joint_indexes to that robot, and
+    Requires reference to mujoco sim object, target_name of specific robot, relevant joint_indexes to that robot, and
     whether an initial_joint is used for nullspace torques or not
 
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
 
-        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
+        target_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
 
@@ -31,9 +31,9 @@ class Controller(object, metaclass=abc.ABCMeta):
     def __init__(
         self,
         sim,
-        eef_name,
         joint_indexes,
         actuator_range,
+        target_name=None,
         part_name=None,
         naming_prefix=None,
     ):
@@ -57,7 +57,10 @@ class Controller(object, metaclass=abc.ABCMeta):
         # mujoco simulator state
         self.sim = sim
         self.model_timestep = macros.SIMULATION_TIMESTEP
-        self.eef_name = eef_name
+        self.target_name = target_name
+        # A list of site the controller want to follow
+        # self.target_site_names = target_site_names
+
         self.part_name = part_name
         self.naming_prefix = naming_prefix
 
@@ -66,10 +69,11 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.qvel_index = joint_indexes["qvel"]
 
         # robot states
-        self.ee_pos = None
-        self.ee_ori_mat = None
-        self.ee_pos_vel = None
-        self.ee_ori_vel = None
+        self.target_pos = None
+        self.target_ori_mat = None
+        self.target_pos_vel = None
+        self.target_ori_vel = None
+
         self.joint_pos = None
         self.joint_vel = None
 
@@ -94,8 +98,8 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Initialize controller by updating internal state and setting the initial joint, pos, and ori
         self.update()
         self.initial_joint = self.joint_pos
-        self.initial_ee_pos = self.ee_pos
-        self.initial_ee_ori_mat = self.ee_ori_mat
+        self.initial_target_pos = self.target_pos
+        self.initial_target_ori_mat = self.target_ori_mat
 
     @abc.abstractmethod
     def run_controller(self):
@@ -144,19 +148,21 @@ class Controller(object, metaclass=abc.ABCMeta):
             # BUG: Potential bug here. If there are more than two controlllers, the simulation will be forwarded multiple times. 
             self.sim.forward()
 
-            self.ee_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
-            self.ee_ori_mat = np.array(
-                self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3])
-            )
-            self.ee_pos_vel = np.array(self.sim.data.get_site_xvelp(self.eef_name))
-            self.ee_ori_vel = np.array(self.sim.data.get_site_xvelr(self.eef_name))
+            if self.target_name is not None:
+                self.target_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.target_name)])
+                self.target_ori_mat = np.array(
+                    self.sim.data.site_xmat[self.sim.model.site_name2id(self.target_name)].reshape([3, 3])
+                )
+                self.target_pos_vel = np.array(self.sim.data.get_site_xvelp(self.target_name))
+                self.target_ori_vel = np.array(self.sim.data.get_site_xvelr(self.target_name))
+           
+                self.J_pos = np.array(self.sim.data.get_site_jacp(self.target_name).reshape((3, -1))[:, self.qvel_index])
+                self.J_ori = np.array(self.sim.data.get_site_jacr(self.target_name).reshape((3, -1))[:, self.qvel_index])
+                self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
             self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
             self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
 
-            self.J_pos = np.array(self.sim.data.get_site_jacp(self.eef_name).reshape((3, -1))[:, self.qvel_index])
-            self.J_ori = np.array(self.sim.data.get_site_jacr(self.eef_name).reshape((3, -1))[:, self.qvel_index])
-            self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
 
             mass_matrix = np.ndarray(shape=(self.sim.model.nv, self.sim.model.nv), dtype=np.float64, order="C")
             mujoco.mj_fullM(self.sim.model._model, mass_matrix, self.sim.data.qM)
@@ -187,8 +193,10 @@ class Controller(object, metaclass=abc.ABCMeta):
         """
         self.initial_joint = np.array(initial_joints)
         self.update(force=True)
-        self.initial_ee_pos = self.ee_pos
-        self.initial_ee_ori_mat = self.ee_ori_mat
+
+        if self.target_name is not None:
+            self.initial_ee_pos = self.ee_pos
+            self.initial_ee_ori_mat = self.ee_ori_mat
 
     def clip_torques(self, torques):
         """

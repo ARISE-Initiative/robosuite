@@ -691,7 +691,7 @@ class Robot(object):
 
             self.controller_config[arm]["robot_name"] = self.name
             self.controller_config[arm]["sim"] = self.sim
-            self.controller_config[arm]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+            self.controller_config[arm]["target_name"] = self.gripper[arm].important_sites["grip_site"]
             self.controller_config[arm]["part_name"] = arm
             self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
 

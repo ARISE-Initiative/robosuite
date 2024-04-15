@@ -24,7 +24,8 @@
 		<!-- Physical limits of the actuator. -->
 		<velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="joint_mobile_forward" kv="1000" name="actuator_mobile_forward" forcelimited="true" forcerange="-600 600"/>
 		<velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="joint_mobile_side" kv="1000" name="actuator_mobile_side" forcelimited="true" forcerange="-600 600"/>
-		<velocity ctrllimited="true" ctrlrange="-0.75 1.00" joint="joint_torso_height" kv="1500" name="actuator_torso_height" forcelimited="false"/>
+		<!-- <velocity ctrllimited="true" ctrlrange="-0.75 1.00" joint="joint_torso_height" kv="1500" name="actuator_torso_height" forcelimited="false"/> -->
+		<motor ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_torso_height" name="actuator_torso_height" forcelimited="false"/>
 		<velocity ctrllimited="true" ctrlrange="-4.00 4.00" joint="joint_mobile_yaw" kv="1000" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
 	</actuator>
     <worldbody>

@@ -108,7 +108,7 @@ class OperationalSpaceController(Controller):
     def __init__(
         self,
         sim,
-        eef_name,
+        target_name,
         joint_indexes,
         actuator_range,
         input_max=1,
@@ -133,9 +133,9 @@ class OperationalSpaceController(Controller):
 
         super().__init__(
             sim,
-            eef_name,
-            joint_indexes,
-            actuator_range,
+            target_name=target_name,
+            joint_indexes=joint_indexes,
+            actuator_range=actuator_range,
             part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
         )
@@ -506,3 +506,33 @@ class OperationalSpaceController(Controller):
     @property
     def name(self):
         return "OSC_" + self.name_suffix
+
+    @property
+    def eef_name(self):
+        return self.target_name
+
+    @property
+    def ee_pos(self):
+        return self.target_pos
+
+    @property
+    def ee_ori_mat(self):
+        return self.target_ori_mat
+
+
+    @property
+    def ee_pos_vel(self):
+        return self.target_pos_vel
+
+
+    @property
+    def ee_ori_vel(self):
+        return self.target_ori_vel
+
+    @property
+    def initial_ee_pos(self):
+        return self.initial_target_pos
+
+    @property
+    def initial_ee_ori_mat(self):
+        return self.initial_target_ori_mat

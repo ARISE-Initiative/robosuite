@@ -9,6 +9,7 @@ import numpy as np
 
 from robosuite.utils.traj_utils import LinearInterpolator
 
+from . import generic
 from . import arm as arm_controllers
 from . import torso as torso_controllers
 from . import base as base_controllers
@@ -158,13 +159,13 @@ def arm_controller_factory(name, params):
         )
 
     if name == "JOINT_VELOCITY":
-        return arm_controllers.JointVelocityController(interpolator=interpolator, **params)
+        return genereic.JointVelocityController(interpolator=interpolator, **params)
 
     if name == "JOINT_POSITION":
-        return arm_controllers.JointPositionController(interpolator=interpolator, **params)
+        return genereic.JointPositionController(interpolator=interpolator, **params)
 
     if name == "JOINT_TORQUE":
-        return arm_controllers.JointTorqueController(interpolator=interpolator, **params)
+        return genereic.JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))
 
@@ -209,6 +210,8 @@ def torso_controller_factory(name, params):
 
     if name == "JOINT_VELOCITY":
         return torso_controllers.TorsoJointVelocityController(interpolator=interpolator, **params)
+    elif name == "JOINT_POSITION":
+        return generic.JointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 def head_controller_factory(name, params):
@@ -223,6 +226,7 @@ def head_controller_factory(name, params):
 
     if name == "JOINT_VELOCITY":
         return head_controllers.HeadJointVelocityController(interpolator=interpolator, **params)
+        # return generic.JointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
         return head_controllers.HeadJointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
@@ -239,9 +243,11 @@ def legs_controller_factory(name, params):
         )
 
     if name == "JOINT_POSITION":
-        return legs_controllers.LegsJointPositionController(interpolator=interpolator, **params)
+        # return legs_controllers.LegsJointPositionController(interpolator=interpolator, **params)
+        return generic.JointPositionController(interpolator=interpolator, **params)
 
     if name == "JOINT_TORQUE":
-        return legs_controllers.LegsJointTorqueController(interpolator=interpolator, **params)
+        # return legs_controllers.LegsJointTorqueController(interpolator=interpolator, **params)
+        return generic.JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))

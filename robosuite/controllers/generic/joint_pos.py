@@ -86,9 +86,9 @@ class JointPositionController(Controller):
     def __init__(
         self,
         sim,
-        eef_name,
         joint_indexes,
         actuator_range,
+        target_name=None,
         input_max=1,
         input_min=-1,
         output_max=0.05,
@@ -106,9 +106,9 @@ class JointPositionController(Controller):
 
         super().__init__(
             sim,
-            eef_name,
-            joint_indexes,
-            actuator_range,
+            target_name=target_name,
+            joint_indexes=joint_indexes,
+            actuator_range=actuator_range,
             part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
         )

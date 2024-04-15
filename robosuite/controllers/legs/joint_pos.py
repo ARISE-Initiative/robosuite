@@ -241,7 +241,6 @@ class LegsJointPositionController(LegsController):
 
         # Return desired torques plus gravity compensations
         self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
-
         # Always run superclass call for any cleanups at the end
         super().run_controller()
 
