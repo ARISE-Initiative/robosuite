@@ -80,8 +80,9 @@ class CompositeController:
             return self.controllers[part_name].control_dim
 
     def update_state(self):
+        base_pos, base_ori = self.controllers["base"].get_base_pose()
         for arm in self.arms:
-            self.controllers[arm].update_base_pose()
+            self.controllers[arm].update_ref_frame(base_pos, base_ori)
 
     def get_controller(self, part_name):
         return self.controllers[part_name]

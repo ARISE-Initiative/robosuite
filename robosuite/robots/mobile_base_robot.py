@@ -50,7 +50,7 @@ class MobileBaseRobot(Robot):
             return None
         # TODO: Add a default controller config for base
         self.controller_config[self.base] = {}
-        self.controller_config[self.base]["type"] = "JOINT_VELOCITY"
+        self.controller_config[self.base]["type"] = "JOINT_POSITION"
         self.controller_config[self.base]["interpolation"] = None
         self.controller_config[self.base]["ramp_ratio"] = 1.0
         self.controller_config[self.base]["robot_name"] = self.name

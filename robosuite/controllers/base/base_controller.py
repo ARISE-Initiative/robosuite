@@ -128,6 +128,13 @@ class BaseController(object, metaclass=abc.ABCMeta):
 
         return transformed_action
 
+    def get_base_pose(self):
+        base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{self.naming_prefix}center")])
+        base_ori = np.array(
+            self.sim.data.site_xmat[self.sim.model.site_name2id(f"{self.naming_prefix}center")].reshape([3, 3])
+        )
+        return base_pos, base_ori
+
     def update(self, force=False):
         """
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,

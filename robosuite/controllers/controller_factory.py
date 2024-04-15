@@ -10,13 +10,15 @@ import numpy as np
 from robosuite.utils.traj_utils import LinearInterpolator
 
 from . import arm as arm_controllers
-from . import torso as torso_controllers
 from . import base as base_controllers
-from . import head as head_controllers
 from . import gripper as gripper_controllers
+from . import head as head_controllers
 from . import legs as legs_controllers
+from . import torso as torso_controllers
+
 # Global var for linking pybullet server to multiple ik controller instances if necessary
 pybullet_server = None
+
 
 def reset_controllers():
     """
@@ -127,7 +129,9 @@ def arm_controller_factory(name, params):
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.set_states(ori="euler")
         params["control_ori"] = True
-        return arm_controllers.OperationalSpaceController(interpolator_pos=interpolator, interpolator_ori=ori_interpolator, **params)
+        return arm_controllers.OperationalSpaceController(
+            interpolator_pos=interpolator, interpolator_ori=ori_interpolator, **params
+        )
 
     if name == "OSC_POSITION":
         if interpolator is not None:
@@ -183,6 +187,7 @@ def controller_factory(name, params):
     elif params["part_name"] == "legs":
         return legs_controller_factory(name, params)
 
+
 def gripper_controller_factory(name, params):
     interpolator = None
     if name == "GRIP":
@@ -194,6 +199,8 @@ def base_controller_factory(name, params):
     interpolator = None
     if name == "JOINT_VELOCITY":
         return base_controllers.BaseJointVelocityController(interpolator=interpolator, **params)
+    elif name == "JOINT_POSITION":
+        return base_controllers.BaseJointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 
@@ -210,6 +217,7 @@ def torso_controller_factory(name, params):
     if name == "JOINT_VELOCITY":
         return torso_controllers.TorsoJointVelocityController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
+
 
 def head_controller_factory(name, params):
     interpolator = None
