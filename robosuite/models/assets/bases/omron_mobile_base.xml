@@ -21,9 +21,9 @@
         <material name="Shell005_001_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
     </asset>
     <actuator>
-        <position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_forward" kp="1000000" name="actuator_mobile_forward" forcelimited="true" forcerange="-600 600"/>
-		<position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_side" kp="1000000" name="actuator_mobile_side" forcelimited="true" forcerange="-600 600"/>
-		<position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_yaw" kp="100000" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
+        <velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="joint_mobile_forward" kv="1000" name="actuator_mobile_forward" forcelimited="true" forcerange="-600 600"/>
+		<velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="joint_mobile_side" kv="1000" name="actuator_mobile_side" forcelimited="true" forcerange="-600 600"/>
+		<velocity ctrllimited="true" ctrlrange="-1.50 1.50" joint="joint_mobile_yaw" kv="1500" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
 		<motor ctrllimited="true" ctrlrange="-100000.0 100000.0" joint="joint_torso_height" name="actuator_torso_height" forcelimited="false"/>
 	</actuator>
     <worldbody>

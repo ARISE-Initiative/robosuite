@@ -3,7 +3,7 @@
 		<!-- Physical limits of the actuator. -->
 		<velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="joint_mobile_forward" kv="1000" name="actuator_mobile_forward" forcelimited="true" forcerange="-600 600"/>
 		<velocity ctrllimited="true" ctrlrange="-1.00 1.00" joint="joint_mobile_side" kv="1000" name="actuator_mobile_side" forcelimited="true" forcerange="-600 600"/>
-		<velocity ctrllimited="true" ctrlrange="-4.00 4.00" joint="joint_mobile_yaw" kv="1000" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
+		<velocity ctrllimited="true" ctrlrange="-1.50 1.50" joint="joint_mobile_yaw" kv="1000" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
 	</actuator>
     <worldbody>
         <body name="support" pos="0 0 0">

@@ -211,7 +211,7 @@ class OperationalSpaceController(Controller):
         self.origin_pos = None
         self.origin_ori = None
 
-    def set_goal(self, action, set_pos=None, set_ori=None, origin_updated=False):
+    def set_goal(self, action, set_pos=None, set_ori=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
         delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
@@ -266,7 +266,7 @@ class OperationalSpaceController(Controller):
             # No scaling of values since these are absolute values
             scaled_delta = delta
 
-        self.origin_updated = origin_updated
+        self.update_wrt_origin = np.all(action == 0)
 
         self.goal_origin_to_eef_ori = self.compute_goal_orientation(  # set_goal_orientation
             scaled_delta[3:], set_ori=set_ori
@@ -296,7 +296,7 @@ class OperationalSpaceController(Controller):
         if self.goal_origin_to_eef_pos is None:
             self.goal_origin_to_eef_pos = self.world_to_origin_frame(self.ee_pos)
 
-        if self.origin_updated:
+        if self.update_wrt_origin:
             goal_origin_to_eef_pos = self.goal_origin_to_eef_pos + delta
         else:
             goal_origin_to_eef_pos = self.world_to_origin_frame(self.ee_pos) + delta
@@ -336,7 +336,7 @@ class OperationalSpaceController(Controller):
             quat_error = T.axisangle2quat(delta)
             rotation_mat_error = T.quat2mat(quat_error)
 
-            if self.origin_updated:
+            if self.update_wrt_origin:
                 goal_origin_to_eef_ori = np.dot(rotation_mat_error, self.goal_origin_to_eef_ori)
             else:
                 goal_origin_to_eef_ori = np.dot(rotation_mat_error, np.dot(self.origin_ori.T, self.ee_ori_mat))

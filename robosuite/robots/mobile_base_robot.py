@@ -50,7 +50,7 @@ class MobileBaseRobot(Robot):
             return None
         # TODO: Add a default controller config for base
         self.controller_config[self.base] = {}
-        self.controller_config[self.base]["type"] = "JOINT_POSITION"
+        self.controller_config[self.base]["type"] = "JOINT_VELOCITY"
         self.controller_config[self.base]["interpolation"] = None
         self.controller_config[self.base]["ramp_ratio"] = 1.0
         self.controller_config[self.base]["robot_name"] = self.name
@@ -252,7 +252,7 @@ class MobileBaseRobot(Robot):
 
         return observables
 
-    def enable_parts(self, right=True, left=False, torso=False, head=False, base=True, legs=False):
+    def enable_parts(self, right=True, left=True, torso=True, head=True, base=True, legs=True):
 
         self._enabled_parts = {
             "right": right,

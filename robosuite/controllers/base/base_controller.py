@@ -89,10 +89,10 @@ class BaseController(object, metaclass=abc.ABCMeta):
 
     def get_base_pose(self):
         base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{self.naming_prefix}center")])
-        base_rot = np.array(
+        base_ori = np.array(
             self.sim.data.site_xmat[self.sim.model.site_name2id(f"{self.naming_prefix}center")].reshape([3, 3])
         )
-        return base_pos, base_rot
+        return base_pos, base_ori
 
     def reset(self):
         self.init_pos = self.base_pos
@@ -127,13 +127,6 @@ class BaseController(object, metaclass=abc.ABCMeta):
         transformed_action = (action - self.action_input_transform) * self.action_scale + self.action_output_transform
 
         return transformed_action
-
-    def get_base_pose(self):
-        base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{self.naming_prefix}center")])
-        base_ori = np.array(
-            self.sim.data.site_xmat[self.sim.model.site_name2id(f"{self.naming_prefix}center")].reshape([3, 3])
-        )
-        return base_pos, base_ori
 
     def update(self, force=False):
         """
