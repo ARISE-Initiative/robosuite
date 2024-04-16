@@ -186,6 +186,8 @@ def gripper_controller_factory(name, params):
     interpolator = None
     if name == "GRIP":
         return gripper_controllers.SimpleGripController(interpolator=interpolator, **params)
+    elif name == "JOINT_POSITION":
+        return generic.JointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 
@@ -225,7 +227,7 @@ def head_controller_factory(name, params):
     if name == "JOINT_VELOCITY":
         return generic.JointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
-        return generic.ointPositionController(interpolator=interpolator, **params)
+        return generic.JointPositionController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 
