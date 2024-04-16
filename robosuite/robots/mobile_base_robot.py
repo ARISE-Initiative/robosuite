@@ -116,11 +116,15 @@ class MobileBaseRobot(Robot):
             return None
         # TODO: Add a default controller config for head
         self.controller_config[self.head] = {}
-        self.controller_config[self.head]["type"] = "JOINT_VELOCITY"  # "JOINT_POSITION"
+        self.controller_config[self.head]["type"] = "JOINT_POSITION"
         self.controller_config[self.head]["interpolation"] = None
         self.controller_config[self.head]["ramp_ratio"] = 1.0
         self.controller_config[self.head]["robot_name"] = self.name
         self.controller_config[self.head]["sim"] = self.sim
+        self.controller_config[self.head]["kp"] = 10
+        self.controller_config[self.head]["output_max"] = 1.0
+        self.controller_config[self.head]["output_min"] = -1.0
+
         self.controller_config[self.head]["part_name"] = self.head
         self.controller_config[self.head]["naming_prefix"] = self.robot_model.naming_prefix
         self.controller_config[self.head]["ndim"] = self._joint_split_idx

@@ -129,6 +129,10 @@ class GR1FloatingBody(GR1):
             np.array: default initial qpos for the right, left arms
         """
         init_qpos = np.array([0.0] * 20)
+        init_qpos[7] = 0.2
+        init_qpos[9] = -0.2
+        init_qpos[14] = -0.2
+        init_qpos[16] = 0.2
         return init_qpos
     @property
     def default_base(self):
@@ -163,4 +167,8 @@ class GR1ArmsOnly(GR1):
             np.array: default initial qpos for the right, left arms
         """
         init_qpos = np.array([0.0] * 14)
+        init_qpos[1] = 0.2
+        init_qpos[3] = -0.2
+        init_qpos[8] = -0.2
+        init_qpos[10] = 0.2
         return init_qpos
