@@ -88,7 +88,7 @@ class MobileBaseRobot(Robot):
         self.controller_config[self.torso]["ramp_ratio"] = 1.0
         self.controller_config[self.torso]["robot_name"] = self.name
         self.controller_config[self.torso]["sim"] = self.sim
-        self.controller_config[self.torso]["kp"] = 700
+        self.controller_config[self.torso]["kp"] = 2000
         self.controller_config[self.torso]["part_name"] = self.torso
         self.controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
         self.controller_config[self.torso]["ndim"] = self._joint_split_idx

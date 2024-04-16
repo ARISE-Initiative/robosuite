@@ -24,7 +24,7 @@
         <position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_forward" kp="1000000" name="actuator_mobile_forward" forcelimited="true" forcerange="-600 600"/>
 		<position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_side" kp="1000000" name="actuator_mobile_side" forcelimited="true" forcerange="-600 600"/>
 		<position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_yaw" kp="100000" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
-		<motor ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_torso_height" name="actuator_torso_height" forcelimited="false"/>
+		<motor ctrllimited="true" ctrlrange="-100000.0 100000.0" joint="joint_torso_height" name="actuator_torso_height" forcelimited="false"/>
 	</actuator>
     <worldbody>
         <body name="base" pos="0 0 0">
