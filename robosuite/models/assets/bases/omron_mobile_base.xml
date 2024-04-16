@@ -21,10 +21,9 @@
         <material name="Shell005_001_001_002_001" specular="0.5" shininess="0.45" rgba="1.000000 1.000000 1.000000 1.000000"/>
     </asset>
     <actuator>
-        <position ctrllimited="true" ctrlrange="-10.0 10.0" joint="joint_mobile_forward" kp="1000000" name="actuator_mobile_forward" forcelimited="true" forcerange="-600 600"/>
-		<position ctrllimited="true" ctrlrange="-10.0 10.0" joint="joint_mobile_side" kp="1000000" name="actuator_mobile_side" forcelimited="true" forcerange="-600 600"/>
-		<!-- <position ctrllimited="true" ctrlrange="-10.0 10.0" joint="joint_torso_height" kp="1500000" name="actuator_torso_height" forcelimited="false"/> -->
-		<position ctrllimited="true" ctrlrange="-10.0 10.0" joint="joint_mobile_yaw" kp="100000" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
+        <position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_forward" kp="1000000" name="actuator_mobile_forward" forcelimited="true" forcerange="-600 600"/>
+		<position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_side" kp="1000000" name="actuator_mobile_side" forcelimited="true" forcerange="-600 600"/>
+		<position ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_mobile_yaw" kp="100000" name="actuator_mobile_yaw" forcelimited="true" forcerange="-600 600"/>
 		<motor ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="joint_torso_height" name="actuator_torso_height" forcelimited="false"/>
 	</actuator>
     <worldbody>
@@ -34,6 +33,7 @@
 				<geom name="fixed_support" type="cylinder" pos="0 0 0" size="0.12 0.2 0" group="1" material="Shell005_001_001_002_001"/>
 				<body name="support" pos="0.05 0.0 0.20">
                     <!-- add robot here -->
+                    <site name="center" type="sphere" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
 					<joint name="joint_torso_height" pos="0 0 0" axis="0 0 1" type="slide" limited="true" range="0 0.34" damping="0.01" armature="0.0" frictionloss="1000" ref="0"/>
 					<geom type="cylinder" pos="-0.05 0.0 -0.20" size="0.1125 0.2 0" group="0" material="Shell005_001_001_002_001"/>
 					<geom name="support" type="cylinder" pos="-0.05 0.0 -0.20" size="0.1125 0.2 0" group="1" material="Shell005_001_001_002_001"/>
@@ -53,8 +53,6 @@
                 <geom pos="0 0 0" size="0.35 0.25 0.19" type="box" name="pedestal_feet_col" density="10"/>
             </body>
 
-
-            <site name="center" type="sphere" pos="-0.21 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
             <joint name="joint_mobile_forward" pos="-0.21 0 0" axis="0 1 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
 			<joint name="joint_mobile_side" pos="-0.21 0 0" axis="1 0 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
 			<joint name="joint_mobile_yaw" pos="-0.21 0 0" axis="0 0 1" type="hinge" limited="false" damping="0" armature="0.0" frictionloss="250"/>

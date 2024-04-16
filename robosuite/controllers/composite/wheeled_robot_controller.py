@@ -52,8 +52,8 @@ class WheeledRobotController(CompositeController):
         else:
             base_vel = self.base_pos - self._prev_base_pos
 
-        ref_pos = base_pos + 75.0 * base_vel
-        ref_ori = base_ori
+        origin_pos = base_pos + 75.0 * base_vel
+        origin_ori = base_ori
 
         for arm in self.arms:
-            self.controllers[arm].update_origin(ref_pos, ref_ori)
+            self.controllers[arm].update_origin(origin_pos, origin_ori)
