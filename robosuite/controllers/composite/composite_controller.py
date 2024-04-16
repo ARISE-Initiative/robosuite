@@ -79,10 +79,19 @@ class CompositeController:
         else:
             return self.controllers[part_name].control_dim
 
+    def get_base_pose(self):
+        naming_prefix = self.controllers["right"].naming_prefix
+        part_name = self.controllers["right"].part_name
+        base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{naming_prefix}{part_name}_center")])
+        base_ori = np.array(
+            self.sim.data.site_xmat[self.sim.model.site_name2id(f"{naming_prefix}{part_name}_center")].reshape([3, 3])
+        )
+        return base_pos, base_ori
+
     def update_state(self):
-        base_pos, base_ori = self.controllers["base"].get_base_pose()
+        base_pos, base_ori = self.get_base_pose()
         for arm in self.arms:
-            self.controllers[arm].update_ref_frame(base_pos, base_ori)
+            self.controllers[arm].update_origin(base_pos, base_ori)
 
     def get_controller(self, part_name):
         return self.controllers[part_name]

@@ -19,7 +19,7 @@ class FloatingRobotController(CompositeController):
         self.base_pose_history = deque(maxlen=20)
 
     def update_state(self):
-        base_pos, base_ori = self.controllers["base"].get_base_pose()
+        base_pos, base_ori = self.get_base_pose()
         self.base_pose_history.extend([(base_pos, base_ori)])
 
         # compute origin_position
