@@ -384,14 +384,16 @@ class OperationalSpaceController(Controller):
 
         # Compute desired force and torque based on errors
         position_error = desired_pos - self.ee_pos
-        vel_pos_error = -self.ee_pos_vel
+        base_pos_vel = np.array(self.sim.data.get_site_xvelp(f"{self.naming_prefix}{self.part_name}_center"))
+        vel_pos_error = -(self.ee_pos_vel - base_pos_vel)
 
         # F_r = kp * pos_err + kd * vel_err
         desired_force = np.multiply(np.array(position_error), np.array(self.kp[0:3])) + np.multiply(
             vel_pos_error, self.kd[0:3]
         )
 
-        vel_ori_error = -self.ee_ori_vel
+        base_ori_vel = np.array(self.sim.data.get_site_xvelr(f"{self.naming_prefix}{self.part_name}_center"))
+        vel_ori_error = -(self.ee_ori_vel - base_ori_vel)
 
         # Tau_r = kp * ori_err + kd * vel_err
         desired_torque = np.multiply(np.array(ori_error), np.array(self.kp[3:6])) + np.multiply(
