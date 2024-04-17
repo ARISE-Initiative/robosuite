@@ -44,7 +44,7 @@ class WheeledRobot(MobileBaseRobot):
         # Flag for loading urdf once (only applicable for IK controllers)
 
         self.composite_controller = composite_controller_factory(
-            "FLOATING_ROBOT_CONTROLLER",
+            "BASE",
             self.sim,
             self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
