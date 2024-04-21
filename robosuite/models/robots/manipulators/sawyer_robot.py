@@ -11,6 +11,7 @@ class Sawyer(ManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+
     arms = ["right"]
 
     def __init__(self, idn=0):

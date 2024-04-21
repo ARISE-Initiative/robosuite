@@ -7,6 +7,7 @@ from robosuite.utils.control_utils import *
 
 # Supported impedance modes
 
+
 class SimpleGripController(GripperController):
     """
     Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
@@ -93,7 +94,6 @@ class SimpleGripController(GripperController):
         # limits
         self.position_limits = np.array(qpos_limits) if qpos_limits is not None else qpos_limits
 
-
         # control frequency
         self.control_freq = policy_freq
 
@@ -102,7 +102,6 @@ class SimpleGripController(GripperController):
 
         # initialize
         self.goal_qvel = None
-
 
     def set_goal(self, action, set_qpos=None):
         """
@@ -196,7 +195,7 @@ class SimpleGripController(GripperController):
                 - (np.array) minimum action values
                 - (np.array) maximum action values
         """
-        return  self.input_min, self.input_max
+        return self.input_min, self.input_max
 
     @property
     def name(self):

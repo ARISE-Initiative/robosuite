@@ -3,6 +3,7 @@ import numpy as np
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
+
 class Z1Gripper(GripperModel):
     """
     Gripper for Franka's Panda (has two fingers).
@@ -22,7 +23,4 @@ class Z1Gripper(GripperModel):
 
     @property
     def _important_geoms(self):
-        return {
-            "stator": ["stator_col"],
-            "mover": ["mover_col"]
-        }
+        return {"stator": ["stator_col"], "mover": ["mover_col"]}

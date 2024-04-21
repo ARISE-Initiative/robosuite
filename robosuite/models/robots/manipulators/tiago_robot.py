@@ -11,7 +11,9 @@ class Tiago(ManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+
     arms = ["right", "left"]
+
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/tiago/robot.xml"), idn=idn)
 
@@ -54,8 +56,25 @@ class Tiago(ManipulatorModel):
         # [right, left]
         # Arms half extended
         return np.array(
-            [0, 0, 0, 0.952475, -0.944335, 2.91383, 1.84749, 1.8846, -0.5656, 0.60885, -0.46326, 1.90067, 1.84749, 0.75384, 2.4]
+            [
+                0,
+                0,
+                0,
+                0.952475,
+                -0.944335,
+                2.91383,
+                1.84749,
+                1.8846,
+                -0.5656,
+                0.60885,
+                -0.46326,
+                1.90067,
+                1.84749,
+                0.75384,
+                2.4,
+            ]
         )
+
     @property
     def base_xpos_offset(self):
         return {

@@ -26,7 +26,8 @@ class B1(LegBaseModel):
     @property
     def init_qpos(self):
         return np.array([0.0, 0.9, -1.8] * 4)
-    
+
+
 class B1Floating(LegBaseModel):
     """
     Rethink's Generic Mount (Officially used on Baxter).

@@ -1,4 +1,5 @@
 import abc
+
 import numpy as np
 
 import robosuite.utils.transform_utils as T
@@ -19,6 +20,7 @@ class Interpolator(object, metaclass=abc.ABCMeta):
             np.array: Next interpolated step
         """
         raise NotImplementedError
+
 
 class LinearInterpolator(Interpolator):
     """

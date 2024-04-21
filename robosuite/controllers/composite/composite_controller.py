@@ -8,12 +8,14 @@ from robosuite.controllers import controller_factory, load_controller_config
 class CompositeController:
     """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
 
-    def __init__(self, sim, robot_model, grippers) -> None:
+    def __init__(self, sim, robot_model, grippers, lite_physics=False):
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
 
         self.grippers = grippers
+
+        self.lite_physics = lite_physics
 
         self.controllers = OrderedDict()
 
@@ -50,7 +52,8 @@ class CompositeController:
             previous_idx = last_idx
 
     def set_goal(self, all_action):
-        # self.sim.forward()
+        if not self.lite_physics:
+            self.sim.forward()
 
         for part_name, controller in self.controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
@@ -64,7 +67,8 @@ class CompositeController:
             controller.reset_goal()
 
     def run_controller(self, enabled_parts):
-        # self.sim.forward()
+        if not self.lite_physics:
+            self.sim.forward()
         self.update_state()
         self._applied_action_dict.clear()
         for part_name, controller in self.controllers.items():
@@ -79,9 +83,9 @@ class CompositeController:
         else:
             return self.controllers[part_name].control_dim
 
-    def get_base_pose(self):
-        naming_prefix = self.controllers["right"].naming_prefix
-        part_name = self.controllers["right"].part_name
+    def get_controller_base_pose(self, controller_name):
+        naming_prefix = self.controllers[controller_name].naming_prefix
+        part_name = self.controllers[controller_name].part_name
         base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{naming_prefix}{part_name}_center")])
         base_ori = np.array(
             self.sim.data.site_xmat[self.sim.model.site_name2id(f"{naming_prefix}{part_name}_center")].reshape([3, 3])
@@ -89,8 +93,8 @@ class CompositeController:
         return base_pos, base_ori
 
     def update_state(self):
-        base_pos, base_ori = self.get_base_pose()
         for arm in self.arms:
+            base_pos, base_ori = self.get_controller_base_pose(controller_name=arm)
             self.controllers[arm].update_origin(base_pos, base_ori)
 
     def get_controller(self, part_name):

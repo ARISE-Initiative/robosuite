@@ -1,12 +1,12 @@
 """
 Defines the base class of all mobile bases
 """
-import numpy as np
-
 from xml.etree import ElementTree as ET
 
+import numpy as np
+
 from robosuite.models.base import MujocoXMLModel
-from robosuite.utils.mjcf_utils import MOUNT_COLLISION_COLOR, find_parent, find_elements
+from robosuite.utils.mjcf_utils import MOUNT_COLLISION_COLOR, find_elements, find_parent
 
 
 class LegBaseModel(MujocoXMLModel):
@@ -97,7 +97,6 @@ class LegBaseModel(MujocoXMLModel):
         """
         raise NotImplementedError
 
-
     def _remove_joint_actuation(self, part_name):
         for joint in self.worldbody.findall(".//joint"):
             if part_name in joint.get("name"):
@@ -116,7 +115,7 @@ class LegBaseModel(MujocoXMLModel):
             find_parent(self.worldbody, freejoint).remove(freejoint)
 
     def _add_mobile_joint(self):
-        """This is a special processing of leg base, which converts leg bases into floating ones without users to manually modify the xml file. """
+        """This is a special processing of leg base, which converts leg bases into floating ones without users to manually modify the xml file."""
 
         # Define the dictionary representing the attributes of the tag
         forward_joint_attributes = {
@@ -127,7 +126,7 @@ class LegBaseModel(MujocoXMLModel):
             "limited": "false",
             "damping": "0",
             "armature": "0.0",
-            "frictionloss": "250"
+            "frictionloss": "250",
         }
 
         side_joint_attributes = {
@@ -138,7 +137,7 @@ class LegBaseModel(MujocoXMLModel):
             "limited": "false",
             "damping": "0",
             "armature": "0.0",
-            "frictionloss": "250"
+            "frictionloss": "250",
         }
 
         yaw_joint_attributes = {
@@ -149,14 +148,13 @@ class LegBaseModel(MujocoXMLModel):
             "limited": "false",
             "damping": "0",
             "armature": "0.0",
-            "frictionloss": "250"
+            "frictionloss": "250",
         }
 
         # Create the root element
         forward_joint = ET.Element("joint")
         side_joint = ET.Element("joint")
         yaw_joint = ET.Element("joint")
-
 
         # Set the attributes of the root element from the dictionary
         for key, value in forward_joint_attributes.items():

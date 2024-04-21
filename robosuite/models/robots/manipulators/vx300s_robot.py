@@ -11,6 +11,7 @@ class VX300S(ManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+
     arms = ["right"]
 
     def __init__(self, idn=0):
@@ -31,7 +32,6 @@ class VX300S(ManipulatorModel):
         """
         return {"right": "AlohaGripper"}
         # return {"right": "RethinkGripper", "left": "RethinkGripper"}
-    
 
     @property
     def default_controller_config(self):
@@ -56,9 +56,7 @@ class VX300S(ManipulatorModel):
         """
         # [right, left]
         # Arms half extended
-        return np.array(
-            [0, -0.840225, 0.847975, -0.1571, 1.53683, 0]
-        )
+        return np.array([0, -0.840225, 0.847975, -0.1571, 1.53683, 0])
 
     @property
     def base_xpos_offset(self):

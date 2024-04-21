@@ -30,7 +30,6 @@ class Aloha(ManipulatorModel):
         """
         return {"right": "AlohaGripper", "left": "AlohaGripper"}
         # return {"right": "RethinkGripper", "left": "RethinkGripper"}
-    
 
     @property
     def default_controller_config(self):
@@ -55,9 +54,7 @@ class Aloha(ManipulatorModel):
         """
         # [right, left]
         # Arms half extended
-        return np.array(
-            [0, -0.840225, 0.847975, -0.1571, 1.53683, 0, 0, -0.560595, 0.578455, 0.1571, 1.49582, 0]
-        )
+        return np.array([0, -0.840225, 0.847975, -0.1571, 1.53683, 0, 0, -0.560595, 0.578455, 0.1571, 1.49582, 0])
 
     @property
     def base_xpos_offset(self):

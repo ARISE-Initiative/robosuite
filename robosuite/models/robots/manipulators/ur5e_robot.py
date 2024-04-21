@@ -25,7 +25,7 @@ class UR5e(ManipulatorModel):
 
     @property
     def default_controller_config(self):
-        return {"right" : "default_ur5e"}
+        return {"right": "default_ur5e"}
 
     @property
     def init_qpos(self):

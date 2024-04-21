@@ -1,7 +1,7 @@
 import numpy as np
 
 from robosuite.models.robots.manipulators.legged_manipulator_model import LeggedManipulatorModel
-from robosuite.utils.mjcf_utils import xml_path_completion, find_parent
+from robosuite.utils.mjcf_utils import find_parent, xml_path_completion
 
 
 class GR1(LeggedManipulatorModel):
@@ -11,7 +11,9 @@ class GR1(LeggedManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+
     arms = ["right", "left"]
+
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/gr1/robot.xml"), idn=idn)
 
@@ -106,9 +108,11 @@ class GR1FixedLowerBody(GR1):
         """
         init_qpos = np.array([0.0] * 20)
         return init_qpos
+
     @property
     def default_base(self):
         return "NoActuationBase"
+
 
 class GR1FloatingBody(GR1):
     def __init__(self, idn=0):
@@ -134,6 +138,7 @@ class GR1FloatingBody(GR1):
         left_arm_init = np.array([0.0, -0.2, -0.189, 1.06, -0.581, 0.0, 0.0])
         init_qpos[13:20] = left_arm_init
         return init_qpos
+
     @property
     def default_base(self):
         return "FloatingLeggedBase"
@@ -142,9 +147,10 @@ class GR1FloatingBody(GR1):
     def base_xpos_offset(self):
         return {
             "bins": (-0.5, -0.1, 0.97),
-            "empty": (-0.29, 0,  0.97),
+            "empty": (-0.29, 0, 0.97),
             "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.97),
         }
+
 
 class GR1ArmsOnly(GR1):
     def __init__(self, idn=0):

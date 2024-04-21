@@ -13,6 +13,7 @@ from robosuite.models.robots import create_robot
 from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -330,7 +331,7 @@ class Robot(object):
             zip(self.sim.data.qpos[self._ref_joint_pos_indexes], self.sim.model.jnt_range[self._ref_joint_indexes])
         ):
             if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
-                print("Joint limit reached in joint " + str(qidx))
+                ROBOSUITE_DEFAULT_LOGGER.warn("Joint limit reached in joint " + str(qidx))
                 return True
         return False
 
@@ -760,15 +761,15 @@ class Robot(object):
         full_action_vector = np.zeros(self.action_dim)
         for (part_name, action_vector) in action_dict.items():
             if part_name not in self._action_split_indexes:
-                print(f"{part_name} is not specified in the action space")
+                ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
                 continue
             start_idx, end_idx = self._action_split_indexes[part_name]
             if end_idx - start_idx == 0:
                 # skipping not controlling actions
                 continue
-            assert len(action_vector) == (
-                end_idx - start_idx
-            ), f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
+            assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
+                f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
+            )
             full_action_vector[start_idx:end_idx] = action_vector
         return full_action_vector
 
@@ -780,10 +781,10 @@ class Robot(object):
             action_index_info.append(f"{part_name}: {start_idx}:{end_idx}")
 
         action_dim_info_str = ", ".join(action_dim_info)
-        print(f"[{action_dim_info_str}]")
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Dimensions: [{action_dim_info_str}]")
 
         action_index_info_str = ", ".join(action_index_info)
-        print(f"[{action_index_info_str}]")
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
 
     def get_gripper_name(self, arm):
         return f"{arm}_gripper"

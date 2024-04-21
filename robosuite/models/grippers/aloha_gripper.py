@@ -29,7 +29,7 @@ class AlohaGripperBase(GripperModel):
     def _important_geoms(self):
         return {
             "left_finger": ["left_finger_g0", "left_finger_g1", "left_finger_g2", "left_finger_g3"],
-            "right_finger": ["right_finger_g0", "right_finger_g1", "right_finger_g2", "right_finger_g3"],            
+            "right_finger": ["right_finger_g0", "right_finger_g1", "right_finger_g2", "right_finger_g3"],
             "left_fingerpad": ["left_finger_g4"],
             "right_fingerpad": ["right_finger_g4"],
         }

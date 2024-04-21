@@ -1,7 +1,7 @@
 import numpy as np
 
 from robosuite.models.robots.manipulators.legged_manipulator_model import LeggedManipulatorModel
-from robosuite.utils.mjcf_utils import xml_path_completion, find_parent
+from robosuite.utils.mjcf_utils import find_parent, xml_path_completion
 
 
 class H1(LeggedManipulatorModel):
@@ -11,7 +11,9 @@ class H1(LeggedManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+
     arms = ["right", "left"]
+
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/h1/robot.xml"), idn=idn)
 
@@ -107,9 +109,11 @@ class H1FixedLowerBody(H1):
         """
         init_qpos = np.array([0.0] * 9)
         return init_qpos
+
     @property
     def default_base(self):
         return "NoActuationBase"
+
 
 class H1FloatingBody(H1):
     def __init__(self, idn=0):
@@ -131,9 +135,11 @@ class H1FloatingBody(H1):
         """
         init_qpos = np.array([0.0] * 9)
         return init_qpos
+
     @property
     def default_base(self):
         return "FloatingLeggedBase"
+
 
 class H1ArmsOnly(H1):
     def __init__(self, idn=0):

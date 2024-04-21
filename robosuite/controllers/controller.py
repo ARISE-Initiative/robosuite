@@ -106,6 +106,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.initial_ref_pos = self.ref_pos
         self.initial_ref_ori_mat = self.ref_ori_mat
 
+        self.origin_pos = None
+        self.origin_ori = None
+
     @abc.abstractmethod
     def run_controller(self):
         """
@@ -188,6 +191,19 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         """
         raise NotImplementedError
+
+    def update_origin(self, origin_pos, origin_ori):
+        """
+        Optional function to implement in subclass controllers that will take in @origin_pos and @origin_ori and update
+        internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
+        is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
+
+        Args:
+            origin_pos (3-tuple): x,y,z position of controller reference in mujoco world coordinates
+            origin_ori (np.array): 3x3 rotation matrix orientation of controller reference in mujoco world coordinates
+        """
+        self.origin_pos = origin_pos
+        self.origin_ori = origin_ori
 
     def update_initial_joints(self, initial_joints):
         """

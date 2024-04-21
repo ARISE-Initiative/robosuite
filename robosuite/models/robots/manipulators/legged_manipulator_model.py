@@ -19,7 +19,6 @@ class LeggedManipulatorModel(ManipulatorModel):
         # Always run super init first
         super().__init__(fname, idn=idn)
 
-
     def _remove_joint_actuation(self, part_name):
         for joint in self.worldbody.findall(".//joint"):
             if part_name in joint.get("name"):
@@ -37,12 +36,10 @@ class LeggedManipulatorModel(ManipulatorModel):
                 parent_body.remove(motor)
                 self._actuators.remove(motor.get("name").replace(self.naming_prefix, ""))
 
-
     def _remove_free_joint(self):
         # remove freejoint
         for freejoint in self.worldbody.findall(".//freejoint"):
             find_parent(self.worldbody, freejoint).remove(freejoint)
-
 
     @property
     def legs_joints(self):
