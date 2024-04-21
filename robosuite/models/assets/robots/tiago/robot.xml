@@ -168,6 +168,9 @@
                                     <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="head_1"/>
                                     <geom type="mesh" material="White" name="head_1_collision" group="0" friction="1 0 0" mesh="head_1_collision"/>
                                     <body name="head_2_link" pos="0.005 0.0 0.098" euler="1.57079632679 0 0">
+                                        <!-- Note: the quaternion of the camera is in its own canonical camera frame. The z axis is the focal direction -->
+                                        <camera mode="fixed" name="robotview" pos="0.07 0 0" quat="0.7071067811865476 0.0 -0.7071067811865475 0.0" />
+
                                         <joint name="head_2_joint" type="hinge" limited="true" axis="0 0 1" damping="20" range="-1.0471975512 0.785398163397"/>
                                         <inertial pos="0.04700 0.05542 0.00022" mass="0.66123" diaginertia="0.4 0.4 0.4"/>
                                         <geom type="mesh" material="White" contype="0" conaffinity="0" group="1" mesh="head_2"/>
