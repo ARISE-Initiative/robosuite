@@ -1,0 +1,25 @@
+name: 지속적 통합(CI, Continuous Integration)
+description: CI 설정파일이나 스크립트 변경
+title: "[CI] "
+labels: ["🚀 devops"]
+body:
+- type: textarea
+  attributes:
+    label: 설명
+    description: CI/CD 시스템에 무엇을 변경해야 하고 왜 변경해야하는지 이유를 설명해주세요.
+    placeholder: |
+      1. ...를 변경하였고, ...를 추가하였습니다.
+      2. 이 작업은 ...를 위한 작업입니다.
+      3. ...
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 제약 사항
+    description: 이 이슈를 해결 할 때 제약 사항을 적어 주세요, 그 제약 사항을 지키면서 이슈를 해결해야 합니다.
+    placeholder: |
+      1. 이전처럼 CI가 문제없이 통과되어야 합니다.
+      2. 이전처럼 CD가 문제없이 통과되어야 합니다.
+      3. ...
+  validations:
+    required: false

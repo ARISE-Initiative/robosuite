@@ -1,0 +1,36 @@
+- color: b60205
+  description: "API 변경 등 급격한 변화로 다른 사람의 작업에 영향을 줄 수 있는 내용입니다. 사용할 때 기본 라벨에 옆에 추가하는 것을 추천합니다."
+  name: "❗ breaking"
+- color: d73a4a 
+  description: "발견한 버그를 보고합니다."
+  name: "🐞 bug"
+- color: d73a4a
+  description: "버그를 수정합니다. (PR에서 사용합니다.)"
+  name: "🚑 fix"
+- color: 8fb6e6 
+  description: "기능을 구현합니다."
+  name: "✨ feat"
+- color: f29a4e 
+  description: "코드 내부 동작을 변경합니다."
+  name: "🔨 refactor"
+- color: 1d76db
+  description: "문서를 추가하거나 수정합니다."
+  name: "📃 docs"
+- color: e4dede
+  description: "코드와 관련되지 않은 일을(ex. 환경설정 etc.) 설정합니다."
+  name: "🧹 chore"
+- color: ccffc4
+  description: "테스트 코드를 작성합니다."
+  name: "✅ test"
+- color: 9ed447
+  description: "토론 내용을 공식적으로 문서화하기 위한 이슈, 토론이 종료된 경우 이슈를 종료합니다."
+  name: "💬 discussion"
+- color: c2e0c6
+  description: "DevOps 관련된 내용을 설정합니다. (GitHub Action, Circle CI, Docker etc.)"
+  name: "🚀 devops"
+- color: 96b110
+  description: "보안 관련 일을 작업합니다."
+  name: "🔒 security"
+- color: 5319e7
+  description: "코드 의미를 바꾸지 않는 요소를 변겅합니다. (빈칸, 포맷팅, 마지막 쉼표 etc.)"
+  name: "💄 style"

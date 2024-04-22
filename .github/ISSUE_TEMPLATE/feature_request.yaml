@@ -1,0 +1,31 @@
+name: 기능 추가(Feature Request)
+description: 프로젝트에 추가될 새 기능
+title: "[Feat] "
+labels: ["✨ feat"]
+body:
+- type: textarea
+  attributes:
+    label: 설명
+    description: 어떠한 기능이 추가될지 명확히 설명해주세요. 이해를 도울 수 있는 문맥을 추가 할수록 더 좋습니다.
+    placeholder: |
+      1. ...의 기능이 추가 되면 좋을 것 같습니다.
+      2. ...의 기능이 필요합니다.
+      3. ...
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 제약 사항
+    description: 이 이슈를 해결 할 때 제약 사항을 적어 주세요, 그 제약 사항을 지키면서 이슈를 해결해야 합니다.
+    placeholder: |
+      1. 해당 기능을 작성 할 때 ... 파일이 수정되면 안됩니다.
+      2. 해당 기능을 작성 할 때 외부 라이브러리 사용을 최소화 해야 합니다.
+      3. ...
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: 추가 내용
+    description: 기능에 대한 추가적인 문맥이나, 스크린샷은 여기 추가해주세요.
+  validations:
+    required: false

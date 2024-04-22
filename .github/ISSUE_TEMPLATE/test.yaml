@@ -1,0 +1,24 @@
+name: 테스트(Test)
+description: 테스트 추가 및 기존 테스트 변경
+title: "[Test] "
+labels: ["✅ test"]
+body:
+- type: textarea
+  attributes:
+    label: 설명
+    description: 추가되거나 변경된 테스트 목록을 작성해주세요. 또한, 왜 이러한 테스트가 포함되어야 하는지 작성해주세요.
+    placeholder: |
+      1. ... 테스트 코드가 추가되었습니다.
+      2. 이 테스트 코드는 return이 ... 값이 아닐 때 발생합니다.
+      3. ...
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 제약 사항
+    description: 이 이슈를 해결 할 때 제약 사항을 적어 주세요, 그 제약 사항을 지키면서 이슈를 해결해야 합니다.
+    placeholder: |
+      1. Test Coverage가 떨어지지 않아야 합니다.
+      2. ...
+  validations:
+    required: false

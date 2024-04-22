@@ -1,0 +1,26 @@
+name: 리팩토링(Refactoring)
+description: Bug를 고치거나, 기능을 추가한 것이 아닌 코드 변경
+title: "[Refactor] "
+labels: ["🔨 refactor"]
+body:
+- type: textarea
+  attributes:
+    label: 설명
+    description: 무엇을 리팩토링 해야하고, 왜 해야하는지 설명해주세요. 우선순위를 정하기 위해 연관있는 issue 를 연결하면 더욱 좋습니다.
+    placeholder: |
+      1. ...의 기능은 추후 버전 업데이트가 될 때 사라집니다. 이에 대비해서 다른 메소드를 써야합니다.
+      2. ...의 기능은 아키텍처를 손상시킵니다.
+      3. ... 메소드는 개선된 메소드로 대체 될 수 있습니다.
+      4. ...
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 제약 사항
+    description: 이 이슈를 해결 할 때 제약 사항을 적어 주세요, 그 제약 사항을 지키면서 이슈를 해결해야 합니다.
+    placeholder: |
+      1. Test Coverage가 떨어지지 않아야 합니다.
+      2. 리팩토링 된 코드에 대해 충분한 테스트가 이뤄져야 합니다.
+      3. ...
+  validations:
+    required: false
