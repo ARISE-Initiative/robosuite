@@ -27,6 +27,7 @@ class LeggedRobot(MobileBaseRobot):
         base_type="default",
         gripper_type="default",
         control_freq=20,
+        lite_physics=False,
     ):
         super().__init__(
             robot_type=robot_type,
@@ -37,6 +38,7 @@ class LeggedRobot(MobileBaseRobot):
             base_type=base_type,
             gripper_type=gripper_type,
             control_freq=control_freq,
+            lite_physics=lite_physics,
         )
 
     def _load_leg_controllers(self):
@@ -77,6 +79,7 @@ class LeggedRobot(MobileBaseRobot):
             self.sim,
             self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
+            lite_physics=self.lite_physics,
         )
 
         self._load_arm_controllers()

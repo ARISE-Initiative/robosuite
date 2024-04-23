@@ -69,6 +69,7 @@ class JointVelocityController(Controller):
         output_min=-1,
         kp=0.25,
         policy_freq=20,
+        lite_physics=False,
         velocity_limits=None,
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
@@ -81,6 +82,7 @@ class JointVelocityController(Controller):
             actuator_range=actuator_range,
             part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
+            lite_physics=lite_physics,
         )
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])

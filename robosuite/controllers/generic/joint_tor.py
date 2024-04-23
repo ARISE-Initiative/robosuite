@@ -67,6 +67,7 @@ class JointTorqueController(Controller):
         output_max=0.05,
         output_min=-0.05,
         policy_freq=20,
+        lite_physics=False,
         torque_limits=None,
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
@@ -79,6 +80,7 @@ class JointTorqueController(Controller):
             actuator_range=actuator_range,
             part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
+            lite_physics=lite_physics,
         )
 
         # Control dimension

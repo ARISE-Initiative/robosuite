@@ -99,6 +99,7 @@ class JointPositionController(Controller):
         kp_limits=(0, 300),
         damping_ratio_limits=(0, 100),
         policy_freq=20,
+        lite_physics=False,
         qpos_limits=None,
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
@@ -111,6 +112,7 @@ class JointPositionController(Controller):
             actuator_range=actuator_range,
             part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
+            lite_physics=lite_physics,
         )
 
         # Control dimension

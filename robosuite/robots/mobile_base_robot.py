@@ -24,6 +24,7 @@ class MobileBaseRobot(Robot):
         base_type="default",
         gripper_type="default",
         control_freq=20,
+        lite_physics=False,
     ):
         super().__init__(
             robot_type=robot_type,
@@ -34,6 +35,7 @@ class MobileBaseRobot(Robot):
             base_type=base_type,
             gripper_type=gripper_type,
             control_freq=control_freq,
+            lite_physics=lite_physics,
         )
 
     def _load_controller(self):
@@ -60,6 +62,7 @@ class MobileBaseRobot(Robot):
         self.controller_config[self.base]["naming_prefix"] = self.robot_model.base.naming_prefix
         self.controller_config[self.base]["ndim"] = self._joint_split_idx
         self.controller_config[self.base]["policy_freq"] = self.control_freq
+        self.controller_config[self.base]["lite_physics"] = self.lite_physics
 
         ref_base_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.base_joints]
         ref_base_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.base_joints]
@@ -93,6 +96,7 @@ class MobileBaseRobot(Robot):
         self.controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
         self.controller_config[self.torso]["ndim"] = self._joint_split_idx
         self.controller_config[self.torso]["policy_freq"] = self.control_freq
+        self.controller_config[self.torso]["lite_physics"] = self.lite_physics
 
         ref_torso_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.torso_joints]
         ref_torso_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.torso_joints]
