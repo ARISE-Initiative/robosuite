@@ -6,7 +6,7 @@ from robosuite.utils.mjcf_utils import xml_path_completion
 
 class RB3(ManipulatorModel):
     """
-    Panda is a sensitive single-arm robot designed by Franka.
+    RB3_730es_u by Rainbow Robots
 
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
@@ -15,25 +15,21 @@ class RB3(ManipulatorModel):
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/rb3/robot.xml"), idn=idn)
 
-        # Set joint damping
-        self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
-
     @property
     def default_mount(self):
         return "RethinkMount"
 
     @property
     def default_gripper(self):
-        return "PandaGripper"
+        return "Robotiq85Gripper"
 
     @property
     def default_controller_config(self):
-        return "default_panda"
+        return "default_rb3"
 
     @property
     def init_qpos(self):
-        return np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, np.pi / 4])
-
+        return np.array([np.pi, 0, -np.pi/2, 0, -np.pi/2, 0])
 
     @property
     def base_xpos_offset(self):
