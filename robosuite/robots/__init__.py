@@ -15,6 +15,7 @@ ROBOT_CLASS_MAPPING = {
     "Panda": SingleArm,
     "Sawyer": SingleArm,
     "UR5e": SingleArm,
+    "RB3": SingleArm,
 }
 
 BIMANUAL_ROBOTS = {k.lower() for k, v in ROBOT_CLASS_MAPPING.items() if v == Bimanual}
