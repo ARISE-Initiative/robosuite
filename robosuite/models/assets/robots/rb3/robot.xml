@@ -18,26 +18,7 @@
       <material specular="0.5" shininess="0.25" />
       <joint axis="0 1 0" range="-6.28319 6.28319" armature="0.1" />
       <general biastype="affine" ctrlrange="-6.2831 6.2831" gainprm="5000" biasprm="0 -5000 -500"/>
-      <default class="size3">
-        <default class="size3_limited">
-          <joint range="-3.1415 3.1415" />
-          <general ctrlrange="-3.1415 3.1415" />
-        </default>
-        <joint damping="10"/>
-        <general forcerange="-1000 1000"/>
-      </default>
-      <default class="size1">
-        <general gainprm="500" biasprm="0 -500 -100" forcerange="-28 28" />
-      </default>
-      <default class="visual">
-        <geom type="mesh" contype="0" conaffinity="0" group="2" />
-      </default>
-      <default class="collision">
-        <geom type="capsule" group="3" />
-        <default class="eef_collision">
-          <geom type="cylinder" />
-        </default>
-      </default>
+      
       <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
     </default>
   </default>
@@ -113,12 +94,12 @@
   
   
   <actuator>
-    <general class="size3" name="base" joint="base" />
-    <general class="size3" name="shoulder" joint="shoulder" />
-    <general class="size3_limited" name="elbow" joint="elbow" />
-    <general class="size1" name="wrist1" joint="wrist1" />
-    <general class="size1" name="wrist2" joint="wrist2" />
-    <general class="size1" name="wrist3" joint="wrist3" />
+    <motor ctrllimited="true" ctrlrange="-150.0 150.0" name="base" joint="base" />
+    <motor ctrllimited="true" ctrlrange="-150.0 150.0" name="shoulder" joint="shoulder" />
+    <motor ctrllimited="true" ctrlrange="-150.0 150.0" name="elbow" joint="elbow" />
+    <motor ctrllimited="true" ctrlrange="-28.0 28.0" name="wrist1" joint="wrist1" />
+    <motor ctrllimited="true" ctrlrange="-28.0 28.0" name="wrist2" joint="wrist2" />
+    <motor ctrllimited="true" ctrlrange="-28.0 28.0" name="wrist3" joint="wrist3" />
   </actuator>
 
 
