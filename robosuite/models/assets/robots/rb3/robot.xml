@@ -2,6 +2,15 @@
 
   <option integrator="implicitfast" />
 
+  <actuator>
+    <motor ctrllimited="true" ctrlrange="-150.0 150.0" joint="shoulder_pan_joint" name="torq_j1" />
+    <motor ctrllimited="true" ctrlrange="-150.0 150.0" joint="shoulder_lift_joint" name="torq_j2" />
+    <motor ctrllimited="true" ctrlrange="-150.0 150.0" joint="elbow_joint" name="torq_j3" />
+    <motor ctrllimited="true" ctrlrange="-28.0 28.0" joint="wrist1_joint" name="torq_j4" />
+    <motor ctrllimited="true" ctrlrange="-28.0 28.0" joint="wrist2_joint" name="torq_j5" />
+    <motor ctrllimited="true" ctrlrange="-28.0 28.0" joint="wrist3_joint" name="torq_j6" />
+  </actuator>
+
   <asset>
     <mesh name="link0" file="meshes/link0.stl"/>
     <mesh name="link1" file="meshes/link1.stl"/>
@@ -32,37 +41,36 @@
 
     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link0"/>
     <geom type="mesh" mesh="link0"/>
-    <body name="link1" pos="0 0 0.1453">
+    <body name="link1" pos="0 0 0.1484">  <!-- 0.1453 was the original value -->
       <inertial pos="0.000101 -0.003241 -0.017587" mass="2.058" diaginertia="0.003 0.003 0.002"/>
-      <joint name="base" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14 3.14"/>
+      <joint name="shoulder_pan_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01"/>
       <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link1"/>
       <geom type="mesh" mesh="link1"/>
       <body name="link2">
         <inertial pos="-4.9e-05 -0.095326 0.121743" mass="4.227" diaginertia="0.075 0.073 0.005"/>
-        <joint name="shoulder" pos="0 0 0" axis="0 1 0" limited="true" range="-3.14 3.14"/>
+        <joint name="shoulder_lift_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01"/>
         <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link2"/>
         <geom type="mesh" mesh="link2"/>
         <body name="link3" pos="0 -0.00645 0.286">
           <inertial pos="0 -0.004 0.026" mass="1.45" diaginertia="0.002 0.002 0.001"/>
-          <joint name="elbow" pos="0 0 0" axis="0 1 0" limited="true" range="-3.14 3.14"/>
+          <joint name="elbow_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01"/>
           <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link3"/>
           <geom type="mesh" mesh="link3"/>
           <body name="link4">
             <inertial pos="0 -0.065 0.264" quat="0.992508 0.122183 0 0" mass="1.798" diaginertia="0.02 0.019 0.002"/>
-            <joint name="wrist1" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14 3.14"/>
+            <joint name="wrist1_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link4"/>
             <geom type="mesh" mesh="link4"/>
             <body name="link5" pos="0 0 0.344">
               <inertial pos="0 -0.001 0.017" quat="0.829513 -0.0210279 0.0255432 0.557507" mass="0.944" diaginertia="0.000789998 0.000774598 0.000513916"/>
-              <joint name="wrist2" pos="0 0 0" axis="0 1 0" limited="true" range="-3.14 3.14"/>
+              <joint name="wrist2_joint" pos="0 0 0" axis="0 1 0" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01"/>
               <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link5"/>
               <geom type="mesh" mesh="link5"/>
               <body name="link6">
                 <inertial pos="-0.001 -0.001 0.068" quat="0.523579 0.501214 -0.49427 0.479945" mass="0.05" diaginertia="3.52563e-05 2.62915e-05 1.68733e-05"/>
-                <joint name="wrist3" pos="0 0 0" axis="0 0 1" limited="true" range="-3.14 3.14"/>
+                <joint name="wrist3_joint" pos="0 0 0" axis="0 0 1" limited="true" range="-6.28319 6.28319" damping="0.001" frictionloss="0.01"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link6"/>
                 <geom type="mesh" mesh="link6"/>
-
 
                 <body name="right_hand" pos="0 0 0.107" quat="-0.707108 0 0 -0.707108"> <!-- euler 0 0 -1.57 to quat -->
                   <!-- This sites were added for visualization. They are all standardized between models-->
@@ -81,8 +89,8 @@
             </body> <!-- end of link5 -->
           </body> <!-- end of link4 -->
         </body> <!-- end of link3 -->
-      </body> <!-- end of link2 -->
-    </body>  <!-- end of link1 -->
+      </body>  <!-- end of link2 -->
+    </body> <!-- end of link1 -->
   </body> <!-- end of base -->
   </worldbody>
 
@@ -92,15 +100,5 @@
   </sensor>
 
   
-  
-  <actuator>
-    <motor ctrllimited="true" ctrlrange="-150.0 150.0" name="base" joint="base" />
-    <motor ctrllimited="true" ctrlrange="-150.0 150.0" name="shoulder" joint="shoulder" />
-    <motor ctrllimited="true" ctrlrange="-150.0 150.0" name="elbow" joint="elbow" />
-    <motor ctrllimited="true" ctrlrange="-28.0 28.0" name="wrist1" joint="wrist1" />
-    <motor ctrllimited="true" ctrlrange="-28.0 28.0" name="wrist2" joint="wrist2" />
-    <motor ctrllimited="true" ctrlrange="-28.0 28.0" name="wrist3" joint="wrist3" />
-  </actuator>
-
 
 </mujoco>
