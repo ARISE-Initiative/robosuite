@@ -176,8 +176,6 @@ class WheeledRobot(MobileBaseRobot):
                 sensors (list): Array of sensors for the given arm
                 names (list): array of corresponding observable names
         """
-        pf = self.robot_model.naming_prefix
-
         # eef features
         @sensor(modality=modality)
         def eef_pos(obs_cache):
@@ -189,10 +187,51 @@ class WheeledRobot(MobileBaseRobot):
 
         @sensor(modality=modality)
         def base_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("mobile_base0_center")])
+            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("base0_center")])
 
-        sensors = [eef_pos, eef_quat, base_pos]
-        names = [f"{pf}{arm}_eef_pos", f"{pf}{arm}_eef_quat", f"{pf}base_pos"]
+        @sensor(modality=modality)
+        def base_quat(obs_cache):
+            return T.mat2quat(self.sim.data.get_site_xmat("base0_center"))
+
+        @sensor(modality=modality)
+        def base_to_eef_pos(obs_cache):
+            eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+            base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("base0_center")])
+
+            eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+            eef_mat = T.quat2mat(eef_quat)
+            base_mat = self.sim.data.get_site_xmat("base0_center")
+
+            T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
+            T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))
+            T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
+            base_to_eef_pos = T_AB[:3, 3]
+            return base_to_eef_pos
+
+        @sensor(modality=modality)
+        def base_to_eef_quat(obs_cache):
+            eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+            base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("base0_center")])
+
+            eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+            eef_mat = T.quat2mat(eef_quat)
+            base_mat = self.sim.data.get_site_xmat("base0_center")
+
+            T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
+            T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))
+            T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
+            base_to_eef_mat = T_AB[:3, :3]
+            return T.mat2quat(base_to_eef_mat)
+
+        sensors = [eef_pos, eef_quat, base_pos, base_quat, base_to_eef_pos, base_to_eef_quat]
+        names = [
+            f"{arm}_eef_pos",
+            f"{arm}_eef_quat",
+            f"base_pos",
+            f"base_quat",
+            f"base_to_{arm}_eef_pos",
+            f"base_to_{arm}_eef_quat",
+        ]
 
         # add in gripper sensors if this robot has a gripper
         if self.has_gripper[arm]:
@@ -206,7 +245,7 @@ class WheeledRobot(MobileBaseRobot):
                 return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
 
             sensors += [gripper_qpos, gripper_qvel]
-            names += [f"{pf}{arm}_gripper_qpos", f"{pf}{arm}_gripper_qvel"]
+            names += [f"{arm}_gripper_qpos", f"{arm}_gripper_qvel"]
 
         return sensors, names
 

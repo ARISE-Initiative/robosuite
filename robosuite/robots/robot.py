@@ -293,7 +293,7 @@ class Robot(object):
             arm_sensors, arm_sensor_names = self._create_arm_sensors(arm=arm, modality=modality)
             sensors += arm_sensors
             names += arm_sensor_names
-            actives += [True]
+            actives += [True] * len(arm_sensors)
 
         # Create observables for this robot
         observables = OrderedDict()
