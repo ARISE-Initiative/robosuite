@@ -122,14 +122,13 @@ class SpaceMouse(Device):
         print("Opening SpaceMouse device")
         self.vendor_id = vendor_id
         self.product_id = product_id
-        self.device = hid.device()
-        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        self.device = hid.Device(self.vendor_id, self.product_id)
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
 
-        print("Manufacturer: %s" % self.device.get_manufacturer_string())
-        print("Product: %s" % self.device.get_product_string())
+        print("Manufacturer: %s" % self.device.manufacturer)
+        print("Product: %s" % self.device.product)
 
         # 6-DOF variables
         self.x, self.y, self.z = 0, 0, 0
