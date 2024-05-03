@@ -528,6 +528,7 @@ class RobotEnv(MujocoEnv):
         # Reset robot and update action space dimension along the way
         for robot in self.robots:
             robot.reset(deterministic=self.deterministic_reset)
+            robot.print_action_info_dict()
             self._action_dim += robot.action_dim
 
         # Update cameras if appropriate
