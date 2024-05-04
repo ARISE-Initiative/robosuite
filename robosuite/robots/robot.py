@@ -54,6 +54,7 @@ class Robot(object):
         robot_type: str,
         idn=0,
         controller_config=None,
+        composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
         base_type="default",
@@ -64,6 +65,10 @@ class Robot(object):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
         self.controller_config = self._input2dict(copy.deepcopy(controller_config))
+        if composite_controller_config is not None:
+            self.composite_controller_config = composite_controller_config
+        else:
+            self.composite_controller_config = {}
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
         self.has_gripper = self._input2dict([gripper_type is not None for _, gripper_type in self.gripper_type.items()])

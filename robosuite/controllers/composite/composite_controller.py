@@ -116,3 +116,31 @@ class CompositeController:
                 low_c, high_c = controller.control_limits
                 low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         return low, high
+
+
+class HybridMobileBaseCompositeController(CompositeController):
+    def set_goal(self, all_action):
+        if not self.lite_physics:
+            self.sim.forward()
+
+        action_mode = all_action[-1]
+        if action_mode > 0:
+            update_wrt_origin = True
+        else:
+            update_wrt_origin = False
+
+        for part_name, controller in self.controllers.items():
+            start_idx, end_idx = self._action_split_indexes[part_name]
+            action = all_action[start_idx:end_idx]
+            if part_name in self.grippers.keys():
+                action = self.grippers[part_name].format_action(action)
+
+            if part_name in self.arms:
+                controller.set_goal(action, update_wrt_origin=update_wrt_origin)
+            else:
+                controller.set_goal(action)
+
+    @property
+    def action_limits(self):
+        low, high = super().action_limits
+        return np.concatenate((low, [-1])), np.concatenate((high, [1]))

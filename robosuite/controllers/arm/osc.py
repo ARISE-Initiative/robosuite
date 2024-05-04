@@ -211,7 +211,7 @@ class OperationalSpaceController(Controller):
         self.origin_pos = None
         self.origin_ori = None
 
-    def set_goal(self, action, set_pos=None, set_ori=None):
+    def set_goal(self, action, set_pos=None, set_ori=None, update_wrt_origin=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
         delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
@@ -266,7 +266,10 @@ class OperationalSpaceController(Controller):
             # No scaling of values since these are absolute values
             scaled_delta = delta
 
-        self.update_wrt_origin = np.all(action == 0)
+        if update_wrt_origin is not None:
+            self.update_wrt_origin = update_wrt_origin
+        else:
+            self.update_wrt_origin = np.all(action == 0)
 
         self.goal_origin_to_eef_ori = self.compute_goal_orientation(  # set_goal_orientation
             scaled_delta[3:], set_ori=set_ori

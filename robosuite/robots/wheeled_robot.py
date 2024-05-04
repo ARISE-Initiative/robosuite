@@ -20,6 +20,7 @@ class WheeledRobot(MobileBaseRobot):
         robot_type: str,
         idn=0,
         controller_config=None,
+        composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
         base_type="default",
@@ -31,6 +32,7 @@ class WheeledRobot(MobileBaseRobot):
             robot_type=robot_type,
             idn=idn,
             controller_config=controller_config,
+            composite_controller_config=composite_controller_config,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
             base_type=base_type,
@@ -46,9 +48,9 @@ class WheeledRobot(MobileBaseRobot):
         # Flag for loading urdf once (only applicable for IK controllers)
 
         self.composite_controller = composite_controller_factory(
-            "BASE",
-            self.sim,
-            self.robot_model,
+            type=self.composite_controller_config.get("type", "BASE"),
+            sim=self.sim,
+            robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
             lite_physics=self.lite_physics,
         )
