@@ -15,7 +15,7 @@ from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.observables import Observable, sensor
-
+import json
 
 class Robot(object):
     """
@@ -793,6 +793,15 @@ class Robot(object):
 
         action_index_info_str = ", ".join(action_index_info)
         ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
+    
+    def print_action_info_dict(self):
+        info_dict = {}
+        info_dict["Action Dimension"] = self.action_dim
+        info_dict.update(dict(self._action_split_indexes))
+        
+        info_dict_str = f"\nAction Info for {self.name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
+        ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
+
 
     def get_gripper_name(self, arm):
         return f"{arm}_gripper"

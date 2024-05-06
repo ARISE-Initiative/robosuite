@@ -42,7 +42,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
-    env.robots[0].print_action_info()
+    env.robots[0].print_action_info_dict()
     # Loop until we get a reset from the input or the task completes
 
     count = 0
