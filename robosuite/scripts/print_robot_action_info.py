@@ -47,7 +47,11 @@ for robot in env.robots:
     print(json.dumps(robot._action_split_indexes, indent=4))
     print()
 
+
 env.close()
+
+print("Actions can created by calling robot.create_action_vector, and passing in a dictionary with the above keys and desired values.")
+
     
 
 
