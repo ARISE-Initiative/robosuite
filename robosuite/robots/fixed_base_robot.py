@@ -259,8 +259,6 @@ class FixedBaseRobot(Robot):
                 sensors (list): Array of sensors for the given arm
                 names (list): array of corresponding observable names
         """
-        pf = self.robot_model.naming_prefix
-
         # eef features
         @sensor(modality=modality)
         def eef_pos(obs_cache):
@@ -270,8 +268,11 @@ class FixedBaseRobot(Robot):
         def eef_quat(obs_cache):
             return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
 
+        # only consider prefix if there is more than one arm
+        pf = f"{arm}_" if len(self.arms) > 1 else ""
+
         sensors = [eef_pos, eef_quat]
-        names = [f"{pf}{arm}_eef_pos", f"{pf}{arm}_eef_quat"]
+        names = [f"{pf}eef_pos", f"{pf}eef_quat"]
 
         # add in gripper sensors if this robot has a gripper
         if self.has_gripper[arm]:
@@ -285,7 +286,7 @@ class FixedBaseRobot(Robot):
                 return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
 
             sensors += [gripper_qpos, gripper_qvel]
-            names += [f"{pf}{arm}_gripper_qpos", f"{pf}{arm}_gripper_qvel"]
+            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
 
         return sensors, names
 

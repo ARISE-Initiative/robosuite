@@ -225,14 +225,17 @@ class WheeledRobot(MobileBaseRobot):
             base_to_eef_mat = T_AB[:3, :3]
             return T.mat2quat(base_to_eef_mat)
 
+        # only consider prefix if there is more than one arm
+        pf = f"{arm}_" if len(self.arms) > 1 else ""
+
         sensors = [eef_pos, eef_quat, base_pos, base_quat, base_to_eef_pos, base_to_eef_quat]
         names = [
-            f"{arm}_eef_pos",
-            f"{arm}_eef_quat",
+            f"{pf}eef_pos",
+            f"{pf}eef_quat",
             f"base_pos",
             f"base_quat",
-            f"base_to_{arm}_eef_pos",
-            f"base_to_{arm}_eef_quat",
+            f"base_to_{pf}eef_pos",
+            f"base_to_{pf}eef_quat",
         ]
 
         # add in gripper sensors if this robot has a gripper
@@ -247,7 +250,7 @@ class WheeledRobot(MobileBaseRobot):
                 return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
 
             sensors += [gripper_qpos, gripper_qvel]
-            names += [f"{arm}_gripper_qpos", f"{arm}_gripper_qvel"]
+            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
 
         return sensors, names
 
