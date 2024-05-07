@@ -247,8 +247,8 @@ class LeggedRobot(MobileBaseRobot):
         # only consider prefix if there is more than one arm
         pf = f"{arm}_" if len(self.arms) > 1 else ""
 
-        sensors = [eef_pos, eef_quat, base_pos]
-        names = [f"{pf}eef_pos", f"{pf}eef_quat", f"base_pos"]
+        sensors = [eef_pos, eef_quat]  # , base_pos]
+        names = [f"{pf}eef_pos", f"{pf}eef_quat"]  # , f"base_pos"]
 
         # add in gripper sensors if this robot has a gripper
         if self.has_gripper[arm]:
