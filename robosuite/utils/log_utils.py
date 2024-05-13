@@ -43,7 +43,7 @@ class ConsoleFormatter(logging.Formatter):
 
     FORMATS = {
         logging.DEBUG: FORMAT_STR["console"] + MESSAGE_STR,
-        logging.INFO: "%(message)s",
+        logging.INFO: colored(FORMAT_STR["console"], "green", attrs=["bold"]) + MESSAGE_STR,
         logging.WARNING: colored(FORMAT_STR["console"], "yellow", attrs=["bold"]) + MESSAGE_STR,
         logging.ERROR: colored(FORMAT_STR["console"], "red", attrs=["bold"]) + MESSAGE_STR,
         logging.CRITICAL: colored(FORMAT_STR["console"], "red", attrs=["bold", "reverse"]) + MESSAGE_STR,
@@ -85,6 +85,7 @@ class DefaultLogger:
             console_formatter = ConsoleFormatter()
             ch.setFormatter(console_formatter)
             logger.addHandler(ch)
+            logger.setLevel(logging.getLevelName(console_logging_level))
 
     def get_logger(self):
         """_summary_

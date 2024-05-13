@@ -103,30 +103,28 @@ def choose_multi_arm_config():
     return list(env_configs.values())[k]
 
 
-def choose_robots(exclude_bimanual=False):
+def choose_robots(exclude_bimanual=False, use_humanoids=False):
     """
     Prints out robot options, and returns the requested robot. Restricts options to single-armed robots if
-    @exclude_bimanual is set to True (False by default)
+    @exclude_bimanual is set to True (False by default). Restrict options to humanoids if @use_humanoids is set to True (Flase by default).
 
     Args:
         exclude_bimanual (bool): If set, excludes bimanual robots from the robot options
+        use_humanoids (bool): If set, use humanoid robots
 
     Returns:
         str: Requested robot name
     """
     # Get the list of robots
-    robots = {
-        "Sawyer",
-        "Panda",
-        "Jaco",
-        "Kinova3",
-        "IIWA",
-        "UR5e",
-    }
+    robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e"}
 
     # Add Baxter if bimanual robots are not excluded
     if not exclude_bimanual:
         robots.add("Baxter")
+        robots.add("GR1")
+        robots.add("GR1UpperBody")
+    if use_humanoids:
+        robots = {"GR1", "GR1UpperBody"}
 
     # Make sure set is deterministically sorted
     robots = sorted(robots)
@@ -149,7 +147,7 @@ def choose_robots(exclude_bimanual=False):
     return list(robots)[k]
 
 
-def input2action(device, robot, active_arm="right", env_configuration=None):
+def input2action(device, robot, active_arm="right", env_configuration=None, mirror_actions=False):
     """
     Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -168,6 +166,9 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
             correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
             {bimanual, single-arm-parallel, single-arm-opposed}
+
+        mirror_actions (bool): actions corresponding to viewing robot from behind.
+            first axis: left/right. second axis: back/forward. third axis: down/up.
 
     Returns:
         2-tuple:
@@ -190,13 +191,20 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         state["reset"],
     )
 
+    if mirror_actions:
+        dpos[0], dpos[1] = dpos[1], dpos[0]
+        raw_drotation[0], raw_drotation[1] = raw_drotation[1], raw_drotation[0]
+
+        dpos[1] *= -1
+        raw_drotation[0] *= -1
+
     # If we're resetting, immediately return None
     if reset:
         return None, None
 
     # Get controller reference
-    controller = robot.controller if not isinstance(robot, Bimanual) else robot.controller[active_arm]
-    gripper_dof = robot.gripper.dof if not isinstance(robot, Bimanual) else robot.gripper[active_arm].dof
+    controller = robot.controller[active_arm]
+    gripper_dof = robot.gripper[active_arm].dof
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
@@ -230,7 +238,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
         # Lastly, map to axis angle form
         drotation = T.quat2axisangle(drotation)
 
-    elif controller.name == "OSC_POSE":
+    elif controller.name == "OSC_POSE" or controller.name == "JOINT_POSITION":
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
@@ -245,11 +253,33 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     # map 0 to -1 (open) and map 1 to 1 (closed)
     grasp = 1 if grasp else -1
 
-    # Create action based on action space of individual robot
-    if controller.name == "OSC_POSITION":
-        action = np.concatenate([dpos, [grasp] * gripper_dof])
+    if robot.is_mobile:
+        # assert controller.name == "OSC_POSE" or controller.name == "OSC_POSITION", "Mobile robots only currently supported by OSC_POSE controller"
+        base_mode = bool(state["base_mode"])
+        if base_mode is True:
+            arm_ac = np.zeros(6)
+            base_ac = np.array([dpos[0], dpos[1], drotation[2], dpos[2]])
+            mode_ac = np.array([1])
+        else:
+            if controller.name == "OSC_POSITION":
+                arm_ac = dpos
+            else:
+                arm_ac = np.concatenate([dpos, drotation])
+            base_ac = np.zeros(4)
+            mode_ac = np.array([-1])
+        gripper_ac = np.array([grasp] * gripper_dof)
+        action = np.concatenate((arm_ac, gripper_ac, base_ac, mode_ac))
+        # clip actions between -1 and 1
+        action = np.clip(action, -1, 1)
+        return action, {"grasp": grasp, "mode": base_mode}
     else:
-        action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
+        # Create action based on action space of individual robot
+        if controller.name == "OSC_POSITION":
+            action = np.concatenate([dpos, [grasp] * gripper_dof])
+        else:
+            action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
 
-    # Return the action and grasp
-    return action, grasp
+        # clip actions between -1 and 1
+        action = np.clip(action, -1, 1)
+        # Return the action and grasp
+        return action, grasp

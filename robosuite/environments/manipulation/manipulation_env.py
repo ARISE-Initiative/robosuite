@@ -3,7 +3,7 @@ import numpy as np
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
-from robosuite.robots import ROBOT_CLASS_MAPPING, Manipulator
+from robosuite.robots import ROBOT_CLASS_MAPPING  # ,Manipulator
 
 
 class ManipulationEnv(RobotEnv):
@@ -22,10 +22,10 @@ class ManipulationEnv(RobotEnv):
             dict if same controller is to be used for all robots or else it should be a list of the same length as
             "robots" param
 
-        mount_types (None or str or list of str): type of mount, used to instantiate mount models from mount factory.
-            Default is "default", which is the default mount associated with the robot(s) the 'robots' specification.
-            None results in no mount, and any other (valid) model overrides the default mount. Should either be
-            single str if same mount type is to be used for all robots or else it should be a list of the same
+        base_types (None or str or list of str): type of base, used to instantiate base models from base factory.
+            Default is "default", which is the default base associated with the robot(s) the 'robots' specification.
+            None results in no base, and any other (valid) model overrides the default base. Should either be
+            single str if same base type is to be used for all robots or else it should be a list of the same
             length as "robots" param
 
         gripper_types (None or str or list of str): type of gripper, used to instantiate
@@ -33,6 +33,9 @@ class ManipulationEnv(RobotEnv):
             with the robot(s) the 'robots' specification. None removes the gripper, and any other (valid) model
             overrides the default gripper. Should either be single str if same gripper type is to be used for all
             robots or else it should be a list of the same length as "robots" param
+
+        initial_qpos (None or tuple or list of tuples): If set, sets custom initial qpos values for robot models.
+            Default of None corresponds to defalt initial qpos values defined by robot model.
 
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
@@ -68,8 +71,11 @@ class ManipulationEnv(RobotEnv):
             Defaults to -1, in which case the device will be inferred from environment variables
             (GPUS or CUDA_VISIBLE_DEVICES).
 
-        control_freq (float): how many control signals to receive in every second. This sets the amount of
+        control_freq (float): how many control signals to receive in every second. This sets the abase of
             simulation time that passes between every action input.
+
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            This feature is set to False by default to preserve backward compatibility.
 
         horizon (int): Every episode lasts for exactly @horizon timesteps.
 
@@ -111,6 +117,8 @@ class ManipulationEnv(RobotEnv):
             [multiple / a single] segmentation(s) to use for all cameras. A list of list of str specifies per-camera
             segmentation setting(s) to use.
 
+        seed (int): environment seed. Default is None, where environment is unseeded, ie. random
+
     Raises:
         ValueError: [Camera obs require offscreen renderer]
         ValueError: [Camera name must be specified to use camera obs]
@@ -121,8 +129,10 @@ class ManipulationEnv(RobotEnv):
         robots,
         env_configuration="default",
         controller_configs=None,
-        mount_types="default",
+        composite_controller_configs=None,
+        base_types="default",
         gripper_types="default",
+        initial_qpos=None,
         initialization_noise=None,
         use_camera_obs=True,
         has_renderer=False,
@@ -132,6 +142,7 @@ class ManipulationEnv(RobotEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        lite_physics=False,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -142,6 +153,7 @@ class ManipulationEnv(RobotEnv):
         camera_segmentations=None,
         renderer="mujoco",
         renderer_config=None,
+        seed=None,
     ):
         # Robot info
         robots = list(robots) if type(robots) is list or type(robots) is tuple else [robots]
@@ -150,10 +162,18 @@ class ManipulationEnv(RobotEnv):
         # Gripper
         gripper_types = self._input2list(gripper_types, num_robots)
 
+        # Initial qpos
+        if initial_qpos is not None:
+            if initial_qpos[0] is None or type(initial_qpos[0]) is list or type(initial_qpos[0]) is tuple:
+                initial_qpos = list(initial_qpos)
+            else:
+                initial_qpos = [initial_qpos for _ in range(num_robots)]
+
         # Robot configurations to pass to super call
         robot_configs = [
             {
                 "gripper_type": gripper_types[idx],
+                "initial_qpos": initial_qpos,
             }
             for idx in range(num_robots)
         ]
@@ -163,7 +183,8 @@ class ManipulationEnv(RobotEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types=mount_types,
+            composite_controller_configs=composite_controller_configs,
+            base_types=base_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
             has_renderer=has_renderer,
@@ -173,6 +194,7 @@ class ManipulationEnv(RobotEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            lite_physics=lite_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
@@ -184,6 +206,7 @@ class ManipulationEnv(RobotEnv):
             robot_configs=robot_configs,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     @property
@@ -256,7 +279,7 @@ class ManipulationEnv(RobotEnv):
             np.array or float: (Cartesian or Euclidean) distance from gripper to target
         """
         # Get gripper and target positions
-        gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
+        gripper_pos = self.sim.data.get_site_xpos(gripper["right"].important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
         if isinstance(target, MujocoModel):
             target_pos = self.sim.data.get_body_xpos(target.root_body)
@@ -284,7 +307,7 @@ class ManipulationEnv(RobotEnv):
                 refers to.
         """
         # Get gripper and target positions
-        gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
+        gripper_pos = self.sim.data.get_site_xpos(gripper["right"].important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
         if isinstance(target, MujocoModel):
             target_pos = self.sim.data.get_body_xpos(target.root_body)
@@ -301,7 +324,7 @@ class ManipulationEnv(RobotEnv):
         rgba = np.zeros(3)
         rgba[0] = 1 - scaled
         rgba[1] = scaled
-        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper.important_sites["grip_site"])][:3] = rgba
+        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper["right"].important_sites["grip_site"])][:3] = rgba
 
     def _check_robot_configuration(self, robots):
         """
@@ -311,10 +334,11 @@ class ManipulationEnv(RobotEnv):
         Args:
             robots (str or list of str): Inputted requested robots at the task-level environment
         """
-        # Make sure all inputted robots are a manipulation robot
-        if type(robots) is str:
-            robots = [robots]
-        for robot in robots:
-            assert issubclass(
-                ROBOT_CLASS_MAPPING[robot], Manipulator
-            ), "Only manipulator robots supported for manipulation environment!"
+        # # Make sure all inputted robots are a manipulation robot
+        # if type(robots) is str:
+        #     robots = [robots]
+        # for robot in robots:
+        #     assert issubclass(
+        #         ROBOT_CLASS_MAPPING[robot], Manipulator
+        #     ), "Only manipulator robots supported for manipulation environment!"
+        pass

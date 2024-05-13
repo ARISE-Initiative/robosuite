@@ -1,6 +1,7 @@
-from .manipulator import Manipulator
-from .single_arm import SingleArm
-from .bimanual import Bimanual
+from .fixed_base_robot import FixedBaseRobot
+from .mobile_base_robot import MobileBaseRobot
+from .wheeled_robot import WheeledRobot
+from .legged_robot import LeggedRobot
 
 from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
 
@@ -8,13 +9,27 @@ ALL_ROBOTS = REGISTERED_ROBOTS.keys()
 
 # Robot class mappings -- must be maintained manually
 ROBOT_CLASS_MAPPING = {
-    "Baxter": Bimanual,
-    "IIWA": SingleArm,
-    "Jaco": SingleArm,
-    "Kinova3": SingleArm,
-    "Panda": SingleArm,
-    "Sawyer": SingleArm,
-    "UR5e": SingleArm,
+    "Baxter": FixedBaseRobot,
+    "IIWA": FixedBaseRobot,
+    "Jaco": FixedBaseRobot,
+    "Kinova3": FixedBaseRobot,
+    "Panda": FixedBaseRobot,
+    "Sawyer": FixedBaseRobot,
+    "UR5e": FixedBaseRobot,
+    "VX300S": FixedBaseRobot,
+    "Z1": FixedBaseRobot,
+    "PandaMobile": WheeledRobot,
+    "GoogleRobot": WheeledRobot,
+    "VX300SMobile": WheeledRobot,
+    "Tiago": WheeledRobot,
+    "B1Z1": LeggedRobot,
+    # "B1Z1Floating": LeggedRobot,
+    "GR1": LeggedRobot,
+    "GR1FixedLowerBody": LeggedRobot,
+    "GR1ArmsOnly": LeggedRobot,
+    "GR1FloatingBody": LeggedRobot,
+    "H1": LeggedRobot,
+    "H1FixedLowerBody": LeggedRobot,
+    "H1FloatingBody": LeggedRobot,
+    "H1ArmsOnly": LeggedRobot,
 }
-
-BIMANUAL_ROBOTS = {k.lower() for k, v in ROBOT_CLASS_MAPPING.items() if v == Bimanual}

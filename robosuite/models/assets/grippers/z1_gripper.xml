@@ -1,0 +1,37 @@
+<mujoco model="z1_gripper">
+    <asset>
+        <mesh name="stator_vis" file="meshes/z1_gripper/z1_GripperStator.obj"/>
+        <mesh name="mover_vis" file="meshes/z1_gripper/z1_GripperMover.obj"/>
+    </asset>
+    <actuator>
+        <position  ctrllimited="true" ctrlrange="-1.57 0." joint="stator_mover_joint" kp="1000" name="gripper_mover_joint" forcelimited="true" forcerange="-20 20"/>
+    </actuator>
+    <contact>
+        <exclude name="exclude_two_bodies" body1="stator" body2="mover"/>
+    </contact>
+    <worldbody>
+        <body name="right_gripper" pos="0 0 0" quat="1 0 0 0">
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+            <body name="eef" pos="0 0 0.0" quat="0.707 0. -0.707 0.">
+                <site name="grip_site" pos="0 0 -0.1" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
+                <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            </body>
+            <body name="stator" pos="0.0 0 0" quat="1 0 0 0">
+                <inertial pos="0.04764427 -0.00035819 -0.00249162" mass="0.526" fullinertia="0.00038683 0.00068614 0.00066293 0.00000359 -0.00007662 -0.00000209" />
+                <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="stator_vis" name="stator_visual" rgba="0.499 0.499 0.499 1" />
+                <geom type="mesh" contype="0" conaffinity="1" group="0" mesh="stator_vis" name="stator_col" rgba="0.499 0.499 0.499 1" />               
+                <body name="mover" pos="0.049 0 0" quat="1 0 0 0">
+                    <inertial pos="0.01320633 0.00476708 0.00380534" mass="0.276" fullinertia="0.00017716 0.00026787 0.00035728 -0.00001683 0.00001786 -0.00000262" />
+                    <joint name="stator_mover_joint" pos="0 0 0" axis="0 0 -1" type="hinge" limited="true" range="-1.57 0." damping="1" armature="1.0" frictionloss="0.2"/> 
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="mover_vis" name="mover_visual" rgba="0 0.499 0.499 1" />
+                    <geom type="mesh" contype="0" conaffinity="1" group="0" mesh="mover_vis" name="mover_col" rgba="0 0.499 0.499 0.8" />
+
+                </body>
+            </body>
+        </body>
+</worldbody>
+<sensor>
+    <force name="force_ee" site="ft_frame"/>
+    <torque name="torque_ee" site="ft_frame"/>
+</sensor>
+</mujoco>

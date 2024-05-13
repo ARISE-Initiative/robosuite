@@ -177,9 +177,11 @@ class CustomMaterial(object):
         if type(texture) is str:
             default = False
             # Verify that requested texture is valid
-            assert texture in ALL_TEXTURES, "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(
-                texture, ALL_TEXTURES
-            )
+            texture_is_path = "/" in texture
+            if not texture_is_path:
+                assert (
+                    texture in ALL_TEXTURES
+                ), "Error: Requested invalid texture. Got {}. Valid options are:\n{}".format(texture, ALL_TEXTURES)
         else:
             default = True
             # If specified, this is an rgba value and a default texture is desired; make sure length of rgba array is 4
@@ -212,7 +214,11 @@ class CustomMaterial(object):
         # Handle default and non-default cases separately for linking texture patch file locations
         if not default:
             # Add in the filepath to texture patch
-            self.tex_attrib["file"] = xml_path_completion(TEXTURES[texture])
+            texture_is_path = "/" in texture
+            if texture_is_path:
+                self.tex_attrib["file"] = xml_path_completion(texture)
+            else:
+                self.tex_attrib["file"] = xml_path_completion(TEXTURES[texture])
         else:
             if texture is not None:
                 # Create a texture patch
@@ -227,7 +233,7 @@ class CustomMaterial(object):
                 self.tex_attrib["file"] = fpath
 
 
-def xml_path_completion(xml_path):
+def xml_path_completion(xml_path, root=None):
     """
     Takes in a local xml path and returns a full path.
         if @xml_path is absolute, do nothing
@@ -235,6 +241,7 @@ def xml_path_completion(xml_path):
 
     Args:
         xml_path (str): local xml path
+        root (str): root folder for xml path. If not specified defaults to robosuite.models.assets_root
 
     Returns:
         str: Full (absolute) xml path
@@ -242,7 +249,9 @@ def xml_path_completion(xml_path):
     if xml_path.startswith("/"):
         full_path = xml_path
     else:
-        full_path = os.path.join(robosuite.models.assets_root, xml_path)
+        if root is None:
+            root = robosuite.models.assets_root
+        full_path = os.path.join(root, xml_path)
     return full_path
 
 
@@ -275,7 +284,7 @@ def string_to_array(string):
     Returns:
         np.array: Numerical array equivalent of @string
     """
-    return np.array([float(x) for x in string.strip().split(" ")])
+    return np.array([float(x) if x != "None" else None for x in string.strip().split(" ")])
 
 
 def convert_to_string(inp):
@@ -799,6 +808,54 @@ def find_elements(root, tags, attribs=None, return_first=True):
                 elements += found_elements if type(found_elements) is list else [found_elements]
 
     return elements if elements else None
+
+
+def find_elements_by_substring(root, tags, substrings, attribs=None, return_first=False):
+    """
+    Find all element(s) matching the requested @substrings and @attributes. If @return_first is True, then will return the
+    first element found matching the criteria specified. Otherwise, will return a list of elements that match the
+    criteria.
+
+    Args:
+        root (ET.Element): Root of the xml element tree to start recursively searching through.
+        tags (str or list of str or set): Tag(s) to search for in this ElementTree.
+        substrings (str or list of str or set): Substring(s) to search for in this ElementTree.
+        attribs (None or dict of str): Element attribute(s) to check against for a filtered element. A match is
+            considered found only if all attributes match. Each attribute key should have a corresponding value with
+            which to compare against.
+        return_first (bool): Whether to immediately return once the first matching element is found.
+
+    Returns:
+        None or ET.Element or list of ET.Element: Matching element(s) found. Returns None if there was no match.
+    """
+    # Initialize return value
+    elements = None if return_first else []
+
+    # Make sure substrings is list
+    substrings = [substrings] if type(substrings) is str else substrings
+    elements = find_elements(root, tags, attribs=attribs, return_first=return_first)
+
+    new_elements = []
+    if elements is not None:
+        for element in elements:
+            for substring in substrings:
+                if substring in element.get("name"):
+                    new_elements.append(element)
+                    break
+    return new_elements if len(new_elements) > 0 else None
+
+
+def find_parent(element, target):
+    """
+    Find the parent element of the target.
+    """
+    for child in element:
+        if child == target:
+            return element  # Found the parent
+        parent = find_parent(child, target)
+        if parent is not None:
+            return parent
+    return None
 
 
 def save_sim_model(sim, fname):

@@ -29,6 +29,7 @@
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="base_link" />
             <geom type="mesh" conaffinity="0" rgba="0.75294 0.75294 0.75294 1" mesh="base_link" name="base_collision" />
             <body name="shoulder_link" pos="0 0 0.15643" quat="-3.67321e-06 1 0 0">
+                <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
                 <inertial pos="-2.3e-05 -0.010364 -0.07336" quat="0.707051 0.0451246 -0.0453544 0.704263" mass="1.3773" diaginertia="0.00488868 0.00457 0.00135132" />
                 <joint name="Actuator1" pos="0 0 0" axis="0 0 1" damping="0.1" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" name="s_visual" mesh="shoulder_link" />
