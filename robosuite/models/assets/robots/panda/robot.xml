@@ -236,7 +236,7 @@
                                             <body name="right_hand" pos="0 0 0.1065" quat="0.924 0 0 -0.383">
                                                 <inertial pos="0 0 0" mass="0.5" diaginertia="0.05 0.05 0.05" />
                                                 <!-- This camera points out from the eef. -->
-                                                <camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
+                                                <camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75" resolution="1024 720"/>
                                                 <!-- to add gripper -->
                                             </body>
                                         </body>

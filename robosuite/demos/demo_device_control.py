@@ -102,6 +102,7 @@ import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
+from PIL import Image
 
 if __name__ == "__main__":
 
@@ -149,10 +150,11 @@ if __name__ == "__main__":
     env = suite.make(
         **config,
         has_renderer=True,
-        has_offscreen_renderer=False,
+        has_offscreen_renderer=True,
         render_camera="agentview",
+        camera_names="robot0_eye_in_hand",
         ignore_done=True,
-        use_camera_obs=False,
+        use_camera_obs=True,
         reward_shaping=True,
         control_freq=20,
         hard_reset=False,
@@ -177,6 +179,7 @@ if __name__ == "__main__":
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
+    i = 0
     while True:
         # Reset the environment
         obs = env.reset()
@@ -238,4 +241,8 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
+            if i < 100 and "robot0_eye_in_hand_image" in obs:
+                im = Image.fromarray(obs["robot0_eye_in_hand_image"])
+                im.save("camera_observation.jpeg")
+                i = i+1
             env.render()
