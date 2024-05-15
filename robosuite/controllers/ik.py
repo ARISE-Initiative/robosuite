@@ -151,7 +151,7 @@ class InverseKinematicsController(JointVelocityController):
             input_min=-1,
             output_max=1,
             output_min=-1,
-            kv=0.25,
+            kp=0.25,
             policy_freq=policy_freq,
             velocity_limits=[-1, 1],
             **kwargs,
