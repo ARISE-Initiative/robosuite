@@ -290,7 +290,16 @@ class OperationalSpaceController(Controller):
         """
         transform vector from world to reference coordinate frame
         """
-        return np.matmul(self.origin_ori.T, vec - self.origin_pos)
+
+        # world rotation matrix is just identity
+        world_frame = np.eye(4)
+        world_frame[:3, 3] = vec  
+
+        origin_frame = T.make_pose(self.origin_pos, self.origin_ori)
+        origin_frame_inv = T.pose_inv(origin_frame)
+        vec_origin_pose = T.pose_in_A_to_pose_in_B(world_frame, origin_frame_inv)
+        vec_origin_pos, _ = T.mat2pose(vec_origin_pose)
+        return vec_origin_pos
 
     def compute_goal_pos(self, delta, set_pos=None):
         if set_pos is not None:
@@ -308,6 +317,13 @@ class OperationalSpaceController(Controller):
             raise NotImplementedError
 
         return goal_origin_to_eef_pos
+    
+    def goal_origin_to_eef_pose(self):
+        origin_pose = T.make_pose(self.origin_pos, self.origin_ori)
+        ee_pose = T.make_pose(self.ee_pos, self.ee_ori_mat)
+        origin_pose_inv = T.pose_inv(origin_pose)
+        return T.pose_in_A_to_pose_in_B(ee_pose, origin_pose_inv)
+
 
     def compute_goal_orientation(self, delta, set_ori=None):
         """
@@ -328,7 +344,7 @@ class OperationalSpaceController(Controller):
             ValueError: [Invalid orientation_limit shape]
         """
         if self.goal_origin_to_eef_ori is None:
-            self.goal_origin_to_eef_ori = np.dot(self.origin_ori.T, self.ee_ori_mat)
+            self.goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
 
         # directly set orientation
         if set_ori is not None:
@@ -342,7 +358,8 @@ class OperationalSpaceController(Controller):
             if self.update_wrt_origin:
                 goal_origin_to_eef_ori = np.dot(rotation_mat_error, self.goal_origin_to_eef_ori)
             else:
-                goal_origin_to_eef_ori = np.dot(rotation_mat_error, np.dot(self.origin_ori.T, self.ee_ori_mat))
+                curr_goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
+                goal_origin_to_eef_ori = np.dot(rotation_mat_error, curr_goal_origin_to_eef_ori)
 
         # check for orientation limits
         if np.array(self.orientation_limits).any():
