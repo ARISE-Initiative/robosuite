@@ -11,5 +11,6 @@ from .z1_robot import Z1
 from .aloha_robot import Aloha
 from .vx300s_robot import VX300S
 from .tiago_robot import Tiago
-from .gr1_robot import GR1, GR1FixedLowerBody, GR1ArmsOnly
-from .h1_robot import H1
+from .gr1_robot import GR1, GR1FixedLowerBody, GR1FloatingBody, GR1ArmsOnly
+from .h1_robot import H1, H1FixedLowerBody, H1FloatingBody, H1ArmsOnly
+from .g1_robot import G1, G1FixedLowerBody, G1FloatingBody, G1ArmsOnly
