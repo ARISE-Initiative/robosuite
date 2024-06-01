@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import DoorObject
 from robosuite.models.tasks import ManipulationTask
@@ -10,7 +10,7 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 
 
-class Door(SingleArmEnv):
+class Door(ManipulationEnv):
     """
     This class corresponds to the door opening task for a single robot arm.
 
@@ -339,7 +339,14 @@ class Door(SingleArmEnv):
         # low-level object information
         if self.use_object_obs:
             # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            pf0 = self.robots[0].robot_model.naming_prefix
+            pf1 = None 
+
+            if len(self.robots[0].arms) > 1:
+                pf0 += "right_"
+                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
+
+
             modality = "object"
 
             # Define sensor callbacks
@@ -351,19 +358,21 @@ class Door(SingleArmEnv):
             def handle_pos(obs_cache):
                 return self._handle_xpos
 
+
+            #TODO changing function name may affect backwards compatibility; change back?
             @sensor(modality=modality)
-            def door_to_eef_pos(obs_cache):
+            def door_to_eef0_pos(obs_cache):
                 return (
-                    obs_cache["door_pos"] - obs_cache[f"{pf}eef_pos"]
-                    if "door_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    obs_cache["door_pos"] - obs_cache[f"{pf0}eef_pos"]
+                    if "door_pos" in obs_cache and f"{pf0}eef_pos" in obs_cache
                     else np.zeros(3)
                 )
 
             @sensor(modality=modality)
-            def handle_to_eef_pos(obs_cache):
+            def handle_to_eef0_pos(obs_cache):
                 return (
-                    obs_cache["handle_pos"] - obs_cache[f"{pf}eef_pos"]
-                    if "handle_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    obs_cache["handle_pos"] - obs_cache[f"{pf0}eef_pos"]
+                    if "handle_pos" in obs_cache and f"{pf0}eef_pos" in obs_cache
                     else np.zeros(3)
                 )
 
@@ -371,7 +380,30 @@ class Door(SingleArmEnv):
             def hinge_qpos(obs_cache):
                 return np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
 
-            sensors = [door_pos, handle_pos, door_to_eef_pos, handle_to_eef_pos, hinge_qpos]
+            sensors = [door_pos, handle_pos, door_to_eef0_pos, handle_to_eef0_pos, hinge_qpos]
+
+            if len(self.robots[0].arms) > 1:
+                assert pf1 is not None
+
+                @sensor(modality=modality)
+                def door_to_eef1_pos(obs_cache):
+                    return (
+                        obs_cache["door_pos"] - obs_cache[f"{pf1}eef_pos"]
+                        if "door_pos" in obs_cache and f"{pf1}eef_pos" in obs_cache
+                        else np.zeros(3)
+                    )
+
+                @sensor(modality=modality)
+                def handle_to_eef1_pos(obs_cache):
+                    return (
+                        obs_cache["handle_pos"] - obs_cache[f"{pf1}eef_pos"]
+                        if "handle_pos" in obs_cache and f"{pf1}eef_pos" in obs_cache
+                        else np.zeros(3)
+                    )
+                
+                sensors.extend([door_to_eef1_pos, handle_to_eef1_pos])
+
+
             names = [s.__name__ for s in sensors]
 
             # Also append handle qpos if we're using a locked door version with rotatable handle
@@ -458,4 +490,7 @@ class Door(SingleArmEnv):
         Returns:
             np.array: (x,y,z) distance between handle and eef
         """
-        return self._handle_xpos - self._eef_xpos
+
+        #TODO Use the right or consider both when appropriate?
+        eef_xpos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]])
+        return self._handle_xpos - eef_xpos
