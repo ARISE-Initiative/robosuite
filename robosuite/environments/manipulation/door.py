@@ -354,31 +354,6 @@ class Door(ManipulationEnv):
             def hinge_qpos(obs_cache):
                 return np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
             
-            #create relevants functions for each arm type
-            def get_door_eef_fn(pf):
-                @sensor(modality=modality)
-                def door_to_eef_pf(obs_cache):
-                    return (
-                    obs_cache["door_pos"] - obs_cache[f"{pf}eef_pos"]
-                    if "door_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-                #TODO changing function name may affect backwards compatibility for single arm robot; change back?
-                door_to_eef_pf.__name__ = f"door_to_{pf}eef_pos"
-                return door_to_eef_pf
-            
-            def get_handle_eef_fn(pf):
-                @sensor(modality=modality)
-                def handle_to_eef_pf(obs_cache):
-                    return (
-                        obs_cache["handle_pos"] - obs_cache[f"{pf}eef_pos"]
-                        if "handle_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
-                        else np.zeros(3)
-                    )
-                
-                handle_to_eef_pf.__name__ = f"handle_to_{pf}eef_pos"
-                return handle_to_eef_pf
-
             prefixes = self._get_arm_prefixes(self.robots[0])
             sensors = [door_pos, handle_pos, hinge_qpos] 
 
