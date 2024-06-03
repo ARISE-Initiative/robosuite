@@ -220,6 +220,10 @@ class ManipulationEnv(RobotEnv):
         vis_set = super()._visualizations
         vis_set.add("grippers")
         return vis_set
+    
+    def _check_grasp_multi_gripper(self, gripper_dict, object_geoms, robot):
+        assert isinstance(gripper_dict, dict)
+        return any([self._check_grasp(gripper_dict[arm], object_geoms) for arm in robot.arms])
 
     def _check_grasp(self, gripper, object_geoms):
         """
@@ -243,6 +247,9 @@ class ManipulationEnv(RobotEnv):
         Returns:
             bool: True if the gripper is grasping the given object
         """
+
+        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function or use _check_grasp_multi_gripper to check all grippers on the robot"
+
         # Convert object, gripper geoms into standardized form
         if isinstance(object_geoms, MujocoModel):
             o_geoms = object_geoms.contact_geoms
@@ -261,6 +268,11 @@ class ManipulationEnv(RobotEnv):
             if not self.check_contact(g_group, o_geoms):
                 return False
         return True
+    
+    def _min_grippers_to_target(self, gripper_dict, target, robot, target_type="body", return_distance=False):
+        assert isinstance(gripper_dict, dict)
+        return min([self._gripper_to_target(gripper_dict[arm], target, target_type, return_distance) for arm in robot.arms])
+
 
     def _gripper_to_target(self, gripper, target, target_type="body", return_distance=False):
         """
@@ -278,8 +290,11 @@ class ManipulationEnv(RobotEnv):
         Returns:
             np.array or float: (Cartesian or Euclidean) distance from gripper to target
         """
+
+        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function"
+
         # Get gripper and target positions
-        gripper_pos = self.sim.data.get_site_xpos(gripper["right"].important_sites["grip_site"])
+        gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
         if isinstance(target, MujocoModel):
             target_pos = self.sim.data.get_body_xpos(target.root_body)
@@ -325,6 +340,20 @@ class ManipulationEnv(RobotEnv):
         rgba[0] = 1 - scaled
         rgba[1] = scaled
         self.sim.model.site_rgba[self.sim.model.site_name2id(gripper["right"].important_sites["grip_site"])][:3] = rgba
+
+    def _get_arm_prefixes(self, robot):
+
+        name_pf = robot.robot_model.naming_prefix
+        if len(robot.arms) == 1:
+            return [name_pf]
+
+        prefixes = []
+        for arm in robot.arms:
+            prefixes.append(f"{name_pf}{arm}_")
+        
+        return prefixes
+
+        
 
     def _check_robot_configuration(self, robots):
         """

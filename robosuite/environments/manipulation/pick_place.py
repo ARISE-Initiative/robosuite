@@ -4,7 +4,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import BinsArena
 from robosuite.models.objects import (
     BreadObject,
@@ -21,7 +21,7 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 
 
-class PickPlace(SingleArmEnv):
+class PickPlace(ManipulationEnv):
     """
     This class corresponds to the pick place task for a single robot arm.
 
@@ -329,9 +329,10 @@ class PickPlace(SingleArmEnv):
         if active_objs:
             # get reaching reward via minimum distance to a target object
             dists = [
-                self._gripper_to_target(
-                    gripper=self.robots[0].gripper,
+                self._min_grippers_to_target(
+                    gripper_dict=self.robots[0].gripper,
                     target=active_obj.root_body,
+                    robot=self.robots[0],
                     target_type="body",
                     return_distance=True,
                 )
@@ -342,9 +343,10 @@ class PickPlace(SingleArmEnv):
         # grasping reward for touching any objects of interest
         r_grasp = (
             int(
-                self._check_grasp(
-                    gripper=self.robots[0].gripper,
+                self._check_grasp_multi_gripper(
+                    gripper_dict=self.robots[0].gripper,
                     object_geoms=[g for active_obj in active_objs for g in active_obj.contact_geoms],
+                    robot=self.robots[0]
                 )
             )
             * grasp_mult
@@ -739,11 +741,11 @@ class PickPlace(SingleArmEnv):
             bool: True if all objects are placed correctly
         """
         # remember objects that are in the correct bins
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+
         for i, obj in enumerate(self.objects):
             obj_str = obj.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
-            dist = np.linalg.norm(gripper_site_pos - obj_pos)
+            dist = min([np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - obj_pos) for arm in self.robots[0].arms])
             r_reach = 1 - np.tanh(10.0 * dist)
             self.objects_in_bins[i] = int((not self.not_in_bin(obj_pos, i)) and r_reach < 0.6)
 
@@ -771,7 +773,7 @@ class PickPlace(SingleArmEnv):
             # find closest object
             dists = [
                 self._gripper_to_target(
-                    gripper=self.robots[0].gripper,
+                    gripper=self.robots[0].gripper["right"],
                     target=obj.root_body,
                     target_type="body",
                     return_distance=True,

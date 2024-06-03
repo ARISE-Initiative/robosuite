@@ -338,14 +338,6 @@ class Door(ManipulationEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf0 = self.robots[0].robot_model.naming_prefix
-            pf1 = None 
-
-            if len(self.robots[0].arms) > 1:
-                pf0 += "right_"
-                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
-
 
             modality = "object"
 
@@ -357,53 +349,38 @@ class Door(ManipulationEnv):
             @sensor(modality=modality)
             def handle_pos(obs_cache):
                 return self._handle_xpos
-
-
-            #TODO changing function name may affect backwards compatibility; change back?
-            @sensor(modality=modality)
-            def door_to_eef0_pos(obs_cache):
-                return (
-                    obs_cache["door_pos"] - obs_cache[f"{pf0}eef_pos"]
-                    if "door_pos" in obs_cache and f"{pf0}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            @sensor(modality=modality)
-            def handle_to_eef0_pos(obs_cache):
-                return (
-                    obs_cache["handle_pos"] - obs_cache[f"{pf0}eef_pos"]
-                    if "handle_pos" in obs_cache and f"{pf0}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
+            
             @sensor(modality=modality)
             def hinge_qpos(obs_cache):
                 return np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
-
-            sensors = [door_pos, handle_pos, door_to_eef0_pos, handle_to_eef0_pos, hinge_qpos]
-
-            if len(self.robots[0].arms) > 1:
-                assert pf1 is not None
-
+            
+            #create relevants functions for each arm type
+            def get_door_eef_fn(pf):
                 @sensor(modality=modality)
-                def door_to_eef1_pos(obs_cache):
+                def door_to_eef_pf(obs_cache):
                     return (
-                        obs_cache["door_pos"] - obs_cache[f"{pf1}eef_pos"]
-                        if "door_pos" in obs_cache and f"{pf1}eef_pos" in obs_cache
-                        else np.zeros(3)
-                    )
-
+                    obs_cache["door_pos"] - obs_cache[f"{pf}eef_pos"]
+                    if "door_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
+                    else np.zeros(3)
+                )
+                #TODO changing function name may affect backwards compatibility for single arm robot; change back?
+                door_to_eef_pf.__name__ = f"door_to_{pf}eef_pos"
+                return door_to_eef_pf
+            
+            def get_handle_eef_fn(pf):
                 @sensor(modality=modality)
-                def handle_to_eef1_pos(obs_cache):
+                def handle_to_eef_pf(obs_cache):
                     return (
-                        obs_cache["handle_pos"] - obs_cache[f"{pf1}eef_pos"]
-                        if "handle_pos" in obs_cache and f"{pf1}eef_pos" in obs_cache
+                        obs_cache["handle_pos"] - obs_cache[f"{pf}eef_pos"]
+                        if "handle_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
                         else np.zeros(3)
                     )
                 
-                sensors.extend([door_to_eef1_pos, handle_to_eef1_pos])
+                handle_to_eef_pf.__name__ = f"handle_to_{pf}eef_pos"
+                return handle_to_eef_pf
 
-
+            prefixes = self._get_arm_prefixes(self.robots[0])
+            sensors = [door_pos, handle_pos, hinge_qpos] + [get_door_eef_fn(pf) for pf in prefixes] + [get_handle_eef_fn(pf) for pf in prefixes]
             names = [s.__name__ for s in sensors]
 
             # Also append handle qpos if we're using a locked door version with rotatable handle
@@ -491,6 +468,8 @@ class Door(ManipulationEnv):
             np.array: (x,y,z) distance between handle and eef
         """
 
-        #TODO Use the right or consider both when appropriate?
-        eef_xpos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]])
-        return self._handle_xpos - eef_xpos
+        dist = float("inf")
+        for arm in self.robots[0].arms:
+            diff = self._handle_xpos - np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]])
+            dist = min(np.linalg.norm(diff), dist)
+        return dist
