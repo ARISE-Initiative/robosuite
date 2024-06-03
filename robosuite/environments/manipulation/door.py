@@ -380,7 +380,11 @@ class Door(ManipulationEnv):
                 return handle_to_eef_pf
 
             prefixes = self._get_arm_prefixes(self.robots[0])
-            sensors = [door_pos, handle_pos, hinge_qpos] + [get_door_eef_fn(pf) for pf in prefixes] + [get_handle_eef_fn(pf) for pf in prefixes]
+            sensors = [door_pos, handle_pos, hinge_qpos] 
+
+            #TODO naming convention is still slightly different than before for single arm robots; change back?
+            sensors += [self._get_obj_eef_sensor(pf, "door_pos", f"door_to_{pf}eef_pos", modality)  for pf in prefixes] 
+            sensors += [self._get_obj_eef_sensor(pf, "handle_pos", f"handle_to_{pf}eef_pos", modality)  for pf in prefixes] 
             names = [s.__name__ for s in sensors]
 
             # Also append handle qpos if we're using a locked door version with rotatable handle

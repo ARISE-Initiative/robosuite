@@ -4,6 +4,8 @@ from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
 from robosuite.robots import ROBOT_CLASS_MAPPING  # ,Manipulator
+from robosuite.utils.observables import Observable, sensor
+
 
 
 class ManipulationEnv(RobotEnv):
@@ -221,9 +223,23 @@ class ManipulationEnv(RobotEnv):
         vis_set.add("grippers")
         return vis_set
     
-    def _check_grasp_multi_gripper(self, gripper_dict, object_geoms, robot):
-        assert isinstance(gripper_dict, dict)
-        return any([self._check_grasp(gripper_dict[arm], object_geoms) for arm in robot.arms])
+    def _check_grasp_robot(self, object_geoms, robot):
+        return any([self._check_grasp(robot.gripper[arm], object_geoms) for arm in robot.arms])
+    
+    def _get_obj_eef_sensor(self, prefix, obj_key, fn_name, modality):
+        @sensor(modality)
+        def sensor_fn(obs_cache):
+                return (
+                obs_cache[obj_key] - obs_cache[f"{prefix}eef_pos"]
+                if obj_key in obs_cache and f"{prefix}eef_pos" in obs_cache
+                else np.zeros(3)
+            )
+        
+        sensor_fn.__name__ = fn_name
+        return sensor_fn
+            
+            
+
 
     def _check_grasp(self, gripper, object_geoms):
         """
@@ -248,7 +264,7 @@ class ManipulationEnv(RobotEnv):
             bool: True if the gripper is grasping the given object
         """
 
-        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function or use _check_grasp_multi_gripper to check all grippers on the robot"
+        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function or use _check_grasp_robot to check all grippers on the robot"
 
         # Convert object, gripper geoms into standardized form
         if isinstance(object_geoms, MujocoModel):
@@ -269,9 +285,8 @@ class ManipulationEnv(RobotEnv):
                 return False
         return True
     
-    def _min_grippers_to_target(self, gripper_dict, target, robot, target_type="body", return_distance=False):
-        assert isinstance(gripper_dict, dict)
-        return min([self._gripper_to_target(gripper_dict[arm], target, target_type, return_distance) for arm in robot.arms])
+    def _closest_gripper_to_target(self, target, robot, target_type="body", return_distance=False):
+        return min([self._gripper_to_target(robot.gripper[arm], target, target_type, return_distance) for arm in robot.arms])
 
 
     def _gripper_to_target(self, gripper, target, target_type="body", return_distance=False):

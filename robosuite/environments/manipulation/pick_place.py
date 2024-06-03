@@ -329,8 +329,7 @@ class PickPlace(ManipulationEnv):
         if active_objs:
             # get reaching reward via minimum distance to a target object
             dists = [
-                self._min_grippers_to_target(
-                    gripper_dict=self.robots[0].gripper,
+                self._closest_gripper_to_target(
                     target=active_obj.root_body,
                     robot=self.robots[0],
                     target_type="body",
@@ -343,8 +342,7 @@ class PickPlace(ManipulationEnv):
         # grasping reward for touching any objects of interest
         r_grasp = (
             int(
-                self._check_grasp_multi_gripper(
-                    gripper_dict=self.robots[0].gripper,
+                self._check_grasp_robot(
                     object_geoms=[g for active_obj in active_objs for g in active_obj.contact_geoms],
                     robot=self.robots[0]
                 )
