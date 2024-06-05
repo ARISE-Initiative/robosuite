@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import HookFrame, RatchetingWrenchObject, StandWithMount
 from robosuite.models.tasks import ManipulationTask
@@ -13,7 +13,7 @@ from robosuite.utils.placement_samplers import SequentialCompositeSampler, Unifo
 from robosuite.utils.sim_utils import check_contact
 
 
-class ToolHang(SingleArmEnv):
+class ToolHang(ManipulationEnv):
     """
     This class corresponds to the tool hang task for a single robot arm.
 
@@ -669,8 +669,8 @@ class ToolHang(SingleArmEnv):
 
         # check (1): robot is not touching the tool
         robot_grasp_geoms = [
-            self.robots[0].gripper.important_geoms["left_fingerpad"],
-            self.robots[0].gripper.important_geoms["right_fingerpad"],
+            self.robots[0].gripper["right"].important_geoms["left_fingerpad"],
+            self.robots[0].gripper["right"].important_geoms["right_fingerpad"],
         ]
         robot_and_tool_contact = False
         for g_group in robot_grasp_geoms:
