@@ -102,7 +102,9 @@ import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
-from PIL import Image
+from robosuite.recorder import Recorder
+import signal
+import sys
 
 if __name__ == "__main__":
 
@@ -152,7 +154,7 @@ if __name__ == "__main__":
         has_renderer=True,
         has_offscreen_renderer=True,
         render_camera="agentview",
-        camera_names="robot0_eye_in_hand",
+        camera_names=["robot0_eye_in_hand", "frontview", "birdview"],
         ignore_done=True,
         use_camera_obs=True,
         reward_shaping=True,
@@ -179,7 +181,12 @@ if __name__ == "__main__":
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
-    i = 0
+    recorder = Recorder(["robot0_eye_in_hand", "frontview", "birdview"], args.environment)
+    def handler(arg1, arg2):
+        recorder.save()
+        print('Exiting..')
+        sys.exit(0)
+    signal.signal(signal.SIGINT, handler)
     while True:
         # Reset the environment
         obs = env.reset()
@@ -241,8 +248,7 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
-            if i < 100 and "robot0_eye_in_hand_image" in obs:
-                im = Image.fromarray(obs["robot0_eye_in_hand_image"])
-                im.save("camera_observation.jpeg")
-                i = i+1
+            obs['grasp'] = np.array([0]) if grasp == -1 else np.array([1])
+            recorder.record(obs)
+            
             env.render()

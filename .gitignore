@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# data recordings
+*.hdf5
+
 # Distribution / packaging
 .Python
 env/

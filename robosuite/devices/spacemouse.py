@@ -136,7 +136,7 @@ class SpaceMouse(Device):
 
         self._display_controls()
 
-        self.single_click_and_hold = False
+        self.gripper_toggle = False
 
         self._control = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self._reset_state = 0
@@ -178,7 +178,7 @@ class SpaceMouse(Device):
         # Reset control
         self._control = np.zeros(6)
         # Reset grasp
-        self.single_click_and_hold = False
+        self.gripper_toggle = False
 
     def start_control(self):
         """
@@ -270,14 +270,7 @@ class SpaceMouse(Device):
 
                     # press left button
                     if d[1] == 1:
-                        t_click = time.time()
-                        elapsed_time = t_click - t_last_click
-                        t_last_click = t_click
-                        self.single_click_and_hold = True
-
-                    # release left button
-                    if d[1] == 0:
-                        self.single_click_and_hold = False
+                        self.gripper_toggle = not self.gripper_toggle
 
                     # right button is for reset
                     if d[1] == 2:
@@ -303,7 +296,7 @@ class SpaceMouse(Device):
         Returns:
             float: Whether we're using single click and hold or not
         """
-        if self.single_click_and_hold:
+        if self.gripper_toggle:
             return 1.0
         return 0
 
