@@ -50,11 +50,11 @@ class Keyboard(Device):
         print_command("q", "reset simulation")
         print_command("spacebar", "toggle gripper (open/close)")
         print_command("b", "toggle arm/base mode (if applicable)")
-        print_command("w-a-s-d / up-right-down-left", "move arm horizontally in x-y plane")
-        print_command("r-f", "move arm vertically")
-        print_command("z-x", "rotate arm about x-axis")
-        print_command("t-g", "rotate arm about y-axis")
-        print_command("c-v", "rotate arm about z-axis")
+        print_command("up-right-down-left", "move horizontally in x-y plane")
+        print_command(".-;", "move vertically")
+        print_command("o-p", "rotate (yaw)")
+        print_command("y-h", "rotate (pitch)")
+        print_command("e-r", "rotate (roll)")
         print("")
 
     def _reset_internal_state(self):
@@ -117,41 +117,33 @@ class Keyboard(Device):
                 self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
             elif key == Key.right:
                 self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
-            elif key.char == "w":
-                self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
-            elif key.char == "s":
-                self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
-            elif key.char == "a":
-                self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
-            elif key.char == "d":
-                self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
-            elif key.char == "f":
+            elif key.char == ".":
                 self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
-            elif key.char == "r":
+            elif key.char == ";":
                 self.pos[2] += self._pos_step * self.pos_sensitivity  # inc z
 
             # controls for moving orientation
-            elif key.char == "z":
+            elif key.char == "e":
                 drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates x
                 self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
-            elif key.char == "x":
+            elif key.char == "r":
                 drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates x
                 self.raw_drotation[1] += 0.1 * self.rot_sensitivity
-            elif key.char == "t":
+            elif key.char == "y":
                 drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates y
                 self.raw_drotation[0] += 0.1 * self.rot_sensitivity
-            elif key.char == "g":
+            elif key.char == "h":
                 drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates y
                 self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
-            elif key.char == "c":
+            elif key.char == "p":
                 drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates z
                 self.raw_drotation[2] += 0.1 * self.rot_sensitivity
-            elif key.char == "v":
+            elif key.char == "o":
                 drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates z
                 self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
