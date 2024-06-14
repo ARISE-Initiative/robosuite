@@ -768,23 +768,24 @@ class PickPlace(ManipulationEnv):
 
         # Color the gripper visualization site according to its distance to the closest object
         if vis_settings["grippers"]:
-            # find closest object
-            dists = [
-                self._gripper_to_target(
-                    gripper=self.robots[0].gripper["right"],
-                    target=obj.root_body,
+            for arm in self.robots[0].arms:
+                # find closest object
+                dists = [
+                    self._gripper_to_target(
+                        gripper=self.robots[0].gripper[arm],
+                        target=obj.root_body,
+                        target_type="body",
+                        return_distance=True,
+                    )
+                    for obj in self.objects
+                ]
+                closest_obj_id = np.argmin(dists)
+                # Visualize the distance to this target
+                self._visualize_gripper_to_target(
+                    gripper=self.robots[0].gripper[arm],
+                    target=self.objects[closest_obj_id].root_body,
                     target_type="body",
-                    return_distance=True,
                 )
-                for obj in self.objects
-            ]
-            closest_obj_id = np.argmin(dists)
-            # Visualize the distance to this target
-            self._visualize_gripper_to_target(
-                gripper=self.robots[0].gripper,
-                target=self.objects[closest_obj_id].root_body,
-                target_type="body",
-            )
 
 
 class PickPlaceSingle(PickPlace):

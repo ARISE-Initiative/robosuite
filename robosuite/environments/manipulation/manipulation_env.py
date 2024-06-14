@@ -336,8 +336,9 @@ class ManipulationEnv(RobotEnv):
             target_type (str): One of {"body", "geom", or "site"}, corresponding to the type of element @target
                 refers to.
         """
+        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function"
         # Get gripper and target positions
-        gripper_pos = self.sim.data.get_site_xpos(gripper["right"].important_sites["grip_site"])
+        gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
         if isinstance(target, MujocoModel):
             target_pos = self.sim.data.get_body_xpos(target.root_body)
@@ -354,7 +355,7 @@ class ManipulationEnv(RobotEnv):
         rgba = np.zeros(3)
         rgba[0] = 1 - scaled
         rgba[1] = scaled
-        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper["right"].important_sites["grip_site"])][:3] = rgba
+        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper.important_sites["grip_site"])][:3] = rgba
 
     def _get_arm_prefixes(self, robot):
 
