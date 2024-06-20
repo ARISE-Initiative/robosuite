@@ -15,7 +15,7 @@ from .z1_gripper import Z1Gripper
 from .null_gripper import NullGripper
 from .aloha_gripper import AlohaGripper
 from .inspire_hands import InspireLeftHand, InspireRightHand
-
+from .g1_three_finger_gripper import G1ThreeFingerLeftGripper, G1ThreeFingerRightGripper
 
 GRIPPER_MAPPING = {
     "RethinkGripper": RethinkGripper,
@@ -32,6 +32,8 @@ GRIPPER_MAPPING = {
     "AlohaGripper": AlohaGripper,
     "InspireLeftHand": InspireLeftHand,
     "InspireRightHand": InspireRightHand,
+    "G1ThreeFingerLeftGripper": G1ThreeFingerLeftGripper,
+    "G1ThreeFingerRightGripper": G1ThreeFingerRightGripper,
     None: NullGripper,
 }
 
