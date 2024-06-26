@@ -242,13 +242,12 @@ class Lift(ManipulationEnv):
         elif self.reward_shaping:
 
             # reaching reward
-
-            dist = self._closest_gripper_to_target(self.cube.root_body, self.robots[0], "body", True )
+            dist = self._gripper_to_target(target=self.cube.root_body, gripper=self.robots[0].gripper, target_type="body", return_distance=True )
             reaching_reward = 1 - np.tanh(10.0 * dist)
             reward += reaching_reward
 
             # grasping reward
-            if self._check_grasp_robot(object_geoms=self.cube, robot=self.robots[0]):
+            if self._check_grasp(object_geoms=self.cube, gripper=self.robots[0].gripper):
                 reward += 0.25
 
         # Scale reward if requested
@@ -404,8 +403,7 @@ class Lift(ManipulationEnv):
 
         # Color the gripper visualization site according to its distance to the cube
         if vis_settings["grippers"]:
-            for arm in self.robots[0].arms:
-                self._visualize_gripper_to_target(gripper=self.robots[0].gripper[arm], target=self.cube)
+                self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cube)
 
     def _check_success(self):
         """

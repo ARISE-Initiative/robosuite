@@ -445,17 +445,23 @@ class ToolHang(ManipulationEnv):
             modality = "object"
 
             # for conversion to relative gripper frame
-            @sensor(modality=modality)
-            def world_pose_in_gripper(obs_cache):
-                return (
-                    T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"])))
-                    if f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache
-                    else np.eye(4)
-                )
+            def get_world_pose_grippers(modality, arm_prefix, name):
+                @sensor(modality=modality)
+                def fn(obs_cache):
+                    return (
+                        T.pose_inv(T.pose2mat((obs_cache[f"{arm_prefix}eef_pos"], obs_cache[f"{arm_prefix}eef_quat"])))
+                        if f"{arm_prefix}eef_pos" in obs_cache and f"{arm_prefix}eef_quat" in obs_cache
+                        else np.eye(4)
+                    )
+                fn.__name__ = name
+                return fn
+            
+            arm_prefixes = self._get_arm_prefixes(self.robots[0])
 
-            sensors = [world_pose_in_gripper]
-            names = ["world_pose_in_gripper"]
-            actives = [False]
+            #following convention to not include naming prefix in observable name
+            sensors = [get_world_pose_grippers(modality, arm_prefix=arm_prefix, name=f"world_pose_in_{arm_prefix}_gripper") for arm_prefix in arm_prefixes]
+            names = [fn.__name__ for fn in sensors]
+            actives = [False] * len(sensors)
 
             # Add absolute and relative pose for each object
             obj_names = ["base", "frame", "tool"]
@@ -536,28 +542,46 @@ class ToolHang(ManipulationEnv):
         @sensor(modality=modality)
         def obj_quat(obs_cache):
             return T.mat2quat(np.array(mat_lookup[id_lookup[query_name]]).reshape(3, 3))
+        
+        def get_obj_to_eefs_pos(arm_prefix, name):
+            
 
-        @sensor(modality=modality)
-        def obj_to_eef_pos(obs_cache):
-            # Immediately return default value if cache is empty
-            if any(
-                [name not in obs_cache for name in [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]
-            ):
-                return np.zeros(3)
-            obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
-            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
-            rel_pos, rel_quat = T.mat2pose(rel_pose)
-            obs_cache[f"{obj_name}_to_{pf}eef_quat"] = rel_quat
-            return rel_pos
+            @sensor(modality=modality)
+            def fn(obs_cache):
+                # Immediately return default value if cache is empty
+                if any(
+                    [name not in obs_cache for name in [f"{obj_name}_pos", f"{obj_name}_quat", f"world_pose_in_{arm_prefix}_gripper"]]
+                ):
+                    return np.zeros(3)
+                obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
+                rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache[f"world_pose_in_{arm_prefix}_gripper"])
+                rel_pos, rel_quat = T.mat2pose(rel_pose)
+                obs_cache[f"{obj_name}_to_{arm_prefix}eef_quat"] = rel_quat
+                return rel_pos
+            
+            fn.__name__ = name
+            return fn
+        
+        def get_objs_to_eefs_quat(arm_prefix, name):
+            @sensor(modality=modality)
+            def fn(obs_cache):
+                return obs_cache[f"{obj_name}_to_{arm_prefix}eef_quat"] if f"{obj_name}_to_{arm_prefix}eef_quat" in obs_cache else np.zeros(4)
+            fn.__name__ = name
+            return fn
 
-        @sensor(modality=modality)
-        def obj_to_eef_quat(obs_cache):
-            return (
-                obs_cache[f"{obj_name}_to_{pf}eef_quat"] if f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
-            )
+        arm_prefixes = self._get_arm_prefixes(self.robots[0])
 
-        sensors = [obj_pos, obj_quat, obj_to_eef_pos, obj_to_eef_quat]
-        names = [f"{obj_name}_pos", f"{obj_name}_quat", f"{obj_name}_to_{pf}eef_pos", f"{obj_name}_to_{pf}eef_quat"]
+
+        
+        sensors = [get_obj_to_eefs_pos(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_pos") for arm_prefix in arm_prefixes] \
+                + [get_objs_to_eefs_quat(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_quat") for arm_prefix in arm_prefixes]
+        names = [fn.__name__ for fn in sensors]
+
+        
+
+
+        sensors += [obj_pos, obj_quat]
+        names += [f"{obj_name}_pos", f"{obj_name}_quat"] 
 
         return sensors, names
 
@@ -669,9 +693,15 @@ class ToolHang(ManipulationEnv):
 
         # check (1): robot is not touching the tool
         robot_grasp_geoms = [
-            self.robots[0].gripper["right"].important_geoms["left_fingerpad"],
-            self.robots[0].gripper["right"].important_geoms["right_fingerpad"],
+            self.robots[0].gripper[arm].important_geoms["left_fingerpad"]
+            for arm in self.robots[0].gripper
         ]
+
+        robot_grasp_geoms += [
+            self.robots[0].gripper[arm].important_geoms["right_fingerpad"]
+            for arm in self.robots[0].gripper
+        ]
+        
         robot_and_tool_contact = False
         for g_group in robot_grasp_geoms:
             if check_contact(self.sim, g_group, self.tool.contact_geoms):

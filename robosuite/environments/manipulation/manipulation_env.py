@@ -223,8 +223,6 @@ class ManipulationEnv(RobotEnv):
         vis_set.add("grippers")
         return vis_set
     
-    def _check_grasp_robot(self, object_geoms, robot):
-        return any([self._check_grasp(robot.gripper[arm], object_geoms) for arm in robot.arms])
     
     def _get_obj_eef_sensor(self, prefix, obj_key, fn_name, modality):
         @sensor(modality)
@@ -264,7 +262,6 @@ class ManipulationEnv(RobotEnv):
             bool: True if the gripper is grasping the given object
         """
 
-        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function or use _check_grasp_robot to check all grippers on the robot"
 
         # Convert object, gripper geoms into standardized form
         if isinstance(object_geoms, MujocoModel):
@@ -275,6 +272,9 @@ class ManipulationEnv(RobotEnv):
             g_geoms = [gripper.important_geoms["left_fingerpad"], gripper.important_geoms["right_fingerpad"]]
         elif type(gripper) is str:
             g_geoms = [[gripper]]
+        elif isinstance(gripper, dict):
+            assert all([isinstance(gripper[arm], GripperModel) for arm in gripper]), "Invalid gripper dict format!"
+            return any([self._check_grasp(gripper[arm], object_geoms) for arm in gripper])
         else:
             # Parse each element in the gripper_geoms list accordingly
             g_geoms = [[g_group] if type(g_group) is str else g_group for g_group in gripper]
@@ -285,8 +285,6 @@ class ManipulationEnv(RobotEnv):
                 return False
         return True
     
-    def _closest_gripper_to_target(self, target, robot, target_type="body", return_distance=False):
-        return min([self._gripper_to_target(robot.gripper[arm], target, target_type, return_distance) for arm in robot.arms])
 
 
     def _gripper_to_target(self, gripper, target, target_type="body", return_distance=False):
@@ -305,8 +303,14 @@ class ManipulationEnv(RobotEnv):
         Returns:
             np.array or float: (Cartesian or Euclidean) distance from gripper to target
         """
+        if isinstance(gripper, dict):
+            assert all([isinstance(gripper[arm], GripperModel) for arm in gripper]), "Invalid gripper dict format!"
+            # get the min distance to the target if there are multiple arms
+            if return_distance:
+                return min([self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper])
+            else:
+                return min([self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper], key=lambda x: np.linalg.norm(x))
 
-        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function"
 
         # Get gripper and target positions
         gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
@@ -316,7 +320,7 @@ class ManipulationEnv(RobotEnv):
         elif target_type == "body":
             target_pos = self.sim.data.get_body_xpos(target)
         elif target_type == "site":
-            target_pos = self.sim.data.get_site_xpos(target)
+            target_pos = self.sim.data.get_site_xpos(target)    
         else:
             target_pos = self.sim.data.get_geom_xpos(target)
         # Calculate distance
@@ -336,7 +340,11 @@ class ManipulationEnv(RobotEnv):
             target_type (str): One of {"body", "geom", or "site"}, corresponding to the type of element @target
                 refers to.
         """
-        assert not isinstance(gripper, dict), "Please specify a specific gripper when calling this function"
+        if isinstance(gripper, dict):
+            assert all([isinstance(gripper[arm], GripperModel) for arm in gripper]), "Invalid gripper dict format!"
+            for arm in gripper:
+                self._visualize_gripper_to_target(gripper[arm], target, target_type)
+            return
         # Get gripper and target positions
         gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
