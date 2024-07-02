@@ -10,6 +10,7 @@ ALL_ROBOTS = REGISTERED_ROBOTS.keys()
 # Robot class mappings -- must be maintained manually
 ROBOT_CLASS_MAPPING = {
     "Baxter": FixedBaseRobot,
+    "Yumi": FixedBaseRobot,
     "IIWA": FixedBaseRobot,
     "Jaco": FixedBaseRobot,
     "Kinova3": FixedBaseRobot,
@@ -23,6 +24,7 @@ ROBOT_CLASS_MAPPING = {
     "VX300SMobile": WheeledRobot,
     "Tiago": WheeledRobot,
     "B1Z1": LeggedRobot,
+    "SpotArm": LeggedRobot,
     # "B1Z1Floating": LeggedRobot,
     "GR1": LeggedRobot,
     "GR1FixedLowerBody": LeggedRobot,

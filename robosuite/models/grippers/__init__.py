@@ -12,6 +12,8 @@ from .robotiq_140_gripper import Robotiq140Gripper
 from .wiping_gripper import WipingGripper
 from .google_gripper import GoogleGripper
 from .z1_gripper import Z1Gripper
+from .yumi_gripper import YumiLeftGripper, YumiRightGripper
+from .bd_gripper import BDGripper
 from .null_gripper import NullGripper
 from .aloha_gripper import AlohaGripper
 from .inspire_hands import InspireLeftHand, InspireRightHand
@@ -29,6 +31,9 @@ GRIPPER_MAPPING = {
     "RobotiqThreeFingerDexterousGripper": RobotiqThreeFingerDexterousGripper,
     "GoogleGripper": GoogleGripper,
     "Z1Gripper": Z1Gripper,
+    "BDGripper": BDGripper,
+    "YumiLeftGripper": YumiLeftGripper,
+    "YumiRightGripper": YumiRightGripper,
     "AlohaGripper": AlohaGripper,
     "InspireLeftHand": InspireLeftHand,
     "InspireRightHand": InspireRightHand,

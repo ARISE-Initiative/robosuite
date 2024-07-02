@@ -7,7 +7,9 @@ from .kinova3_robot import Kinova3
 from .iiwa_robot import IIWA
 from .ur5e_robot import UR5e
 from .google_robot import GoogleRobot
+from .bd_arm import BDArm
 from .z1_robot import Z1
+from .yumi_robot import Yumi
 from .aloha_robot import Aloha
 from .vx300s_robot import VX300S
 from .tiago_robot import Tiago
