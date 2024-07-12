@@ -147,12 +147,13 @@ def arm_controller_factory(name, params):
 
         # Import pybullet server if necessary
         global pybullet_server
+        from .ik import InverseKinematicsController
 
         if pybullet_server is None:
             from robosuite.controllers.arm.ik import PyBulletServer
 
             pybullet_server = PyBulletServer()
-        return arm_controllers.InverseKinematicsController(
+        return InverseKinematicsController(
             interpolator_pos=interpolator,
             interpolator_ori=ori_interpolator,
             bullet_server_id=pybullet_server.server_id,
