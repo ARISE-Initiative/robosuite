@@ -11,13 +11,11 @@ class BaseController(object, metaclass=abc.ABCMeta):
     """
     General controller interface.
 
-    Requires reference to mujoco sim object, eef_name of specific robot, relevant joint_indexes to that robot, and
+    Requires reference to mujoco sim object, relevant joint_indexes to that robot, and
     whether an initial_joint is used for nullspace torques or not
 
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
-
-        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
 
