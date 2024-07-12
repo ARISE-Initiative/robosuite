@@ -32,4 +32,8 @@ ROBOT_CLASS_MAPPING = {
     "H1FixedLowerBody": LeggedRobot,
     "H1FloatingBody": LeggedRobot,
     "H1ArmsOnly": LeggedRobot,
+    "G1": LeggedRobot,
+    "G1FixedLowerBody": LeggedRobot,
+    "G1ArmsOnly": LeggedRobot,
+    "G1FloatingBody": LeggedRobot,
 }
