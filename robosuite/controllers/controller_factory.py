@@ -161,13 +161,13 @@ def arm_controller_factory(name, params):
         )
 
     if name == "JOINT_VELOCITY":
-        return genereic.JointVelocityController(interpolator=interpolator, **params)
+        return generic.JointVelocityController(interpolator=interpolator, **params)
 
     if name == "JOINT_POSITION":
-        return genereic.JointPositionController(interpolator=interpolator, **params)
+        return generic.JointPositionController(interpolator=interpolator, **params)
 
     if name == "JOINT_TORQUE":
-        return genereic.JointTorqueController(interpolator=interpolator, **params)
+        return generic.JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))
 
