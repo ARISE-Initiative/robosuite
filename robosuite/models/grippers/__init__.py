@@ -19,6 +19,7 @@ from .aloha_gripper import AlohaGripper
 from .pr2_gripper import PR2Gripper
 from .inspire_hands import InspireLeftHand, InspireRightHand
 from .ability_hands import AbilityLeftHand, AbilityRightHand
+from .schunk_svh_hands import SchunkSvhLeftHand, SchunkSvhRightHand
 from .g1_three_finger_gripper import G1ThreeFingerLeftGripper, G1ThreeFingerRightGripper
 
 GRIPPER_MAPPING = {
@@ -42,6 +43,8 @@ GRIPPER_MAPPING = {
     "InspireRightHand": InspireRightHand,
     "AbilityLeftHand": AbilityLeftHand,
     "AbilityRightHand": AbilityRightHand,
+    "SchunkSvhLeftHand": SchunkSvhLeftHand,
+    "SchunkSvhRightHand": SchunkSvhRightHand,
     "G1ThreeFingerLeftGripper": G1ThreeFingerLeftGripper,
     "G1ThreeFingerRightGripper": G1ThreeFingerRightGripper,
     None: NullGripper,
