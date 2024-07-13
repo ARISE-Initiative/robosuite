@@ -11,6 +11,7 @@ class UR5e(ManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+    arms = ["right"]
 
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/ur5e/robot.xml"), idn=idn)

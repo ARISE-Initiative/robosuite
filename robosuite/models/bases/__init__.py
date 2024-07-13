@@ -15,6 +15,7 @@ from .floating_legged_base import FloatingLeggedBase
 from .aloha_mount import AlohaMount
 
 from .b1_base import B1, B1Floating
+from .go2_base import Go2, Go2Floating
 from .spot_base import Spot, SpotFloating
 
 BASE_MAPPING = {
@@ -30,6 +31,8 @@ BASE_MAPPING = {
     "B1Floating": B1Floating,
     "Spot": Spot,
     "SpotFloating": SpotFloating,
+    "Go2": Go2,
+    "Go2Floating": Go2Floating,
 
     # "Z1Base": Z1Base,
     # "SpotBase": SpotBase,
