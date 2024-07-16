@@ -19,7 +19,7 @@ class G1ThreeFingerLeftGripper(GripperModel):
         super().__init__(xml_path_completion("grippers/g1_three_finger_left_gripper.xml"), idn=idn)
 
     def format_action(self, action):
-        return action * np.array([0., 1., 1., -1., -1., -1., -1.])
+        return action * np.array([0.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0])
 
     @property
     def init_qpos(self):
@@ -46,7 +46,7 @@ class G1ThreeFingerRightGripper(GripperModel):
         super().__init__(xml_path_completion("grippers/g1_three_finger_right_gripper.xml"), idn=idn)
 
     def format_action(self, action):
-        return action * np.array([0., -1., -1., 1., 1., 1., 1.])
+        return action * np.array([0.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0])
 
     @property
     def init_qpos(self):

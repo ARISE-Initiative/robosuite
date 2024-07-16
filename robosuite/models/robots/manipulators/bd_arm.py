@@ -34,7 +34,7 @@ class BDArm(ManipulatorModel):
 
     @property
     def init_qpos(self):
-        return np.array([0., -1.2, 1.85, 0., 0.862, 0.])
+        return np.array([0.0, -1.2, 1.85, 0.0, 0.862, 0.0])
 
     @property
     def base_xpos_offset(self):

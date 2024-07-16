@@ -33,7 +33,6 @@ BASE_MAPPING = {
     "SpotFloating": SpotFloating,
     "Go2": Go2,
     "Go2Floating": Go2Floating,
-
     # "Z1Base": Z1Base,
     # "SpotBase": SpotBase,
     # "NullLeggedBase": NullLeggedBase,

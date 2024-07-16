@@ -79,10 +79,11 @@ class SpotArmFloating(SpotArm):
     @property
     def default_arms(self):
         return {"right": "BDArm"}
-    
-class Go2VX300S(VX300S):
+
+
+class Go2Arx5(Arx5):
     """
-    Go2 robot with VX300S arm mounted on it.
+    Go2 robot with Arx5 arm mounted on it.
     """
 
     @property
@@ -91,4 +92,4 @@ class Go2VX300S(VX300S):
 
     @property
     def default_arms(self):
-        return {"right": "VX300S"}
+        return {"right": "Arx5"}

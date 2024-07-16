@@ -23,7 +23,7 @@ class PR2Gripper(GripperModel):
 
     @property
     def init_qpos(self):
-        return np.array([0.548, 0., 0.548, 0.])
+        return np.array([0.548, 0.0, 0.548, 0.0])
 
     @property
     def _important_geoms(self):
@@ -31,9 +31,7 @@ class PR2Gripper(GripperModel):
             "left_finger": [
                 "gripper_l_finger_link_collision",
             ],
-            "right_finger": [
-                "gripper_r_finger_link_collision"
-            ],
+            "right_finger": ["gripper_r_finger_link_collision"],
             "left_fingerpad": ["gripper_l_finger_tip_link_collision"],
             "right_fingerpad": ["gripper_r_finger_tip_link_collision"],
         }

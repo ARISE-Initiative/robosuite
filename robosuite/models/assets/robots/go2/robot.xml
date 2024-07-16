@@ -80,7 +80,7 @@
       <geom size="0.047" pos="0.293 0 -0.06" class="collision"/>
       <site name="imu" pos="-0.02557 0 0.04232"/>
   
-        <body name="fixed_support" pos="0.10 0 0.0">
+        <body name="fixed_support" pos="0.085 0 0.07">
 				<body name="support" pos="0.0 0.0 0.0">
               <!-- add robot here -->
               <site name="center" type="sphere" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>

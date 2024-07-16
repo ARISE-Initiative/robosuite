@@ -11,6 +11,7 @@ class Yumi(ManipulatorModel):
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
     """
+
     arms = ["right", "left"]
 
     def __init__(self, idn=0):
@@ -53,13 +54,28 @@ class Yumi(ManipulatorModel):
             np.array: default initial qpos for the right, left arms
         """
         # [right, left]
-        # Arms half extended    
-        return np.array([
-            # -0.802, 0.76, -0.17, -0.134, 0.137, 0.241, 1.57, 
-            # 0.745, 0.76, 0.202, -0.138, -0.0221, 0.374, 1.3,
-            -0.67643, -0.432233, -0.35292, 0.11764, -0.25305, 0.831, 0.99925,
-            0.79407, -0.432233, 0.14705, 0.312945, 3.34026, -0.608925, -1.23907,
-            ])
+        # Arms half extended
+        return np.array(
+            [
+                # -0.802, 0.76, -0.17, -0.134, 0.137, 0.241, 1.57,
+                # 0.745, 0.76, 0.202, -0.138, -0.0221, 0.374, 1.3,
+                -0.67643,
+                -0.432233,
+                -0.35292,
+                0.11764,
+                -0.25305,
+                0.831,
+                0.99925,
+                0.79407,
+                -0.432233,
+                0.14705,
+                0.312945,
+                3.34026,
+                -0.608925,
+                -1.23907,
+            ]
+        )
+
     @property
     def base_xpos_offset(self):
         return {

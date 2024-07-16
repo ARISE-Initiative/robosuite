@@ -17,3 +17,4 @@ from .gr1_robot import GR1, GR1FixedLowerBody, GR1ArmsOnly
 from .h1_robot import H1
 from .g1_robot import G1
 from .pr2_robot import PR2
+from .arx5_robot import Arx5

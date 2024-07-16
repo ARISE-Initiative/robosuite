@@ -14,6 +14,7 @@ from .google_gripper import GoogleGripper
 from .z1_gripper import Z1Gripper
 from .yumi_gripper import YumiLeftGripper, YumiRightGripper
 from .bd_gripper import BDGripper
+from .umi_gripper import UMIGripper
 from .null_gripper import NullGripper
 from .aloha_gripper import AlohaGripper
 from .pr2_gripper import PR2Gripper
@@ -35,6 +36,7 @@ GRIPPER_MAPPING = {
     "GoogleGripper": GoogleGripper,
     "Z1Gripper": Z1Gripper,
     "BDGripper": BDGripper,
+    "UMIGripper": UMIGripper,
     "PR2Gripper": PR2Gripper,
     "YumiLeftGripper": YumiLeftGripper,
     "YumiRightGripper": YumiRightGripper,

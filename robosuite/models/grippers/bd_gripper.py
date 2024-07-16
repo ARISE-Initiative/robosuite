@@ -16,10 +16,9 @@ class BDGripper(GripperModel):
 
     def format_action(self, action):
         assert len(action) == self.dof
-        self.current_action = np.clip(
-            self.current_action + np.array([1.]) * self.speed * np.sign(action), -1.0, 1.0
-        )
+        self.current_action = np.clip(self.current_action + np.array([1.0]) * self.speed * np.sign(action), -1.0, 1.0)
         return self.current_action
+
     @property
     def init_qpos(self):
         return np.array([-1.57])

@@ -16,7 +16,6 @@
     </default>
     <default class="arm_joint">
       <motor ctrllimited="true" ctrlrange="-1000 1000"/>
-      <!-- <joint damping="7.7" armature="1.0" frictionloss="0.2"/> -->
     </default>
     <default class="hand_joint">
       <site rgba="1 0 0 1" size="0.01" group="5"/>

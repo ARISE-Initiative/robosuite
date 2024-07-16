@@ -1,15 +1,14 @@
+<?xml version="1.0" ?>
 <mujoco model="spot">
-  <compiler angle="radian" />
+  <compiler angle="radian"/>
   <option gravity="0 0 0"/>
   <option integrator="implicitfast" cone="elliptic" impratio="100"/>
   <visual>
     <global ellipsoidinertia="true"/>
   </visual>
-
-<asset>
+  <asset>
     <material name="BlackAbs" rgba="0.1 0.1 0.1 1"/>
     <material name="wrap" rgba="0.878431 0.666666 0.227450 1"/>
-
     <mesh file="meshes/body_0.obj" name="body_0"/>
     <mesh file="meshes/body_1.obj" name="body_1"/>
     <mesh file="meshes/front_left_hip.obj" name="front_left_hip"/>
@@ -34,13 +33,12 @@
     <mesh file="meshes/right_upper_leg_collision.obj" name="right_upper_leg_collision"/>
     <mesh file="meshes/right_lower_leg_collision.obj" name="right_lower_leg_collision"/>
   </asset>
-
   <default>
     <default class="spot">
       <geom solref="0.004 1"/>
       <joint actuatorfrcrange="-1000 1000"/>
       <position kp="500" kv="40" inheritrange="1"/>
-      <motor ctrlrange="-33.5 33.5"  ctrllimited="true"/>
+      <motor ctrlrange="-33.5 33.5" ctrllimited="true"/>
     </default>
     <default class="spot_visual">
       <joint actuatorfrcrange="-1000 1000"/>
@@ -48,18 +46,16 @@
       <geom group="1" type="mesh" contype="0" conaffinity="0" solref="0.004 1"/>
     </default>
     <default class="spot_collision">
-        <joint actuatorfrcrange="-1000 1000"/>
-        <position kp="500" kv="40" inheritrange="1"/>
-        <geom group="0" type="mesh" solref="0.004 1"/>
+      <joint actuatorfrcrange="-1000 1000"/>
+      <position kp="500" kv="40" inheritrange="1"/>
+      <geom group="0" type="mesh" solref="0.004 1"/>
     </default>
     <default class="spot_foot">
-        <joint actuatorfrcrange="-1000 1000"/>
-        <position kp="500" kv="40" inheritrange="1"/>
-        <geom type="sphere" size="0.036" pos="0 0 -0.3365" group="0" solimp="0.015 1 0.036" condim="6"
-        friction="0.8 0.02 0.01"/>
+      <joint actuatorfrcrange="-1000 1000"/>
+      <position kp="500" kv="40" inheritrange="1"/>
+      <geom type="sphere" size="0.036" pos="0 0 -0.3365" group="0" solimp="0.015 1 0.036" condim="6" friction="0.8 0.02 0.01"/>
     </default>
   </default>
-
   <worldbody>
     <body name="body" pos="0 0 0">
       <freejoint/>
@@ -67,21 +63,17 @@
       <geom mesh="body_0" material="BlackAbs" class="spot_visual"/>
       <geom mesh="body_1" material="wrap" class="spot_visual"/>
       <geom mesh="body_collision" class="spot_collision"/>
-      
-      
       <body name="fixed_support" pos="0.292 0 0.188">
-				<body name="support" pos="0.0 0.0 0.0">
-              <!-- add robot here -->
-              <site name="center" type="sphere" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
-          </body>
+        <body name="support" pos="0.0 0.0 0.0">
+          <!-- add robot here -->
+          <site name="center" type="sphere" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
+        </body>
       </body>
-
       <!-- FR Leg -->
       <body name="FR_leg">
         <site name="FR_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
         <body name="fr_hip" pos="0.29785 -0.055 0">
-          <inertial pos="-0.00537435 -0.0128418 -9.87523e-05" quat="1 1 -1 1" mass="1.68"
-            diaginertia="0.00226544 0.00211474 0.00181296"/>
+          <inertial pos="-0.00537435 -0.0128418 -9.87523e-05" quat="1 1 -1 1" mass="1.68" diaginertia="0.00226544 0.00211474 0.00181296"/>
           <joint class="spot_collision" name="fr_hx_leg_joint" axis="1 0 0" range="-0.785398 0.785398"/>
           <geom material="BlackAbs" mesh="front_right_hip" class="spot_visual"/>
           <body name="fr_uleg" pos="0 -0.1108 0">
@@ -91,8 +83,7 @@
             <geom mesh="front_right_upper_leg_1" material="BlackAbs" class="spot_visual"/>
             <geom mesh="right_upper_leg_collision" class="spot_collision"/>
             <body name="fr_lleg" pos="0.025 0 -0.32">
-              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35"
-                diaginertia="0.00405032 0.00399902 0.00014934"/>
+              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35" diaginertia="0.00405032 0.00399902 0.00014934"/>
               <joint class="spot_collision" name="fr_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.255648"/>
               <geom material="BlackAbs" mesh="front_right_lower_leg" class="spot_visual"/>
               <geom mesh="right_lower_leg_collision" class="spot_collision"/>
@@ -102,13 +93,11 @@
         </body>
       </body>
       <!-- End of FR Leg -->
-
       <!-- FL Leg -->
       <body name="FL_leg">
-        <site name="FL_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>  
+        <site name="FL_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
         <body name="fl_hip" pos="0.29785 0.055 0">
-          <inertial pos="-0.00537435 0.0128418 9.87523e-05" quat="1 1 -1 1" mass="1.68"
-            diaginertia="0.00226544 0.00211474 0.00181296"/>
+          <inertial pos="-0.00537435 0.0128418 9.87523e-05" quat="1 1 -1 1" mass="1.68" diaginertia="0.00226544 0.00211474 0.00181296"/>
           <joint class="spot_collision" name="fl_hx_leg_joint" axis="1 0 0" range="-0.785398 0.785398"/>
           <geom material="BlackAbs" mesh="front_left_hip" class="spot_visual"/>
           <body name="fl_uleg" pos="0 0.1108 0">
@@ -118,8 +107,7 @@
             <geom mesh="front_left_upper_leg_1" material="BlackAbs" class="spot_visual"/>
             <geom mesh="left_upper_leg_collision" class="spot_collision"/>
             <body name="fl_lleg" pos="0.025 0 -0.32">
-              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35"
-                diaginertia="0.00405032 0.00399902 0.00014934"/>
+              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35" diaginertia="0.00405032 0.00399902 0.00014934"/>
               <joint class="spot_collision" name="fl_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.254402"/>
               <geom material="BlackAbs" mesh="front_left_lower_leg" class="spot_visual"/>
               <geom mesh="left_lower_leg_collision" class="spot_collision"/>
@@ -129,13 +117,11 @@
         </body>
       </body>
       <!-- End of FL Leg -->
-
       <!-- Start of RR Leg -->
       <body name="RR_leg">
         <site name="RR_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
         <body name="hr_hip" pos="-0.29785 -0.055 0">
-          <inertial pos="0.00537435 -0.0128418 9.87523e-05" quat="1 1 -1 1" mass="1.68"
-            diaginertia="0.00226544 0.00211474 0.00181296"/>
+          <inertial pos="0.00537435 -0.0128418 9.87523e-05" quat="1 1 -1 1" mass="1.68" diaginertia="0.00226544 0.00211474 0.00181296"/>
           <joint class="spot_collision" name="hr_hx_leg_joint" axis="1 0 0" range="-0.785398 0.785398"/>
           <geom material="BlackAbs" mesh="rear_right_hip" class="spot_visual"/>
           <body name="hr_uleg" pos="0 -0.1108 0">
@@ -145,8 +131,7 @@
             <geom mesh="rear_right_upper_leg_1" material="BlackAbs" class="spot_visual"/>
             <geom mesh="right_upper_leg_collision" class="spot_collision"/>
             <body name="hr_lleg" pos="0.025 0 -0.32">
-              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35"
-                diaginertia="0.00405032 0.00399902 0.00014934"/>
+              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35" diaginertia="0.00405032 0.00399902 0.00014934"/>
               <joint class="spot_collision" name="hr_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.248282"/>
               <geom material="BlackAbs" mesh="rear_left_lower_leg" class="spot_visual"/>
               <geom mesh="right_lower_leg_collision" class="spot_collision"/>
@@ -156,13 +141,11 @@
         </body>
       </body>
       <!-- End of RR Leg -->
-
       <!-- Start of RL Leg -->
       <body name="RL_leg">
         <site name="RL_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
         <body name="hl_hip" pos="-0.29785 0.055 0">
-          <inertial pos="0.00537435 0.0128418 -9.87523e-05" quat="1 1 -1 1" mass="1.68"
-            diaginertia="0.00226544 0.00211474 0.00181296"/>
+          <inertial pos="0.00537435 0.0128418 -9.87523e-05" quat="1 1 -1 1" mass="1.68" diaginertia="0.00226544 0.00211474 0.00181296"/>
           <joint class="spot_collision" name="hl_hx_leg_joint" axis="1 0 0" range="-0.785398 0.785398"/>
           <geom material="BlackAbs" mesh="rear_left_hip" class="spot_visual"/>
           <body name="hl_uleg" pos="0 0.1108 0">
@@ -172,8 +155,7 @@
             <geom mesh="rear_left_upper_leg_1" material="BlackAbs" class="spot_visual"/>
             <geom mesh="left_upper_leg_collision" class="spot_collision"/>
             <body name="hl_lleg" pos="0.025 0 -0.32">
-              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35"
-                diaginertia="0.00405032 0.00399902 0.00014934"/>
+              <inertial pos="0.00225794 4.6076e-05 -0.180082" quat="1 0 0 1" mass="0.35" diaginertia="0.00405032 0.00399902 0.00014934"/>
               <joint class="spot_collision" name="hl_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.247067"/>
               <geom material="BlackAbs" mesh="rear_left_lower_leg" class="spot_visual"/>
               <geom mesh="left_lower_leg_collision" class="spot_collision"/>
@@ -185,14 +167,12 @@
       <!-- End of RL Leg -->
     </body>
   </worldbody>
-
   <contact>
     <exclude body1="body" body2="fl_uleg"/>
     <exclude body1="body" body2="fr_uleg"/>
     <exclude body1="body" body2="hl_uleg"/>
     <exclude body1="body" body2="hr_uleg"/>
   </contact>
-
   <actuator>
     <motor class="spot" name="fr_hx_leg" joint="fr_hx_leg_joint"/>
     <motor class="spot" name="fr_hy_leg" joint="fr_hy_leg_joint"/>

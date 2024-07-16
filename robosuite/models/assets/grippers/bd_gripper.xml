@@ -44,8 +44,6 @@
   </default>
 
   <worldbody>
-    <light pos="3 0 4"/>
-
     <body name="right_gripper" pos="0 0 0" quat="1 0 0 0">
         <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
         <inertial pos="0 0 0.0" quat="0.707107 0.707107 0 0" mass="0.3" diaginertia="0.09 0.07 0.05" />
