@@ -15,31 +15,7 @@ from . import generic
 from . import gripper as gripper_controllers
 
 # from . import legs as legs_controllers
-# Global var for linking pybullet server to multiple ik controller instances if necessary
-pybullet_server = None
 
-
-def reset_controllers():
-    """
-    Global function for doing one-time clears and restarting of any global controller-related
-    specifics before re-initializing each individual controller again
-    """
-    global pybullet_server
-    # Disconnect and reconnect to pybullet server if it exists
-    if pybullet_server is not None:
-        pybullet_server.disconnect()
-        pybullet_server.connect()
-
-
-def get_pybullet_server():
-    """
-    Getter to return reference to pybullet server module variable
-
-    Returns:
-        PyBulletServer: Server instance running PyBullet
-    """
-    global pybullet_server
-    return pybullet_server
 
 
 def load_controller_config(custom_fpath=None, default_controller=None):
@@ -145,18 +121,10 @@ def arm_controller_factory(name, params):
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.set_states(dim=4, ori="quat")
 
-        # Import pybullet server if necessary
-        global pybullet_server
-        from robosuite.controllers.arm.ik import InverseKinematicsController
-
-        if pybullet_server is None:
-            from robosuite.controllers.arm.ik import PyBulletServer
-
-            pybullet_server = PyBulletServer()
+        from robosuite.controllers.arm.ik_new import InverseKinematicsController
         return InverseKinematicsController(
             interpolator_pos=interpolator,
             interpolator_ori=ori_interpolator,
-            bullet_server_id=pybullet_server.server_id,
             **params,
         )
 

@@ -4,7 +4,6 @@ from copy import deepcopy
 import numpy as np
 
 import robosuite.macros as macros
-from robosuite.controllers import reset_controllers
 from robosuite.environments.base import MujocoEnv
 from robosuite.robots import ROBOT_CLASS_MAPPING
 from robosuite.utils.mjcf_utils import IMAGE_CONVENTION_MAPPING
@@ -523,9 +522,6 @@ class RobotEnv(MujocoEnv):
         """
         # Run superclass reset functionality
         super()._reset_internal()
-
-        # Reset controllers
-        reset_controllers()
 
         # Reset action dim
         self._action_dim = 0
