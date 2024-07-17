@@ -486,22 +486,25 @@ class NutAssembly(ManipulationEnv):
             pf = self.robots[0].robot_model.naming_prefix
             modality = "object"
 
-            # Reset nut sensor mappings
-            self.nut_id_to_sensors = {}
-
             # for conversion to relative gripper frame
-            @sensor(modality=modality)
-            def world_pose_in_gripper(obs_cache):
-                return (
-                    T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"])))
-                    if f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache
-                    else np.eye(4)
-                )
+            def get_world_pose_grippers(modality, arm_prefix, name):
+                @sensor(modality=modality)
+                def fn(obs_cache):
+                    return (
+                        T.pose_inv(T.pose2mat((obs_cache[f"{arm_prefix}eef_pos"], obs_cache[f"{arm_prefix}eef_quat"])))
+                        if f"{arm_prefix}eef_pos" in obs_cache and f"{arm_prefix}eef_quat" in obs_cache
+                        else np.eye(4)
+                    )
+                fn.__name__ = name
+                return fn
+            
+            arm_prefixes = self._get_arm_prefixes(self.robots[0])
 
-            sensors = [world_pose_in_gripper]
-            names = ["world_pose_in_gripper"]
-            enableds = [True]
-            actives = [False]
+            #following convention to not include naming prefix in observable name
+            sensors = [get_world_pose_grippers(modality, arm_prefix=arm_prefix, name=f"world_pose_in_{arm_prefix}_gripper") for arm_prefix in arm_prefixes]
+            names = [fn.__name__ for fn in sensors]
+            actives = [False] * len(sensors)
+            enableds = [True] * len(sensors)
 
             # Define nut related sensors
             for i, nut in enumerate(self.nuts):
@@ -510,8 +513,8 @@ class NutAssembly(ManipulationEnv):
                 nut_sensors, nut_sensor_names = self._create_nut_sensors(nut_name=nut.name, modality=modality)
                 sensors += nut_sensors
                 names += nut_sensor_names
-                enableds += [using_nut] * 4
-                actives += [using_nut] * 4
+                enableds += [using_nut] * len(nut_sensors)
+                actives += [using_nut] * len(nut_sensors)
                 self.nut_id_to_sensors[i] = nut_sensor_names
 
             if self.single_object_mode == 1:
@@ -561,27 +564,39 @@ class NutAssembly(ManipulationEnv):
         def nut_quat(obs_cache):
             return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut_name]], to="xyzw")
 
-        @sensor(modality=modality)
-        def nut_to_eef_pos(obs_cache):
-            # Immediately return default value if cache is empty
-            if any(
-                [name not in obs_cache for name in [f"{nut_name}_pos", f"{nut_name}_quat", "world_pose_in_gripper"]]
-            ):
-                return np.zeros(3)
-            obj_pose = T.pose2mat((obs_cache[f"{nut_name}_pos"], obs_cache[f"{nut_name}_quat"]))
-            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
-            rel_pos, rel_quat = T.mat2pose(rel_pose)
-            obs_cache[f"{nut_name}_to_{pf}eef_quat"] = rel_quat
-            return rel_pos
+        def get_nut_to_eefs_pos(arm_prefix, name):
 
-        @sensor(modality=modality)
-        def nut_to_eef_quat(obs_cache):
-            return (
-                obs_cache[f"{nut_name}_to_{pf}eef_quat"] if f"{nut_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
-            )
+            @sensor(modality=modality)
+            def fn(obs_cache):
+                # Immediately return default value if cache is empty
+                if any(
+                    [name not in obs_cache for name in [f"{nut_name}_pos", f"{nut_name}_quat", f"world_pose_in_{arm_prefix}_gripper"]]
+                ):
+                    return np.zeros(3)
+                obj_pose = T.pose2mat((obs_cache[f"{nut_name}_pos"], obs_cache[f"{nut_name}_quat"]))
+                rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache[f"world_pose_in_{arm_prefix}_gripper"])
+                rel_pos, rel_quat = T.mat2pose(rel_pose)
+                obs_cache[f"{nut_name}_to_{arm_prefix}eef_quat"] = rel_quat
+                return rel_pos
+            
+            fn.__name__ = name
+            return fn
+        
+        def get_nut_to_eefs_quat(arm_prefix, name):
+            @sensor(modality=modality)
+            def fn(obs_cache):
+                return obs_cache[f"{nut_name}_to_{arm_prefix}eef_quat"] if f"{nut_name}_to_{arm_prefix}eef_quat" in obs_cache else np.zeros(4)
+            fn.__name__ = name
+            return fn
+        
+        arm_prefixes = self._get_arm_prefixes(self.robots[0])
 
-        sensors = [nut_pos, nut_quat, nut_to_eef_pos, nut_to_eef_quat]
-        names = [f"{nut_name}_pos", f"{nut_name}_quat", f"{nut_name}_to_{pf}eef_pos", f"{nut_name}_to_{pf}eef_quat"]
+        sensors = [get_nut_to_eefs_pos(arm_prefix, f"{nut_name}_to_{arm_prefix}eef_pos") for arm_prefix in arm_prefixes] \
+                + [get_nut_to_eefs_quat(arm_prefix, f"{nut_name}_to_{arm_prefix}eef_quat") for arm_prefix in arm_prefixes]
+        names = [fn.__name__ for fn in sensors]
+
+        sensors += [nut_pos, nut_quat]
+        names += [f"{nut_name}_pos", f"{nut_name}_quat"]
 
         return sensors, names
 
@@ -631,11 +646,10 @@ class NutAssembly(ManipulationEnv):
             bool: True if all nuts are placed correctly
         """
         # remember objects that are on the correct pegs
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]]
         for i, nut in enumerate(self.nuts):
             obj_str = nut.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
-            dist = np.linalg.norm(gripper_site_pos - obj_pos)
+            dist = min([np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - obj_pos) for arm in self.robots[0].arms])
             r_reach = 1 - np.tanh(10.0 * dist)
             self.objects_on_pegs[i] = int(self.on_peg(obj_pos, i) and r_reach < 0.6)
 
