@@ -23,11 +23,11 @@ class Recorder:
             self.data_dict[f'/observations/images/{cam_name}'] = []
         
 
-    def record(self, obs) -> None:
+    def record(self, obs, action) -> None:
         qpos = np.arctan2(obs['robot0_joint_pos_sin'], obs['robot0_joint_pos_cos'])
         self.data_dict['/observations/qpos'].append(np.concatenate((qpos, obs['grasp'])))
         self.data_dict['/observations/qvel'].append(np.concatenate((obs['robot0_joint_vel'], obs['grasp'])))
-        self.data_dict['/action'].append(np.concatenate((obs['robot0_eef_pos'], obs['robot0_eef_quat'], obs['grasp'])))
+        self.data_dict['/action'].append(action)
         for cam_name in self.cameras:
             self.data_dict[f'/observations/images/{cam_name}'].append(obs[cam_name + "_image"])
 
@@ -66,7 +66,7 @@ class Recorder:
             qpos = obs.create_dataset('qpos', (episode_len, 8))
             qvel = obs.create_dataset('qvel', (episode_len, 8))
             # image = obs.create_dataset("image", (episode_len, 240, 320, 3), dtype='uint8', chunks=(1, 240, 320, 3))
-            action = root.create_dataset('action', (episode_len, 8))
+            action = root.create_dataset('action', (episode_len, 7))
             
             for name, array in self.data_dict.items():
                 root[name][...] = array

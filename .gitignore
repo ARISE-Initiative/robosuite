@@ -9,6 +9,9 @@ __pycache__/
 # data recordings
 *.hdf5
 
+# recorded data
+data/
+
 # Distribution / packaging
 .Python
 env/
@@ -70,6 +73,8 @@ docs/_build/
 # PyBuilder
 target/
 
+checkpoints/
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
@@ -111,7 +116,6 @@ mjkey.txt
 
 .mujocomanip_temp_model.xml
 
-*.jpg
 .idea
 
 .pytest_cache/

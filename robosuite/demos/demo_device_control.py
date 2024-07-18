@@ -245,10 +245,13 @@ if __name__ == "__main__":
             elif rem_action_dim < 0:
                 # We're in an environment with no gripper action space, so trim the action space to be the action dim
                 action = action[: env.action_dim]
+            
+            # record the current obs and corresponding action picked
+            obs['grasp'] = np.array([0]) if grasp == -1 else np.array([1])
+            recorder.record(obs, action)
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
-            obs['grasp'] = np.array([0]) if grasp == -1 else np.array([1])
-            recorder.record(obs)
+            
             
             env.render()
