@@ -209,12 +209,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
     if controller.name == "IK_POSE":
-        # If this is panda, want to swap x and y axis
-        if isinstance(robot.robot_model, Panda):
-            drotation = drotation[[1, 0, 2]]
-        else:
-            # Flip x
-            drotation[0] = -drotation[0]
+        drotation[2] = -drotation[2]
+
         # Scale rotation for teleoperation (tuned for IK)
         drotation *= 10
         dpos *= 5
