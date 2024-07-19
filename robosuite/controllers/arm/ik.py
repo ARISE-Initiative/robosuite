@@ -370,9 +370,6 @@ class InverseKinematicsController(JointVelocityController):
         self.reference_target_pos = self.ref_pos
         self.reference_target_orn = T.mat2quat(self.ref_ori_mat)
 
-        # Sync pybullet state as well
-        self.sync_state()
-
     def _clip_ik_input(self, dpos, rotation):
         """
         Helper function that clips desired ik input deltas into a valid range.
