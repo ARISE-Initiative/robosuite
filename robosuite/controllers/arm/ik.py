@@ -25,7 +25,7 @@ from robosuite.utils.control_utils import *
 from robosuite.utils.binding_utils import MjSim
 
 # Dict of supported ik robots
-SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda"}
+SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda", "GR1FixedLowerBody"}
 
 
 class InverseKinematicsController(JointVelocityController):
@@ -191,7 +191,7 @@ class InverseKinematicsController(JointVelocityController):
         control_freq: float,
         velocity_limits: Optional[np.ndarray],
         dpos: Optional[np.ndarray] = None,
-        rotation: Optional[np.ndarray] = None,
+        drot: Optional[np.ndarray] = None,
         Kn: Optional[np.ndarray] = np.array([10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 5.0]),
         damping_pseudo_inv: float = 1e-3,
         Kpos: float = 0.9,
@@ -199,7 +199,7 @@ class InverseKinematicsController(JointVelocityController):
     ) -> np.ndarray:
         """
         Returns joint velocities to control the robot after the target end effector
-        position and orientation are updated from arguments @dpos and @rotation.
+        position and orientation are updated from arguments @dpos and @drot.
         If no arguments are provided, joint velocities will be set as zero.
 
         Args:
@@ -210,7 +210,7 @@ class InverseKinematicsController(JointVelocityController):
             control_freq (float): Control frequency.
             velocity_limits (np.array): Limits on joint velocities.
             dpos (Optional[np.array]): Desired change in end-effector position.
-            rotation (Optional[np.array]): Desired rotation matrix.
+            drot (Optional[np.array]): Desired change in orientation for the reference site (e.g end effector).
             update_targets (bool): Whether to update ik target pos / ori attributes or not.
             Kpos (float): Position gain. Between 0 and 1.
                 0 means no movement, 1 means move end effector to desired position in one integration step.
@@ -219,7 +219,7 @@ class InverseKinematicsController(JointVelocityController):
         Returns:
             np.array: A flat array of joint velocity commands to apply to try and achieve the desired input control.
         """
-        if (dpos is not None) and (rotation is not None):
+        if (dpos is not None) and (drot is not None):
             max_angvel = velocity_limits[1] if velocity_limits is not None else 0.7
             integration_dt: float = 1 / control_freq
 
@@ -233,7 +233,7 @@ class InverseKinematicsController(JointVelocityController):
             dof_ids = joint_indices
 
             twist[:3] = Kpos * dpos / integration_dt
-            mujoco.mju_mat2Quat(error_quat, rotation.reshape(-1))
+            mujoco.mju_mat2Quat(error_quat, drot.reshape(-1))
             mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
             twist[3:] *= Kori / integration_dt
 
