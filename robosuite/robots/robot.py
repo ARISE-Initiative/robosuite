@@ -536,7 +536,8 @@ class Robot(object):
             int: degrees of freedom of the robot (with grippers).
         """
         # Get the dof of the base robot model
-        dof = super().dof
+        dof = self.robot_model.dof
+        # dof = super().dof
         for gripper in self.robot_model.grippers.values():
             dof += gripper.dof
         return dof
