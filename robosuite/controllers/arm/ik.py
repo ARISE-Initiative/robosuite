@@ -13,7 +13,7 @@ Attempting to run IK with any other robot will raise an error!
 ***********************************************************************************
 """
 
-from typing import Optional
+from typing import List, Optional, Union
 
 import numpy as np
 
@@ -45,7 +45,7 @@ class InverseKinematicsController(JointVelocityController):
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
 
-        ref_name (str): Name of controlled robot arm's end effector (from robot XML)
+        ref_name: Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
 
@@ -84,11 +84,11 @@ class InverseKinematicsController(JointVelocityController):
     def __init__(
         self,
         sim,
-        ref_name,
+        ref_name: Union[List[str], str],
         joint_indexes,
         robot_name,
         actuator_range,
-        eef_rot_offset,
+        eef_rot_offset=None,
         bullet_server_id=0,
         policy_freq=20,
         load_urdf=True,
@@ -131,9 +131,14 @@ class InverseKinematicsController(JointVelocityController):
 
         self.rest_poses = None
 
+        self.num_ref_sites = 1 if isinstance(ref_name, str) else len(ref_name)
         # Set the reference robot target pos / orientation (to prevent drift / weird ik numerical behavior over time)
-        self.reference_target_pos = self.ref_pos
-        self.reference_target_orn = T.mat2quat(self.ref_ori_mat)
+        if self.num_ref_sites == 1:
+            self.reference_target_pos = self.ref_pos
+            self.reference_target_orn = T.mat2quat(self.ref_ori_mat)
+        else:
+            self.reference_target_pos = self.ref_pos
+            self.reference_target_orn = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
 
         # Interpolator
         self.interpolator_pos = interpolator_pos
@@ -178,6 +183,7 @@ class InverseKinematicsController(JointVelocityController):
             self.velocity_limits,
             dpos,
             rotation,
+            jac=self.J_full,
         )
         self.commanded_joint_velocities = velocities
         return velocities
@@ -187,7 +193,7 @@ class InverseKinematicsController(JointVelocityController):
         sim: MjSim,
         initial_joint: np.ndarray,
         joint_indices: np.ndarray,
-        ref_name: str,
+        ref_name: Union[List[str], str],
         control_freq: float,
         velocity_limits: Optional[np.ndarray],
         dpos: Optional[np.ndarray] = None,
@@ -196,6 +202,7 @@ class InverseKinematicsController(JointVelocityController):
         damping_pseudo_inv: float = 1e-3,
         Kpos: float = 0.9,
         Kori: float = 0.9,
+        jac: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
         Returns joint velocities to control the robot after the target end effector
@@ -206,7 +213,7 @@ class InverseKinematicsController(JointVelocityController):
             sim (MjSim): The simulation object.
             initial_joint (np.array): Initial joint positions.
             joint_indices (np.array): Indices of the joints.
-            ref_name (str): End-effector name.
+            ref_name: Reference site name.
             control_freq (float): Control frequency.
             velocity_limits (np.array): Limits on joint velocities.
             dpos (Optional[np.array]): Desired change in end-effector position.
@@ -215,6 +222,7 @@ class InverseKinematicsController(JointVelocityController):
             Kpos (float): Position gain. Between 0 and 1.
                 0 means no movement, 1 means move end effector to desired position in one integration step.
             Kori (float): Orientation gain. Between 0 and 1.
+            jac (Optional[np.array]): Precomputed jacobian matrix.
 
         Returns:
             np.array: A flat array of joint velocity commands to apply to try and achieve the desired input control.
@@ -223,7 +231,6 @@ class InverseKinematicsController(JointVelocityController):
             max_angvel = velocity_limits[1] if velocity_limits is not None else 0.7
             integration_dt: float = 1 / control_freq
 
-            jac = np.zeros((6, sim.model.nv), dtype=np.float64)
             diag = damping_pseudo_inv * np.eye(6)
             eye = np.eye(len(joint_indices))
             twist = np.zeros(6)
@@ -237,14 +244,15 @@ class InverseKinematicsController(JointVelocityController):
             mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
             twist[3:] *= Kori / integration_dt
 
-            mujoco.mj_jacSite(
-                sim.model._model,
-                sim.data._data,
-                jac[:3],
-                jac[3:],
-                sim.data.site(ref_name).id,
-            )
-
+            if jac is None:
+                jac = np.zeros((6, sim.model.nv), dtype=np.float64)
+                mujoco.mj_jacSite(
+                    sim.model._model,
+                    sim.data._data,
+                    jac[:3],
+                    jac[3:],
+                    sim.data.site(ref_name).id,
+                )
             jac = jac[:, dof_ids]
 
             dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, twist)
@@ -274,7 +282,7 @@ class InverseKinematicsController(JointVelocityController):
             set_ik (Iterable): If set, overrides @delta and sets the desired global position / orientation goal state
         """
         # Update state
-        self.update()
+        self.update(force=True)  # force because new_update = True only set in super().run_controller()
 
         # Get requested delta inputs if we're using interpolators
         (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
@@ -313,7 +321,7 @@ class InverseKinematicsController(JointVelocityController):
              np.array: Command torques
         """
         # Update state
-        self.update()
+        self.update(force=True)  # force because new_update = True only set in super().run_controller()
 
         # Update interpolated action if necessary
         desired_pos = None
@@ -412,9 +420,15 @@ class InverseKinematicsController(JointVelocityController):
         # Clip action appropriately
         dpos, rotation = self._clip_ik_input(action[:3], action[3:])
 
-        # Update reference targets
-        self.reference_target_pos += dpos * self.user_sensitivity
-        self.reference_target_orn = T.quat_multiply(old_quat, rotation)
+
+        if self.num_ref_sites == 1:
+            # Update reference targets
+            self.reference_target_pos += dpos * self.user_sensitivity
+            self.reference_target_orn = T.quat_multiply(old_quat, rotation)
+        else:
+            # Update reference targets
+            self.reference_target_pos += dpos * self.user_sensitivity
+            self.reference_target_orn = np.array([T.quat_multiply(old_quat[i], rotation) for i in range(self.num_ref_sites)])
 
         return {"dpos": dpos * self.user_sensitivity, "rotation": T.quat2mat(rotation)}
 
