@@ -22,6 +22,8 @@ def load_renderer_config(renderer):
         fname = "config/nvisii_config.json"
     elif renderer == "mjviewer":
         return {}
+    elif renderer == "mujoco":
+        return {}
     else:
         raise ValueError(f"renderer type can only be  'nvisii', or 'mjviewer' got '{renderer}'")
 

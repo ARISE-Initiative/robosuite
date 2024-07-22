@@ -1,15 +1,28 @@
+import cv2
+import numpy as np
 from mujoco import viewer
 
 
 class MjviewerRenderer:
-    def __init__(self, env, camera_id=None, cam_config=None):
+    def __init__(self, env, camera_id=None, cam_config=None, sim=None):
         self.env = env
         self.camera_id = camera_id
         self.viewer = None
         self.camera_config = cam_config
 
+        self.width = 1280
+        self.height = 800
+        self.sim = sim
+        self.camera_name = self.sim.model.camera_id2name(0)
+
     def render(self):
-        pass
+        # get frame with offscreen renderer (assumes that the renderer already exists)
+        im = self.sim.render( height=self.height, width=self.width)[..., ::-1]
+
+        # write frame to window
+        im = np.flip(im, axis=0)
+        # cv2.imshow("offscreen render", im)
+        return im
 
     def set_camera(self, camera_id):
         self.camera_id = camera_id
