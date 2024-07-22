@@ -147,7 +147,7 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False):
     return list(robots)[k]
 
 
-def input2action(device, robot, active_arm="right", env_configuration=None, mirror_actions=False):
+def input2action(device, robot, active_arm="right", active_end_effector: str = "right", env_configuration=None, mirror_actions=False):
     """
     Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -159,9 +159,9 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
 
         robot (Robot): Which robot we're controlling
 
-        active_arm (str): Only applicable for multi-armed setups (e.g.: multi-arm environments or bimanual robots).
-            Allows inputs to be converted correctly if the control type (e.g.: IK) is dependent on arm choice.
-            Choices are {right, left}
+        active_body_part (str): Allows inputs to be converted correctly if the control type (e.g.: OSC) is dependent on arm choice.
+
+        active_end_effector (str): Which end effector we're controlling
 
         env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
             correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
@@ -204,7 +204,7 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
 
     # Get controller reference
     controller = robot.controller[active_arm]
-    gripper_dof = robot.gripper[active_arm].dof
+    gripper_dof = robot.gripper[active_end_effector].dof
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
