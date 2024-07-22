@@ -144,3 +144,28 @@ class HybridMobileBaseCompositeController(CompositeController):
     def action_limits(self):
         low, high = super().action_limits
         return np.concatenate((low, [-1])), np.concatenate((high, [1]))
+
+
+class WholeBodyCompositeController(CompositeController):
+    def _init_controllers(self):
+        for part_name in self.controller_config.keys():
+            self.controllers[part_name] = controller_factory(
+                self.controller_config[part_name]["type"], 
+                {
+                    **self.controller_config[part_name], 
+                    "sim": self.sim,
+                    "joint_indexes": {
+                        "joints": [self.sim.model.joint(joint_name).id for joint_name in self.robot_model.joints],
+                        "qpos": [self.sim.model.get_joint_qpos_addr(joint_name) for joint_name in self.robot_model.joints],
+                        "qvel": [self.sim.model.get_joint_qvel_addr(joint_name) for joint_name in self.robot_model.joints],
+                    }
+                }  # manually add sim to the controller config
+            )
+
+    def set_goal(self, all_action: np.ndarray):
+        return super().set_goal(all_action)
+    
+
+    def update_state(self):
+        # no need for extra update state here or in CompositeController, I believe
+        return
