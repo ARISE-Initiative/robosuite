@@ -21,7 +21,7 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration):
+def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -51,7 +51,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
         # Get the newest action
         input_action, grasp = input2action(
-            device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
+            device=device, robot=active_robot, active_arm=arm, active_end_effector=end_effector, env_configuration=env_configuration
         )
 
         # If action is none, then this a reset so we should break
@@ -72,7 +72,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             action = env.robots[0].create_action_vector(
                 {
                     arm: arm_actions,
-                    f"{arm}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[arm].dof),
+                    f"{end_effector}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof),
                     env.robots[0].base: base_action,
                     # env.robots[0].head: base_action,
                     # env.robots[0].torso: base_action
@@ -87,7 +87,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
                 env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:
             arm_actions = input_action
-            action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{arm}_gripper": arm_actions[-1:]})
+            action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
         # action[-1] = input_action[-1]
         env.step(action)
         env.render()
@@ -237,6 +237,26 @@ if __name__ == "__main__":
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
+        "composite_controller_configs": {
+            "type": "WHOLE_BODY",
+            # body-part-name to sites mapping and actuators available for control
+            # e.g.
+            "controller_configs": {
+                    "arms_body": 
+                        {
+                            "ref_names": ["right_eef_site", "left_eef_site"],
+                            "joint_indexes": None,
+                            "actuator_range": [-2, 2], # dummy values
+                            "type": "IK_POSE",
+                            "part_name": "arms_body",
+                            "ref_name": ["robot0_right_eef_site", "robot0_left_eef_site"],
+                            "interpolation": None,
+                            "robot_name": args.robots[0]
+                        },
+                    # "left_gripper": ["left_gripper_site"], 
+                    # "right_gripper": ["right_gripper_site"]
+            }
+        },
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
