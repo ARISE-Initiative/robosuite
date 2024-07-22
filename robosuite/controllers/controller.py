@@ -68,7 +68,6 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         self.part_name = part_name
         self.naming_prefix = naming_prefix
-
         self.joint_index = joint_indexes["joints"]
         self.qpos_index = joint_indexes["qpos"]
         self.qvel_index = joint_indexes["qvel"]
@@ -82,14 +81,38 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.joint_pos = None
         self.joint_vel = None
 
-        # dynamics and kinematics
-        self.J_pos = None
-        self.J_ori = None
-        self.J_full = None
-        self.mass_matrix = None
-
         # Joint dimension
         self.joint_dim = len(joint_indexes["joints"])
+
+        if isinstance(ref_name, str):
+            self.ref_names = [ref_name]
+            self.num_ref_sites = 1
+        else:
+            self.ref_names = ref_name
+            self.num_ref_sites = len(ref_name)
+
+        # Initialize robot states
+        if self.num_ref_sites == 1:
+            # non-batched for backward compatibility
+            self.ref_pos = np.zeros(3)
+            self.ref_ori_mat = np.zeros((3, 3))
+            self.ref_pos_vel = np.zeros(3)
+            self.ref_ori_vel = np.zeros(3)
+            # Initialize Jacobians
+            self.J_pos = np.zeros((3, len(self.joint_index)))
+            self.J_ori = np.zeros((3, len(self.joint_index)))
+            self.J_full = np.zeros((6, len(self.joint_index)))
+        else:
+            self.ref_pos = np.zeros((self.num_ref_sites, 3))
+            self.ref_ori_mat = np.zeros((self.num_ref_sites, 3, 3))
+            self.ref_pos_vel = np.zeros((self.num_ref_sites, 3))
+            self.ref_ori_vel = np.zeros((self.num_ref_sites, 3))
+            # Initialize Jacobians
+            self.J_pos = np.zeros((self.num_ref_sites, 3, len(self.joint_index)))
+            self.J_ori = np.zeros((self.num_ref_sites, 3, len(self.joint_index)))
+            self.J_full = np.zeros((self.num_ref_sites, 6, len(self.joint_index)))
+
+        self.mass_matrix = None
 
         # Torques being outputted by the controller
         self.torques = None
@@ -139,6 +162,34 @@ class Controller(object, metaclass=abc.ABCMeta):
 
         return transformed_action
 
+    def update_reference_data(self):
+        if self.num_ref_sites == 1:
+            self._update_single_reference(self.ref_name, 0)
+        else:
+            for i, name in enumerate(self.ref_name):
+                self._update_single_reference(name, i)
+
+    def _update_single_reference(self, name: str, index: int):
+        ref_id = self.sim.model.site_name2id(name)
+
+        if self.num_ref_sites == 1:
+            self.ref_pos[:] = np.array(self.sim.data.site_xpos[ref_id])
+            self.ref_ori_mat[:, :] = np.array(self.sim.data.site_xmat[ref_id].reshape([3, 3]))
+            self.ref_pos_vel[:] = np.array(self.sim.data.get_site_xvelp(name))
+            self.ref_ori_vel[:] = np.array(self.sim.data.get_site_xvelr(name))
+            self.J_pos[:, :] = np.array(self.sim.data.get_site_jacp(name).reshape((3, -1))[:, self.qvel_index])
+            self.J_ori[:, :] = np.array(self.sim.data.get_site_jacr(name).reshape((3, -1))[:, self.qvel_index])
+            self.J_full[:, :] = np.vstack([self.J_pos, self.J_ori])
+        else:
+            self.ref_pos[index, :] = np.array(self.sim.data.site_xpos[ref_id])
+            self.ref_ori_mat[index, :, :] = np.array(self.sim.data.site_xmat[ref_id].reshape([3, 3]))
+            self.ref_pos_vel[index, :] = np.array(self.sim.data.get_site_xvelp(name))
+            self.ref_ori_vel[index, :] = np.array(self.sim.data.get_site_xvelr(name))
+
+            self.J_pos[index, :, :] = np.array(self.sim.data.get_site_jacp(name).reshape((3, -1))[:, self.qvel_index])
+            self.J_ori[index, :, :] = np.array(self.sim.data.get_site_jacr(name).reshape((3, -1))[:, self.qvel_index])
+            self.J_full[index, :, :] = np.vstack([self.J_pos[index], self.J_ori[index]])
+
     def update(self, force=False):
         """
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,
@@ -161,17 +212,8 @@ class Controller(object, metaclass=abc.ABCMeta):
                 self.sim.forward()
 
             if self.ref_name is not None:
-                self.ref_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.ref_name)])
-                self.ref_ori_mat = np.array(
-                    self.sim.data.site_xmat[self.sim.model.site_name2id(self.ref_name)].reshape([3, 3])
-                )
-                self.ref_pos_vel = np.array(self.sim.data.get_site_xvelp(self.ref_name))
-                self.ref_ori_vel = np.array(self.sim.data.get_site_xvelr(self.ref_name))
-
-                self.J_pos = np.array(self.sim.data.get_site_jacp(self.ref_name).reshape((3, -1))[:, self.qvel_index])
-                self.J_ori = np.array(self.sim.data.get_site_jacr(self.ref_name).reshape((3, -1))[:, self.qvel_index])
-                self.J_full = np.array(np.vstack([self.J_pos, self.J_ori]))
-
+                self.update_reference_data()
+                
             self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
             self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
 
