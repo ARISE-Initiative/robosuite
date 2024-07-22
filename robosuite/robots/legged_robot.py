@@ -95,7 +95,10 @@ class LeggedRobot(MobileBaseRobot):
         self._load_head_controller()
         self._load_torso_controller()
 
-        self.composite_controller.load_controller_config(self.controller_config)
+        self.composite_controller.load_controller_config(
+            self.composite_controller_config['controller_configs']
+            if self.composite_controller_config.get('controller_configs', None) is not None else self.controller_config
+        )
         self.enable_parts()
 
     def load_model(self):
