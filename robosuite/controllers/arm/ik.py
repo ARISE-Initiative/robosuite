@@ -231,18 +231,53 @@ class InverseKinematicsController(JointVelocityController):
             max_angvel = velocity_limits[1] if velocity_limits is not None else 0.7
             integration_dt: float = 1 / control_freq
 
-            diag = damping_pseudo_inv * np.eye(6)
-            eye = np.eye(len(joint_indices))
-            twist = np.zeros(6)
-            error_quat = np.zeros(4)
 
             q0 = initial_joint
             dof_ids = joint_indices
 
-            twist[:3] = Kpos * dpos / integration_dt
-            mujoco.mju_mat2Quat(error_quat, drot.reshape(-1))
-            mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
-            twist[3:] *= Kori / integration_dt
+            num_ref_sites = 1 if isinstance(ref_name, str) else len(ref_name)
+            if num_ref_sites == 1:
+                twist = np.zeros(6)
+                error_quat = np.zeros(4)
+                diag = damping_pseudo_inv * np.eye(len(twist))
+                eye = np.eye(len(joint_indices))
+
+                twist[:3] = Kpos * dpos / integration_dt
+                mujoco.mju_mat2Quat(error_quat, drot.reshape(-1))
+                mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
+                twist[3:] *= Kori / integration_dt
+            else:
+
+                print(f"For now, hardcode dpos and drot if num_ref_sites > 1")
+                twists = np.array([[0, 0, 0, 0, 0, 0],
+                                     [0, 0, 0, 0, 0, 0]])
+                target_pos = np.array([
+                    [0., 0.22736135, -0.09601273],
+                    [0, -0.22733374, -0.09597139]], dtype=np.float64
+                )
+                target_ori = np.array([
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1.]], dtype=np.float64)
+
+                site_ids = [sim.model.site(ref_name[i]).id for i in range(len(ref_name))]
+                site_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
+                site_quat_conjs: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
+                error_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
+                twists: List[np.ndarray] = [np.zeros(6) for _ in range(len(site_ids))]
+
+                for i in range(num_ref_sites):
+                    dx = target_pos[i] - sim.data.site(site_ids[i]).xpos
+                    twists[i][:3] = Kpos * dx / integration_dt
+                    mujoco.mju_mat2Quat(site_quats[i], sim.data.site(site_ids[i]).xmat)
+                    mujoco.mju_negQuat(site_quat_conjs[i], site_quats[i])
+                    mujoco.mju_mulQuat(error_quats[i], target_ori[i], site_quat_conjs[i])
+                    mujoco.mju_quat2Vel(twists[i][3:], error_quats[i], 1.0)
+                    twists[i][3:] *= Kori / integration_dt
+
+                Kn = np.ones(len(dof_ids)) * 1
+                twist = np.hstack(twists)
+                diag = damping_pseudo_inv * np.eye(len(twist))
+                eye = np.eye(len(joint_indices))
 
             if jac is None:
                 jac = np.zeros((6, sim.model.nv), dtype=np.float64)
@@ -253,14 +288,16 @@ class InverseKinematicsController(JointVelocityController):
                     jac[3:],
                     sim.data.site(ref_name).id,
                 )
-            jac = jac[:, dof_ids]
-
+                jac = jac[:, dof_ids]
+            else:
+                jac = np.vstack(jac)
+            np.set_printoptions(precision=3)
             dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, twist)
             dq += (eye - np.linalg.pinv(jac) @ jac) @ (
                 Kn * (q0 - sim.data.qpos[dof_ids])
             )
-
             dq_abs_max = np.abs(dq).max()
+            max_angvel = 100
             if dq_abs_max > max_angvel:
                 dq *= max_angvel / dq_abs_max
 
@@ -375,8 +412,13 @@ class InverseKinematicsController(JointVelocityController):
         """
         Resets the goal to the current pose of the robot
         """
-        self.reference_target_pos = self.ref_pos
-        self.reference_target_orn = T.mat2quat(self.ref_ori_mat)
+        if self.num_ref_sites == 1:
+            self.reference_target_pos = self.ref_pos
+            self.reference_target_orn = T.mat2quat(self.ref_ori_mat)
+        else:
+            self.reference_target_pos = self.ref_pos
+            self.reference_target_orn = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
+
 
     def _clip_ik_input(self, dpos, rotation):
         """
