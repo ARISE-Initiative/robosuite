@@ -13,13 +13,14 @@ Attempting to run IK with any other robot will raise an error!
 ***********************************************************************************
 """
 
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
 import mujoco
 import robosuite.utils.transform_utils as T
 from robosuite.controllers.generic.joint_vel import JointVelocityController
+from robosuite.controllers.generic.joint_pos import JointPositionController
 from robosuite.utils.control_utils import *
 
 from robosuite.utils.binding_utils import MjSim
@@ -28,7 +29,8 @@ from robosuite.utils.binding_utils import MjSim
 SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda", "GR1FixedLowerBody"}
 
 
-class InverseKinematicsController(JointVelocityController):
+class InverseKinematicsController(JointPositionController):
+# class InverseKinematicsController(JointVelocityController):
     """
     Controller for controlling robot arm via inverse kinematics. Allows position and orientation control of the
     robot's end effector.
@@ -109,7 +111,9 @@ class InverseKinematicsController(JointVelocityController):
             input_min=-1,
             output_max=1,
             output_min=-1,
-            kv=0.25,
+            # kv=0.25,
+            kp=100,
+            kv=10,
             policy_freq=policy_freq,
             velocity_limits=[-1, 1],
             **kwargs,
@@ -174,6 +178,9 @@ class InverseKinematicsController(JointVelocityController):
         Returns:
             np.array: a flat array of joint velocity commands to apply to try and achieve the desired input control.
         """
+        pos_limits = np.ones(len(self.joint_index)) * -2
+        neg_limits = np.ones(len(self.joint_index)) * 2
+        self.velocity_limits = [pos_limits, neg_limits]
         velocities = InverseKinematicsController.compute_joint_velocities(
             self.sim,
             self.initial_joint,
@@ -186,7 +193,9 @@ class InverseKinematicsController(JointVelocityController):
             jac=self.J_full,
         )
         self.commanded_joint_velocities = velocities
-        return velocities
+        # return velocities
+        positions = self.sim.data.qpos[self.joint_index] + velocities
+        return positions
 
     @staticmethod
     def compute_joint_velocities(
@@ -199,9 +208,9 @@ class InverseKinematicsController(JointVelocityController):
         dpos: Optional[np.ndarray] = None,
         drot: Optional[np.ndarray] = None,
         Kn: Optional[np.ndarray] = np.array([10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 5.0]),
-        damping_pseudo_inv: float = 1e-3,
-        Kpos: float = 0.9,
-        Kori: float = 0.9,
+        damping_pseudo_inv: float = 0.05,
+        Kpos: float = 0.95,
+        Kori: float = 0.95,
         jac: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
@@ -227,9 +236,27 @@ class InverseKinematicsController(JointVelocityController):
         Returns:
             np.array: A flat array of joint velocity commands to apply to try and achieve the desired input control.
         """
+
+        def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
+            return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
+
+        nullspace_joint_weights = {
+            "robot0_torso_waist_yaw": 100.0,
+            "robot0_torso_waist_pitch": 100.0,
+            "robot0_torso_waist_roll": 500.0,
+            "robot0_l_shoulder_pitch": 4.0,
+            "robot0_r_shoulder_pitch": 4.0,
+            "robot0_l_shoulder_roll": 3.0,
+            "robot0_r_shoulder_roll": 3.0,
+            "robot0_l_shoulder_yaw": 2.0,
+            "robot0_r_shoulder_yaw": 2.0,
+        }
+        # Kn = get_Kn(joint_names, nullspace_joint_weights)
+
         if (dpos is not None) and (drot is not None):
             max_angvel = velocity_limits[1] if velocity_limits is not None else 0.7
             integration_dt: float = 1 / control_freq
+            integration_dt = 1
 
 
             q0 = initial_joint
@@ -239,7 +266,7 @@ class InverseKinematicsController(JointVelocityController):
             if num_ref_sites == 1:
                 twist = np.zeros(6)
                 error_quat = np.zeros(4)
-                diag = damping_pseudo_inv * np.eye(len(twist))
+                diag = damping_pseudo_inv ** 2 * np.eye(len(twist))
                 eye = np.eye(len(joint_indices))
 
                 twist[:3] = Kpos * dpos / integration_dt
@@ -248,51 +275,85 @@ class InverseKinematicsController(JointVelocityController):
                 twist[3:] *= Kori / integration_dt
             else:
 
-                print(f"For now, hardcode dpos and drot if num_ref_sites > 1")
+                print("For now, hardcode dpos and drot if num_ref_sites > 1")
                 twists = np.array([[0, 0, 0, 0, 0, 0],
                                      [0, 0, 0, 0, 0, 0]])
                 target_pos = np.array([
-                    [0., 0.22736135, -0.09601273],
-                    [0, -0.22733374, -0.09597139]], dtype=np.float64
+                    [-0.66, 0.22736135, 0.85398727],
+                    [-0.66, -0.22733374, 0.85402861]], dtype=np.float64
                 )
                 target_ori = np.array([
-                    [1, 1, 1, 1],
-                    [1, 1, 1, 1.]], dtype=np.float64)
+                    [0.70710678, 0.70710678, 0, 0],
+                    [0, 0, 0.70710678, 0.70710678]], dtype=np.float64)
+                    # [[0.70710678 0.70710678 0.         0.        ]
+                    # [0.         0.         0.70710678 0.70710678]]
 
+                target_pos = np.array([[-0.419,  0.28 ,  1.11 ],
+                                        [-0.419, -0.279,  1.11 ]])
+                target_ori = np.array([[-0.465, -0.46 ,  0.54 , -0.53 ],
+                                        [ 0.548, -0.535,  0.487,  0.419]])
+
+                # target_pos += sim.data.get_body_xpos('robot0_base')
+                # target_pos = target_pos + sim.data.xpos[sim.model.body("robot0_base").id]
                 site_ids = [sim.model.site(ref_name[i]).id for i in range(len(ref_name))]
                 site_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
                 site_quat_conjs: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
                 error_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
                 twists: List[np.ndarray] = [np.zeros(6) for _ in range(len(site_ids))]
 
+                np.set_printoptions(precision=3)
                 for i in range(num_ref_sites):
                     dx = target_pos[i] - sim.data.site(site_ids[i]).xpos
+                    print(f'curr pos: {sim.data.site(site_ids[i]).xpos}')
+                    print(f'target pos: {target_pos[i]}')
                     twists[i][:3] = Kpos * dx / integration_dt
                     mujoco.mju_mat2Quat(site_quats[i], sim.data.site(site_ids[i]).xmat)
                     mujoco.mju_negQuat(site_quat_conjs[i], site_quats[i])
                     mujoco.mju_mulQuat(error_quats[i], target_ori[i], site_quat_conjs[i])
+                    print(f'target_ori: {target_ori[i]}')
+                    print(f'curr ori: {sim.data.site(site_ids[i]).xmat}')
                     mujoco.mju_quat2Vel(twists[i][3:], error_quats[i], 1.0)
+                    print(f"dx: {dx}")
+                    print(f"self.error_quats[i]: {error_quats[i]}")
                     twists[i][3:] *= Kori / integration_dt
 
                 Kn = np.ones(len(dof_ids)) * 1
                 twist = np.hstack(twists)
+                print(f"twist: {twist}")
+                # import ipdb; ipdb.set_trace()
                 diag = damping_pseudo_inv * np.eye(len(twist))
                 eye = np.eye(len(joint_indices))
 
+            jac = None
             if jac is None:
-                jac = np.zeros((6, sim.model.nv), dtype=np.float64)
-                mujoco.mj_jacSite(
-                    sim.model._model,
-                    sim.data._data,
-                    jac[:3],
-                    jac[3:],
-                    sim.data.site(ref_name).id,
-                )
-                jac = jac[:, dof_ids]
+                jac_temps: List[np.ndarray] = [np.zeros((6, sim.model.nv), dtype=np.float64) for _ in range(len(site_ids))]
+                def _compute_jacobian(model: mujoco.MjModel, data: mujoco.MjData):
+                    for i, site_id in enumerate(site_ids):
+                        mujoco.mj_jacSite(model, data, jac_temps[i][:3], jac_temps[i][3:], site_id)
+
+                    jac = np.vstack(jac_temps)
+                    # compute jacobian for our dof_ids
+                    jac = jac[:, dof_ids]
+                    return jac
+
+                jac = _compute_jacobian(sim.model._model, sim.data._data)
+                
+                # jac = np.zeros((6, sim.model.nv), dtype=np.float64)
+                # mujoco.mj_jacSite(
+                #     sim.model._model,
+                #     sim.data._data,
+                #     jac[:3],
+                #     jac[3:],
+                #     sim.data.site(ref_name).id,
+                # )
+                # jac = jac[:, dof_ids]
             else:
                 jac = np.vstack(jac)
+
             np.set_printoptions(precision=3)
             dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, twist)
+            print(f'dq: {dq}')
+            # import ipdb; ipdb.set_trace()
             dq += (eye - np.linalg.pinv(jac) @ jac) @ (
                 Kn * (q0 - sim.data.qpos[dof_ids])
             )
@@ -321,8 +382,13 @@ class InverseKinematicsController(JointVelocityController):
         # Update state
         self.update(force=True)  # force because new_update = True only set in super().run_controller()
 
-        # Get requested delta inputs if we're using interpolators
-        (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
+
+        try:
+            (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
+        except:
+            import ipdb; ipdb.set_trace()
+            # Get requested delta inputs if we're using interpolators
+            (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
 
         # Set interpolated goals if necessary
         if self.interpolator_pos is not None:
@@ -389,7 +455,7 @@ class InverseKinematicsController(JointVelocityController):
                 pass
             update_velocity_goal = True
         else:
-            rotation = T.quat2mat(self.reference_target_orn)
+            rotation = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
 
         # Only update the velocity goals if we're interpolating
         if update_velocity_goal:
@@ -437,14 +503,14 @@ class InverseKinematicsController(JointVelocityController):
                 - (np.array) clipped rotation
         """
         # scale input range to desired magnitude
-        if dpos.any():
-            dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
+        # if dpos.any():
+        #     dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
 
         # Map input to quaternion
         rotation = T.axisangle2quat(rotation)
 
-        # Clip orientation to desired magnitude
-        rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
+        # # Clip orientation to desired magnitude
+        # rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
 
         return dpos, rotation
 

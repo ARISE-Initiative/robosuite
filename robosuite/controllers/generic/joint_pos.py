@@ -1,3 +1,4 @@
+from typing import Dict, List
 import numpy as np
 
 from robosuite.controllers.controller import Controller
@@ -115,6 +116,8 @@ class JointPositionController(Controller):
             lite_physics=lite_physics,
         )
 
+        self.joint_indexes = joint_indexes
+
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
 
@@ -130,6 +133,14 @@ class JointPositionController(Controller):
         # kp kd
         self.kp = self.nums2array(kp, self.control_dim)
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio
+
+        print(f'self.kp: {self.kp}')
+        print(f'self.kd: {self.kd}')
+        # import ipdb; ipdb.set_trace()
+
+        # # print out joint angles of all joints
+        # for joint in self.robots.joints:
+        #     print(f"joint: {joint} {self.sim.data.get_joint_qpos(joint)}")
 
         # kp and kd limits
         self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
@@ -241,16 +252,73 @@ class JointPositionController(Controller):
         else:
             desired_qpos = np.array(self.goal_qpos)
 
+        from robosuite.scripts.diffik_nullspace import RobotController
+
+        model = self.sim.model._model
+        data = self.sim.data._data
+        joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0]  # Exclude fixed joints
+        body_names = [model.body(i).name for i in range(model.nbody) if model.body(i).name not in {"world", "base", "target"}]
+
+        def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
+            return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
+
+        nullspace_joint_weights = {
+            "robot0_torso_waist_yaw": 100.0,
+            "robot0_torso_waist_pitch": 100.0,
+            "robot0_torso_waist_roll": 500.0,
+            "robot0_l_shoulder_pitch": 4.0,
+            "robot0_r_shoulder_pitch": 4.0,
+            "robot0_l_shoulder_roll": 3.0,
+            "robot0_r_shoulder_roll": 3.0,
+            "robot0_l_shoulder_yaw": 2.0,
+            "robot0_r_shoulder_yaw": 2.0,
+        }
+        Kn = get_Kn(joint_names, nullspace_joint_weights)
+        end_effector_sites = [ "gripper0_left_grip_site", "gripper0_right_grip_site"]
+        robot_config =  {
+            'end_effector_sites': end_effector_sites,
+            'body_names': body_names,
+            'joint_names': joint_names,
+            'mocap_bodies': [],
+            'initial_keyframe': 'home',
+            'nullspace_gains': Kn
+        }
+        robot = RobotController(model, data, robot_config, input_type="mocap", debug=True)
+        # desired_qpos[:] = 0 # + np.random.normal(0, 0.1, len(desired_qpos))
+
+        target_pos = np.array([[-0.419,  0.28 ,  1.11 ],
+                                [-0.419, -0.279,  1.11 ]])
+        target_ori = np.array([[-0.465, -0.46 ,  0.54 , -0.53 ],
+                                [ 0.548, -0.535,  0.487,  0.419]])
+
+        integration_dt = 0.1
+        damping = 5e-2
+        dt = 0.002        
+        Kpos = 0.95
+        Kori = 0.95
+
+        max_actuation_val = 100
+        torques = robot.solve_ik(
+            target_pos=target_pos, 
+            target_ori=target_ori, 
+            damping=damping,
+            integration_dt=integration_dt, 
+            max_actuation_val=max_actuation_val,
+            Kpos=Kpos, 
+            Kori=Kori, 
+            update_sim=False)
+        self.torques = torques
         # torques = pos_err * kp + vel_err * kd
-        position_error = desired_qpos - self.joint_pos
-        vel_pos_error = -self.joint_vel
-        desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
-        # Return desired torques plus gravity compensations
-        self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
+        # position_error = desired_qpos - self.joint_pos
+        # vel_pos_error = -self.joint_vel
+        # desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
+        # # Return desired torques plus gravity compensations
+        # self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
+
+        # print(f"max joint position error: {np.max(np.abs(position_error))}")
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
-
         return self.torques
 
     def reset_goal(self):

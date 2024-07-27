@@ -244,12 +244,11 @@ if __name__ == "__main__":
             "controller_configs": {
                     "arms_body": 
                         {
-                            "ref_names": ["right_eef_site", "left_eef_site"],
                             "joint_indexes": None,
                             "actuator_range": [-2, 2], # dummy values
                             "type": "IK_POSE",
                             "part_name": "arms_body",
-                            "ref_name": ["robot0_right_eef_site", "robot0_left_eef_site"],
+                            "ref_name": ["gripper0_left_grip_site", "gripper0_right_grip_site"],
                             "interpolation": None,
                             "robot_name": args.robots[0]
                         },

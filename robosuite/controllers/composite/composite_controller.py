@@ -93,6 +93,8 @@ class CompositeController:
         return base_pos, base_ori
 
     def update_state(self):
+        print(f"update_state in CompositeController")
+        import ipdb; ipdb.set_trace()
         for arm in self.arms:
             base_pos, base_ori = self.get_controller_base_pose(controller_name=arm)
             self.controllers[arm].update_origin(base_pos, base_ori)
@@ -163,9 +165,18 @@ class WholeBodyCompositeController(CompositeController):
             )
 
     def set_goal(self, all_action: np.ndarray):
-        return super().set_goal(all_action)
+        for part_name, controller in self.controllers.items():
+            controller.set_goal(all_action)
     
-
     def update_state(self):
         # no need for extra update state here or in CompositeController, I believe
         return
+
+    def run_controller(self, enabled_parts):
+        self.update_state()
+        self._applied_action_dict.clear()
+        for part_name, controller in self.controllers.items():
+            # ignore the enabled_parts for now
+            # import ipdb; ipdb.set_trace()
+            self._applied_action_dict[part_name] = controller.run_controller()
+        return self._applied_action_dict
