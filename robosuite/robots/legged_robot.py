@@ -152,12 +152,10 @@ class LeggedRobot(MobileBaseRobot):
                     indices.extend(index_dict[key])
             return indices
         
+        # TODO pass as configs
         keys_to_add = ['torso', 'head', *self.arms]
         new_joint_indexes = get_indices_for_keys(self._ref_joints_indexes_dict, keys_to_add)
         new_actuator_indexes = get_indices_for_keys(self._ref_actuators_indexes_dict, keys_to_add)
-        print(f"new_joint_indexes: {new_joint_indexes}")
-        print(f"new_actuator_indexes: {new_actuator_indexes}")
-        # import ipdb; ipdb.set_trace()
         self._ref_joints_indexes_dict["arms_body"] = new_joint_indexes
         self._ref_actuators_indexes_dict["arms_body"] = new_actuator_indexes
 

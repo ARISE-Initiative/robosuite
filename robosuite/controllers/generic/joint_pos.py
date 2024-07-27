@@ -256,7 +256,9 @@ class JointPositionController(Controller):
 
         model = self.sim.model._model
         data = self.sim.data._data
-        joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0]  # Exclude fixed joints
+        # TODO(klin): get the correct indexing for the torque output --- probably need the correct joint names for our case that we care about -- find how to get that?
+        # find way to get correct joint names perhaps from _ref_joints_indexes_dict
+        joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0 and ("gripper0" not in model.joint(i).name)]  # Exclude fixed joints
         body_names = [model.body(i).name for i in range(model.nbody) if model.body(i).name not in {"world", "base", "target"}]
 
         def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
@@ -305,8 +307,10 @@ class JointPositionController(Controller):
             integration_dt=integration_dt, 
             max_actuation_val=max_actuation_val,
             Kpos=Kpos, 
-            Kori=Kori, 
-            update_sim=False)
+            Kori=Kori,
+            update_sim=False
+        )
+
         self.torques = torques
         # torques = pos_err * kp + vel_err * kd
         # position_error = desired_qpos - self.joint_pos

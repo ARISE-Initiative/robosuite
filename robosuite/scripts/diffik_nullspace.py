@@ -215,8 +215,8 @@ class RobotController:
         self.body_ids = [self.model.body(name).id for name in robot_config['body_names']]
         self.joint_qpos_ids = np.array([get_joint_qpos_addr(model, joint_name) for joint_name in robot_config['joint_names']])
         self.dof_ids = np.array([self.model.joint(name).id for name in robot_config['joint_names']])
-        # self.actuator_ids = np.array([self.model.actuator(name).id for name in robot_config['joint_names']])
-        self.actuator_ids = np.array([i for i in range(20)])
+        # self.actuator_ids = np.array([self.model.actuator(name).id for name in robot_config['joint_names']])  # this works if actuators match joints
+        self.actuator_ids = np.array([i for i in range(20)])  # TODO figure out how to not hardcode this --- currently hardcoded for GR1
         # self.key_id = self.model.key(robot_config['initial_keyframe']).id
 
         self.jac_temps: List[np.ndarray] = [np.zeros((6, self.model.nv)) for _ in range(len(self.site_ids))]
@@ -376,7 +376,7 @@ class RobotController:
         # projects dqs into the nullspace of the Jacobian, which intuitively 
         # only allows movements that don't affect the task space.
         dq_null = (eye - np.linalg.pinv(jac) @ jac) @ \
-            (self.Kn * (self.q0[self.dof_ids] - self.data.qpos[self.dof_ids]))
+            (self.Kn * (self.q0 - self.data.qpos[self.dof_ids]))
         dq += dq_null
 
         if max_actuation_val > 0:
@@ -424,13 +424,12 @@ class RobotController:
             mass_matrix = np.zeros(shape=(self.model.nv, self.model.nv), dtype=np.float64, order="C")
             mujoco.mj_fullM(self.model, mass_matrix, self.data.qM)
             mass_matrix = np.reshape(mass_matrix, (len(self.data.qvel), len(self.data.qvel)))
-            # get correct indices of mass matrix
             mass_matrix = mass_matrix[self.dof_ids][:, self.dof_ids]
             torque = np.dot(mass_matrix, desired_torque) + gravity_compensation
             if update_sim:
                 self.data.ctrl[self.actuator_ids] = torque
             else:
-                return torque[self.actuator_ids]
+                return torque
         else:
             # Set the control signal.
             # this indexing mightn't always work for freejoint
