@@ -297,8 +297,8 @@
 		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="torso_waist_pitch" name="torso_waist_pitch" />
 		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="torso_waist_roll" name="torso_waist_roll" />
 		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_yaw" name="head_yaw" />
-		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_pitch" name="head_pitch" />
 		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_roll" name="head_roll" />
+		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_pitch" name="head_pitch" />
 		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_shoulder_pitch" name="r_shoulder_pitch" />
 		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_shoulder_roll" name="r_shoulder_roll" />
 		<motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_shoulder_yaw" name="r_shoulder_yaw" />
