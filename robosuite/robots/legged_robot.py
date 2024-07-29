@@ -76,7 +76,6 @@ class LeggedRobot(MobileBaseRobot):
         Loads controller to be used for dynamic trajectories
         """
         # Flag for loading urdf once (only applicable for IK controllers)
-
         self.composite_controller = composite_controller_factory(
             type=self.composite_controller_config.get("type", "BASE"),
             sim=self.sim,
@@ -152,12 +151,11 @@ class LeggedRobot(MobileBaseRobot):
                     indices.extend(index_dict[key])
             return indices
         
-        # TODO pass as configs
-        keys_to_add = ['torso', 'head', *self.arms]
-        new_joint_indexes = get_indices_for_keys(self._ref_joints_indexes_dict, keys_to_add)
-        new_actuator_indexes = get_indices_for_keys(self._ref_actuators_indexes_dict, keys_to_add)
-        self._ref_joints_indexes_dict["arms_body"] = new_joint_indexes
-        self._ref_actuators_indexes_dict["arms_body"] = new_actuator_indexes
+        for body_part, body_controller_config in self.composite_controller_config["controller_configs"].items():
+            new_joint_indexes = get_indices_for_keys(self._ref_joints_indexes_dict, body_controller_config["individual_part_names"])
+            new_actuator_indexes = get_indices_for_keys(self._ref_actuators_indexes_dict, body_controller_config["individual_part_names"])
+            self._ref_joints_indexes_dict[body_part] = new_joint_indexes
+            self._ref_actuators_indexes_dict[body_part] = new_actuator_indexes
 
         self._ref_legs_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.legs_joints]
         self._ref_legs_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.legs_joints]
@@ -204,23 +202,26 @@ class LeggedRobot(MobileBaseRobot):
             self.recent_actions.push(action)
             self.recent_torques.push(self.torques)
 
-            # for arm in self.arms:
-            #     controller = self.controller[arm]
-            #     # Update arm-specific proprioceptive values
-            #     self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
-            #     self.recent_ee_pose[arm].push(np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat))))
-            #     self.recent_ee_vel[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
+            for arm in self.arms:
+                controller = self.controller.get(arm, None)
+                if controller is None:
+                    # TODO: enable buffer update for whole body controllers not using individual arm controllers
+                    continue
+                # Update arm-specific proprioceptive values
+                self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
+                self.recent_ee_pose[arm].push(np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat))))
+                self.recent_ee_vel[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
 
-            #     # Estimation of eef acceleration (averaged derivative of recent velocities)
-            #     self.recent_ee_vel_buffer[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
-            #     diffs = np.vstack(
-            #         [
-            #             self.recent_ee_acc[arm].current,
-            #             self.control_freq * np.diff(self.recent_ee_vel_buffer[arm].buf, axis=0),
-            #         ]
-            #     )
-            #     ee_acc = np.array([np.convolve(col, np.ones(10) / 10.0, mode="valid")[0] for col in diffs.transpose()])
-            #     self.recent_ee_acc[arm].push(ee_acc)
+                # Estimation of eef acceleration (averaged derivative of recent velocities)
+                self.recent_ee_vel_buffer[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
+                diffs = np.vstack(
+                    [
+                        self.recent_ee_acc[arm].current,
+                        self.control_freq * np.diff(self.recent_ee_vel_buffer[arm].buf, axis=0),
+                    ]
+                )
+                ee_acc = np.array([np.convolve(col, np.ones(10) / 10.0, mode="valid")[0] for col in diffs.transpose()])
+                self.recent_ee_acc[arm].push(ee_acc)
 
     def setup_observables(self):
         """

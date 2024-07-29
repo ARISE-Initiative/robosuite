@@ -93,8 +93,6 @@ class CompositeController:
         return base_pos, base_ori
 
     def update_state(self):
-        print(f"update_state in CompositeController")
-        import ipdb; ipdb.set_trace()
         for arm in self.arms:
             base_pos, base_ori = self.get_controller_base_pose(controller_name=arm)
             self.controllers[arm].update_origin(base_pos, base_ori)
@@ -155,28 +153,26 @@ class WholeBodyCompositeController(CompositeController):
                 self.controller_config[part_name]["type"], 
                 {
                     **self.controller_config[part_name], 
-                    "sim": self.sim,
+                    "sim": self.sim,    # manually added sim to the controller config
                     "joint_indexes": {
                         "joints": [self.sim.model.joint(joint_name).id for joint_name in self.robot_model.joints],
                         "qpos": [self.sim.model.get_joint_qpos_addr(joint_name) for joint_name in self.robot_model.joints],
                         "qvel": [self.sim.model.get_joint_qvel_addr(joint_name) for joint_name in self.robot_model.joints],
                     }
-                }  # manually add sim to the controller config
+                }
             )
 
     def set_goal(self, all_action: np.ndarray):
-        for part_name, controller in self.controllers.items():
+        for _, controller in self.controllers.items():
             controller.set_goal(all_action)
     
     def update_state(self):
-        # no need for extra update state here or in CompositeController, I believe
+        # no need for extra update state here, since Jacobians are computed inside the controller
         return
 
     def run_controller(self, enabled_parts):
-        self.update_state()
         self._applied_action_dict.clear()
         for part_name, controller in self.controllers.items():
             # ignore the enabled_parts for now
-            # import ipdb; ipdb.set_trace()
             self._applied_action_dict[part_name] = controller.run_controller()
         return self._applied_action_dict

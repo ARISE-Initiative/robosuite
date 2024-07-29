@@ -237,23 +237,20 @@ if __name__ == "__main__":
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
+        # new composite controller configs structure
         "composite_controller_configs": {
             "type": "WHOLE_BODY",
-            # body-part-name to sites mapping and actuators available for control
-            # e.g.
             "controller_configs": {
                     "arms_body": 
                         {
-                            "joint_indexes": None,
                             "actuator_range": [-2, 2], # dummy values
                             "type": "IK_POSE",
                             "part_name": "arms_body",
-                            "ref_name": ["gripper0_left_grip_site", "gripper0_right_grip_site"],
+                            "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
                             "interpolation": None,
-                            "robot_name": args.robots[0]
+                            "robot_name": args.robots[0],
+                            "individual_part_names": ["torso", "head", "right", "left"]
                         },
-                    # "left_gripper": ["left_gripper_site"], 
-                    # "right_gripper": ["right_gripper_site"]
             }
         },
     }
