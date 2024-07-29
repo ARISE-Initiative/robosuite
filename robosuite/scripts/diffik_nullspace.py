@@ -405,9 +405,15 @@ class RobotController:
             # Using torque based control (motor actuators) + pos + vel joint control doesn't work for my code
             Kp = 1000
             Kd = 100
+            self.Kp = Kp
+            self.Kd = Kd
 
             position_error = self.q_des - self.data.qpos[self.dof_ids]
             velocity_error = -self.data.qvel[self.dof_ids]
+
+            self.pos_curr = self.data.qpos[self.dof_ids].copy()
+            self.position_error = position_error
+            self.velocity_error = velocity_error
 
             if self.debug and self.i % 100 == 0:
                 if np.all(self.twist == 0):
