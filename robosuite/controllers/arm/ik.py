@@ -19,7 +19,6 @@ import numpy as np
 
 import mujoco
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.generic.joint_vel import JointVelocityController
 from robosuite.controllers.generic.joint_pos import JointPositionController
 from robosuite.utils.control_utils import *
 
@@ -30,13 +29,12 @@ SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda", "GR1FixedLowerBody"}
 
 
 class InverseKinematicsController(JointPositionController):
-# class InverseKinematicsController(JointVelocityController):
     """
     Controller for controlling robot arm via inverse kinematics. Allows position and orientation control of the
     robot's end effector.
 
     We use differential inverse kinematics with posture control in the null space posture control
-    to generate joint velocities (see https://github.com/kevinzakka/mjctrl) which are fed to the JointVelocityController.
+    to generate joint positions (see https://github.com/kevinzakka/mjctrl) which are fed to the JointPositionController.
 
     NOTE: Control input actions are assumed to be relative to the current position / orientation of the end effector
     and are taken as the array (x_dpos, y_dpos, z_dpos, x_rot, y_rot, z_rot).
@@ -99,6 +97,8 @@ class InverseKinematicsController(JointPositionController):
         interpolator_pos=None,
         interpolator_ori=None,
         converge_steps=5,
+        kp: int = 100,
+        kv: int = 10,
         **kwargs,
     ):
         # Run sueprclass inits
@@ -111,9 +111,8 @@ class InverseKinematicsController(JointPositionController):
             input_min=-1,
             output_max=1,
             output_min=-1,
-            # kv=0.25,
-            kp=100,
-            kv=10,
+            kp=kp,
+            kv=kv,
             policy_freq=policy_freq,
             velocity_limits=[-1, 1],
             **kwargs,
@@ -163,9 +162,9 @@ class InverseKinematicsController(JointPositionController):
 
     def get_control(self, dpos=None, rotation=None, update_targets=False):
         """
-        Returns joint velocities to control the robot after the target end effector
+        Returns joint positions to control the robot after the target end effector
         position and orientation are updated from arguments @dpos and @rotation.
-        If no arguments are provided, joint velocities will be computed based
+        If no arguments are provided, joint positions will be computed based
         on the previously recorded target.
 
         Args:
@@ -176,12 +175,13 @@ class InverseKinematicsController(JointPositionController):
             update_targets (bool): whether to update ik target pos / ori attributes or not
 
         Returns:
-            np.array: a flat array of joint velocity commands to apply to try and achieve the desired input control.
+            np.array: a flat array of joint position commands to apply to try and achieve the desired input control.
         """
         pos_limits = np.ones(len(self.joint_index)) * -2
         neg_limits = np.ones(len(self.joint_index)) * 2
         self.velocity_limits = [pos_limits, neg_limits]
-        velocities = InverseKinematicsController.compute_joint_velocities(
+        self.velocity_limits = [-1, 1]
+        positions = InverseKinematicsController.compute_joint_positions(
             self.sim,
             self.initial_joint,
             self.joint_index,
@@ -192,13 +192,11 @@ class InverseKinematicsController(JointPositionController):
             rotation,
             jac=self.J_full,
         )
-        self.commanded_joint_velocities = velocities
-        # return velocities
-        positions = self.sim.data.qpos[self.joint_index] + velocities
+
         return positions
 
     @staticmethod
-    def compute_joint_velocities(
+    def compute_joint_positions(
         sim: MjSim,
         initial_joint: np.ndarray,
         joint_indices: np.ndarray,
@@ -214,9 +212,9 @@ class InverseKinematicsController(JointPositionController):
         jac: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
-        Returns joint velocities to control the robot after the target end effector
+        Returns joint positions to control the robot after the target end effector
         position and orientation are updated from arguments @dpos and @drot.
-        If no arguments are provided, joint velocities will be set as zero.
+        If no arguments are provided, joint positions will be set as zero.
 
         Args:
             sim (MjSim): The simulation object.
@@ -234,7 +232,7 @@ class InverseKinematicsController(JointPositionController):
             jac (Optional[np.array]): Precomputed jacobian matrix.
 
         Returns:
-            np.array: A flat array of joint velocity commands to apply to try and achieve the desired input control.
+            np.array: A flat array of joint position commands to apply to try and achieve the desired input control.
         """
 
         def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
@@ -256,7 +254,7 @@ class InverseKinematicsController(JointPositionController):
         if (dpos is not None) and (drot is not None):
             max_angvel = velocity_limits[1] if velocity_limits is not None else 0.7
             integration_dt: float = 1 / control_freq
-            integration_dt = 1
+            integration_dt = 0.1
 
 
             q0 = initial_joint
@@ -269,100 +267,98 @@ class InverseKinematicsController(JointPositionController):
                 diag = damping_pseudo_inv ** 2 * np.eye(len(twist))
                 eye = np.eye(len(joint_indices))
 
+                jac = np.zeros((6, sim.model.nv), dtype=np.float64)
+                twist = np.zeros(6)
+                error_quat = np.zeros(4)
+    
                 twist[:3] = Kpos * dpos / integration_dt
                 mujoco.mju_mat2Quat(error_quat, drot.reshape(-1))
                 mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
                 twist[3:] *= Kori / integration_dt
-            else:
 
-                print("For now, hardcode dpos and drot if num_ref_sites > 1")
-                twists = np.array([[0, 0, 0, 0, 0, 0],
-                                     [0, 0, 0, 0, 0, 0]])
-                target_pos = np.array([
-                    [-0.66, 0.22736135, 0.85398727],
-                    [-0.66, -0.22733374, 0.85402861]], dtype=np.float64
+                mujoco.mj_jacSite(
+                    sim.model._model,
+                    sim.data._data,
+                    jac[:3],
+                    jac[3:],
+                    sim.data.site(ref_name).id,
                 )
-                target_ori = np.array([
-                    [0.70710678, 0.70710678, 0, 0],
-                    [0, 0, 0.70710678, 0.70710678]], dtype=np.float64)
-                    # [[0.70710678 0.70710678 0.         0.        ]
-                    # [0.         0.         0.70710678 0.70710678]]
 
-                target_pos = np.array([[-0.419,  0.28 ,  1.11 ],
-                                        [-0.419, -0.279,  1.11 ]])
-                target_ori = np.array([[-0.465, -0.46 ,  0.54 , -0.53 ],
-                                        [ 0.548, -0.535,  0.487,  0.419]])
+                jac = jac[:, dof_ids]
 
-                # target_pos += sim.data.get_body_xpos('robot0_base')
-                # target_pos = target_pos + sim.data.xpos[sim.model.body("robot0_base").id]
-                site_ids = [sim.model.site(ref_name[i]).id for i in range(len(ref_name))]
-                site_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
-                site_quat_conjs: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
-                error_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(site_ids))]
-                twists: List[np.ndarray] = [np.zeros(6) for _ in range(len(site_ids))]
+                dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, twist)
+                dq += (eye - np.linalg.pinv(jac) @ jac) @ (
+                    Kn * (q0 - sim.data.qpos[dof_ids])
+                )
 
-                np.set_printoptions(precision=3)
-                for i in range(num_ref_sites):
-                    dx = target_pos[i] - sim.data.site(site_ids[i]).xpos
-                    print(f'curr pos: {sim.data.site(site_ids[i]).xpos}')
-                    print(f'target pos: {target_pos[i]}')
-                    twists[i][:3] = Kpos * dx / integration_dt
-                    mujoco.mju_mat2Quat(site_quats[i], sim.data.site(site_ids[i]).xmat)
-                    mujoco.mju_negQuat(site_quat_conjs[i], site_quats[i])
-                    mujoco.mju_mulQuat(error_quats[i], target_ori[i], site_quat_conjs[i])
-                    print(f'target_ori: {target_ori[i]}')
-                    print(f'curr ori: {sim.data.site(site_ids[i]).xmat}')
-                    mujoco.mju_quat2Vel(twists[i][3:], error_quats[i], 1.0)
-                    print(f"dx: {dx}")
-                    print(f"self.error_quats[i]: {error_quats[i]}")
-                    twists[i][3:] *= Kori / integration_dt
+                dq_abs_max = np.abs(dq).max()
+                if dq_abs_max > max_angvel:
+                    dq *= max_angvel / dq_abs_max
 
-                Kn = np.ones(len(dof_ids)) * 1
-                twist = np.hstack(twists)
-                print(f"twist: {twist}")
-                # import ipdb; ipdb.set_trace()
-                diag = damping_pseudo_inv * np.eye(len(twist))
-                eye = np.eye(len(joint_indices))
-
-            jac = None
-            if jac is None:
-                jac_temps: List[np.ndarray] = [np.zeros((6, sim.model.nv), dtype=np.float64) for _ in range(len(site_ids))]
-                def _compute_jacobian(model: mujoco.MjModel, data: mujoco.MjData):
-                    for i, site_id in enumerate(site_ids):
-                        mujoco.mj_jacSite(model, data, jac_temps[i][:3], jac_temps[i][3:], site_id)
-
-                    jac = np.vstack(jac_temps)
-                    # compute jacobian for our dof_ids
-                    jac = jac[:, dof_ids]
-                    return jac
-
-                jac = _compute_jacobian(sim.model._model, sim.data._data)
-                
-                # jac = np.zeros((6, sim.model.nv), dtype=np.float64)
-                # mujoco.mj_jacSite(
-                #     sim.model._model,
-                #     sim.data._data,
-                #     jac[:3],
-                #     jac[3:],
-                #     sim.data.site(ref_name).id,
-                # )
-                # jac = jac[:, dof_ids]
+                q_des = sim.data.qpos[dof_ids] + dq * integration_dt
+                dq = q_des  # hack for now
+                return dq
             else:
-                jac = np.vstack(jac)
+                hardcoded_controller = False
+                if hardcoded_controller:
+                    from robosuite.scripts.diffik_nullspace import RobotController
 
-            np.set_printoptions(precision=3)
-            dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, twist)
-            print(f'dq: {dq}')
-            # import ipdb; ipdb.set_trace()
-            dq += (eye - np.linalg.pinv(jac) @ jac) @ (
-                Kn * (q0 - sim.data.qpos[dof_ids])
-            )
-            dq_abs_max = np.abs(dq).max()
-            max_angvel = 100
-            if dq_abs_max > max_angvel:
-                dq *= max_angvel / dq_abs_max
+                    model = sim.model._model
+                    data = sim.data._data
+                    # TODO(klin): get the correct indexing for the torque output --- probably need the correct joint names for our case that we care about -- find how to get that?
+                    # find way to get correct joint names perhaps from _ref_joints_indexes_dict
+                    joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0 and ("gripper0" not in model.joint(i).name)]  # Exclude fixed joints
+                    body_names = [model.body(i).name for i in range(model.nbody) if model.body(i).name not in {"world", "base", "target"}]
 
-            return dq
+                    def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
+                        return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
+
+                    nullspace_joint_weights = {
+                        "robot0_torso_waist_yaw": 100.0,
+                        "robot0_torso_waist_pitch": 100.0,
+                        "robot0_torso_waist_roll": 500.0,
+                        "robot0_l_shoulder_pitch": 4.0,
+                        "robot0_r_shoulder_pitch": 4.0,
+                        "robot0_l_shoulder_roll": 3.0,
+                        "robot0_r_shoulder_roll": 3.0,
+                        "robot0_l_shoulder_yaw": 2.0,
+                        "robot0_r_shoulder_yaw": 2.0,
+                    }
+                    Kn = get_Kn(joint_names, nullspace_joint_weights)
+                    end_effector_sites = [ "gripper0_left_grip_site", "gripper0_right_grip_site"]
+                    robot_config =  {
+                        'end_effector_sites': end_effector_sites,
+                        'body_names': body_names,
+                        'joint_names': joint_names,
+                        'mocap_bodies': [],
+                        'initial_keyframe': 'home',
+                        'nullspace_gains': Kn
+                    }
+                    robot = RobotController(model, data, robot_config, input_type="mocap", debug=False)
+                    target_pos = np.array([[-0.419,  0.28 ,  1.11 ],
+                                            [-0.419, -0.279,  1.11 ]])
+                    target_pos[0] += dpos
+                    target_ori = np.array([[-0.465, -0.46 ,  0.54 , -0.53 ],
+                                            [ 0.548, -0.535,  0.487,  0.419]])
+
+                    integration_dt = 0.1
+                    damping = 5e-2
+                    Kpos = 0.95
+                    Kori = 0.95
+
+                    max_actuation_val = 100
+                    robot.solve_ik(
+                        target_pos=target_pos, 
+                        target_ori=target_ori, 
+                        damping=damping,
+                        integration_dt=integration_dt, 
+                        max_actuation_val=max_actuation_val,
+                        Kpos=Kpos, 
+                        Kori=Kori,
+                        update_sim=False,
+                    )
+                    q_des = robot.dq
+                    return robot.dq
 
         return np.zeros(len(joint_indices))
 
@@ -407,14 +403,14 @@ class InverseKinematicsController(JointPositionController):
             )  # reference is the current orientation at start
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
-        # Run ik prepropressing to convert pos, quat ori to desired velocities
+        # Run ik prepropressing to convert pos, quat ori to desired positions
         requested_control = self._make_input(delta, self.reference_target_orn)
 
         # Compute desired velocities to achieve eef pos / ori
-        velocities = self.get_control(**requested_control, update_targets=True)
+        positions = self.get_control(**requested_control, update_targets=True)
 
-        # Set the goal velocities for the underlying velocity controller
-        super().set_goal(velocities)
+        # Set the goal positions for the underlying position controller
+        super().set_goal(positions)
 
     def run_controller(self):
         """
@@ -424,7 +420,7 @@ class InverseKinematicsController(JointPositionController):
              np.array: Command torques
         """
         # Update state
-        self.update(force=True)  # force because new_update = True only set in super().run_controller()
+        self.update()  # force because new_update = True only set in super().run_controller()
 
         # Update interpolated action if necessary
         desired_pos = None
@@ -455,7 +451,10 @@ class InverseKinematicsController(JointPositionController):
                 pass
             update_velocity_goal = True
         else:
-            rotation = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
+            if self.num_ref_sites == 1:
+                rotation = T.mat2quat(self.ref_ori_mat)
+            else:
+                rotation = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
 
         # Only update the velocity goals if we're interpolating
         if update_velocity_goal:
@@ -464,7 +463,6 @@ class InverseKinematicsController(JointPositionController):
             )
             super().set_goal(velocities)
 
-        # Run controller with given action
         return super().run_controller()
 
     def update_initial_joints(self, initial_joints):

@@ -132,15 +132,8 @@ class JointPositionController(Controller):
 
         # kp kd
         self.kp = self.nums2array(kp, self.control_dim)
-        self.kd = 2 * np.sqrt(self.kp) * damping_ratio
-
-        print(f'self.kp: {self.kp}')
-        print(f'self.kd: {self.kd}')
-        # import ipdb; ipdb.set_trace()
-
-        # # print out joint angles of all joints
-        # for joint in self.robots.joints:
-        #     print(f"joint: {joint} {self.sim.data.get_joint_qpos(joint)}")
+        self.kd = 2 * np.sqrt(self.kp) * damping_ratio if kwargs.get("kv", None) is None else \
+            self.nums2array(kwargs.get("kv", None), self.control_dim)
 
         # kp and kd limits
         self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
@@ -213,14 +206,13 @@ class JointPositionController(Controller):
         # Check to make sure delta is size self.joint_dim
         assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
 
-        if delta is not None:
-            scaled_delta = self.scale_action(delta)
-        else:
-            scaled_delta = None
+        # scale delta appears to mess up action coming from subclassed IK controller; commenting out
+        # if delta is not None:
+        #     scaled_delta = self.scale_action(delta)
+        # else:
+        #     scaled_delta = None
 
-        self.goal_qpos = set_goal_position(
-            scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
-        )
+        self.goal_qpos = action
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_qpos)
@@ -252,74 +244,14 @@ class JointPositionController(Controller):
         else:
             desired_qpos = np.array(self.goal_qpos)
 
-        from robosuite.scripts.diffik_nullspace import RobotController
+        position_error = desired_qpos - self.joint_pos
+        vel_pos_error = -self.joint_vel
+        desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
 
-        model = self.sim.model._model
-        data = self.sim.data._data
-        # TODO(klin): get the correct indexing for the torque output --- probably need the correct joint names for our case that we care about -- find how to get that?
-        # find way to get correct joint names perhaps from _ref_joints_indexes_dict
-        joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0 and ("gripper0" not in model.joint(i).name)]  # Exclude fixed joints
-        body_names = [model.body(i).name for i in range(model.nbody) if model.body(i).name not in {"world", "base", "target"}]
-
-        def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
-            return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
-
-        nullspace_joint_weights = {
-            "robot0_torso_waist_yaw": 100.0,
-            "robot0_torso_waist_pitch": 100.0,
-            "robot0_torso_waist_roll": 500.0,
-            "robot0_l_shoulder_pitch": 4.0,
-            "robot0_r_shoulder_pitch": 4.0,
-            "robot0_l_shoulder_roll": 3.0,
-            "robot0_r_shoulder_roll": 3.0,
-            "robot0_l_shoulder_yaw": 2.0,
-            "robot0_r_shoulder_yaw": 2.0,
-        }
-        Kn = get_Kn(joint_names, nullspace_joint_weights)
-        end_effector_sites = [ "gripper0_left_grip_site", "gripper0_right_grip_site"]
-        robot_config =  {
-            'end_effector_sites': end_effector_sites,
-            'body_names': body_names,
-            'joint_names': joint_names,
-            'mocap_bodies': [],
-            'initial_keyframe': 'home',
-            'nullspace_gains': Kn
-        }
-        robot = RobotController(model, data, robot_config, input_type="mocap", debug=True)
-        # desired_qpos[:] = 0 # + np.random.normal(0, 0.1, len(desired_qpos))
-
-        target_pos = np.array([[-0.419,  0.28 ,  1.11 ],
-                                [-0.419, -0.279,  1.11 ]])
-        target_ori = np.array([[-0.465, -0.46 ,  0.54 , -0.53 ],
-                                [ 0.548, -0.535,  0.487,  0.419]])
-
-        integration_dt = 0.1
-        damping = 5e-2
-        dt = 0.002        
-        Kpos = 0.95
-        Kori = 0.95
-
-        max_actuation_val = 100
-        torques = robot.solve_ik(
-            target_pos=target_pos, 
-            target_ori=target_ori, 
-            damping=damping,
-            integration_dt=integration_dt, 
-            max_actuation_val=max_actuation_val,
-            Kpos=Kpos, 
-            Kori=Kori,
-            update_sim=False
-        )
+        # Return desired torques plus gravity compensations
+        torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
 
         self.torques = torques
-        # torques = pos_err * kp + vel_err * kd
-        # position_error = desired_qpos - self.joint_pos
-        # vel_pos_error = -self.joint_vel
-        # desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
-        # # Return desired torques plus gravity compensations
-        # self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
-
-        # print(f"max joint position error: {np.max(np.abs(position_error))}")
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()

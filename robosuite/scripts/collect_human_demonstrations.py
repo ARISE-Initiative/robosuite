@@ -232,27 +232,30 @@ if __name__ == "__main__":
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
 
+    composite_controller_config = {
+        "type": "WHOLE_BODY",
+        "controller_configs": {
+            "arms_body": {
+                    "actuator_range": [-2, 2], # dummy values
+                    "type": "IK_POSE",
+                    "part_name": "arms_body",
+                    "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
+                    "interpolation": None,
+                    "robot_name": args.robots[0],
+                    "individual_part_names": ["torso", "head", "right", "left"],
+                    # "kp": 1000,
+                    # "kv": 200,
+            },
+        }
+    }
+    composite_controller_config = None
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
         # new composite controller configs structure
-        "composite_controller_configs": {
-            "type": "WHOLE_BODY",
-            "controller_configs": {
-                    "arms_body": 
-                        {
-                            "actuator_range": [-2, 2], # dummy values
-                            "type": "IK_POSE",
-                            "part_name": "arms_body",
-                            "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
-                            "interpolation": None,
-                            "robot_name": args.robots[0],
-                            "individual_part_names": ["torso", "head", "right", "left"]
-                        },
-            }
-        },
+        "composite_controller_configs": composite_controller_config,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
