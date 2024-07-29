@@ -218,6 +218,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
+    parser.add_argument(
+        "--use-whole-body-controller", action="store_true", help="Use the whole body controller for the arms and body"
+    )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
@@ -243,12 +246,14 @@ if __name__ == "__main__":
                     "interpolation": None,
                     "robot_name": args.robots[0],
                     "individual_part_names": ["torso", "head", "right", "left"],
-                    # "kp": 1000,
-                    # "kv": 200,
+                    "kp": 1000,
+                    "kv": 200,
             },
         }
     }
-    composite_controller_config = None
+    if not args.use_whole_body_controller:
+        composite_controller_config = None
+
     # Create argument configuration
     config = {
         "env_name": args.environment,
