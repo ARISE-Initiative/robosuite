@@ -371,30 +371,30 @@ class RobotController:
         diag = damping ** 2 * np.eye(len(self.twist))
         eye = np.eye(len(self.dof_ids))
         # basically dq = J^{-1} dx. This formulation is nicer since m is small in dimensionality.
-        dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, self.twist)
+        self.dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, self.twist)
         # Nullspace control: intuitively, (eye - np.linalg.pinv(jac) @ jac) 
         # projects dqs into the nullspace of the Jacobian, which intuitively 
         # only allows movements that don't affect the task space.
         dq_null = (eye - np.linalg.pinv(jac) @ jac) @ \
             (self.Kn * (self.q0 - self.data.qpos[self.dof_ids]))
-        dq += dq_null
+        self.dq += dq_null
 
         if max_actuation_val > 0:
-            dq_abs_max = np.abs(dq).max()
+            dq_abs_max = np.abs(self.dq).max()
             if dq_abs_max > max_actuation_val:
-                dq *= max_actuation_val / dq_abs_max
+                self.dq *= max_actuation_val / dq_abs_max
 
         # get the desired joint angles by integrating the desired joint velocities
-        q_des = self.data.qpos[self.dof_ids].copy()
+        self.q_des = self.data.qpos[self.dof_ids].copy()
         # mujoco.mj_integratePos(self.model, q_des, dq, integration_dt)
-        q_des += dq * integration_dt  # manually integrate q_des
+        self.q_des += self.dq * integration_dt  # manually integrate q_des
 
         pre_clip_error = np.inf
         post_clip_error = np.inf
 
         if self.debug and self.i % 10 == 0:
             # compare q_des's forward kinematics with target_pos
-            integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(q_des)
+            integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
             integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
             print(f"internal error pre clip: {np.linalg.norm(target_pos - integrated_pos_np)}")
             pre_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
@@ -406,7 +406,7 @@ class RobotController:
             Kp = 1000
             Kd = 100
 
-            position_error = q_des - self.data.qpos[self.dof_ids]
+            position_error = self.q_des - self.data.qpos[self.dof_ids]
             velocity_error = -self.data.qvel[self.dof_ids]
 
             if self.debug and self.i % 100 == 0:
@@ -418,14 +418,14 @@ class RobotController:
                     print(f"velocity_error: {np.max(np.abs(velocity_error))}")
 
             desired_torque = Kp * position_error + Kd * velocity_error
-            gravity_compensation = self.data.qfrc_bias[self.dof_ids]
+            self.gravity_compensation = self.data.qfrc_bias[self.dof_ids]
 
             # scale desired torque by mass matrix if doing torque control!
             mass_matrix = np.zeros(shape=(self.model.nv, self.model.nv), dtype=np.float64, order="C")
             mujoco.mj_fullM(self.model, mass_matrix, self.data.qM)
             mass_matrix = np.reshape(mass_matrix, (len(self.data.qvel), len(self.data.qvel)))
-            mass_matrix = mass_matrix[self.dof_ids][:, self.dof_ids]
-            torque = np.dot(mass_matrix, desired_torque) + gravity_compensation
+            self.mass_matrix = mass_matrix[self.dof_ids][:, self.dof_ids]
+            torque = np.dot(self.mass_matrix, desired_torque) + self.gravity_compensation
             if update_sim:
                 self.data.ctrl[self.actuator_ids] = torque
             else:
@@ -433,24 +433,24 @@ class RobotController:
         else:
             # Set the control signal.
             # this indexing mightn't always work for freejoint
-            np.clip(q_des, *self.model.jnt_range[self.dof_ids].T, out=q_des)
+            np.clip(self.q_des, *self.model.jnt_range[self.dof_ids].T, out=self.q_des)
             print(self.i)
             # if self.debug and self.i % 10 == 0:
 
             if self.debug:
-                # compare q_des's forward kinematics with target_pos
-                integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(q_des)
+                # compare self.q_des's forward kinematics with target_pos
+                integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
                 integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
                 post_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
                 print(f"internal error post clip: {post_clip_error}")
 
             print(f"diff in error: {post_clip_error - pre_clip_error}")
             # check if we're outside the joint limits
-            if False or np.any(q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(q_des > self.model.jnt_range[self.dof_ids][:, 1]):
+            if False or np.any(self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(self.q_des > self.model.jnt_range[self.dof_ids][:, 1]):
                 print("Joint limits exceeded! Not updating control signal.")
                 # import ipdb; ipdb.set_trace()
                 # get dof ids exceeding joint limits
-                exceeding_ids = np.where((q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
+                exceeding_ids = np.where((self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (self.q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
                 # get joint names
                 exceeding_joint_names = [self.model.joint(i).name for i in self.dof_ids[exceeding_ids]]
                 for joint_name in exceeding_joint_names:
@@ -462,9 +462,9 @@ class RobotController:
                 # return
 
             if update_sim:
-                self.data.ctrl[self.actuator_ids] = q_des[self.dof_ids]
+                self.data.ctrl[self.actuator_ids] = self.q_des[self.dof_ids]
             else:
-                return q_des[self.dof_ids]
+                return self.q_des[self.dof_ids]
 
 
 def circle(t: float, r: float, h: float, k: float, f: float, z: float) -> np.ndarray:
