@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 import time
-from typing import Dict, List, Optional, Tuple, Literal
+from typing import Dict, List, Optional, Tuple, Literal, Union
 
 import mujoco
 import mujoco.viewer
 import numpy as np
 import tyro
+
 
 # from devices import KeyboardHandler
 # from utils import get_joint_qpos_addr, quaternion
@@ -35,167 +36,12 @@ def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
 
 
 
-import math
-from typing import Tuple, Union
-
-import mujoco
-import numpy as np
-
-
-def get_joint_qpos_addr(model: mujoco.MjModel, joint_name: str) -> Union[int, Tuple[int, int]]:
-    """
-    Get the qpos address for the given joint name in the provided MuJoCo model.
-    
-    Args:
-        model (mujoco.MjModel): The MuJoCo model.
-        joint_name (str): The name of the joint.
-
-    Returns:
-        Union[int, Tuple[int, int]]: The address of the joint's qpos. Returns an integer
-        if the joint is 1-dimensional, otherwise returns a tuple with the start and end addresses.
-    """
-    joint_id = model.joint(joint_name).id
-    joint_type = model.jnt_type[joint_id]
-    joint_addr = model.jnt_qposadr[joint_id]
-
-    if joint_type == mujoco.mjtJoint.mjJNT_FREE:
-        ndim = 7
-    elif joint_type == mujoco.mjtJoint.mjJNT_BALL:
-        ndim = 4
-    else:
-        assert joint_type in (mujoco.mjtJoint.mjJNT_HINGE, mujoco.mjtJoint.mjJNT_SLIDE)
-        ndim = 1
-
-    if ndim == 1:
-        return joint_addr
-    else:
-        return joint_addr, joint_addr + ndim
-
-
-def unit_vector(data, axis=None, out=None):
-    """
-    Taken from robosuite.utils.transform_utils.py
-
-    Returns ndarray normalized by length, i.e. eucledian norm, along axis.
-
-    E.g.:
-        >>> v0 = numpy.random.random(3)
-        >>> v1 = unit_vector(v0)
-        >>> numpy.allclose(v1, v0 / numpy.linalg.norm(v0))
-        True
-
-        >>> v0 = numpy.random.rand(5, 4, 3)
-        >>> v1 = unit_vector(v0, axis=-1)
-        >>> v2 = v0 / numpy.expand_dims(numpy.sqrt(numpy.sum(v0*v0, axis=2)), 2)
-        >>> numpy.allclose(v1, v2)
-        True
-
-        >>> v1 = unit_vector(v0, axis=1)
-        >>> v2 = v0 / numpy.expand_dims(numpy.sqrt(numpy.sum(v0*v0, axis=1)), 1)
-        >>> numpy.allclose(v1, v2)
-        True
-
-        >>> v1 = numpy.empty((5, 4, 3), dtype=numpy.float32)
-        >>> unit_vector(v0, axis=1, out=v1)
-        >>> numpy.allclose(v1, v2)
-        True
-
-        >>> list(unit_vector([]))
-        []
-
-        >>> list(unit_vector([1.0]))
-        [1.0]
-
-    Args:
-        data (np.array): data to normalize
-        axis (None or int): If specified, determines specific axis along data to normalize
-        out (None or np.array): If specified, will store computation in this variable
-
-    Returns:
-        None or np.array: If @out is not specified, will return normalized vector. Otherwise, stores the output in @out
-    """
-    if out is None:
-        data = np.array(data, dtype=np.float32, copy=True)
-        if data.ndim == 1:
-            data /= math.sqrt(np.dot(data, data))
-            return data
-    else:
-        if out is not data:
-            out[:] = np.array(data, copy=False)
-        data = out
-    length = np.atleast_1d(np.sum(data * data, axis))
-    np.sqrt(length, length)
-    if axis is not None:
-        length = np.expand_dims(length, axis)
-    data /= length
-    if out is None:
-        return data
-
-
 def quaternion(axis: np.ndarray, angle: float) -> np.ndarray:
     axis = axis / np.linalg.norm(axis)  # Normalize the axis vector
     half_angle = angle / 2.0
     sin_half_angle = np.sin(half_angle)
     return np.array([*(axis * sin_half_angle), np.cos(half_angle)])
 
-def rotation_matrix(angle, direction, point=None):
-    """
-    Taken from robosuite.utils.transform_utils.py
-
-    Returns matrix to rotate about axis defined by point and direction.
-
-    E.g.:
-        >>> angle = (random.random() - 0.5) * (2*math.pi)
-        >>> direc = numpy.random.random(3) - 0.5
-        >>> point = numpy.random.random(3) - 0.5
-        >>> R0 = rotation_matrix(angle, direc, point)
-        >>> R1 = rotation_matrix(angle-2*math.pi, direc, point)
-        >>> is_same_transform(R0, R1)
-        True
-
-        >>> R0 = rotation_matrix(angle, direc, point)
-        >>> R1 = rotation_matrix(-angle, -direc, point)
-        >>> is_same_transform(R0, R1)
-        True
-
-        >>> I = numpy.identity(4, numpy.float32)
-        >>> numpy.allclose(I, rotation_matrix(math.pi*2, direc))
-        True
-
-        >>> numpy.allclose(2., numpy.trace(rotation_matrix(math.pi/2,
-        ...                                                direc, point)))
-        True
-
-    Args:
-        angle (float): Magnitude of rotation
-        direction (np.array): (ax,ay,az) axis about which to rotate
-        point (None or np.array): If specified, is the (x,y,z) point about which the rotation will occur
-
-    Returns:
-        np.array: 4x4 homogeneous matrix that includes the desired rotation
-    """
-    sina = math.sin(angle)
-    cosa = math.cos(angle)
-    direction = unit_vector(direction[:3])
-    # rotation matrix around unit vector
-    R = np.array(((cosa, 0.0, 0.0), (0.0, cosa, 0.0), (0.0, 0.0, cosa)), dtype=np.float32)
-    R += np.outer(direction, direction) * (1.0 - cosa)
-    direction *= sina
-    R += np.array(
-        (
-            (0.0, -direction[2], direction[1]),
-            (direction[2], 0.0, -direction[0]),
-            (-direction[1], direction[0], 0.0),
-        ),
-        dtype=np.float32,
-    )
-    M = np.identity(4)
-    M[:3, :3] = R
-    if point is not None:
-        # rotation not around origin
-        point = np.array(point[:3], dtype=np.float32, copy=False)
-        M[:3, 3] = point - np.dot(R, point)
-    return M
 
 class RobotController:
     def __init__(
