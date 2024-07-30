@@ -234,28 +234,10 @@ class InverseKinematicsController(JointPositionController):
         Returns:
             np.array: A flat array of joint position commands to apply to try and achieve the desired input control.
         """
-
-        def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
-            return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
-
-        nullspace_joint_weights = {
-            "robot0_torso_waist_yaw": 100.0,
-            "robot0_torso_waist_pitch": 100.0,
-            "robot0_torso_waist_roll": 500.0,
-            "robot0_l_shoulder_pitch": 4.0,
-            "robot0_r_shoulder_pitch": 4.0,
-            "robot0_l_shoulder_roll": 3.0,
-            "robot0_r_shoulder_roll": 3.0,
-            "robot0_l_shoulder_yaw": 2.0,
-            "robot0_r_shoulder_yaw": 2.0,
-        }
-        # Kn = get_Kn(joint_names, nullspace_joint_weights)
-
         if (dpos is not None) and (drot is not None):
             max_angvel = velocity_limits[1] if velocity_limits is not None else 0.7
             integration_dt: float = 1 / control_freq
             integration_dt = 0.1
-
 
             q0 = initial_joint
             dof_ids = joint_indices
@@ -333,14 +315,20 @@ class InverseKinematicsController(JointPositionController):
                     'nullspace_gains': Kn
                 }
                 robot = RobotController(model, data, robot_config, input_type="mocap", debug=False)
-                target_pos = np.array([[-0.419,  0.28 ,  1.11 ],
-                                        [-0.419, -0.279,  1.11 ]])
-                target_pos[0] += dpos
-                target_ori = np.array([[-0.465, -0.46 ,  0.54 , -0.53 ],
-                                        [ 0.548, -0.535,  0.487,  0.419]])
+                target_pos = np.array([robot.data.site(site_id).xpos for site_id in robot.site_ids])
+                target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
+                target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
+                [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(robot.site_ids))]
+
+                if dpos.ndim == 1:
+                    target_pos[0] += dpos
+                    target_ori[0] = T.quat_multiply(target_ori[0], T.mat2quat(drot))
+                else:
+                    target_pos += dpos
+                    target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(robot.site_ids))])
 
                 integration_dt = 0.1
-                damping = 5e-2
+                damping = 5e-1
                 Kpos = 0.95
                 Kori = 0.95
 
@@ -357,7 +345,7 @@ class InverseKinematicsController(JointPositionController):
                 )
                 return robot.q_des
 
-        return np.zeros(len(joint_indices))
+        return sim.data.qpos[joint_indices]
 
     def set_goal(self, delta, set_ik=None):
         """
