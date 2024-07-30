@@ -363,8 +363,8 @@ class InverseKinematicsController(JointPositionController):
         """
         Sets the internal goal state of this controller based on @delta
 
-        Note that this controller wraps a VelocityController, and so determines the desired velocities
-        to achieve the inputted pose, and sets its internal setpoint in terms of joint velocities
+        Note that this controller wraps a PositionController, and so determines the desired positions
+        to achieve the inputted pose, and sets its internal setpoint in terms of joint positions
 
         TODO: Add feature so that using @set_ik automatically sets the target values to these absolute values
 
@@ -403,7 +403,7 @@ class InverseKinematicsController(JointPositionController):
         # Run ik prepropressing to convert pos, quat ori to desired positions
         requested_control = self._make_input(delta, self.reference_target_orn)
 
-        # Compute desired velocities to achieve eef pos / ori
+        # Compute desired positions to achieve eef pos / ori
         positions = self.get_control(**requested_control, update_targets=True)
 
         # Set the goal positions for the underlying position controller
@@ -422,7 +422,7 @@ class InverseKinematicsController(JointPositionController):
         # Update interpolated action if necessary
         desired_pos = None
         rotation = None
-        update_velocity_goal = False
+        update_position_goal = False
 
         # Update interpolated goals if active
         if self.interpolator_pos is not None:
@@ -432,7 +432,7 @@ class InverseKinematicsController(JointPositionController):
             else:
                 # Nonlinear case not currently supported
                 pass
-            update_velocity_goal = True
+            update_position_goal = True
         else:
             desired_pos = self.reference_target_pos
 
@@ -446,15 +446,15 @@ class InverseKinematicsController(JointPositionController):
             else:
                 # Nonlinear case not currently supported
                 pass
-            update_velocity_goal = True
+            update_position_goal = True
         else:
             if self.num_ref_sites == 1:
                 rotation = T.mat2quat(self.ref_ori_mat)
             else:
                 rotation = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
 
-        # Only update the velocity goals if we're interpolating
-        if update_velocity_goal:
+        # Only update the position goals if we're interpolating
+        if update_position_goal:
             velocities = self.get_control(
                 dpos=(desired_pos - self.ref_pos), rotation=rotation
             )
