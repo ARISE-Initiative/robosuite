@@ -130,9 +130,6 @@ class InverseKinematicsController(JointPositionController):
         # Initialize ik-specific attributes
         self.robot_name = robot_name  # Name of robot (e.g.: "Panda", "Sawyer", etc.)
 
-        # Override underlying control dim
-        self.control_dim = 6
-
         self.rest_poses = None
 
         self.num_ref_sites = 1 if isinstance(ref_name, str) else len(ref_name)
@@ -143,6 +140,9 @@ class InverseKinematicsController(JointPositionController):
         else:
             self.reference_target_pos = self.ref_pos
             self.reference_target_orn = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
+
+        # Override underlying control dim
+        self.control_dim = 6 * self.num_ref_sites  # assuming 6dof control of end effectors; TODO: handle head
 
         # Interpolator
         self.interpolator_pos = interpolator_pos
@@ -471,14 +471,15 @@ class InverseKinematicsController(JointPositionController):
                 - (np.array) clipped rotation
         """
         # scale input range to desired magnitude
-        # if dpos.any():
-        #     dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
+        if dpos.any() and self.ik_pos_limit is not None:
+            dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
 
         # Map input to quaternion
         rotation = T.axisangle2quat(rotation)
 
-        # # Clip orientation to desired magnitude
-        # rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
+        if self.ik_ori_limit is not None:
+            # Clip orientation to desired magnitude
+            rotation, _ = T.clip_rotation(rotation, self.ik_ori_limit)
 
         return dpos, rotation
 
