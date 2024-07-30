@@ -212,12 +212,11 @@ class RobotController:
         self.joint_names = robot_config['joint_names']
         self.site_names = robot_config['end_effector_sites']
         self.site_ids = [self.model.site(robot_config['end_effector_sites'][i]).id for i in range(len(robot_config['end_effector_sites']))]
-        self.body_ids = [self.model.body(name).id for name in robot_config['body_names']]
-        self.joint_qpos_ids = np.array([get_joint_qpos_addr(model, joint_name) for joint_name in robot_config['joint_names']])
+        self.body_ids = [self.model.body(name).id for name in robot_config['body_names']] if 'body_names' in robot_config else []
         self.dof_ids = np.array([self.model.joint(name).id for name in robot_config['joint_names']])
         # self.actuator_ids = np.array([self.model.actuator(name).id for name in robot_config['joint_names']])  # this works if actuators match joints
-        self.actuator_ids = np.array([i for i in range(20)])  # TODO figure out how to not hardcode this --- currently hardcoded for GR1
-        # self.key_id = self.model.key(robot_config['initial_keyframe']).id
+        self.actuator_ids = np.array([i for i in range(20)])  # TODO no hardcode; cur for GR1; model.nu is 32
+        self.key_id = self.model.key(robot_config['initial_keyframe']).id if 'initial_keyframe' in robot_config else None
 
         self.jac_temps: List[np.ndarray] = [np.zeros((6, self.model.nv)) for _ in range(len(self.site_ids))]
         self.twists: List[np.ndarray] = [np.zeros(6) for _ in range(len(self.site_ids))]
@@ -244,8 +243,6 @@ class RobotController:
             self.history = input_file
 
         # Nullspace control
-        # self.q0 = self.model.key(robot_config['initial_keyframe']).qpos
-        # all zeros for now
         self.q0 = np.zeros(len(self.dof_ids))
         self.Kn = np.array(robot_config['nullspace_gains'])
 
@@ -350,9 +347,9 @@ class RobotController:
         target_ori: np.ndarray,
         damping: float, 
         integration_dt: float, 
-        max_actuation_val: float, 
+        max_dq: float, 
         use_torque_actuation: bool = True, 
-        Kpos: float = 0.95, 
+        Kpos: float = 0.95,
         Kori: float = 0.95,
         update_sim: bool = True,
     ):
@@ -379,10 +376,10 @@ class RobotController:
             (self.Kn * (self.q0 - self.data.qpos[self.dof_ids]))
         self.dq += dq_null
 
-        if max_actuation_val > 0:
+        if max_dq > 0:
             dq_abs_max = np.abs(self.dq).max()
-            if dq_abs_max > max_actuation_val:
-                self.dq *= max_actuation_val / dq_abs_max
+            if dq_abs_max > max_dq:
+                self.dq *= max_dq / dq_abs_max
 
         # get the desired joint angles by integrating the desired joint velocities
         self.q_des = self.data.qpos[self.dof_ids].copy()
@@ -396,8 +393,8 @@ class RobotController:
             # compare q_des's forward kinematics with target_pos
             integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
             integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
-            print(f"internal error pre clip: {np.linalg.norm(target_pos - integrated_pos_np)}")
             pre_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
+            print(f"internal error pre clip: {pre_clip_error}")
 
         self.i += 1
 
@@ -416,12 +413,8 @@ class RobotController:
             self.velocity_error = velocity_error
 
             if self.debug and self.i % 100 == 0:
-                if np.all(self.twist == 0):
-                    print(f"position_error: {np.max(np.abs(position_error))}")
-                    print(f"velocity_error: {np.max(np.abs(velocity_error))}")
-                else:
-                    print(f"position_error: {np.max(np.abs(position_error))}")
-                    print(f"velocity_error: {np.max(np.abs(velocity_error))}")
+                print(f"position_error: {np.max(np.abs(position_error))}")
+                print(f"velocity_error: {np.max(np.abs(velocity_error))}")
 
             desired_torque = Kp * position_error + Kd * velocity_error
             self.gravity_compensation = self.data.qfrc_bias[self.dof_ids]
@@ -438,10 +431,7 @@ class RobotController:
                 return torque
         else:
             # Set the control signal.
-            # this indexing mightn't always work for freejoint
             np.clip(self.q_des, *self.model.jnt_range[self.dof_ids].T, out=self.q_des)
-            print(self.i)
-            # if self.debug and self.i % 10 == 0:
 
             if self.debug:
                 # compare self.q_des's forward kinematics with target_pos
@@ -450,22 +440,17 @@ class RobotController:
                 post_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
                 print(f"internal error post clip: {post_clip_error}")
 
-            print(f"diff in error: {post_clip_error - pre_clip_error}")
-            # check if we're outside the joint limits
-            if False or np.any(self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(self.q_des > self.model.jnt_range[self.dof_ids][:, 1]):
-                print("Joint limits exceeded! Not updating control signal.")
-                # import ipdb; ipdb.set_trace()
-                # get dof ids exceeding joint limits
-                exceeding_ids = np.where((self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (self.q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
-                # get joint names
-                exceeding_joint_names = [self.model.joint(i).name for i in self.dof_ids[exceeding_ids]]
-                for joint_name in exceeding_joint_names:
-                    if "gripper" not in joint_name:
-                        print(f"Joint {joint_name} has exceeded its limits.")
-                        import ipdb; ipdb.set_trace()
-                print(f"Exceeding joint limits for {exceeding_joint_names}")
-                # import ipdb; ipdb.set_trace()
-                # return
+                # check if we're outside the joint limits
+                if np.any(self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(self.q_des > self.model.jnt_range[self.dof_ids][:, 1]):
+                    print("Joint limits exceeded! Not updating control signal.")
+                    # get dof ids exceeding joint limits
+                    exceeding_ids = np.where((self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (self.q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
+                    # get joint names
+                    exceeding_joint_names = [self.model.joint(i).name for i in self.dof_ids[exceeding_ids]]
+                    for joint_name in exceeding_joint_names:
+                        if "gripper" not in joint_name:
+                            print(f"Joint {joint_name} has exceeded its limits.")
+                    print(f"Exceeding joint limits for {exceeding_joint_names}")
 
             if update_sim:
                 self.data.ctrl[self.actuator_ids] = self.q_des[self.dof_ids]
@@ -536,11 +521,11 @@ def main(cfg: Config):
     damping = 5e-2
     dt = 0.002
     if cfg.use_torque_actuation:
-        max_actuation_val = 100
+        max_dq = 100
         gravity_compensation = False
     else:
         gravity_compensation = True
-        max_actuation_val = 1
+        max_dq = 1
 
     Kpos = 0.95
     Kori = 0.95
@@ -567,7 +552,7 @@ def main(cfg: Config):
                 robot.set_target_positions([left_target_pos, right_target_pos])
 
             target_pos, target_ori = robot.get_targets()
-            robot.solve_ik(target_pos, target_ori, damping, integration_dt, max_actuation_val, cfg.use_torque_actuation, Kpos, Kori)
+            robot.solve_ik(target_pos, target_ori, damping, integration_dt, max_dq, cfg.use_torque_actuation, Kpos, Kori)
 
             mujoco.mj_step(model, data)
 

@@ -13,6 +13,7 @@ Attempting to run IK with any other robot will raise an error!
 ***********************************************************************************
 """
 
+from dataclasses import field
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -158,6 +159,11 @@ class InverseKinematicsController(JointPositionController):
         # Should be in (0, 1], smaller values mean less sensitivity.
         self.user_sensitivity = 0.3
 
+        self.nullspace_joint_weights = kwargs.get("nullspace_joint_weights", {})
+        self.joint_names = [sim.model.joint_id2name(i) for i in joint_indexes['joints']]
+        self.integration_dt = kwargs.get("ik_integration_dt", 0.1)
+        self.damping = kwargs.get("ik_pseudo_inverse_damping", 5e-1)
+
         self.i = 0
 
     def get_control(self, dpos=None, rotation=None, update_targets=False):
@@ -177,20 +183,20 @@ class InverseKinematicsController(JointPositionController):
         Returns:
             np.array: a flat array of joint position commands to apply to try and achieve the desired input control.
         """
-        pos_limits = np.ones(len(self.joint_index)) * -2
-        neg_limits = np.ones(len(self.joint_index)) * 2
-        self.velocity_limits = [pos_limits, neg_limits]
-        self.velocity_limits = [-1, 1]
         positions = InverseKinematicsController.compute_joint_positions(
             self.sim,
             self.initial_joint,
             self.joint_index,
             self.ref_name,
             self.control_freq,
-            self.velocity_limits,
+            [-1, 1],  # hardcoded velocity limits; unused
             dpos,
             rotation,
             jac=self.J_full,
+            joint_names=self.joint_names,
+            nullspace_joint_weights=self.nullspace_joint_weights,
+            damping=self.damping,
+            integration_dt=self.integration_dt,
         )
 
         return positions
@@ -202,7 +208,7 @@ class InverseKinematicsController(JointPositionController):
         joint_indices: np.ndarray,
         ref_name: Union[List[str], str],
         control_freq: float,
-        velocity_limits: Optional[np.ndarray],
+        velocity_limits: Optional[np.ndarray] = None,
         dpos: Optional[np.ndarray] = None,
         drot: Optional[np.ndarray] = None,
         Kn: Optional[np.ndarray] = np.array([10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 5.0]),
@@ -210,6 +216,10 @@ class InverseKinematicsController(JointPositionController):
         Kpos: float = 0.95,
         Kori: float = 0.95,
         jac: Optional[np.ndarray] = None,
+        joint_names: Optional[List[str]] = None,
+        nullspace_joint_weights: Dict[str, float] = field(default_factory=dict),
+        integration_dt: float = 0.1,
+        damping: float = 5e-1,
     ) -> np.ndarray:
         """
         Returns joint positions to control the robot after the target end effector
@@ -236,8 +246,6 @@ class InverseKinematicsController(JointPositionController):
         """
         if (dpos is not None) and (drot is not None):
             max_angvel = velocity_limits[1] if velocity_limits is not None else 0.7
-            integration_dt: float = 1 / control_freq
-            integration_dt = 0.1
 
             q0 = initial_joint
             dof_ids = joint_indices
@@ -285,33 +293,14 @@ class InverseKinematicsController(JointPositionController):
 
                 model = sim.model._model
                 data = sim.data._data
-                # TODO(klin): get the correct indexing for the torque output --- probably need the correct joint names for our case that we care about -- find how to get that?
-                # find way to get correct joint names perhaps from _ref_joints_indexes_dict
                 joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0 and ("gripper0" not in model.joint(i).name)]  # Exclude fixed joints
-                body_names = [model.body(i).name for i in range(model.nbody) if model.body(i).name not in {"world", "base", "target"}]
-
                 def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
                     return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
-
-                nullspace_joint_weights = {
-                    "robot0_torso_waist_yaw": 100.0,
-                    "robot0_torso_waist_pitch": 100.0,
-                    "robot0_torso_waist_roll": 500.0,
-                    "robot0_l_shoulder_pitch": 4.0,
-                    "robot0_r_shoulder_pitch": 4.0,
-                    "robot0_l_shoulder_roll": 3.0,
-                    "robot0_r_shoulder_roll": 3.0,
-                    "robot0_l_shoulder_yaw": 2.0,
-                    "robot0_r_shoulder_yaw": 2.0,
-                }
                 Kn = get_Kn(joint_names, nullspace_joint_weights)
-                end_effector_sites = [ "gripper0_left_grip_site", "gripper0_right_grip_site"]
                 robot_config =  {
-                    'end_effector_sites': end_effector_sites,
-                    'body_names': body_names,
+                    'end_effector_sites': ref_name,
                     'joint_names': joint_names,
                     'mocap_bodies': [],
-                    'initial_keyframe': 'home',
                     'nullspace_gains': Kn
                 }
                 robot = RobotController(model, data, robot_config, input_type="mocap", debug=False)
@@ -327,22 +316,18 @@ class InverseKinematicsController(JointPositionController):
                     target_pos += dpos
                     target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(robot.site_ids))])
 
-                integration_dt = 0.1
-                damping = 5e-1
-                Kpos = 0.95
-                Kori = 0.95
-
-                max_actuation_val = 100
+                max_dq = 1
                 robot.solve_ik(
                     target_pos=target_pos, 
                     target_ori=target_ori, 
                     damping=damping,
                     integration_dt=integration_dt, 
-                    max_actuation_val=max_actuation_val,
+                    max_dq=max_dq,
                     Kpos=Kpos, 
                     Kori=Kori,
                     update_sim=False,
                 )
+                # assumes the ordering of joints is the same as ordering of actuators
                 return robot.q_des
 
         return sim.data.qpos[joint_indices]
