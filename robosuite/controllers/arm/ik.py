@@ -362,6 +362,8 @@ class InverseKinematicsController(JointPositionController):
 
         # hardcoding to assumes 6D delta input for now
         (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:6])
+        dpos = dpos[0]
+        dquat = dquat[0]
 
         # Set interpolated goals if necessary
         if self.interpolator_pos is not None:
@@ -481,8 +483,11 @@ class InverseKinematicsController(JointPositionController):
         if dpos.any() and self.ik_pos_limit is not None:
             dpos, _ = T.clip_translation(dpos, self.ik_pos_limit)
 
-        # Map input to quaternion
-        rotation = T.axisangle2quat(rotation)
+        if self.num_ref_sites == 1:
+            # Map input to quaternion
+            rotation = T.axisangle2quat(rotation)
+        else:
+            rotation = [T.axisangle2quat(rotation[i]) for i in range(self.num_ref_sites)]
 
         if self.ik_ori_limit is not None:
             # Clip orientation to desired magnitude
@@ -501,9 +506,11 @@ class InverseKinematicsController(JointPositionController):
                 scaled axis-angle form)
             old_quat (np.array) the old target quaternion that will be updated with the relative change in @action
         """
-        # Clip action appropriately
-        dpos, rotation = self._clip_ik_input(action[:3], action[3:6])  # hardcoded to assume 6dof control for now
+        if self.num_ref_sites > 1:
+            action = np.array(action).reshape(self.num_ref_sites, 6)
 
+        # Clip action appropriately
+        dpos, rotation = self._clip_ik_input(action[..., :3], action[..., 3:6])  # hardcoded to assume 6dof control for now
 
         if self.use_delta:
             if self.num_ref_sites == 1:
@@ -513,11 +520,16 @@ class InverseKinematicsController(JointPositionController):
             else:
                 # Update reference targets
                 self.reference_target_pos += dpos * self.user_sensitivity
-                self.reference_target_orn = np.array([T.quat_multiply(old_quat[i], rotation) for i in range(self.num_ref_sites)])
+                self.reference_target_orn = np.array([T.quat_multiply(old_quat[i], rotation[i]) for i in range(self.num_ref_sites)])
         else:
             # Update reference targets
             self.reference_target_pos = dpos
             self.reference_target_orn = rotation
+
+        if self.num_ref_sites > 1:
+            # Hack for debugging single arm IK
+            dpos = dpos[0]
+            rotation = rotation[0]
 
         return {"dpos": dpos, "rotation": T.quat2mat(rotation)}
 
