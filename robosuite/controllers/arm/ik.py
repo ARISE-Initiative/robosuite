@@ -390,8 +390,9 @@ class InverseKinematicsController(JointPositionController):
         # Run ik prepropressing to convert pos, quat ori to desired positions
         requested_control = self._make_input(delta, self.reference_target_orn)
 
-        requested_control["dpos"][1] = np.zeros(3)  # hardcoding to ignore y-axis for now
-        requested_control["rotation"][1] = np.eye(3)  # hardcoding to ignore y-axis for now
+        if self.num_ref_sites > 1:
+            requested_control["dpos"][1] = np.zeros(3)  # hardcoding to ignore other ref site for now
+            requested_control["rotation"][1] = np.eye(3)  # hardcoding to ignore other ref site for now
 
         # Compute desired positions to achieve eef pos / ori
         positions = self.get_control(**requested_control, update_targets=True)  # is this delta?
