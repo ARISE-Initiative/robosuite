@@ -366,10 +366,6 @@ class InverseKinematicsController(JointPositionController):
         # hardcoding to assumes 6D delta input for now
         (dpos, dquat) = self._clip_ik_input(delta[..., :3], delta[..., 3:6])
 
-        if self.num_ref_sites > 1:
-            dpos = dpos[0]
-            dquat = dquat[0]
-
         # Set interpolated goals if necessary
         if self.interpolator_pos is not None:
             # Absolute position goal
@@ -389,10 +385,6 @@ class InverseKinematicsController(JointPositionController):
 
         # Run ik prepropressing to convert pos, quat ori to desired positions
         requested_control = self._make_input(delta, self.reference_target_orn)
-
-        if self.num_ref_sites > 1:
-            requested_control["dpos"][1] = np.zeros(3)  # hardcoding to ignore other ref site for now
-            requested_control["rotation"][1] = np.eye(3)  # hardcoding to ignore other ref site for now
 
         # Compute desired positions to achieve eef pos / ori
         positions = self.get_control(**requested_control, update_targets=True)  # is this delta?

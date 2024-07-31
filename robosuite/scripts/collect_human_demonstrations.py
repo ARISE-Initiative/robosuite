@@ -61,7 +61,9 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         # Run environment step
 
         if env.robots[0].is_mobile:
-            arm_actions = input_action[:12] if "GR1" in env.robots[0].name else input_action[:6]
+            arm_actions = input_action[:12].copy() if "GR1" in env.robots[0].name else input_action[:6].copy()
+            if "GR1" in env.robots[0].name:
+                arm_actions[6:] = [0.0] * 6   # no action for other arm
             # arm_actions = np.concatenate([arm_actions, ])
 
             base_action = input_action[-5:-2]
