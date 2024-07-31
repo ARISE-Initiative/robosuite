@@ -238,8 +238,7 @@ if __name__ == "__main__":
     # naming of type is weird
     composite_controller_config = {
         "type": "WHOLE_BODY",
-        # "default_controller_configs_part_names": ["right_gripper", "left_gripper"],  # not working yet
-        "default_controller_configs_part_names": [],
+        "default_controller_configs_part_names": ["right_gripper", "left_gripper"],
         "controller_configs": {
             "arms_body": {
                     "actuator_range": [-2, 2], # dummy values
