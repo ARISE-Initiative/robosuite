@@ -21,7 +21,8 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
+def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right",
+        control_delta_whole_body: bool = False):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -64,8 +65,9 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             arm_actions = input_action[:12].copy() if "GR1" in env.robots[0].name else input_action[:6].copy()
             if "GR1" in env.robots[0].name:
                 arm_actions[6:] = [0.0] * 6   # no action for other arm
-            # arm_actions = np.concatenate([arm_actions, ])
-
+                if not control_delta_whole_body:
+                    arm_actions = [-0.41931295, -0.22706004, 1.09566707, -1.26839518, 1.15421975, 0.99332174, \
+                                -0.4189254, 0.22745755,  1.09597001, -2.1356914 ,  2.50323857, -2.45929076]
             base_action = input_action[-5:-2]
             torso_action = input_action[-2:-1]
 
@@ -237,6 +239,7 @@ if __name__ == "__main__":
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
 
+    control_delta_whole_body = False
     # naming of type is weird
     composite_controller_config = {
         "type": "WHOLE_BODY",
@@ -245,7 +248,7 @@ if __name__ == "__main__":
             "arms_body": {
                     "actuator_range": [-2, 2], # dummy values
                     "type": "IK_POSE",
-                    "control_delta": True,
+                    "control_delta": control_delta_whole_body,
                     "part_name": "arms_body",
                     "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
                     "interpolation": None,
@@ -327,5 +330,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
+        collect_human_trajectory(env, device, args.arm, args.config, control_delta_whole_body=control_delta_whole_body)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

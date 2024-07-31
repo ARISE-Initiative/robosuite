@@ -240,8 +240,10 @@ class InverseKinematicsController(JointPositionController):
             velocity_limits (np.array): Limits on joint velocities.
             use_delta: Whether or not to use delta commands. If so, use dpos, drot to compute joint positions.
                 If not, assume dpos, drot are absolute commands (in mujoco world frame).
-            dpos (Optional[np.array]): Desired change in end-effector position.
-            drot (Optional[np.array]): Desired change in orientation for the reference site (e.g end effector).
+            dpos (Optional[np.array]): Desired change in end-effector position 
+                if use_delta=True, otherwise desired end-effector position.
+            drot (Optional[np.array]): Desired change in orientation for the reference site (e.g end effector) 
+                if use_delta=True, otherwise desired end-effector orientation.
             update_targets (bool): Whether to update ik target pos / ori attributes or not.
             Kpos (float): Position gain. Between 0 and 1.
                 0 means no movement, 1 means move end effector to desired position in one integration step.
@@ -314,10 +316,10 @@ class InverseKinematicsController(JointPositionController):
                 }
                 robot = RobotController(model, data, robot_config, input_type="mocap", debug=False)
                 if use_delta:
-                    target_pos = np.array([robot.data.site(site_id).xpos for site_id in robot.site_ids])
                     target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
                     target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
                     [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(robot.site_ids))]
+                    target_pos = np.array([robot.data.site(site_id).xpos for site_id in robot.site_ids])
                     if dpos.ndim == 1:
                         target_pos[0] += dpos
                         target_ori[0] = T.quat_multiply(target_ori[0], T.mat2quat(drot))
@@ -326,7 +328,9 @@ class InverseKinematicsController(JointPositionController):
                         target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(robot.site_ids))])
                 else:
                     target_pos = dpos
-                    target_ori = drot
+                    target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
+                    # convert drot (3x3) to quaternion
+                    [mujoco.mju_mat2Quat(target_ori[i], drot[i].flatten()) for i in range(len(robot.site_ids))]
 
                 max_dq = 1
                 robot.solve_ik(
