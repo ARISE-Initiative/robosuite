@@ -243,6 +243,7 @@ if __name__ == "__main__":
             "arms_body": {
                     "actuator_range": [-2, 2], # dummy values
                     "type": "IK_POSE",
+                    "control_delta": True,
                     "part_name": "arms_body",
                     "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
                     "interpolation": None,

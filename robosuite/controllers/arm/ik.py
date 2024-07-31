@@ -100,6 +100,7 @@ class InverseKinematicsController(JointPositionController):
         converge_steps=5,
         kp: int = 100,
         kv: int = 10,
+        control_delta: bool = True,
         **kwargs,
     ):
         # Run sueprclass inits
@@ -152,6 +153,8 @@ class InverseKinematicsController(JointPositionController):
         self.ori_ref = None
         self.relative_ori = None
 
+        self.use_delta = control_delta
+
         # Set ik limits and override internal min / max
         self.ik_pos_limit = ik_pos_limit
         self.ik_ori_limit = ik_ori_limit
@@ -190,8 +193,9 @@ class InverseKinematicsController(JointPositionController):
             self.ref_name,
             self.control_freq,
             [-1, 1],  # hardcoded velocity limits; unused
-            dpos,
-            rotation,
+            use_delta=self.use_delta,
+            dpos=dpos,
+            drot=rotation,
             jac=self.J_full,
             joint_names=self.joint_names,
             nullspace_joint_weights=self.nullspace_joint_weights,
@@ -209,6 +213,7 @@ class InverseKinematicsController(JointPositionController):
         ref_name: Union[List[str], str],
         control_freq: float,
         velocity_limits: Optional[np.ndarray] = None,
+        use_delta: bool = True,
         dpos: Optional[np.ndarray] = None,
         drot: Optional[np.ndarray] = None,
         Kn: Optional[np.ndarray] = np.array([10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 5.0]),
@@ -233,6 +238,8 @@ class InverseKinematicsController(JointPositionController):
             ref_name: Reference site name.
             control_freq (float): Control frequency.
             velocity_limits (np.array): Limits on joint velocities.
+            use_delta: Whether or not to use delta commands. If so, use dpos, drot to compute joint positions.
+                If not, assume dpos, drot are absolute commands (in mujoco world frame).
             dpos (Optional[np.array]): Desired change in end-effector position.
             drot (Optional[np.array]): Desired change in orientation for the reference site (e.g end effector).
             update_targets (bool): Whether to update ik target pos / ori attributes or not.
@@ -240,7 +247,7 @@ class InverseKinematicsController(JointPositionController):
                 0 means no movement, 1 means move end effector to desired position in one integration step.
             Kori (float): Orientation gain. Between 0 and 1.
             jac (Optional[np.array]): Precomputed jacobian matrix.
-
+    
         Returns:
             np.array: A flat array of joint position commands to apply to try and achieve the desired input control.
         """
@@ -252,6 +259,8 @@ class InverseKinematicsController(JointPositionController):
 
             num_ref_sites = 1 if isinstance(ref_name, str) else len(ref_name)
             if num_ref_sites == 1:
+                assert use_delta, "Currently, only delta commands are supported. Please set use_delta=True."  
+                # TODO: support absolute commands by using solve_ik() from diffik_nullspace.py
                 twist = np.zeros(6)
                 error_quat = np.zeros(4)
                 diag = damping_pseudo_inv ** 2 * np.eye(len(twist))
@@ -304,17 +313,20 @@ class InverseKinematicsController(JointPositionController):
                     'nullspace_gains': Kn
                 }
                 robot = RobotController(model, data, robot_config, input_type="mocap", debug=False)
-                target_pos = np.array([robot.data.site(site_id).xpos for site_id in robot.site_ids])
-                target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
-                target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
-                [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(robot.site_ids))]
-
-                if dpos.ndim == 1:
-                    target_pos[0] += dpos
-                    target_ori[0] = T.quat_multiply(target_ori[0], T.mat2quat(drot))
+                if use_delta:
+                    target_pos = np.array([robot.data.site(site_id).xpos for site_id in robot.site_ids])
+                    target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
+                    target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
+                    [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(robot.site_ids))]
+                    if dpos.ndim == 1:
+                        target_pos[0] += dpos
+                        target_ori[0] = T.quat_multiply(target_ori[0], T.mat2quat(drot))
+                    else:
+                        target_pos += dpos
+                        target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(robot.site_ids))])
                 else:
-                    target_pos += dpos
-                    target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(robot.site_ids))])
+                    target_pos = dpos
+                    target_ori = drot
 
                 max_dq = 1
                 robot.solve_ik(
@@ -372,7 +384,7 @@ class InverseKinematicsController(JointPositionController):
         requested_control = self._make_input(delta, self.reference_target_orn)
 
         # Compute desired positions to achieve eef pos / ori
-        positions = self.get_control(**requested_control, update_targets=True)
+        positions = self.get_control(**requested_control, update_targets=True)  # is this delta?
 
         # Set the goal positions for the underlying position controller
         super().set_goal(positions)
@@ -493,16 +505,21 @@ class InverseKinematicsController(JointPositionController):
         dpos, rotation = self._clip_ik_input(action[:3], action[3:6])  # hardcoded to assume 6dof control for now
 
 
-        if self.num_ref_sites == 1:
-            # Update reference targets
-            self.reference_target_pos += dpos * self.user_sensitivity
-            self.reference_target_orn = T.quat_multiply(old_quat, rotation)
+        if self.use_delta:
+            if self.num_ref_sites == 1:
+                # Update reference targets
+                self.reference_target_pos += dpos * self.user_sensitivity
+                self.reference_target_orn = T.quat_multiply(old_quat, rotation)
+            else:
+                # Update reference targets
+                self.reference_target_pos += dpos * self.user_sensitivity
+                self.reference_target_orn = np.array([T.quat_multiply(old_quat[i], rotation) for i in range(self.num_ref_sites)])
         else:
             # Update reference targets
-            self.reference_target_pos += dpos * self.user_sensitivity
-            self.reference_target_orn = np.array([T.quat_multiply(old_quat[i], rotation) for i in range(self.num_ref_sites)])
+            self.reference_target_pos = dpos
+            self.reference_target_orn = rotation
 
-        return {"dpos": dpos * self.user_sensitivity, "rotation": T.quat2mat(rotation)}
+        return {"dpos": dpos, "rotation": T.quat2mat(rotation)}
 
     @staticmethod
     def _get_current_error(current, set_point):
