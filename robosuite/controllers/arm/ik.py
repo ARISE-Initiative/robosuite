@@ -360,10 +360,15 @@ class InverseKinematicsController(JointPositionController):
         # Update state
         self.update(force=True)  # force because new_update = True only set in super().run_controller()
 
+        if self.num_ref_sites > 1:
+            delta = np.array(delta).reshape(self.num_ref_sites, 6)
+        
         # hardcoding to assumes 6D delta input for now
-        (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:6])
-        dpos = dpos[0]
-        dquat = dquat[0]
+        (dpos, dquat) = self._clip_ik_input(delta[..., :3], delta[..., 3:6])
+
+        if self.num_ref_sites > 1:
+            dpos = dpos[0]
+            dquat = dquat[0]
 
         # Set interpolated goals if necessary
         if self.interpolator_pos is not None:
