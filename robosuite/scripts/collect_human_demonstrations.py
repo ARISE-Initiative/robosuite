@@ -61,7 +61,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         # Run environment step
 
         if env.robots[0].is_mobile:
-            arm_actions = input_action[:6]
+            arm_actions = input_action[:12] if "GR1" in env.robots[0].name else input_action[:6]
             # arm_actions = np.concatenate([arm_actions, ])
 
             base_action = input_action[-5:-2]
@@ -235,8 +235,11 @@ if __name__ == "__main__":
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
 
+    # naming of type is weird
     composite_controller_config = {
         "type": "WHOLE_BODY",
+        # "default_controller_configs_part_names": ["right_gripper", "left_gripper"],  # not working yet
+        "default_controller_configs_part_names": [],
         "controller_configs": {
             "arms_body": {
                     "actuator_range": [-2, 2], # dummy values

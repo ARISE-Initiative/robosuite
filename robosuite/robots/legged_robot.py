@@ -95,10 +95,13 @@ class LeggedRobot(MobileBaseRobot):
         self._load_head_controller()
         self._load_torso_controller()
 
-        self.composite_controller.load_controller_config(
-            self.composite_controller_config['controller_configs']
-            if self.composite_controller_config.get('controller_configs', None) is not None else self.controller_config
-        )
+        composite_controller_config = copy.deepcopy(self.composite_controller_config["controller_configs"]) if self.composite_controller_config is not None else self.controller_config
+        default_controller_part_names = self.composite_controller_config.get("default_controller_configs_part_names", [])
+        for part_name in default_controller_part_names:
+            composite_controller_config[part_name] = self.controller_config[part_name]
+        # TODO: currently no guarantee that passed in arguments work:
+        # for now assume only gripper can be in default controller config parts
+        self.composite_controller.load_controller_config(composite_controller_config)
         self.enable_parts()
 
     def load_model(self):

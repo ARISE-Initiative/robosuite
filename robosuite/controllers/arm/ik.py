@@ -348,13 +348,8 @@ class InverseKinematicsController(JointPositionController):
         # Update state
         self.update(force=True)  # force because new_update = True only set in super().run_controller()
 
-
-        try:
-            (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
-        except:
-            import ipdb; ipdb.set_trace()
-            # Get requested delta inputs if we're using interpolators
-            (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:7])
+        # hardcoding to assumes 6D delta input for now
+        (dpos, dquat) = self._clip_ik_input(delta[:3], delta[3:6])
 
         # Set interpolated goals if necessary
         if self.interpolator_pos is not None:
@@ -495,7 +490,7 @@ class InverseKinematicsController(JointPositionController):
             old_quat (np.array) the old target quaternion that will be updated with the relative change in @action
         """
         # Clip action appropriately
-        dpos, rotation = self._clip_ik_input(action[:3], action[3:])
+        dpos, rotation = self._clip_ik_input(action[:3], action[3:6])  # hardcoded to assume 6dof control for now
 
 
         if self.num_ref_sites == 1:

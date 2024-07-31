@@ -149,17 +149,19 @@ class HybridMobileBaseCompositeController(CompositeController):
 class WholeBodyCompositeController(CompositeController):
     def _init_controllers(self):
         for part_name in self.controller_config.keys():
+            controller_params = self.controller_config[part_name]
+            # default controller configs may have these values loaded
+            if controller_params.get("sim", None) is None:
+                controller_params["sim"] = self.sim
+            if controller_params.get("joint_indexes", None) is None:
+                controller_params["joint_indexes"] = {
+                    "joints": [self.sim.model.joint(joint_name).id for joint_name in self.robot_model.joints],
+                    "qpos": [self.sim.model.get_joint_qpos_addr(joint_name) for joint_name in self.robot_model.joints],
+                    "qvel": [self.sim.model.get_joint_qvel_addr(joint_name) for joint_name in self.robot_model.joints],
+                }
             self.controllers[part_name] = controller_factory(
                 self.controller_config[part_name]["type"], 
-                {
-                    **self.controller_config[part_name], 
-                    "sim": self.sim,    # manually added sim to the controller config
-                    "joint_indexes": {
-                        "joints": [self.sim.model.joint(joint_name).id for joint_name in self.robot_model.joints],
-                        "qpos": [self.sim.model.get_joint_qpos_addr(joint_name) for joint_name in self.robot_model.joints],
-                        "qvel": [self.sim.model.get_joint_qvel_addr(joint_name) for joint_name in self.robot_model.joints],
-                    }
-                }
+                controller_params
             )
 
     def set_goal(self, all_action: np.ndarray):
