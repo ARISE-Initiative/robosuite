@@ -390,6 +390,9 @@ class InverseKinematicsController(JointPositionController):
         # Run ik prepropressing to convert pos, quat ori to desired positions
         requested_control = self._make_input(delta, self.reference_target_orn)
 
+        requested_control["dpos"][1] = np.zeros(3)  # hardcoding to ignore y-axis for now
+        requested_control["rotation"][1] = np.eye(3)  # hardcoding to ignore y-axis for now
+
         # Compute desired positions to achieve eef pos / ori
         positions = self.get_control(**requested_control, update_targets=True)  # is this delta?
 
@@ -531,12 +534,13 @@ class InverseKinematicsController(JointPositionController):
             self.reference_target_pos = dpos
             self.reference_target_orn = rotation
 
-        if self.num_ref_sites > 1:
-            # Hack for debugging single arm IK
-            dpos = dpos[0]
-            rotation = rotation[0]
+        if self.num_ref_sites == 1:
+            rotation = T.quat2mat(rotation)
+        else:
+            dpos = dpos
+            rotation = np.array([T.quat2mat(rotation[i]) for i in range(self.num_ref_sites)])
 
-        return {"dpos": dpos, "rotation": T.quat2mat(rotation)}
+        return {"dpos": dpos, "rotation": rotation}
 
     @staticmethod
     def _get_current_error(current, set_point):
