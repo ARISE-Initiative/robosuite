@@ -254,8 +254,8 @@ if __name__ == "__main__":
                     "kp": 1000,
                     "kv": 200,
                     "nullspace_joint_weights": {
-                        "robot0_torso_waist_yaw": 100.0,
-                        "robot0_torso_waist_pitch": 100.0,
+                        "robot0_torso_waist_yaw": 150.0,
+                        "robot0_torso_waist_pitch": 150.0,
                         "robot0_torso_waist_roll": 500.0,
                         "robot0_l_shoulder_pitch": 4.0,
                         "robot0_r_shoulder_pitch": 4.0,
