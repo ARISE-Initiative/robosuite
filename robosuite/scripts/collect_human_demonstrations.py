@@ -256,9 +256,10 @@ if __name__ == "__main__":
                     "individual_part_names": ["torso", "head", "right", "left"],
                     "kp": 1000,
                     "kv": 200,
+                    "max_dq": 4,
                     "nullspace_joint_weights": {
-                        "robot0_torso_waist_yaw": 150.0,
-                        "robot0_torso_waist_pitch": 150.0,
+                        "robot0_torso_waist_yaw": 100.0,
+                        "robot0_torso_waist_pitch": 100.0,
                         "robot0_torso_waist_roll": 500.0,
                         "robot0_l_shoulder_pitch": 4.0,
                         "robot0_r_shoulder_pitch": 4.0,
@@ -269,6 +270,7 @@ if __name__ == "__main__":
                     },
                     "ik_pseudo_inverse_damping": 5e-1,
                     "ik_integration_dt": 1e-1,
+                    "ik_max_dq": 4.0,
             },
         }
     }

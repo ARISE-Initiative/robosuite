@@ -166,6 +166,7 @@ class InverseKinematicsController(JointPositionController):
         self.joint_names = [sim.model.joint_id2name(i) for i in joint_indexes['joints']]
         self.integration_dt = kwargs.get("ik_integration_dt", 0.1)
         self.damping = kwargs.get("ik_pseudo_inverse_damping", 5e-1)
+        self.max_dq = kwargs.get("ik_max_dq", 4.0)  # currently only used for multi-site ik
 
         self.i = 0
 
@@ -201,6 +202,7 @@ class InverseKinematicsController(JointPositionController):
             nullspace_joint_weights=self.nullspace_joint_weights,
             damping=self.damping,
             integration_dt=self.integration_dt,
+            max_dq=self.max_dq,
         )
 
         return positions
@@ -225,6 +227,7 @@ class InverseKinematicsController(JointPositionController):
         nullspace_joint_weights: Dict[str, float] = field(default_factory=dict),
         integration_dt: float = 0.1,
         damping: float = 5e-1,
+        max_dq: int = 4,  # TODO: should be derived from velocity_limits
     ) -> np.ndarray:
         """
         Returns joint positions to control the robot after the target end effector
@@ -332,7 +335,6 @@ class InverseKinematicsController(JointPositionController):
                     # convert drot (3x3) to quaternion
                     [mujoco.mju_mat2Quat(target_ori[i], drot[i].flatten()) for i in range(len(robot.site_ids))]
 
-                max_dq = 1
                 robot.solve_ik(
                     target_pos=target_pos, 
                     target_ori=target_ori, 
