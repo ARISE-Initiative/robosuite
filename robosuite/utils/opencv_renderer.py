@@ -36,10 +36,6 @@ class OpenCVRenderer:
 
         # write frame to window
         im = np.flip(im, axis=0)
-        # cv2.imshow("offscreen render", im)
-        # key = cv2.waitKey(1)
-        # if self.keypress_callback:
-        #     self.keypress_callback(key)
         return im
 
     def update(self):

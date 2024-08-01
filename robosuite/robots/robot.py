@@ -537,7 +537,6 @@ class Robot(object):
         """
         # Get the dof of the base robot model
         dof = self.robot_model.dof
-        # dof = super().dof
         for gripper in self.robot_model.grippers.values():
             dof += gripper.dof
         return dof

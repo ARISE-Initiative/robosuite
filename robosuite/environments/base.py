@@ -109,7 +109,6 @@ class MujocoEnv(metaclass=EnvMeta):
         self.has_renderer = has_renderer
         # offscreen renderer needed for on-screen rendering
         self.has_offscreen_renderer = has_renderer or has_offscreen_renderer
-        # self.has_offscreen_renderer = (has_renderer and renderer != "mjviewer") or has_offscreen_renderer
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
@@ -170,7 +169,6 @@ class MujocoEnv(metaclass=EnvMeta):
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
 
-        # if self.renderer_config is None and self.renderer != "mujoco":
         if self.renderer_config is None:
             self.renderer_config = load_renderer_config(self.renderer)
             self.renderer_config['sim'] = self.sim
@@ -179,7 +177,6 @@ class MujocoEnv(metaclass=EnvMeta):
             # Set the camera angle for viewing
             camera_id = self.sim.model.camera_name2id(self.render_camera) if self.render_camera is not None else 0
 
-            # TODO(zxz): modify here to set renderer args
             self.viewer = OpenCVRenderer(env=self, camera_id=camera_id, **self.renderer_config)
             self.viewer.set_camera(camera_id)
         elif self.renderer == "mjviewer":
@@ -195,15 +192,6 @@ class MujocoEnv(metaclass=EnvMeta):
             from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
 
             self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
-        # elif self.renderer == "mjviewer":
-        #     from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
-        #
-        #     if self.render_camera is not None:
-        #         camera_id = self.sim.model.camera_name2id(self.render_camera)
-        #     else:
-        #         camera_id = None
-        #     self.viewer = MjviewerRenderer(env=self, camera_id=camera_id, sim=self.sim)
-        #     self.viewer.set_camera(camera_id)
         else:
             raise ValueError(
                 f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
@@ -286,9 +274,6 @@ class MujocoEnv(metaclass=EnvMeta):
         # Use hard reset if requested
 
         if self.hard_reset and not self.deterministic_reset:
-            # if self.renderer == "mujoco" or self.renderer == "default":
-            #     self._destroy_viewer()
-            #     self._destroy_sim()
             self._load_model()
             self._initialize_sim()
         # Else, we only reset the sim internally
@@ -334,8 +319,6 @@ class MujocoEnv(metaclass=EnvMeta):
         """Resets simulation internal configurations."""
 
         self.renderer_config = load_renderer_config(self.renderer)
-        # self.renderer_config['sim'] = self.sim
-
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
             if self.renderer == "mujoco" or self.renderer == "default":

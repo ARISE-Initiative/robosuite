@@ -21,7 +21,7 @@ class MjviewerRenderer:
 
         # write frame to window
         im = np.flip(im, axis=0)
-        # cv2.imshow("offscreen render", im)
+
         return im
 
     def set_camera(self, camera_id):
