@@ -303,7 +303,7 @@ class InverseKinematicsController(JointPositionController):
                 dq = q_des  # hack for now
                 return dq
             else:
-                from robosuite.scripts.diffik_nullspace import RobotController
+                from robosuite.utils.ik_utils import IKSolver
 
                 model = sim.model._model
                 data = sim.data._data
@@ -317,7 +317,7 @@ class InverseKinematicsController(JointPositionController):
                     'mocap_bodies': [],
                     'nullspace_gains': Kn
                 }
-                robot = RobotController(model, data, robot_config, input_type="mocap")
+                robot = IKSolver(model, data, robot_config, input_type="mocap")
                 if use_delta:
                     target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
                     target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
