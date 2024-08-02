@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import time
-from typing import Dict, List, Optional, Tuple, Literal, Union
+from typing import Dict, List, Optional, Tuple, Literal
 
 import mujoco
 import mujoco.viewer
@@ -8,14 +8,9 @@ import numpy as np
 import tyro
 
 
-# from devices import KeyboardHandler
-# from utils import get_joint_qpos_addr, quaternion
-
-# TODO(klin): move these to an IK file
-
 @dataclass
 class Config:
-    input_type: Literal["keyboard", "mocap", "pkl"] = "mocap"
+    input_type: Literal["mocap", "pkl"] = "mocap"
     input_file: str = "recordings/gr1_eef_targets_gr1_w_hands_from_avp_preprocessor.pkl"
     debug: bool = False
     use_torque_actuation: bool = True
@@ -31,9 +26,9 @@ def load_model_and_data(model_path: str) -> Tuple[mujoco.MjModel, mujoco.MjData]
     data = mujoco.MjData(model)
     return model, data
 
+
 def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
     return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
-
 
 
 def quaternion(axis: np.ndarray, angle: float) -> np.ndarray:
@@ -58,7 +53,6 @@ class RobotController:
         self.joint_names = robot_config['joint_names']
         self.site_names = robot_config['end_effector_sites']
         self.site_ids = [self.model.site(robot_config['end_effector_sites'][i]).id for i in range(len(robot_config['end_effector_sites']))]
-        self.body_ids = [self.model.body(name).id for name in robot_config['body_names']] if 'body_names' in robot_config else []
         self.dof_ids = np.array([self.model.joint(name).id for name in robot_config['joint_names']])
         # self.actuator_ids = np.array([self.model.actuator(name).id for name in robot_config['joint_names']])  # this works if actuators match joints
         self.actuator_ids = np.array([i for i in range(20)])  # TODO no hardcode; cur for GR1; model.nu is 32
@@ -74,11 +68,7 @@ class RobotController:
         self.debug = debug
 
         self.input_type = input_type
-        if input_type == "keyboard":
-            self.keyboard_handler = KeyboardHandler()
-            self.pos_sensitivity = 0.1
-            self.rot_sensitivity = 0.1
-        elif input_type == "mocap":
+        if input_type == "mocap":
             self.mocap_ids = [self.model.body(name).mocapid[0] for name in robot_config['mocap_bodies']]
         elif input_type == "pkl":
             self.mocap_ids = [self.model.body(name).mocapid[0] for name in robot_config['mocap_bodies']]
@@ -95,9 +85,6 @@ class RobotController:
         # Initialize error and error_dot
         self.error_prev = np.zeros_like(self.q0)
         self.error_dot = np.zeros_like(self.q0)
-
-    def apply_gravity_compensation(self):
-        self.model.body_gravcomp[self.body_ids] = 1.0
 
     def reset_to_initial_state(self):
         mujoco.mj_resetDataKeyframe(self.model, self.data, self.key_id)
@@ -116,39 +103,8 @@ class RobotController:
         target_ori_mat = np.array([self.data.site(site_id).xmat for site_id in self.site_ids])
         target_ori = np.array([np.ones(4) for _ in range(len(self.site_ids))])
         [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(self.site_ids))]
-
-        if self.input_type == "keyboard":
-            keys = self.keyboard_handler.get_keyboard_input()
         
-            if 'right' in keys:
-                target_pos[0, 1] += self.pos_sensitivity
-            if 'left' in keys:
-                target_pos[0, 1] -= self.pos_sensitivity
-            if 'up' in keys:
-                target_pos[0, 0] -= self.pos_sensitivity
-            if 'down' in keys:
-                target_pos[0, 0] += self.pos_sensitivity
-            if 'up_z' in keys:
-                target_pos[0, 2] += self.pos_sensitivity
-            if 'down_z' in keys:
-                target_pos[0, 2] -= self.pos_sensitivity
-
-            dquat = np.array([1.0, 0.0, 0.0, 0.0])
-            if 'e' in keys:
-                dquat = quaternion(angle=0.1 * self.rot_sensitivity, axis=np.array([1.0, 0.0, 0.0]))
-            elif 'r' in keys:
-                dquat = quaternion(angle=-0.1 * self.rot_sensitivity, axis=np.array([1.0, 0.0, 0.0]))
-            elif 'y' in keys:
-                dquat = quaternion(angle=0.1 * self.rot_sensitivity, axis=np.array([0.0, 1.0, 0.0]))
-            elif 'h' in keys:
-                dquat = quaternion(angle=-0.1 * self.rot_sensitivity, axis=np.array([0.0, 1.0, 0.0]))
-            elif 'p' in keys:
-                dquat = quaternion(angle=0.1 * self.rot_sensitivity, axis=np.array([0.0, 0.0, 1.0]))
-            elif 'o' in keys:
-                dquat = quaternion(angle=-0.1 * self.rot_sensitivity, axis=np.array([0.0, 0.0, 1.0]))
-
-            mujoco.mju_mulQuat(target_ori[0], target_ori[0], dquat)
-        elif self.input_type == "mocap":
+        if self.input_type == "mocap":
             for i in range(len(self.site_ids)):
                 target_pos[i] = self.data.mocap_pos[self.mocap_ids[i]]
                 target_ori[i] = self.data.mocap_quat[self.mocap_ids[i]]
@@ -166,7 +122,6 @@ class RobotController:
             self.data.mocap_pos[self.mocap_ids[right_index]] = self.history['right_eef_pos'][int(self.pkl_t)]
             self.data.mocap_quat[self.mocap_ids[left_index]] = self.history['left_eef_quat_wxyz'][int(self.pkl_t)]
             self.data.mocap_quat[self.mocap_ids[right_index]] = self.history['right_eef_quat_wxyz'][int(self.pkl_t)]
-
         else:
             raise ValueError(f"Invalid input type {self.input_type}")
 
@@ -193,13 +148,15 @@ class RobotController:
         target_ori: np.ndarray,
         damping: float, 
         integration_dt: float, 
-        max_dq: float, 
+        max_dq: float,
+        max_dq_torso: float = 0.2,  # hardcoded for GR1; else torso shakes
         use_torque_actuation: bool = True, 
         Kpos: float = 0.95,
         Kori: float = 0.95,
         update_sim: bool = True,
     ):
         jac = self._compute_jacobian(self.model, self.data)
+        import ipdb; ipdb.set_trace()
 
         for i in range(len(self.site_ids)):
             dx = target_pos[i] - self.data.site(self.site_ids[i]).xpos
@@ -226,6 +183,14 @@ class RobotController:
             dq_abs_max = np.abs(self.dq).max()
             if dq_abs_max > max_dq:
                 self.dq *= max_dq / dq_abs_max
+
+        torso_joint_ids = [self.model.joint(name).id for name in self.joint_names if "torso" in name]
+        if len(torso_joint_ids) > 0 and max_dq_torso > 0:
+            dq_torso = self.dq[torso_joint_ids]
+            dq_torso_abs_max = np.abs(dq_torso).max()
+            if dq_torso_abs_max > max_dq_torso:
+                dq_torso *= max_dq_torso / dq_torso_abs_max
+            self.dq[torso_joint_ids] = dq_torso
 
         # get the desired joint angles by integrating the desired joint velocities
         self.q_des = self.data.qpos[self.dof_ids].copy()
@@ -288,20 +253,16 @@ class RobotController:
 
                 # check if we're outside the joint limits
                 if np.any(self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(self.q_des > self.model.jnt_range[self.dof_ids][:, 1]):
-                    print("Joint limits exceeded! Not updating control signal.")
                     # get dof ids exceeding joint limits
                     exceeding_ids = np.where((self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (self.q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
-                    # get joint names
                     exceeding_joint_names = [self.model.joint(i).name for i in self.dof_ids[exceeding_ids]]
                     for joint_name in exceeding_joint_names:
                         if "gripper" not in joint_name:
                             print(f"Joint {joint_name} has exceeded its limits.")
-                    print(f"Exceeding joint limits for {exceeding_joint_names}")
-
             if update_sim:
                 self.data.ctrl[self.actuator_ids] = self.q_des[self.dof_ids]
             else:
-                return self.q_des[self.dof_ids]
+                return self.q_des
 
 
 def circle(t: float, r: float, h: float, k: float, f: float, z: float) -> np.ndarray:

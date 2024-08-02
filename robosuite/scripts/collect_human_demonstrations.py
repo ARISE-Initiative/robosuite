@@ -268,7 +268,7 @@ if __name__ == "__main__":
                         "robot0_l_shoulder_yaw": 2.0,
                         "robot0_r_shoulder_yaw": 2.0,
                     },
-                    "ik_pseudo_inverse_damping": 5e-1,
+                    "ik_pseudo_inverse_damping": 5e-2,
                     "ik_integration_dt": 1e-1,
                     "ik_max_dq": 4.0,
             },

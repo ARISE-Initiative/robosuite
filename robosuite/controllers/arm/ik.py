@@ -317,7 +317,7 @@ class InverseKinematicsController(JointPositionController):
                     'mocap_bodies': [],
                     'nullspace_gains': Kn
                 }
-                robot = RobotController(model, data, robot_config, input_type="mocap", debug=False)
+                robot = RobotController(model, data, robot_config, input_type="mocap")
                 if use_delta:
                     target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
                     target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
@@ -335,7 +335,8 @@ class InverseKinematicsController(JointPositionController):
                     # convert drot (3x3) to quaternion
                     [mujoco.mju_mat2Quat(target_ori[i], drot[i].flatten()) for i in range(len(robot.site_ids))]
 
-                robot.solve_ik(
+                # assumes the ordering of joints is the same as ordering of actuators
+                return robot.solve_ik(
                     target_pos=target_pos, 
                     target_ori=target_ori, 
                     damping=damping,
@@ -344,9 +345,8 @@ class InverseKinematicsController(JointPositionController):
                     Kpos=Kpos, 
                     Kori=Kori,
                     update_sim=False,
+                    use_torque_actuation=False
                 )
-                # assumes the ordering of joints is the same as ordering of actuators
-                return robot.q_des
 
         return sim.data.qpos[joint_indices]
 
