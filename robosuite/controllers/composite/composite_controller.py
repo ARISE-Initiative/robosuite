@@ -164,10 +164,6 @@ class WholeBodyCompositeController(CompositeController):
                 controller_params
             )
 
-    # def set_goal(self, all_action: np.ndarray):
-    #     for _, controller in self.controllers.items():  # how are things split?
-    #         controller.set_goal(all_action)
-    
     def update_state(self):
         # no need for extra update state here, since Jacobians are computed inside the controller
         return

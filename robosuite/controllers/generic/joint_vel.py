@@ -96,14 +96,12 @@ class JointVelocityController(Controller):
         # gains and corresopnding vars
         self.kp = self.nums2array(kp, self.joint_dim)
         # if kp is a single value, map wrist gains accordingly (scale down x10 for final two joints)
-        print(f'self.kp: {self.kp}')
 
         if type(kp) is float or type(kp) is int:
             # Scale kpp according to how wide the actuator range is for this robot
             low, high = self.actuator_limits
             self.kp = kp * (high - low)
 
-        self.kp = 100
         self.ki = self.kp * 0.005
         self.kd = self.kp * 0.001
         self.last_err = np.zeros(self.joint_dim)

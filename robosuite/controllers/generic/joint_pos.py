@@ -249,9 +249,7 @@ class JointPositionController(Controller):
         desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
 
         # Return desired torques plus gravity compensations
-        torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
-
-        self.torques = torques
+        self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
