@@ -156,7 +156,6 @@ class RobotController:
         update_sim: bool = True,
     ):
         jac = self._compute_jacobian(self.model, self.data)
-        import ipdb; ipdb.set_trace()
 
         for i in range(len(self.site_ids)):
             dx = target_pos[i] - self.data.site(self.site_ids[i]).xpos
