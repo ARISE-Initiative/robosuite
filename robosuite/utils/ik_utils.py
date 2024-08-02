@@ -16,6 +16,9 @@ class IKSolver:
         model: mujoco.MjModel, 
         data: mujoco.MjData, 
         robot_config: Dict, 
+        damping: float, 
+        integration_dt: float, 
+        max_dq: float,
         input_type: Literal["keyboard", "mocap", "pkl"] = "keyboard", 
         debug: bool = False, 
         input_file: Optional[str] = None,
@@ -23,6 +26,11 @@ class IKSolver:
     ):
         self.model = model
         self.data = data
+
+        self.damping = damping
+        self.integration_dt = integration_dt
+        self.max_dq = max_dq
+
         self.joint_names = robot_config['joint_names']
         self.site_names = robot_config['end_effector_sites']
         self.site_ids = [self.model.site(robot_config['end_effector_sites'][i]).id for i in range(len(robot_config['end_effector_sites']))]
@@ -39,9 +47,9 @@ class IKSolver:
 
         self.input_rotation_repr = input_rotation_repr
         ROTATION_REPRESENTATION_DIMS: Dict[str, int] = {"quat_wxyz": 4, "axis_angle": 3}
-        rot_dim = ROTATION_REPRESENTATION_DIMS[input_rotation_repr]
-        pos_dim = 3
-        self.control_dim = len(self.site_names) * (pos_dim + rot_dim)
+        self.rot_dim = ROTATION_REPRESENTATION_DIMS[input_rotation_repr]
+        self.pos_dim = 3
+        self.control_dim = len(self.site_names) * (self.pos_dim + self.rot_dim)
         # hardcoded control limits for now
         self.control_limits = np.array([-np.inf] * self.control_dim), np.array([np.inf] * self.control_dim)
         self.i = 0
@@ -127,17 +135,17 @@ class IKSolver:
 
     def solve_ik(
         self,
-        target_pos: np.ndarray,
-        target_ori: np.ndarray,
-        damping: float, 
-        integration_dt: float, 
-        max_dq: float,
+        target_action: np.ndarray,
         max_dq_torso: float = 0.2,  # hardcoded for GR1; else torso shakes
-        use_torque_actuation: bool = True, 
+        use_torque_actuation: bool = False, 
         Kpos: float = 0.95,
         Kori: float = 0.95,
-        update_sim: bool = True,
+        update_sim: bool = False,
     ):
+        target_action = target_action.reshape(len(self.site_names), -1)
+        target_pos = target_action[:, :self.pos_dim]
+        target_ori = target_action[:, self.pos_dim:]
+
         jac = self._compute_jacobian(self.model, self.data)
 
         if self.input_rotation_repr == "axis_angle":
@@ -149,15 +157,15 @@ class IKSolver:
 
         for i in range(len(self.site_ids)):
             dx = target_pos[i] - self.data.site(self.site_ids[i]).xpos
-            self.twists[i][:3] = Kpos * dx / integration_dt
+            self.twists[i][:3] = Kpos * dx / self.integration_dt
             mujoco.mju_mat2Quat(self.site_quats[i], self.data.site(self.site_ids[i]).xmat)
             mujoco.mju_negQuat(self.site_quat_conjs[i], self.site_quats[i])
             mujoco.mju_mulQuat(self.error_quats[i], target_quat_wxyz[i], self.site_quat_conjs[i])
             mujoco.mju_quat2Vel(self.twists[i][3:], self.error_quats[i], 1.0)
-            self.twists[i][3:] *= Kori / integration_dt
+            self.twists[i][3:] *= Kori / self.integration_dt
 
         self.twist = np.hstack(self.twists)
-        diag = damping ** 2 * np.eye(len(self.twist))
+        diag = self.damping ** 2 * np.eye(len(self.twist))
         eye = np.eye(len(self.dof_ids))
         # basically dq = J^{-1} dx. This formulation is nicer since m is small in dimensionality.
         self.dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, self.twist)
@@ -168,10 +176,10 @@ class IKSolver:
             (self.Kn * (self.q0 - self.data.qpos[self.dof_ids]))
         self.dq += dq_null
 
-        if max_dq > 0:
+        if self.max_dq > 0:
             dq_abs_max = np.abs(self.dq).max()
-            if dq_abs_max > max_dq:
-                self.dq *= max_dq / dq_abs_max
+            if dq_abs_max > self.max_dq:
+                self.dq *= self.max_dq / dq_abs_max
 
         torso_joint_ids = [self.model.joint(name).id for name in self.joint_names if "torso" in name]
         if len(torso_joint_ids) > 0 and max_dq_torso > 0:
@@ -183,8 +191,8 @@ class IKSolver:
 
         # get the desired joint angles by integrating the desired joint velocities
         self.q_des = self.data.qpos[self.dof_ids].copy()
-        # mujoco.mj_integratePos(self.model, q_des, dq, integration_dt)
-        self.q_des += self.dq * integration_dt  # manually integrate q_des
+        # mujoco.mj_integratePos(self.model, q_des, dq, self.integration_dt)
+        self.q_des += self.dq * self.integration_dt  # manually integrate q_des
 
         pre_clip_error = np.inf
         post_clip_error = np.inf

@@ -3,12 +3,13 @@ from collections import OrderedDict
 import numpy as np
 
 from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.utils.ik_utils import IKSolver, get_Kn
 
 
 class CompositeController:
     """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
 
-    def __init__(self, sim, robot_model, grippers, lite_physics=False):
+    def __init__(self, sim, robot_model, grippers, lite_physics=False, kwargs=None):
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
@@ -16,6 +17,8 @@ class CompositeController:
         self.grippers = grippers
 
         self.lite_physics = lite_physics
+
+        self.kwargs = kwargs
 
         self.controllers = OrderedDict()
 
@@ -146,7 +149,7 @@ class HybridMobileBaseCompositeController(CompositeController):
         return np.concatenate((low, [-1])), np.concatenate((high, [1]))
 
 
-class WholeBodyCompositeController(CompositeController):
+class WholeBodyIKCompositeController(CompositeController):
     def _init_controllers(self):
         for part_name in self.controller_config.keys():
             controller_params = self.controller_config[part_name]
@@ -164,6 +167,60 @@ class WholeBodyCompositeController(CompositeController):
                 controller_params
             )
 
+        self.kwargs["individual_part_names"]
+        joint_names = []
+        for part_name in self.kwargs["individual_part_names"]:
+            joint_names += self.controllers[part_name].joint_names
+
+        Kn = get_Kn(joint_names, self.kwargs["nullspace_joint_weights"])
+        mocap_bodies = []
+        robot_config = {
+            'end_effector_sites': self.kwargs["ref_name"],
+            'joint_names': joint_names,
+            'mocap_bodies': mocap_bodies,
+            'nullspace_gains': Kn
+        }
+        self.ik_solver = IKSolver(
+            model=self.sim.model._model, 
+            data=self.sim.data._data, 
+            robot_config=robot_config,
+            damping=self.kwargs["ik_pseudo_inverse_damping"],
+            integration_dt=self.kwargs["ik_integration_dt"],
+            max_dq=self.kwargs["ik_max_dq"],
+        )
+
+    def setup_action_split_idx(self):
+        previous_idx = 0
+        last_idx = 0
+        # add the IK solver's action split index first -- outputs in the order of individual_part_names
+        for part_name in self.kwargs["individual_part_names"]:
+            last_idx += self.controllers[part_name].control_dim
+            self._action_split_indexes[part_name] = (previous_idx, last_idx)
+            previous_idx = last_idx
+
+        for part_name, controller in self.controllers.items():
+            if part_name not in self.kwargs["individual_part_names"]:
+                if part_name in self.grippers.keys():
+                    last_idx += self.grippers[part_name].dof
+                else:
+                    last_idx += controller.control_dim
+                self._action_split_indexes[part_name] = (previous_idx, last_idx)
+                previous_idx = last_idx
+
+    def set_goal(self, all_action):
+        if not self.lite_physics:
+            self.sim.forward()
+
+        target_qpos = self.ik_solver.solve_ik(all_action[:self.ik_solver.control_dim])
+        # create new all_action vector with the IK solver's actions first
+        all_action = np.concatenate([target_qpos, all_action[self.ik_solver.control_dim:]])
+        for part_name, controller in self.controllers.items():
+            start_idx, end_idx = self._action_split_indexes[part_name]
+            action = all_action[start_idx:end_idx]
+            if part_name in self.grippers.keys():
+                action = self.grippers[part_name].format_action(action)
+            controller.set_goal(action)
+
     def update_state(self):
         # no need for extra update state here, since Jacobians are computed inside the controller
         return
@@ -174,3 +231,30 @@ class WholeBodyCompositeController(CompositeController):
             # ignore the enabled_parts for now
             self._applied_action_dict[part_name] = controller.run_controller()
         return self._applied_action_dict
+
+    @property
+    def action_limits(self):
+        """
+        Returns the action limits for the whole body controller.
+        Corresponds to each term in the action vector passed to env.step().
+        """
+        low, high = [], []
+        # assumption: IK solver's actions come first
+        low_c, high_c = self.ik_solver.control_limits
+        low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
+        for part_name, controller in self.controllers.items():
+            # Exclude terms that the IK solver handles
+            if part_name in self.kwargs["individual_part_names"]:
+                continue
+            if part_name not in self.arms:
+                if part_name in self.grippers.keys():
+                    low_g, high_g = ([-1] * self.grippers[part_name].dof, [1] * self.grippers[part_name].dof)
+                    low, high = np.concatenate([low, low_g]), np.concatenate([high, high_g])
+                else:
+                    control_dim = controller.control_dim
+                    low_c, high_c = ([-1] * control_dim, [1] * control_dim)
+                    low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
+            else:
+                low_c, high_c = controller.control_limits
+                low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
+        return low, high

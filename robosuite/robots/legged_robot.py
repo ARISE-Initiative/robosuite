@@ -82,6 +82,7 @@ class LeggedRobot(MobileBaseRobot):
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
             lite_physics=self.lite_physics,
+            kwargs=self.composite_controller_config.get("composite_controller_specific_configs", {}),
         )
 
         self._load_arm_controllers()
@@ -95,13 +96,13 @@ class LeggedRobot(MobileBaseRobot):
         self._load_head_controller()
         self._load_torso_controller()
 
-        composite_controller_config = copy.deepcopy(self.composite_controller_config["controller_configs"]) if self.composite_controller_config is not None else self.controller_config
-        default_controller_part_names = self.composite_controller_config.get("default_controller_configs_part_names", [])
-        for part_name in default_controller_part_names:
-            composite_controller_config[part_name] = self.controller_config[part_name]
+        # composite_controller_config = copy.deepcopy(self.composite_controller_config["controller_configs"]) if self.composite_controller_config is not None else self.controller_config
+        # default_controller_part_names = self.composite_controller_config.get("default_controller_configs_part_names", [])
+        # for part_name in default_controller_part_names:
+        #     composite_controller_config[part_name] = self.controller_config[part_name]
         # TODO: currently no guarantee that passed in arguments work:
         # for now assume only gripper can be in default controller config parts
-        self.composite_controller.load_controller_config(composite_controller_config)
+        self.composite_controller.load_controller_config(self.controller_config)
         self.enable_parts()
 
     def load_model(self):
@@ -212,6 +213,9 @@ class LeggedRobot(MobileBaseRobot):
                     continue
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
+                # currently assumes ee pose exists in the controller
+                if not hasattr(controller, "ee_pos") or not hasattr(controller, "ee_ori_mat"):
+                    continue
                 self.recent_ee_pose[arm].push(np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat))))
                 self.recent_ee_vel[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
 
