@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
+from robosuite.environments.manipulation.single_robot_env import SingleRobotEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.tasks import ManipulationTask
@@ -12,7 +12,7 @@ from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
 
 
-class Stack(ManipulationEnv):
+class Stack(SingleRobotEnv):
     """
     This class corresponds to the stacking task for a single robot arm.
 

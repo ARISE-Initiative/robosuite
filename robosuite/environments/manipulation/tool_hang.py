@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
+from robosuite.environments.manipulation.single_robot_env import SingleRobotEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import HookFrame, RatchetingWrenchObject, StandWithMount
 from robosuite.models.tasks import ManipulationTask
@@ -13,7 +13,7 @@ from robosuite.utils.placement_samplers import SequentialCompositeSampler, Unifo
 from robosuite.utils.sim_utils import check_contact
 
 
-class ToolHang(ManipulationEnv):
+class ToolHang(SingleRobotEnv):
     """
     This class corresponds to the tool hang task for a single robot arm.
 
