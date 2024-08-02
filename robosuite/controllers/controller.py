@@ -84,7 +84,10 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Joint dimension
         self.joint_dim = len(joint_indexes["joints"])
 
-        if isinstance(ref_name, str):
+        if ref_name is None:
+            self.ref_names = None
+            self.num_ref_sites = 0
+        elif isinstance(ref_name, str):
             self.ref_names = [ref_name]
             self.num_ref_sites = 1
         else:
