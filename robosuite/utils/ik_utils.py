@@ -19,7 +19,7 @@ class IKSolver:
         input_type: Literal["keyboard", "mocap", "pkl"] = "keyboard", 
         debug: bool = False, 
         input_file: Optional[str] = None,
-        input_rotation_repr: Literal["quat_wxyz", "aa"] = "quat_wxyz",
+        input_rotation_repr: Literal["quat_wxyz", "axis_angle"] = "axis_angle",
     ):
         self.model = model
         self.data = data
@@ -38,9 +38,12 @@ class IKSolver:
         self.error_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(self.site_ids))]
 
         self.input_rotation_repr = input_rotation_repr
-        ROTATION_REPRESENTATION_DIMS = {"quat_wxyz": 4, "aa": 3}
+        ROTATION_REPRESENTATION_DIMS: Dict[str, int] = {"quat_wxyz": 4, "axis_angle": 3}
         rot_dim = ROTATION_REPRESENTATION_DIMS[input_rotation_repr]
-        self.action_dim = len(self.site_names) * (3 + rot_dim)  # 3 for pos, 3 for 
+        pos_dim = 3
+        self.control_dim = len(self.site_names) * (pos_dim + rot_dim)
+        # hardcoded control limits for now
+        self.control_limits = np.array([-np.inf] * self.control_dim), np.array([np.inf] * self.control_dim)
         self.i = 0
         self.debug = debug
 

@@ -317,7 +317,7 @@ class InverseKinematicsController(JointPositionController):
                     'mocap_bodies': [],
                     'nullspace_gains': Kn
                 }
-                robot = IKSolver(model, data, robot_config, input_type="mocap")
+                robot = IKSolver(model, data, robot_config, input_type="mocap", input_rotation_repr="quat_wxyz")
                 if use_delta:
                     target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
                     target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
