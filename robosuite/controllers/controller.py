@@ -71,6 +71,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.joint_index = joint_indexes["joints"]
         self.qpos_index = joint_indexes["qpos"]
         self.qvel_index = joint_indexes["qvel"]
+        self.joint_names = [self.sim.model.joint_id2name(joint_id) for joint_id in self.joint_index]
 
         # robot states
         self.ref_pos = None
