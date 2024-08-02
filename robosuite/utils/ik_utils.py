@@ -4,6 +4,9 @@ import mujoco
 import mujoco.viewer
 import numpy as np
 
+import robosuite.utils.transform_utils as T
+
+
 def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
     return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
 
@@ -15,7 +18,8 @@ class IKSolver:
         robot_config: Dict, 
         input_type: Literal["keyboard", "mocap", "pkl"] = "keyboard", 
         debug: bool = False, 
-        input_file: Optional[str] = None
+        input_file: Optional[str] = None,
+        input_rotation_repr: Literal["quat_wxyz", "aa"] = "quat_wxyz",
     ):
         self.model = model
         self.data = data
@@ -33,6 +37,10 @@ class IKSolver:
         self.site_quat_conjs: List[np.ndarray] = [np.zeros(4) for _ in range(len(self.site_ids))]
         self.error_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(self.site_ids))]
 
+        self.input_rotation_repr = input_rotation_repr
+        ROTATION_REPRESENTATION_DIMS = {"quat_wxyz": 4, "aa": 3}
+        rot_dim = ROTATION_REPRESENTATION_DIMS[input_rotation_repr]
+        self.action_dim = len(self.site_names) * (3 + rot_dim)  # 3 for pos, 3 for 
         self.i = 0
         self.debug = debug
 
@@ -129,12 +137,19 @@ class IKSolver:
     ):
         jac = self._compute_jacobian(self.model, self.data)
 
+        if self.input_rotation_repr == "axis_angle":
+            target_quat_wxyz = np.array([np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))])
+        elif self.input_rotation_repr == "mat":
+            target_quat_wxyz = np.array([np.roll(T.mat2quat(target_ori[i])) for i in range(len(target_ori))])
+        elif self.input_rotation_repr == "quat_wxyz":
+            target_quat_wxyz = target_ori
+
         for i in range(len(self.site_ids)):
             dx = target_pos[i] - self.data.site(self.site_ids[i]).xpos
             self.twists[i][:3] = Kpos * dx / integration_dt
             mujoco.mju_mat2Quat(self.site_quats[i], self.data.site(self.site_ids[i]).xmat)
             mujoco.mju_negQuat(self.site_quat_conjs[i], self.site_quats[i])
-            mujoco.mju_mulQuat(self.error_quats[i], target_ori[i], self.site_quat_conjs[i])
+            mujoco.mju_mulQuat(self.error_quats[i], target_quat_wxyz[i], self.site_quat_conjs[i])
             mujoco.mju_quat2Vel(self.twists[i][3:], self.error_quats[i], 1.0)
             self.twists[i][3:] *= Kori / integration_dt
 
