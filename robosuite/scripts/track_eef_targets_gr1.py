@@ -39,18 +39,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
     env.reset()
     env.render()
-    # env.reset()
-    # env.robots[0].init_qpos[:] = 0
-    # env.robots[0].reset()
-    # env.render()
 
-    # env.sim.data.qpos[:] = 0
-    # env.sim.data.qvel[:] = 0
-    # env.sim.forward()
-
-    # print qps qvel
-    # print(f"qpos: {env.sim.data.qpos}")
-    # print(f"qvel: {env.sim.data.qvel}")
     is_first = True
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
@@ -83,12 +72,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             right_target_pos = history['right_eef_pos'][int(count)]
             left_target_ori = history['left_eef_quat_wxyz'][int(count)]
             right_target_ori = history['right_eef_quat_wxyz'][int(count)]
-            # print the poses
-            # print(f"Left target pos: {left_target_pos}")
-            # print(f"Right target pos: {right_target_pos}")
-            # print(f"Left target ori: {left_target_ori}")
-            # print(f"Right target ori: {right_target_ori}")
-            # exit()
+
             # convert to axis angle using quat2axisangle
             left_target_aa = quat2axisangle(np.roll(left_target_ori, -1))
             right_target_aa = quat2axisangle(np.roll(right_target_ori, -1))
@@ -102,6 +86,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
             right_action = [0.0] * 5
             right_action[0] = 0.0
+            # TODO: update create action vector
             # action = env.robots[0].create_action_vector(
             #     {
             #         arm: arm_actions,
@@ -122,14 +107,10 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             arm_actions = input_action
             action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
 
-        # print(f"qpos: {env.sim.data.qpos}")
-        # print(f"qvel: {env.sim.data.qvel}")
         left_gripper = np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof)
         right_gripper = np.repeat(input_action[7:8], env.robots[0].gripper[end_effector].dof)
         action = np.concatenate([arm_actions, left_gripper, right_gripper])
         env.step(action)
-        # print("qpos", env.sim.data.qpos)
-        # print("qvel", env.sim.data.qvel)
         env.render()
 
         count += 1
@@ -281,19 +262,13 @@ if __name__ == "__main__":
     # naming of type is weird
     composite_controller_config = {
         "type": "WHOLE_BODY",
-        # in this case, we're deadling w/ a whole body controller
-        # so it's more whole body controller specific configs ...
+        # so it's more whole body controller specific configs, rather
+        # than composite controller specific configs ...
         "composite_controller_specific_configs": {
-            "actuator_range": [-2, 2], # dummy values
-            "type": "IK_POSE",
-            "control_delta": control_delta_whole_body,
-            "part_name": "arms_body",
             "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
             "interpolation": None,
             "robot_name": args.robots[0],
             "individual_part_names": ["torso", "head", "right", "left"],
-            "kp": 1000,
-            "kv": 200,
             "max_dq": 4,
             "nullspace_joint_weights": {
                 "robot0_torso_waist_yaw": 100.0,
@@ -324,7 +299,6 @@ if __name__ == "__main__":
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
-        # new composite controller configs structure
         "composite_controller_configs": composite_controller_config,
     }
 
