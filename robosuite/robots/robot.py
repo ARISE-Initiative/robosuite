@@ -765,23 +765,29 @@ class Robot(object):
         """
         A helper function that creates the action vector given a dictionary
         """
-
-        full_action_vector = np.zeros(self.action_dim)
-        for (part_name, action_vector) in action_dict.items():
-            if part_name not in self._action_split_indexes:
-                ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
-                continue
-            start_idx, end_idx = self._action_split_indexes[part_name]
-            if end_idx - start_idx == 0:
-                # skipping not controlling actions
-                continue
-            assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
-                f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
-            )
-            full_action_vector[start_idx:end_idx] = action_vector
-        return full_action_vector
+        # check if there's a composite controller and if the controller has a create_action_vector method
+        if self.composite_controller is not None and hasattr(self.composite_controller, "create_action_vector"):
+            return self.composite_controller.create_action_vector(action_dict)
+        else:
+            full_action_vector = np.zeros(self.action_dim)
+            for (part_name, action_vector) in action_dict.items():
+                if part_name not in self._action_split_indexes:
+                    ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
+                    continue
+                start_idx, end_idx = self._action_split_indexes[part_name]
+                if end_idx - start_idx == 0:
+                    # skipping not controlling actions
+                    continue
+                assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
+                    f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
+                )
+                full_action_vector[start_idx:end_idx] = action_vector
+            return full_action_vector
 
     def print_action_info(self):
+        if self.composite_controller is not None and hasattr(self.composite_controller, "print_action_info"):
+            self.composite_controller.print_action_info()
+            return
         action_index_info = []
         action_dim_info = []
         for part_name, (start_idx, end_idx) in self._action_split_indexes.items():
@@ -795,6 +801,9 @@ class Robot(object):
         ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
     
     def print_action_info_dict(self):
+        if self.composite_controller is not None and hasattr(self.composite_controller, "print_action_info_dict"):
+            self.composite_controller.print_action_info_dict(name=self.name)
+            return
         info_dict = {}
         info_dict["Action Dimension"] = self.action_dim
         info_dict.update(dict(self._action_split_indexes))

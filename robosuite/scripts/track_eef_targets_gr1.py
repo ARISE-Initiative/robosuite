@@ -86,17 +86,17 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
             right_action = [0.0] * 5
             right_action[0] = 0.0
-            # TODO: update create action vector
-            # action = env.robots[0].create_action_vector(
-            #     {
-            #         arm: arm_actions,
-            #         f"{end_effector}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof),
-            #         env.robots[0].base: base_action,
-            #         # env.robots[0].head: base_action,
-            #         # env.robots[0].torso: base_action
-            #         # env.robots[0].torso: torso_action
-            #     }
-            # )
+
+            action_dict =  {
+                "gripper0_left_grip_site_pos": left_target_pos,
+                "gripper0_left_grip_site_axis_angle": left_target_aa,
+                "gripper0_right_grip_site_pos": right_target_pos,
+                "gripper0_right_grip_site_axis_angle": right_target_aa,
+                "left_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof),
+                "right_gripper": np.repeat(input_action[7:8], env.robots[0].gripper[end_effector].dof),
+            }
+            action = env.robots[0].create_action_vector(action_dict)
+
             mode_action = input_action[-1]
 
             if mode_action > 0:
@@ -107,9 +107,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             arm_actions = input_action
             action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
 
-        left_gripper = np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof)
-        right_gripper = np.repeat(input_action[7:8], env.robots[0].gripper[end_effector].dof)
-        action = np.concatenate([arm_actions, left_gripper, right_gripper])
         env.step(action)
         env.render()
 
@@ -284,6 +281,7 @@ if __name__ == "__main__":
             "ik_pseudo_inverse_damping": 5e-2,
             "ik_integration_dt": 1e-1,
             "ik_max_dq": 4.0,
+            "ik_input_rotation_repr": "axis_angle",
         },
         "default_controller_configs_part_names": ["right_gripper", "left_gripper"],
         "body_parts": {

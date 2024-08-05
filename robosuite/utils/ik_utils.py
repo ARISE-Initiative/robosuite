@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Literal
+from typing import Dict, List, Optional, Literal, Tuple
 
 import mujoco
 import mujoco.viewer
@@ -73,6 +73,19 @@ class IKSolver:
         # Initialize error and error_dot
         self.error_prev = np.zeros_like(self.q0)
         self.error_dot = np.zeros_like(self.q0)
+
+    def action_split_indexes(self) -> Dict[str, Tuple[int, int]]:
+        action_split_indexes: Dict[str, Tuple[int, int]] = {}
+        previous_idx = 0
+
+        for site_name in self.site_names:
+            total_dim = self.pos_dim + self.rot_dim
+            last_idx = previous_idx + total_dim
+            action_split_indexes[site_name + "_pos"] = (previous_idx, previous_idx + self.pos_dim)
+            action_split_indexes[site_name + f"_{self.input_rotation_repr}"] = (previous_idx + self.pos_dim, last_idx)
+            previous_idx = last_idx
+
+        return action_split_indexes
 
     def reset_to_initial_state(self):
         if self.key_id is not None:

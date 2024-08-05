@@ -1,10 +1,13 @@
 from collections import OrderedDict
+import json
 from typing import Optional, Dict
 
 import numpy as np
 
-from robosuite.controllers import controller_factory, load_controller_config
+from robosuite.controllers import controller_factory
 from robosuite.utils.ik_utils import IKSolver, get_Kn
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+
 
 
 class CompositeController:
@@ -150,6 +153,13 @@ class HybridMobileBaseCompositeController(CompositeController):
 
 
 class WholeBodyIKCompositeController(CompositeController):
+    def __init__(self, sim, robot_model, grippers, lite_physics=False):
+        super().__init__(sim, robot_model, grippers, lite_physics)
+
+        self.ik_solver: IKSolver = None
+
+        self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
+
     def _init_controllers(self):
         for part_name in self.controller_config.keys():
             controller_params = self.controller_config[part_name]
@@ -186,9 +196,16 @@ class WholeBodyIKCompositeController(CompositeController):
             damping=self.composite_controller_specific_config["ik_pseudo_inverse_damping"],
             integration_dt=self.composite_controller_specific_config["ik_integration_dt"],
             max_dq=self.composite_controller_specific_config["ik_max_dq"],
+            input_rotation_repr=self.composite_controller_specific_config["ik_input_rotation_repr"],
         )
 
     def setup_action_split_idx(self):
+        """
+        Action split indices for the underlying factorized controllers.
+
+        WholeBodyIK controller takes in a different action space from the
+        underlying factorized controllers.
+        """
         previous_idx = 0
         last_idx = 0
         # add the IK solver's action split index first -- outputs in the order of individual_part_names
@@ -205,6 +222,30 @@ class WholeBodyIKCompositeController(CompositeController):
                     last_idx += controller.control_dim
                 self._action_split_indexes[part_name] = (previous_idx, last_idx)
                 previous_idx = last_idx
+
+        self.setup_whole_body_controller_action_split_idx()
+
+    def setup_whole_body_controller_action_split_idx(self):
+        """
+        Action split indices for the composite controller's input ation space.
+
+        WholeBodyIK controller takes in a different action space from the
+        underlying factorized controllers.
+        """
+        # add ik solver action split indexes first
+        self._whole_body_controller_action_split_indexes.update(self.ik_solver.action_split_indexes())
+
+        # prev and last index correspond to the IK solver indexes' last index
+        previous_idx = last_idx = list(self._whole_body_controller_action_split_indexes.values())[-1][-1]
+        for part_name, controller in self.controllers.items():
+            if part_name in self.composite_controller_specific_config["individual_part_names"]:
+                continue
+            if part_name in self.grippers.keys():
+                last_idx += self.grippers[part_name].dof
+            else:
+                last_idx += controller.control_dim
+            self._whole_body_controller_action_split_indexes[part_name] = (previous_idx, last_idx)
+            previous_idx = last_idx
 
     def set_goal(self, all_action):
         if not self.lite_physics:
@@ -257,3 +298,40 @@ class WholeBodyIKCompositeController(CompositeController):
                 low_c, high_c = controller.control_limits
                 low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         return low, high
+
+    def create_action_vector(self, action_dict: Dict[str, np.ndarray]) -> np.ndarray:
+        full_action_vector = np.zeros(self.action_limits[0].shape)
+        for (part_name, action_vector) in action_dict.items():
+            if part_name not in self._whole_body_controller_action_split_indexes:
+                ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
+                continue
+            start_idx, end_idx = self._whole_body_controller_action_split_indexes[part_name]
+            if end_idx - start_idx == 0:
+                # skipping not controlling actions
+                continue
+            assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
+                f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
+            )
+            full_action_vector[start_idx:end_idx] = action_vector
+        return full_action_vector
+
+    def print_action_info(self):
+        action_index_info = []
+        action_dim_info = []
+        for part_name, (start_idx, end_idx) in self._whole_body_controller_action_split_indexes.items():
+            action_dim_info.append(f"{part_name}: {(end_idx - start_idx)} dim")
+            action_index_info.append(f"{part_name}: {start_idx}:{end_idx}")
+
+        action_dim_info_str = ", ".join(action_dim_info)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Dimensions: [{action_dim_info_str}]")
+
+        action_index_info_str = ", ".join(action_index_info)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
+    
+    def print_action_info_dict(self, name: str):
+        info_dict = {}
+        info_dict["Action Dimension"] = self.action_limits[0].shape
+        info_dict.update(dict(self._whole_body_controller_action_split_indexes))
+        
+        info_dict_str = f"\nAction Info for {name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
+        ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
