@@ -7,7 +7,6 @@ from robosuite.robots import ROBOT_CLASS_MAPPING  # ,Manipulator
 from robosuite.utils.observables import Observable, sensor
 
 
-
 class ManipulationEnv(RobotEnv):
     """
     Initializes a manipulation-specific robot environment in Mujoco.
@@ -222,22 +221,18 @@ class ManipulationEnv(RobotEnv):
         vis_set = super()._visualizations
         vis_set.add("grippers")
         return vis_set
-    
-    
+
     def _get_obj_eef_sensor(self, prefix, obj_key, fn_name, modality):
         @sensor(modality)
         def sensor_fn(obs_cache):
-                return (
+            return (
                 obs_cache[obj_key] - obs_cache[f"{prefix}eef_pos"]
                 if obj_key in obs_cache and f"{prefix}eef_pos" in obs_cache
                 else np.zeros(3)
             )
-        
+
         sensor_fn.__name__ = fn_name
         return sensor_fn
-            
-            
-
 
     def _check_grasp(self, gripper, object_geoms):
         """
@@ -261,8 +256,6 @@ class ManipulationEnv(RobotEnv):
         Returns:
             bool: True if the gripper is grasping the given object
         """
-
-
         # Convert object, gripper geoms into standardized form
         if isinstance(object_geoms, MujocoModel):
             o_geoms = object_geoms.contact_geoms
@@ -284,8 +277,6 @@ class ManipulationEnv(RobotEnv):
             if not self.check_contact(g_group, o_geoms):
                 return False
         return True
-    
-
 
     def _gripper_to_target(self, gripper, target, target_type="body", return_distance=False):
         """
@@ -307,10 +298,14 @@ class ManipulationEnv(RobotEnv):
             assert all([isinstance(gripper[arm], GripperModel) for arm in gripper]), "Invalid gripper dict format!"
             # get the min distance to the target if there are multiple arms
             if return_distance:
-                return min([self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper])
+                return min(
+                    [self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper]
+                )
             else:
-                return min([self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper], key=lambda x: np.linalg.norm(x))
-
+                return min(
+                    [self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper],
+                    key=lambda x: np.linalg.norm(x),
+                )
 
         # Get gripper and target positions
         gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
@@ -320,7 +315,7 @@ class ManipulationEnv(RobotEnv):
         elif target_type == "body":
             target_pos = self.sim.data.get_body_xpos(target)
         elif target_type == "site":
-            target_pos = self.sim.data.get_site_xpos(target)    
+            target_pos = self.sim.data.get_site_xpos(target)
         else:
             target_pos = self.sim.data.get_geom_xpos(target)
         # Calculate distance
@@ -374,10 +369,8 @@ class ManipulationEnv(RobotEnv):
         prefixes = []
         for arm in robot.arms:
             prefixes.append(f"{name_pf}{arm}_")
-        
-        return prefixes
 
-        
+        return prefixes
 
     def _check_robot_configuration(self, robots):
         """

@@ -250,8 +250,6 @@ class Wipe(SingleRobotEnv):
             self.num_markers * self.unit_wiped_reward + horizon * (self.wipe_contact_reward + self.task_complete_reward)
         )
 
-        
-
         # set other wipe-specific attributes
         self.wiped_markers = []
         self.collisions = 0
@@ -399,7 +397,12 @@ class Wipe(SingleRobotEnv):
         """
         reward = 0
 
-        total_force_ee = max([np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques[arm].current[:3])) for arm in self.robots[0].arms])
+        total_force_ee = max(
+            [
+                np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques[arm].current[:3]))
+                for arm in self.robots[0].arms
+            ]
+        )
 
         # Neg Reward from collisions of the arm with the table
         if self.check_contact(self.robots[0].robot_model):
@@ -419,7 +422,6 @@ class Wipe(SingleRobotEnv):
             for arm in self.robots[0].arms:
                 c_geoms = self.robots[0].gripper[arm].important_geoms["corners"]
                 active_markers += self._get_active_markers(c_geoms)
-            
 
             # Obtain the list of currently active (wiped) markers that where not wiped before
             # These are the markers we are wiping at this step
@@ -466,7 +468,9 @@ class Wipe(SingleRobotEnv):
                         reward += 10.0 * self.wipe_contact_reward
 
                 # Penalize large accelerations
-                reward -= self.ee_accel_penalty * max([np.mean(abs(self.robots[0].recent_ee_acc[arm].current)) for arm in self.robots[0].arms])
+                reward -= self.ee_accel_penalty * max(
+                    [np.mean(abs(self.robots[0].recent_ee_acc[arm].current)) for arm in self.robots[0].arms]
+                )
 
             # Final reward if all wiped
             if len(self.wiped_markers) == self.num_markers:
@@ -578,10 +582,11 @@ class Wipe(SingleRobotEnv):
 
                 if self.use_robot_obs:
                     # also use ego-centric obs
-                    
                     prefixes = self._get_arm_prefixes(self.robots[0])
-                    
-                    robot_obs_sensors = [self._get_obj_eef_sensor(arm_pf, "wipe_centroid", f"{arm_pf}gripper_to_wipe_centroid", modality) for arm_pf in prefixes]
+                    robot_obs_sensors = [
+                        self._get_obj_eef_sensor(arm_pf, "wipe_centroid", f"{arm_pf}gripper_to_wipe_centroid", modality)
+                        for arm_pf in prefixes
+                    ]
 
                     sensors.extend(robot_obs_sensors)
                     names.extend([fn.__name__ for fn in robot_obs_sensors])
@@ -640,8 +645,11 @@ class Wipe(SingleRobotEnv):
                     if f"marker{i}_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
                     else np.zeros(3)
                 )
-            
-            grippers_to_marker_fns = [self._get_obj_eef_sensor(arm_pf, f"marker{i}_pos", f"{arm_pf}gripper_to_marker{i}", modality) for arm_pf in self._get_arm_prefixes(self.robots[0])]
+
+            grippers_to_marker_fns = [
+                self._get_obj_eef_sensor(arm_pf, f"marker{i}_pos", f"{arm_pf}gripper_to_marker{i}", modality)
+                for arm_pf in self._get_arm_prefixes(self.robots[0])
+            ]
 
             sensors.extend(grippers_to_marker_fns)
             names.extend([fn.__name__ for fn in grippers_to_marker_fns])
@@ -757,14 +765,16 @@ class Wipe(SingleRobotEnv):
                     num_non_wiped_markers += 1
             wipe_centroid /= max(1, num_non_wiped_markers)
             mean_pos_to_things_to_wipe_list = [wipe_centroid - self._get_eef_xpos(arm) for arm in self.robots[0].arms]
-            mean_pos_to_things_to_wipe = mean_pos_to_things_to_wipe_list[np.argmin([np.linalg.norm(x) for x in mean_pos_to_things_to_wipe_list])]
+            mean_pos_to_things_to_wipe = mean_pos_to_things_to_wipe_list[
+                np.argmin([np.linalg.norm(x) for x in mean_pos_to_things_to_wipe_list])
+            ]
         # Radius of circle from centroid capturing all remaining wiping markers
         max_radius = 0
         if num_non_wiped_markers > 0:
             max_radius = np.max(np.linalg.norm(np.array(marker_positions) - wipe_centroid, axis=1))
         # Return all values
         return max_radius, wipe_centroid, mean_pos_to_things_to_wipe
-    
+
     def _get_eef_xpos(self, arm):
         """
         Grabs End Effector position
@@ -783,4 +793,9 @@ class Wipe(SingleRobotEnv):
         Returns:
             bool: True if contact is surpasses given threshold magnitude
         """
-        return any([np.linalg.norm(self.robots[0].ee_force[arm] - self.ee_force_bias[arm]) > self.contact_threshold for arm in self.robots[0].arms])
+        return any(
+            [
+                np.linalg.norm(self.robots[0].ee_force[arm] - self.ee_force_bias[arm]) > self.contact_threshold
+                for arm in self.robots[0].arms
+            ]
+        )

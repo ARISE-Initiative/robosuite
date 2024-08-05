@@ -265,7 +265,12 @@ class Stack(SingleRobotEnv):
         # reaching is successful when the gripper site is close to the center of the cube
         cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
         cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
-        dist = min([np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - cubeA_pos) for arm in self.robots[0].arms])
+        dist = min(
+            [
+                np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - cubeA_pos)
+                for arm in self.robots[0].arms
+            ]
+        )
         r_reach = (1 - np.tanh(10.0 * dist)) * 0.25
 
         # grasping reward
@@ -434,8 +439,6 @@ class Stack(SingleRobotEnv):
             def cubeB_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cubeB_body_id]), to="xyzw")
 
-            
-
             @sensor(modality=modality)
             def cubeA_to_cubeB(obs_cache):
                 return (
@@ -444,9 +447,12 @@ class Stack(SingleRobotEnv):
                     else np.zeros(3)
                 )
 
-
             sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, cubeA_to_cubeB]
-            sensors += [self._get_obj_eef_sensor(pf, f"{cube}_pos", f"{pf}gripper_to_{cube}_pos", modality ) for pf in self._get_arm_prefixes(self.robots[0]) for cube in ["cubeA", "cubeB" ]]
+            sensors += [
+                self._get_obj_eef_sensor(pf, f"{cube}_pos", f"{pf}gripper_to_{cube}_pos", modality)
+                for pf in self._get_arm_prefixes(self.robots[0])
+                for cube in ["cubeA", "cubeB"]
+            ]
             names = [s.__name__ for s in sensors]
 
             # Create observables

@@ -88,11 +88,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
                 env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:
             arm_actions = input_action
-
-            ## if using wipe task ignore the last gripper dimension
-            # action = env.robots[0].create_action_vector({arm: arm_actions})
             action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{arm}_gripper": arm_actions[-1:]})
-        # action[-1] = input_action[-1]
         env.step(action)
         env.render()
 

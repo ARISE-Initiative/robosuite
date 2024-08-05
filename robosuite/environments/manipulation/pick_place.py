@@ -344,7 +344,7 @@ class PickPlace(SingleRobotEnv):
             int(
                 self._check_grasp(
                     object_geoms=[g for active_obj in active_objs for g in active_obj.contact_geoms],
-                    gripper=self.robots[0].gripper
+                    gripper=self.robots[0].gripper,
                 )
             )
             * grasp_mult
@@ -739,11 +739,15 @@ class PickPlace(SingleRobotEnv):
             bool: True if all objects are placed correctly
         """
         # remember objects that are in the correct bins
-
         for i, obj in enumerate(self.objects):
             obj_str = obj.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
-            dist = min([np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - obj_pos) for arm in self.robots[0].arms])
+            dist = min(
+                [
+                    np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - obj_pos)
+                    for arm in self.robots[0].arms
+                ]
+            )
             r_reach = 1 - np.tanh(10.0 * dist)
             self.objects_in_bins[i] = int((not self.not_in_bin(obj_pos, i)) and r_reach < 0.6)
 

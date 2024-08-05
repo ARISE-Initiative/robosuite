@@ -2,12 +2,10 @@
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 
 
-
 class SingleRobotEnv(ManipulationEnv):
     """
     A manipulation environment intended for a single robot
     """
-
 
     def _check_robot_configuration(self, robots):
         """
