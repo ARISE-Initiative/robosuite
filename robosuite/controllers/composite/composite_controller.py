@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import Optional, Dict
 
 import numpy as np
 
@@ -9,7 +10,7 @@ from robosuite.utils.ik_utils import IKSolver, get_Kn
 class CompositeController:
     """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
 
-    def __init__(self, sim, robot_model, grippers, lite_physics=False, kwargs=None):
+    def __init__(self, sim, robot_model, grippers, lite_physics=False):
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
@@ -17,8 +18,6 @@ class CompositeController:
         self.grippers = grippers
 
         self.lite_physics = lite_physics
-
-        self.kwargs = kwargs
 
         self.controllers = OrderedDict()
 
@@ -30,8 +29,9 @@ class CompositeController:
 
         self._applied_action_dict = {}
 
-    def load_controller_config(self, controller_config):
+    def load_controller_config(self, controller_config, composite_controller_specific_config: Optional[Dict] = None):
         self.controller_config = controller_config
+        self.composite_controller_specific_config = composite_controller_specific_config
         self.controllers.clear()
         self._action_split_indexes.clear()
         self._init_controllers()
@@ -167,15 +167,14 @@ class WholeBodyIKCompositeController(CompositeController):
                 controller_params
             )
 
-        self.kwargs["individual_part_names"]
         joint_names = []
-        for part_name in self.kwargs["individual_part_names"]:
+        for part_name in self.composite_controller_specific_config["individual_part_names"]:
             joint_names += self.controllers[part_name].joint_names
 
-        Kn = get_Kn(joint_names, self.kwargs["nullspace_joint_weights"])
+        Kn = get_Kn(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
         mocap_bodies = []
         robot_config = {
-            'end_effector_sites': self.kwargs["ref_name"],
+            'end_effector_sites': self.composite_controller_specific_config["ref_name"],
             'joint_names': joint_names,
             'mocap_bodies': mocap_bodies,
             'nullspace_gains': Kn
@@ -184,22 +183,22 @@ class WholeBodyIKCompositeController(CompositeController):
             model=self.sim.model._model, 
             data=self.sim.data._data, 
             robot_config=robot_config,
-            damping=self.kwargs["ik_pseudo_inverse_damping"],
-            integration_dt=self.kwargs["ik_integration_dt"],
-            max_dq=self.kwargs["ik_max_dq"],
+            damping=self.composite_controller_specific_config["ik_pseudo_inverse_damping"],
+            integration_dt=self.composite_controller_specific_config["ik_integration_dt"],
+            max_dq=self.composite_controller_specific_config["ik_max_dq"],
         )
 
     def setup_action_split_idx(self):
         previous_idx = 0
         last_idx = 0
         # add the IK solver's action split index first -- outputs in the order of individual_part_names
-        for part_name in self.kwargs["individual_part_names"]:
+        for part_name in self.composite_controller_specific_config["individual_part_names"]:
             last_idx += self.controllers[part_name].control_dim
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
         for part_name, controller in self.controllers.items():
-            if part_name not in self.kwargs["individual_part_names"]:
+            if part_name not in self.composite_controller_specific_config["individual_part_names"]:
                 if part_name in self.grippers.keys():
                     last_idx += self.grippers[part_name].dof
                 else:
@@ -244,7 +243,7 @@ class WholeBodyIKCompositeController(CompositeController):
         low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         for part_name, controller in self.controllers.items():
             # Exclude terms that the IK solver handles
-            if part_name in self.kwargs["individual_part_names"]:
+            if part_name in self.composite_controller_specific_config["individual_part_names"]:
                 continue
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():

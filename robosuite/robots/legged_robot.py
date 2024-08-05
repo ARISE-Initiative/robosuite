@@ -82,9 +82,9 @@ class LeggedRobot(MobileBaseRobot):
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
             lite_physics=self.lite_physics,
-            kwargs=self.composite_controller_config.get("composite_controller_specific_configs", {}),
         )
 
+        # TODO: hijack these arm controller defaults to something more controllable
         self._load_arm_controllers()
 
         # default base, torso, and head controllers are inherited from MobileBaseRobot
@@ -96,13 +96,11 @@ class LeggedRobot(MobileBaseRobot):
         self._load_head_controller()
         self._load_torso_controller()
 
-        # composite_controller_config = copy.deepcopy(self.composite_controller_config["controller_configs"]) if self.composite_controller_config is not None else self.controller_config
-        # default_controller_part_names = self.composite_controller_config.get("default_controller_configs_part_names", [])
-        # for part_name in default_controller_part_names:
-        #     composite_controller_config[part_name] = self.controller_config[part_name]
-        # TODO: currently no guarantee that passed in arguments work:
-        # for now assume only gripper can be in default controller config parts
-        self.composite_controller.load_controller_config(self.controller_config)
+        # override controller config with composite controller config values
+        for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
+            if part_name in self.controller_config:
+                self.controller_config[part_name].update(controller_config)
+        self.composite_controller.load_controller_config(self.controller_config, self.composite_controller_config.get("composite_controller_specific_configs", {}))
         self.enable_parts()
 
     def load_model(self):
@@ -155,11 +153,11 @@ class LeggedRobot(MobileBaseRobot):
                     indices.extend(index_dict[key])
             return indices
         
-        for body_part, body_controller_config in self.composite_controller_config["controller_configs"].items():
-            new_joint_indexes = get_indices_for_keys(self._ref_joints_indexes_dict, body_controller_config["individual_part_names"])
-            new_actuator_indexes = get_indices_for_keys(self._ref_actuators_indexes_dict, body_controller_config["individual_part_names"])
-            self._ref_joints_indexes_dict[body_part] = new_joint_indexes
-            self._ref_actuators_indexes_dict[body_part] = new_actuator_indexes
+        # for body_part, body_controller_config in self.composite_controller_config["controller_configs"].items():
+        #     new_joint_indexes = get_indices_for_keys(self._ref_joints_indexes_dict, body_controller_config["individual_part_names"])
+        #     new_actuator_indexes = get_indices_for_keys(self._ref_actuators_indexes_dict, body_controller_config["individual_part_names"])
+        #     self._ref_joints_indexes_dict[body_part] = new_joint_indexes
+        #     self._ref_actuators_indexes_dict[body_part] = new_actuator_indexes
 
         self._ref_legs_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.legs_joints]
         self._ref_legs_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.legs_joints]

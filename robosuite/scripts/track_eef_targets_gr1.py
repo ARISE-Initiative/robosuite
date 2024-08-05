@@ -277,16 +277,6 @@ if __name__ == "__main__":
     with open("robosuite/controllers/config/default_gr1.json") as f:
         gr1_controller_config = json.load(f)
 
-    # apply to all parts             "individual_part_names": ["torso", "head", "right", "left"],
-    controller_config = {
-        "right": gr1_controller_config,
-        "left": gr1_controller_config,
-        "torso": gr1_controller_config,
-        "head": gr1_controller_config,
-    }
-
-    controller_config = gr1_controller_config
-
     control_delta_whole_body = False
     # naming of type is weird
     composite_controller_config = {
@@ -321,34 +311,9 @@ if __name__ == "__main__":
             "ik_max_dq": 4.0,
         },
         "default_controller_configs_part_names": ["right_gripper", "left_gripper"],
-        "controller_configs": {
-            # "arms_body": {
-            #         "actuator_range": [-2, 2], # dummy values
-            #         "type": "IK_POSE",
-            #         "control_delta": control_delta_whole_body,
-            #         "part_name": "arms_body",
-            #         "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
-            #         "interpolation": None,
-            #         "robot_name": args.robots[0],
-            #         "individual_part_names": ["torso", "head", "right", "left"],
-            #         "kp": 1000,
-            #         "kv": 200,
-            #         "max_dq": 4,
-            #         "nullspace_joint_weights": {
-            #             "robot0_torso_waist_yaw": 100.0,
-            #             "robot0_torso_waist_pitch": 100.0,
-            #             "robot0_torso_waist_roll": 500.0,
-            #             "robot0_l_shoulder_pitch": 4.0,
-            #             "robot0_r_shoulder_pitch": 4.0,
-            #             "robot0_l_shoulder_roll": 3.0,
-            #             "robot0_r_shoulder_roll": 3.0,
-            #             "robot0_l_shoulder_yaw": 2.0,
-            #             "robot0_r_shoulder_yaw": 2.0,
-            #         },
-            #         "ik_pseudo_inverse_damping": 5e-2,
-            #         "ik_integration_dt": 1e-1,
-            #         "ik_max_dq": 4.0,
-            # },
+        "body_parts": {
+            "right": gr1_controller_config,
+            "left": gr1_controller_config,
         }
     }
     if not args.use_whole_body_controller:

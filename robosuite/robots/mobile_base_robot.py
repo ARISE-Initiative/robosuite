@@ -86,14 +86,27 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.torso]) == 0:
             return None
+
+        if not self.controller.get(self.torso, None):
+            controller_path = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.torso]),
+            )
+            self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
+                
+            # Assert that the controller config is a dict file:
+            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
+            assert (
+                type(self.controller_config[self.torso]) == dict
+            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
+                type(self.controller_config[self.torso])
+            )
+
         # TODO: Add a default controller config for torso
-        self.controller_config[self.torso] = {}
-        self.controller_config[self.torso]["type"] = "JOINT_POSITION"
-        self.controller_config[self.torso]["interpolation"] = None
-        self.controller_config[self.torso]["ramp_ratio"] = 1.0
         self.controller_config[self.torso]["robot_name"] = self.name
         self.controller_config[self.torso]["sim"] = self.sim
-        self.controller_config[self.torso]["kp"] = 2000
         self.controller_config[self.torso]["part_name"] = self.torso
         self.controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
         self.controller_config[self.torso]["ndim"] = self._joint_split_idx
@@ -120,16 +133,26 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.head]) == 0:
             return None
-        # TODO: Add a default controller config for head
-        self.controller_config[self.head] = {}
-        self.controller_config[self.head]["type"] = "JOINT_POSITION"
-        self.controller_config[self.head]["interpolation"] = None
-        self.controller_config[self.head]["ramp_ratio"] = 1.0
+        
+        if not self.controller.get(self.head, None):
+            controller_path = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.head]),
+            )
+            self.controller_config[self.head] = load_controller_config(custom_fpath=controller_path)
+
+            # Assert that the controller config is a dict file:
+            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
+            assert (
+                type(self.controller_config[self.head]) == dict
+            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
+                type(self.controller_config[self.head])
+            )
+
         self.controller_config[self.head]["robot_name"] = self.name
         self.controller_config[self.head]["sim"] = self.sim
-        self.controller_config[self.head]["kp"] = 10
-        self.controller_config[self.head]["output_max"] = 1.0
-        self.controller_config[self.head]["output_min"] = -1.0
 
         self.controller_config[self.head]["part_name"] = self.head
         self.controller_config[self.head]["naming_prefix"] = self.robot_model.naming_prefix

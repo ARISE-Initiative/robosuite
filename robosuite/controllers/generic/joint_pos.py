@@ -134,8 +134,7 @@ class JointPositionController(Controller):
         self.kp = self.nums2array(kp, self.control_dim)
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio if kwargs.get("kd", None) is None else \
             self.nums2array(kwargs.get("kd", None), self.control_dim)
-        self.kp[:] = 1000
-        self.kd[:] = 200
+
         # kp and kd limits
         self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
         self.kp_max = self.nums2array(kp_limits[1], self.control_dim)

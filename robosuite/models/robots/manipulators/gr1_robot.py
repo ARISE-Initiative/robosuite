@@ -35,13 +35,13 @@ class GR1(LeggedManipulatorModel):
     @property
     def default_controller_config(self):
         """
-        Since this is bimanual robot, returns dict with `'right'`, `'left'` keywords corresponding to their respective
+        Since this is bimanual robot, returns dict with `'right'`, `'left'`, `'head'`, `'torso'` keywords corresponding to their respective
         values
 
         Returns:
-            dict: Dictionary containing arm-specific default controller config names
+            dict: Dictionary containing arm,head,torso-specific default controller config names
         """
-        return {"right": "default_gr1", "left": "default_gr1"}
+        return {"right": "default_gr1", "left": "default_gr1", "head": "default_gr1_head", "torso": "default_gr1_torso"}
 
     @property
     def init_qpos(self):
