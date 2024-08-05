@@ -102,16 +102,16 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
             right_action = [0.0] * 5
             right_action[0] = 0.0
-            action = env.robots[0].create_action_vector(
-                {
-                    arm: arm_actions,
-                    f"{end_effector}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof),
-                    env.robots[0].base: base_action,
-                    # env.robots[0].head: base_action,
-                    # env.robots[0].torso: base_action
-                    # env.robots[0].torso: torso_action
-                }
-            )
+            # action = env.robots[0].create_action_vector(
+            #     {
+            #         arm: arm_actions,
+            #         f"{end_effector}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof),
+            #         env.robots[0].base: base_action,
+            #         # env.robots[0].head: base_action,
+            #         # env.robots[0].torso: base_action
+            #         # env.robots[0].torso: torso_action
+            #     }
+            # )
             mode_action = input_action[-1]
 
             if mode_action > 0:
@@ -273,6 +273,19 @@ if __name__ == "__main__":
 
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
+
+    with open("robosuite/controllers/config/default_gr1.json") as f:
+        gr1_controller_config = json.load(f)
+
+    # apply to all parts             "individual_part_names": ["torso", "head", "right", "left"],
+    controller_config = {
+        "right": gr1_controller_config,
+        "left": gr1_controller_config,
+        "torso": gr1_controller_config,
+        "head": gr1_controller_config,
+    }
+
+    controller_config = gr1_controller_config
 
     control_delta_whole_body = False
     # naming of type is weird
