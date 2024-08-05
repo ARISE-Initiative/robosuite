@@ -23,7 +23,6 @@ from robosuite.utils.transform_utils import quat2axisangle
 
 
 def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right",
-    control_delta_whole_body: bool = False,
     history: Dict[str, List] = None
 ):
     """
@@ -255,7 +254,6 @@ if __name__ == "__main__":
     with open("robosuite/controllers/config/default_gr1.json") as f:
         gr1_controller_config = json.load(f)
 
-    control_delta_whole_body = False
     # naming of type is weird
     composite_controller_config = {
         "type": "WHOLE_BODY",
@@ -350,5 +348,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config, control_delta_whole_body=control_delta_whole_body, history=history)
+        collect_human_trajectory(env, device, args.arm, args.config, history=history)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
