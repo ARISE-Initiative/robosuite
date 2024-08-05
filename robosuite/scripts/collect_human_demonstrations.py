@@ -21,8 +21,7 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right",
-        control_delta_whole_body: bool = False):
+def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -62,19 +61,25 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         # Run environment step
 
         if env.robots[0].is_mobile:
-            arm_actions = input_action[:12].copy() if "GR1" in env.robots[0].name else input_action[:6].copy()
+            arm_actions = input_action[:12].copy() if "bimanual" in env.robots[0].name else input_action[:6].copy()
             if "GR1" in env.robots[0].name:
-                arm_actions[6:] = [0.0] * 6   # no action for other arm
-                if not control_delta_whole_body:
-                    arm_actions = [-0.41931295, -0.22706004, 1.09566707, -1.26839518, 1.15421975, 0.99332174, \
-                                -0.4189254, 0.22745755,  1.09597001, -2.1356914 ,  2.50323857, -2.45929076]
-            base_action = input_action[-5:-2]
-            torso_action = input_action[-2:-1]
+                print(f"Hardcoded actions for GR1")
+                action_dict = {
+                    'gripper0_left_grip_site_pos': np.array([-0.4189254 ,  0.22745755,  1.09597001]), 
+                    'gripper0_left_grip_site_axis_angle': np.array([-2.1356914 ,  2.50323857, -2.45929076]), 
+                    'gripper0_right_grip_site_pos': np.array([-0.41931295, -0.22706004,  1.09566707]), 
+                    'gripper0_right_grip_site_axis_angle': np.array([-1.26839518,  1.15421975,  0.99332174]), 
+                    'left_gripper': np.array([0., 0., 0., 0., 0., 0.]), 
+                    'right_gripper': np.array([0., 0., 0., 0., 0., 0.])
+                }
+            else:
+                action_dict = {}
+                base_action = input_action[-5:-2]
+                torso_action = input_action[-2:-1]
 
-            right_action = [0.0] * 5
-            right_action[0] = 0.0
-            action = env.robots[0].create_action_vector(
-                {
+                right_action = [0.0] * 5
+                right_action[0] = 0.0
+                action_dict = {
                     arm: arm_actions,
                     f"{end_effector}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof),
                     env.robots[0].base: base_action,
@@ -82,7 +87,8 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     # env.robots[0].torso: base_action
                     # env.robots[0].torso: torso_action
                 }
-            )
+
+            action = env.robots[0].create_action_vector(action_dict)
             mode_action = input_action[-1]
 
             if mode_action > 0:
@@ -92,7 +98,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         else:
             arm_actions = input_action
             action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
-        # action[-1] = input_action[-1]
+
         env.step(action)
         env.render()
 
@@ -237,36 +243,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    gr1_controller_config = load_controller_config(default_controller=args.controller)
-    # replace controller config to load default_gr1.json for "left", "right"
+    controller_config = load_controller_config(default_controller=args.controller)
+
     with open("robosuite/controllers/config/default_gr1.json") as f:
         gr1_controller_config = json.load(f)
 
-    # apply to all parts             "individual_part_names": ["torso", "head", "right", "left"],
-    controller_config = {
-        "right": gr1_controller_config,
-        "left": gr1_controller_config,
-        "torso": gr1_controller_config,
-        "head": gr1_controller_config,
-    }
-
-    control_delta_whole_body = False
-    # naming of type is weird
     composite_controller_config = {
         "type": "WHOLE_BODY",
-        # in this case, we're deadling w/ a whole body controller
-        # so it's more whole body controller specific configs ...
+        # so it's more whole body controller specific configs, rather
+        # than composite controller specific configs ...
         "composite_controller_specific_configs": {
-            "actuator_range": [-2, 2], # dummy values
-            "type": "IK_POSE",
-            "control_delta": control_delta_whole_body,
-            "part_name": "arms_body",
             "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
             "interpolation": None,
             "robot_name": args.robots[0],
             "individual_part_names": ["torso", "head", "right", "left"],
-            "kp": 1000,
-            "kv": 200,
             "max_dq": 4,
             "nullspace_joint_weights": {
                 "robot0_torso_waist_yaw": 100.0,
@@ -282,36 +272,12 @@ if __name__ == "__main__":
             "ik_pseudo_inverse_damping": 5e-2,
             "ik_integration_dt": 1e-1,
             "ik_max_dq": 4.0,
+            "ik_input_rotation_repr": "axis_angle",
         },
         "default_controller_configs_part_names": ["right_gripper", "left_gripper"],
-        "controller_configs": {
-            # "arms_body": {
-            #         "actuator_range": [-2, 2], # dummy values
-            #         "type": "IK_POSE",
-            #         "control_delta": control_delta_whole_body,
-            #         "part_name": "arms_body",
-            #         "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
-            #         "interpolation": None,
-            #         "robot_name": args.robots[0],
-            #         "individual_part_names": ["torso", "head", "right", "left"],
-            #         "kp": 1000,
-            #         "kv": 200,
-            #         "max_dq": 4,
-            #         "nullspace_joint_weights": {
-            #             "robot0_torso_waist_yaw": 100.0,
-            #             "robot0_torso_waist_pitch": 100.0,
-            #             "robot0_torso_waist_roll": 500.0,
-            #             "robot0_l_shoulder_pitch": 4.0,
-            #             "robot0_r_shoulder_pitch": 4.0,
-            #             "robot0_l_shoulder_roll": 3.0,
-            #             "robot0_r_shoulder_roll": 3.0,
-            #             "robot0_l_shoulder_yaw": 2.0,
-            #             "robot0_r_shoulder_yaw": 2.0,
-            #         },
-            #         "ik_pseudo_inverse_damping": 5e-2,
-            #         "ik_integration_dt": 1e-1,
-            #         "ik_max_dq": 4.0,
-            # },
+        "body_parts": {
+            "right": gr1_controller_config,
+            "left": gr1_controller_config,
         }
     }
     if not args.use_whole_body_controller:
@@ -372,5 +338,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config, control_delta_whole_body=control_delta_whole_body)
+        collect_human_trajectory(env, device, args.arm, args.config)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
