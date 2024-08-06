@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.environments.manipulation.single_robot_env import SingleRobotEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import WipeArena
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.observables import Observable, sensor
@@ -43,7 +43,7 @@ DEFAULT_WIPE_CONFIG = {
 }
 
 
-class Wipe(SingleRobotEnv):
+class Wipe(ManipulationEnv):
     """
     This class corresponds to the Wiping task for a single robot arm
 

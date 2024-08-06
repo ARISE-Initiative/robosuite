@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.environments.manipulation.single_robot_env import SingleRobotEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import DoorObject
 from robosuite.models.tasks import ManipulationTask
@@ -10,7 +10,7 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 
 
-class Door(SingleRobotEnv):
+class Door(ManipulationEnv):
     """
     This class corresponds to the door opening task for a single robot arm.
 
