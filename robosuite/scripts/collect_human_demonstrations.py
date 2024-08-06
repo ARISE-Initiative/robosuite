@@ -250,7 +250,7 @@ if __name__ == "__main__":
         gr1_controller_config = json.load(f)
 
     composite_controller_config = {
-        "type": "WHOLE_BODY",
+        "type": "WHOLE_BODY_IK",
         # so it's more whole body controller specific configs, rather
         # than composite controller specific configs ...
         "composite_controller_specific_configs": {
