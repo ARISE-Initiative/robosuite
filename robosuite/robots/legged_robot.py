@@ -84,7 +84,6 @@ class LeggedRobot(MobileBaseRobot):
             lite_physics=self.lite_physics,
         )
 
-        # TODO: hijack these arm controller defaults to something more controllable
         self._load_arm_controllers()
 
         # default base, torso, and head controllers are inherited from MobileBaseRobot
@@ -146,18 +145,6 @@ class LeggedRobot(MobileBaseRobot):
         self._ref_joints_indexes_dict[self.legs] = [
             self.sim.model.joint_name2id(joint) for joint in self.robot_model.legs_joints
         ]
-        def get_indices_for_keys(index_dict: Dict[str, List[int]], keys: List[str]) -> List[int]:
-            indices = []
-            for key in keys:
-                if key in index_dict:
-                    indices.extend(index_dict[key])
-            return indices
-        
-        # for body_part, body_controller_config in self.composite_controller_config["controller_configs"].items():
-        #     new_joint_indexes = get_indices_for_keys(self._ref_joints_indexes_dict, body_controller_config["individual_part_names"])
-        #     new_actuator_indexes = get_indices_for_keys(self._ref_actuators_indexes_dict, body_controller_config["individual_part_names"])
-        #     self._ref_joints_indexes_dict[body_part] = new_joint_indexes
-        #     self._ref_actuators_indexes_dict[body_part] = new_actuator_indexes
 
         self._ref_legs_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.legs_joints]
         self._ref_legs_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.legs_joints]
