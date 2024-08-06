@@ -3,7 +3,7 @@ import numpy as np
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
-from robosuite.robots import ROBOT_CLASS_MAPPING  # ,Manipulator
+from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot, MobileBaseRobot
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -259,7 +259,7 @@ class ManipulationEnv(RobotEnv):
 
         Args:
             gripper (GripperModel or str or list of str or list of list of str or dict): If a MujocoModel, this is specific
-            gripper to check for grasping (as defined by "left_fingerpad" and "right_fingerpad" geom groups). Otherwise,
+                gripper to check for grasping (as defined by "left_fingerpad" and "right_fingerpad" geom groups). Otherwise,
                 this sets custom gripper geom groups which together define a grasp. This can be a string
                 (one group of single gripper geom), a list of string (multiple groups of single gripper geoms) or a
                 list of list of string (multiple groups of multiple gripper geoms), or a dictionary in the case
@@ -277,6 +277,7 @@ class ManipulationEnv(RobotEnv):
             o_geoms = object_geoms.contact_geoms
         else:
             o_geoms = [object_geoms] if type(object_geoms) is str else object_geoms
+
         if isinstance(gripper, GripperModel):
             g_geoms = [gripper.important_geoms["left_fingerpad"], gripper.important_geoms["right_fingerpad"]]
         elif type(gripper) is str:
@@ -406,11 +407,10 @@ class ManipulationEnv(RobotEnv):
         Args:
             robots (str or list of str): Inputted requested robots at the task-level environment
         """
-        # # Make sure all inputted robots are a manipulation robot
-        # if type(robots) is str:
-        #     robots = [robots]
-        # for robot in robots:
-        #     assert issubclass(
-        #         ROBOT_CLASS_MAPPING[robot], Manipulator
-        #     ), "Only manipulator robots supported for manipulation environment!"
-        pass
+        # Make sure all inputted robots are a manipulation robot
+        if type(robots) is str:
+            robots = [robots]
+        for robot in robots:
+            assert issubclass(ROBOT_CLASS_MAPPING[robot], FixedBaseRobot) or issubclass(
+                ROBOT_CLASS_MAPPING[robot], MobileBaseRobot
+            ), "Only manipulator robots supported for manipulation environment!"
