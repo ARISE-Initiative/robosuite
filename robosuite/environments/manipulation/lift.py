@@ -242,7 +242,9 @@ class Lift(ManipulationEnv):
         elif self.reward_shaping:
 
             # reaching reward
-            dist = self._gripper_to_target(target=self.cube.root_body, gripper=self.robots[0].gripper, target_type="body", return_distance=True )
+            dist = self._gripper_to_target(
+                target=self.cube.root_body, gripper=self.robots[0].gripper, target_type="body", return_distance=True
+            )
             reaching_reward = 1 - np.tanh(10.0 * dist)
             reward += reaching_reward
 
@@ -360,7 +362,10 @@ class Lift(ManipulationEnv):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw")
 
             sensors = [cube_pos, cube_quat]
-            sensors += [self._get_obj_eef_sensor(pf, "cube_pos", f"{pf}gripper_to_cube_pos", modality) for pf in self._get_arm_prefixes(self.robots[0])]
+            sensors += [
+                self._get_obj_eef_sensor(pf, "cube_pos", f"{pf}gripper_to_cube_pos", modality)
+                for pf in self._get_arm_prefixes(self.robots[0])
+            ]
             names = [s.__name__ for s in sensors]
 
             # Create observables

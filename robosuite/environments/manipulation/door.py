@@ -349,17 +349,20 @@ class Door(SingleRobotEnv):
             @sensor(modality=modality)
             def handle_pos(obs_cache):
                 return self._handle_xpos
-            
+
             @sensor(modality=modality)
             def hinge_qpos(obs_cache):
                 return np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
-            
-            prefixes = self._get_arm_prefixes(self.robots[0])
-            sensors = [door_pos, handle_pos, hinge_qpos] 
 
-            #TODO naming convention is still slightly different than before for single arm robots; change back?
-            sensors += [self._get_obj_eef_sensor(pf, "door_pos", f"door_to_{pf}eef_pos", modality)  for pf in prefixes] 
-            sensors += [self._get_obj_eef_sensor(pf, "handle_pos", f"handle_to_{pf}eef_pos", modality)  for pf in prefixes] 
+            prefixes = self._get_arm_prefixes(self.robots[0])
+            sensors = [door_pos, handle_pos, hinge_qpos]
+
+            sensors += [self._get_obj_eef_sensor(pf, "door_pos", f"door_to_{pf}eef_pos", modality) for pf in prefixes]
+
+            # create variable number of sensors for each arm representing distance from specified arm to handle
+            sensors += [
+                self._get_obj_eef_sensor(pf, "handle_pos", f"handle_to_{pf}eef_pos", modality) for pf in prefixes
+            ]
             names = [s.__name__ for s in sensors]
 
             # Also append handle qpos if we're using a locked door version with rotatable handle
@@ -443,6 +446,7 @@ class Door(SingleRobotEnv):
     def _gripper_to_handle(self):
         """
         Calculates distance from the gripper to the door handle.
+        If multiple arms, returns the minimum distance.
 
         Returns:
             np.array: (x,y,z) distance between handle and eef

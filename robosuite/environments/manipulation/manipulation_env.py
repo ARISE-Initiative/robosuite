@@ -223,6 +223,20 @@ class ManipulationEnv(RobotEnv):
         return vis_set
 
     def _get_obj_eef_sensor(self, prefix, obj_key, fn_name, modality):
+        """
+        Creates a sensor function that returns the relative position between the object specified by @obj_key
+        and the end effector specified by @prefix.
+
+        Args:
+            prefix (str): Prefix for the arm to which the end effector belongs
+            obj_key (str): Key to access the object's position in the observation cache
+            fn_name (str): Name to assign to the sensor function
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative position between the object and the end effector
+        """
+
         @sensor(modality)
         def sensor_fn(obs_cache):
             return (
