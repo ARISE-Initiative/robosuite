@@ -57,15 +57,15 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         # If action is none, then this a reset so we should break
         if input_action is None:
             break
-
+        # print(f"input_action: {input_action}")
         # Run environment step
 
         if env.robots[0].is_mobile:
             arm_actions = input_action[:12].copy() if "bimanual" in env.robots[0].name else input_action[:6].copy()
             if "GR1" in env.robots[0].name:
-                print(f"Hardcoded actions for GR1")
+                # print(f"Hardcoded actions for GR1")
                 action_dict = {
-                    'gripper0_left_grip_site_pos': np.array([-0.4189254 ,  0.22745755,  1.09597001]), 
+                    'gripper0_left_grip_site_pos': np.array([-0.4189254 ,  0.22745755,  1.09597001]) + input_action[:3] * 0.05, 
                     'gripper0_left_grip_site_axis_angle': np.array([-2.1356914 ,  2.50323857, -2.45929076]), 
                     'gripper0_right_grip_site_pos': np.array([-0.41931295, -0.22706004,  1.09566707]), 
                     'gripper0_right_grip_site_axis_angle': np.array([-1.26839518,  1.15421975,  0.99332174]), 
@@ -89,6 +89,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                 }
 
             action = env.robots[0].create_action_vector(action_dict)
+            print(f"action: {action}")
             mode_action = input_action[-1]
 
             if mode_action > 0:
@@ -261,7 +262,7 @@ if __name__ == "__main__":
             "nullspace_joint_weights": {
                 "robot0_torso_waist_yaw": 100.0,
                 "robot0_torso_waist_pitch": 100.0,
-                "robot0_torso_waist_roll": 500.0,
+                "robot0_torso_waist_roll": 600.0,
                 "robot0_l_shoulder_pitch": 4.0,
                 "robot0_r_shoulder_pitch": 4.0,
                 "robot0_l_shoulder_roll": 3.0,
