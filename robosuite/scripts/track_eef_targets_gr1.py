@@ -66,7 +66,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             if int(count) >= len(history['right_eef_pos']):
                 print(f"Finished looping through the history. Count: {count}")
                 break
-
+            # count = 0
             left_target_pos = history['left_eef_pos'][int(count)]
             right_target_pos = history['right_eef_pos'][int(count)]
             left_target_ori = history['left_eef_quat_wxyz'][int(count)]
@@ -101,7 +101,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             if mode_action > 0:
                 env.robots[0].enable_parts(base=True, right=True, left=True, torso=True)
             else:
-                env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
+                env.robots[0].enable_parts(base=False, right=True, left=True, torso=True)
         else:
             arm_actions = input_action
             action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
@@ -279,7 +279,9 @@ if __name__ == "__main__":
             "ik_pseudo_inverse_damping": 5e-2,
             "ik_integration_dt": 1e-1,
             "ik_max_dq": 4.0,
+            "ik_max_dq_torso": 0.2,
             "ik_input_rotation_repr": "axis_angle",
+            "ik_debug": True,
         },
         "default_controller_configs_part_names": ["right_gripper", "left_gripper"],
         "body_parts": {

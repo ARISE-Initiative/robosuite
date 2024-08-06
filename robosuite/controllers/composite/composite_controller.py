@@ -5,6 +5,9 @@ from typing import Optional, Dict
 import numpy as np
 
 from robosuite.controllers import controller_factory
+from robosuite.models.grippers.gripper_model import GripperModel
+from robosuite.models.robots.robot_model import RobotModel
+from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.ik_utils import IKSolver, get_Kn
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
@@ -13,7 +16,7 @@ from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 class CompositeController:
     """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
 
-    def __init__(self, sim, robot_model, grippers, lite_physics=False):
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
@@ -153,7 +156,7 @@ class HybridMobileBaseCompositeController(CompositeController):
 
 
 class WholeBodyIKCompositeController(CompositeController):
-    def __init__(self, sim, robot_model, grippers, lite_physics=False):
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
         self.ik_solver: IKSolver = None
@@ -163,15 +166,6 @@ class WholeBodyIKCompositeController(CompositeController):
     def _init_controllers(self):
         for part_name in self.controller_config.keys():
             controller_params = self.controller_config[part_name]
-            # default controller configs may have these values loaded
-            if controller_params.get("sim", None) is None:
-                controller_params["sim"] = self.sim
-            if controller_params.get("joint_indexes", None) is None:
-                controller_params["joint_indexes"] = {
-                    "joints": [self.sim.model.joint(joint_name).id for joint_name in self.robot_model.joints],
-                    "qpos": [self.sim.model.get_joint_qpos_addr(joint_name) for joint_name in self.robot_model.joints],
-                    "qvel": [self.sim.model.get_joint_qvel_addr(joint_name) for joint_name in self.robot_model.joints],
-                }
             self.controllers[part_name] = controller_factory(
                 self.controller_config[part_name]["type"], 
                 controller_params
@@ -193,10 +187,12 @@ class WholeBodyIKCompositeController(CompositeController):
             model=self.sim.model._model, 
             data=self.sim.data._data, 
             robot_config=robot_config,
-            damping=self.composite_controller_specific_config["ik_pseudo_inverse_damping"],
-            integration_dt=self.composite_controller_specific_config["ik_integration_dt"],
-            max_dq=self.composite_controller_specific_config["ik_max_dq"],
-            input_rotation_repr=self.composite_controller_specific_config["ik_input_rotation_repr"],
+            damping=self.composite_controller_specific_config.get("ik_pseudo_inverse_damping", 5e-2),
+            integration_dt=self.composite_controller_specific_config.get("ik_integration_dt", 0.1),
+            max_dq=self.composite_controller_specific_config.get("ik_max_dq", 4),
+            max_dq_torso=self.composite_controller_specific_config.get("ik_max_dq_torso", 0.2),
+            input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
+            debug=self.composite_controller_specific_config.get("ik_debug", False),
         )
 
     def setup_action_split_idx(self):
@@ -264,13 +260,6 @@ class WholeBodyIKCompositeController(CompositeController):
     def update_state(self):
         # no need for extra update state here, since Jacobians are computed inside the controller
         return
-
-    def run_controller(self, enabled_parts):
-        self._applied_action_dict.clear()
-        for part_name, controller in self.controllers.items():
-            # ignore the enabled_parts for now
-            self._applied_action_dict[part_name] = controller.run_controller()
-        return self._applied_action_dict
 
     @property
     def action_limits(self):

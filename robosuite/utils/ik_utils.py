@@ -19,6 +19,7 @@ class IKSolver:
         damping: float, 
         integration_dt: float, 
         max_dq: float,
+        max_dq_torso: float = 0.3,
         input_type: Literal["keyboard", "mocap", "pkl"] = "keyboard", 
         debug: bool = False, 
         input_file: Optional[str] = None,
@@ -30,6 +31,7 @@ class IKSolver:
         self.damping = damping
         self.integration_dt = integration_dt
         self.max_dq = max_dq
+        self.max_dq_torso = max_dq_torso
 
         self.joint_names = robot_config['joint_names']
         self.site_names = robot_config['end_effector_sites']
@@ -195,11 +197,11 @@ class IKSolver:
                 self.dq *= self.max_dq / dq_abs_max
 
         torso_joint_ids = [self.model.joint(name).id for name in self.joint_names if "torso" in name]
-        if len(torso_joint_ids) > 0 and max_dq_torso > 0:
+        if len(torso_joint_ids) > 0 and self.max_dq_torso > 0:
             dq_torso = self.dq[torso_joint_ids]
             dq_torso_abs_max = np.abs(dq_torso).max()
-            if dq_torso_abs_max > max_dq_torso:
-                dq_torso *= max_dq_torso / dq_torso_abs_max
+            if dq_torso_abs_max > self.max_dq_torso:
+                dq_torso *= self.max_dq_torso / dq_torso_abs_max
             self.dq[torso_joint_ids] = dq_torso
 
         # get the desired joint angles by integrating the desired joint velocities
@@ -254,7 +256,7 @@ class IKSolver:
             # Set the control signal.
             np.clip(self.q_des, *self.model.jnt_range[self.dof_ids].T, out=self.q_des)
 
-            if self.debug:
+            if self.debug and self.i % 10 == 0:
                 # compare self.q_des's forward kinematics with target_pos
                 integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
                 integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])

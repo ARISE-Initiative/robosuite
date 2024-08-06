@@ -34,7 +34,7 @@ class InverseKinematicsController(JointPositionController):
     Controller for controlling robot arm via inverse kinematics. Allows position and orientation control of the
     robot's end effector.
 
-    We use differential inverse kinematics with posture control in the null space posture control
+    We use differential inverse kinematics with posture control in the null space
     to generate joint positions (see https://github.com/kevinzakka/mjctrl) which are fed to the JointPositionController.
 
     NOTE: Control input actions are assumed to be relative to the current position / orientation of the end effector
@@ -392,8 +392,8 @@ class InverseKinematicsController(JointPositionController):
         # Run ik prepropressing to convert pos, quat ori to desired positions
         requested_control = self._make_input(delta, self.reference_target_orn)
 
-        # Compute desired positions to achieve eef pos / ori
-        positions = self.get_control(**requested_control, update_targets=True)  # is this delta?
+        # Compute desired (absolute) joint positions to achieve eef pos / ori
+        positions = self.get_control(**requested_control, update_targets=True)
 
         # Set the goal positions for the underlying position controller
         super().set_goal(positions)
