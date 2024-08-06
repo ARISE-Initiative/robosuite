@@ -243,7 +243,7 @@ class Lift(ManipulationEnv):
 
             # reaching reward
             dist = self._gripper_to_target(
-                target=self.cube.root_body, gripper=self.robots[0].gripper, target_type="body", return_distance=True
+                gripper=self.robots[0].gripper, target=self.cube.root_body, target_type="body", return_distance=True
             )
             reaching_reward = 1 - np.tanh(10.0 * dist)
             reward += reaching_reward
