@@ -249,7 +249,7 @@ class Lift(ManipulationEnv):
             reward += reaching_reward
 
             # grasping reward
-            if self._check_grasp(object_geoms=self.cube, gripper=self.robots[0].gripper):
+            if self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cube):
                 reward += 0.25
 
         # Scale reward if requested
@@ -362,6 +362,8 @@ class Lift(ManipulationEnv):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw")
 
             sensors = [cube_pos, cube_quat]
+
+            # gripper to cube position sensor; one for each arm
             sensors += [
                 self._get_obj_eef_sensor(pf, "cube_pos", f"{pf}gripper_to_cube_pos", modality)
                 for pf in self._get_arm_prefixes(self.robots[0])

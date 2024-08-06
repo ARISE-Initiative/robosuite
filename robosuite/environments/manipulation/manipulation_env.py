@@ -251,18 +251,20 @@ class ManipulationEnv(RobotEnv):
     def _check_grasp(self, gripper, object_geoms):
         """
         Checks whether the specified gripper as defined by @gripper is grasping the specified object in the environment.
+        If multiple grippers are specified, will return True if at least one gripper is grasping the object.
 
         By default, this will return True if at least one geom in both the "left_fingerpad" and "right_fingerpad" geom
         groups are in contact with any geom specified by @object_geoms. Custom gripper geom groups can be
         specified with @gripper as well.
 
         Args:
-            gripper (GripperModel or str or list of str or list of list of str): If a MujocoModel, this is specific
+            gripper (GripperModel or str or list of str or list of list of str or dict): If a MujocoModel, this is specific
             gripper to check for grasping (as defined by "left_fingerpad" and "right_fingerpad" geom groups). Otherwise,
                 this sets custom gripper geom groups which together define a grasp. This can be a string
                 (one group of single gripper geom), a list of string (multiple groups of single gripper geoms) or a
-                list of list of string (multiple groups of multiple gripper geoms). At least one geom from each group
-                must be in contact with any geom in @object_geoms for this method to return True.
+                list of list of string (multiple groups of multiple gripper geoms), or a dictionary in the case
+                where the robot has multiple arms/grippers. At least one geom from each group must be in contact
+                with any geom in @object_geoms for this method to return True.
             object_geoms (str or list of str or MujocoModel): If a MujocoModel is inputted, will check for any
                 collisions with the model's contact_geoms. Otherwise, this should be specific geom name(s) composing
                 the object to check for contact.
@@ -296,9 +298,10 @@ class ManipulationEnv(RobotEnv):
         """
         Calculates the (x,y,z) Cartesian distance (target_pos - gripper_pos) from the specified @gripper to the
         specified @target. If @return_distance is set, will return the Euclidean (scalar) distance instead.
+        If the @gripper is a dict, will return the minimum distance across all grippers.
 
         Args:
-            gripper (MujocoModel): Gripper model to update grip site rgb
+            gripper (MujocoModel or dict): Gripper model to update grip site rgb
             target (MujocoModel or str): Either a site / geom / body name, or a model that serves as the target.
                 If a model is given, then the root body will be used as the target.
             target_type (str): One of {"body", "geom", or "site"}, corresponding to the type of element @target
@@ -340,10 +343,11 @@ class ManipulationEnv(RobotEnv):
     def _visualize_gripper_to_target(self, gripper, target, target_type="body"):
         """
         Colors the grip visualization site proportional to the Euclidean distance to the specified @target.
-        Colors go from red --> green as the gripper gets closer.
+        Colors go from red --> green as the gripper gets closer. If a dict of grippers is given, will visualize
+        all grippers to the target.
 
         Args:
-            gripper (MujocoModel): Gripper model to update grip site rgb
+            gripper (MujocoModel or dict): Gripper model to update grip site rgb
             target (MujocoModel or str): Either a site / geom / body name, or a model that serves as the target.
                 If a model is given, then the root body will be used as the target.
             target_type (str): One of {"body", "geom", or "site"}, corresponding to the type of element @target
@@ -375,15 +379,23 @@ class ManipulationEnv(RobotEnv):
         self.sim.model.site_rgba[self.sim.model.site_name2id(gripper.important_sites["grip_site"])][:3] = rgba
 
     def _get_arm_prefixes(self, robot):
+        """
+        Returns the naming prefixes for the robot arms in the environment used to access proprioceptive information.
+        By convention, if there is only one arm, returns the robot's naming prefix only. Otherwise, returns
+        a list of prefixes for each arm containing the robot's naming prefix and the arm name.
+
+        Args:
+            robot (RobotModel): Robot model to extract prefixes from
+
+        Returns:
+            list: List of prefixes for the robot arms
+        """
 
         name_pf = robot.robot_model.naming_prefix
         if len(robot.arms) == 1:
             return [name_pf]
 
-        prefixes = []
-        for arm in robot.arms:
-            prefixes.append(f"{name_pf}{arm}_")
-
+        prefixes = [f"{name_pf}{arm}_" for arm in robot.arms]
         return prefixes
 
     def _check_robot_configuration(self, robots):

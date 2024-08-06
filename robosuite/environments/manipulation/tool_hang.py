@@ -440,11 +440,10 @@ class ToolHang(SingleRobotEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            # define observables modality
             modality = "object"
 
-            # for conversion to relative gripper frame
+            # for conversion to relative gripper frame for each gripper
             def get_world_pose_grippers(modality, arm_prefix, name):
                 @sensor(modality=modality)
                 def fn(obs_cache):
@@ -459,7 +458,6 @@ class ToolHang(SingleRobotEnv):
 
             arm_prefixes = self._get_arm_prefixes(self.robots[0])
 
-            # following convention to not include naming prefix in observable name
             sensors = [
                 get_world_pose_grippers(modality, arm_prefix=arm_prefix, name=f"world_pose_in_{arm_prefix}_gripper")
                 for arm_prefix in arm_prefixes
@@ -580,9 +578,10 @@ class ToolHang(SingleRobotEnv):
             return fn
 
         arm_prefixes = self._get_arm_prefixes(self.robots[0])
-        sensors = [
-            get_obj_to_eefs_pos(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_pos") for arm_prefix in arm_prefixes
-        ] + [get_objs_to_eefs_quat(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_quat") for arm_prefix in arm_prefixes]
+        sensors = [get_obj_to_eefs_pos(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_pos") for arm_prefix in arm_prefixes]
+        sensors += [
+            get_objs_to_eefs_quat(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_quat") for arm_prefix in arm_prefixes
+        ]
         names = [fn.__name__ for fn in sensors]
         sensors += [obj_pos, obj_quat]
         names += [f"{obj_name}_pos", f"{obj_name}_quat"]

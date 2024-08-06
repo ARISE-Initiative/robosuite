@@ -287,11 +287,20 @@ class Wipe(SingleRobotEnv):
             renderer_config=renderer_config,
         )
 
-        # ee resets
+        # set after init to ensure self.robots is set
         self.ee_force_bias = {arm: np.zeros(3) for arm in self.robots[0].arms}
         self.ee_torque_bias = {arm: np.zeros(3) for arm in self.robots[0].arms}
 
     def _get_active_markers(self, c_geoms):
+        """
+        Get the markers that are currently being wiped by the tool
+
+        Args:
+            c_geoms (list): List of corner geoms for the tool
+
+        Returns:
+            list: List of active markers
+        """
         active_markers = []
         corner1_id = self.sim.model.geom_name2id(c_geoms[0])
         corner1_pos = np.array(self.sim.data.geom_xpos[corner1_id])
@@ -581,8 +590,9 @@ class Wipe(SingleRobotEnv):
                 names += ["proportion_wiped", "wipe_radius", "wipe_centroid"]
 
                 if self.use_robot_obs:
-                    # also use ego-centric obs
                     prefixes = self._get_arm_prefixes(self.robots[0])
+
+                    # also use ego-centric obs
                     robot_obs_sensors = [
                         self._get_obj_eef_sensor(arm_pf, "wipe_centroid", f"{arm_pf}gripper_to_wipe_centroid", modality)
                         for arm_pf in prefixes
@@ -637,15 +647,6 @@ class Wipe(SingleRobotEnv):
         names = [f"marker{i}_pos", f"marker{i}_wiped"]
 
         if self.use_robot_obs:
-            # also use ego-centric obs
-            @sensor(modality=modality)
-            def gripper_to_marker(obs_cache):
-                return (
-                    obs_cache[f"marker{i}_pos"] - obs_cache[f"{pf}eef_pos"]
-                    if f"marker{i}_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
             grippers_to_marker_fns = [
                 self._get_obj_eef_sensor(arm_pf, f"marker{i}_pos", f"{arm_pf}gripper_to_marker{i}", modality)
                 for arm_pf in self._get_arm_prefixes(self.robots[0])
@@ -764,6 +765,8 @@ class Wipe(SingleRobotEnv):
                     marker_positions.append(marker_pos)
                     num_non_wiped_markers += 1
             wipe_centroid /= max(1, num_non_wiped_markers)
+
+            # Mean position to things to wipe to the closest arm
             mean_pos_to_things_to_wipe_list = [wipe_centroid - self._get_eef_xpos(arm) for arm in self.robots[0].arms]
             mean_pos_to_things_to_wipe = mean_pos_to_things_to_wipe_list[
                 np.argmin([np.linalg.norm(x) for x in mean_pos_to_things_to_wipe_list])
@@ -777,7 +780,10 @@ class Wipe(SingleRobotEnv):
 
     def _get_eef_xpos(self, arm):
         """
-        Grabs End Effector position
+        Grabs End Effector position as specifed by the arm argument
+
+        Args:
+            arm (str): Arm name
 
         Returns:
             np.array: End effector(x,y,z)
@@ -787,7 +793,7 @@ class Wipe(SingleRobotEnv):
     @property
     def _has_gripper_contact(self):
         """
-        Determines whether the gripper is making contact with an object, as defined by the eef force surprassing
+        Determines whether the any of the grippers are making contact with an object, as defined by the eef force surprassing
         a certain threshold defined by self.contact_threshold
 
         Returns:

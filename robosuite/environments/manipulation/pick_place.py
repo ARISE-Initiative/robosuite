@@ -330,8 +330,8 @@ class PickPlace(SingleRobotEnv):
             # get reaching reward via minimum distance to a target object
             dists = [
                 self._gripper_to_target(
-                    target=active_obj.root_body,
                     gripper=self.robots[0].gripper,
+                    target=active_obj.root_body,
                     target_type="body",
                     return_distance=True,
                 )
@@ -343,8 +343,8 @@ class PickPlace(SingleRobotEnv):
         r_grasp = (
             int(
                 self._check_grasp(
-                    object_geoms=[g for active_obj in active_objs for g in active_obj.contact_geoms],
                     gripper=self.robots[0].gripper,
+                    object_geoms=[g for active_obj in active_objs for g in active_obj.contact_geoms],
                 )
             )
             * grasp_mult
@@ -772,6 +772,7 @@ class PickPlace(SingleRobotEnv):
 
         # Color the gripper visualization site according to its distance to the closest object
         if vis_settings["grippers"]:
+            # if the robot has multiple arms color each arm independently based on its closest object
             for arm in self.robots[0].arms:
                 # find closest object
                 dists = [

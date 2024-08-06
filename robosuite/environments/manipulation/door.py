@@ -426,11 +426,10 @@ class Door(SingleRobotEnv):
         super().visualize(vis_settings=vis_settings)
 
         # Color the gripper visualization site according to its distance to the door handle
-        for arm in self.robots[0].arms:
-            if vis_settings["grippers"]:
-                self._visualize_gripper_to_target(
-                    gripper=self.robots[0].gripper[arm], target=self.door.important_sites["handle"], target_type="site"
-                )
+        if vis_settings["grippers"]:
+            self._visualize_gripper_to_target(
+                gripper=self.robots[0].gripper, target=self.door.important_sites["handle"], target_type="site"
+            )
 
     @property
     def _handle_xpos(self):
