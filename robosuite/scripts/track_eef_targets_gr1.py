@@ -101,7 +101,10 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             if mode_action > 0:
                 env.robots[0].enable_parts(base=True, right=True, left=True, torso=True)
             else:
-                env.robots[0].enable_parts(base=False, right=True, left=True, torso=True)
+                if "GR1FixedLowerBody" in env.robots[0].name:
+                    env.robots[0].enable_parts(base=False, right=True, left=True, torso=True)
+                else:
+                    env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:
             arm_actions = input_action
             action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
@@ -233,7 +236,7 @@ if __name__ == "__main__":
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
     parser.add_argument(
-        "--use-whole-body-controller", action="store_true", help="Use the whole body controller for the arms and body"
+        "--composite-controller", type=str, default="NONE", help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
     )
     # pkl file
     parser.add_argument("--input-file", type=str, default=None, help="Path to the pkl file containing the controller config")
@@ -251,46 +254,22 @@ if __name__ == "__main__":
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
 
-    with open("robosuite/controllers/config/default_gr1.json") as f:
-        gr1_controller_config = json.load(f)
-
-    # naming of type is weird
-    composite_controller_config = {
-        "type": "WHOLE_BODY_IK",
-        # so it's more whole body controller specific configs, rather
-        # than composite controller specific configs ...
-        "composite_controller_specific_configs": {
-            "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
-            "interpolation": None,
-            "robot_name": args.robots[0],
-            "individual_part_names": ["torso", "head", "right", "left"],
-            "max_dq": 4,
-            "nullspace_joint_weights": {
-                "robot0_torso_waist_yaw": 100.0,
-                "robot0_torso_waist_pitch": 100.0,
-                "robot0_torso_waist_roll": 500.0,
-                "robot0_l_shoulder_pitch": 4.0,
-                "robot0_r_shoulder_pitch": 4.0,
-                "robot0_l_shoulder_roll": 3.0,
-                "robot0_r_shoulder_roll": 3.0,
-                "robot0_l_shoulder_yaw": 2.0,
-                "robot0_r_shoulder_yaw": 2.0,
-            },
-            "ik_pseudo_inverse_damping": 5e-2,
-            "ik_integration_dt": 1e-1,
-            "ik_max_dq": 4.0,
-            "ik_max_dq_torso": 0.2,
-            "ik_input_rotation_repr": "axis_angle",
-            "ik_debug": True,
-        },
-        "default_controller_configs_part_names": ["right_gripper", "left_gripper"],
-        "body_parts": {
-            "right": gr1_controller_config,
-            "left": gr1_controller_config,
-        }
-    }
-    if not args.use_whole_body_controller:
+    if args.composite_controller == "NONE":
         composite_controller_config = None
+    else:
+        if any(["GR1" in robot for robot in args.robots]):
+            with open("robosuite/controllers/config/default_gr1.json") as f:
+                gr1_controller_config = json.load(f)
+
+            with open("robosuite/controllers/config/composite/default_whole_body_ik_gr1.json") as f:
+                composite_controller_config = json.load(f)
+
+            composite_controller_config["body_parts"] = {
+                "right": gr1_controller_config,
+                "left": gr1_controller_config,
+            }
+        else:
+            assert False, f"Composite controller not implemented for the {args.robots} robot."
 
     # Create argument configuration
     config = {

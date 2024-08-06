@@ -37,14 +37,11 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
     env.reset()
     env.render()
 
-    is_first = True
-
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
     env.robots[0].print_action_info_dict()
     # Loop until we get a reset from the input or the task completes
 
-    count = 0
     while True:
         # Set active robot
         active_robot = env.robots[0]  # if env_configuration == "bimanual" else env.robots[arm == "left"]
@@ -57,9 +54,8 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         # If action is none, then this a reset so we should break
         if input_action is None:
             break
-        # print(f"input_action: {input_action}")
-        # Run environment step
 
+        # Run environment step
         if env.robots[0].is_mobile:
             arm_actions = input_action[:12].copy() if "bimanual" in env.robots[0].name else input_action[:6].copy()
             if "GR1" in env.robots[0].name:
@@ -89,13 +85,15 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                 }
 
             action = env.robots[0].create_action_vector(action_dict)
-            print(f"action: {action}")
             mode_action = input_action[-1]
 
             if mode_action > 0:
                 env.robots[0].enable_parts(base=True, right=True, left=True, torso=True)
             else:
-                env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
+                if "GR1FixedLowerBody" in env.robots[0].name:
+                    env.robots[0].enable_parts(base=False, right=True, left=True, torso=True)
+                else:
+                    env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:
             arm_actions = input_action
             action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
@@ -230,7 +228,7 @@ if __name__ == "__main__":
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
     parser.add_argument(
-        "--use-whole-body-controller", action="store_true", help="Use the whole body controller for the arms and body"
+        "--composite-controller", type=str, default="NONE", help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
     )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
@@ -246,50 +244,28 @@ if __name__ == "__main__":
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
 
-    with open("robosuite/controllers/config/default_gr1.json") as f:
-        gr1_controller_config = json.load(f)
-
-    composite_controller_config = {
-        "type": "WHOLE_BODY_IK",
-        # so it's more whole body controller specific configs, rather
-        # than composite controller specific configs ...
-        "composite_controller_specific_configs": {
-            "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
-            "interpolation": None,
-            "robot_name": args.robots[0],
-            "individual_part_names": ["torso", "head", "right", "left"],
-            "max_dq": 4,
-            "nullspace_joint_weights": {
-                "robot0_torso_waist_yaw": 100.0,
-                "robot0_torso_waist_pitch": 100.0,
-                "robot0_torso_waist_roll": 600.0,
-                "robot0_l_shoulder_pitch": 4.0,
-                "robot0_r_shoulder_pitch": 4.0,
-                "robot0_l_shoulder_roll": 3.0,
-                "robot0_r_shoulder_roll": 3.0,
-                "robot0_l_shoulder_yaw": 2.0,
-                "robot0_r_shoulder_yaw": 2.0,
-            },
-            "ik_pseudo_inverse_damping": 5e-2,
-            "ik_integration_dt": 1e-1,
-            "ik_max_dq": 4.0,
-            "ik_input_rotation_repr": "axis_angle",
-        },
-        "default_controller_configs_part_names": ["right_gripper", "left_gripper"],
-        "body_parts": {
-            "right": gr1_controller_config,
-            "left": gr1_controller_config,
-        }
-    }
-    if not args.use_whole_body_controller:
+    if args.composite_controller == "NONE":
         composite_controller_config = None
+    else:
+        if any(["GR1" in robot for robot in args.robots]):
+            with open("robosuite/controllers/config/default_gr1.json") as f:
+                gr1_controller_config = json.load(f)
+
+            with open("robosuite/controllers/config/composite/default_whole_body_ik_gr1.json") as f:
+                composite_controller_config = json.load(f)
+
+            composite_controller_config["body_parts"] = {
+                "right": gr1_controller_config,
+                "left": gr1_controller_config,
+            }
+        else:
+            assert False, f"Composite controller not implemented for the {args.robots} robot."
 
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
-        # new composite controller configs structure
         "composite_controller_configs": composite_controller_config,
     }
 
