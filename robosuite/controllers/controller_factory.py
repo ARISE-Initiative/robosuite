@@ -154,7 +154,7 @@ def controller_factory(name, params):
     elif params["part_name"] == "legs":
         return legs_controller_factory(name, params)
     else:
-        return whole_body_controller_factory(name, params)
+        raise ValueError("Unknown controller part name: {}".format(params["part_name"]))
 
 
 def gripper_controller_factory(name, params):
@@ -224,50 +224,5 @@ def legs_controller_factory(name, params):
 
     if name == "JOINT_TORQUE":
         return generic.JointTorqueController(interpolator=interpolator, **params)
-
-    raise ValueError("Unknown controller name: {}".format(name))
-
-def whole_body_controller_factory(name, params):
-    interpolator = None
-    if params["interpolation"] == "linear":
-        interpolator = LinearInterpolator(
-            ndim=params["ndim"],
-            controller_freq=(1 / params["sim"].model.opt.timestep),
-            policy_freq=params["policy_freq"],
-            ramp_ratio=params["ramp_ratio"],
-        )
-
-    if name == "JOINT_POSITION":
-        return generic.JointPositionController(interpolator=interpolator, **params)
-
-    if name == "JOINT_TORQUE":
-        return generic.JointTorqueController(interpolator=interpolator, **params)
-    
-    if name == "OSC_POSE":
-        ori_interpolator = None
-        if interpolator is not None:
-            interpolator.set_states(dim=3)
-            ori_interpolator = deepcopy(interpolator)
-            ori_interpolator.set_states(ori="euler")
-        params["control_ori"] = True
-        return arm_controllers.OperationalSpaceController(
-            interpolator_pos=interpolator, interpolator_ori=ori_interpolator, **params
-        )
-    
-    if name == "OSC_POSITION":
-        if interpolator is not None:
-            interpolator.set_states(dim=3)
-        params["control_ori"] = False
-        return arm_controllers.OperationalSpaceController(interpolator_pos=interpolator, **params)
-
-    if name == "IK_POSE":
-        ori_interpolator = None
-        interpolator = None  # no interpolation for now
-        from robosuite.controllers.arm.ik import InverseKinematicsController
-        return InverseKinematicsController(
-            interpolator_pos=interpolator,
-            interpolator_ori=ori_interpolator,
-            **params,
-        )
 
     raise ValueError("Unknown controller name: {}".format(name))
