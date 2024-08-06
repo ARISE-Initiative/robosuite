@@ -338,7 +338,6 @@ class Door(ManipulationEnv):
 
         # low-level object information
         if self.use_object_obs:
-
             modality = "object"
 
             # Define sensor callbacks
@@ -357,12 +356,14 @@ class Door(ManipulationEnv):
             prefixes = self._get_arm_prefixes(self.robots[0])
             sensors = [door_pos, handle_pos, hinge_qpos]
 
+            # create variable number of sensors for each arm representing distance from specified arm to door
             sensors += [self._get_obj_eef_sensor(pf, "door_pos", f"door_to_{pf}eef_pos", modality) for pf in prefixes]
 
             # create variable number of sensors for each arm representing distance from specified arm to handle
             sensors += [
                 self._get_obj_eef_sensor(pf, "handle_pos", f"handle_to_{pf}eef_pos", modality) for pf in prefixes
             ]
+
             names = [s.__name__ for s in sensors]
 
             # Also append handle qpos if we're using a locked door version with rotatable handle
@@ -450,9 +451,8 @@ class Door(ManipulationEnv):
         Returns:
             np.array: (x,y,z) distance between handle and eef
         """
-
-        dist = float("inf")
+        dists = []
         for arm in self.robots[0].arms:
             diff = self._handle_xpos - np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]])
-            dist = min(np.linalg.norm(diff), dist)
-        return dist
+            dists.append(np.linalg.norm(diff))
+        return min(dists)
