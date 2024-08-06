@@ -529,7 +529,6 @@ class RobotEnv(MujocoEnv):
         # Reset robot and update action space dimension along the way
         for robot in self.robots:
             robot.reset(deterministic=self.deterministic_reset)
-            self.sim.data.qpos[robot.joint_indexes] = robot.init_qpos
             self._action_dim += robot.action_dim
 
         # Update cameras if appropriate
