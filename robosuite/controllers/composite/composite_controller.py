@@ -155,11 +155,11 @@ class HybridMobileBaseCompositeController(CompositeController):
         return np.concatenate((low, [-1])), np.concatenate((high, [1]))
 
 
-class WholeBodyIKCompositeController(CompositeController):
+class WholeBodyCompositeController(CompositeController):
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
-        self.ik_solver: IKSolver = None
+        self.joint_action_solver: IKSolver = None  # TODO: handle different types of joint action solvers
 
         self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
 
@@ -171,29 +171,19 @@ class WholeBodyIKCompositeController(CompositeController):
                 controller_params
             )
 
-        joint_names = []
-        for part_name in self.composite_controller_specific_config["individual_part_names"]:
-            joint_names += self.controllers[part_name].joint_names
+        self._init_joint_action_solver()
 
-        Kn = get_Kn(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
-        mocap_bodies = []
-        robot_config = {
-            'end_effector_sites': self.composite_controller_specific_config["ref_name"],
-            'joint_names': joint_names,
-            'mocap_bodies': mocap_bodies,
-            'nullspace_gains': Kn
-        }
-        self.ik_solver = IKSolver(
-            model=self.sim.model._model, 
-            data=self.sim.data._data, 
-            robot_config=robot_config,
-            damping=self.composite_controller_specific_config.get("ik_pseudo_inverse_damping", 5e-2),
-            integration_dt=self.composite_controller_specific_config.get("ik_integration_dt", 0.1),
-            max_dq=self.composite_controller_specific_config.get("ik_max_dq", 4),
-            max_dq_torso=self.composite_controller_specific_config.get("ik_max_dq_torso", 0.2),
-            input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
-            debug=self.composite_controller_specific_config.get("ik_debug", False),
-        )
+
+    def _init_joint_action_solver(self):
+        """Joint action solver initialization.
+        
+        Joint action solver converts input targets (such as end-effector poses, head poses) to joint actions 
+        (such as joint angles or joint torques).
+
+        Examples of joint_action_solver could be an IK Solver, a neural network policy, a model predictive controller, etc.
+        """
+        raise NotImplementedError("WholeBodyCompositeController requires a joint action solver")
+
 
     def setup_action_split_idx(self):
         """
@@ -223,13 +213,13 @@ class WholeBodyIKCompositeController(CompositeController):
 
     def setup_whole_body_controller_action_split_idx(self):
         """
-        Action split indices for the composite controller's input ation space.
+        Action split indices for the composite controller's input action space.
 
         WholeBodyIK controller takes in a different action space from the
         underlying factorized controllers.
         """
         # add ik solver action split indexes first
-        self._whole_body_controller_action_split_indexes.update(self.ik_solver.action_split_indexes())
+        self._whole_body_controller_action_split_indexes.update(self.joint_action_solver.action_split_indexes())
 
         # prev and last index correspond to the IK solver indexes' last index
         previous_idx = last_idx = list(self._whole_body_controller_action_split_indexes.values())[-1][-1]
@@ -247,9 +237,9 @@ class WholeBodyIKCompositeController(CompositeController):
         if not self.lite_physics:
             self.sim.forward()
 
-        target_qpos = self.ik_solver.solve_ik(all_action[:self.ik_solver.control_dim])
+        target_qpos = self.joint_action_solver.solve(all_action[:self.joint_action_solver.control_dim])
         # create new all_action vector with the IK solver's actions first
-        all_action = np.concatenate([target_qpos, all_action[self.ik_solver.control_dim:]])
+        all_action = np.concatenate([target_qpos, all_action[self.joint_action_solver.control_dim:]])
         for part_name, controller in self.controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
@@ -269,7 +259,7 @@ class WholeBodyIKCompositeController(CompositeController):
         """
         low, high = [], []
         # assumption: IK solver's actions come first
-        low_c, high_c = self.ik_solver.control_limits
+        low_c, high_c = self.joint_action_solver.control_limits
         low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         for part_name, controller in self.controllers.items():
             # Exclude terms that the IK solver handles
@@ -324,3 +314,34 @@ class WholeBodyIKCompositeController(CompositeController):
         
         info_dict_str = f"\nAction Info for {name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
         ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
+
+
+class WholeBodyIKCompositeController(WholeBodyCompositeController):
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+        super().__init__(sim, robot_model, grippers, lite_physics)
+
+
+    def _init_joint_action_solver(self):
+        joint_names: str = []
+        for part_name in self.composite_controller_specific_config["individual_part_names"]:
+            joint_names += self.controllers[part_name].joint_names
+
+        Kn = get_Kn(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
+        mocap_bodies = []
+        robot_config = {
+            'end_effector_sites': self.composite_controller_specific_config["ref_name"],
+            'joint_names': joint_names,
+            'mocap_bodies': mocap_bodies,
+            'nullspace_gains': Kn
+        }
+        self.joint_action_solver = IKSolver(
+            model=self.sim.model._model, 
+            data=self.sim.data._data, 
+            robot_config=robot_config,
+            damping=self.composite_controller_specific_config.get("ik_pseudo_inverse_damping", 5e-2),
+            integration_dt=self.composite_controller_specific_config.get("ik_integration_dt", 0.1),
+            max_dq=self.composite_controller_specific_config.get("ik_max_dq", 4),
+            max_dq_torso=self.composite_controller_specific_config.get("ik_max_dq_torso", 0.2),
+            input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
+            debug=self.composite_controller_specific_config.get("ik_debug", False),
+        )

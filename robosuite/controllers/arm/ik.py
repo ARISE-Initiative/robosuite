@@ -265,7 +265,7 @@ class InverseKinematicsController(JointPositionController):
             num_ref_sites = 1 if isinstance(ref_name, str) else len(ref_name)
             if num_ref_sites == 1:
                 assert use_delta, "Currently, only delta commands are supported. Please set use_delta=True."  
-                # TODO: support absolute commands by using solve_ik() from diffik_nullspace.py
+                # TODO: support absolute commands by using solve() from diffik_nullspace.py
                 twist = np.zeros(6)
                 error_quat = np.zeros(4)
                 diag = damping_pseudo_inv ** 2 * np.eye(len(twist))
@@ -336,7 +336,7 @@ class InverseKinematicsController(JointPositionController):
                     [mujoco.mju_mat2Quat(target_ori[i], drot[i].flatten()) for i in range(len(robot.site_ids))]
 
                 # assumes the ordering of joints is the same as ordering of actuators
-                return robot.solve_ik(
+                return robot.solve(
                     target_pos=target_pos, 
                     target_ori=target_ori, 
                     damping=damping,

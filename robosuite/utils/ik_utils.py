@@ -148,10 +148,9 @@ class IKSolver:
         mujoco.mj_kinematics(self.model, data)
         return {name: data.site(site_id).xpos for name, site_id in zip(self.site_names, self.site_ids)}
 
-    def solve_ik(
+    def solve(
         self,
         target_action: np.ndarray,
-        max_dq_torso: float = 0.2,  # hardcoded for GR1; else torso shakes
         use_torque_actuation: bool = False, 
         Kpos: float = 0.95,
         Kori: float = 0.95,
