@@ -5,7 +5,6 @@ from typing import Optional, Dict
 import numpy as np
 
 from robosuite.controllers import controller_factory
-from robosuite.controllers.generic.neural_wbc import NeuralWBCPolicy
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
