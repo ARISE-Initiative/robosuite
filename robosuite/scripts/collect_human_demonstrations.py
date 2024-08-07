@@ -266,8 +266,7 @@ if __name__ == "__main__":
                 "right": gr1_controller_config,
                 "left": gr1_controller_config,
             }
-
-        if any(["Tiago" in robot for robot in args.robots]):
+        elif any(["Tiago" in robot for robot in args.robots]):
             with open("robosuite/controllers/config/default_tiago.json") as f:
                 tiago_controller_config = json.load(f)
 
