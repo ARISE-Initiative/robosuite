@@ -348,13 +348,3 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
             debug=self.composite_controller_specific_config.get("ik_debug", False),
         )
-
-
-class WholeBodyNeuralCompositeController(WholeBodyCompositeController):
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
-        super().__init__(sim, robot_model, grippers, lite_physics)
-
-    def _init_joint_action_policy(self):
-        joint_names = []
-        for part_name in self.composite_controller_specific_config["individual_part_names"]:
-            joint_names += self.controllers[part_name].joint_names
