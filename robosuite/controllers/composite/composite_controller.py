@@ -178,14 +178,14 @@ class WholeBodyCompositeController(CompositeController):
 
 
     def _init_joint_action_policy(self):
-        """Joint action solver initialization.
+        """Joint action policy initialization.
         
-        Joint action solver converts input targets (such as end-effector poses, head poses) to joint actions 
+        Joint action policy converts input targets (such as end-effector poses, head poses) to joint actions 
         (such as joint angles or joint torques).
 
-        Examples of joint_action_policy could be an IK Solver, a neural network policy, a model predictive controller, etc.
+        Examples of joint_action_policy could be an IK policy, a neural network policy, a model predictive controller, etc.
         """
-        raise NotImplementedError("WholeBodyCompositeController requires a joint action solver")
+        raise NotImplementedError("WholeBodyCompositeController requires a joint action policy")
 
 
     def setup_action_split_idx(self):
@@ -348,3 +348,13 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
             debug=self.composite_controller_specific_config.get("ik_debug", False),
         )
+
+
+class WholeBodyNeuralCompositeController(WholeBodyCompositeController):
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+        super().__init__(sim, robot_model, grippers, lite_physics)
+
+    def _init_joint_action_policy(self):
+        joint_names = []
+        for part_name in self.composite_controller_specific_config["individual_part_names"]:
+            joint_names += self.controllers[part_name].joint_names
