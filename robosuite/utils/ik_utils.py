@@ -151,10 +151,8 @@ class IKSolver:
     def solve(
         self,
         target_action: np.ndarray,
-        use_torque_actuation: bool = False, 
         Kpos: float = 0.95,
         Kori: float = 0.95,
-        update_sim: bool = False,
     ):
         target_action = target_action.reshape(len(self.site_names), -1)
         target_pos = target_action[:, :self.pos_dim]
@@ -220,57 +218,23 @@ class IKSolver:
 
         self.i += 1
 
-        if use_torque_actuation:
-            # Using torque based control (motor actuators) + pos + vel joint control doesn't work for my code
-            Kp = 1000
-            Kd = 100
-            self.Kp = Kp
-            self.Kd = Kd
+        # Set the control signal.
+        np.clip(self.q_des, *self.model.jnt_range[self.dof_ids].T, out=self.q_des)
 
-            position_error = self.q_des - self.data.qpos[self.dof_ids]
-            velocity_error = -self.data.qvel[self.dof_ids]
+        if self.debug and self.i % 10 == 0:
+            # compare self.q_des's forward kinematics with target_pos
+            integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
+            integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
+            post_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
+            print(f"internal error post clip: {post_clip_error}")
 
-            self.pos_curr = self.data.qpos[self.dof_ids].copy()
-            self.position_error = position_error
-            self.velocity_error = velocity_error
+            # check if we're outside the joint limits
+            if np.any(self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(self.q_des > self.model.jnt_range[self.dof_ids][:, 1]):
+                # get dof ids exceeding joint limits
+                exceeding_ids = np.where((self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (self.q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
+                exceeding_joint_names = [self.model.joint(i).name for i in self.dof_ids[exceeding_ids]]
+                for joint_name in exceeding_joint_names:
+                    if "gripper" not in joint_name:
+                        print(f"Joint {joint_name} has exceeded its limits.")
 
-            if self.debug and self.i % 100 == 0:
-                print(f"position_error: {np.max(np.abs(position_error))}")
-                print(f"velocity_error: {np.max(np.abs(velocity_error))}")
-
-            desired_torque = Kp * position_error + Kd * velocity_error
-            self.gravity_compensation = self.data.qfrc_bias[self.dof_ids]
-
-            # scale desired torque by mass matrix if doing torque control!
-            mass_matrix = np.zeros(shape=(self.model.nv, self.model.nv), dtype=np.float64, order="C")
-            mujoco.mj_fullM(self.model, mass_matrix, self.data.qM)
-            mass_matrix = np.reshape(mass_matrix, (len(self.data.qvel), len(self.data.qvel)))
-            self.mass_matrix = mass_matrix[self.dof_ids][:, self.dof_ids]
-            torque = np.dot(self.mass_matrix, desired_torque) + self.gravity_compensation
-            if update_sim:
-                self.data.ctrl[self.actuator_ids] = torque
-            else:
-                return torque
-        else:
-            # Set the control signal.
-            np.clip(self.q_des, *self.model.jnt_range[self.dof_ids].T, out=self.q_des)
-
-            if self.debug and self.i % 10 == 0:
-                # compare self.q_des's forward kinematics with target_pos
-                integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
-                integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
-                post_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
-                print(f"internal error post clip: {post_clip_error}")
-
-                # check if we're outside the joint limits
-                if np.any(self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(self.q_des > self.model.jnt_range[self.dof_ids][:, 1]):
-                    # get dof ids exceeding joint limits
-                    exceeding_ids = np.where((self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (self.q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
-                    exceeding_joint_names = [self.model.joint(i).name for i in self.dof_ids[exceeding_ids]]
-                    for joint_name in exceeding_joint_names:
-                        if "gripper" not in joint_name:
-                            print(f"Joint {joint_name} has exceeded its limits.")
-            if update_sim:
-                self.data.ctrl[self.actuator_ids] = self.q_des[self.dof_ids]
-            else:
-                return self.q_des
+        return self.q_des

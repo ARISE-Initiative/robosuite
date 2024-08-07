@@ -317,7 +317,16 @@ class InverseKinematicsController(JointPositionController):
                     'mocap_bodies': [],
                     'nullspace_gains': Kn
                 }
-                robot = IKSolver(model, data, robot_config, input_type="mocap", input_rotation_repr="quat_wxyz")
+                robot = IKSolver(
+                    model,
+                    data,
+                    robot_config,
+                    damping=damping,
+                    integration_dt=integration_dt,
+                    max_dq=max_dq,
+                    input_type="mocap",
+                    input_rotation_repr="quat_wxyz"
+                )
                 if use_delta:
                     target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
                     target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
@@ -335,17 +344,18 @@ class InverseKinematicsController(JointPositionController):
                     # convert drot (3x3) to quaternion
                     [mujoco.mju_mat2Quat(target_ori[i], drot[i].flatten()) for i in range(len(robot.site_ids))]
 
-                # assumes the ordering of joints is the same as ordering of actuators
+                ori_dim = target_ori.shape[1]
+                pos_dim = target_pos.shape[1]
+                target_action = np.empty(target_pos.shape[0] * (target_pos.shape[1] + target_ori.shape[1]))
+                for i in range(target_pos.shape[0]):
+                    target_action[i*(pos_dim+ori_dim):(i+1)*(pos_dim+ori_dim)] = \
+                        np.concatenate((target_pos[i], target_ori[i]))
+
                 return robot.solve(
                     target_pos=target_pos, 
-                    target_ori=target_ori, 
-                    damping=damping,
-                    integration_dt=integration_dt, 
-                    max_dq=max_dq,
+                    target_ori=target_ori,
                     Kpos=Kpos, 
                     Kori=Kori,
-                    update_sim=False,
-                    use_torque_actuation=False
                 )
 
         return sim.data.qpos[joint_indices]
