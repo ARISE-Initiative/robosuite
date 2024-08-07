@@ -5,6 +5,7 @@ from typing import Optional, Dict
 import numpy as np
 
 from robosuite.controllers import controller_factory
+from robosuite.controllers.generic.neural_wbc import NeuralWBCPolicy
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
@@ -159,7 +160,9 @@ class WholeBodyCompositeController(CompositeController):
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
-        self.joint_action_solver: IKSolver = None  # TODO: handle different types of joint action solvers
+        self.joint_action_policy: IKSolver = None  
+        # TODO: handle different types of joint action policies; joint_action_policy maps 
+        # task space actions (such as end effector poses) to joint actions (such as joint angles or joint torques)
 
         self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
 
@@ -171,16 +174,16 @@ class WholeBodyCompositeController(CompositeController):
                 controller_params
             )
 
-        self._init_joint_action_solver()
+        self._init_joint_action_policy()
 
 
-    def _init_joint_action_solver(self):
+    def _init_joint_action_policy(self):
         """Joint action solver initialization.
         
         Joint action solver converts input targets (such as end-effector poses, head poses) to joint actions 
         (such as joint angles or joint torques).
 
-        Examples of joint_action_solver could be an IK Solver, a neural network policy, a model predictive controller, etc.
+        Examples of joint_action_policy could be an IK Solver, a neural network policy, a model predictive controller, etc.
         """
         raise NotImplementedError("WholeBodyCompositeController requires a joint action solver")
 
@@ -219,7 +222,7 @@ class WholeBodyCompositeController(CompositeController):
         underlying factorized controllers.
         """
         # add ik solver action split indexes first
-        self._whole_body_controller_action_split_indexes.update(self.joint_action_solver.action_split_indexes())
+        self._whole_body_controller_action_split_indexes.update(self.joint_action_policy.action_split_indexes())
 
         # prev and last index correspond to the IK solver indexes' last index
         previous_idx = last_idx = list(self._whole_body_controller_action_split_indexes.values())[-1][-1]
@@ -237,9 +240,9 @@ class WholeBodyCompositeController(CompositeController):
         if not self.lite_physics:
             self.sim.forward()
 
-        target_qpos = self.joint_action_solver.solve(all_action[:self.joint_action_solver.control_dim])
+        target_qpos = self.joint_action_policy.solve(all_action[:self.joint_action_policy.control_dim])
         # create new all_action vector with the IK solver's actions first
-        all_action = np.concatenate([target_qpos, all_action[self.joint_action_solver.control_dim:]])
+        all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim:]])
         for part_name, controller in self.controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
@@ -259,7 +262,7 @@ class WholeBodyCompositeController(CompositeController):
         """
         low, high = [], []
         # assumption: IK solver's actions come first
-        low_c, high_c = self.joint_action_solver.control_limits
+        low_c, high_c = self.joint_action_policy.control_limits
         low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         for part_name, controller in self.controllers.items():
             # Exclude terms that the IK solver handles
@@ -321,7 +324,7 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
 
-    def _init_joint_action_solver(self):
+    def _init_joint_action_policy(self):
         joint_names: str = []
         for part_name in self.composite_controller_specific_config["individual_part_names"]:
             joint_names += self.controllers[part_name].joint_names
@@ -334,8 +337,8 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
             'mocap_bodies': mocap_bodies,
             'nullspace_gains': Kn
         }
-        self.joint_action_solver = IKSolver(
-            model=self.sim.model._model, 
+        self.joint_action_policy = IKSolver(
+            model=self.sim.model._model,
             data=self.sim.data._data, 
             robot_config=robot_config,
             damping=self.composite_controller_specific_config.get("ik_pseudo_inverse_damping", 5e-2),
