@@ -46,7 +46,6 @@ class WheeledRobot(MobileBaseRobot):
         Loads controller to be used for dynamic trajectories
         """
         # Flag for loading urdf once (only applicable for IK controllers)
-
         self.composite_controller = composite_controller_factory(
             type=self.composite_controller_config.get("type", "BASE"),
             sim=self.sim,
@@ -57,10 +56,20 @@ class WheeledRobot(MobileBaseRobot):
 
         self._load_arm_controllers()
 
+        # default base, torso, and head controllers are inherited from MobileBaseRobot
         self._load_base_controller()
+
+        self._load_head_controller()
         self._load_torso_controller()
 
-        self.composite_controller.load_controller_config(self.controller_config)
+        # override controller config with composite controller config values
+        for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
+            if part_name in self.controller_config:
+                self.controller_config[part_name].update(controller_config)
+        self.composite_controller.load_controller_config(
+            self.controller_config, 
+            self.composite_controller_config.get("composite_controller_specific_configs", {})
+        )
         self.enable_parts()
 
     def load_model(self):
@@ -135,9 +144,16 @@ class WheeledRobot(MobileBaseRobot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
-                controller = self.controller[arm]
+                controller = self.controller.get(arm, None)
+                if controller is None:
+                    # TODO: enable buffer update for whole body controllers not using individual arm controllers
+                    continue
+
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
+                # currently assumes ee pose exists in the controller
+                if not hasattr(controller, "ee_pos") or not hasattr(controller, "ee_ori_mat"):
+                    continue
                 self.recent_ee_pose[arm].push(np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat))))
                 self.recent_ee_vel[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
 

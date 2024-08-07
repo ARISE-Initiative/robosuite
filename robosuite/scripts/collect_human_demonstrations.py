@@ -59,7 +59,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         if env.robots[0].is_mobile:
             arm_actions = input_action[:12].copy() if "bimanual" in env.robots[0].name else input_action[:6].copy()
             if "GR1" in env.robots[0].name:
-                # print(f"Hardcoded actions for GR1")
                 action_dict = {
                     'gripper0_left_grip_site_pos': np.array([-0.4189254 ,  0.22745755,  1.09597001]) + input_action[:3] * 0.05, 
                     'gripper0_left_grip_site_axis_angle': np.array([-2.1356914 ,  2.50323857, -2.45929076]), 
@@ -67,6 +66,15 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     'gripper0_right_grip_site_axis_angle': np.array([-1.26839518,  1.15421975,  0.99332174]), 
                     'left_gripper': np.array([0., 0., 0., 0., 0., 0.]), 
                     'right_gripper': np.array([0., 0., 0., 0., 0., 0.])
+                }
+            elif "Tiago" in env.robots[0].name:
+                action_dict = {
+                    'right_gripper': np.array([0.]), 
+                    'left_gripper': np.array([0.]), 
+                    'gripper0_left_grip_site_pos': np.array([-0.4189254 ,  0.22745755,  1.0597]) + input_action[:3] * 0.05, 
+                    'gripper0_left_grip_site_axis_angle': np.array([-2.1356914 ,  2.50323857, -2.45929076]), 
+                    'gripper0_right_grip_site_pos': np.array([-0.41931295, -0.22706004,  1.0566]), 
+                    'gripper0_right_grip_site_axis_angle': np.array([-1.26839518,  1.15421975,  0.99332174]),
                 }
             else:
                 action_dict = {}
@@ -90,7 +98,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             if mode_action > 0:
                 env.robots[0].enable_parts(base=True, right=True, left=True, torso=True)
             else:
-                if "GR1FixedLowerBody" in env.robots[0].name:
+                if "GR1FixedLowerBody" in env.robots[0].name or "Tiago" in env.robots[0].name:
                     env.robots[0].enable_parts(base=False, right=True, left=True, torso=True)
                 else:
                     env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
@@ -257,6 +265,18 @@ if __name__ == "__main__":
             composite_controller_config["body_parts"] = {
                 "right": gr1_controller_config,
                 "left": gr1_controller_config,
+            }
+
+        if any(["Tiago" in robot for robot in args.robots]):
+            with open("robosuite/controllers/config/default_tiago.json") as f:
+                tiago_controller_config = json.load(f)
+
+            with open("robosuite/controllers/config/composite/default_whole_body_ik_tiago.json") as f:
+                composite_controller_config = json.load(f)
+
+            composite_controller_config["body_parts"] = {
+                "right": tiago_controller_config,
+                "left": tiago_controller_config,
             }
         else:
             assert False, f"Composite controller not implemented for the {args.robots} robot."
