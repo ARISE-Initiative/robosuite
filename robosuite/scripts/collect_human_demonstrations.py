@@ -49,7 +49,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     while True:
         # Set active robot
         active_robot = env.robots[0]  # if env_configuration == "bimanual" else env.robots[arm == "left"]
-
+        using_gripper = active_robot.has_gripper[arm] and env.robots[0].gripper[arm].dof > 0
         # Get the newest action
         input_action, grasp = input2action(
             device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
@@ -60,7 +60,7 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             break
 
         # Run environment step
-
+        action_dict = {}
         if env.robots[0].is_mobile:
             arm_actions = input_action[:6]
             # arm_actions = np.concatenate([arm_actions, ])
@@ -70,16 +70,16 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
             right_action = [0.0] * 5
             right_action[0] = 0.0
-            action = env.robots[0].create_action_vector(
-                {
-                    arm: arm_actions,
-                    f"{arm}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[arm].dof),
-                    env.robots[0].base: base_action,
-                    # env.robots[0].head: base_action,
-                    # env.robots[0].torso: base_action
-                    # env.robots[0].torso: torso_action
-                }
-            )
+            action_dict = {
+                arm: arm_actions,
+                env.robots[0].base: base_action,
+                # env.robots[0].head: base_action,
+                # env.robots[0].torso: base_action
+                # env.robots[0].torso: torso_action
+            }
+            if using_gripper:
+                action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], env.robots[0].gripper[arm].dof)
+
             mode_action = input_action[-1]
 
             if mode_action > 0:
@@ -87,8 +87,11 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             else:
                 env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:
-            arm_actions = input_action
-            action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{arm}_gripper": arm_actions[-1:]})
+            arm_actions = input_action[:-1] if using_gripper else input_action
+            action_dict = {arm: arm_actions}
+            if using_gripper:
+                action_dict[f"{arm}_gripper"] = np.repeat(input_action[-1:], env.robots[0].gripper[arm].dof)
+        action = env.robots[0].create_action_vector(action_dict)
         env.step(action)
         env.render()
 
