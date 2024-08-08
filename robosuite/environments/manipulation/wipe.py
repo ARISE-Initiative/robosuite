@@ -590,12 +590,15 @@ class Wipe(ManipulationEnv):
                 names += ["proportion_wiped", "wipe_radius", "wipe_centroid"]
 
                 if self.use_robot_obs:
-                    prefixes = self._get_arm_prefixes(self.robots[0])
+                    arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+                    full_prefixes = self._get_arm_prefixes(self.robots[0])
 
                     # also use ego-centric obs
                     robot_obs_sensors = [
-                        self._get_obj_eef_sensor(arm_pf, "wipe_centroid", f"{arm_pf}gripper_to_wipe_centroid", modality)
-                        for arm_pf in prefixes
+                        self._get_obj_eef_sensor(
+                            full_pf, "wipe_centroid", f"{arm_pf}gripper_to_wipe_centroid", modality
+                        )
+                        for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
                     ]
 
                     sensors.extend(robot_obs_sensors)
@@ -633,7 +636,6 @@ class Wipe(ManipulationEnv):
                 sensors (list): Array of sensors for the given marker
                 names (list): array of corresponding observable names
         """
-        pf = self.robots[0].robot_model.naming_prefix
 
         @sensor(modality=modality)
         def marker_pos(obs_cache):
@@ -647,9 +649,11 @@ class Wipe(ManipulationEnv):
         names = [f"marker{i}_pos", f"marker{i}_wiped"]
 
         if self.use_robot_obs:
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
             grippers_to_marker_fns = [
-                self._get_obj_eef_sensor(arm_pf, f"marker{i}_pos", f"{arm_pf}gripper_to_marker{i}", modality)
-                for arm_pf in self._get_arm_prefixes(self.robots[0])
+                self._get_obj_eef_sensor(full_pf, f"marker{i}_pos", f"{arm_pf}gripper_to_marker{i}", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
             ]
 
             sensors.extend(grippers_to_marker_fns)

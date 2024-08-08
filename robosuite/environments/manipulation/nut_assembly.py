@@ -484,23 +484,13 @@ class NutAssembly(ManipulationEnv):
         if self.use_object_obs:
             modality = "object"
 
-            # for conversion to relative gripper frame for each gripper
-            def get_world_pose_grippers(modality, arm_prefix, name):
-                @sensor(modality=modality)
-                def fn(obs_cache):
-                    return (
-                        T.pose_inv(T.pose2mat((obs_cache[f"{arm_prefix}eef_pos"], obs_cache[f"{arm_prefix}eef_quat"])))
-                        if f"{arm_prefix}eef_pos" in obs_cache and f"{arm_prefix}eef_quat" in obs_cache
-                        else np.eye(4)
-                    )
-
-                fn.__name__ = name
-                return fn
-
-            arm_prefixes = self._get_arm_prefixes(self.robots[0])
+            # Reset nut sensor mappings
+            self.nut_id_to_sensors = {}
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
             sensors = [
-                get_world_pose_grippers(modality, arm_prefix=arm_prefix, name=f"world_pose_in_{arm_prefix}_gripper")
-                for arm_prefix in arm_prefixes
+                self._get_world_pose_in_gripper_sensor(full_pf, f"world_pose_in_{arm_pf}gripper", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
             ]
             names = [fn.__name__ for fn in sensors]
             actives = [False] * len(sensors)
@@ -563,43 +553,16 @@ class NutAssembly(ManipulationEnv):
         def nut_quat(obs_cache):
             return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut_name]], to="xyzw")
 
-        def get_nut_to_eefs_pos(arm_prefix, name):
-            @sensor(modality=modality)
-            def fn(obs_cache):
-                # Immediately return default value if cache is empty
-                if any(
-                    [
-                        name not in obs_cache
-                        for name in [f"{nut_name}_pos", f"{nut_name}_quat", f"world_pose_in_{arm_prefix}_gripper"]
-                    ]
-                ):
-                    return np.zeros(3)
-                obj_pose = T.pose2mat((obs_cache[f"{nut_name}_pos"], obs_cache[f"{nut_name}_quat"]))
-                rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache[f"world_pose_in_{arm_prefix}_gripper"])
-                rel_pos, rel_quat = T.mat2pose(rel_pose)
-                obs_cache[f"{nut_name}_to_{arm_prefix}eef_quat"] = rel_quat
-                return rel_pos
+        arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+        full_prefixes = self._get_arm_prefixes(self.robots[0])
 
-            fn.__name__ = name
-            return fn
-
-        def get_nut_to_eefs_quat(arm_prefix, name):
-            @sensor(modality=modality)
-            def fn(obs_cache):
-                return (
-                    obs_cache[f"{nut_name}_to_{arm_prefix}eef_quat"]
-                    if f"{nut_name}_to_{arm_prefix}eef_quat" in obs_cache
-                    else np.zeros(4)
-                )
-
-            fn.__name__ = name
-            return fn
-
-        arm_prefixes = self._get_arm_prefixes(self.robots[0])
-
-        sensors = [get_nut_to_eefs_pos(arm_prefix, f"{nut_name}_to_{arm_prefix}eef_pos") for arm_prefix in arm_prefixes]
+        sensors = [
+            self._get_rel_obj_eef_sensor(arm_pf, nut_name, f"{nut_name}_to_{full_pf}eef_pos", full_pf, modality)
+            for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+        ]
         sensors += [
-            get_nut_to_eefs_quat(arm_prefix, f"{nut_name}_to_{arm_prefix}eef_quat") for arm_prefix in arm_prefixes
+            self._get_obj_eef_rel_quat_sensor(full_pf, nut_name, f"{nut_name}_to_{full_pf}eef_quat", modality)
+            for full_pf in full_prefixes
         ]
         names = [fn.__name__ for fn in sensors]
 

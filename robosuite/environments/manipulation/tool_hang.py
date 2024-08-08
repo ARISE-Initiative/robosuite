@@ -443,25 +443,13 @@ class ToolHang(ManipulationEnv):
             # define observables modality
             modality = "object"
 
-            # for conversion to relative gripper frame for each gripper
-            def get_world_pose_grippers(modality, arm_prefix, name):
-                @sensor(modality=modality)
-                def fn(obs_cache):
-                    return (
-                        T.pose_inv(T.pose2mat((obs_cache[f"{arm_prefix}eef_pos"], obs_cache[f"{arm_prefix}eef_quat"])))
-                        if f"{arm_prefix}eef_pos" in obs_cache and f"{arm_prefix}eef_quat" in obs_cache
-                        else np.eye(4)
-                    )
-
-                fn.__name__ = name
-                return fn
-
-            arm_prefixes = self._get_arm_prefixes(self.robots[0])
-
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
             sensors = [
-                get_world_pose_grippers(modality, arm_prefix=arm_prefix, name=f"world_pose_in_{arm_prefix}_gripper")
-                for arm_prefix in arm_prefixes
+                self._get_world_pose_in_gripper_sensor(full_pf, f"world_pose_in_{arm_pf}gripper", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
             ]
+            names = [fn.__name__ for fn in sensors]
             names = [fn.__name__ for fn in sensors]
             actives = [False] * len(sensors)
 
@@ -534,9 +522,6 @@ class ToolHang(ManipulationEnv):
             pos_lookup = self.sim.data.site_xpos
             mat_lookup = self.sim.data.site_xmat
 
-        ### TODO: this was slightly modified from pick-place - do we want to move this into utils to share it? ###
-        pf = self.robots[0].robot_model.naming_prefix
-
         @sensor(modality=modality)
         def obj_pos(obs_cache):
             return np.array(pos_lookup[id_lookup[query_name]])
@@ -545,42 +530,16 @@ class ToolHang(ManipulationEnv):
         def obj_quat(obs_cache):
             return T.mat2quat(np.array(mat_lookup[id_lookup[query_name]]).reshape(3, 3))
 
-        def get_obj_to_eefs_pos(arm_prefix, name):
-            @sensor(modality=modality)
-            def fn(obs_cache):
-                # Immediately return default value if cache is empty
-                if any(
-                    [
-                        name not in obs_cache
-                        for name in [f"{obj_name}_pos", f"{obj_name}_quat", f"world_pose_in_{arm_prefix}_gripper"]
-                    ]
-                ):
-                    return np.zeros(3)
-                obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
-                rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache[f"world_pose_in_{arm_prefix}_gripper"])
-                rel_pos, rel_quat = T.mat2pose(rel_pose)
-                obs_cache[f"{obj_name}_to_{arm_prefix}eef_quat"] = rel_quat
-                return rel_pos
+        arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+        full_prefixes = self._get_arm_prefixes(self.robots[0])
 
-            fn.__name__ = name
-            return fn
-
-        def get_objs_to_eefs_quat(arm_prefix, name):
-            @sensor(modality=modality)
-            def fn(obs_cache):
-                return (
-                    obs_cache[f"{obj_name}_to_{arm_prefix}eef_quat"]
-                    if f"{obj_name}_to_{arm_prefix}eef_quat" in obs_cache
-                    else np.zeros(4)
-                )
-
-            fn.__name__ = name
-            return fn
-
-        arm_prefixes = self._get_arm_prefixes(self.robots[0])
-        sensors = [get_obj_to_eefs_pos(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_pos") for arm_prefix in arm_prefixes]
+        sensors = [
+            self._get_rel_obj_eef_sensor(arm_pf, obj_name, f"{obj_name}_to_{full_pf}eef_pos", full_pf, modality)
+            for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+        ]
         sensors += [
-            get_objs_to_eefs_quat(arm_prefix, f"{obj_name}_to_{arm_prefix}eef_quat") for arm_prefix in arm_prefixes
+            self._get_obj_eef_rel_quat_sensor(full_pf, obj_name, f"{obj_name}_to_{full_pf}eef_quat", modality)
+            for full_pf in full_prefixes
         ]
         names = [fn.__name__ for fn in sensors]
         sensors += [obj_pos, obj_quat]

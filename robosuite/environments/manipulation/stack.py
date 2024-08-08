@@ -418,8 +418,7 @@ class Stack(ManipulationEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            # define observables modality
             modality = "object"
 
             # position and rotation of the first cube
@@ -447,10 +446,13 @@ class Stack(ManipulationEnv):
                     else np.zeros(3)
                 )
 
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+
             sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, cubeA_to_cubeB]
             sensors += [
-                self._get_obj_eef_sensor(pf, f"{cube}_pos", f"{pf}gripper_to_{cube}_pos", modality)
-                for pf in self._get_arm_prefixes(self.robots[0])
+                self._get_obj_eef_sensor(full_pf, f"{cube}_pos", f"{arm_pf}gripper_to_{cube}", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
                 for cube in ["cubeA", "cubeB"]
             ]
             names = [s.__name__ for s in sensors]

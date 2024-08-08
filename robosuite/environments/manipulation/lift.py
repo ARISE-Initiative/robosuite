@@ -348,8 +348,7 @@ class Lift(ManipulationEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            # define observables modality
             modality = "object"
 
             # cube-related observables
@@ -363,10 +362,13 @@ class Lift(ManipulationEnv):
 
             sensors = [cube_pos, cube_quat]
 
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+
             # gripper to cube position sensor; one for each arm
             sensors += [
-                self._get_obj_eef_sensor(pf, "cube_pos", f"{pf}gripper_to_cube_pos", modality)
-                for pf in self._get_arm_prefixes(self.robots[0])
+                self._get_obj_eef_sensor(full_pf, "cube_pos", f"{arm_pf}gripper_to_cube_pos", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
             ]
             names = [s.__name__ for s in sensors]
 

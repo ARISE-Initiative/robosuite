@@ -581,26 +581,21 @@ class PickPlace(ManipulationEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            # define observables modality
             modality = "object"
 
             # Reset obj sensor mappings
             self.object_id_to_sensors = {}
 
-            # for conversion to relative gripper frame
-            @sensor(modality=modality)
-            def world_pose_in_gripper(obs_cache):
-                return (
-                    T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"])))
-                    if f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache
-                    else np.eye(4)
-                )
-
-            sensors = [world_pose_in_gripper]
-            names = ["world_pose_in_gripper"]
-            enableds = [True]
-            actives = [False]
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+            sensors = [
+                self._get_world_pose_in_gripper_sensor(full_pf, f"world_pose_in_{arm_pf}gripper", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+            ]
+            names = [fn.__name__ for fn in sensors]
+            actives = [False] * len(sensors)
+            enableds = [True] * len(sensors)
 
             for i, obj in enumerate(self.objects):
                 # Create object sensors
@@ -608,8 +603,8 @@ class PickPlace(ManipulationEnv):
                 obj_sensors, obj_sensor_names = self._create_obj_sensors(obj_name=obj.name, modality=modality)
                 sensors += obj_sensors
                 names += obj_sensor_names
-                enableds += [using_obj] * 4
-                actives += [using_obj] * 4
+                enableds += [using_obj] * len(obj_sensor_names)
+                actives += [using_obj] * len(obj_sensor_names)
                 self.object_id_to_sensors[i] = obj_sensor_names
 
             if self.single_object_mode == 1:
@@ -649,7 +644,6 @@ class PickPlace(ManipulationEnv):
                 sensors (list): Array of sensors for the given obj
                 names (list): array of corresponding observable names
         """
-        pf = self.robots[0].robot_model.naming_prefix
 
         @sensor(modality=modality)
         def obj_pos(obs_cache):
@@ -659,27 +653,20 @@ class PickPlace(ManipulationEnv):
         def obj_quat(obs_cache):
             return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[obj_name]], to="xyzw")
 
-        @sensor(modality=modality)
-        def obj_to_eef_pos(obs_cache):
-            # Immediately return default value if cache is empty
-            if any(
-                [name not in obs_cache for name in [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]
-            ):
-                return np.zeros(3)
-            obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
-            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
-            rel_pos, rel_quat = T.mat2pose(rel_pose)
-            obs_cache[f"{obj_name}_to_{pf}eef_quat"] = rel_quat
-            return rel_pos
+        arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+        full_prefixes = self._get_arm_prefixes(self.robots[0])
 
-        @sensor(modality=modality)
-        def obj_to_eef_quat(obs_cache):
-            return (
-                obs_cache[f"{obj_name}_to_{pf}eef_quat"] if f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
-            )
-
-        sensors = [obj_pos, obj_quat, obj_to_eef_pos, obj_to_eef_quat]
-        names = [f"{obj_name}_pos", f"{obj_name}_quat", f"{obj_name}_to_{pf}eef_pos", f"{obj_name}_to_{pf}eef_quat"]
+        sensors = [
+            self._get_rel_obj_eef_sensor(arm_pf, obj_name, f"{obj_name}_to_{full_pf}eef_pos", full_pf, modality)
+            for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+        ]
+        sensors += [
+            self._get_obj_eef_rel_quat_sensor(full_pf, obj_name, f"{obj_name}_to_{full_pf}eef_quat", modality)
+            for full_pf in full_prefixes
+        ]
+        names = [fn.__name__ for fn in sensors]
+        sensors += [obj_pos, obj_quat]
+        names += [f"{obj_name}_pos", f"{obj_name}_quat"]
 
         return sensors, names
 

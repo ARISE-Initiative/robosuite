@@ -353,15 +353,18 @@ class Door(ManipulationEnv):
             def hinge_qpos(obs_cache):
                 return np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
 
-            prefixes = self._get_arm_prefixes(self.robots[0])
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
             sensors = [door_pos, handle_pos, hinge_qpos]
 
-            # create variable number of sensors for each arm representing distance from specified arm to door
-            sensors += [self._get_obj_eef_sensor(pf, "door_pos", f"door_to_{pf}eef_pos", modality) for pf in prefixes]
-
-            # create variable number of sensors for each arm representing distance from specified arm to handle
+            # create variable number of sensors for each arm representing distance from specified arm to handle/door
             sensors += [
-                self._get_obj_eef_sensor(pf, "handle_pos", f"handle_to_{pf}eef_pos", modality) for pf in prefixes
+                self._get_obj_eef_sensor(full_pf, "door_pos", f"door_to_{arm_pf}eef_pos", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+            ]
+            sensors += [
+                self._get_obj_eef_sensor(full_pf, "handle_pos", f"handle_to_{arm_pf}eef_pos", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
             ]
 
             names = [s.__name__ for s in sensors]

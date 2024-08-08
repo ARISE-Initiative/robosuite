@@ -1,5 +1,6 @@
 import numpy as np
 
+import robosuite.utils.transform_utils as T
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
@@ -248,6 +249,93 @@ class ManipulationEnv(RobotEnv):
         sensor_fn.__name__ = fn_name
         return sensor_fn
 
+    def _get_world_pose_in_gripper_sensor(self, prefix, fn_name, modality):
+        """
+        Creates a sensor function that returns the inverse pose of the gripper.
+
+        Args:
+            prefix (str): Prefix for the arm to which the gripper belongs
+            fn_name (str): Name to assign to the sensor function
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative pose between the world and the gripper
+        """
+
+        @sensor(modality=modality)
+        def fn(obs_cache):
+            return (
+                T.pose_inv(T.pose2mat((obs_cache[f"{prefix}eef_pos"], obs_cache[f"{prefix}eef_quat"])))
+                if f"{prefix}eef_pos" in obs_cache and f"{prefix}eef_quat" in obs_cache
+                else np.eye(4)
+            )
+
+        fn.__name__ = fn_name
+        return fn
+
+    def _get_rel_obj_eef_sensor(self, prefix, obj_key, fn_name, new_key_prefix, modality):
+        """
+        Creates a sensor function that returns the relative position between the object specified by @obj_key
+        and populates the observation cache with relative quaternion. This sensor function uses the robots
+        gripper's inverse pose which should be in the observation cache.
+
+
+        Args:
+            prefix (str): Prefix used to access the robot arm's inverse pose in the observation cache
+            obj_key (str): Key to access the object's position/quaternion in the observation cache
+            fn_name (str): Name to assign to the sensor function
+            new_key_prefix (str): Prefix to use for the new key in the observation cache
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative position between the object and the end effector
+        """
+
+        @sensor(modality=modality)
+        def fn(obs_cache):
+            # Immediately return default value if cache is empty
+            if any(
+                [
+                    name not in obs_cache
+                    for name in [f"{obj_key}_pos", f"{obj_key}_quat", f"world_pose_in_{prefix}gripper"]
+                ]
+            ):
+                return np.zeros(3)
+            obj_pose = T.pose2mat((obs_cache[f"{obj_key}_pos"], obs_cache[f"{obj_key}_quat"]))
+            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache[f"world_pose_in_{prefix}gripper"])
+            rel_pos, rel_quat = T.mat2pose(rel_pose)
+            obs_cache[f"{obj_key}_to_{new_key_prefix}eef_quat"] = rel_quat
+            return rel_pos
+
+        fn.__name__ = fn_name
+        return fn
+
+    def _get_obj_eef_rel_quat_sensor(self, prefix, obj_key, fn_name, modality):
+        """
+        Creates a sensor function that returns the relative quaternion between the object specified by @obj_key
+        and the end effector specified by @prefix.
+
+        Args:
+            prefix (str): Prefix for the arm to which the end effector belongs
+            obj_key (str): Key to access the object's quaternion in the observation cache
+            fn_name (str): Name to assign to the sensor function
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative quaternion between the object and the end effector
+        """
+
+        @sensor(modality)
+        def sensor_fn(obs_cache):
+            return (
+                obs_cache[f"{obj_key}_to_{prefix}eef_quat"]
+                if f"{obj_key}_to_{prefix}eef_quat" in obs_cache
+                else np.zeros(4)
+            )
+
+        sensor_fn.__name__ = fn_name
+        return sensor_fn
+
     def _check_grasp(self, gripper, object_geoms):
         """
         Checks whether the specified gripper as defined by @gripper is grasping the specified object in the environment.
@@ -379,11 +467,11 @@ class ManipulationEnv(RobotEnv):
         rgba[1] = scaled
         self.sim.model.site_rgba[self.sim.model.site_name2id(gripper.important_sites["grip_site"])][:3] = rgba
 
-    def _get_arm_prefixes(self, robot):
+    def _get_arm_prefixes(self, robot, include_robot_name=True):
         """
         Returns the naming prefixes for the robot arms in the environment used to access proprioceptive information.
-        By convention, if there is only one arm, returns the robot's naming prefix only. Otherwise, returns
-        a list of prefixes for each arm containing the robot's naming prefix and the arm name.
+        By convention, if there is only one arm, it does not include  the arm name. Otherwise, returns
+        a list of prefixes for each arm containing the robot's naming prefix (if include_robot_name is set) and the arm name.
 
         Args:
             robot (RobotModel): Robot model to extract prefixes from
@@ -392,7 +480,7 @@ class ManipulationEnv(RobotEnv):
             list: List of prefixes for the robot arms
         """
 
-        name_pf = robot.robot_model.naming_prefix
+        name_pf = robot.robot_model.naming_prefix if include_robot_name else ""
         if len(robot.arms) == 1:
             return [name_pf]
 
