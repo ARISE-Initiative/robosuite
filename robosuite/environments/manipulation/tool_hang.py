@@ -655,13 +655,10 @@ class ToolHang(ManipulationEnv):
 
         # check (1): robot is not touching the tool
         robot_grasp_geoms = [
-            self.robots[0].gripper[arm].important_geoms["left_fingerpad"] for arm in self.robots[0].gripper
+            self.robots[0].gripper[arm].important_geoms[key]
+            for arm in self.robots[0].gripper
+            for key in self.robots[0].gripper[arm].important_geoms
         ]
-
-        robot_grasp_geoms += [
-            self.robots[0].gripper[arm].important_geoms["right_fingerpad"] for arm in self.robots[0].gripper
-        ]
-
         robot_and_tool_contact = False
         for g_group in robot_grasp_geoms:
             if check_contact(self.sim, g_group, self.tool.contact_geoms):
