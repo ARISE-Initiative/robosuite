@@ -22,9 +22,17 @@ class IKSolver:
         max_dq_torso: float = 0.3,
         input_type: Literal["keyboard", "mocap", "pkl"] = "keyboard", 
         debug: bool = False, 
+        input_action_repr: Literal["absolute", "relative", "relative_pose"] = "absolute",
         input_file: Optional[str] = None,
         input_rotation_repr: Literal["quat_wxyz", "axis_angle"] = "axis_angle",
     ):
+        """
+        Args:
+            input_action_repr:
+                absolute: input actions are absolute positions and rotations.
+                relative: input actions are relative to the current position and rotation, separately.
+                relative_pose: input actions are relative_pose to the pose of the respective reference site.
+        """
         self.model = model
         self.data = data
 
@@ -47,6 +55,7 @@ class IKSolver:
         self.site_quat_conjs: List[np.ndarray] = [np.zeros(4) for _ in range(len(self.site_ids))]
         self.error_quats: List[np.ndarray] = [np.zeros(4) for _ in range(len(self.site_ids))]
 
+        self.input_action_repr = input_action_repr
         self.input_rotation_repr = input_rotation_repr
         ROTATION_REPRESENTATION_DIMS: Dict[str, int] = {"quat_wxyz": 4, "axis_angle": 3}
         self.rot_dim = ROTATION_REPRESENTATION_DIMS[input_rotation_repr]
@@ -157,15 +166,45 @@ class IKSolver:
         target_action = target_action.reshape(len(self.site_names), -1)
         target_pos = target_action[:, :self.pos_dim]
         target_ori = target_action[:, self.pos_dim:]
-
-        jac = self._compute_jacobian(self.model, self.data)
-
+        target_quat_wxyz = None
+        
         if self.input_rotation_repr == "axis_angle":
             target_quat_wxyz = np.array([np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))])
         elif self.input_rotation_repr == "mat":
             target_quat_wxyz = np.array([np.roll(T.mat2quat(target_ori[i])) for i in range(len(target_ori))])
         elif self.input_rotation_repr == "quat_wxyz":
             target_quat_wxyz = target_ori
+
+        if "relative" in self.input_action_repr:
+            cur_pos = np.array([self.data.site(site_id).xpos for site_id in self.site_ids])
+            cur_ori = np.array([self.data.site(site_id).xmat for site_id in self.site_ids])
+        if self.input_action_repr == "relative":
+            # decoupled pos and rotation deltas
+            target_pos += cur_pos
+            target_quat_xyzw = np.array([T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1)) for i in range(len(self.site_ids))])
+            target_quat_wxyz = np.array([np.roll(target_quat_xyzw[i], shift=1) for i in range(len(self.site_ids))])
+        elif self.input_action_repr == "relative_pose":
+            cur_poses = np.zeros((len(self.site_ids), 4, 4))
+            for i in range(len(self.site_ids)):
+                cur_poses[i, :3, :3] = cur_ori[i].reshape(3, 3)
+                cur_poses[i, :3, 3] = cur_pos[i]
+                cur_poses[i, 3, :] = [0, 0, 0, 1]
+
+            # Convert target action to target pose
+            target_poses = np.zeros_like(cur_poses)
+            for i in range(len(self.site_ids)):
+                target_poses[i, :3, :3] = T.quat2mat(target_quat_wxyz[i])
+                target_poses[i, :3, 3] = target_pos[i]
+                target_poses[i, 3, :] = [0, 0, 0, 1]
+            
+            # Apply target pose to current pose
+            new_target_poses = np.array([np.dot(cur_poses[i], target_poses[i]) for i in range(len(self.site_ids))])
+            
+            # Split new target pose back into position and quaternion
+            target_pos = new_target_poses[:, :3, 3]
+            target_quat_wxyz = np.array([np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))])
+
+        jac = self._compute_jacobian(self.model, self.data)
 
         for i in range(len(self.site_ids)):
             dx = target_pos[i] - self.data.site(self.site_ids[i]).xpos

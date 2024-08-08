@@ -15,6 +15,7 @@ import h5py
 import numpy as np
 
 import robosuite as suite
+from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 import robosuite.macros as macros
 from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
@@ -59,11 +60,12 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         if env.robots[0].is_mobile:
             arm_actions = input_action[:12].copy() if "bimanual" in env.robots[0].name else input_action[:6].copy()
             if "GR1" in env.robots[0].name:
+                # "relative" actions by default for now
                 action_dict = {
-                    'gripper0_left_grip_site_pos': np.array([-0.4189254 ,  0.22745755,  1.09597001]) + input_action[:3] * 0.05, 
-                    'gripper0_left_grip_site_axis_angle': np.array([-2.1356914 ,  2.50323857, -2.45929076]), 
-                    'gripper0_right_grip_site_pos': np.array([-0.41931295, -0.22706004,  1.09566707]), 
-                    'gripper0_right_grip_site_axis_angle': np.array([-1.26839518,  1.15421975,  0.99332174]), 
+                    'gripper0_left_grip_site_pos': input_action[:3] * 0.1, 
+                    'gripper0_left_grip_site_axis_angle': input_action[3:6], 
+                    'gripper0_right_grip_site_pos': np.zeros(3), 
+                    'gripper0_right_grip_site_axis_angle': np.zeros(3), 
                     'left_gripper': np.array([0., 0., 0., 0., 0., 0.]), 
                     'right_gripper': np.array([0., 0., 0., 0., 0., 0.])
                 }
@@ -251,7 +253,7 @@ if __name__ == "__main__":
 
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
-    composite_controller_config = load_controller_config(default_controller=args.composite_controller)
+    composite_controller_config = load_composite_controller_config(default_controller=args.composite_controller, robot=args.robots[0])
 
     # Create argument configuration
     config = {
