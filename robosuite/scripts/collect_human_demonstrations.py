@@ -251,34 +251,7 @@ if __name__ == "__main__":
 
     # Get controller config
     controller_config = load_controller_config(default_controller=args.controller)
-
-    if args.composite_controller == "NONE":
-        composite_controller_config = None
-    else:
-        if any(["GR1" in robot for robot in args.robots]):
-            with open("robosuite/controllers/config/default_gr1.json") as f:
-                gr1_controller_config = json.load(f)
-
-            with open("robosuite/controllers/config/composite/default_whole_body_ik_gr1.json") as f:
-                composite_controller_config = json.load(f)
-
-            composite_controller_config["body_parts"] = {
-                "right": gr1_controller_config,
-                "left": gr1_controller_config,
-            }
-        elif any(["Tiago" in robot for robot in args.robots]):
-            with open("robosuite/controllers/config/default_tiago.json") as f:
-                tiago_controller_config = json.load(f)
-
-            with open("robosuite/controllers/config/composite/default_whole_body_ik_tiago.json") as f:
-                composite_controller_config = json.load(f)
-
-            composite_controller_config["body_parts"] = {
-                "right": tiago_controller_config,
-                "left": tiago_controller_config,
-            }
-        else:
-            assert False, f"Composite controller not implemented for the {args.robots} robot."
+    composite_controller_config = load_controller_config(default_controller=args.composite_controller)
 
     # Create argument configuration
     config = {

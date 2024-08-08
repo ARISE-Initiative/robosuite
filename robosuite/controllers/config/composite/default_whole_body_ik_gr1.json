@@ -21,7 +21,7 @@
         "ik_max_dq": 4.0,
         "ik_max_dq_torso": 0.2,
         "ik_input_rotation_repr": "axis_angle",
-        "ik_debug": false
+        "ik_debug": true
     },
-    "default_controller_configs_part_names": ["right_gripper", "left_gripper"]
+    "default_controller_configs_part_names": ["right", "left"]
 }
