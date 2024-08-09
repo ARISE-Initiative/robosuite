@@ -65,6 +65,8 @@ class IKSolver:
         self.control_limits = np.array([-np.inf] * self.control_dim), np.array([np.inf] * self.control_dim)
         self.i = 0
         self.debug = debug
+        if debug:
+            self.pre_clip_errors: List[np.ndarray] = []
 
         self.input_type = input_type
         if input_type == "mocap":
@@ -254,6 +256,7 @@ class IKSolver:
             integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
             pre_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
             print(f"internal error pre clip: {pre_clip_error}")
+            self.pre_clip_errors.append(pre_clip_error)
 
         self.i += 1
 
