@@ -1,5 +1,5 @@
 from .osc import OperationalSpaceController
 
-# from .joint_pos import JointPositionController
-# from .joint_vel import JointVelocityController
-# from .joint_tor import JointTorqueController
+# comment out this import due to optional pybullet dependency
+# import the IK controller if requested in controller factory 
+# from .ik import InverseKinematicsController

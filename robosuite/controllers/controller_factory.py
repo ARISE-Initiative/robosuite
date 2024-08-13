@@ -147,7 +147,7 @@ def arm_controller_factory(name, params):
 
         # Import pybullet server if necessary
         global pybullet_server
-        from .arm.ik import InverseKinematicsController
+        from robosuite.controllers.arm.ik import InverseKinematicsController
 
         if pybullet_server is None:
             from robosuite.controllers.arm.ik import PyBulletServer
@@ -161,13 +161,13 @@ def arm_controller_factory(name, params):
         )
 
     if name == "JOINT_VELOCITY":
-        return genereic.JointVelocityController(interpolator=interpolator, **params)
+        return generic.JointVelocityController(interpolator=interpolator, **params)
 
     if name == "JOINT_POSITION":
-        return genereic.JointPositionController(interpolator=interpolator, **params)
+        return generic.JointPositionController(interpolator=interpolator, **params)
 
     if name == "JOINT_TORQUE":
-        return genereic.JointTorqueController(interpolator=interpolator, **params)
+        return generic.JointTorqueController(interpolator=interpolator, **params)
 
     raise ValueError("Unknown controller name: {}".format(name))
 
