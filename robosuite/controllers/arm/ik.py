@@ -27,7 +27,7 @@ import numpy as np
 
 import robosuite
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.joint_vel import JointVelocityController
+from robosuite.controllers.generic.joint_vel import JointVelocityController
 from robosuite.utils.control_utils import *
 
 # Dict of supported ik robots
@@ -86,8 +86,6 @@ class InverseKinematicsController(JointVelocityController):
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
 
-        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
-
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
 
             :`'joints'`: list of indexes to relevant robot joints
@@ -125,7 +123,6 @@ class InverseKinematicsController(JointVelocityController):
     def __init__(
         self,
         sim,
-        eef_name,
         joint_indexes,
         robot_name,
         actuator_range,
@@ -144,7 +141,6 @@ class InverseKinematicsController(JointVelocityController):
         # Run sueprclass inits
         super().__init__(
             sim=sim,
-            eef_name=eef_name,
             joint_indexes=joint_indexes,
             actuator_range=actuator_range,
             input_max=1,

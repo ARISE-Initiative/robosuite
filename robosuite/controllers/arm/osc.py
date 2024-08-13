@@ -25,8 +25,6 @@ class OperationalSpaceController(Controller):
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
 
-        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
-
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
 
             :`'joints'`: list of indexes to relevant robot joints
