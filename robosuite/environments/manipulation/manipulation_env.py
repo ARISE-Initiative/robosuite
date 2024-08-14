@@ -1,9 +1,11 @@
 import numpy as np
 
+import robosuite.utils.transform_utils as T
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
-from robosuite.robots import ROBOT_CLASS_MAPPING  # ,Manipulator
+from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot, MobileBaseRobot
+from robosuite.utils.observables import Observable, sensor
 
 
 class ManipulationEnv(RobotEnv):
@@ -221,21 +223,136 @@ class ManipulationEnv(RobotEnv):
         vis_set.add("grippers")
         return vis_set
 
+    def _get_obj_eef_sensor(self, prefix, obj_key, fn_name, modality):
+        """
+        Creates a sensor function that returns the relative position between the object specified by @obj_key
+        and the end effector specified by @prefix.
+
+        Args:
+            prefix (str): Prefix for the arm to which the end effector belongs
+            obj_key (str): Key to access the object's position in the observation cache
+            fn_name (str): Name to assign to the sensor function
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative position between the object and the end effector
+        """
+
+        @sensor(modality)
+        def sensor_fn(obs_cache):
+            return (
+                obs_cache[obj_key] - obs_cache[f"{prefix}eef_pos"]
+                if obj_key in obs_cache and f"{prefix}eef_pos" in obs_cache
+                else np.zeros(3)
+            )
+
+        sensor_fn.__name__ = fn_name
+        return sensor_fn
+
+    def _get_world_pose_in_gripper_sensor(self, prefix, fn_name, modality):
+        """
+        Creates a sensor function that returns the inverse pose of the gripper.
+
+        Args:
+            prefix (str): Prefix for the arm to which the gripper belongs
+            fn_name (str): Name to assign to the sensor function
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative pose between the world and the gripper
+        """
+
+        @sensor(modality=modality)
+        def fn(obs_cache):
+            return (
+                T.pose_inv(T.pose2mat((obs_cache[f"{prefix}eef_pos"], obs_cache[f"{prefix}eef_quat"])))
+                if f"{prefix}eef_pos" in obs_cache and f"{prefix}eef_quat" in obs_cache
+                else np.eye(4)
+            )
+
+        fn.__name__ = fn_name
+        return fn
+
+    def _get_rel_obj_eef_sensor(self, prefix, obj_key, fn_name, new_key_prefix, modality):
+        """
+        Creates a sensor function that returns the relative position between the object specified by @obj_key
+        and populates the observation cache with relative quaternion. This sensor function uses the robots
+        gripper's inverse pose which should be in the observation cache.
+
+
+        Args:
+            prefix (str): Prefix used to access the robot arm's inverse pose in the observation cache
+            obj_key (str): Key to access the object's position/quaternion in the observation cache
+            fn_name (str): Name to assign to the sensor function
+            new_key_prefix (str): Prefix to use for the new key in the observation cache
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative position between the object and the end effector
+        """
+
+        @sensor(modality=modality)
+        def fn(obs_cache):
+            # Immediately return default value if cache is empty
+            if any(
+                [
+                    name not in obs_cache
+                    for name in [f"{obj_key}_pos", f"{obj_key}_quat", f"world_pose_in_{prefix}gripper"]
+                ]
+            ):
+                return np.zeros(3)
+            obj_pose = T.pose2mat((obs_cache[f"{obj_key}_pos"], obs_cache[f"{obj_key}_quat"]))
+            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache[f"world_pose_in_{prefix}gripper"])
+            rel_pos, rel_quat = T.mat2pose(rel_pose)
+            obs_cache[f"{obj_key}_to_{new_key_prefix}eef_quat"] = rel_quat
+            return rel_pos
+
+        fn.__name__ = fn_name
+        return fn
+
+    def _get_obj_eef_rel_quat_sensor(self, prefix, obj_key, fn_name, modality):
+        """
+        Creates a sensor function that returns the relative quaternion between the object specified by @obj_key
+        and the end effector specified by @prefix.
+
+        Args:
+            prefix (str): Prefix for the arm to which the end effector belongs
+            obj_key (str): Key to access the object's quaternion in the observation cache
+            fn_name (str): Name to assign to the sensor function
+            modality (str): Modality for the sensor
+
+        Returns:
+            function: Sensor function that returns the relative quaternion between the object and the end effector
+        """
+
+        @sensor(modality)
+        def sensor_fn(obs_cache):
+            return (
+                obs_cache[f"{obj_key}_to_{prefix}eef_quat"]
+                if f"{obj_key}_to_{prefix}eef_quat" in obs_cache
+                else np.zeros(4)
+            )
+
+        sensor_fn.__name__ = fn_name
+        return sensor_fn
+
     def _check_grasp(self, gripper, object_geoms):
         """
         Checks whether the specified gripper as defined by @gripper is grasping the specified object in the environment.
+        If multiple grippers are specified, will return True if at least one gripper is grasping the object.
 
         By default, this will return True if at least one geom in both the "left_fingerpad" and "right_fingerpad" geom
         groups are in contact with any geom specified by @object_geoms. Custom gripper geom groups can be
         specified with @gripper as well.
 
         Args:
-            gripper (GripperModel or str or list of str or list of list of str): If a MujocoModel, this is specific
-            gripper to check for grasping (as defined by "left_fingerpad" and "right_fingerpad" geom groups). Otherwise,
+            gripper (GripperModel or str or list of str or list of list of str or dict): If a MujocoModel, this is specific
+                gripper to check for grasping (as defined by "left_fingerpad" and "right_fingerpad" geom groups). Otherwise,
                 this sets custom gripper geom groups which together define a grasp. This can be a string
                 (one group of single gripper geom), a list of string (multiple groups of single gripper geoms) or a
-                list of list of string (multiple groups of multiple gripper geoms). At least one geom from each group
-                must be in contact with any geom in @object_geoms for this method to return True.
+                list of list of string (multiple groups of multiple gripper geoms), or a dictionary in the case
+                where the robot has multiple arms/grippers. At least one geom from each group must be in contact
+                with any geom in @object_geoms for this method to return True.
             object_geoms (str or list of str or MujocoModel): If a MujocoModel is inputted, will check for any
                 collisions with the model's contact_geoms. Otherwise, this should be specific geom name(s) composing
                 the object to check for contact.
@@ -248,10 +365,14 @@ class ManipulationEnv(RobotEnv):
             o_geoms = object_geoms.contact_geoms
         else:
             o_geoms = [object_geoms] if type(object_geoms) is str else object_geoms
+
         if isinstance(gripper, GripperModel):
             g_geoms = [gripper.important_geoms["left_fingerpad"], gripper.important_geoms["right_fingerpad"]]
         elif type(gripper) is str:
             g_geoms = [[gripper]]
+        elif isinstance(gripper, dict):
+            assert all([isinstance(gripper[arm], GripperModel) for arm in gripper]), "Invalid gripper dict format!"
+            return any([self._check_grasp(gripper[arm], object_geoms) for arm in gripper])
         else:
             # Parse each element in the gripper_geoms list accordingly
             g_geoms = [[g_group] if type(g_group) is str else g_group for g_group in gripper]
@@ -266,9 +387,10 @@ class ManipulationEnv(RobotEnv):
         """
         Calculates the (x,y,z) Cartesian distance (target_pos - gripper_pos) from the specified @gripper to the
         specified @target. If @return_distance is set, will return the Euclidean (scalar) distance instead.
+        If the @gripper is a dict, will return the minimum distance across all grippers.
 
         Args:
-            gripper (MujocoModel): Gripper model to update grip site rgb
+            gripper (MujocoModel or dict): Gripper model to update grip site rgb
             target (MujocoModel or str): Either a site / geom / body name, or a model that serves as the target.
                 If a model is given, then the root body will be used as the target.
             target_type (str): One of {"body", "geom", or "site"}, corresponding to the type of element @target
@@ -278,8 +400,21 @@ class ManipulationEnv(RobotEnv):
         Returns:
             np.array or float: (Cartesian or Euclidean) distance from gripper to target
         """
+        if isinstance(gripper, dict):
+            assert all([isinstance(gripper[arm], GripperModel) for arm in gripper]), "Invalid gripper dict format!"
+            # get the min distance to the target if there are multiple arms
+            if return_distance:
+                return min(
+                    [self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper]
+                )
+            else:
+                return min(
+                    [self._gripper_to_target(gripper[arm], target, target_type, return_distance) for arm in gripper],
+                    key=lambda x: np.linalg.norm(x),
+                )
+
         # Get gripper and target positions
-        gripper_pos = self.sim.data.get_site_xpos(gripper["right"].important_sites["grip_site"])
+        gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
         if isinstance(target, MujocoModel):
             target_pos = self.sim.data.get_body_xpos(target.root_body)
@@ -297,17 +432,23 @@ class ManipulationEnv(RobotEnv):
     def _visualize_gripper_to_target(self, gripper, target, target_type="body"):
         """
         Colors the grip visualization site proportional to the Euclidean distance to the specified @target.
-        Colors go from red --> green as the gripper gets closer.
+        Colors go from red --> green as the gripper gets closer. If a dict of grippers is given, will visualize
+        all grippers to the target.
 
         Args:
-            gripper (MujocoModel): Gripper model to update grip site rgb
+            gripper (MujocoModel or dict): Gripper model to update grip site rgb
             target (MujocoModel or str): Either a site / geom / body name, or a model that serves as the target.
                 If a model is given, then the root body will be used as the target.
             target_type (str): One of {"body", "geom", or "site"}, corresponding to the type of element @target
                 refers to.
         """
+        if isinstance(gripper, dict):
+            assert all([isinstance(gripper[arm], GripperModel) for arm in gripper]), "Invalid gripper dict format!"
+            for arm in gripper:
+                self._visualize_gripper_to_target(gripper[arm], target, target_type)
+            return
         # Get gripper and target positions
-        gripper_pos = self.sim.data.get_site_xpos(gripper["right"].important_sites["grip_site"])
+        gripper_pos = self.sim.data.get_site_xpos(gripper.important_sites["grip_site"])
         # If target is MujocoModel, grab the correct body as the target and find the target position
         if isinstance(target, MujocoModel):
             target_pos = self.sim.data.get_body_xpos(target.root_body)
@@ -324,7 +465,27 @@ class ManipulationEnv(RobotEnv):
         rgba = np.zeros(3)
         rgba[0] = 1 - scaled
         rgba[1] = scaled
-        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper["right"].important_sites["grip_site"])][:3] = rgba
+        self.sim.model.site_rgba[self.sim.model.site_name2id(gripper.important_sites["grip_site"])][:3] = rgba
+
+    def _get_arm_prefixes(self, robot, include_robot_name=True):
+        """
+        Returns the naming prefixes for the robot arms in the environment used to access proprioceptive information.
+        By convention, if there is only one arm, it does not include  the arm name. Otherwise, returns
+        a list of prefixes for each arm containing the robot's naming prefix (if include_robot_name is set) and the arm name.
+
+        Args:
+            robot (RobotModel): Robot model to extract prefixes from
+
+        Returns:
+            list: List of prefixes for the robot arms
+        """
+
+        name_pf = robot.robot_model.naming_prefix if include_robot_name else ""
+        if len(robot.arms) == 1:
+            return [name_pf]
+
+        prefixes = [f"{name_pf}{arm}_" for arm in robot.arms]
+        return prefixes
 
     def _check_robot_configuration(self, robots):
         """
@@ -334,11 +495,10 @@ class ManipulationEnv(RobotEnv):
         Args:
             robots (str or list of str): Inputted requested robots at the task-level environment
         """
-        # # Make sure all inputted robots are a manipulation robot
-        # if type(robots) is str:
-        #     robots = [robots]
-        # for robot in robots:
-        #     assert issubclass(
-        #         ROBOT_CLASS_MAPPING[robot], Manipulator
-        #     ), "Only manipulator robots supported for manipulation environment!"
-        pass
+        # Make sure all inputted robots are a manipulation robot
+        if type(robots) is str:
+            robots = [robots]
+        for robot in robots:
+            assert issubclass(ROBOT_CLASS_MAPPING[robot], FixedBaseRobot) or issubclass(
+                ROBOT_CLASS_MAPPING[robot], MobileBaseRobot
+            ), "Only manipulator robots supported for manipulation environment!"
