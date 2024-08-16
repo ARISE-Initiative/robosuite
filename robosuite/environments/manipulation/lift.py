@@ -242,9 +242,9 @@ class Lift(ManipulationEnv):
         elif self.reward_shaping:
 
             # reaching reward
-            cube_pos = self.sim.data.body_xpos[self.cube_body_id]
-            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]]
-            dist = np.linalg.norm(gripper_site_pos - cube_pos)
+            dist = self._gripper_to_target(
+                gripper=self.robots[0].gripper, target=self.cube.root_body, target_type="body", return_distance=True
+            )
             reaching_reward = 1 - np.tanh(10.0 * dist)
             reward += reaching_reward
 
@@ -348,8 +348,7 @@ class Lift(ManipulationEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            # define observables modality
             modality = "object"
 
             # cube-related observables
@@ -361,15 +360,16 @@ class Lift(ManipulationEnv):
             def cube_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw")
 
-            @sensor(modality=modality)
-            def gripper_to_cube_pos(obs_cache):
-                return (
-                    obs_cache[f"{pf}eef_pos"] - obs_cache["cube_pos"]
-                    if f"{pf}eef_pos" in obs_cache and "cube_pos" in obs_cache
-                    else np.zeros(3)
-                )
+            sensors = [cube_pos, cube_quat]
 
-            sensors = [cube_pos, cube_quat, gripper_to_cube_pos]
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+
+            # gripper to cube position sensor; one for each arm
+            sensors += [
+                self._get_obj_eef_sensor(full_pf, "cube_pos", f"{arm_pf}gripper_to_cube_pos", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+            ]
             names = [s.__name__ for s in sensors]
 
             # Create observables

@@ -30,7 +30,7 @@ class Panda(ManipulatorModel):
 
     @property
     def default_controller_config(self):
-        return {"right", "default_panda"}
+        return {"right": "default_panda"}
 
     @property
     def init_qpos(self):

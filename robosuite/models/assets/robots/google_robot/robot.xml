@@ -160,7 +160,6 @@
                       <inertial pos="-3.20302e-05 0.000371384 0.0387883" quat="0.997934 0.0574504 -0.0278948 -0.00699571" mass="0.41474" diaginertia="0.000327698 0.000308611 0.000272392"/>
                       
                       <joint name="joint_gripper" axis="0 0 1" range="-4.49 1.35"/>
-
                     </body>  <!-- gripper -->
 
                   </body>  <!-- wrist -->

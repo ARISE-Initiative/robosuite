@@ -482,26 +482,19 @@ class NutAssembly(ManipulationEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
             modality = "object"
 
             # Reset nut sensor mappings
             self.nut_id_to_sensors = {}
-
-            # for conversion to relative gripper frame
-            @sensor(modality=modality)
-            def world_pose_in_gripper(obs_cache):
-                return (
-                    T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"])))
-                    if f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache
-                    else np.eye(4)
-                )
-
-            sensors = [world_pose_in_gripper]
-            names = ["world_pose_in_gripper"]
-            enableds = [True]
-            actives = [False]
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+            sensors = [
+                self._get_world_pose_in_gripper_sensor(full_pf, f"world_pose_in_{arm_pf}gripper", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+            ]
+            names = [fn.__name__ for fn in sensors]
+            actives = [False] * len(sensors)
+            enableds = [True] * len(sensors)
 
             # Define nut related sensors
             for i, nut in enumerate(self.nuts):
@@ -510,8 +503,8 @@ class NutAssembly(ManipulationEnv):
                 nut_sensors, nut_sensor_names = self._create_nut_sensors(nut_name=nut.name, modality=modality)
                 sensors += nut_sensors
                 names += nut_sensor_names
-                enableds += [using_nut] * 4
-                actives += [using_nut] * 4
+                enableds += [using_nut] * len(nut_sensors)
+                actives += [using_nut] * len(nut_sensors)
                 self.nut_id_to_sensors[i] = nut_sensor_names
 
             if self.single_object_mode == 1:
@@ -551,7 +544,6 @@ class NutAssembly(ManipulationEnv):
                 sensors (list): Array of sensors for the given nut
                 names (list): array of corresponding observable names
         """
-        pf = self.robots[0].robot_model.naming_prefix
 
         @sensor(modality=modality)
         def nut_pos(obs_cache):
@@ -561,27 +553,21 @@ class NutAssembly(ManipulationEnv):
         def nut_quat(obs_cache):
             return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut_name]], to="xyzw")
 
-        @sensor(modality=modality)
-        def nut_to_eef_pos(obs_cache):
-            # Immediately return default value if cache is empty
-            if any(
-                [name not in obs_cache for name in [f"{nut_name}_pos", f"{nut_name}_quat", "world_pose_in_gripper"]]
-            ):
-                return np.zeros(3)
-            obj_pose = T.pose2mat((obs_cache[f"{nut_name}_pos"], obs_cache[f"{nut_name}_quat"]))
-            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
-            rel_pos, rel_quat = T.mat2pose(rel_pose)
-            obs_cache[f"{nut_name}_to_{pf}eef_quat"] = rel_quat
-            return rel_pos
+        arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+        full_prefixes = self._get_arm_prefixes(self.robots[0])
 
-        @sensor(modality=modality)
-        def nut_to_eef_quat(obs_cache):
-            return (
-                obs_cache[f"{nut_name}_to_{pf}eef_quat"] if f"{nut_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
-            )
+        sensors = [
+            self._get_rel_obj_eef_sensor(arm_pf, nut_name, f"{nut_name}_to_{full_pf}eef_pos", full_pf, modality)
+            for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+        ]
+        sensors += [
+            self._get_obj_eef_rel_quat_sensor(full_pf, nut_name, f"{nut_name}_to_{full_pf}eef_quat", modality)
+            for full_pf in full_prefixes
+        ]
+        names = [fn.__name__ for fn in sensors]
 
-        sensors = [nut_pos, nut_quat, nut_to_eef_pos, nut_to_eef_quat]
-        names = [f"{nut_name}_pos", f"{nut_name}_quat", f"{nut_name}_to_{pf}eef_pos", f"{nut_name}_to_{pf}eef_quat"]
+        sensors += [nut_pos, nut_quat]
+        names += [f"{nut_name}_pos", f"{nut_name}_quat"]
 
         return sensors, names
 
@@ -631,11 +617,15 @@ class NutAssembly(ManipulationEnv):
             bool: True if all nuts are placed correctly
         """
         # remember objects that are on the correct pegs
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id["right"]]
         for i, nut in enumerate(self.nuts):
             obj_str = nut.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
-            dist = np.linalg.norm(gripper_site_pos - obj_pos)
+            dist = min(
+                [
+                    np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - obj_pos)
+                    for arm in self.robots[0].arms
+                ]
+            )
             r_reach = 1 - np.tanh(10.0 * dist)
             self.objects_on_pegs[i] = int(self.on_peg(obj_pos, i) and r_reach < 0.6)
 
@@ -659,23 +649,25 @@ class NutAssembly(ManipulationEnv):
 
         # Color the gripper visualization site according to its distance to the closest nut
         if vis_settings["grippers"]:
-            # find closest object
-            dists = [
-                self._gripper_to_target(
-                    gripper=self.robots[0].gripper,
-                    target=nut.important_sites["handle"],
+            # if the robot has multiple arms color each arm independently based on its closest object
+            for arm in self.robots[0].arms:
+                # find closest object
+                dists = [
+                    self._gripper_to_target(
+                        gripper=self.robots[0].gripper[arm],
+                        target=nut.important_sites["handle"],
+                        target_type="site",
+                        return_distance=True,
+                    )
+                    for nut in self.nuts
+                ]
+                closest_nut_id = np.argmin(dists)
+                # Visualize the distance to this target
+                self._visualize_gripper_to_target(
+                    gripper=self.robots[0].gripper[arm],
+                    target=self.nuts[closest_nut_id].important_sites["handle"],
                     target_type="site",
-                    return_distance=True,
                 )
-                for nut in self.nuts
-            ]
-            closest_nut_id = np.argmin(dists)
-            # Visualize the distance to this target
-            self._visualize_gripper_to_target(
-                gripper=self.robots[0].gripper,
-                target=self.nuts[closest_nut_id].important_sites["handle"],
-                target_type="site",
-            )
 
 
 class NutAssemblySingle(NutAssembly):
