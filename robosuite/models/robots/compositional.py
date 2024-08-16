@@ -61,11 +61,35 @@ class B1Z1Floating(B1Z1):
         return "B1Floating"
 
 
-# class SpotArm(Compositional):
-#     @property
-#     def default_base(self):
-#         return "Spot"
+class SpotArm(BDArm):
+    @property
+    def default_base(self):
+        return "Spot"
 
-#     @property
-#     def default_arms(self):
-#         return {"right": "BDArm"}
+    @property
+    def default_arms(self):
+        return {"right": "BDArm"}
+
+
+class SpotArmFloating(SpotArm):
+    @property
+    def default_base(self):
+        return "SpotFloating"
+
+    @property
+    def default_arms(self):
+        return {"right": "BDArm"}
+
+
+class Go2Arx5(Arx5):
+    """
+    Go2 robot with Arx5 arm mounted on it.
+    """
+
+    @property
+    def default_base(self):
+        return "Go2"
+
+    @property
+    def default_arms(self):
+        return {"right": "Arx5"}

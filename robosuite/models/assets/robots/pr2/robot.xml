@@ -1,0 +1,305 @@
+<?xml version="1.0" ?>
+<mujoco>
+  <compiler angle="radian" autolimits="true"/>
+  <visual>
+    <global ellipsoidinertia="true"/>
+  </visual>
+  <default>
+    <default class="pr2_joints">
+      <motor ctrlrange="-100 100" ctrllimited="true"/>
+    </default>
+    <default class="pr2_shoulder_joints">
+      <motor ctrlrange="-100 100" ctrllimited="true"/>
+    </default>
+    <default class="pr2_wrist_joints">
+      <motor ctrlrange="-100 100" ctrllimited="true"/>
+    </default>
+  </default>
+  <asset>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="base" rgba="0.5 0.5 0.5 1.0"/>
+    <material name="head_v0_head_pan_mat" texture="head_v0_head_pan_tex"/>
+    <texture type="2d" name="head_v0_head_pan_tex" file="meshes/head_v0/head_pan_color.png"/>
+    <material name="head_v0_head_tilt_mat" texture="head_v0_head_tilt_tex"/>
+    <texture type="2d" name="head_v0_head_tilt_tex" file="meshes/head_v0/head_tilt_color.png"/>
+    <material name="forearm_v0_forearm_mat" texture="forearm_v0_forearm_tex"/>
+    <texture type="2d" name="forearm_v0_forearm_tex" file="meshes/forearm_v0/forearm_color.png"/>
+    <material name="forearm_v0_wrist_flex_mat" texture="forearm_v0_wrist_flex_tex"/>
+    <texture type="2d" name="forearm_v0_wrist_flex_tex" file="meshes/forearm_v0/wrist_color.png"/>
+    <material name="shoulder_v0_shoulder_lift_mat" texture="shoulder_v0_shoulder_lift_tex"/>
+    <texture type="2d" name="shoulder_v0_shoulder_lift_tex" file="meshes/shoulder_v0/shoulder_lift_color.png"/>
+    <material name="shoulder_v0_shoulder_pan_mat" texture="shoulder_v0_shoulder_pan_tex"/>
+    <texture type="2d" name="shoulder_v0_shoulder_pan_tex" file="meshes/shoulder_v0/shoulder_pan_color.png"/>
+    <material name="shoulder_v0_upper_arm_roll_mat" texture="shoulder_v0_upper_arm_roll_tex"/>
+    <texture type="2d" name="shoulder_v0_upper_arm_roll_tex" file="meshes/shoulder_v0/upper_arm_roll_color.png"/>
+    <material name="upper_arm_v0_upper_arm_mat" texture="upper_arm_v0_upper_arm_tex"/>
+    <texture type="2d" name="upper_arm_v0_upper_arm_tex" file="meshes/upper_arm_v0/upper_arm_color.png"/>
+    <material name="upper_arm_v0_elbow_flex_mat" texture="upper_arm_v0_elbow_flex_tex"/>
+    <texture type="2d" name="upper_arm_v0_elbow_flex_tex" file="meshes/upper_arm_v0/elbow_flex_color.png"/>
+    <mesh name="base_v0_base_vis" file="meshes/base_v0/base.obj"/>
+    <mesh name="base_v0_base_L" file="meshes/base_v0/base_L.stl"/>
+    <mesh name="base_v0_caster" file="meshes/base_v0/caster.stl"/>
+    <mesh name="base_v0_caster_L" file="meshes/base_v0/caster_L.stl"/>
+    <mesh name="torso_v0_torso_lift_L" file="meshes/torso_v0/torso_lift_L.stl"/>
+    <mesh name="head_v0_head_pan_vis" file="meshes/head_v0/head_pan.obj"/>
+    <mesh name="head_v0_head_pan_L" file="meshes/head_v0/head_pan_L.stl"/>
+    <mesh name="head_v0_head_tilt_vis" file="meshes/head_v0/head_tilt.obj"/>
+    <mesh name="head_v0_head_tilt_L" file="meshes/head_v0/head_tilt_L.stl"/>
+    <mesh name="shoulder_v0_shoulder_pan_vis" file="meshes/shoulder_v0/shoulder_pan.obj"/>
+    <mesh name="shoulder_v0_shoulder_pan" file="meshes/shoulder_v0/shoulder_pan.stl"/>
+    <mesh name="shoulder_v0_shoulder_lift_vis" file="meshes/shoulder_v0/shoulder_lift.obj"/>
+    <mesh name="shoulder_v0_shoulder_lift" file="meshes/shoulder_v0/shoulder_lift.stl"/>
+    <mesh name="shoulder_v0_upper_arm_roll" file="meshes/shoulder_v0/upper_arm_roll.stl"/>
+    <mesh name="shoulder_v0_upper_arm_roll_L" file="meshes/shoulder_v0/upper_arm_roll_L.stl"/>
+    <mesh name="upper_arm_v0_upper_arm_vis" file="meshes/upper_arm_v0/upper_arm.obj"/>
+    <mesh name="upper_arm_v0_upper_arm" file="meshes/upper_arm_v0/upper_arm.stl"/>
+    <mesh name="upper_arm_v0_forearm_roll" file="meshes/upper_arm_v0/forearm_roll.stl"/>
+    <mesh name="upper_arm_v0_forearm_roll_L" file="meshes/upper_arm_v0/forearm_roll_L.stl"/>
+    <mesh name="upper_arm_v0_elbow_flex_vis" file="meshes/upper_arm_v0/elbow_flex.obj"/>
+    <mesh name="upper_arm_v0_elbow_flex" file="meshes/upper_arm_v0/elbow_flex.stl"/>
+    <mesh name="forearm_v0_forearm_vis" file="meshes/forearm_v0/forearm.obj"/>
+    <mesh name="forearm_v0_forearm" file="meshes/forearm_v0/forearm.stl"/>
+    <mesh name="forearm_v0_wrist_flex_vis" file="meshes/forearm_v0/wrist_flex.obj"/>
+    <mesh name="forearm_v0_wrist_flex" file="meshes/forearm_v0/wrist_flex.stl"/>
+    <mesh name="forearm_v0_wrist_roll" file="meshes/forearm_v0/wrist_roll.stl"/>
+    <mesh name="forearm_v0_wrist_roll_L" file="meshes/forearm_v0/wrist_roll_L.stl"/>
+  </asset>
+  <worldbody>
+    <!--Start of base-->
+    <body name="base">
+      <body name="base_link" pos="0.0 0.0 0.051" quat="1.0 0.0 0.0 0.0">
+        <inertial pos="-0.061 0.0 0.1465" quat="1.0 0.0 0.0 0.0" mass="116.0" diaginertia="5.652232699207 5.669473158652 3.683196351726"/>
+        <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="base_link_visual" group="1" contype="0" conaffinity="0" mesh="base_v0_base_vis" type="mesh" material="base"/>
+        <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="base_link_collision" group="0" mesh="base_v0_base_L" type="mesh"/>
+        <body name="torso_lift_link" pos="-0.05 0.0 0.739675" quat="1.0 0.0 0.0 0.0">
+          <inertial pos="-0.1 0 -0.0885" quat="1.0 0.0 0.0 0.0" mass="36.248046" diaginertia="2.771653750257 2.510019507959 0.526432355569"/>
+          <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="torso_lift_link_visual" group="1" contype="0" conaffinity="0" mesh="torso_v0_torso_lift_L" type="mesh"/>
+          <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="torso_lift_link_collision" group="0" mesh="torso_v0_torso_lift_L" type="mesh"/>
+          <body name="head_mount" pos="0.0 0.0 0.0" quat="1 0 0 0">
+            <!--Start of head_pan_link-->
+            <body name="head_pan_link" pos="-0.01707 0.0 0.38145" quat="1.0 0.0 0.0 0.0">
+              <joint name="head_pan_joint" type="hinge" frictionloss="0.5" damping="30" stiffness="0.3" axis="0 0 1" range="-3.007 3.007"/>
+              <inertial pos="0.010907 0.031693 0.090507" quat="1.0 0.0 0.0 0.0" mass="6.339" diaginertia="0.032497592 0.046545627 0.057652724"/>
+              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="head_pan_link_visual" group="1" contype="0" conaffinity="0" mesh="head_v0_head_pan_vis" material="head_v0_head_pan_mat" type="mesh"/>
+              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="head_pan_link_collision" group="0" mesh="head_v0_head_pan_L" type="mesh"/>
+              <!--Start of head_tilt_link-->
+              <body name="head_tilt_link" pos="0.068 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                <joint name="head_tilt_joint" type="hinge" frictionloss="0.5" damping="100" stiffness="0.3" axis="0 1 0" range="-0.471238 1.39626"/>
+                <inertial pos="0.001716 -0.019556 0.055002" quat="1.0 0.0 0.0 0.0" mass="4.479" diaginertia="0.024223222 0.054723086 0.067306377"/>
+                <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="head_tilt_link_visual" group="1" contype="0" conaffinity="0" mesh="head_v0_head_tilt_vis" material="head_v0_head_tilt_mat" type="mesh"/>
+                <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="head_tilt_link_collision" group="0" mesh="head_v0_head_tilt_L" type="mesh"/>
+                <camera mode="fixed" name="robotview_left" pos="0.10 0.10 0.12" quat="0.5 0.5 -0.5 -0.5"/>
+                <camera mode="fixed" name="robotview_right" pos="0.10 -0.10 0.12" quat="0.5 0.5 -0.5 -0.5"/>
+              </body>
+              <!--End of head_tilt_link-->
+            </body>
+            <!--End of head_pan_link-->
+          </body>
+          <body name="right_arm" pos="0.0 0.0 0.0" quat="1 0 0 0">
+            <!--Start of r_shoulder_pan_link-->
+            <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+            <body name="r_shoulder_pan_link" pos="0.0 -0.188 0.0" quat="1.0 0.0 0.0 0.0">
+              <joint name="r_shoulder_pan_joint" type="hinge" armature="0.1" damping="0" axis="0 0 1" range="-2.2853981634 0.714601836603"/>
+              <inertial pos="-0.001201 0.024513 -0.098231" quat="1.0 0.0 0.0 0.0" mass="25.799322" diaginertia="0.866179142480 0.87421714893 0.27353821674"/>
+              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_shoulder_pan_link_visual" group="1" contype="0" conaffinity="0" mesh="shoulder_v0_shoulder_pan_vis" material="shoulder_v0_shoulder_pan_mat" type="mesh"/>
+              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_shoulder_pan_link_collision" group="0" mesh="shoulder_v0_shoulder_pan" type="mesh"/>
+              <!--Start of r_shoulder_lift_link-->
+              <body name="r_shoulder_lift_link" pos="0.1 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                <joint name="r_shoulder_lift_joint" type="hinge" armature="0.1" damping="0" axis="0 1 0" range="-0.5236 1.3963"/>
+                <inertial pos="0.02195 -0.02664 -0.03127" quat="1.0 0.0 0.0 0.0" mass="2.74988" diaginertia="0.02105584615 0.02127223737 0.01975753814"/>
+                <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_shoulder_lift_link_visual" group="1" contype="0" conaffinity="0" mesh="shoulder_v0_shoulder_lift_vis" material="shoulder_v0_shoulder_lift_mat" type="mesh"/>
+                <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_shoulder_lift_link_collision" group="0" mesh="shoulder_v0_shoulder_lift" type="mesh"/>
+                <!--Start of r_upper_arm_roll_link-->
+                <body name="r_upper_arm_roll_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                  <joint name="r_upper_arm_roll_joint" type="hinge" armature="0.1" damping="0" axis="1 0 0" range="-3.9 0.8"/>
+                  <inertial pos="0.0 0 0" quat="1.0 0.0 0.0 0.0" mass="0.1" diaginertia="0.01 0.01 0.01"/>
+                  <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_upper_arm_roll_link_visual" group="1" contype="0" conaffinity="0" mesh="shoulder_v0_upper_arm_roll" material="shoulder_v0_upper_arm_roll_mat" type="mesh"/>
+                  <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_upper_arm_roll_link_collision" group="0" mesh="shoulder_v0_upper_arm_roll_L" type="mesh"/>
+                  <!--Start of r_upper_arm_link-->
+                  <body name="r_upper_arm_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                    <inertial pos="0.21398 -0.01621 -0.0002" quat="1.0 0.0 0.0 0.0" mass="6.01769" diaginertia="0.01537748957 0.0747367044 0.07608763307"/>
+                    <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_upper_arm_link_visual" group="1" contype="0" conaffinity="0" mesh="upper_arm_v0_upper_arm_vis" material="upper_arm_v0_upper_arm_mat" type="mesh"/>
+                    <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_upper_arm_link_collision" group="0" mesh="upper_arm_v0_upper_arm" type="mesh"/>
+                    <!--Start of r_elbow_flex_link-->
+                    <body name="r_elbow_flex_link" pos="0.4 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                      <joint name="r_elbow_flex_joint" type="hinge" armature="0.1" damping="0" axis="0 1 0" range="-2.3213 0.00"/>
+                      <inertial pos="0.01014 0.00032 -0.01211" quat="1.0 0.0 0.0 0.0" mass="1.90327" diaginertia="0.00346541989 0.00441606455 0.00359156824"/>
+                      <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_elbow_flex_link_visual" group="1" contype="0" conaffinity="0" mesh="upper_arm_v0_elbow_flex_vis" material="upper_arm_v0_elbow_flex_mat" type="mesh"/>
+                      <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_elbow_flex_link_collision" group="0" mesh="upper_arm_v0_elbow_flex" type="mesh"/>
+                      <!--Start of r_forearm_roll_link-->
+                      <body name="r_forearm_roll_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                        <joint name="r_forearm_roll_joint" type="hinge" armature="0.1" damping="0" axis="1 0 0" range="-3.14159 3.14159"/>
+                        <inertial pos="0 0 0" quat="1.0 0.0 0.0 0.0" mass="0.1" diaginertia="0.01 0.01 0.01"/>
+                        <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_forearm_roll_link_visual" group="1" contype="0" conaffinity="0" mesh="upper_arm_v0_forearm_roll" type="mesh"/>
+                        <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_forearm_roll_link_collision" group="0" mesh="upper_arm_v0_forearm_roll_L" type="mesh"/>
+                        <!--Start of r_forearm_link-->
+                        <body name="r_forearm_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                          <inertial pos="0.18791 -0.00017 -0.00912" quat="1.0 0.0 0.0 0.0" mass="2.57968" diaginertia="0.00364857222 0.01507736897 0.01659310749"/>
+                          <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_forearm_link_visual" group="1" contype="0" conaffinity="0" mesh="forearm_v0_forearm_vis" material="forearm_v0_forearm_mat" type="mesh"/>
+                          <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_forearm_link_collision" group="0" mesh="forearm_v0_forearm" type="mesh"/>
+                          <!--Start of r_wrist_flex_link-->
+                          <body name="r_wrist_flex_link" pos="0.321 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                            <joint name="r_wrist_flex_joint" type="hinge" armature="0.1" damping="0" axis="0 1 0" range="-2.18 0.0"/>
+                            <inertial pos="-0.00157 0.0 -0.00075" quat="1.0 0.0 0.0 0.0" mass="0.61402" diaginertia="0.00065165722 0.00019824443 0.00064450498"/>
+                            <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_wrist_flex_link_visual" group="1" contype="0" conaffinity="0" mesh="forearm_v0_wrist_flex_vis" material="forearm_v0_wrist_flex_mat" type="mesh"/>
+                            <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_wrist_flex_link_collision" group="0" mesh="forearm_v0_wrist_flex" type="mesh"/>
+                            <!--Start of r_wrist_roll_link-->
+                            <body name="r_wrist_roll_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                              <joint name="r_wrist_roll_joint" type="hinge" armature="0.1" damping="0" axis="1 0 0" range="-3.14159 3.14159"/>
+                              <inertial pos="0 0 0" quat="1.0 0.0 0.0 0.0" mass="0.1" diaginertia="0.01 0.01 0.01"/>
+                              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_wrist_roll_link_visual" group="1" contype="0" conaffinity="0" mesh="forearm_v0_wrist_roll" type="mesh"/>
+                              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="r_wrist_roll_link_collision" group="0" mesh="forearm_v0_wrist_roll_L" type="mesh"/>
+                              <!--Start of right_hand-->
+                              <body name="right_hand" pos="0.0 0.0 0.0" quat="1 0 0 0">
+                            </body>
+                              <!--End of right_hand-->
+                            </body>
+                            <!--End of r_wrist_roll_link-->
+                          </body>
+                          <!--End of r_wrist_flex_link-->
+                        </body>
+                        <!--End of r_forearm_link-->
+                      </body>
+                      <!--End of r_elbow_flex_link-->
+                    </body>
+                    <!--End of r_forearm_roll_link-->
+                  </body>
+                  <!--End of r_upper_arm_link-->
+                </body>
+                <!--End of r_upper_arm_roll_link-->
+              </body>
+              <!--End of r_shoulder_lift_link-->
+            </body>
+            <!--End of r_shoulder_pan_link-->
+          </body>
+          <body name="left_arm" pos="0.0 0.0 0.0" quat="1 0 0 0">
+            <site name="left_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+            <!--Start of l_shoulder_pan_link-->
+            <body name="l_shoulder_pan_link" pos="0.0 0.188 0.0" quat="1.0 0.0 0.0 0.0">
+              <joint name="l_shoulder_pan_joint" type="hinge" armature="0.1" damping="0" axis="0 0 1" range="-0.714601836603 2.2853981634"/>
+              <inertial pos="-0.001201 0.024513 -0.098231" quat="1.0 0.0 0.0 0.0" mass="25.799322" diaginertia="0.866179142480 0.87421714893 0.27353821674"/>
+              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_shoulder_pan_link_visual" group="1" contype="0" conaffinity="0" mesh="shoulder_v0_shoulder_pan_vis" material="shoulder_v0_shoulder_pan_mat" type="mesh"/>
+              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_shoulder_pan_link_collision" group="0" mesh="shoulder_v0_shoulder_pan" type="mesh"/>
+              <!--Start of l_shoulder_lift_link-->
+              <body name="l_shoulder_lift_link" pos="0.1 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                <joint name="l_shoulder_lift_joint" type="hinge" armature="0.1" damping="0" axis="0 1 0" range="-0.5236 1.3963"/>
+                <inertial pos="0.02195 -0.02664 -0.03127" quat="1.0 0.0 0.0 0.0" mass="2.74988" diaginertia="0.02105584615 0.02127223737 0.01975753814"/>
+                <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_shoulder_lift_link_visual" group="1" contype="0" conaffinity="0" mesh="shoulder_v0_shoulder_lift_vis" material="shoulder_v0_shoulder_lift_mat" type="mesh"/>
+                <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_shoulder_lift_link_collision" group="0" mesh="shoulder_v0_shoulder_lift" type="mesh"/>
+                <!--Start of l_upper_arm_roll_link-->
+                <body name="l_upper_arm_roll_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                  <joint name="l_upper_arm_roll_joint" type="hinge" armature="0.1" damping="0" axis="1 0 0" range="-0.8 3.9"/>
+                  <inertial pos="0.0 0 0" quat="1.0 0.0 0.0 0.0" mass="0.1" diaginertia="0.01 0.01 0.01"/>
+                  <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_upper_arm_roll_link_visual" group="1" contype="0" conaffinity="0" mesh="shoulder_v0_upper_arm_roll" material="shoulder_v0_upper_arm_roll_mat" type="mesh"/>
+                  <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_upper_arm_roll_link_collision" group="0" mesh="shoulder_v0_upper_arm_roll_L" type="mesh"/>
+                  <!--Start of l_upper_arm_link-->
+                  <body name="l_upper_arm_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                    <inertial pos="0.21405 0.01658 -0.00057" quat="1.0 0.0 0.0 0.0" mass="6.01769" diaginertia="0.01530603856 0.07473694455 0.07601594191"/>
+                    <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_upper_arm_link_visual" group="1" contype="0" conaffinity="0" mesh="upper_arm_v0_upper_arm_vis" material="upper_arm_v0_upper_arm_mat" type="mesh"/>
+                    <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_upper_arm_link_collision" group="0" mesh="upper_arm_v0_upper_arm" type="mesh"/>
+                    <!--Start of l_elbow_flex_link-->
+                    <body name="l_elbow_flex_link" pos="0.4 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                      <joint name="l_elbow_flex_joint" type="hinge" armature="0.1" damping="0" axis="0 1 0" range="-2.3213 0.00"/>
+                      <inertial pos="0.01014 0.00032 -0.01211" quat="1.0 0.0 0.0 0.0" mass="1.90327" diaginertia="0.00346541989 0.00441606455 0.00359156824"/>
+                      <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_elbow_flex_link_visual" group="1" contype="0" conaffinity="0" mesh="upper_arm_v0_elbow_flex_vis" material="upper_arm_v0_elbow_flex_mat" type="mesh"/>
+                      <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_elbow_flex_link_collision" group="0" mesh="upper_arm_v0_elbow_flex" type="mesh"/>
+                      <!--Start of l_forearm_roll_link-->
+                      <body name="l_forearm_roll_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                        <joint name="l_forearm_roll_joint" type="hinge" armature="0.1" damping="0" axis="1 0 0" range="-3.14159 3.14159"/>
+                        <inertial pos="0 0 0" quat="1.0 0.0 0.0 0.0" mass="0.1" diaginertia="0.01 0.01 0.01"/>
+                        <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_forearm_roll_link_visual" group="1" contype="0" conaffinity="0" mesh="upper_arm_v0_forearm_roll" type="mesh"/>
+                        <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_forearm_roll_link_collision" group="0" mesh="upper_arm_v0_forearm_roll_L" type="mesh"/>
+                        <!--Start of l_forearm_link-->
+                        <body name="l_forearm_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                          <inertial pos="0.18791 -0.00017 -0.00912" quat="1.0 0.0 0.0 0.0" mass="2.57968" diaginertia="0.00364857222 0.01507736897 0.01659310749"/>
+                          <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_forearm_link_visual" group="1" contype="0" conaffinity="0" mesh="forearm_v0_forearm_vis" material="forearm_v0_forearm_mat" type="mesh"/>
+                          <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_forearm_link_collision" group="0" mesh="forearm_v0_forearm" type="mesh"/>
+                          <!--Start of l_wrist_flex_link-->
+                          <body name="l_wrist_flex_link" pos="0.321 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                            <joint name="l_wrist_flex_joint" type="hinge" armature="0.1" damping="0" axis="0 1 0" range="-2.18 0.0"/>
+                            <inertial pos="-0.00157 0.0 -0.00075" quat="1.0 0.0 0.0 0.0" mass="0.61402" diaginertia="0.00065165722 0.00019824443 0.00064450498"/>
+                            <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_wrist_flex_link_visual" group="1" contype="0" conaffinity="0" mesh="forearm_v0_wrist_flex_vis" material="forearm_v0_wrist_flex_mat" type="mesh"/>
+                            <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_wrist_flex_link_collision" group="0" mesh="forearm_v0_wrist_flex" type="mesh"/>
+                            <!--Start of l_wrist_roll_link-->
+                            <body name="l_wrist_roll_link" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+                              <joint name="l_wrist_roll_joint" type="hinge" armature="0.1" damping="0" axis="1 0 0" range="-3.14159 3.14159"/>
+                              <inertial pos="0 0 0" quat="1.0 0.0 0.0 0.0" mass="0.1" diaginertia="0.01 0.01 0.01"/>
+                              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_wrist_roll_link_visual" group="4" contype="0" conaffinity="0" mesh="forearm_v0_wrist_roll" type="mesh"/>
+                              <geom pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" name="l_wrist_roll_link_collision" group="0" mesh="forearm_v0_wrist_roll_L" type="mesh"/>
+                              <!--Start of left_hand-->
+                              <body name="left_hand" pos="0.0 0.0 0.0" quat="1 0 0 0">
+                              </body>
+                              <!--End of left_hand-->
+                            </body>
+                            <!--End of l_wrist_roll_link-->
+                          </body>
+                          <!--End of l_wrist_flex_link-->
+                        </body>
+                        <!--End of l_forearm_link-->
+                      </body>
+                      <!--End of l_elbow_flex_link-->
+                    </body>
+                    <!--End of l_forearm_roll_link-->
+                  </body>
+                  <!--End of l_upper_arm_link-->
+                </body>
+                <!--End of l_upper_arm_roll_link-->
+              </body>
+              <!--End of l_shoulder_lift_link-->
+            </body>
+            <!--End of l_shoulder_pan_link-->
+          </body>
+        </body>
+      </body>
+      <!--End of base_link-->
+    </body>
+    <!--End of base-->
+  </worldbody>
+  <actuator>
+    <motor name="head_pan_actuator" joint="head_pan_joint" class="pr2_shoulder_joints"/>
+    <motor name="head_tilt_actuator" joint="head_tilt_joint" class="pr2_shoulder_joints"/>
+    <motor name="r_shoulder_pan_actuator" joint="r_shoulder_pan_joint" class="pr2_shoulder_joints"/>
+    <motor name="r_shoulder_lift_actuator" joint="r_shoulder_lift_joint" class="pr2_joints"/>
+    <motor name="r_upper_arm_roll_actuator" joint="r_upper_arm_roll_joint" class="pr2_joints"/>
+    <motor name="r_elbow_flex_actuator" joint="r_elbow_flex_joint" class="pr2_joints"/>
+    <motor name="r_forearm_roll_actuator" joint="r_forearm_roll_joint" class="pr2_joints"/>
+    <motor name="r_wrist_flex_actuator" joint="r_wrist_flex_joint" class="pr2_wrist_joints"/>
+    <motor name="r_wrist_roll_actuator" joint="r_wrist_roll_joint" class="pr2_wrist_joints"/>
+    <motor name="l_shoulder_pan_actuator" joint="l_shoulder_pan_joint" class="pr2_shoulder_joints"/>
+    <motor name="l_shoulder_lift_actuator" joint="l_shoulder_lift_joint" class="pr2_shoulder_joints"/>
+    <motor name="l_upper_arm_roll_actuator" joint="l_upper_arm_roll_joint" class="pr2_shoulder_joints" ctrllimited="true"/>
+    <motor name="l_elbow_flex_actuator" joint="l_elbow_flex_joint" class="pr2_joints"/>
+    <motor name="l_forearm_roll_actuator" joint="l_forearm_roll_joint" class="pr2_joints"/>
+    <motor name="l_wrist_flex_actuator" joint="l_wrist_flex_joint" class="pr2_wrist_joints"/>
+    <motor name="l_wrist_roll_actuator" joint="l_wrist_roll_joint" class="pr2_wrist_joints"/>
+  </actuator>
+  <contact>
+    <exclude body1="r_shoulder_pan_link" body2="base_link"/>
+    <exclude body1="l_shoulder_pan_link" body2="base_link"/>
+    <exclude body1="r_shoulder_pan_link" body2="torso_lift_link"/>
+    <exclude body1="l_shoulder_pan_link" body2="torso_lift_link"/>
+    <exclude body1="r_shoulder_lift_link" body2="torso_lift_link"/>
+    <exclude body1="l_shoulder_lift_link" body2="torso_lift_link"/>
+    <exclude body1="left_arm" body2="torso_lift_link"/>
+    <exclude body1="right_arm" body2="torso_lift_link"/>
+    <exclude body1="torso_lift_link" body2="base_link"/>
+    <exclude body1="torso_lift_link" body2="base_link"/>
+    <exclude body1="r_shoulder_pan_link" body2="r_shoulder_lift_link"/>
+    <exclude body1="r_shoulder_lift_link" body2="r_upper_arm_roll_link"/>
+    <exclude body1="r_shoulder_pan_link" body2="r_upper_arm_roll_link"/>
+    <exclude body1="l_shoulder_lift_link" body2="l_upper_arm_roll_link"/>
+    <exclude body1="l_shoulder_pan_link" body2="l_upper_arm_roll_link"/>
+    <exclude body1="r_shoulder_pan_link" body2="r_upper_arm_link"/>
+    <exclude body1="l_shoulder_pan_link" body2="l_upper_arm_link"/>
+    <exclude body1="r_forearm_roll_link" body2="r_upper_arm_link"/>
+    <exclude body1="l_forearm_roll_link" body2="l_upper_arm_link"/>
+    <exclude body1="r_forearm_link" body2="r_upper_arm_link"/>
+    <exclude body1="l_forearm_link" body2="l_upper_arm_link"/>
+    <exclude body1="r_wrist_roll_link" body2="r_forearm_link"/>
+    <exclude body1="l_wrist_roll_link" body2="l_forearm_link"/>
+    <exclude body1="l_shoulder_pan_link" body2="l_shoulder_lift_link"/>
+    <exclude body1="r_wrist_roll_link" body2="r_wrist_flex_link"/>
+    <exclude body1="l_wrist_roll_link" body2="l_wrist_flex_link"/>
+  </contact>
+</mujoco>

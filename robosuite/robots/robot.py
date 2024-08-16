@@ -292,7 +292,14 @@ class Robot(object):
         sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
         names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
         # We don't want to include the direct joint pos sensor outputs
-        actives = [False, True, True, True]
+        actives = [True, True, True, True]
+
+        for arm in self.arms:
+            # Add in eef info
+            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm=arm, modality=modality)
+            sensors += arm_sensors
+            names += arm_sensor_names
+            actives += [True] * len(arm_sensors)
 
         for arm in self.arms:
             # Add in eef info
