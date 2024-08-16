@@ -191,12 +191,12 @@ class WholeBodyCompositeController(CompositeController):
         """
         Action split indices for the underlying factorized controllers.
 
-        WholeBodyIK controller takes in a different action space from the
-        underlying factorized controllers.
+        WholeBody controller takes in a different action space from the
+        underlying factorized controllers for individual body parts.
         """
         previous_idx = 0
         last_idx = 0
-        # add the IK solver's action split index first -- outputs in the order of individual_part_names
+        # add joint_action_policy related body parts' action split index first
         for part_name in self.composite_controller_specific_config["individual_part_names"]:
             last_idx += self.controllers[part_name].control_dim
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
@@ -220,7 +220,7 @@ class WholeBodyCompositeController(CompositeController):
         WholeBodyIK controller takes in a different action space from the
         underlying factorized controllers.
         """
-        # add ik solver action split indexes first
+        # add joint_action_policy's action split indexes first
         self._whole_body_controller_action_split_indexes.update(self.joint_action_policy.action_split_indexes())
 
         # prev and last index correspond to the IK solver indexes' last index
@@ -250,7 +250,7 @@ class WholeBodyCompositeController(CompositeController):
             controller.set_goal(action)
 
     def update_state(self):
-        # no need for extra update state here, since Jacobians are computed inside the controller
+        # no need for extra update state here, since Jacobians are computed inside the controllers of individual body parts
         return
 
     @property
@@ -308,8 +308,8 @@ class WholeBodyCompositeController(CompositeController):
 
         action_index_info_str = ", ".join(action_index_info)
         ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
-    
-    def print_action_info_dict(self, name: str):
+
+    def print_action_info_dict(self, name: str = ""):
         info_dict = {}
         info_dict["Action Dimension"] = self.action_limits[0].shape
         info_dict.update(dict(self._whole_body_controller_action_split_indexes))
