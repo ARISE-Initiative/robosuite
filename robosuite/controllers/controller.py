@@ -174,6 +174,7 @@ class Controller(object, metaclass=abc.ABCMeta):
                 self._update_single_reference(name, i)
 
     def _update_single_reference(self, name: str, index: int):
+        # TODO: remove if statement once we unify the shapes of variables when num_ref_sites == 1 and num_ref_sites > 1
         ref_id = self.sim.model.site_name2id(name)
 
         if self.num_ref_sites == 1:
