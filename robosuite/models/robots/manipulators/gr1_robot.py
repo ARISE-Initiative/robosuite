@@ -41,7 +41,14 @@ class GR1(LeggedManipulatorModel):
         Returns:
             dict: Dictionary containing arm,head,torso-specific default controller config names
         """
-        return {"right": "default_gr1", "left": "default_gr1", "head": "default_gr1_head", "torso": "default_gr1_torso"}
+        return {
+            "right": "default_gr1", 
+            "left": "default_gr1", 
+            "head": "default_gr1_head",
+            "torso": "default_gr1_torso",
+            "right_leg": "default_gr1",
+            "left_leg": "default_gr1"
+        }
 
     @property
     def init_qpos(self):

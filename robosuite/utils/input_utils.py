@@ -159,10 +159,6 @@ def input2action(device, robot, active_arm="right", active_end_effector: str = "
 
         robot (Robot): Which robot we're controlling
 
-        active_body_part (str): Allows inputs to be converted correctly if the control type (e.g.: OSC) is dependent on arm choice.
-
-        active_end_effector (str): Which end effector we're controlling
-
         env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
             correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
             {bimanual, single-arm-parallel, single-arm-opposed}
