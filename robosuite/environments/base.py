@@ -466,7 +466,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.update()
-        elif self.viewer is None and self.renderer == "mjviewer":
+        elif self.has_renderer and self.renderer == "mjviewer" and self.viewer is None:
             # need to launch again after it was destroyed
             self.initialize_renderer()
             # so that mujoco viewer renders
