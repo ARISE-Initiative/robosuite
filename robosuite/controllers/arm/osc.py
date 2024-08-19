@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers.controller import Controller
@@ -269,10 +270,13 @@ class OperationalSpaceController(Controller):
         else:
             self.update_wrt_origin = np.all(action == 0)
 
-        self.goal_origin_to_eef_ori = self.compute_goal_orientation(  # set_goal_orientation
-            scaled_delta[3:], set_ori=set_ori
-        )
-        self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[:3], set_pos=set_pos)  # set_goal_position(
+        # TODO: refactor logic for delta vs non-delta based actions
+        if self.use_delta:
+            self.goal_origin_to_eef_ori = self.compute_goal_orientation(scaled_delta[3:], set_ori=set_ori)
+            self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[:3], set_pos=set_pos)
+        else:
+            self.goal_origin_to_eef_pos = action[0:3]
+            self.goal_origin_to_eef_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
 
         if self.interpolator_pos is not None:
             self.interpolator_pos.set_goal(self.goal_pos)
