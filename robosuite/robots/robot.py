@@ -537,18 +537,6 @@ class Robot(object):
         raise NotImplementedError
 
     @property
-    def dof(self):
-        """
-        Returns:
-            int: degrees of freedom of the robot (with grippers).
-        """
-        # Get the dof of the base robot model
-        dof = super().dof
-        for gripper in self.robot_model.grippers.values():
-            dof += gripper.dof
-        return dof
-
-    @property
     def is_mobile(self):
         return NotImplementedError
 
