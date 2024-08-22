@@ -48,7 +48,7 @@ class EnvMeta(type):
         cls = super().__new__(meta, name, bases, class_dict)
 
         # List all environments that should not be registered here.
-        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "SingleArmEnv", "TwoArmEnv"]
+        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "TwoArmEnv"]
 
         if cls.__name__ not in _unregistered_envs:
             register_env(cls)

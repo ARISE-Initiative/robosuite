@@ -5,7 +5,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
 
 
