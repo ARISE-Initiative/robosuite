@@ -7,6 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
+from robosuite.utils.observables import Observable, sensor
 
 
 class MobileBaseRobot(Robot):
@@ -261,6 +262,65 @@ class MobileBaseRobot(Robot):
         observables = super().setup_observables()
 
         return observables
+
+    def _create_base_sensors(self, modality):
+        """
+        Creates base sensors for the robot.
+
+        Args:
+            modality (str): Type/modality of the created sensor
+        """
+
+        @sensor(modality=modality)
+        def base_pos(obs_cache):
+            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"base{self.idn}_center")])
+
+        @sensor(modality=modality)
+        def base_quat(obs_cache):
+            return T.mat2quat(self.sim.data.get_site_xmat(f"base{self.idn}_center"))
+
+        sensors = [base_pos, base_quat]
+        names = ["base_pos", "base_quat"]
+
+        for arm in self.arms:
+
+            @sensor(modality=modality)
+            def base_to_eef_pos(obs_cache):
+                eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"base{self.idn}_center")])
+
+                eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+                eef_mat = T.quat2mat(eef_quat)
+                base_mat = self.sim.data.get_site_xmat(f"base{self.idn}_center")
+
+                T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
+                T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))
+                T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
+                base_to_eef_pos = T_AB[:3, 3]
+                return base_to_eef_pos
+
+            @sensor(modality=modality)
+            def base_to_eef_quat(obs_cache):
+                eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"base{self.idn}_center")])
+
+                eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+                eef_mat = T.quat2mat(eef_quat)
+                base_mat = self.sim.data.get_site_xmat(f"base{self.idn}_center")
+
+                T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
+                T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))
+                T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
+                base_to_eef_mat = T_AB[:3, :3]
+                return T.mat2quat(base_to_eef_mat)
+
+            # only consider prefix if there is more than one arm
+            pf = f"{arm}_" if len(self.arms) > 1 else ""
+
+            sensors += [base_to_eef_pos, base_to_eef_quat]
+            names += [f"base_to_{pf}eef_pos", f"base_to_{pf}eef_quat"]
+
+        return sensors, names
 
     def enable_parts(self, right=True, left=True, torso=True, head=True, base=True, legs=True):
 

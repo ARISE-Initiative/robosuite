@@ -7,7 +7,6 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
-from robosuite.utils.observables import sensor
 
 
 class WheeledRobot(MobileBaseRobot):
@@ -163,96 +162,6 @@ class WheeledRobot(MobileBaseRobot):
         observables = super().setup_observables()
 
         return observables
-
-    def _create_arm_sensors(self, arm, modality):
-        """
-        Helper function to create sensors for a given arm. This is abstracted in a separate function call so that we
-        don't have local function naming collisions during the _setup_observables() call.
-
-        Args:
-            arm (str): Arm to create sensors for
-            modality (str): Modality to assign to all sensors
-
-        Returns:
-            2-tuple:
-                sensors (list): Array of sensors for the given arm
-                names (list): array of corresponding observable names
-        """
-        # eef features
-        @sensor(modality=modality)
-        def eef_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-
-        @sensor(modality=modality)
-        def eef_quat(obs_cache):
-            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
-
-        @sensor(modality=modality)
-        def base_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("base0_center")])
-
-        @sensor(modality=modality)
-        def base_quat(obs_cache):
-            return T.mat2quat(self.sim.data.get_site_xmat("base0_center"))
-
-        @sensor(modality=modality)
-        def base_to_eef_pos(obs_cache):
-            eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-            base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("base0_center")])
-
-            eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
-            eef_mat = T.quat2mat(eef_quat)
-            base_mat = self.sim.data.get_site_xmat("base0_center")
-
-            T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
-            T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))
-            T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
-            base_to_eef_pos = T_AB[:3, 3]
-            return base_to_eef_pos
-
-        @sensor(modality=modality)
-        def base_to_eef_quat(obs_cache):
-            eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-            base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("base0_center")])
-
-            eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
-            eef_mat = T.quat2mat(eef_quat)
-            base_mat = self.sim.data.get_site_xmat("base0_center")
-
-            T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
-            T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))
-            T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
-            base_to_eef_mat = T_AB[:3, :3]
-            return T.mat2quat(base_to_eef_mat)
-
-        # only consider prefix if there is more than one arm
-        pf = f"{arm}_" if len(self.arms) > 1 else ""
-
-        sensors = [eef_pos, eef_quat, base_pos, base_quat, base_to_eef_pos, base_to_eef_quat]
-        names = [
-            f"{pf}eef_pos",
-            f"{pf}eef_quat",
-            f"base_pos",
-            f"base_quat",
-            f"base_to_{pf}eef_pos",
-            f"base_to_{pf}eef_quat",
-        ]
-
-        # add in gripper sensors if this robot has a gripper
-        if self.has_gripper[arm]:
-
-            @sensor(modality=modality)
-            def gripper_qpos(obs_cache):
-                return np.array([self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]])
-
-            @sensor(modality=modality)
-            def gripper_qvel(obs_cache):
-                return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
-
-            sensors += [gripper_qpos, gripper_qvel]
-            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
-
-        return sensors, names
 
     @property
     def action_limits(self):
