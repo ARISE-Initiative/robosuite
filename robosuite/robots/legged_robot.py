@@ -6,10 +6,10 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
-from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.observables import sensor
 
 
 class LeggedRobot(MobileBaseRobot):
