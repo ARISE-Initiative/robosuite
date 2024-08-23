@@ -207,12 +207,22 @@ class JointPositionController(Controller):
         assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
 
         # scale delta appears to mess up action coming from subclassed IK controller; commenting out
-        # if delta is not None:
-        #     scaled_delta = self.scale_action(delta)
-        # else:
-        #     scaled_delta = None
+        # TODO: Add an option to skip self.scale_action to accommodate the actions from subclassed IK controller. Temporally hard-code the boolean variable here. Need to be fixed before official merging.  
+        use_scaled_action = False
+        if delta is not None:
+            if use_scaled_action:
+                scaled_delta = self.scale_action(delta)
+            else:
+                scaled_delta = action
+        else:
+            scaled_delta = None
 
-        self.goal_qpos = action
+        if use_scaled_action:
+            self.goal_qpos = set_goal_position(
+                scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
+            )
+        else:
+            self.goal_qpos = action
 
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_qpos)

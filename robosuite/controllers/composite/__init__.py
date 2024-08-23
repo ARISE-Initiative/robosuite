@@ -1,16 +1,13 @@
 from .composite_controller import CompositeController, HybridMobileBaseCompositeController, WholeBodyIKCompositeController
+from .composite_controller import COMPOSITE_CONTROLLERS_DICT
 
-
-CONTROLLER_INFO = {
-    "BASE": "Base composite controller factory",
-    "HYBRID_MOBILE_BASE": "Hybrid mobile base composite controller",
-    "WHOLE_BODY_IK": "Whole Body Inverse Kinematics Composite Controller",
-}
-
-ALL_CONTROLLERS = CONTROLLER_INFO.keys()
-
+ALL_CONTROLLERS = COMPOSITE_CONTROLLERS_DICT.keys()
 
 def composite_controller_factory(type, sim, robot_model, grippers, lite_physics):
+    assert(type in COMPOSITE_CONTROLLERS_DICT), f"{type} controller is specified, but not imported or loaded"
+    # Note: Currently we assume that the init arguments are same for all composite controllers. The situation might change given new controllers in the future, and we will adjust accodingly. 
+
+    # The default composite controllers are explicitly initialized without using the COMPOSITE_CONTORLLERS
     if type == "BASE":
         return CompositeController(sim, robot_model, grippers, lite_physics)
     elif type == "HYBRID_MOBILE_BASE":
@@ -18,4 +15,4 @@ def composite_controller_factory(type, sim, robot_model, grippers, lite_physics)
     elif type == "WHOLE_BODY_IK":
         return WholeBodyIKCompositeController(sim, robot_model, grippers, lite_physics)
     else:
-        raise ValueError
+        return COMPOSITE_CONTROLLERS_DICT[type](sim, robot_model, grippers, lite_physics)
