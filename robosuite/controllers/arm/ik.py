@@ -25,6 +25,7 @@ from robosuite.controllers.generic.joint_pos import JointPositionController
 from robosuite.utils.control_utils import *
 
 from robosuite.utils.binding_utils import MjSim
+from robosuite.utils.ik_utils import IKSolver, get_Kn
 
 # Dict of supported ik robots
 SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda", "GR1FixedLowerBody"}
@@ -314,7 +315,7 @@ class InverseKinematicsController(JointPositionController):
                     'mocap_bodies': [],
                     'nullspace_gains': nullspace_gains
                 }
-                robot = IKSolver(
+                ik_solver = IKSolver(
                     model,
                     data,
                     robot_config,
@@ -325,21 +326,21 @@ class InverseKinematicsController(JointPositionController):
                     input_rotation_repr="quat_wxyz"
                 )
                 if use_delta:
-                    target_ori_mat = np.array([robot.data.site(site_id).xmat for site_id in robot.site_ids])
-                    target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
-                    [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(robot.site_ids))]
-                    target_pos = np.array([robot.data.site(site_id).xpos for site_id in robot.site_ids])
+                    target_ori_mat = np.array([ik_solver.data.site(site_id).xmat for site_id in ik_solver.site_ids])
+                    target_ori = np.array([np.ones(4) for _ in range(len(ik_solver.site_ids))])
+                    [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(ik_solver.site_ids))]
+                    target_pos = np.array([ik_solver.data.site(site_id).xpos for site_id in ik_solver.site_ids])
                     if dpos.ndim == 1:
                         target_pos[0] += dpos
                         target_ori[0] = T.quat_multiply(target_ori[0], T.mat2quat(drot))
                     else:
                         target_pos += dpos
-                        target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(robot.site_ids))])
+                        target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(ik_solver.site_ids))])
                 else:
                     target_pos = dpos
-                    target_ori = np.array([np.ones(4) for _ in range(len(robot.site_ids))])
+                    target_ori = np.array([np.ones(4) for _ in range(len(ik_solver.site_ids))])
                     # convert drot (3x3) to quaternion
-                    [mujoco.mju_mat2Quat(target_ori[i], drot[i].flatten()) for i in range(len(robot.site_ids))]
+                    [mujoco.mju_mat2Quat(target_ori[i], drot[i].flatten()) for i in range(len(ik_solver.site_ids))]
 
                 ori_dim = target_ori.shape[1]
                 pos_dim = target_pos.shape[1]
@@ -348,7 +349,7 @@ class InverseKinematicsController(JointPositionController):
                     target_action[i*(pos_dim+ori_dim):(i+1)*(pos_dim+ori_dim)] = \
                         np.concatenate((target_pos[i], target_ori[i]))
 
-                return robot.solve(
+                return ik_solver.solve(
                     target_pos=target_pos, 
                     target_ori=target_ori,
                     Kpos=Kpos, 

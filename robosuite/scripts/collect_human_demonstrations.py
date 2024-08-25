@@ -58,7 +58,10 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
         # Run environment step
         if env.robots[0].is_mobile:
-            arm_actions = input_action[:12].copy() if "bimanual" in env.robots[0].name else input_action[:6].copy()
+
+            # Decide if it's one arm or two arms. The number of arms can be decided based on the attribute `arms` of the robot.
+            arm_actions = input_action[:6*len(env.robots[0].arms)].copy() 
+            import pdb; pdb.set_trace()
             if "GR1" in env.robots[0].name:
                 # "relative" actions by default for now
                 action_dict = {
