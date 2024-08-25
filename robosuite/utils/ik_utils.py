@@ -5,9 +5,10 @@ import mujoco.viewer
 import numpy as np
 
 import robosuite.utils.transform_utils as T
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 
-def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
+def get_nullspace_gains(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
     return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
 
 class IKSolver:
@@ -63,7 +64,7 @@ class IKSolver:
         self.control_dim = len(self.site_names) * (self.pos_dim + self.rot_dim)
         # hardcoded control limits for now
         self.control_limits = np.array([-np.inf] * self.control_dim), np.array([np.inf] * self.control_dim)
-        self.i = 0
+        self.debug_iter = 0
         self.debug = debug
         if debug:
             self.pre_clip_errors: List[np.ndarray] = []
@@ -250,33 +251,24 @@ class IKSolver:
         pre_clip_error = np.inf
         post_clip_error = np.inf
 
-        if self.debug and self.i % 10 == 0:
+        if self.debug and self.debug_iter % 10 == 0:
             # compare q_des's forward kinematics with target_pos
             integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
             integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
             pre_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
-            print(f"internal error pre clip: {pre_clip_error}")
+            ROBOSUITE_DEFAULT_LOGGER.info(f"IK error before clipping based on joint ranges: {pre_clip_error}")
             self.pre_clip_errors.append(pre_clip_error)
 
-        self.i += 1
+        self.debug_iter += 1
 
         # Set the control signal.
         np.clip(self.q_des, *self.model.jnt_range[self.dof_ids].T, out=self.q_des)
 
-        if self.debug and self.i % 10 == 0:
+        if self.debug and self.debug_iter % 10 == 0:
             # compare self.q_des's forward kinematics with target_pos
             integrated_pos: Dict[str, np.ndarray] = self.forward_kinematics(self.q_des)
             integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
             post_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
-            print(f"internal error post clip: {post_clip_error}")
-
-            # check if we're outside the joint limits
-            if np.any(self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) or np.any(self.q_des > self.model.jnt_range[self.dof_ids][:, 1]):
-                # get dof ids exceeding joint limits
-                exceeding_ids = np.where((self.q_des < self.model.jnt_range[self.dof_ids][:, 0]) | (self.q_des > self.model.jnt_range[self.dof_ids][:, 1]))[0]
-                exceeding_joint_names = [self.model.joint(i).name for i in self.dof_ids[exceeding_ids]]
-                for joint_name in exceeding_joint_names:
-                    if "gripper" not in joint_name:
-                        print(f"Joint {joint_name} has exceeded its limits.")
+            ROBOSUITE_DEFAULT_LOGGER.info(f"IK error after clipping based on joint ranges: {post_clip_error}")
 
         return self.q_des

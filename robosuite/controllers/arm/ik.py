@@ -19,6 +19,7 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 
 import mujoco
+from robosuite.utils.ik_utils import IKSolver, get_nullspace_gains
 import robosuite.utils.transform_utils as T
 from robosuite.controllers.generic.joint_pos import JointPositionController
 from robosuite.utils.control_utils import *
@@ -303,19 +304,15 @@ class InverseKinematicsController(JointPositionController):
                 dq = q_des  # hack for now
                 return dq
             else:
-                from robosuite.utils.ik_utils import IKSolver
-
                 model = sim.model._model
                 data = sim.data._data
                 joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0 and ("gripper0" not in model.joint(i).name)]  # Exclude fixed joints
-                def get_Kn(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
-                    return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
-                Kn = get_Kn(joint_names, nullspace_joint_weights)
+                nullspace_gains = get_nullspace_gains(joint_names, nullspace_joint_weights)
                 robot_config =  {
                     'end_effector_sites': ref_name,
                     'joint_names': joint_names,
                     'mocap_bodies': [],
-                    'nullspace_gains': Kn
+                    'nullspace_gains': nullspace_gains
                 }
                 robot = IKSolver(
                     model,
