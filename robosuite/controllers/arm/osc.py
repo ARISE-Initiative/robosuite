@@ -202,12 +202,15 @@ class OperationalSpaceController(Controller):
         self.goal_ori = np.array(self.initial_ee_ori_mat)
         self.goal_pos = np.array(self.initial_ee_pos)
 
+        # initialize orientation references
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
 
+        # initialize relative goal position and orientations
         self.goal_origin_to_eef_pos = None
         self.goal_origin_to_eef_ori = None
 
+        # initialize origin pos and ori
         self.origin_pos = None
         self.origin_ori = None
 
@@ -293,7 +296,7 @@ class OperationalSpaceController(Controller):
 
         # world rotation matrix is just identity
         world_frame = np.eye(4)
-        world_frame[:3, 3] = vec  
+        world_frame[:3, 3] = vec
 
         origin_frame = T.make_pose(self.origin_pos, self.origin_ori)
         origin_frame_inv = T.pose_inv(origin_frame)
@@ -317,13 +320,12 @@ class OperationalSpaceController(Controller):
             raise NotImplementedError
 
         return goal_origin_to_eef_pos
-    
+
     def goal_origin_to_eef_pose(self):
         origin_pose = T.make_pose(self.origin_pos, self.origin_ori)
         ee_pose = T.make_pose(self.ee_pos, self.ee_ori_mat)
         origin_pose_inv = T.pose_inv(origin_pose)
         return T.pose_in_A_to_pose_in_B(ee_pose, origin_pose_inv)
-
 
     def compute_goal_orientation(self, delta, set_ori=None):
         """
