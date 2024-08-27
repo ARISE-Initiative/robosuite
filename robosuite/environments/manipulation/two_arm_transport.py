@@ -18,21 +18,15 @@ class TwoArmTransport(TwoArmEnv):
     initial bin into a target bin, while removing trash from the target bin to a trash bin.
 
     Args:
-        robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
-            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
-            Note: Must be either 2 single single-arm robots or 1 bimanual robot!
+        robots (str or list of str): Specification for specific robot(s)
+            Note: Must be either 2 robots or 1 bimanual robot!
 
-        env_configuration (str): Specifies how to position the robots within the environment. Can be either:
+        env_configuration (str): Specifies how to position the robots within the environment if two robots inputted. Can be either:
 
-            :`'bimanual'`: Only applicable for bimanual robot setups. Sets up the (single) bimanual robot on the -x
-                side of the table
-            :`'single-arm-parallel'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots next to each other on the -x side of the table
-            :`'single-arm-opposed'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots opposed from each others on the opposite +/-y sides of the table.
+            :`'parallel'`: Sets up the two robots next to each other on the -x side of the table
+            :`'opposed'`: Sets up the two robots opposed from each others on the opposite +/-y sides of the table.
 
-        Note that "default" corresponds to either "bimanual" if a bimanual robot is used or "single-arm-opposed" if two
-        single-arm robots are used.
+        Note that "default" "opposed" if two robots are used.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -271,11 +265,11 @@ class TwoArmTransport(TwoArmEnv):
         super()._load_model()
 
         # Adjust base pose(s) accordingly
-        if self.env_configuration == "bimanual":
+        if self.env_configuration == "single-robot":
             xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
             self.robots[0].robot_model.set_base_xpos(xpos)
         else:
-            if self.env_configuration == "single-arm-opposed":
+            if self.env_configuration == "opposed":
                 # Set up robots facing towards each other by rotating them from their default position
                 for robot, rotation, offset in zip(self.robots, (np.pi / 2, -np.pi / 2), (-0.25, 0.25)):
                     xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -284,7 +278,7 @@ class TwoArmTransport(TwoArmEnv):
                     xpos += np.array((0, offset, 0))
                     robot.robot_model.set_base_xpos(xpos)
                     robot.robot_model.set_base_ori(rot)
-            else:  # "single-arm-parallel" configuration setting
+            else:  # "parallel" configuration setting
                 # Set up robots parallel to each other but offset from the center
                 for robot, offset in zip(self.robots, (-0.6, 0.6)):
                     xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -431,13 +425,6 @@ class TwoArmTransport(TwoArmEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            if self.env_configuration == "bimanual":
-                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
-                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
-            else:
-                pf0 = self.robots[0].robot_model.naming_prefix
-                pf1 = self.robots[1].robot_model.naming_prefix
             modality = "object"
 
             # position and rotation of payload
@@ -476,40 +463,6 @@ class TwoArmTransport(TwoArmEnv):
             def trash_bin_pos(obs_cache):
                 return np.array(self.transport.trash_bin_pos)
 
-            # Relevant egocentric positions for arm0
-            @sensor(modality=modality)
-            def gripper0_to_payload(obs_cache):
-                return (
-                    obs_cache["payload_pos"] - obs_cache[f"{pf0}eef_pos"]
-                    if "payload_pos" in obs_cache and f"{pf0}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            @sensor(modality=modality)
-            def gripper0_to_lid_handle(obs_cache):
-                return (
-                    obs_cache["lid_handle_pos"] - obs_cache[f"{pf0}eef_pos"]
-                    if "lid_handle_pos" in obs_cache and f"{pf0}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            # Relevant egocentric positions for arm1
-            @sensor(modality=modality)
-            def gripper1_to_payload(obs_cache):
-                return (
-                    obs_cache["payload_pos"] - obs_cache[f"{pf1}eef_pos"]
-                    if "payload_pos" in obs_cache and f"{pf1}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            @sensor(modality=modality)
-            def gripper1_to_trash(obs_cache):
-                return (
-                    obs_cache["trash_pos"] - obs_cache[f"{pf1}eef_pos"]
-                    if "trash_pos" in obs_cache and f"{pf1}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
             # Key boolean checks
             @sensor(modality=modality)
             def payload_in_target_bin(obs_cache):
@@ -528,14 +481,53 @@ class TwoArmTransport(TwoArmEnv):
                 lid_handle_quat,
                 target_bin_pos,
                 trash_bin_pos,
-                gripper0_to_payload,
-                gripper0_to_lid_handle,
-                gripper1_to_payload,
-                gripper1_to_trash,
                 payload_in_target_bin,
                 trash_in_trash_bin,
             ]
             names = [s.__name__ for s in sensors]
+
+            arm_sensor_fns = []
+            if self.env_configuration == "single-robot":
+                # If single-robot, we only have one robot. gripper 0 is always right and gripper 1 is always left
+                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
+                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
+                prefixes = [pf0, pf1]
+                arm_sensor_fns = [
+                    self._get_obj_eef_sensor(full_pf, "payload_pos", f"gripper{i}_to_payload", modality)
+                    for i, full_pf in enumerate(prefixes)
+                ]
+                arm_sensor_fns += [
+                    self._get_obj_eef_sensor(pf0, "lid_handle_pos", "gripper0_to_lid_handle", modality),
+                    self._get_obj_eef_sensor(pf1, "trash_pos", "gripper1_to_trash", modality),
+                ]
+            else:
+                # If not single-robot, we have two robots. gripper 0 is always the first robot's gripper and
+                # gripper 1 is always the second robot's gripper. However, must account for the fact that
+                # each robot may have multiple arms/grippers
+                robot_arm_prefixes = [self._get_arm_prefixes(robot, include_robot_name=False) for robot in self.robots]
+                robot_full_prefixes = [self._get_arm_prefixes(robot, include_robot_name=True) for robot in self.robots]
+                for i, (arm_prefixes, full_prefixes) in enumerate(zip(robot_arm_prefixes, robot_full_prefixes)):
+                    arm_sensor_fns += [
+                        self._get_obj_eef_sensor(full_pf, "payload_pos", f"{arm_pf}gripper{i}_to_payload", modality)
+                        for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+                    ]
+
+                    # If this is the first robot, add lid handle sensor, else add trash sensor
+                    if i == 0:
+                        arm_sensor_fns += [
+                            self._get_obj_eef_sensor(
+                                full_pf, "lid_handle_pos", f"{arm_pf}gripper0_to_lid_handle", modality
+                            )
+                            for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+                        ]
+                    else:
+                        arm_sensor_fns += [
+                            self._get_obj_eef_sensor(full_pf, "trash_pos", f"{arm_pf}gripper1_to_trash", modality)
+                            for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+                        ]
+
+            sensors += arm_sensor_fns
+            names += [s.__name__ for s in arm_sensor_fns]
 
             # Create observables
             for name, s in zip(names, sensors):

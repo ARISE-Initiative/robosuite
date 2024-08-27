@@ -108,17 +108,21 @@ class SpaceMouse(Device):
     You can look up its vendor/product id from this method.
 
     Args:
+        env (RobotEnv): The environment which contains the robot(s) to control
+                        using this device.
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
     def __init__(
         self,
+        env,
         vendor_id=macros.SPACEMOUSE_VENDOR_ID,
         product_id=macros.SPACEMOUSE_PRODUCT_ID,
         pos_sensitivity=1.0,
         rot_sensitivity=1.0,
     ):
+        super().__init__(env)
 
         print("Opening SpaceMouse device")
         self.vendor_id = vendor_id
@@ -175,12 +179,16 @@ class SpaceMouse(Device):
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
         print_command("B", "Toggle arm/base mode (if applicable)")
         print_command("Control+C", "quit")
+        print_command("S", "Switch active arm if multi-armed robot")
+        print_command("=", "Switch active robot if multi-robot environment")
         print("")
 
     def _reset_internal_state(self):
         """
         Resets internal state of controller, except for the reset signal.
         """
+        super()._reset_internal_state()
+
         self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
         # Reset 6-DOF variables
         self.x, self.y, self.z = 0, 0, 0
@@ -189,8 +197,6 @@ class SpaceMouse(Device):
         self._control = np.zeros(6)
         # Reset grasp
         self.single_click_and_hold = False
-        # Reset base mode
-        self.base_mode = False
 
     def start_control(self):
         """
@@ -337,7 +343,11 @@ class SpaceMouse(Device):
         try:
             # controls for mobile base (only applicable if mobile base present)
             if key.char == "b":
-                self.base_mode = not self.base_mode  # toggle mobile base
+                self.base_modes[self.active_robot] = not self.base_modes[self.active_robot]  # toggle mobile base
+            elif key.char == "s":
+                self.active_arm_index = (self.active_arm_index + 1) % len(self.all_robot_arms[self.active_robot])
+            elif key.char == "=":
+                self.active_robot = (self.active_robot + 1) % self.num_robots
 
         except AttributeError as e:
             pass

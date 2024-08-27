@@ -13,11 +13,14 @@ class Keyboard(Device):
     """
     A minimalistic driver class for a Keyboard.
     Args:
+        env (RobotEnv): The environment which contains the robot(s) to control
+                        using this device.
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
-    def __init__(self, pos_sensitivity=1.0, rot_sensitivity=1.0):
+    def __init__(self, env, pos_sensitivity=1.0, rot_sensitivity=1.0):
+        super().__init__(env)
 
         self._display_controls()
         self._reset_internal_state()
@@ -55,19 +58,21 @@ class Keyboard(Device):
         print_command("o-p", "rotate (yaw)")
         print_command("y-h", "rotate (pitch)")
         print_command("e-r", "rotate (roll)")
+        print_command("s", "switch active arm if multi-armed robot")
+        print_command("=", "switch active robot if multi-robot environment")
         print("")
 
     def _reset_internal_state(self):
         """
         Resets internal state of controller, except for the reset signal.
         """
+        super()._reset_internal_state()
+
         self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
         self.raw_drotation = np.zeros(3)  # immediate roll, pitch, yaw delta values from keyboard hits
         self.last_drotation = np.zeros(3)
         self.pos = np.zeros(3)  # (x, y, z)
         self.last_pos = np.zeros(3)
-        self.grasp = False
-        self.base_mode = False
 
     def start_control(self):
         """
@@ -161,17 +166,25 @@ class Keyboard(Device):
         try:
             # controls for grasping
             if key == Key.space:
-                self.grasp = not self.grasp  # toggle gripper
+                self.grasp_states[self.active_robot][self.active_arm_index] = not self.grasp_states[self.active_robot][
+                    self.active_arm_index
+                ]  # toggle gripper
 
             # controls for mobile base (only applicable if mobile base present)
             elif key.char == "b":
-                self.base_mode = not self.base_mode  # toggle mobile base
+                self.base_modes[self.active_robot] = not self.base_modes[self.active_robot]  # toggle mobile base
 
             # user-commanded reset
             elif key.char == "q":
                 self._reset_state = 1
                 self._enabled = False
                 self._reset_internal_state()
+
+            elif key.char == "s":
+                self.active_arm_index = (self.active_arm_index + 1) % len(self.all_robot_arms[self.active_robot])
+
+            elif key.char == "=":
+                self.active_robot = (self.active_robot + 1) % self.num_robots
 
         except AttributeError as e:
             pass

@@ -30,7 +30,7 @@ def test_all_environments():
                     config = "bimanual"
                 else:
                     robots = [robot_name, robot_name]
-                    config = "single-arm-opposed"
+                    config = "opposed"
                 # compile configuration specs
                 env_config["robots"] = robots
                 env_config["env_configuration"] = config
