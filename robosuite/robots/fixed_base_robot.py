@@ -89,6 +89,13 @@ class FixedBaseRobot(Robot):
         # Now, add references to gripper if necessary
         # indices for grippers in qpos, qvel
         for arm in self.arms:
+            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+            self._ref_joints_indexes_dict[arm] = [
+                self.sim.model.joint_name2id(joint) for joint in self.robot_model.arm_joints[start:end]
+            ]
+            self._ref_actuators_indexes_dict[arm] = [
+                self.sim.model.actuator_name2id(joint) for joint in self.robot_model.arm_actuators[start:end]
+            ]
             if self.has_gripper[arm]:
                 self.gripper_joints[arm] = list(self.gripper[arm].joints)
                 self._ref_gripper_joint_pos_indexes[arm] = [
@@ -99,13 +106,6 @@ class FixedBaseRobot(Robot):
                 ]
                 self._ref_joint_gripper_actuator_indexes[arm] = [
                     self.sim.model.actuator_name2id(actuator) for actuator in self.gripper[arm].actuators
-                ]
-                (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-                self._ref_joints_indexes_dict[arm] = [
-                    self.sim.model.joint_name2id(joint) for joint in self.robot_model.arm_joints[start:end]
-                ]
-                self._ref_actuators_indexes_dict[arm] = [
-                    self.sim.model.actuator_name2id(joint) for joint in self.robot_model.arm_actuators[start:end]
                 ]
                 self._ref_joints_indexes_dict[self.get_gripper_name(arm)] = [
                     self.sim.model.joint_name2id(joint) for joint in self.gripper_joints[arm]
