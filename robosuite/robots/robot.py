@@ -294,6 +294,12 @@ class Robot(object):
         # We don't want to include the direct joint pos sensor outputs
         actives = [False, True, True, True]
 
+        for arm in self.arms:
+            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm, modality=modality)
+            sensors += arm_sensors
+            names += arm_sensor_names
+            actives += [True] * len(arm_sensors)
+
         base_sensors, base_sensor_names = self._create_base_sensors(modality=modality)
         sensors += base_sensors
         names += base_sensor_names
