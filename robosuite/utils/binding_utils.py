@@ -172,7 +172,8 @@ class MjRenderContext:
 
         ret_img = rgb_img
         if segmentation:
-            seg_img = rgb_img[:, :, 0] + rgb_img[:, :, 1] * (2**8) + rgb_img[:, :, 2] * (2**16)
+            uint32_rgb_img = rgb_img.astype(np.int32)
+            seg_img = uint32_rgb_img[:, :, 0] + uint32_rgb_img[:, :, 1] * (2**8) + uint32_rgb_img[:, :, 2] * (2**16)
             seg_img[seg_img >= (self.scn.ngeom + 1)] = 0
             seg_ids = np.full((self.scn.ngeom + 1, 2), fill_value=-1, dtype=np.int32)
 
