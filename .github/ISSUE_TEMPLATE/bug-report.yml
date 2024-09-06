@@ -16,7 +16,7 @@ body:
     validations:
       required: true
 
-  - type: checkboxes
+  - type: textarea
     id: information-scripts-examples
     attributes:
       label: Information
