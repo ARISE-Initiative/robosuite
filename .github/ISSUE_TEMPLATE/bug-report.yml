@@ -35,10 +35,23 @@ body:
 
       placeholder: |
         Steps to reproduce the behavior:
+          0. Use the following code-snippet `example_script.py`: 
+          ```
+          from robosuite import make
+          env = make(
+              "Lift",
+              robots="Panda",
+              gripper_types="TwoFinger",
+              use_camera_obs=False,
+              reward_shaping=True,
+              )
+            
+          print(env)
+          ```
 
-          1. `python robosuite/scripts/example_script.py`
-          2.
-          3.
+          ```
+          1. `python example_script.py`
+          2. ...
 
   - type: textarea
     id: expected-behavior
