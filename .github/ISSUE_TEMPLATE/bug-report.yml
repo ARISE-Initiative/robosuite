@@ -1,0 +1,49 @@
+name: "\U0001F41B Bug Report"
+description: Help us improve Robosuite by submitting a bug report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks submitting a bug report!
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System Info
+      description: Which version of Robosuite are you using? Which OS (e.g., Ubuntu, MacOS, Windows) are you using? If you think it'll help, you can also share the output of `pip list`.
+      render: Shell
+      placeholder: Robosuite version, OS.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: information-scripts-examples
+    attributes:
+      label: Information
+      description: 'The problem arises when using:'
+
+  - type: textarea
+    id: reproduction
+    validations:
+      required: true
+    attributes:
+      label: Reproduction
+      description: |
+        If possible, provide a minimal code sample or script that reproduces the problem you ran into.
+        Please use code tags to correctly format your code: https://help.github.com/en/github/writing-on-github/creating-and-highlighting-code-blocks#syntax-highlighting
+        Please avoid screenshots, as they don't allow copy-and-pasting.
+
+      placeholder: |
+        Steps to reproduce the behavior:
+
+          1. `python robosuite/scripts/example_script.py`
+          2.
+          3.
+
+  - type: textarea
+    id: expected-behavior
+    validations:
+      required: true
+    attributes:
+      label: Expected behavior
+      description: "A clear and concise description of what you would expect to happen."
