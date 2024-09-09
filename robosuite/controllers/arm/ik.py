@@ -25,7 +25,7 @@ from robosuite.controllers.generic.joint_pos import JointPositionController
 from robosuite.utils.control_utils import *
 
 from robosuite.utils.binding_utils import MjSim
-from robosuite.utils.ik_utils import IKSolver, get_Kn
+from robosuite.utils.ik_utils import IKSolver
 
 # Dict of supported ik robots
 SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda", "GR1FixedLowerBody"}
