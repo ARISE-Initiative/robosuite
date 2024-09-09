@@ -11,6 +11,9 @@ class MjviewerRenderer:
     def render(self):
         pass
 
+    def set_camera(self, camera_id):
+        self.camera_id = camera_id
+
     def update(self):
         if self.viewer is None:
             self.viewer = viewer.launch_passive(

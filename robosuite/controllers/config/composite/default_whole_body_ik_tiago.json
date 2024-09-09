@@ -15,5 +15,5 @@
         "ik_input_rotation_repr": "axis_angle",
         "ik_debug": false
     },
-    "default_controller_configs_part_names": ["right_gripper", "left_gripper"]
+    "default_controller_configs_part_names": ["right", "left"]
 }

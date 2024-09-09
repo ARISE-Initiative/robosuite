@@ -1,11 +1,12 @@
 import json
 
 import pathlib
+from typing import Optional, Dict
 import robosuite
 from robosuite import load_controller_config
 
 
-def load_composite_controller_config(custom_fpath: str = None, default_controller: str = None, robot: str = None):
+def load_composite_controller_config(custom_fpath: str = None, default_controller: str = None, robot: str = None) -> Optional[Dict]:
     """
     Utility function that loads the desired composite controller and returns the loaded configuration as a dict
 
@@ -47,6 +48,8 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
 
         # Store the default controller config fpath associated with the requested controller
         custom_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/composite/default_{default_controller.lower()}_{robot_name}.json"
+    else:
+        return None
 
     # Assert that the fpath to load the controller is not empty
     assert custom_fpath is not None, "Error: Either custom_fpath or default_controller must be specified!"

@@ -1,30 +1,24 @@
 import argparse
 import json
+
 import robosuite as suite
 from robosuite import load_controller_config
-
-import json
-
-
-
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--environment", type=str, default="Lift")
 parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-parser.add_argument(
-    "--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary"
-)
+parser.add_argument("--config", type=str, default="opposed", help="Specified environment configuration if necessary")
 
 args = parser.parse_args()
 
 
 controller_config = load_controller_config(default_controller="OSC_POSE")
 config = {
-        "env_name": args.environment,
-        "robots": args.robots,
-        "controller_configs": controller_config,
-    }
+    "env_name": args.environment,
+    "robots": args.robots,
+    "controller_configs": controller_config,
+}
 
 # Check if we're using a multi-armed environment and use env_configuration argument if so
 if "TwoArm" in args.environment:
@@ -50,8 +44,6 @@ for robot in env.robots:
 
 env.close()
 
-print("Actions can created by calling robot.create_action_vector, and passing in a dictionary with the above keys and desired values.")
-
-    
-
-
+print(
+    "Actions can created by calling robot.create_action_vector, and passing in a dictionary with the above keys and desired values."
+)

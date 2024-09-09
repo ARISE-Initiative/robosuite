@@ -7,10 +7,10 @@ from typing import Dict, List
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
-from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.observables import sensor
 
 
 class LeggedRobot(MobileBaseRobot):
@@ -226,55 +226,6 @@ class LeggedRobot(MobileBaseRobot):
         observables = super().setup_observables()
 
         return observables
-
-    def _create_arm_sensors(self, arm, modality):
-        """
-        Helper function to create sensors for a given arm. This is abstracted in a separate function call so that we
-        don't have local function naming collisions during the _setup_observables() call.
-
-        Args:
-            arm (str): Arm to create sensors for
-            modality (str): Modality to assign to all sensors
-
-        Returns:
-            2-tuple:
-                sensors (list): Array of sensors for the given arm
-                names (list): array of corresponding observable names
-        """
-        # eef features
-        @sensor(modality=modality)
-        def eef_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-
-        @sensor(modality=modality)
-        def eef_quat(obs_cache):
-            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
-
-        @sensor(modality=modality)
-        def base_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id("mobile_base0_center")])
-
-        # only consider prefix if there is more than one arm
-        pf = f"{arm}_" if len(self.arms) > 1 else ""
-
-        sensors = [eef_pos, eef_quat]  # , base_pos]
-        names = [f"{pf}eef_pos", f"{pf}eef_quat"]  # , f"base_pos"]
-
-        # add in gripper sensors if this robot has a gripper
-        if self.has_gripper[arm]:
-
-            @sensor(modality=modality)
-            def gripper_qpos(obs_cache):
-                return np.array([self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]])
-
-            @sensor(modality=modality)
-            def gripper_qvel(obs_cache):
-                return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
-
-            sensors += [gripper_qpos, gripper_qvel]
-            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
-
-        return sensors, names
 
     @property
     def action_limits(self):

@@ -42,22 +42,6 @@ if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["os
     else:
         os.environ["MUJOCO_GL"] = "egl"
 _MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
-if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
-    _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
-    if _SYSTEM == "Linux":
-        _VALID_MUJOCO_GL += ("glx", "egl", "osmesa")
-    elif _SYSTEM == "Windows":
-        _VALID_MUJOCO_GL += ("wgl",)
-    elif _SYSTEM == "Darwin":
-        _VALID_MUJOCO_GL += ("cgl",)
-    if _MUJOCO_GL not in _VALID_MUJOCO_GL:
-        raise RuntimeError(f"invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}")
-    if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
-        from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
-    elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
-        from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
-    else:
-        from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
 
 
 class MjRenderContext:
@@ -69,6 +53,25 @@ class MjRenderContext:
     """
 
     def __init__(self, sim, offscreen=True, device_id=-1, max_width=640, max_height=480):
+
+        # move this logic from outside to inside class to avoid multiprocessing issues
+        if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
+            _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
+            if _SYSTEM == "Linux":
+                _VALID_MUJOCO_GL += ("glx", "egl", "osmesa")
+            elif _SYSTEM == "Windows":
+                _VALID_MUJOCO_GL += ("wgl",)
+            elif _SYSTEM == "Darwin":
+                _VALID_MUJOCO_GL += ("cgl",)
+            if _MUJOCO_GL not in _VALID_MUJOCO_GL:
+                raise RuntimeError(f"invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}")
+            if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
+                from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
+            elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
+                from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
+            else:
+                from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
+
         assert offscreen, "only offscreen supported for now"
         self.sim = sim
         self.offscreen = offscreen

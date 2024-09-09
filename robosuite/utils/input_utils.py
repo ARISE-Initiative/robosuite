@@ -77,9 +77,8 @@ def choose_multi_arm_config():
     """
     # Get the list of all multi arm configs
     env_configs = {
-        "Single Arms Opposed": "single-arm-opposed",
-        "Single Arms Parallel": "single-arm-parallel",
-        "Bimanual": "bimanual",
+        "Opposed": "opposed",
+        "Parallel": "parallel",
     }
 
     # Select environment configuration
@@ -161,7 +160,7 @@ def input2action(device, robot, active_arm="right", active_end_effector: str = "
 
         env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
             correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
-            {bimanual, single-arm-parallel, single-arm-opposed}
+            {parallel, opposed}
 
         mirror_actions (bool): actions corresponding to viewing robot from behind.
             first axis: left/right. second axis: back/forward. third axis: down/up.
@@ -215,7 +214,7 @@ def input2action(device, robot, active_arm="right", active_end_effector: str = "
         drotation = T.mat2quat(T.euler2mat(drotation))
 
         # If we're using a non-forward facing configuration, need to adjust relative position / orientation
-        if env_configuration == "single-arm-opposed":
+        if env_configuration == "opposed":
             # Swap x and y for pos and flip x,y signs for ori
             dpos = dpos[[1, 0, 2]]
             drotation[0] = -drotation[0]

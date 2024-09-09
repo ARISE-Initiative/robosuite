@@ -1,122 +1,110 @@
+<?xml version="1.0" ?>
 <mujoco model="g1 three finger left gripper">
-    <statistic center="0.3 0 0.4" extent="1"/>
-    <compiler angle="radian" meshdir="./" autolimits="true"/>
-
-    <visual>
-        <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
-        <rgba haze="0.15 0.25 0.35 1"/>
-        <global azimuth="120" elevation="20"/>
-    </visual>
-
-    <default>
-        <default class="visual">
-            <geom group="1" type="mesh" contype="0" conaffinity="0" density="0" material="metallic"/>
-        </default>
-        <default class="collision">
-            <geom group="0" type="mesh"/>
-        </default>
-        <joint damping="3"/>
-        <muscle ctrllimited="true" ctrlrange="0 100"/>
-        <motor ctrllimited="true" ctrlrange="-3 3" gear="1"/>
-        <position ctrllimited="true" kp="10"/>
-        <default class="hand_joint">
-            <site rgba="1 0 0 1" size="0.01" group="5"/>
-            <joint damping="0.5" armature="0.01" frictionloss="0.1"/>
-        <motor ctrlrange="-0.7 0.7"/>
+  <statistic center="0.3 0 0.4" extent="1"/>
+  <compiler angle="radian" meshdir="./" autolimits="true"/>
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="120" elevation="20"/>
+  </visual>
+  <default>
+    <default class="visual">
+      <geom group="1" type="mesh" contype="0" conaffinity="0" density="0" material="metallic"/>
     </default>
-
+    <default class="collision">
+      <geom group="0" type="mesh"/>
     </default>
-    <asset>
-        <material name="metallic" rgba="0.7 0.7 0.7 1"/>
-        <material name="black" rgba="0.2 0.2 0.2 1"/>
-        <mesh name="l_palm_link" file="meshes/g1_three_finger_gripper/left_palm_link.STL"/>
-        <mesh name="l_zero_link" file="./meshes/g1_three_finger_gripper/left_zero_link.STL"/>
-        <mesh name="l_one_link" file="./meshes/g1_three_finger_gripper/left_one_link.STL"/>
-        <mesh name="l_two_link" file="./meshes/g1_three_finger_gripper/left_two_link.STL"/>
-        <mesh name="l_three_link" file="./meshes/g1_three_finger_gripper/left_three_link.STL"/>
-        <mesh name="l_four_link" file="./meshes/g1_three_finger_gripper/left_four_link.STL"/>
-        <mesh name="l_five_link" file="./meshes/g1_three_finger_gripper/left_five_link.STL"/>
-        <mesh name="l_six_link" file="./meshes/g1_three_finger_gripper/left_six_link.STL"/>
-    </asset>
-
-    <worldbody>
-        <body name="left_hand" pos="0 0 0" quat="1 0 0 0">
-            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="1"/>
-            <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
-            <body name="eef" pos="0 0 0" quat="0.707 0. -0.707 0.">
-                <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 1 0 1" type="sphere" group="2"/>
-                <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
-                <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
-                <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
-                <site name="grip_site_cylinder" pos="0 0 0" quat="1 0 0 0" size="0.005 0.5" rgba="0 1 0 0.3" type="cylinder" group="1"/>
-            </body>
-            <geom pos="0.12 0 0" type="mesh" class="visual" mesh="l_palm_link"/>
-            <geom pos="0.12 0 0" type="mesh" mesh="l_palm_link" class="collision"/>
-            <body name="l_zero_link" pos="0.17 0 0">
-                <inertial pos="-0.0260466 -0.00877511 1.08605e-05" quat="0.59241 0.381376 -0.592953 0.389884"
-                mass="0.0509893" diaginertia="8.68047e-06 7.23365e-06 4.58058e-06"/>
-                <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_zero_joint" axis="0 1 0" range="-0.523598 0.523598"/>
-                <geom type="mesh" class="visual" mesh="l_zero_link"/>
-                <body name="l_one_link" pos="-0.026525 -0.0188 -5e-05">
-                <inertial pos="-0.00181538 -0.0327057 -0.000185871" quat="0.701646 0.698199 0.0817825 -0.116289"
-                    mass="0.047762" diaginertia="8.03051e-06 7.8455e-06 3.65282e-06"/>
-                <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_one_joint" axis="0 0 1" range="-1 1.2"/>
-                <geom type="mesh" class="visual" mesh="l_one_link"/>
-                <geom size="0.01 0.015 0.01" pos="-0.001 -0.032 0" type="box" class="collision"/>
-                <body name="l_two_link" pos="0 -0.0431 0">
-                    <inertial pos="-0.00135257 -0.0237591 -0.000119669"
-                    quat="0.717995 0.695316 -0.0180122 -0.0263741" mass="0.0138584"
-                    diaginertia="2.55338e-06 2.04399e-06 9.3995e-07"/>
-                    <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_two_joint" axis="0 0 1" range="0 1.84"/>
-                    <geom type="mesh" class="visual" mesh="l_two_link"/>
-                    <geom type="mesh" mesh="l_two_link" class="collision"/>
-                </body>
-                </body>
-            </body>
-            <body name="l_three_link" pos="0.205 0.004 0.02395">
-                <inertial pos="0.0362561 -0.0015725 0.000269899" quat="0.540443 0.459072 0.5397 0.45376"
-                mass="0.0488469" diaginertia="8.91742e-06 8.64873e-06 3.8319e-06"/>
-                <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_three_joint" axis="0 0 1" range="-1.84 0.3"/>
-                <geom type="mesh" class="visual" mesh="l_three_link"/>
-                <geom type="mesh" mesh="l_three_link" class="collision"/>
-                <body name="l_four_link" pos="0.0471 -0.0036 0">
-                <inertial pos="0.0237591 0.00135257 0.000119669" quat="0.478926 0.48905 0.526348 0.504399"
-                    mass="0.0138584" diaginertia="2.55338e-06 2.04399e-06 9.3995e-07"/>
-                <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_four_joint" axis="0 0 1" range="-1.84 0"/>
-                <geom type="mesh" class="visual" mesh="l_four_link"/>
-                <geom type="mesh" mesh="l_four_link" class="collision"/>
-                </body>
-            </body>
-            <body name="l_five_link" pos="0.205 0.004 -0.02395">
-                <inertial pos="0.0362561 -0.0015725 0.000269899" quat="0.540443 0.459072 0.5397 0.45376"
-                mass="0.0488469" diaginertia="8.91742e-06 8.64873e-06 3.8319e-06"/>
-                <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_five_joint" axis="0 0 1" range="-1.84 0.3"/>
-                <geom type="mesh" class="visual" mesh="l_five_link"/>
-                <geom type="mesh" mesh="l_five_link" class="collision"/>
-                <body name="l_six_link" pos="0.0471 -0.0036 0">
-                <inertial pos="0.0237591 0.00135257 0.000119669" quat="0.478926 0.48905 0.526348 0.504399"
-                    mass="0.0138584" diaginertia="2.55338e-06 2.04399e-06 9.3995e-07"/>
-                <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_six_joint" axis="0 0 1" range="-1.84 0"/>
-                <geom type="mesh" class="visual" mesh="l_six_link"/>
-                <geom type="mesh" mesh="l_six_link" class="collision"/>
-                </body>
-            </body>
+    <joint damping="3"/>
+    <muscle ctrllimited="true" ctrlrange="0 100"/>
+    <motor ctrllimited="true" ctrlrange="-3 3" gear="1"/>
+    <position ctrllimited="true" kp="10"/>
+    <default class="hand_joint">
+      <site rgba="1 0 0 1" size="0.01" group="5"/>
+      <joint damping="0.5" armature="0.01" frictionloss="0.1"/>
+      <motor ctrlrange="-0.7 0.7"/>
+    </default>
+  </default>
+  <asset>
+    <material name="metallic" rgba="0.7 0.7 0.7 1"/>
+    <material name="black" rgba="0.2 0.2 0.2 1"/>
+    <mesh name="l_palm_link" file="meshes/g1_three_finger_gripper/left_palm_link.STL"/>
+    <mesh name="l_zero_link" file="./meshes/g1_three_finger_gripper/left_zero_link.STL"/>
+    <mesh name="l_one_link" file="./meshes/g1_three_finger_gripper/left_one_link.STL"/>
+    <mesh name="l_two_link" file="./meshes/g1_three_finger_gripper/left_two_link.STL"/>
+    <mesh name="l_three_link" file="./meshes/g1_three_finger_gripper/left_three_link.STL"/>
+    <mesh name="l_four_link" file="./meshes/g1_three_finger_gripper/left_four_link.STL"/>
+    <mesh name="l_five_link" file="./meshes/g1_three_finger_gripper/left_five_link.STL"/>
+    <mesh name="l_six_link" file="./meshes/g1_three_finger_gripper/left_six_link.STL"/>
+  </asset>
+  <worldbody>
+    <body name="left_hand" pos="0 0 0" quat="-0.5 -0.5 -0.5 0.5">
+      <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="1"/>
+      <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
+      <body name="eef" pos="0 0 0" quat="0.707 0. -0.707 0.">
+        <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 1 0 1" type="sphere" group="2"/>
+        <site name="ee_x" pos="0.1 0 0" size="0.005 .1" quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+        <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+        <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+        <site name="grip_site_cylinder" pos="0 0 0" quat="1 0 0 0" size="0.005 0.5" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+      </body>
+      <geom pos="0.0 0 0" type="mesh" class="visual" mesh="l_palm_link"/>
+      <geom pos="0.0 0 0" type="mesh" mesh="l_palm_link" class="collision"/>
+      <body name="l_zero_link" pos="0.05 0 0">
+        <inertial pos="-0.0260466 -0.00877511 1.08605e-05" quat="0.59241 0.381376 -0.592953 0.389884" mass="0.0509893" diaginertia="8.68047e-06 7.23365e-06 4.58058e-06"/>
+        <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_zero_joint" axis="0 1 0" range="-0.523598 0.523598"/>
+        <geom type="mesh" class="visual" mesh="l_zero_link"/>
+        <body name="l_one_link" pos="-0.026525 -0.0188 -5e-05">
+          <inertial pos="-0.00181538 -0.0327057 -0.000185871" quat="0.701646 0.698199 0.0817825 -0.116289" mass="0.047762" diaginertia="8.03051e-06 7.8455e-06 3.65282e-06"/>
+          <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_one_joint" axis="0 0 1" range="-1 1.2"/>
+          <geom type="mesh" class="visual" mesh="l_one_link"/>
+          <geom size="0.01 0.015 0.01" pos="-0.001 -0.032 0" type="box" class="collision"/>
+          <body name="l_two_link" pos="0 -0.0431 0">
+            <inertial pos="-0.00135257 -0.0237591 -0.000119669" quat="0.717995 0.695316 -0.0180122 -0.0263741" mass="0.0138584" diaginertia="2.55338e-06 2.04399e-06 9.3995e-07"/>
+            <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_two_joint" axis="0 0 1" range="0 1.84"/>
+            <geom type="mesh" class="visual" mesh="l_two_link"/>
+            <geom type="mesh" mesh="l_two_link" class="collision"/>
+          </body>
         </body>
-    </worldbody>
-    <!-- <contact>
+      </body>
+      <body name="l_three_link" pos="0.085 0.004 0.02395">
+        <inertial pos="0.0362561 -0.0015725 0.000269899" quat="0.540443 0.459072 0.5397 0.45376" mass="0.0488469" diaginertia="8.91742e-06 8.64873e-06 3.8319e-06"/>
+        <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_three_joint" axis="0 0 1" range="-1.84 0.3"/>
+        <geom type="mesh" class="visual" mesh="l_three_link"/>
+        <geom type="mesh" mesh="l_three_link" class="collision"/>
+        <body name="l_four_link" pos="0.0471 -0.0036 0">
+          <inertial pos="0.0237591 0.00135257 0.000119669" quat="0.478926 0.48905 0.526348 0.504399" mass="0.0138584" diaginertia="2.55338e-06 2.04399e-06 9.3995e-07"/>
+          <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_four_joint" axis="0 0 1" range="-1.84 0"/>
+          <geom type="mesh" class="visual" mesh="l_four_link"/>
+          <geom type="mesh" mesh="l_four_link" class="collision"/>
+        </body>
+      </body>
+      <body name="l_five_link" pos="0.085 0.004 -0.02395">
+        <inertial pos="0.0362561 -0.0015725 0.000269899" quat="0.540443 0.459072 0.5397 0.45376" mass="0.0488469" diaginertia="8.91742e-06 8.64873e-06 3.8319e-06"/>
+        <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_five_joint" axis="0 0 1" range="-1.84 0.3"/>
+        <geom type="mesh" class="visual" mesh="l_five_link"/>
+        <geom type="mesh" mesh="l_five_link" class="collision"/>
+        <body name="l_six_link" pos="0.0471 -0.0036 0">
+          <inertial pos="0.0237591 0.00135257 0.000119669" quat="0.478926 0.48905 0.526348 0.504399" mass="0.0138584" diaginertia="2.55338e-06 2.04399e-06 9.3995e-07"/>
+          <joint damping="0.5" armature="0.01" frictionloss="0.1" name="l_six_joint" axis="0 0 1" range="-1.84 0"/>
+          <geom type="mesh" class="visual" mesh="l_six_link"/>
+          <geom type="mesh" mesh="l_six_link" class="collision"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <!-- <contact>
     </contact>
-
     <equality>
     </equality> -->
   <actuator>
-        <position class="hand_joint" name="l_zero_joint" joint="l_zero_joint"/>
-        <position class="hand_joint" name="l_one_joint" joint="l_one_joint"/>
-        <position class="hand_joint" name="l_two_joint" joint="l_two_joint"/>
-        <position class="hand_joint" name="l_three_joint" joint="l_three_joint"/>
-        <position class="hand_joint" name="l_four_joint" joint="l_four_joint"/>
-        <position class="hand_joint" name="l_five_joint" joint="l_five_joint"/>
-        <position class="hand_joint" name="l_six_joint" joint="l_six_joint"/>
-        <!-- <motor class="hand_joint" name="l_zero_joint" joint="l_zero_joint"/>
+    <position class="hand_joint" name="l_zero_joint" joint="l_zero_joint"/>
+    <position class="hand_joint" name="l_one_joint" joint="l_one_joint"/>
+    <position class="hand_joint" name="l_two_joint" joint="l_two_joint"/>
+    <position class="hand_joint" name="l_three_joint" joint="l_three_joint"/>
+    <position class="hand_joint" name="l_four_joint" joint="l_four_joint"/>
+    <position class="hand_joint" name="l_five_joint" joint="l_five_joint"/>
+    <position class="hand_joint" name="l_six_joint" joint="l_six_joint"/>
+    <!-- <motor class="hand_joint" name="l_zero_joint" joint="l_zero_joint"/>
         <motor class="hand_joint" name="l_one_joint" joint="l_one_joint"/>
         <motor class="hand_joint" name="l_two_joint" joint="l_two_joint"/>
         <motor class="hand_joint" name="l_three_joint" joint="l_three_joint"/>
@@ -124,10 +112,8 @@
         <motor class="hand_joint" name="l_five_joint" joint="l_five_joint"/>
         <motor class="hand_joint" name="l_six_joint" joint="l_six_joint"/> -->
   </actuator>
-
   <sensor>
-          <force name="force_ee" site="ft_frame"/>
-          <torque name="torque_ee" site="ft_frame"/>
+    <force name="force_ee" site="ft_frame"/>
+    <torque name="torque_ee" site="ft_frame"/>
   </sensor>
-
 </mujoco>

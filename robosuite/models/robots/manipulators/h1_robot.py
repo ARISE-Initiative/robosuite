@@ -30,7 +30,6 @@ class H1(LeggedManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific gripper names
         """
-        # return {"right": "InspireRightHand", "left": "InspireLeftHand"}
         return {"right": "Robotiq85Gripper", "left": "Robotiq85Gripper"}
 
     @property
