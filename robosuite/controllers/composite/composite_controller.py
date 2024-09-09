@@ -10,7 +10,7 @@ from robosuite.controllers import controller_factory
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
-from robosuite.utils.ik_utils import IKSolver, get_Kn
+from robosuite.utils.ik_utils import IKSolver, get_nullspace_gains
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 COMPOSITE_CONTROLLERS_DICT = {}
@@ -344,7 +344,8 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
         for part_name in self.composite_controller_specific_config["individual_part_names"]:
             joint_names += self.controllers[part_name].joint_names
 
-        Kn = get_Kn(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
+        # Compute nullspace gains, Kn.
+        Kn = get_nullspace_gains(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
         mocap_bodies = []
         robot_config = {
             'end_effector_sites': self.composite_controller_specific_config["ref_name"],
