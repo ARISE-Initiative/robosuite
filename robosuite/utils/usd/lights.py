@@ -20,63 +20,57 @@ import numpy as np
 
 # TODO: b/288149332 - Remove once USD Python Binding works well with pytype.
 # pytype: disable=module-attr
-from pxr import Gf
-from pxr import Usd
-from pxr import UsdGeom
-from pxr import UsdLux
+from pxr import Gf, Usd, UsdGeom, UsdLux
 
 
 class USDSphereLight:
-  """Class that handles the sphere lights in the USD scene."""
+    """Class that handles the sphere lights in the USD scene."""
 
-  def __init__(
-      self, stage: Usd.Stage, light_name: str, radius: Optional[float] = 0.3
-  ):
-    self.stage = stage
+    def __init__(self, stage: Usd.Stage, light_name: str, radius: Optional[float] = 0.3):
+        self.stage = stage
 
-    xform_path = f"/World/Light_Xform_{light_name}"
-    light_path = f"{xform_path}/Light_{light_name}"
-    self.usd_xform = UsdGeom.Xform.Define(stage, xform_path)
-    self.usd_light = UsdLux.SphereLight.Define(stage, light_path)
-    self.usd_prim = stage.GetPrimAtPath(light_path)
+        xform_path = f"/World/Light_Xform_{light_name}"
+        light_path = f"{xform_path}/Light_{light_name}"
+        self.usd_xform = UsdGeom.Xform.Define(stage, xform_path)
+        self.usd_light = UsdLux.SphereLight.Define(stage, light_path)
+        self.usd_prim = stage.GetPrimAtPath(light_path)
 
-    # we assume in mujoco that all lights are point lights
-    self.usd_light.GetRadiusAttr().Set(radius)
-    self.usd_light.GetTreatAsPointAttr().Set(False)
-    self.usd_light.GetNormalizeAttr().Set(True)
+        # we assume in mujoco that all lights are point lights
+        self.usd_light.GetRadiusAttr().Set(radius)
+        self.usd_light.GetTreatAsPointAttr().Set(False)
+        self.usd_light.GetNormalizeAttr().Set(True)
 
-    # defining ops required by update function
-    self.translate_op = self.usd_xform.AddTranslateOp()
+        # defining ops required by update function
+        self.translate_op = self.usd_xform.AddTranslateOp()
 
-  def update(
-      self, pos: np.ndarray, intensity: int, color: np.ndarray, frame: int
-  ):
-    """Updates the attributes of a sphere light."""
-    self.translate_op.Set(Gf.Vec3d(pos.tolist()), frame)
+    def update(self, pos: np.ndarray, intensity: int, color: np.ndarray, frame: int):
+        """Updates the attributes of a sphere light."""
+        self.translate_op.Set(Gf.Vec3d(pos.tolist()), frame)
 
-    if not np.any(pos):
-      intensity = 0
+        if not np.any(pos):
+            intensity = 0
 
-    self.usd_light.GetIntensityAttr().Set(intensity)
-    self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
+        self.usd_light.GetIntensityAttr().Set(intensity)
+        self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
 
 
 class USDDomeLight:
-  """Class that handles the dome lights in the USD scene"""
-  def __init__(self, stage: Usd.Stage, light_name: str):
-    self.stage = stage
+    """Class that handles the dome lights in the USD scene"""
 
-    xform_path = f"/World/Light_Xform_{light_name}"
-    light_path = f"{xform_path}/Light_{light_name}"
-    self.usd_xform = UsdGeom.Xform.Define(stage, xform_path)
-    self.usd_light = UsdLux.DomeLight.Define(stage, light_path)
-    self.usd_prim = stage.GetPrimAtPath(light_path)
+    def __init__(self, stage: Usd.Stage, light_name: str):
+        self.stage = stage
 
-    # we assume in mujoco that all lights are point lights
-    self.usd_light.GetNormalizeAttr().Set(True)
+        xform_path = f"/World/Light_Xform_{light_name}"
+        light_path = f"{xform_path}/Light_{light_name}"
+        self.usd_xform = UsdGeom.Xform.Define(stage, xform_path)
+        self.usd_light = UsdLux.DomeLight.Define(stage, light_path)
+        self.usd_prim = stage.GetPrimAtPath(light_path)
 
-  def update(self, intensity: int, color: np.ndarray):
-    """Updates the attributes of a dome light."""
-    self.usd_light.GetIntensityAttr().Set(intensity)
-    self.usd_light.GetExposureAttr().Set(0.0)
-    self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
+        # we assume in mujoco that all lights are point lights
+        self.usd_light.GetNormalizeAttr().Set(True)
+
+    def update(self, intensity: int, color: np.ndarray):
+        """Updates the attributes of a dome light."""
+        self.usd_light.GetIntensityAttr().Set(intensity)
+        self.usd_light.GetExposureAttr().Set(0.0)
+        self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
