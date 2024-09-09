@@ -1,4 +1,5 @@
 import copy
+import json
 import os
 from collections import OrderedDict
 
@@ -15,7 +16,7 @@ from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.observables import Observable, sensor
-import json
+
 
 class Robot(object):
     """
@@ -291,14 +292,18 @@ class Robot(object):
         sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
         names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
         # We don't want to include the direct joint pos sensor outputs
-        actives = [True, True, True, True]
+        actives = [False, True, True, True]
 
         for arm in self.arms:
-            # Add in eef info
-            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm=arm, modality=modality)
+            arm_sensors, arm_sensor_names = self._create_arm_sensors(arm, modality=modality)
             sensors += arm_sensors
             names += arm_sensor_names
             actives += [True] * len(arm_sensors)
+
+        base_sensors, base_sensor_names = self._create_base_sensors(modality=modality)
+        sensors += base_sensors
+        names += base_sensor_names
+        actives += [True] * len(base_sensors)
 
         # Create observables for this robot
         observables = OrderedDict()
@@ -312,6 +317,62 @@ class Robot(object):
             )
 
         return observables
+
+    def _create_arm_sensors(self, arm, modality):
+        """
+        Helper function to create sensors for a given arm. This is abstracted in a separate function call so that we
+        don't have local function naming collisions during the _setup_observables() call.
+
+        Args:
+            arm (str): Arm to create sensors for
+            modality (str): Modality to assign to all sensors
+
+        Returns:
+            2-tuple:
+                sensors (list): Array of sensors for the given arm
+                names (list): array of corresponding observable names
+        """
+
+        # eef features
+        @sensor(modality=modality)
+        def eef_pos(obs_cache):
+            return np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+
+        @sensor(modality=modality)
+        def eef_quat(obs_cache):
+            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+
+        # only consider prefix if there is more than one arm
+        pf = f"{arm}_" if len(self.arms) > 1 else ""
+
+        sensors = [eef_pos, eef_quat]
+        names = [f"{pf}eef_pos", f"{pf}eef_quat"]
+
+        # add in gripper sensors if this robot has a gripper
+        if self.has_gripper[arm]:
+
+            @sensor(modality=modality)
+            def gripper_qpos(obs_cache):
+                return np.array([self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]])
+
+            @sensor(modality=modality)
+            def gripper_qvel(obs_cache):
+                return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
+
+            sensors += [gripper_qpos, gripper_qvel]
+            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
+
+        return sensors, names
+
+    def _create_base_sensors(self, modality):
+        """
+        Helper function to create sensors for the robot base. This will be
+        overriden by subclasses.
+
+        Args:
+            modality (str): Type/modality of the created sensor
+        """
+        return [], []
 
     def control(self, action, policy_step=False):
         """
@@ -527,18 +588,6 @@ class Robot(object):
     @property
     def action_limits(self):
         raise NotImplementedError
-
-    @property
-    def dof(self):
-        """
-        Returns:
-            int: degrees of freedom of the robot (with grippers).
-        """
-        # Get the dof of the base robot model
-        dof = super().dof
-        for gripper in self.robot_model.grippers.values():
-            dof += gripper.dof
-        return dof
 
     @property
     def is_mobile(self):
@@ -799,7 +848,7 @@ class Robot(object):
 
         action_index_info_str = ", ".join(action_index_info)
         ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
-    
+
     def print_action_info_dict(self):
         if self.composite_controller is not None and hasattr(self.composite_controller, "print_action_info_dict"):
             self.composite_controller.print_action_info_dict(name=self.name)
@@ -807,10 +856,9 @@ class Robot(object):
         info_dict = {}
         info_dict["Action Dimension"] = self.action_dim
         info_dict.update(dict(self._action_split_indexes))
-        
+
         info_dict_str = f"\nAction Info for {self.name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
         ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
-
 
     def get_gripper_name(self, arm):
         return f"{arm}_gripper"

@@ -6,7 +6,7 @@ from robosuite.utils.mjcf_utils import find_parent, xml_path_completion
 
 class G1(LeggedManipulatorModel):
     """
-    Tiago is a mobile manipulator robot created by PAL Robotics.
+    G1 is a humanoid robot developed by Unitree.
 
     Args:
         idn (int or str): Number or some other unique identification string for this robot instance
@@ -41,7 +41,7 @@ class G1(LeggedManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific default controller config names
         """
-        return {"right": "default_gr1", "left": "default_gr1"}
+        return {"right": "default_g1", "left": "default_g1"}
 
     @property
     def init_qpos(self):
@@ -59,9 +59,9 @@ class G1(LeggedManipulatorModel):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.5, -0.1, 0.),
-            "empty": (-0.29, 0, 0.),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.),
+            "bins": (-0.5, -0.1, 0.0),
+            "empty": (-0.29, 0, 0.0),
+            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.0),
         }
 
     @property
@@ -146,9 +146,9 @@ class G1FloatingBody(G1):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.5, -0.1, 0.),
-            "empty": (-0.29, 0, 0.),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.),
+            "bins": (-0.5, -0.1, 0.0),
+            "empty": (-0.29, 0, 0.0),
+            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.0),
         }
 
 

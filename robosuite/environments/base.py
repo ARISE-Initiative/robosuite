@@ -48,7 +48,7 @@ class EnvMeta(type):
         cls = super().__new__(meta, name, bases, class_dict)
 
         # List all environments that should not be registered here.
-        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "SingleArmEnv", "TwoArmEnv", "HumanoidEnv"]
+        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "TwoArmEnv"]
 
         if cls.__name__ not in _unregistered_envs:
             register_env(cls)
@@ -466,7 +466,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.update()
-        elif self.viewer is None and self.renderer == "mjviewer":
+        elif self.has_renderer and self.renderer == "mjviewer" and self.viewer is None:
             # need to launch again after it was destroyed
             self.initialize_renderer()
             # so that mujoco viewer renders

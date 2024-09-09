@@ -40,13 +40,30 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
-    env.robots[0].print_action_info_dict()
-    # Loop until we get a reset from the input or the task completes
 
+    for robot in env.robots:
+        robot.print_action_info_dict()
+
+    # Keep track of prev gripper actions when using since they are position-based and must be maintained when arms switched
+    all_prev_gripper_actions = [
+        {
+            f"{robot_arm}_gripper": np.repeat([0], robot.gripper[robot_arm].dof)
+            for robot_arm in robot.arms
+            if robot.gripper[robot_arm].dof > 0
+        }
+        for robot in env.robots
+    ]
+
+    # Loop until we get a reset from the input or the task completes
+    count = 0
     while True:
         # Set active robot
-        active_robot = env.robots[0]  # if env_configuration == "bimanual" else env.robots[arm == "left"]
+        active_robot = env.robots[device.active_robot]
+        prev_gripper_actions = all_prev_gripper_actions[device.active_robot]
 
+        arm = device.active_arm
+        # Check if we have gripper actions for the active arm
+        arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
         # Get the newest action
         input_action, grasp = input2action(
             device=device, robot=active_robot, active_arm=arm, active_end_effector=end_effector, env_configuration=env_configuration
@@ -57,7 +74,10 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             break
 
         # Run environment step
-        if env.robots[0].is_mobile:
+        action_dict = prev_gripper_actions.copy()
+        arm_actions = input_action[:6]
+        if active_robot.is_mobile:
+            # arm_actions = np.concatenate([arm_actions, ])
 
             # Decide if it's one arm or two arms. The number of arms can be decided based on the attribute `arms` of the robot.
             arm_actions = input_action[:6*len(env.robots[0].arms)].copy() 
@@ -86,32 +106,40 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                 base_action = input_action[-5:-2]
                 torso_action = input_action[-2:-1]
 
-                right_action = [0.0] * 5
-                right_action[0] = 0.0
-                action_dict = {
-                    arm: arm_actions,
-                    f"{end_effector}_gripper": np.repeat(input_action[6:7], env.robots[0].gripper[end_effector].dof),
-                    env.robots[0].base: base_action,
-                    # env.robots[0].head: base_action,
-                    # env.robots[0].torso: base_action
-                    # env.robots[0].torso: torso_action
-                }
+            right_action = [0.0] * 5
+            right_action[0] = 0.0
 
-            action = env.robots[0].create_action_vector(action_dict)
+            action_dict.update(
+                {
+                    arm: arm_actions,
+                    active_robot.base: base_action,
+                    # active_robot.head: base_action,
+                    # active_robot.torso: base_action
+                    # active_robot.torso: torso_action
+                }
+            )
+            if arm_using_gripper:
+                action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
+                prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
+            action = active_robot.create_action_vector(action_dict)
             mode_action = input_action[-1]
 
             if mode_action > 0:
-                env.robots[0].enable_parts(base=True, right=True, left=True, torso=True)
+                active_robot.enable_parts(base=True, right=True, left=True, torso=True)
             else:
-                if "GR1FixedLowerBody" in env.robots[0].name or "Tiago" in env.robots[0].name:
-                    env.robots[0].enable_parts(base=False, right=True, left=True, torso=True)
-                else:
-                    env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
+                active_robot.enable_parts(base=False, right=True, left=True, torso=False)
         else:
-            arm_actions = input_action
-            action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
+            action_dict.update({arm: arm_actions})
+            if arm_using_gripper:
+                action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
+                prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
+            action = active_robot.create_action_vector(action_dict)
 
-        env.step(action)
+        # Maintain gripper state for each robot but only update the active robot with action
+        env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
+        env_action[device.active_robot] = action
+        env_action = np.concatenate(env_action)
+        env.step(env_action)
         env.render()
 
         # Also break if we complete the task
@@ -249,7 +277,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--renderer",
         type=str,
-        default="mujoco",
+        default="mjviewer",
         help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)",
     )
     args = parser.parse_args()
@@ -297,11 +325,12 @@ if __name__ == "__main__":
     if args.device == "keyboard":
         from robosuite.devices import Keyboard
 
-        device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+        device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
-        device = SpaceMouse(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+        device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 

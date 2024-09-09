@@ -4,7 +4,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import BinsArena
 from robosuite.models.objects import (
     BreadObject,
@@ -21,7 +21,7 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 
 
-class PickPlace(SingleArmEnv):
+class PickPlace(ManipulationEnv):
     """
     This class corresponds to the pick place task for a single robot arm.
 
@@ -581,26 +581,21 @@ class PickPlace(SingleArmEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            # define observables modality
             modality = "object"
 
             # Reset obj sensor mappings
             self.object_id_to_sensors = {}
 
-            # for conversion to relative gripper frame
-            @sensor(modality=modality)
-            def world_pose_in_gripper(obs_cache):
-                return (
-                    T.pose_inv(T.pose2mat((obs_cache[f"{pf}eef_pos"], obs_cache[f"{pf}eef_quat"])))
-                    if f"{pf}eef_pos" in obs_cache and f"{pf}eef_quat" in obs_cache
-                    else np.eye(4)
-                )
-
-            sensors = [world_pose_in_gripper]
-            names = ["world_pose_in_gripper"]
-            enableds = [True]
-            actives = [False]
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+            sensors = [
+                self._get_world_pose_in_gripper_sensor(full_pf, f"world_pose_in_{arm_pf}gripper", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+            ]
+            names = [fn.__name__ for fn in sensors]
+            actives = [False] * len(sensors)
+            enableds = [True] * len(sensors)
 
             for i, obj in enumerate(self.objects):
                 # Create object sensors
@@ -608,8 +603,8 @@ class PickPlace(SingleArmEnv):
                 obj_sensors, obj_sensor_names = self._create_obj_sensors(obj_name=obj.name, modality=modality)
                 sensors += obj_sensors
                 names += obj_sensor_names
-                enableds += [using_obj] * 4
-                actives += [using_obj] * 4
+                enableds += [using_obj] * len(obj_sensor_names)
+                actives += [using_obj] * len(obj_sensor_names)
                 self.object_id_to_sensors[i] = obj_sensor_names
 
             if self.single_object_mode == 1:
@@ -649,7 +644,6 @@ class PickPlace(SingleArmEnv):
                 sensors (list): Array of sensors for the given obj
                 names (list): array of corresponding observable names
         """
-        pf = self.robots[0].robot_model.naming_prefix
 
         @sensor(modality=modality)
         def obj_pos(obs_cache):
@@ -659,27 +653,20 @@ class PickPlace(SingleArmEnv):
         def obj_quat(obs_cache):
             return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[obj_name]], to="xyzw")
 
-        @sensor(modality=modality)
-        def obj_to_eef_pos(obs_cache):
-            # Immediately return default value if cache is empty
-            if any(
-                [name not in obs_cache for name in [f"{obj_name}_pos", f"{obj_name}_quat", "world_pose_in_gripper"]]
-            ):
-                return np.zeros(3)
-            obj_pose = T.pose2mat((obs_cache[f"{obj_name}_pos"], obs_cache[f"{obj_name}_quat"]))
-            rel_pose = T.pose_in_A_to_pose_in_B(obj_pose, obs_cache["world_pose_in_gripper"])
-            rel_pos, rel_quat = T.mat2pose(rel_pose)
-            obs_cache[f"{obj_name}_to_{pf}eef_quat"] = rel_quat
-            return rel_pos
+        arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+        full_prefixes = self._get_arm_prefixes(self.robots[0])
 
-        @sensor(modality=modality)
-        def obj_to_eef_quat(obs_cache):
-            return (
-                obs_cache[f"{obj_name}_to_{pf}eef_quat"] if f"{obj_name}_to_{pf}eef_quat" in obs_cache else np.zeros(4)
-            )
-
-        sensors = [obj_pos, obj_quat, obj_to_eef_pos, obj_to_eef_quat]
-        names = [f"{obj_name}_pos", f"{obj_name}_quat", f"{obj_name}_to_{pf}eef_pos", f"{obj_name}_to_{pf}eef_quat"]
+        sensors = [
+            self._get_rel_obj_eef_sensor(arm_pf, obj_name, f"{obj_name}_to_{full_pf}eef_pos", full_pf, modality)
+            for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+        ]
+        sensors += [
+            self._get_obj_eef_rel_quat_sensor(full_pf, obj_name, f"{obj_name}_to_{full_pf}eef_quat", modality)
+            for full_pf in full_prefixes
+        ]
+        names = [fn.__name__ for fn in sensors]
+        sensors += [obj_pos, obj_quat]
+        names += [f"{obj_name}_pos", f"{obj_name}_quat"]
 
         return sensors, names
 
@@ -739,11 +726,15 @@ class PickPlace(SingleArmEnv):
             bool: True if all objects are placed correctly
         """
         # remember objects that are in the correct bins
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
         for i, obj in enumerate(self.objects):
             obj_str = obj.name
             obj_pos = self.sim.data.body_xpos[self.obj_body_id[obj_str]]
-            dist = np.linalg.norm(gripper_site_pos - obj_pos)
+            dist = min(
+                [
+                    np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - obj_pos)
+                    for arm in self.robots[0].arms
+                ]
+            )
             r_reach = 1 - np.tanh(10.0 * dist)
             self.objects_in_bins[i] = int((not self.not_in_bin(obj_pos, i)) and r_reach < 0.6)
 
@@ -768,23 +759,25 @@ class PickPlace(SingleArmEnv):
 
         # Color the gripper visualization site according to its distance to the closest object
         if vis_settings["grippers"]:
-            # find closest object
-            dists = [
-                self._gripper_to_target(
-                    gripper=self.robots[0].gripper,
-                    target=obj.root_body,
+            # if the robot has multiple arms color each arm independently based on its closest object
+            for arm in self.robots[0].arms:
+                # find closest object
+                dists = [
+                    self._gripper_to_target(
+                        gripper=self.robots[0].gripper[arm],
+                        target=obj.root_body,
+                        target_type="body",
+                        return_distance=True,
+                    )
+                    for obj in self.objects
+                ]
+                closest_obj_id = np.argmin(dists)
+                # Visualize the distance to this target
+                self._visualize_gripper_to_target(
+                    gripper=self.robots[0].gripper[arm],
+                    target=self.objects[closest_obj_id].root_body,
                     target_type="body",
-                    return_distance=True,
                 )
-                for obj in self.objects
-            ]
-            closest_obj_id = np.argmin(dists)
-            # Visualize the distance to this target
-            self._visualize_gripper_to_target(
-                gripper=self.robots[0].gripper,
-                target=self.objects[closest_obj_id].root_body,
-                target_type="body",
-            )
 
 
 class PickPlaceSingle(PickPlace):

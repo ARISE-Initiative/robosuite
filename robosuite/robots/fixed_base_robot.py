@@ -5,9 +5,9 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
-from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.observables import sensor
 
 
 class FixedBaseRobot(Robot):
@@ -58,14 +58,6 @@ class FixedBaseRobot(Robot):
         self.composite_controller.load_controller_config(self.controller_config)
 
         self.enable_parts()
-        # self._action_split_indexes.clear()
-        # previous_idx = 0
-        # last_idx = 0
-        # for arm in self.arms:
-        #     last_idx += self.controller[arm].control_dim
-        #     last_idx += self.gripper[arm].dof if self.has_gripper[arm] else 0
-        #     self._action_split_indexes[arm] = (previous_idx, last_idx)
-        #     previous_idx = last_idx
 
     def load_model(self):
         """
@@ -97,6 +89,13 @@ class FixedBaseRobot(Robot):
         # Now, add references to gripper if necessary
         # indices for grippers in qpos, qvel
         for arm in self.arms:
+            (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
+            self._ref_joints_indexes_dict[arm] = [
+                self.sim.model.joint_name2id(joint) for joint in self.robot_model.arm_joints[start:end]
+            ]
+            self._ref_actuators_indexes_dict[arm] = [
+                self.sim.model.actuator_name2id(joint) for joint in self.robot_model.arm_actuators[start:end]
+            ]
             if self.has_gripper[arm]:
                 self.gripper_joints[arm] = list(self.gripper[arm].joints)
                 self._ref_gripper_joint_pos_indexes[arm] = [
@@ -107,13 +106,6 @@ class FixedBaseRobot(Robot):
                 ]
                 self._ref_joint_gripper_actuator_indexes[arm] = [
                     self.sim.model.actuator_name2id(actuator) for actuator in self.gripper[arm].actuators
-                ]
-                (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-                self._ref_joints_indexes_dict[arm] = [
-                    self.sim.model.joint_name2id(joint) for joint in self.robot_model.arm_joints[start:end]
-                ]
-                self._ref_actuators_indexes_dict[arm] = [
-                    self.sim.model.actuator_name2id(joint) for joint in self.robot_model.arm_actuators[start:end]
                 ]
                 self._ref_joints_indexes_dict[self.get_gripper_name(arm)] = [
                     self.sim.model.joint_name2id(joint) for joint in self.gripper_joints[arm]
@@ -160,55 +152,6 @@ class FixedBaseRobot(Robot):
             applied_action = np.clip(applied_action, applied_action_low, applied_action_high)
             self.sim.data.ctrl[self._ref_actuators_indexes_dict[part_name]] = applied_action
 
-        # for arm in self.arms:
-        #     # (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-        #     # self.controller[arm].update_initial_joints(self.sim.data.qpos[self._ref_joint_pos_indexes[start:end]])
-        #     self.controller[arm].update_base_pose()
-
-        # self.torques = np.array([])
-        # # Now execute actions for each arm
-        # for arm in self.arms:
-        #     # Make sure to split action space correctly
-        #     (start, end) = self._action_split_indexes[arm]
-        #     sub_action = action[start:end]
-
-        #     gripper_action = None
-        #     if self.has_gripper[arm]:
-        #         # get all indexes past controller dimension indexes
-        #         gripper_action = sub_action[self.controller[arm].control_dim :]
-        #         sub_action = sub_action[: self.controller[arm].control_dim]
-
-        #     # Update the controller goal if this is a new policy step
-        #     if policy_step:
-        #         self.controller[arm].set_goal(sub_action)
-
-        #     # Now run the controller for a step and add it to the torques
-        #     applied_torque = self.controller[arm].run_controller()
-        #     self.sim.data.ctrl[self._ref_actuators_indexes_dict[arm]] = applied_torque
-        #     self.torques = np.concatenate((self.torques, applied_torque))
-
-        #     # Get gripper action, if applicable
-        #     if self.has_gripper[arm]:
-        #         gripper_name = self.get_gripper_name(arm)
-        #         # if policy_step:
-        #         formatted_gripper_action = self.gripper[arm].format_action(gripper_action)
-        #         self.controller[gripper_name].set_goal(formatted_gripper_action)
-        #         applied_gripper_action = self.controller[gripper_name].run_controller()
-        #         # self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
-        #         self.sim.data.ctrl[self._ref_actuators_indexes_dict[self.get_gripper_name(arm)]] = applied_gripper_action
-
-        # # Get gripper action, if applicable
-        # if self.has_gripper[arm]:
-        #     applied_gripper_action = self.grip_action(gripper=self.gripper[arm], gripper_action=gripper_action)
-        #     self.sim.data.ctrl[self._ref_joint_gripper_actuator_indexes[arm]] = applied_gripper_action
-
-        # # Clip the torques
-        # low, high = self.torque_limits
-        # self.torques = np.clip(self.torques, low, high)
-
-        # # Apply joint torque control
-        # self.sim.data.ctrl[self._ref_arm_joint_actuator_indexes] = self.torques
-
         if policy_step:
             # Update proprioceptive values
             self.recent_qpos.push(self._joint_positions)
@@ -245,51 +188,6 @@ class FixedBaseRobot(Robot):
 
         return observables
 
-    def _create_arm_sensors(self, arm, modality):
-        """
-        Helper function to create sensors for a given arm. This is abstracted in a separate function call so that we
-        don't have local function naming collisions during the _setup_observables() call.
-
-        Args:
-            arm (str): Arm to create sensors for
-            modality (str): Modality to assign to all sensors
-
-        Returns:
-            2-tuple:
-                sensors (list): Array of sensors for the given arm
-                names (list): array of corresponding observable names
-        """
-        # eef features
-        @sensor(modality=modality)
-        def eef_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-
-        @sensor(modality=modality)
-        def eef_quat(obs_cache):
-            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
-
-        # only consider prefix if there is more than one arm
-        pf = f"{arm}_" if len(self.arms) > 1 else ""
-
-        sensors = [eef_pos, eef_quat]
-        names = [f"{pf}eef_pos", f"{pf}eef_quat"]
-
-        # add in gripper sensors if this robot has a gripper
-        if self.has_gripper[arm]:
-
-            @sensor(modality=modality)
-            def gripper_qpos(obs_cache):
-                return np.array([self.sim.data.qpos[x] for x in self._ref_gripper_joint_pos_indexes[arm]])
-
-            @sensor(modality=modality)
-            def gripper_qvel(obs_cache):
-                return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
-
-            sensors += [gripper_qpos, gripper_qvel]
-            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
-
-        return sensors, names
-
     @property
     def action_limits(self):
         """
@@ -302,27 +200,6 @@ class FixedBaseRobot(Robot):
                 - (np.array) maximum (high) action values
         """
         return self.composite_controller.action_limits
-
-    # @property
-    # def action_limits(self):
-    #     """
-    #     Action lower/upper limits per dimension.
-
-    #     Returns:
-    #         2-tuple:
-
-    #             - (np.array) minimum (low) action values
-    #             - (np.array) maximum (high) action values
-    #     """
-    #     # Action limits based on controller limits
-    #     low, high = [], []
-    #     for arm in self.arms:
-    #         low_g, high_g = (
-    #             ([-1] * self.gripper[arm].dof, [1] * self.gripper[arm].dof) if self.has_gripper[arm] else ([], [])
-    #         )
-    #         low_c, high_c = self.controller[arm].control_limits
-    #         low, high = np.concatenate([low, low_c, low_g]), np.concatenate([high, high_c, high_g])
-    #     return low, high
 
     @property
     def is_mobile(self):

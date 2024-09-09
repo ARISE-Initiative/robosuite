@@ -16,21 +16,15 @@ class TwoArmLift(TwoArmEnv):
     This class corresponds to the lifting task for two robot arms.
 
     Args:
-        robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
-            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
-            Note: Must be either 2 single single-arm robots or 1 bimanual robot!
+        robots (str or list of str): Specification for specific robot(s)
+            Note: Must be either 2 robots or 1 bimanual robot!
 
-        env_configuration (str): Specifies how to position the robots within the environment. Can be either:
+        env_configuration (str): Specifies how to position the robots within the environment if two robots inputted. Can be either:
 
-            :`'bimanual'`: Only applicable for bimanual robot setups. Sets up the (single) bimanual robot on the -x
-                side of the table
-            :`'single-arm-parallel'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots next to each other on the -x side of the table
-            :`'single-arm-opposed'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots opposed from each others on the opposite +/-y sides of the table.
+            :`'parallel'`: Sets up the two robots next to each other on the -x side of the table
+            :`'opposed'`: Sets up the two robots opposed from each others on the opposite +/-y sides of the table.
 
-        Note that "default" corresponds to either "bimanual" if a bimanual robot is used or "single-arm-opposed" if two
-        single-arm robots are used.
+        Note that "default" "opposed" if two robots are used.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -274,7 +268,7 @@ class TwoArmLift(TwoArmEnv):
             # Get contacts
             (g0, g1) = (
                 (self.robots[0].gripper["right"], self.robots[0].gripper["left"])
-                if self.env_configuration == "bimanual"
+                if self.env_configuration == "single-robot"
                 else (self.robots[0].gripper, self.robots[1].gripper)
             )
 
@@ -305,11 +299,11 @@ class TwoArmLift(TwoArmEnv):
         super()._load_model()
 
         # Adjust base pose(s) accordingly
-        if self.env_configuration == "bimanual":
+        if self.env_configuration == "single-robot":
             xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
             self.robots[0].robot_model.set_base_xpos(xpos)
         else:
-            if self.env_configuration == "single-arm-opposed":
+            if self.env_configuration == "opposed":
                 # Set up robots facing towards each other by rotating them from their default position
                 for robot, rotation in zip(self.robots, (np.pi / 2, -np.pi / 2)):
                     xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -317,7 +311,7 @@ class TwoArmLift(TwoArmEnv):
                     xpos = T.euler2mat(rot) @ np.array(xpos)
                     robot.robot_model.set_base_xpos(xpos)
                     robot.robot_model.set_base_ori(rot)
-            else:  # "single-arm-parallel" configuration setting
+            else:  # "parallel" configuration setting
                 # Set up robots parallel to each other but offset from the center
                 for robot, offset in zip(self.robots, (-0.25, 0.25)):
                     xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -386,13 +380,6 @@ class TwoArmLift(TwoArmEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            if self.env_configuration == "bimanual":
-                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
-                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
-            else:
-                pf0 = self.robots[0].robot_model.naming_prefix
-                pf1 = self.robots[1].robot_model.naming_prefix
             modality = "object"
 
             # position and rotation of object
@@ -413,24 +400,35 @@ class TwoArmLift(TwoArmEnv):
             def handle1_xpos(obs_cache):
                 return np.array(self._handle1_xpos)
 
-            @sensor(modality=modality)
-            def gripper0_to_handle0(obs_cache):
-                return (
-                    obs_cache["handle0_xpos"] - obs_cache[f"{pf0}eef_pos"]
-                    if "handle0_xpos" in obs_cache and f"{pf0}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            @sensor(modality=modality)
-            def gripper1_to_handle1(obs_cache):
-                return (
-                    obs_cache["handle1_xpos"] - obs_cache[f"{pf1}eef_pos"]
-                    if "handle1_xpos" in obs_cache and f"{pf1}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            sensors = [pot_pos, pot_quat, handle0_xpos, handle1_xpos, gripper0_to_handle0, gripper1_to_handle1]
+            sensors = [pot_pos, pot_quat, handle0_xpos, handle1_xpos]
             names = [s.__name__ for s in sensors]
+
+            arm_sensor_fns = []
+            if self.env_configuration == "single-robot":
+                # If single-robot, we only have one robot. gripper 0 is always right and gripper 1 is always left
+                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
+                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
+                prefixes = [pf0, pf1]
+                arm_sensor_fns = [
+                    self._get_obj_eef_sensor(full_pf, f"handle{i}_xpos", f"gripper{i}_to_handle{i}", modality)
+                    for i, full_pf in enumerate(prefixes)
+                ]
+            else:
+                # If not single-robot, we have two robots. gripper 0 is always the first robot's gripper and
+                # gripper 1 is always the second robot's gripper. However, must account for the fact that
+                # each robot may have multiple arms/grippers
+                robot_arm_prefixes = [self._get_arm_prefixes(robot, include_robot_name=False) for robot in self.robots]
+                robot_full_prefixes = [self._get_arm_prefixes(robot, include_robot_name=True) for robot in self.robots]
+                for i, (arm_prefixes, full_prefixes) in enumerate(zip(robot_arm_prefixes, robot_full_prefixes)):
+                    arm_sensor_fns += [
+                        self._get_obj_eef_sensor(
+                            full_pf, f"handle{i}_xpos", f"{arm_pf}gripper{i}_to_handle{i}", modality
+                        )
+                        for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+                    ]
+
+            sensors += arm_sensor_fns
+            names += [s.__name__ for s in arm_sensor_fns]
 
             # Create observables
             for name, s in zip(names, sensors):
@@ -475,7 +473,7 @@ class TwoArmLift(TwoArmEnv):
             handles = [self.pot.important_sites[f"handle{i}"] for i in range(2)]
             grippers = (
                 [self.robots[0].gripper[arm] for arm in self.robots[0].arms]
-                if self.env_configuration == "bimanual"
+                if self.env_configuration == "single-robot"
                 else [robot.gripper for robot in self.robots]
             )
             for gripper, handle in zip(grippers, handles):
@@ -527,19 +525,19 @@ class TwoArmLift(TwoArmEnv):
     @property
     def _gripper0_to_handle0(self):
         """
-        Calculate vector from the left gripper to the left pot handle.
+        Calculate vector from gripper0 to the left pot handle.
 
         Returns:
-            np.array: (dx,dy,dz) distance vector between handle and EEF0
+            np.array: (dx,dy,dz) distance vector between handle and gripper0
         """
-        return self._handle0_xpos - self._eef0_xpos
+        return self._gripper0_to_target(self.pot.important_sites["handle0"], target_type="site")
 
     @property
     def _gripper1_to_handle1(self):
         """
-        Calculate vector from the right gripper to the right pot handle.
+        Calculate vector from gripper1 to the right pot handle.
 
         Returns:
             np.array: (dx,dy,dz) distance vector between handle and EEF0
         """
-        return self._handle1_xpos - self._eef1_xpos
+        return self._gripper1_to_target(self.pot.important_sites["handle1"], target_type="site")
