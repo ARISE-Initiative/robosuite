@@ -48,5 +48,14 @@
     <!-- side view -->
     <camera mode="fixed" name="sideview" pos="-0.05651774593317116 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364" />
 
+    <!-- mocap hardcoded for now -->
+    <!-- Left end-effector mocap body -->
+    <body name="left_eef_target" pos="0 0.2 1" mocap="true">
+      <geom type="box" size="0.05 0.05 0.05" rgba="1 0 0 0.5" conaffinity="0" contype="0" group="2"/>
+    </body>
+    <!-- Right end-effector mocap body -->
+    <body name="right_eef_target" pos="0 -0.2 1" mocap="true">
+      <geom type="box" size="0.05 0.05 0.05" rgba="0 0 1 0.5" conaffinity="0" contype="0" group="2"/>
+    </body>
   </worldbody>
 </mujoco>
