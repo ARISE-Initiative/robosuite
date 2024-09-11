@@ -212,13 +212,13 @@ class WholeBodyCompositeController(CompositeController):
         previous_idx = 0
         last_idx = 0
         # add joint_action_policy related body parts' action split index first
-        for part_name in self.composite_controller_specific_config["individual_part_names"]:
+        for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
             last_idx += self.controllers[part_name].control_dim
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
         for part_name, controller in self.controllers.items():
-            if part_name not in self.composite_controller_specific_config["individual_part_names"]:
+            if part_name not in self.composite_controller_specific_config["ik_target_part_names"]:
                 if part_name in self.grippers.keys():
                     last_idx += self.grippers[part_name].dof
                 else:
@@ -241,7 +241,7 @@ class WholeBodyCompositeController(CompositeController):
         # prev and last index correspond to the IK solver indexes' last index
         previous_idx = last_idx = list(self._whole_body_controller_action_split_indexes.values())[-1][-1]
         for part_name, controller in self.controllers.items():
-            if part_name in self.composite_controller_specific_config["individual_part_names"]:
+            if part_name in self.composite_controller_specific_config["ik_target_part_names"]:
                 continue
             if part_name in self.grippers.keys():
                 last_idx += self.grippers[part_name].dof
@@ -280,7 +280,7 @@ class WholeBodyCompositeController(CompositeController):
         low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         for part_name, controller in self.controllers.items():
             # Exclude terms that the IK solver handles
-            if part_name in self.composite_controller_specific_config["individual_part_names"]:
+            if part_name in self.composite_controller_specific_config["ik_target_part_names"]:
                 continue
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():
@@ -341,7 +341,7 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
 
     def _init_joint_action_policy(self):
         joint_names: str = []
-        for part_name in self.composite_controller_specific_config["individual_part_names"]:
+        for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
             joint_names += self.controllers[part_name].joint_names
 
         # Compute nullspace gains, Kn.
