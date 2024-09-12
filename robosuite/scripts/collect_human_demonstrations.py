@@ -15,9 +15,8 @@ import h5py
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
+from robosuite.controllers import load_composite_controller_config
 import robosuite.macros as macros
-from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
@@ -81,7 +80,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
             # Decide if it's one arm or two arms. The number of arms can be decided based on the attribute `arms` of the robot.
             arm_actions = input_action[:6*len(env.robots[0].arms)].copy() 
-            import pdb; pdb.set_trace()
+
             if "GR1" in env.robots[0].name:
                 # "relative" actions by default for now
                 action_dict = {
@@ -92,7 +91,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     'left_gripper': np.array([0., 0., 0., 0., 0., 0.]), 
                     'right_gripper': np.array([0., 0., 0., 0., 0., 0.])
                 }
-            elif "Tiago" in env.robots[0].name:
+            elif "Tiago" in env.robots[0].name and args.composite_controller == "WHOLE_BODY_IK":
                 action_dict = {
                     'right_gripper': np.array([0.]), 
                     'left_gripper': np.array([0.]), 
@@ -283,14 +282,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    controller_config = load_controller_config(default_controller=args.controller)
     composite_controller_config = load_composite_controller_config(default_controller=args.composite_controller, robot=args.robots[0])
 
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
-        "controller_configs": controller_config,
+        # "controller_configs": controller_config,
         "composite_controller_configs": composite_controller_config,
     }
 

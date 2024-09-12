@@ -19,7 +19,6 @@ class FixedBaseRobot(Robot):
         self,
         robot_type: str,
         idn=0,
-        controller_config=None,
         composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
@@ -31,7 +30,6 @@ class FixedBaseRobot(Robot):
         super().__init__(
             robot_type=robot_type,
             idn=idn,
-            controller_config=controller_config,
             composite_controller_config=composite_controller_config,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
@@ -55,7 +53,7 @@ class FixedBaseRobot(Robot):
         )
 
         self._load_arm_controllers()
-        self.composite_controller.load_controller_config(self.controller_config)
+        self.composite_controller.load_controller_config(self.part_controller_config)
 
         self.enable_parts()
 
@@ -159,7 +157,7 @@ class FixedBaseRobot(Robot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
-                controller = self.controller[arm]
+                controller = self.part_controllers[arm]
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
                 self.recent_ee_pose[arm].push(np.concatenate((controller.ref_pos, T.mat2quat(controller.ref_ori_mat))))
@@ -214,13 +212,3 @@ class FixedBaseRobot(Robot):
             dict: Dictionary of split indexes for each part of the robot
         """
         return self.composite_controller._action_split_indexes
-
-    @property
-    def controller(self):
-        """
-        Controller dictionary for the robot
-
-        Returns:
-            dict: Controller dictionary for the robot
-        """
-        return self.composite_controller.controllers

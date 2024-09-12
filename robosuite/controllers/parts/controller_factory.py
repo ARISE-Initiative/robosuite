@@ -9,16 +9,16 @@ import numpy as np
 
 from robosuite.utils.traj_utils import LinearInterpolator
 
-from . import arm as arm_controllers
-from . import base as base_controllers
-from . import generic
-from . import gripper as gripper_controllers
+from robosuite.controllers.parts import arm as arm_controllers
+from robosuite.controllers.parts import base as base_controllers
+from robosuite.controllers.parts import generic
+from robosuite.controllers.parts import gripper as gripper_controllers
 
 # from . import legs as legs_controllers
 
 
 
-def load_controller_config(custom_fpath=None, default_controller=None):
+def load_part_controller_config(custom_fpath=None, default_controller=None):
     """
     Utility function that loads the desired controller and returns the loaded configuration as a dict
 
@@ -52,7 +52,7 @@ def load_controller_config(custom_fpath=None, default_controller=None):
 
         # Store the default controller config fpath associated with the requested controller
         custom_fpath = os.path.join(
-            os.path.dirname(__file__), "..", "controllers/config/{}.json".format(default_controller.lower())
+            os.path.dirname(__file__), "..", "controllers/config/parts/{}.json".format(default_controller.lower())
         )
 
     # Assert that the fpath to load the controller is not empty

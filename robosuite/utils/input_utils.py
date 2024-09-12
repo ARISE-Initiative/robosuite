@@ -198,7 +198,7 @@ def input2action(device, robot, active_arm="right", active_end_effector: str = "
         return None, None
 
     # Get controller reference
-    controller = robot.controller[active_arm]
+    controller = robot.part_controllers[active_arm]
     gripper_dof = robot.gripper[active_end_effector].dof
 
     # First process the raw drotation

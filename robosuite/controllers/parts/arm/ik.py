@@ -21,7 +21,7 @@ import numpy as np
 import mujoco
 from robosuite.utils.ik_utils import IKSolver, get_nullspace_gains
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.generic.joint_pos import JointPositionController
+from robosuite.controllers.parts.generic.joint_pos import JointPositionController
 from robosuite.utils.control_utils import *
 
 from robosuite.utils.binding_utils import MjSim

@@ -7,7 +7,7 @@ import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_controller_config
+from robosuite.controllers import composite_controller_factory, load_part_controller_config
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -54,7 +54,6 @@ class Robot(object):
         self,
         robot_type: str,
         idn=0,
-        controller_config=None,
         composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
@@ -65,11 +64,13 @@ class Robot(object):
     ):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
-        self.controller_config = self._input2dict(copy.deepcopy(controller_config))
+        # TODO: Merge self.part_controller_config and self.composite_controller_config into one
+        self.part_controller_config = copy.deepcopy(composite_controller_config.get("body_parts", None))
         if composite_controller_config is not None:
             self.composite_controller_config = composite_controller_config
         else:
             self.composite_controller_config = {}
+
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
         self.has_gripper = self._input2dict([gripper_type is not None for _, gripper_type in self.gripper_type.items()])
@@ -230,7 +231,7 @@ class Robot(object):
                 self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
 
             # Update base pos / ori references in controller (technically only needs to be called once)
-            # self.controller[arm].update_base_pose()
+            # self.part_controller[arm].update_base_pose()
             # Setup buffers for eef values
             self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
             self.recent_ee_pose[arm] = DeltaBuffer(dim=7)
@@ -727,51 +728,50 @@ class Robot(object):
         # Load controller configs for both left and right arm
         for arm in self.arms:
             # First, load the default controller if none is specified
-            if not self.controller_config[arm]:
+            if not self.part_controller_config[arm]:
                 # Need to update default for a single agent
                 controller_path = os.path.join(
                     os.path.dirname(__file__),
                     "..",
                     "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
                 )
-                self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
+                self.part_controller_config[arm] = load_part_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
             assert (
-                type(self.controller_config[arm]) == dict
+                type(self.part_controller_config[arm]) == dict
             ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-                type(self.controller_config[arm])
+                type(self.part_controller_config[arm])
             )
 
             # Add to the controller dict additional relevant params:
             #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
             #   policy (control) freq, and ndim (# joints)
+            self.part_controller_config[arm]["robot_name"] = self.name
+            self.part_controller_config[arm]["sim"] = self.sim
+            self.part_controller_config[arm]["ref_name"] = self.gripper[arm].important_sites["grip_site"]
+            self.part_controller_config[arm]["part_name"] = arm
+            self.part_controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
 
-            self.controller_config[arm]["robot_name"] = self.name
-            self.controller_config[arm]["sim"] = self.sim
-            self.controller_config[arm]["ref_name"] = self.gripper[arm].important_sites["grip_site"]
-            self.controller_config[arm]["part_name"] = arm
-            self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
-
-            self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
-            self.controller_config[arm]["ndim"] = self._joint_split_idx
-            self.controller_config[arm]["policy_freq"] = self.control_freq
-            self.controller_config[arm]["lite_physics"] = self.lite_physics
+            self.part_controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
+            self.part_controller_config[arm]["ndim"] = self._joint_split_idx
+            self.part_controller_config[arm]["policy_freq"] = self.control_freq
+            self.part_controller_config[arm]["lite_physics"] = self.lite_physics
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-            self.controller_config[arm]["joint_indexes"] = {
+            self.part_controller_config[arm]["joint_indexes"] = {
                 "joints": self.arm_joint_indexes[start:end],
                 "qpos": self._ref_arm_joint_pos_indexes[start:end],
                 "qvel": self._ref_arm_joint_vel_indexes[start:end],
             }
-            self.controller_config[arm]["actuator_range"] = (
+            self.part_controller_config[arm]["actuator_range"] = (
                 self.torque_limits[0][start:end],
                 self.torque_limits[1][start:end],
             )
 
             # Only load urdf the first time this controller gets called
-            self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
+            self.part_controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
             urdf_loaded = True
 
             # # Instantiate the relevant controller
@@ -779,16 +779,16 @@ class Robot(object):
             if self.has_gripper[arm]:
                 # Load gripper controllers
                 gripper_name = self.get_gripper_name(arm)
-                self.controller_config[gripper_name] = {}
-                self.controller_config[gripper_name]["type"] = "GRIP"
-                self.controller_config[gripper_name]["robot_name"] = self.name
-                self.controller_config[gripper_name]["sim"] = self.sim
-                self.controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
-                self.controller_config[gripper_name]["part_name"] = gripper_name
-                self.controller_config[gripper_name]["naming_prefix"] = self.robot_model.naming_prefix
-                self.controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
-                self.controller_config[gripper_name]["policy_freq"] = self.control_freq
-                self.controller_config[gripper_name]["joint_indexes"] = {
+                self.part_controller_config[gripper_name] = {}
+                self.part_controller_config[gripper_name]["type"] = "GRIP"
+                self.part_controller_config[gripper_name]["robot_name"] = self.name
+                self.part_controller_config[gripper_name]["sim"] = self.sim
+                self.part_controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+                self.part_controller_config[gripper_name]["part_name"] = gripper_name
+                self.part_controller_config[gripper_name]["naming_prefix"] = self.robot_model.naming_prefix
+                self.part_controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
+                self.part_controller_config[gripper_name]["policy_freq"] = self.control_freq
+                self.part_controller_config[gripper_name]["joint_indexes"] = {
                     "joints": self.gripper_joints[arm],
                     "actuators": self._ref_joint_gripper_actuator_indexes[arm],
                     "qpos": self._ref_gripper_joint_pos_indexes[arm],
@@ -797,7 +797,7 @@ class Robot(object):
                 low = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm], 0]
                 high = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm], 1]
 
-                self.controller_config[gripper_name]["actuator_range"] = (low, high)
+                self.part_controller_config[gripper_name]["actuator_range"] = (low, high)
 
     def enable_parts(self, right=True, left=True):
         self._enabled_parts = {
@@ -863,6 +863,12 @@ class Robot(object):
     def get_gripper_name(self, arm):
         return f"{arm}_gripper"
 
+    def has_part(self, part_name):
+        if part_name in self._ref_joints_indexes_dict.keys():
+            return True
+        else:
+            return False
+
     @property
     def _joint_split_idx(self):
         """
@@ -870,3 +876,13 @@ class Robot(object):
             int: the index that correctly splits the right arm from the left arm joints
         """
         return int(len(self.robot_arm_joints) / len(self.arms))
+
+    @property
+    def part_controllers(self):
+        """
+        Controller dictionary for the robot
+
+        Returns:
+            dict: Controller dictionary for the robot
+        """
+        return self.composite_controller.part_controllers

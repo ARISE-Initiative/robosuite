@@ -4,7 +4,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.controller import Controller
+from robosuite.controllers.parts.controller import Controller
 from robosuite.utils.control_utils import *
 
 # Supported impedance modes

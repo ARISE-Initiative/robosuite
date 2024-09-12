@@ -1,14 +1,14 @@
+from typing import Dict, List
 import numpy as np
 
-import robosuite.utils.transform_utils as T
-from robosuite.controllers.base.base_controller import BaseController
+from robosuite.controllers.parts.controller import Controller
 from robosuite.utils.control_utils import *
 
 # Supported impedance modes
 IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
 
 
-class BaseJointVelocityController(BaseController):
+class JointPositionController(Controller):
     """
     Controller for controlling robot arm via impedance control. Allows position control of the robot's joints.
 
@@ -17,6 +17,8 @@ class BaseJointVelocityController(BaseController):
 
     Args:
         sim (MjSim): Simulator instance this controller will pull robot state updates from
+
+        eef_name (str): Name of controlled robot arm's end effector (from robot XML)
 
         joint_indexes (dict): Each key contains sim reference indexes to relevant robot joint information, namely:
 
@@ -87,26 +89,34 @@ class BaseJointVelocityController(BaseController):
         sim,
         joint_indexes,
         actuator_range,
+        ref_name=None,
         input_max=1,
         input_min=-1,
-        output_max=1,
-        output_min=-1,
+        output_max=0.05,
+        output_min=-0.05,
         kp=50,
         damping_ratio=1,
         impedance_mode="fixed",
         kp_limits=(0, 300),
         damping_ratio_limits=(0, 100),
         policy_freq=20,
+        lite_physics=False,
         qpos_limits=None,
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
+
         super().__init__(
             sim,
-            joint_indexes,
-            actuator_range,
+            ref_name=ref_name,
+            joint_indexes=joint_indexes,
+            actuator_range=actuator_range,
+            part_name=kwargs.get("part_name", None),
             naming_prefix=kwargs.get("naming_prefix", None),
+            lite_physics=lite_physics,
         )
+
+        self.joint_indexes = joint_indexes
 
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
@@ -122,7 +132,8 @@ class BaseJointVelocityController(BaseController):
 
         # kp kd
         self.kp = self.nums2array(kp, self.control_dim)
-        self.kd = 2 * np.sqrt(self.kp) * damping_ratio
+        self.kd = 2 * np.sqrt(self.kp) * damping_ratio if kwargs.get("kd", None) is None else \
+            self.nums2array(kwargs.get("kd", None), self.control_dim)
 
         # kp and kd limits
         self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
@@ -152,9 +163,10 @@ class BaseJointVelocityController(BaseController):
         self.interpolator = interpolator
 
         # initialize
-        self.goal_qvel = None
-        self.init_pos = None
-        self.init_ori = None
+        self.goal_qpos = None
+
+    def update_base_pose(self):
+        pass
 
     def set_goal(self, action, set_qpos=None):
         """
@@ -194,31 +206,26 @@ class BaseJointVelocityController(BaseController):
         # Check to make sure delta is size self.joint_dim
         assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
 
+        # scale delta appears to mess up action coming from subclassed IK controller; commenting out
+        # TODO: Add an option to skip self.scale_action to accommodate the actions from subclassed IK controller. Temporally hard-code the boolean variable here. Need to be fixed before official merging.  
+        use_scaled_action = False
         if delta is not None:
-            scaled_delta = self.scale_action(delta)
+            if use_scaled_action:
+                scaled_delta = self.scale_action(delta)
+            else:
+                scaled_delta = action
         else:
             scaled_delta = None
 
-        curr_pos, curr_ori = self.get_base_pose()
+        if use_scaled_action:
+            self.goal_qpos = set_goal_position(
+                scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
+            )
+        else:
+            self.goal_qpos = action
 
-        # transform the action relative to initial base orientation
-        init_theta = T.mat2euler(self.init_ori)[2]  # np.arctan2(self.init_pos[1], self.init_pos[0])
-        curr_theta = T.mat2euler(curr_ori)[2]  # np.arctan2(curr_pos[1], curr_pos[0])
-        theta = curr_theta - init_theta
-
-        base_action = np.copy([action[i] for i in [1, 0, 2]])
-        # input raw base action is delta relative to current pose of base
-        # controller expects deltas relative to initial pose of base at start of episode
-        # transform deltas from current base pose coordinates to initial base pose coordinates
-        x, y = base_action[0:2]
-
-        # do the reverse of theta rotation
-        base_action[0] = x * np.cos(theta) + y * np.sin(theta)
-        base_action[1] = -x * np.sin(theta) + y * np.cos(theta)
-
-        self.goal_qvel = base_action
         if self.interpolator is not None:
-            self.interpolator.set_goal(self.goal_qvel)
+            self.interpolator.set_goal(self.goal_qpos)
 
     def run_controller(self):
         """
@@ -228,48 +235,45 @@ class BaseJointVelocityController(BaseController):
              np.array: Command torques
         """
         # Make sure goal has been set
-        if self.goal_qvel is None:
+        if self.goal_qpos is None:
             self.set_goal(np.zeros(self.control_dim))
 
         # Update state
         self.update()
 
-        desired_qvel = None
+        desired_qpos = None
 
         # Only linear interpolator is currently supported
         if self.interpolator is not None:
             # Linear case
             if self.interpolator.order == 1:
-                desired_qvel = self.interpolator.get_interpolated_goal()
+                desired_qpos = self.interpolator.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_qvel = np.array(self.goal_qvel)
+            desired_qpos = np.array(self.goal_qpos)
 
-        self.vels = desired_qvel
+        position_error = desired_qpos - self.joint_pos
+        vel_pos_error = -self.joint_vel
+        desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
 
-        ctrl_range = np.stack([self.actuator_min, self.actuator_max], axis=-1)
-        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-        self.vels = bias + weight * self.vels
+        # Return desired torques plus gravity compensations
+        self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
-
-        return self.vels
+        return self.torques
 
     def reset_goal(self):
         """
         Resets joint position goal to be current position
         """
-        self.goal_qvel = self.joint_vel
-
-        self.init_pos, self.init_ori = self.get_base_pose()
+        self.goal_qpos = self.joint_pos
 
         # Reset interpolator if required
         if self.interpolator is not None:
-            self.interpolator.set_goal(self.goal_qvel)
+            self.interpolator.set_goal(self.goal_qpos)
 
     @property
     def control_limits(self):
@@ -299,4 +303,4 @@ class BaseJointVelocityController(BaseController):
 
     @property
     def name(self):
-        return "JOINT_VELOCITY"
+        return "JOINT_POSITION"

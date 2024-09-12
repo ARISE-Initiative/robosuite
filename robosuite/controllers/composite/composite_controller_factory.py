@@ -3,7 +3,7 @@ import json
 import pathlib
 from typing import Optional, Dict
 import robosuite
-from robosuite import load_controller_config
+from robosuite.controllers.parts.controller_factory import load_part_controller_config
 
 
 def load_composite_controller_config(custom_fpath: str = None, default_controller: str = None, robot: str = None) -> Optional[Dict]:
@@ -31,23 +31,21 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
     if default_controller is not None:
 
         # Assert that requested default controller is in the available default controllers
-        from robosuite.controllers.composite import ALL_CONTROLLERS
+        from robosuite.controllers.composite import ALL_COMPOSITE_CONTROLLERS
 
         assert (
-            default_controller in ALL_CONTROLLERS
+            default_controller in ALL_COMPOSITE_CONTROLLERS
         ), "Error: Unknown default controller specified. Requested {}, " "available controllers: {}".format(
-            default_controller, list(ALL_CONTROLLERS)
+            default_controller, list(ALL_COMPOSITE_CONTROLLERS)
         )
 
         if "GR1" in robot:
             robot_name = "gr1"
-        elif "Tiago" in robot:
-            robot_name = "tiago"
         else:
-            raise ValueError("Unknown robot name: {}".format(robot))
+            robot_name = robot.lower()
 
         # Store the default controller config fpath associated with the requested controller
-        custom_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/composite/default_{default_controller.lower()}_{robot_name}.json"
+        custom_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/robots/default_{default_controller.lower()}_{robot_name}.json"
     else:
         return None
 
@@ -62,12 +60,14 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
         print("Error opening controller filepath at: {}. " "Please check filepath and try again.".format(custom_fpath))
 
     # Load default controller configs for each specified body part
-    default_controller_configs_part_names = composite_controller_config.get("default_controller_configs_part_names", None)
-    if default_controller_configs_part_names is not None:
-        composite_controller_config["body_parts"] = {}
-        for part_name in default_controller_configs_part_names:
-            custom_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/default_{robot_name}.json"
-            composite_controller_config["body_parts"][part_name] = load_controller_config(custom_fpath=custom_fpath)
+    body_parts_controller_configs = composite_controller_config.get("body_parts_controller_configs", {})
+    composite_controller_config["body_parts"] = {}
+    for part_name, part_config in body_parts_controller_configs.items():
+        if part_name == "arms":
+            for arm_name, arm_config in part_config.items():
+                composite_controller_config["body_parts"][arm_name] = arm_config
+        else:
+            composite_controller_config["body_parts"][part_name] = part_config
 
     # Return the loaded controller
     return composite_controller_config

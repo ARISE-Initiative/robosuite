@@ -165,7 +165,7 @@ class RobotEnv(MujocoEnv):
         base_types = self._input2list(base_types, self.num_robots)
 
         # Controller
-        controller_configs = self._input2list(controller_configs, self.num_robots)
+        # controller_configs = self._input2list(controller_configs, self.num_robots)
 
         # Composite Controller
         composite_controller_configs = self._input2list(composite_controller_configs, self.num_robots)
@@ -210,7 +210,7 @@ class RobotEnv(MujocoEnv):
         self.robot_configs = [
             dict(
                 **{
-                    "controller_config": controller_configs[idx],
+                    # "controller_config": controller_configs[idx],
                     "composite_controller_config": composite_controller_configs[idx],
                     "base_type": base_types[idx],
                     "initialization_noise": initialization_noise[idx],

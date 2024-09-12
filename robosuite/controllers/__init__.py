@@ -1,9 +1,9 @@
-from .controller_factory import controller_factory, load_controller_config
-from .composite import composite_controller_factory
-from .arm import *
+from .parts.controller_factory import controller_factory, load_part_controller_config
+from .composite import composite_controller_factory, ALL_COMPOSITE_CONTROLLERS
+from .composite.composite_controller_factory import load_composite_controller_config
 
 
-CONTROLLER_INFO = {
+PART_CONTROLLER_INFO = {
     "JOINT_VELOCITY": "Joint Velocity",
     "JOINT_TORQUE": "Joint Torque",
     "JOINT_POSITION": "Joint Position",
@@ -12,4 +12,4 @@ CONTROLLER_INFO = {
     "IK_POSE": "Inverse Kinematics Control (Position + Orientation) (Note: must have PyBullet installed)",
 }
 
-ALL_CONTROLLERS = CONTROLLER_INFO.keys()
+ALL_PART_CONTROLLERS = PART_CONTROLLER_INFO.keys()

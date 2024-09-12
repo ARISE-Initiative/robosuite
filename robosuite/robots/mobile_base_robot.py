@@ -5,7 +5,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import load_controller_config
+from robosuite.controllers import load_part_controller_config
 from robosuite.robots.robot import Robot
 from robosuite.utils.observables import Observable, sensor
 
@@ -19,7 +19,6 @@ class MobileBaseRobot(Robot):
         self,
         robot_type: str,
         idn=0,
-        controller_config=None,
         composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
@@ -31,7 +30,6 @@ class MobileBaseRobot(Robot):
         super().__init__(
             robot_type=robot_type,
             idn=idn,
-            controller_config=controller_config,
             composite_controller_config=composite_controller_config,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
@@ -53,24 +51,40 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.base]) == 0:
             return None
-        # TODO: Add a default controller config for base
-        self.controller_config[self.base] = {}
-        self.controller_config[self.base]["type"] = "JOINT_VELOCITY"
-        self.controller_config[self.base]["interpolation"] = None
-        self.controller_config[self.base]["ramp_ratio"] = 1.0
-        self.controller_config[self.base]["robot_name"] = self.name
+        if not self.part_controller_config[self.base]:
+            controller_path = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.base]),
+            )
+            self.part_controller_config[self.base] = load_part_controller_config(custom_fpath=controller_path)
+                
+            # Assert that the controller config is a dict file:
+            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
+            assert (
+                type(self.part_controller_config[self.base]) == dict
+            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
+                type(self.part_controller_config[self.base])
+            )
+        
+        # self.part_controller_config[self.base] = {}
+        # self.part_controller_config[self.base]["type"] = "JOINT_VELOCITY"
+        # self.part_controller_config[self.base]["interpolation"] = None
+        self.part_controller_config[self.base]["ramp_ratio"] = 1.0
+        self.part_controller_config[self.base]["robot_name"] = self.name
 
-        self.controller_config[self.base]["sim"] = self.sim
-        self.controller_config[self.base]["part_name"] = self.base
-        self.controller_config[self.base]["naming_prefix"] = self.robot_model.base.naming_prefix
-        self.controller_config[self.base]["ndim"] = self._joint_split_idx
-        self.controller_config[self.base]["policy_freq"] = self.control_freq
-        self.controller_config[self.base]["lite_physics"] = self.lite_physics
+        self.part_controller_config[self.base]["sim"] = self.sim
+        self.part_controller_config[self.base]["part_name"] = self.base
+        self.part_controller_config[self.base]["naming_prefix"] = self.robot_model.base.naming_prefix
+        self.part_controller_config[self.base]["ndim"] = self._joint_split_idx
+        self.part_controller_config[self.base]["policy_freq"] = self.control_freq
+        self.part_controller_config[self.base]["lite_physics"] = self.lite_physics
 
         ref_base_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.base_joints]
         ref_base_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.base_joints]
         ref_base_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.base_joints]
-        self.controller_config[self.base]["joint_indexes"] = {
+        self.part_controller_config[self.base]["joint_indexes"] = {
             "joints": ref_base_joint_indexes,
             "qpos": ref_base_joint_pos_indexes,
             "qvel": ref_base_joint_vel_indexes,
@@ -79,7 +93,7 @@ class MobileBaseRobot(Robot):
         low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 0]
         high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.base], 1]
 
-        self.controller_config[self.base]["actuator_range"] = (low, high)
+        self.part_controller_config[self.base]["actuator_range"] = (low, high)
 
     def _load_torso_controller(self):
         """
@@ -88,36 +102,36 @@ class MobileBaseRobot(Robot):
         if len(self._ref_actuators_indexes_dict[self.torso]) == 0:
             return None
 
-        if not self.controller.get(self.torso, None):
+        if not self.part_controller_config[self.torso]:
             controller_path = os.path.join(
                 os.path.dirname(__file__),
                 "..",
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.torso]),
             )
-            self.controller_config[self.torso] = load_controller_config(custom_fpath=controller_path)
+            self.part_controller_config[self.torso] = load_part_controller_config(custom_fpath=controller_path)
                 
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
             assert (
-                type(self.controller_config[self.torso]) == dict
+                type(self.part_controller_config[self.torso]) == dict
             ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-                type(self.controller_config[self.torso])
+                type(self.part_controller_config[self.torso])
             )
 
         # TODO: Add a default controller config for torso
-        self.controller_config[self.torso]["robot_name"] = self.name
-        self.controller_config[self.torso]["sim"] = self.sim
-        self.controller_config[self.torso]["part_name"] = self.torso
-        self.controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
-        self.controller_config[self.torso]["ndim"] = self._joint_split_idx
-        self.controller_config[self.torso]["policy_freq"] = self.control_freq
-        self.controller_config[self.torso]["lite_physics"] = self.lite_physics
+        self.part_controller_config[self.torso]["robot_name"] = self.name
+        self.part_controller_config[self.torso]["sim"] = self.sim
+        self.part_controller_config[self.torso]["part_name"] = self.torso
+        self.part_controller_config[self.torso]["naming_prefix"] = self.robot_model.naming_prefix
+        self.part_controller_config[self.torso]["ndim"] = self._joint_split_idx
+        self.part_controller_config[self.torso]["policy_freq"] = self.control_freq
+        self.part_controller_config[self.torso]["lite_physics"] = self.lite_physics
 
         ref_torso_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.torso_joints]
         ref_torso_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.torso_joints]
         ref_torso_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.torso_joints]
-        self.controller_config[self.torso]["joint_indexes"] = {
+        self.part_controller_config[self.torso]["joint_indexes"] = {
             "joints": ref_torso_joint_indexes,
             "qpos": ref_torso_joint_pos_indexes,
             "qvel": ref_torso_joint_vel_indexes,
@@ -126,7 +140,7 @@ class MobileBaseRobot(Robot):
         low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 0]
         high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.torso], 1]
 
-        self.controller_config[self.torso]["actuator_range"] = (low, high)
+        self.part_controller_config[self.torso]["actuator_range"] = (low, high)
 
     def _load_head_controller(self):
         """
@@ -134,36 +148,35 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.head]) == 0:
             return None
-        
-        if not self.controller.get(self.head, None):
+        if not self.part_controller_config[self.head]:
             controller_path = os.path.join(
                 os.path.dirname(__file__),
                 "..",
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.head]),
             )
-            self.controller_config[self.head] = load_controller_config(custom_fpath=controller_path)
+            self.part_controller_config[self.head] = load_part_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
             assert (
-                type(self.controller_config[self.head]) == dict
+                type(self.part_controller_config[self.head]) == dict
             ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-                type(self.controller_config[self.head])
+                type(self.part_controller_config[self.head])
             )
 
-        self.controller_config[self.head]["robot_name"] = self.name
-        self.controller_config[self.head]["sim"] = self.sim
+        self.part_controller_config[self.head]["robot_name"] = self.name
+        self.part_controller_config[self.head]["sim"] = self.sim
 
-        self.controller_config[self.head]["part_name"] = self.head
-        self.controller_config[self.head]["naming_prefix"] = self.robot_model.naming_prefix
-        self.controller_config[self.head]["ndim"] = self._joint_split_idx
-        self.controller_config[self.head]["policy_freq"] = self.control_freq
+        self.part_controller_config[self.head]["part_name"] = self.head
+        self.part_controller_config[self.head]["naming_prefix"] = self.robot_model.naming_prefix
+        self.part_controller_config[self.head]["ndim"] = self._joint_split_idx
+        self.part_controller_config[self.head]["policy_freq"] = self.control_freq
 
         ref_head_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.head_joints]
         ref_head_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.head_joints]
         ref_head_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.head_joints]
-        self.controller_config[self.head]["joint_indexes"] = {
+        self.part_controller_config[self.head]["joint_indexes"] = {
             "joints": ref_head_joint_indexes,
             "qpos": ref_head_joint_pos_indexes,
             "qvel": ref_head_joint_vel_indexes,
@@ -172,7 +185,7 @@ class MobileBaseRobot(Robot):
         low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.head], 0]
         high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.head], 1]
 
-        self.controller_config[self.head]["actuator_range"] = (low, high)
+        self.part_controller_config[self.head]["actuator_range"] = (low, high)
 
     def load_model(self):
         """
@@ -388,13 +401,3 @@ class MobileBaseRobot(Robot):
             dict: Dictionary of split indexes for each part of the robot
         """
         return self.composite_controller._action_split_indexes
-
-    @property
-    def controller(self):
-        """
-        Controller dictionary for the robot
-
-        Returns:
-            dict: Controller dictionary for the robot
-        """
-        return self.composite_controller.controllers

@@ -7,6 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 
 class WheeledRobot(MobileBaseRobot):
@@ -18,7 +19,6 @@ class WheeledRobot(MobileBaseRobot):
         self,
         robot_type: str,
         idn=0,
-        controller_config=None,
         composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
@@ -30,7 +30,6 @@ class WheeledRobot(MobileBaseRobot):
         super().__init__(
             robot_type=robot_type,
             idn=idn,
-            controller_config=controller_config,
             composite_controller_config=composite_controller_config,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
@@ -63,10 +62,15 @@ class WheeledRobot(MobileBaseRobot):
 
         # override controller config with composite controller config values
         for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
-            if part_name in self.controller_config:
-                self.controller_config[part_name].update(controller_config)
+            if not self.has_part(part_name):
+                ROBOSUITE_DEFAULT_LOGGER.warn(f"The config has defined for the controller {part_name}, but the robot does not have this component. Skipping, but make sure this is intended. Removing the controller config for {part_name} from self.part_controller_config.")
+                self.part_controller_config.pop(part_name, None)
+                continue
+            if part_name in self.part_controller_config:
+                self.part_controller_config[part_name].update(controller_config)
+        
         self.composite_controller.load_controller_config(
-            self.controller_config, 
+            self.part_controller_config, 
             self.composite_controller_config.get("composite_controller_specific_configs", {})
         )
         self.enable_parts()
@@ -143,7 +147,7 @@ class WheeledRobot(MobileBaseRobot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
-                controller = self.controller.get(arm, None)
+                controller = self.part_controllers.get(arm, None)
                 if controller is None:
                     # TODO: enable buffer update for whole body controllers not using individual arm controllers
                     continue

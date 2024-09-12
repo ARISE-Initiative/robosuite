@@ -17,9 +17,8 @@ import numpy as np
 
 import mujoco
 import robosuite as suite
-from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
+from robosuite.controllers import load_composite_controller_config
 import robosuite.macros as macros
-from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 from robosuite.utils import transform_utils
@@ -68,7 +67,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
     env.reset()
     env.render()
-
     if use_mocap:
         site_names: List[str] = env.robots[0].composite_controller.joint_action_policy.site_names
         right_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site_names[0])]
@@ -327,14 +325,13 @@ if __name__ == "__main__":
         assert args.renderer == "mjviewer", "Mocap is only supported with the mjviewer renderer"
 
     # Get controller config
-    controller_config = load_controller_config(default_controller=args.controller)
     composite_controller_config = load_composite_controller_config(default_controller=args.composite_controller, robot=args.robots[0])
 
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
-        "controller_configs": controller_config,
+        # "controller_configs": controller_config,
         "composite_controller_configs": composite_controller_config,
     }
 

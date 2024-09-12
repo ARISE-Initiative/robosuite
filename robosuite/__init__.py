@@ -14,7 +14,7 @@ from robosuite.environments.manipulation.two_arm_handover import TwoArmHandover
 from robosuite.environments.manipulation.two_arm_transport import TwoArmTransport
 
 from robosuite.environments import ALL_ENVIRONMENTS
-from robosuite.controllers import ALL_CONTROLLERS, load_controller_config
+from robosuite.controllers import ALL_PART_CONTROLLERS, load_part_controller_config, ALL_COMPOSITE_CONTROLLERS, load_composite_controller_config
 from robosuite.robots import ALL_ROBOTS
 from robosuite.models.grippers import ALL_GRIPPERS
 

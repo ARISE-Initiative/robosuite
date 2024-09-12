@@ -38,34 +38,35 @@ class CompositeController:
 
         self.lite_physics = lite_physics
 
-        self.controllers = OrderedDict()
+        self.part_controllers = OrderedDict()
 
         self._action_split_indexes = OrderedDict()
 
-        self.controller_config = None
+        self.part_controller_config = None
 
         self.arms = self.robot_model.arms
 
         self._applied_action_dict = {}
 
-    def load_controller_config(self, controller_config, composite_controller_specific_config: Optional[Dict] = None):
-        self.controller_config = controller_config
+    def load_controller_config(self, part_controller_config, composite_controller_specific_config: Optional[Dict] = None):
+        self.part_controller_config = part_controller_config
         self.composite_controller_specific_config = composite_controller_specific_config
-        self.controllers.clear()
+        self.part_controllers.clear()
         self._action_split_indexes.clear()
         self._init_controllers()
         self.setup_action_split_idx()
 
     def _init_controllers(self):
-        for part_name in self.controller_config.keys():
-            self.controllers[part_name] = controller_factory(
-                self.controller_config[part_name]["type"], self.controller_config[part_name]
+        for part_name in self.part_controller_config.keys():
+            controller_params = self.part_controller_config[part_name]
+            self.part_controllers[part_name] = controller_factory(
+                self.part_controller_config[part_name]["type"], controller_params
             )
 
     def setup_action_split_idx(self):
         previous_idx = 0
         last_idx = 0
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             if part_name in self.grippers.keys():
                 last_idx += self.grippers[part_name].dof
             else:
@@ -77,7 +78,7 @@ class CompositeController:
         if not self.lite_physics:
             self.sim.forward()
 
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
             if part_name in self.grippers.keys():
@@ -85,7 +86,7 @@ class CompositeController:
             controller.set_goal(action)
 
     def reset(self):
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             controller.reset_goal()
 
     def run_controller(self, enabled_parts):
@@ -93,21 +94,21 @@ class CompositeController:
             self.sim.forward()
         self.update_state()
         self._applied_action_dict.clear()
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             if enabled_parts.get(part_name, False):
                 self._applied_action_dict[part_name] = controller.run_controller()
 
         return self._applied_action_dict
 
     def get_control_dim(self, part_name):
-        if part_name not in self.controllers:
+        if part_name not in self.part_controllers:
             return 0
         else:
-            return self.controllers[part_name].control_dim
+            return self.part_controllers[part_name].control_dim
 
     def get_controller_base_pose(self, controller_name):
-        naming_prefix = self.controllers[controller_name].naming_prefix
-        part_name = self.controllers[controller_name].part_name
+        naming_prefix = self.part_controllers[controller_name].naming_prefix
+        part_name = self.part_controllers[controller_name].part_name
         base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{naming_prefix}{part_name}_center")])
         base_ori = np.array(
             self.sim.data.site_xmat[self.sim.model.site_name2id(f"{naming_prefix}{part_name}_center")].reshape([3, 3])
@@ -117,15 +118,15 @@ class CompositeController:
     def update_state(self):
         for arm in self.arms:
             base_pos, base_ori = self.get_controller_base_pose(controller_name=arm)
-            self.controllers[arm].update_origin(base_pos, base_ori)
+            self.part_controllers[arm].update_origin(base_pos, base_ori)
 
     def get_controller(self, part_name):
-        return self.controllers[part_name]
+        return self.part_controllers[part_name]
 
     @property
     def action_limits(self):
         low, high = [], []
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():
                     low_g, high_g = ([-1] * self.grippers[part_name].dof, [1] * self.grippers[part_name].dof)
@@ -152,7 +153,7 @@ class HybridMobileBaseCompositeController(CompositeController):
         else:
             update_wrt_origin = False
 
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
             if part_name in self.grippers.keys():
@@ -181,13 +182,12 @@ class WholeBodyCompositeController(CompositeController):
         self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
 
     def _init_controllers(self):
-        for part_name in self.controller_config.keys():
-            controller_params = self.controller_config[part_name]
-            self.controllers[part_name] = controller_factory(
-                self.controller_config[part_name]["type"], 
+        for part_name in self.part_controller_config.keys():
+            controller_params = self.part_controller_config[part_name]
+            self.part_controllers[part_name] = controller_factory(
+                self.part_controller_config[part_name]["type"], 
                 controller_params
             )
-
         self._init_joint_action_policy()
 
 
@@ -213,11 +213,11 @@ class WholeBodyCompositeController(CompositeController):
         last_idx = 0
         # add joint_action_policy related body parts' action split index first
         for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
-            last_idx += self.controllers[part_name].control_dim
+            last_idx += self.part_controllers[part_name].control_dim
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             if part_name not in self.composite_controller_specific_config["ik_target_part_names"]:
                 if part_name in self.grippers.keys():
                     last_idx += self.grippers[part_name].dof
@@ -240,7 +240,7 @@ class WholeBodyCompositeController(CompositeController):
 
         # prev and last index correspond to the IK solver indexes' last index
         previous_idx = last_idx = list(self._whole_body_controller_action_split_indexes.values())[-1][-1]
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             if part_name in self.composite_controller_specific_config["ik_target_part_names"]:
                 continue
             if part_name in self.grippers.keys():
@@ -257,7 +257,7 @@ class WholeBodyCompositeController(CompositeController):
         target_qpos = self.joint_action_policy.solve(all_action[:self.joint_action_policy.control_dim])
         # create new all_action vector with the IK solver's actions first
         all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim:]])
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
             if part_name in self.grippers.keys():
@@ -278,7 +278,7 @@ class WholeBodyCompositeController(CompositeController):
         # assumption: IK solver's actions come first
         low_c, high_c = self.joint_action_policy.control_limits
         low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
-        for part_name, controller in self.controllers.items():
+        for part_name, controller in self.part_controllers.items():
             # Exclude terms that the IK solver handles
             if part_name in self.composite_controller_specific_config["ik_target_part_names"]:
                 continue
@@ -342,7 +342,7 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
     def _init_joint_action_policy(self):
         joint_names: str = []
         for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
-            joint_names += self.controllers[part_name].joint_names
+            joint_names += self.part_controllers[part_name].joint_names
 
         # Compute nullspace gains, Kn.
         Kn = get_nullspace_gains(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
