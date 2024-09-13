@@ -41,7 +41,7 @@ class Baxter(ManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific default controller config names
         """
-        return {"right": "default_baxter", "left": "default_baxter"}
+        return {"right": "osc_pose", "left": "osc_pose"}
 
     @property
     def init_qpos(self):

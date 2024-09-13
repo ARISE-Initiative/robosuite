@@ -19,7 +19,6 @@ REGISTERED_ROBOTS = {}
 def register_robot(target_class):
     REGISTERED_ROBOTS[target_class.__name__] = target_class
 
-
 def create_robot(robot_name, *args, **kwargs):
     """
     Instantiates a Robot object.

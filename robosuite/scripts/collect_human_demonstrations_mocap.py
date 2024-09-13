@@ -111,8 +111,8 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     'gripper0_left_grip_site_axis_angle': input_action[3:6], 
                     'gripper0_right_grip_site_pos': np.zeros(3), 
                     'gripper0_right_grip_site_axis_angle': np.zeros(3), 
-                    'left_gripper': np.array([0., 0., 0., 0., 0., 0.]), 
-                    'right_gripper': np.array([0., 0., 0., 0., 0., 0.])
+                    'left_gripper': np.array([0.] *  env.robots[0].gripper["left"].dof), 
+                    'right_gripper': np.array([0.] *  env.robots[0].gripper["right"].dof)
                 }
 
                 if use_mocap:
@@ -301,9 +301,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
-    parser.add_argument(
-        "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
-    )
+    # parser.add_argument(
+    #     "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
+    # )
     parser.add_argument(
         "--composite-controller", type=str, default=None, help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
     )

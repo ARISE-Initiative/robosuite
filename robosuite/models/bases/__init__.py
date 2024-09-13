@@ -33,9 +33,14 @@ BASE_MAPPING = {
     "SpotFloating": SpotFloating,
     "Go2": Go2,
     "Go2Floating": Go2Floating,
-    # "Z1Base": Z1Base,
-    # "SpotBase": SpotBase,
-    # "NullLeggedBase": NullLeggedBase,
 }
 
 ALL_BASES = BASE_MAPPING.keys()
+
+# def register_base_class(target_type, **kwargs):
+#     def decorator(target_class):
+#         # Store the class in the registry with additional arguments
+#         BASE_MAPPING.update({target_class.__name__: target_class})
+
+#         return target_class  # Return the class itself
+#     return decorator

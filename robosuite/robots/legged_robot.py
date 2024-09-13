@@ -11,7 +11,7 @@ from robosuite.controllers import composite_controller_factory
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
 from robosuite.utils.observables import sensor
-
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 class LeggedRobot(MobileBaseRobot):
     """
@@ -115,7 +115,7 @@ class LeggedRobot(MobileBaseRobot):
         # override controller config with composite controller config values
         for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
             if not self.has_part(part_name):
-                ROBOSUITE_DEFAULT_LOGGER.warn(f"The config has defined for the controller {part_name}, but the robot does not have this component. Skipping, but make sure this is intended. Removing the controller config for {part_name} from self.part_controller_config.")
+                ROBOSUITE_DEFAULT_LOGGER.warn(f"The config has defined for the controller \"{part_name}\", but the robot does not have this component. Skipping, but make sure this is intended. Removing the controller config for {part_name} from self.part_controller_config.")
                 self.part_controller_config.pop(part_name, None)
                 continue
             if part_name in self.part_controller_config:

@@ -41,6 +41,10 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
 
         if "GR1" in robot:
             robot_name = "gr1"
+        elif "G1" in robot:
+            robot_name = "g1"
+        elif "H1" in robot:
+            robot_name = "h1"
         else:
             robot_name = robot.lower()
 

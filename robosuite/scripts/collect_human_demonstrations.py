@@ -65,7 +65,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
         # Get the newest action
         input_action, grasp = input2action(
-            device=device, robot=active_robot, active_arm=arm, active_end_effector=end_effector, env_configuration=env_configuration
+            device=device, robot=active_robot, active_arm=arm, active_end_effector=end_effector, env_configuration=env_configuration,
         )
 
         # If action is none, then this a reset so we should break

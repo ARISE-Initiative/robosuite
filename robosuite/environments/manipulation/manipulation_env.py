@@ -501,4 +501,4 @@ class ManipulationEnv(RobotEnv):
         for robot in robots:
             assert issubclass(ROBOT_CLASS_MAPPING[robot], FixedBaseRobot) or issubclass(
                 ROBOT_CLASS_MAPPING[robot], MobileBaseRobot
-            ), "Only manipulator robots supported for manipulation environment!"
+            ), f"Only manipulator robots supported for manipulation environment! Got {ROBOT_CLASS_MAPPING[robot]}"

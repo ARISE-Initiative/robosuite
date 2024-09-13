@@ -864,7 +864,7 @@ class Robot(object):
         return f"{arm}_gripper"
 
     def has_part(self, part_name):
-        if part_name in self._ref_joints_indexes_dict.keys():
+        if part_name in self._ref_joints_indexes_dict.keys() and len(self._ref_joints_indexes_dict[part_name]) > 0:
             return True
         else:
             return False
