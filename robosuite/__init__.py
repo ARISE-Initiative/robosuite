@@ -17,6 +17,7 @@ from robosuite.environments import ALL_ENVIRONMENTS
 from robosuite.controllers import ALL_PART_CONTROLLERS, load_part_controller_config, ALL_COMPOSITE_CONTROLLERS, load_composite_controller_config
 from robosuite.robots import ALL_ROBOTS
 from robosuite.models.grippers import ALL_GRIPPERS
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 try:
     import robosuite_menagerie
