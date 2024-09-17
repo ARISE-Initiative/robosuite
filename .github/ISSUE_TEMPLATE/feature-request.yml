@@ -1,16 +1,38 @@
 ---
-name: Feature Request Template
-about: "For feature requests. Please search for existing issues first. Also see CONTRIBUTING."
+name: 🛠️ Feature Request
+description: Suggest an idea to help us improve Robosuite :heart:
+title: "[Feature]: "
+labels:
+  - "ty:feature"
 
----
+body:
+  - type: markdown
+    attributes:
+      value: >
+        **Thanks for taking the time to fill out this feature request report! :heart:** Please double check if an issue 
+        [already exists](https://github.com/ARISE-Initiative/robosuite-dev/issues) for
+        your feature.
 
-**Please Describe The Problem To Be Solved**
-(Replace This Text: Please present a concise description of the problem to be addressed by this feature request. Please be clear what parts of the problem are considered to be in-scope and out-of-scope.)
+        We are also happy to accept contributions from our users. For more details see
+        [here](https://github.com/ARISE-Initiative/robosuite-dev/blob/master/CONTRIBUTING.md).
 
-**(Optional): Suggest A Solution**
-(Replace This Text: A concise description of your preferred solution. Things to address include:
-* Details of the technical implementation
-* Tradeoffs made in design decisions
-* Caveats and considerations for the future
+  - type: textarea
+    attributes:
+      label: Description
+      description: |
+        A clear and concise description of the feature you're interested in.
+      value: |
+        <!--- Describe your feature here --->
+    validations:
+      required: true
 
-If there are multiple solutions, please present each one separately. Save comparisons for the very end.)
+  - type: textarea
+    attributes:
+      label: Suggested Solution
+      description: >
+        Describe the solution you'd like. A clear and concise description of what you want to happen. If you have
+        considered alternatives, please describe them.
+      value: |
+        <!--- Describe your solution here --->
+    validations:
+      required: false
