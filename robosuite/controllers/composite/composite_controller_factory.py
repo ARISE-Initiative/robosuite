@@ -56,7 +56,8 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
             ROBOSUITE_DEFAULT_LOGGER.warn(f"Default controller config for {default_controller} not found for robot {robot}. Loading default controller config for {default_controller}. The default config is defined in {custom_fpath} ")
 
     else:
-        return None
+        ROBOSUITE_DEFAULT_LOGGER.info("Loading custom controller configuration from: {} ...".format(custom_fpath))
+    #     return None
 
     # Assert that the fpath to load the controller is not empty
     assert custom_fpath is not None, "Error: Either custom_fpath or default_controller must be specified!"
