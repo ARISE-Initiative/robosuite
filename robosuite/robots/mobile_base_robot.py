@@ -310,11 +310,11 @@ class MobileBaseRobot(Robot):
 
         @sensor(modality=modality)
         def base_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"base{self.idn}_center")])
+            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))])
 
         @sensor(modality=modality)
         def base_quat(obs_cache):
-            return T.mat2quat(self.sim.data.get_site_xmat(f"base{self.idn}_center"))
+            return T.mat2quat(self.sim.data.get_site_xmat(self.robot_model.base.correct_naming("center")))
 
         sensors = [base_pos, base_quat]
         names = ["base_pos", "base_quat"]
@@ -324,11 +324,11 @@ class MobileBaseRobot(Robot):
             @sensor(modality=modality)
             def base_to_eef_pos(obs_cache):
                 eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"base{self.idn}_center")])
+                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))])
 
                 eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
                 eef_mat = T.quat2mat(eef_quat)
-                base_mat = self.sim.data.get_site_xmat(f"base{self.idn}_center")
+                base_mat = self.sim.data.get_site_xmat(self.robot_model.base.correct_naming("center"))
 
                 T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
                 T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))
@@ -339,11 +339,11 @@ class MobileBaseRobot(Robot):
             @sensor(modality=modality)
             def base_to_eef_quat(obs_cache):
                 eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"base{self.idn}_center")])
+                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))])
 
                 eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
                 eef_mat = T.quat2mat(eef_quat)
-                base_mat = self.sim.data.get_site_xmat(f"base{self.idn}_center")
+                base_mat = self.sim.data.get_site_xmat(self.robot_model.base.correct_naming("center"))
 
                 T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
                 T_WB = np.vstack((np.hstack((eef_mat, eef_pos[:, None])), [0, 0, 0, 1]))

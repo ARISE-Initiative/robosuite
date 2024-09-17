@@ -18,7 +18,6 @@ from robosuite.controllers import ALL_PART_CONTROLLERS, load_part_controller_con
 from robosuite.robots import ALL_ROBOTS
 from robosuite.models.grippers import ALL_GRIPPERS
 
-
 try:
     import robosuite_menagerie
 except:

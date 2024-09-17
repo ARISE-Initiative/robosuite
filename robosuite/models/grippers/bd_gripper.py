@@ -29,4 +29,7 @@ class BDGripper(GripperModel):
 
     @property
     def _important_geoms(self):
-        return {"arm_link_fngr": ["arm_link_fngr_0", "arm_link_fngr_1", "left_finger_coll", "right_finger_coll"]}
+        return {"arm_link_fngr": ["arm_link_fngr_0", "arm_link_fngr_1", "left_finger_coll", "right_finger_coll"],
+            "left_fingerpad": ["left_finger_coll"],
+            "right_fingerpad": ["right_finger_coll"]
+        }

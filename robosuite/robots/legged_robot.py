@@ -46,7 +46,7 @@ class LeggedRobot(MobileBaseRobot):
         if len(self._ref_actuators_indexes_dict[self.legs]) == 0:
             return None
 
-        if not self.part_controller[self.legs]:
+        if not self.part_controller_config[self.legs]:
             controller_path = os.path.join(
                 os.path.dirname(__file__),
                 "..",
