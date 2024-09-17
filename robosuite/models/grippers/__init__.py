@@ -15,7 +15,7 @@ from .bd_gripper import BDGripper
 from .null_gripper import NullGripper
 from .inspire_hands import InspireLeftHand, InspireRightHand
 
-EEF_MAPPING = {
+GRIPPER_MAPPING = {
     "RethinkGripper": RethinkGripper,
     "PandaGripper": PandaGripper,
     "JacoThreeFingerGripper": JacoThreeFingerGripper,
@@ -32,8 +32,8 @@ EEF_MAPPING = {
     None: NullGripper,
 }
 
-ALL_EEFS = EEF_MAPPING.keys()
+ALL_GRIPPERS = GRIPPER_MAPPING.keys()
 
-def register_eef(target_class):
-    EEF_MAPPING[target_class.__name__] = target_class
+def register_gripper(target_class):
+    GRIPPER_MAPPING[target_class.__name__] = target_class
     return target_class

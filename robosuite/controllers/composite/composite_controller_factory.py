@@ -4,7 +4,7 @@ import pathlib
 from typing import Optional, Dict
 import robosuite
 from robosuite.controllers.parts.controller_factory import load_part_controller_config
-
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 def load_composite_controller_config(custom_fpath: str = None, default_controller: str = None, robot: str = None) -> Optional[Dict]:
     """
@@ -50,6 +50,11 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
 
         # Store the default controller config fpath associated with the requested controller
         custom_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/robots/default_{default_controller.lower()}_{robot_name}.json"
+
+        if not custom_fpath.exists():
+            custom_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/default/composite/{default_controller.lower()}.json"
+            ROBOSUITE_DEFAULT_LOGGER.warn(f"Default controller config for {default_controller} not found for robot {robot}. Loading default controller config for {default_controller}. The default config is defined in {custom_fpath} ")
+
     else:
         return None
 
@@ -61,7 +66,7 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
         with open(custom_fpath) as f:
             composite_controller_config = json.load(f)
     except FileNotFoundError:
-        print("Error opening controller filepath at: {}. " "Please check filepath and try again.".format(custom_fpath))
+        ROBOSUITE_DEFAULT_LOGGER.error("Error opening controller filepath at: {}. " "Please check filepath and try again.".format(custom_fpath))
 
     # Load default controller configs for each specified body part
     body_parts_controller_configs = composite_controller_config.get("body_parts_controller_configs", {})
