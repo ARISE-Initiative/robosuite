@@ -268,7 +268,10 @@ if __name__ == "__main__":
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
     parser.add_argument(
-        "--composite-controller", type=str, default="NONE", help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
+        "--composite-controller", type=str, default=None, help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
+    )
+    parser.add_argument(
+        "--custom-controller-config", type=str, default=None, help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
     )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
@@ -282,7 +285,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    composite_controller_config = load_composite_controller_config(default_controller=args.composite_controller, robot=args.robots[0])
+    composite_controller_config = load_composite_controller_config(custom_fpath=args.custom_controller_config, default_controller=args.composite_controller, robot=args.robots[0])
 
     # Create argument configuration
     config = {
