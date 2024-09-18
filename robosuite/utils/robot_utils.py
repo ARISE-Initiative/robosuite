@@ -15,5 +15,3 @@ def check_bimanual(robot_name):
     """
     robot = REGISTERED_ROBOTS[robot_name]()
     return robot.arm_type == "bimanual"
-
-# def get_default_config_files():

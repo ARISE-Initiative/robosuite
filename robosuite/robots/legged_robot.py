@@ -46,7 +46,7 @@ class LeggedRobot(MobileBaseRobot):
         if len(self._ref_actuators_indexes_dict[self.legs]) == 0:
             return None
 
-        if not self.part_controller_config[self.legs]:
+        if self.part_controller_config.get(self.legs) is None:
             controller_path = os.path.join(
                 os.path.dirname(__file__),
                 "..",
@@ -63,8 +63,6 @@ class LeggedRobot(MobileBaseRobot):
                 type(self.part_controller_config[self.legs])
             )
         self.part_controller_config[self.legs] = {}
-        # self.part_controller_config[self.legs]["type"] = "JOINT_POSITION"
-        # self.part_controller_config[self.legs]["interpolation"] = "linear"
         self.part_controller_config[self.legs]["ramp_ratio"] = 1.0
         self.part_controller_config[self.legs]["robot_name"] = self.name
 
