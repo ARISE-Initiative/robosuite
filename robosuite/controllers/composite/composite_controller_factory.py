@@ -6,6 +6,14 @@ import robosuite
 from robosuite.controllers.parts.controller_factory import load_part_controller_config
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
+def validate_composite_controller_config(config: dict):
+    # Check top-level keys
+    required_keys = ["type", "body_parts_controller_configs"]
+    for key in required_keys:
+        if key not in config:
+            ROBOSUITE_DEFAULT_LOGGER.error(f"Missing top-level key: {key}")
+            raise ValueError
+
 def load_composite_controller_config(custom_fpath: str = None, default_controller: str = None, robot: str = None) -> Optional[Dict]:
     """
     Utility function that loads the desired composite controller and returns the loaded configuration as a dict
@@ -69,6 +77,7 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
     except FileNotFoundError:
         ROBOSUITE_DEFAULT_LOGGER.error("Error opening controller filepath at: {}. " "Please check filepath and try again.".format(custom_fpath))
 
+    validate_composite_controller_config(composite_controller_config)
     # Load default controller configs for each specified body part
     body_parts_controller_configs = composite_controller_config.get("body_parts_controller_configs", {})
     composite_controller_config["body_parts"] = {}

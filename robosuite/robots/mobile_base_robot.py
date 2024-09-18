@@ -51,7 +51,7 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.base]) == 0:
             return None
-        if not self.part_controller_config[self.base]:
+        if self.part_controller_config.get(self.base) is None:
             controller_path = os.path.join(
                 os.path.dirname(__file__),
                 "..",
@@ -67,10 +67,7 @@ class MobileBaseRobot(Robot):
             ), "Inputted controller config must be a dict! Instead, got type: {}".format(
                 type(self.part_controller_config[self.base])
             )
-        
-        # self.part_controller_config[self.base] = {}
-        # self.part_controller_config[self.base]["type"] = "JOINT_VELOCITY"
-        # self.part_controller_config[self.base]["interpolation"] = None
+
         self.part_controller_config[self.base]["ramp_ratio"] = 1.0
         self.part_controller_config[self.base]["robot_name"] = self.name
 
@@ -102,7 +99,7 @@ class MobileBaseRobot(Robot):
         if len(self._ref_actuators_indexes_dict[self.torso]) == 0:
             return None
 
-        if not self.part_controller_config[self.torso]:
+        if self.part_controller_config.get(self.torso) is None:
             controller_path = os.path.join(
                 os.path.dirname(__file__),
                 "..",
@@ -148,7 +145,7 @@ class MobileBaseRobot(Robot):
         """
         if len(self._ref_actuators_indexes_dict[self.head]) == 0:
             return None
-        if not self.part_controller_config[self.head]:
+        if self.part_controller_config.get(self.head) is None:
             controller_path = os.path.join(
                 os.path.dirname(__file__),
                 "..",
