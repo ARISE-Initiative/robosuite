@@ -370,6 +370,12 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         self._ep_meta = meta
 
+    def unset_ep_meta(self):
+        """
+        Unset episode meta data
+        """
+        self._ep_meta = {}
+
     def _update_observables(self, force=False):
         """
         Updates all observables in this environment
