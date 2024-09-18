@@ -198,8 +198,8 @@ class OperationalSpaceController(Controller):
         self.uncoupling = uncouple_pos_ori
 
         # initialize goals based on initial pos / ori
-        self.goal_ori = np.array(self.initial_ee_ori_mat)
-        self.goal_pos = np.array(self.initial_ee_pos)
+        self.goal_ori = np.array(self.initial_ref_ori_mat)
+        self.goal_pos = np.array(self.initial_ref_pos)
 
         # initialize orientation references
         self.relative_ori = np.zeros(3)
@@ -285,7 +285,7 @@ class OperationalSpaceController(Controller):
             self.interpolator_pos.set_goal(self.goal_pos)
 
         if self.interpolator_ori is not None:
-            self.ori_ref = np.array(self.ee_ori_mat)  # reference is the current orientation at start
+            self.ori_ref = np.array(self.ref_ori_mat)  # reference is the current orientation at start
             self.interpolator_ori.set_goal(
                 orientation_error(self.goal_ori, self.ori_ref)
             )  # goal is the total orientation error
@@ -311,12 +311,12 @@ class OperationalSpaceController(Controller):
             raise NotImplementedError
 
         if self.goal_origin_to_eef_pos is None:
-            self.goal_origin_to_eef_pos = self.world_to_origin_frame(self.ee_pos)
+            self.goal_origin_to_eef_pos = self.world_to_origin_frame(self.ref_pos)
 
         if self.update_wrt_origin:
             goal_origin_to_eef_pos = self.goal_origin_to_eef_pos + delta
         else:
-            goal_origin_to_eef_pos = self.world_to_origin_frame(self.ee_pos) + delta
+            goal_origin_to_eef_pos = self.world_to_origin_frame(self.ref_pos) + delta
 
         if self.position_limits is not None:
             raise NotImplementedError
@@ -325,7 +325,7 @@ class OperationalSpaceController(Controller):
 
     def goal_origin_to_eef_pose(self):
         origin_pose = T.make_pose(self.origin_pos, self.origin_ori)
-        ee_pose = T.make_pose(self.ee_pos, self.ee_ori_mat)
+        ee_pose = T.make_pose(self.ref_pos, self.ref_ori_mat)
         origin_pose_inv = T.pose_inv(origin_pose)
         return T.pose_in_A_to_pose_in_B(ee_pose, origin_pose_inv)
 
@@ -399,17 +399,17 @@ class OperationalSpaceController(Controller):
 
         if self.interpolator_ori is not None:
             # relative orientation based on difference between current ori and ref
-            self.relative_ori = orientation_error(self.ee_ori_mat, self.ori_ref)
+            self.relative_ori = orientation_error(self.ref_ori_mat, self.ori_ref)
 
             ori_error = self.interpolator_ori.get_interpolated_goal()
         else:
             desired_ori = np.dot(self.origin_ori, self.goal_origin_to_eef_ori)
-            ori_error = orientation_error(desired_ori, self.ee_ori_mat)
+            ori_error = orientation_error(desired_ori, self.ref_ori_mat)
 
         # Compute desired force and torque based on errors
-        position_error = desired_pos - self.ee_pos
+        position_error = desired_pos - self.ref_pos
         base_pos_vel = np.array(self.sim.data.get_site_xvelp(f"{self.naming_prefix}{self.part_name}_center"))
-        vel_pos_error = -(self.ee_pos_vel - base_pos_vel)
+        vel_pos_error = -(self.ref_pos_vel - base_pos_vel)
 
         # F_r = kp * pos_err + kd * vel_err
         desired_force = np.multiply(np.array(position_error), np.array(self.kp[0:3])) + np.multiply(
@@ -417,7 +417,7 @@ class OperationalSpaceController(Controller):
         )
 
         base_ori_vel = np.array(self.sim.data.get_site_xvelr(f"{self.naming_prefix}{self.part_name}_center"))
-        vel_ori_error = -(self.ee_ori_vel - base_ori_vel)
+        vel_ori_error = -(self.ref_ori_vel - base_ori_vel)
 
         # Tau_r = kp * ori_err + kd * vel_err
         desired_torque = np.multiply(np.array(ori_error), np.array(self.kp[3:6])) + np.multiply(
@@ -476,8 +476,8 @@ class OperationalSpaceController(Controller):
         """
         Resets the goal to the current state of the robot
         """
-        self.goal_ori = np.array(self.ee_ori_mat)
-        self.goal_pos = np.array(self.ee_pos)
+        self.goal_ori = np.array(self.ref_ori_mat)
+        self.goal_pos = np.array(self.ref_pos)
 
         # Also reset interpolators if required
 
@@ -485,7 +485,7 @@ class OperationalSpaceController(Controller):
             self.interpolator_pos.set_goal(self.goal_pos)
 
         if self.interpolator_ori is not None:
-            self.ori_ref = np.array(self.ee_ori_mat)  # reference is the current orientation at start
+            self.ori_ref = np.array(self.ref_ori_mat)  # reference is the current orientation at start
             self.interpolator_ori.set_goal(
                 orientation_error(self.goal_ori, self.ori_ref)
             )  # goal is the total orientation error
@@ -520,31 +520,3 @@ class OperationalSpaceController(Controller):
     @property
     def name(self):
         return "OSC_" + self.name_suffix
-
-    @property
-    def eef_name(self):
-        return self.ref_name
-
-    @property
-    def ee_pos(self):
-        return self.ref_pos
-
-    @property
-    def ee_ori_mat(self):
-        return self.ref_ori_mat
-
-    @property
-    def ee_pos_vel(self):
-        return self.ref_pos_vel
-
-    @property
-    def ee_ori_vel(self):
-        return self.ref_ori_vel
-
-    @property
-    def initial_ee_pos(self):
-        return self.initial_ref_pos
-
-    @property
-    def initial_ee_ori_mat(self):
-        return self.initial_ref_ori_mat
