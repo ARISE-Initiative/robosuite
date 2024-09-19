@@ -115,3 +115,41 @@ mjkey.txt
 
 # private macros
 macros_private.py
+
+# robot asset files
+robosuite/models/assets/robots/**/*.obj
+robosuite/models/assets/robots/**/*.mtl
+robosuite/models/assets/robots/**/*.stl
+robosuite/models/assets/robots/**/*.dae
+robosuite/models/assets/robots/**/*.png
+!robosuite/models/assets/robots/panda/**
+!robosuite/models/assets/robots/sawyer/**
+!robosuite/models/assets/robots/ur5e/**
+!robosuite/models/assets/robots/baxter/**
+!robosuite/models/assets/robots/iiwa/**
+!robosuite/models/assets/robots/jaco/**
+!robosuite/models/assets/robots/kinova3/**
+!robosuite/models/assets/robots/gr1/**
+
+# gripper asset files
+robosuite/models/assets/grippers/meshes/**/*.obj
+robosuite/models/assets/grippers/meshes/**/*.mtl
+robosuite/models/assets/grippers/meshes/**/*.stl
+robosuite/models/assets/grippers/meshes/**/*.png
+!robosuite/models/assets/grippers/meshes/robotiq_s_gripper/**
+!robosuite/models/assets/grippers/meshes/robotiq_85_gripper/**
+!robosuite/models/assets/grippers/meshes/robotiq_140_gripper/**
+!robosuite/models/assets/grippers/meshes/rethink_gripper/**
+!robosuite/models/assets/grippers/meshes/panda_gripper/**
+!robosuite/models/assets/grippers/meshes/jaco_three_finger_gripper/**
+!robosuite/models/assets/grippers/meshes/inspire_hands/**
+
+# mobile base asset files
+robosuite/models/assets/bases/meshes/**/*.obj
+robosuite/models/assets/bases/meshes/**/*.mtl
+robosuite/models/assets/bases/meshes/**/*.stl
+robosuite/models/assets/bases/meshes/**/*.png
+!robosuite/models/assets/bases/meshes/rethink_mount/**
+!robosuite/models/assets/bases/meshes/rethink_minimal_mount/**
+!robosuite/models/assets/bases/meshes/omron_mobile_base/**
+!robosuite/models/assets/bases/meshes/gr1_lowerbody_mount/**
