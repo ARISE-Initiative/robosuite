@@ -111,18 +111,18 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                 base_action = input_action[-5:-2]
                 torso_action = input_action[-2:-1]
 
-            right_action = [0.0] * 5
-            right_action[0] = 0.0
+                right_action = [0.0] * 5
+                right_action[0] = 0.0
 
-            action_dict.update(
-                {
-                    arm: arm_actions,
-                    active_robot.base: base_action,
-                    # active_robot.head: base_action,
-                    # active_robot.torso: base_action
-                    # active_robot.torso: torso_action
-                }
-            )
+                action_dict.update(
+                    {
+                        arm: arm_actions,
+                        active_robot.base: base_action,
+                        # active_robot.head: base_action,
+                        # active_robot.torso: base_action
+                        # active_robot.torso: torso_action
+                    }
+                )
             if arm_using_gripper:
                 action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
                 prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)

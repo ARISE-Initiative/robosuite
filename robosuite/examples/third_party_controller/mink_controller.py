@@ -130,8 +130,7 @@ class IKSolverMink:
         model: mujoco.MjModel, 
         data: mujoco.MjData,
         site_names: List[str],
-        robot_xml_path: str = 
-            (pathlib.Path(robosuite.__file__).parent / "models/assets/robots/gr1/robot_ik.xml").as_posix(),
+        robot_model: mujoco.MjModel,
         robot_joint_names: Optional[List[str]] = None,
         debug: bool = False,
         input_action_repr: Literal["absolute", "relative", "relative_pose"] = "absolute",
@@ -144,7 +143,7 @@ class IKSolverMink:
         self.full_model: mujoco.MjModel = model
         self.full_model_data: mujoco.MjData = data
 
-        self.robot_model = mujoco.MjModel.from_xml_path(robot_xml_path)
+        self.robot_model = robot_model
         self.configuration = mink.Configuration(self.robot_model)
         self.posture_weights = posture_weights
         self.hand_pos_cost = hand_pos_cost
@@ -156,9 +155,8 @@ class IKSolverMink:
         if robot_joint_names is None:
             robot_joint_names: List[str] = [self.robot_model.joint(i).name for i in range(self.robot_model.njnt) if self.robot_model.joint(i).type != 0]  # Exclude fixed joints
         self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
-        FULL_MODEL_ROBOT_JOINT_EXTRA_PREFIX = "robot0_"  # hardcoded for now
 
-        self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name.replace(FULL_MODEL_ROBOT_JOINT_EXTRA_PREFIX, "")).id for name in robot_joint_names])
+        self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name).id for name in robot_joint_names])
         self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
         self.site_ids = [self.robot_model.site(site_name).id for site_name in site_names]
 
@@ -340,6 +338,7 @@ class WholeBodyMinkIKCompositeController(WholeBodyCompositeController):
             model=self.sim.model._model,
             data=self.sim.data._data,
             site_names=self.composite_controller_specific_config["ref_name"],
+            robot_model=self.robot_model.mujoco_model,
             robot_joint_names=joint_names,
             input_action_repr=self.composite_controller_specific_config.get("ik_input_action_repr", "absolute"),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
