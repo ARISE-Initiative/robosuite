@@ -1,7 +1,7 @@
 {
     "type": "WHOLE_BODY_MINK_IK",
     "composite_controller_specific_configs": {
-            "ref_name": ["robot0_r_eef_site", "robot0_l_eef_site"],
+        "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
             "interpolation": null,
             "ik_target_part_names": ["torso", "head", "right", "left"],
             "max_dq": 4,

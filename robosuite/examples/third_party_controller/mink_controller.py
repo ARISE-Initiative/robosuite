@@ -12,7 +12,6 @@ from mink.configuration import Configuration
 from mink.tasks.exceptions import TargetNotSet
 from mink.tasks.frame_task import FrameTask
 
-import robosuite
 import robosuite.utils.transform_utils as T
 from robosuite.controllers.composite.composite_controller import register_composite_controller, WholeBodyCompositeController
 from robosuite.models.grippers.gripper_model import GripperModel
@@ -154,6 +153,8 @@ class IKSolverMink:
 
         if robot_joint_names is None:
             robot_joint_names: List[str] = [self.robot_model.joint(i).name for i in range(self.robot_model.njnt) if self.robot_model.joint(i).type != 0]  # Exclude fixed joints
+        # get all ids for robot bodies
+        # self.robot_body_ids: List[int] = np.array([self.robot_model.body(name).id for name in robot_joint_names])
         self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
 
         self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name).id for name in robot_joint_names])
@@ -232,6 +233,8 @@ class IKSolverMink:
 
     def solve(self, target_action: Optional[np.ndarray] = None) -> np.ndarray:
         # update configuration's data to match self.data for the joints we care about
+        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
+        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
         self.configuration.update(self.full_model_data.qpos[self.full_model_dof_ids], update_idxs=self.robot_model_dof_ids)
 
         if target_action is not None:
@@ -298,6 +301,9 @@ class IKSolverMink:
             self.task_errors.append(task_errors)
             self.trask_translation_errors.append(task_translation_errors)
             self.task_orientation_errors.append(task_orientation_errors)
+
+            if self.i % 50:
+                print(f"Task errors: {task_translation_errors}")
 
         return self.configuration.data.qpos[self.robot_model_dof_ids]
 
