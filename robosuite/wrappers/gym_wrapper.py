@@ -133,8 +133,6 @@ class GymWrapper(Wrapper, gym.Env):
             np.array: Flattened environment observation space after reset occurs
             dict: Info in GymAPI, default return empty dict
         """
-        import time
-        start_time = time.time()
         if seed is not None:
             if isinstance(seed, int):
                 np.random.seed(seed)
