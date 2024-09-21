@@ -2,8 +2,11 @@
 Defines a string based method of initializing mounts
 """
 
+from typing import Optional
+from robosuite.models.bases.mount_model import MountModel
 
-def base_factory(name, idn=0):
+
+def base_factory(name: Optional[str], idn=0) -> MountModel:
     """
     Generator for grippers
 

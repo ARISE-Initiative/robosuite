@@ -73,7 +73,13 @@ class ManipulatorModel(RobotModel):
             ValueError: [Multiple grippers]
         """
         if arm_name is None:
-            arm_name = self.eef_name
+            # TODO (YL): hack, better fix
+            if isinstance(self.eef_name, str):
+                arm_name = self.eef_name
+            else:
+                assert len(self.eef_name) == 1, "only support single insertion of gripper now"
+                arm_name = list(self.eef_name.values())[0]
+
         if arm_name in self.grippers:
             raise ValueError("Attempts to add multiple grippers to one body")
 
