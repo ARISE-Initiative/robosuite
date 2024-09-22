@@ -23,6 +23,7 @@ setup(
         "opencv-python",
         "pynput",
         "termcolor",
+        "defusedxml>=0.7.1",
     ],
     eager_resources=["*"],
     include_package_data=True,
