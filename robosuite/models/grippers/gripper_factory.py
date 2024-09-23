@@ -2,7 +2,9 @@
 Defines a string based method of initializing grippers
 """
 from typing import Optional
+
 from robosuite.models.grippers.gripper_model import GripperModel
+
 
 def gripper_factory(name: Optional[str], idn=0) -> GripperModel:
     """

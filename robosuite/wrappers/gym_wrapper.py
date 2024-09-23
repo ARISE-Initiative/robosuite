@@ -15,7 +15,7 @@ except ImportError:
     import gym
     from gym import spaces
 
-    if not gym.__version__ >= '0.26.0':
+    if not gym.__version__ >= "0.26.0":
         # Due to API Changes in gym>=0.26.0, we need to ensure that the version is correct
         # Please check: https://github.com/openai/gym/releases/tag/0.26.0
         raise ImportError("Please ensure version of gym>=0.26.0 to use the GymWrapper.")
@@ -81,6 +81,7 @@ class GymWrapper(Wrapper, gym.Env):
             low = -high
             self.observation_space = spaces.Box(low, high)
         else:
+
             def get_box_space(sample):
                 """Util fn to obtain the space of a single numpy sample data"""
                 if np.issubdtype(sample.dtype, np.integer):
@@ -93,9 +94,7 @@ class GymWrapper(Wrapper, gym.Env):
                     raise ValueError()
                 return spaces.Box(low=low, high=high, shape=sample.shape, dtype=sample.dtype)
 
-            self.observation_space = spaces.Dict({
-                key: get_box_space(obs[key]) for key in self.keys
-            })
+            self.observation_space = spaces.Dict({key: get_box_space(obs[key]) for key in self.keys})
 
         low, high = self.env.action_spec
         self.action_space = spaces.Box(low, high)

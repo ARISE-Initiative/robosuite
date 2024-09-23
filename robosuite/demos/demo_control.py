@@ -45,6 +45,7 @@ sequential qualitative behavior during the test is described below for each cont
 """
 
 import robosuite as suite
+
 # from robosuite.robots import Bimanual # TODO remove
 from robosuite.utils.input_utils import *
 
