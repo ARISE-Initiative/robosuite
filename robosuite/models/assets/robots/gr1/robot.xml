@@ -198,6 +198,7 @@
 
                                                     <!-- right eef -->
                                                     <body name="right_eef" pos="0 0 0" quat="-0.707107 0 0 0.707107">
+                                                        <site name="r_eef_site" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="1" />
                                                         <body name="right_mount" quat="0 0 1 0"/>
                                                         <body name="right_hand_eef" pos="0 0 0"/>
                                                     </body>
@@ -278,6 +279,7 @@
 
                                                     <!-- left eef -->
                                                     <body name="left_eef" pos="0 0 0" quat="0.707107 0 0 0.707107">
+                                                        <site name="l_eef_site" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="1" />
                                                         <body name="left_mount" quat="0 0 1 0"/>
                                                         <body name="left_hand_eef" pos="0 0 0"/>
                                                     </body>

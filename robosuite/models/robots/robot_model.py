@@ -1,6 +1,8 @@
 from copy import deepcopy
+from typing import Optional
 
 import numpy as np
+import mujoco
 
 from robosuite.models.base import MujocoXMLModel
 from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel
@@ -81,6 +83,13 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         self.set_joint_attribute(
             attrib="armature", values=np.array([5.0 / (i + 1) for i in range(self.dof)]), force=False
         )
+        self.mujoco_model: Optional[mujoco.MjModel] = None
+
+    def set_mujoco_model(self, mujoco_model: Optional[mujoco.MjModel] = None):
+        if mujoco_model is not None:
+            self.mujoco_model = mujoco_model
+        else:
+            self.mujoco_model = self.get_model()
 
     def set_base_xpos(self, pos):
         """

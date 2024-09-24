@@ -334,7 +334,4 @@
 		<exclude name="head_1" body1="head_roll" body2="head_yaw" />
 		<exclude name="head_2" body1="head_pitch" body2="head_yaw" />
 	</contact>
-	<keyframe>
-		<key name="home" qpos="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" ctrl="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" />
-	</keyframe>
 </mujoco>

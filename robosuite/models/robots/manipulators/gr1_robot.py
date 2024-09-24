@@ -15,7 +15,7 @@ class GR1(LeggedManipulatorModel):
     arms = ["right", "left"]
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("robots/gr1/robot.xml"), idn=idn)
+        super().__init__(xml_path_completion("robots/gr1/robot_ik.xml"), idn=idn)
 
     @property
     def default_base(self):

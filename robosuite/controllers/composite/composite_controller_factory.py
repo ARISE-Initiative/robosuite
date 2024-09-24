@@ -68,7 +68,7 @@ def load_composite_controller_config(custom_fpath: str = None, default_controlle
     #     return None
 
     # Assert that the fpath to load the controller is not empty
-    assert custom_fpath is not None, "Error: Either custom_fpath or default_controller must be specified!"
+    assert custom_fpath is not None, f"Error: Either custom_fpath or {default_controller} must be specified!"
 
     # Attempt to load the controller
     try:
