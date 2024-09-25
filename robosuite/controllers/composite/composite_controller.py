@@ -1,8 +1,7 @@
-from collections import OrderedDict
 import json
 import re
-
-from typing import Optional, Dict
+from collections import OrderedDict
+from typing import Dict, Optional
 
 import numpy as np
 
@@ -15,21 +14,28 @@ from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 COMPOSITE_CONTROLLERS_DICT = {}
 
+
 def register_composite_controller(target_class):
     if not hasattr(target_class, "name"):
-        ROBOSUITE_DEFAULT_LOGGER.warning("The name of the composite controller is not specified. Using the class name as the key.")
+        ROBOSUITE_DEFAULT_LOGGER.warning(
+            "The name of the composite controller is not specified. Using the class name as the key."
+        )
         key = "_".join(re.sub(r"([A-Z0-9])", r" \1", target_class.__name__).split()).upper()
     else:
         key = target_class.name
     COMPOSITE_CONTROLLERS_DICT[key] = target_class
     return target_class
 
+
 @register_composite_controller
 class CompositeController:
     """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
-    name="BASE"
 
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+    name = "BASE"
+
+    def __init__(
+        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
+    ):
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
@@ -48,7 +54,9 @@ class CompositeController:
 
         self._applied_action_dict = {}
 
-    def load_controller_config(self, part_controller_config, composite_controller_specific_config: Optional[Dict] = None):
+    def load_controller_config(
+        self, part_controller_config, composite_controller_specific_config: Optional[Dict] = None
+    ):
         self.part_controller_config = part_controller_config
         self.composite_controller_specific_config = composite_controller_specific_config
         self.part_controllers.clear()
@@ -140,9 +148,11 @@ class CompositeController:
                 low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         return low, high
 
+
 @register_composite_controller
 class HybridMobileBaseCompositeController(CompositeController):
-    name="HYBRID_MOBILE_BASE"
+    name = "HYBRID_MOBILE_BASE"
+
     def set_goal(self, all_action):
         if not self.lite_physics:
             self.sim.forward()
@@ -169,14 +179,18 @@ class HybridMobileBaseCompositeController(CompositeController):
         low, high = super().action_limits
         return np.concatenate((low, [-1])), np.concatenate((high, [1]))
 
+
 @register_composite_controller
 class WholeBodyCompositeController(CompositeController):
-    name="WHOLE_BODY_COMPOSITE"
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+    name = "WHOLE_BODY_COMPOSITE"
+
+    def __init__(
+        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
+    ):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
-        self.joint_action_policy: IKSolver = None  
-        # TODO: handle different types of joint action policies; joint_action_policy maps 
+        self.joint_action_policy: IKSolver = None
+        # TODO: handle different types of joint action policies; joint_action_policy maps
         # task space actions (such as end effector poses) to joint actions (such as joint angles or joint torques)
 
         self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
@@ -185,22 +199,19 @@ class WholeBodyCompositeController(CompositeController):
         for part_name in self.part_controller_config.keys():
             controller_params = self.part_controller_config[part_name]
             self.part_controllers[part_name] = controller_factory(
-                self.part_controller_config[part_name]["type"], 
-                controller_params
+                self.part_controller_config[part_name]["type"], controller_params
             )
         self._init_joint_action_policy()
 
-
     def _init_joint_action_policy(self):
         """Joint action policy initialization.
-        
-        Joint action policy converts input targets (such as end-effector poses, head poses) to joint actions 
+
+        Joint action policy converts input targets (such as end-effector poses, head poses) to joint actions
         (such as joint angles or joint torques).
 
         Examples of joint_action_policy could be an IK policy, a neural network policy, a model predictive controller, etc.
         """
         raise NotImplementedError("WholeBodyCompositeController requires a joint action policy")
-
 
     def setup_action_split_idx(self):
         """
@@ -254,9 +265,9 @@ class WholeBodyCompositeController(CompositeController):
         if not self.lite_physics:
             self.sim.forward()
 
-        target_qpos = self.joint_action_policy.solve(all_action[:self.joint_action_policy.control_dim])
+        target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
         # create new all_action vector with the IK solver's actions first
-        all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim:]])
+        all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
         for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
@@ -328,16 +339,19 @@ class WholeBodyCompositeController(CompositeController):
         info_dict = {}
         info_dict["Action Dimension"] = self.action_limits[0].shape
         info_dict.update(dict(self._whole_body_controller_action_split_indexes))
-        
+
         info_dict_str = f"\nAction Info for {name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
         ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
 
+
 @register_composite_controller
 class WholeBodyIKCompositeController(WholeBodyCompositeController):
-    name="WHOLE_BODY_IK"
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
-        super().__init__(sim, robot_model, grippers, lite_physics)
+    name = "WHOLE_BODY_IK"
 
+    def __init__(
+        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
+    ):
+        super().__init__(sim, robot_model, grippers, lite_physics)
 
     def _init_joint_action_policy(self):
         joint_names: str = []
@@ -348,14 +362,14 @@ class WholeBodyIKCompositeController(WholeBodyCompositeController):
         Kn = get_nullspace_gains(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
         mocap_bodies = []
         robot_config = {
-            'end_effector_sites': self.composite_controller_specific_config["ref_name"],
-            'joint_names': joint_names,
-            'mocap_bodies': mocap_bodies,
-            'nullspace_gains': Kn
+            "end_effector_sites": self.composite_controller_specific_config["ref_name"],
+            "joint_names": joint_names,
+            "mocap_bodies": mocap_bodies,
+            "nullspace_gains": Kn,
         }
         self.joint_action_policy = IKSolver(
             model=self.sim.model._model,
-            data=self.sim.data._data, 
+            data=self.sim.data._data,
             robot_config=robot_config,
             damping=self.composite_controller_specific_config.get("ik_pseudo_inverse_damping", 5e-2),
             integration_dt=self.composite_controller_specific_config.get("ik_integration_dt", 0.1),

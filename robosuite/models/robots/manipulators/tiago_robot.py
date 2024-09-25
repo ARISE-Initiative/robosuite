@@ -41,7 +41,12 @@ class Tiago(ManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific default controller config names
         """
-        return {"right": "joint_position", "left": "joint_position", "head": "joint_position", "torso": "joint_position"} 
+        return {
+            "right": "joint_position",
+            "left": "joint_position",
+            "head": "joint_position",
+            "torso": "joint_position",
+        }
 
     @property
     def init_qpos(self):

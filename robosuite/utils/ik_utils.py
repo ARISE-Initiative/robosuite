@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Literal, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 import mujoco
 import mujoco.viewer
@@ -11,18 +11,19 @@ from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 def get_nullspace_gains(joint_names: List[str], weight_dict: Dict[str, float]) -> np.ndarray:
     return np.array([weight_dict.get(joint, 1.0) for joint in joint_names])
 
+
 class IKSolver:
     def __init__(
-        self, 
-        model: mujoco.MjModel, 
-        data: mujoco.MjData, 
-        robot_config: Dict, 
-        damping: float, 
-        integration_dt: float, 
+        self,
+        model: mujoco.MjModel,
+        data: mujoco.MjData,
+        robot_config: Dict,
+        damping: float,
+        integration_dt: float,
         max_dq: float,
         max_dq_torso: float = 0.3,
-        input_type: Literal["keyboard", "mocap", "pkl"] = "keyboard", 
-        debug: bool = False, 
+        input_type: Literal["keyboard", "mocap", "pkl"] = "keyboard",
+        debug: bool = False,
         input_action_repr: Literal["absolute", "relative", "relative_pose"] = "absolute",
         input_file: Optional[str] = None,
         input_rotation_repr: Literal["quat_wxyz", "axis_angle"] = "axis_angle",
@@ -42,13 +43,18 @@ class IKSolver:
         self.max_dq = max_dq
         self.max_dq_torso = max_dq_torso
 
-        self.joint_names = robot_config['joint_names']
-        self.site_names = robot_config['end_effector_sites']
-        self.site_ids = [self.model.site(robot_config['end_effector_sites'][i]).id for i in range(len(robot_config['end_effector_sites']))]
-        self.dof_ids = np.array([self.model.joint(name).id for name in robot_config['joint_names']])
+        self.joint_names = robot_config["joint_names"]
+        self.site_names = robot_config["end_effector_sites"]
+        self.site_ids = [
+            self.model.site(robot_config["end_effector_sites"][i]).id
+            for i in range(len(robot_config["end_effector_sites"]))
+        ]
+        self.dof_ids = np.array([self.model.joint(name).id for name in robot_config["joint_names"]])
         # self.actuator_ids = np.array([self.model.actuator(name).id for name in robot_config['joint_names']])  # this works if actuators match joints
         self.actuator_ids = np.array([i for i in range(20)])  # TODO no hardcode; cur for GR1; model.nu is 32
-        self.key_id = self.model.key(robot_config['initial_keyframe']).id if 'initial_keyframe' in robot_config else None
+        self.key_id = (
+            self.model.key(robot_config["initial_keyframe"]).id if "initial_keyframe" in robot_config else None
+        )
 
         self.jac_temps: List[np.ndarray] = [np.zeros((6, self.model.nv)) for _ in range(len(self.site_ids))]
         self.twists: List[np.ndarray] = [np.zeros(6) for _ in range(len(self.site_ids))]
@@ -71,18 +77,19 @@ class IKSolver:
 
         self.input_type = input_type
         if input_type == "mocap":
-            self.mocap_ids = [self.model.body(name).mocapid[0] for name in robot_config['mocap_bodies']]
+            self.mocap_ids = [self.model.body(name).mocapid[0] for name in robot_config["mocap_bodies"]]
         elif input_type == "pkl":
-            self.mocap_ids = [self.model.body(name).mocapid[0] for name in robot_config['mocap_bodies']]
+            self.mocap_ids = [self.model.body(name).mocapid[0] for name in robot_config["mocap_bodies"]]
             self.pkl_t = 0
             import pickle
-            with open(input_file, 'rb') as f:
+
+            with open(input_file, "rb") as f:
                 input_file = pickle.load(f)
             self.history = input_file
 
         # Nullspace control
         self.q0 = np.zeros(len(self.dof_ids))
-        self.Kn = np.array(robot_config['nullspace_gains'])
+        self.Kn = np.array(robot_config["nullspace_gains"])
 
         # Initialize error and error_dot
         self.error_prev = np.zeros_like(self.q0)
@@ -121,7 +128,7 @@ class IKSolver:
         target_ori_mat = np.array([self.data.site(site_id).xmat for site_id in self.site_ids])
         target_ori = np.array([np.ones(4) for _ in range(len(self.site_ids))])
         [mujoco.mju_mat2Quat(target_ori[i], target_ori_mat[i]) for i in range(len(self.site_ids))]
-        
+
         if self.input_type == "mocap":
             for i in range(len(self.site_ids)):
                 target_pos[i] = self.data.mocap_pos[self.mocap_ids[i]]
@@ -129,17 +136,17 @@ class IKSolver:
         elif self.input_type == "pkl":
             left_index, right_index = 0, 1
             self.pkl_t += 1 / 10  # hardcoded pkl playback freq for now
-            if int(self.pkl_t) >= len(self.history['left_eef_pos']):
+            if int(self.pkl_t) >= len(self.history["left_eef_pos"]):
                 print("Reached end of pkl file. Exiting.")
                 exit()
-            target_pos[left_index] = self.history['left_eef_pos'][int(self.pkl_t)]
-            target_pos[right_index] = self.history['right_eef_pos'][int(self.pkl_t)]
-            target_ori[left_index] = self.history['left_eef_quat_wxyz'][int(self.pkl_t)]
-            target_ori[right_index] = self.history['right_eef_quat_wxyz'][int(self.pkl_t)]
-            self.data.mocap_pos[self.mocap_ids[left_index]] = self.history['left_eef_pos'][int(self.pkl_t)]
-            self.data.mocap_pos[self.mocap_ids[right_index]] = self.history['right_eef_pos'][int(self.pkl_t)]
-            self.data.mocap_quat[self.mocap_ids[left_index]] = self.history['left_eef_quat_wxyz'][int(self.pkl_t)]
-            self.data.mocap_quat[self.mocap_ids[right_index]] = self.history['right_eef_quat_wxyz'][int(self.pkl_t)]
+            target_pos[left_index] = self.history["left_eef_pos"][int(self.pkl_t)]
+            target_pos[right_index] = self.history["right_eef_pos"][int(self.pkl_t)]
+            target_ori[left_index] = self.history["left_eef_quat_wxyz"][int(self.pkl_t)]
+            target_ori[right_index] = self.history["right_eef_quat_wxyz"][int(self.pkl_t)]
+            self.data.mocap_pos[self.mocap_ids[left_index]] = self.history["left_eef_pos"][int(self.pkl_t)]
+            self.data.mocap_pos[self.mocap_ids[right_index]] = self.history["right_eef_pos"][int(self.pkl_t)]
+            self.data.mocap_quat[self.mocap_ids[left_index]] = self.history["left_eef_quat_wxyz"][int(self.pkl_t)]
+            self.data.mocap_quat[self.mocap_ids[right_index]] = self.history["right_eef_quat_wxyz"][int(self.pkl_t)]
         else:
             raise ValueError(f"Invalid input type {self.input_type}")
 
@@ -167,10 +174,10 @@ class IKSolver:
         Kori: float = 0.95,
     ):
         target_action = target_action.reshape(len(self.site_names), -1)
-        target_pos = target_action[:, :self.pos_dim]
-        target_ori = target_action[:, self.pos_dim:]
+        target_pos = target_action[:, : self.pos_dim]
+        target_ori = target_action[:, self.pos_dim :]
         target_quat_wxyz = None
-        
+
         if self.input_rotation_repr == "axis_angle":
             target_quat_wxyz = np.array([np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))])
         elif self.input_rotation_repr == "mat":
@@ -184,7 +191,12 @@ class IKSolver:
         if self.input_action_repr == "relative":
             # decoupled pos and rotation deltas
             target_pos += cur_pos
-            target_quat_xyzw = np.array([T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1)) for i in range(len(self.site_ids))])
+            target_quat_xyzw = np.array(
+                [
+                    T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1))
+                    for i in range(len(self.site_ids))
+                ]
+            )
             target_quat_wxyz = np.array([np.roll(target_quat_xyzw[i], shift=1) for i in range(len(self.site_ids))])
         elif self.input_action_repr == "relative_pose":
             cur_poses = np.zeros((len(self.site_ids), 4, 4))
@@ -199,13 +211,15 @@ class IKSolver:
                 target_poses[i, :3, :3] = T.quat2mat(target_quat_wxyz[i])
                 target_poses[i, :3, 3] = target_pos[i]
                 target_poses[i, 3, :] = [0, 0, 0, 1]
-            
+
             # Apply target pose to current pose
             new_target_poses = np.array([np.dot(cur_poses[i], target_poses[i]) for i in range(len(self.site_ids))])
-            
+
             # Split new target pose back into position and quaternion
             target_pos = new_target_poses[:, :3, 3]
-            target_quat_wxyz = np.array([np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))])
+            target_quat_wxyz = np.array(
+                [np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
+            )
 
         jac = self._compute_jacobian(self.model, self.data)
 
@@ -219,15 +233,14 @@ class IKSolver:
             self.twists[i][3:] *= Kori / self.integration_dt
 
         self.twist = np.hstack(self.twists)
-        diag = self.damping ** 2 * np.eye(len(self.twist))
+        diag = self.damping**2 * np.eye(len(self.twist))
         eye = np.eye(len(self.dof_ids))
         # basically dq = J^{-1} dx. This formulation is nicer since m is small in dimensionality.
         self.dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, self.twist)
-        # Nullspace control: intuitively, (eye - np.linalg.pinv(jac) @ jac) 
-        # projects dqs into the nullspace of the Jacobian, which intuitively 
+        # Nullspace control: intuitively, (eye - np.linalg.pinv(jac) @ jac)
+        # projects dqs into the nullspace of the Jacobian, which intuitively
         # only allows movements that don't affect the task space.
-        dq_null = (eye - np.linalg.pinv(jac) @ jac) @ \
-            (self.Kn * (self.q0 - self.data.qpos[self.dof_ids]))
+        dq_null = (eye - np.linalg.pinv(jac) @ jac) @ (self.Kn * (self.q0 - self.data.qpos[self.dof_ids]))
         self.dq += dq_null
 
         if self.max_dq > 0:

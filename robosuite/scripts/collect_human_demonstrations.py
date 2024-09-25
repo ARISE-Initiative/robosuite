@@ -15,8 +15,8 @@ import h5py
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers import load_composite_controller_config
 import robosuite.macros as macros
+from robosuite.controllers import load_composite_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
@@ -65,7 +65,11 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
         # Get the newest action
         input_action, grasp = input2action(
-            device=device, robot=active_robot, active_arm=arm, active_end_effector=end_effector, env_configuration=env_configuration,
+            device=device,
+            robot=active_robot,
+            active_arm=arm,
+            active_end_effector=end_effector,
+            env_configuration=env_configuration,
         )
 
         # If action is none, then this a reset so we should break
@@ -79,26 +83,26 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             # arm_actions = np.concatenate([arm_actions, ])
 
             # Decide if it's one arm or two arms. The number of arms can be decided based on the attribute `arms` of the robot.
-            arm_actions = input_action[:6*len(env.robots[0].arms)].copy() 
+            arm_actions = input_action[: 6 * len(env.robots[0].arms)].copy()
 
             if "GR1" in env.robots[0].name:
                 # "relative" actions by default for now
                 action_dict = {
-                    'gripper0_left_grip_site_pos': input_action[:3] * 0.1, 
-                    'gripper0_left_grip_site_axis_angle': input_action[3:6], 
-                    'gripper0_right_grip_site_pos': np.zeros(3), 
-                    'gripper0_right_grip_site_axis_angle': np.zeros(3), 
-                    'left_gripper': np.array([0., 0., 0., 0., 0., 0.]), 
-                    'right_gripper': np.array([0., 0., 0., 0., 0., 0.])
+                    "gripper0_left_grip_site_pos": input_action[:3] * 0.1,
+                    "gripper0_left_grip_site_axis_angle": input_action[3:6],
+                    "gripper0_right_grip_site_pos": np.zeros(3),
+                    "gripper0_right_grip_site_axis_angle": np.zeros(3),
+                    "left_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+                    "right_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
                 }
             elif "Tiago" in env.robots[0].name and args.composite_controller == "WHOLE_BODY_IK":
                 action_dict = {
-                    'right_gripper': np.array([0.]), 
-                    'left_gripper': np.array([0.]), 
-                    'gripper0_left_grip_site_pos': np.array([-0.4189254 ,  0.22745755,  1.0597]) + input_action[:3] * 0.05, 
-                    'gripper0_left_grip_site_axis_angle': np.array([-2.1356914 ,  2.50323857, -2.45929076]), 
-                    'gripper0_right_grip_site_pos': np.array([-0.41931295, -0.22706004,  1.0566]), 
-                    'gripper0_right_grip_site_axis_angle': np.array([-1.26839518,  1.15421975,  0.99332174]),
+                    "right_gripper": np.array([0.0]),
+                    "left_gripper": np.array([0.0]),
+                    "gripper0_left_grip_site_pos": np.array([-0.4189254, 0.22745755, 1.0597]) + input_action[:3] * 0.05,
+                    "gripper0_left_grip_site_axis_angle": np.array([-2.1356914, 2.50323857, -2.45929076]),
+                    "gripper0_right_grip_site_pos": np.array([-0.41931295, -0.22706004, 1.0566]),
+                    "gripper0_right_grip_site_axis_angle": np.array([-1.26839518, 1.15421975, 0.99332174]),
                 }
             else:
                 action_dict = {}
@@ -268,10 +272,16 @@ if __name__ == "__main__":
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
     parser.add_argument(
-        "--composite-controller", type=str, default=None, help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
+        "--composite-controller",
+        type=str,
+        default=None,
+        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
     )
     parser.add_argument(
-        "--custom-controller-config", type=str, default=None, help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
+        "--custom-controller-config",
+        type=str,
+        default=None,
+        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
     )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
@@ -285,7 +295,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    composite_controller_config = load_composite_controller_config(custom_fpath=args.custom_controller_config, default_controller=args.composite_controller, robot=args.robots[0])
+    composite_controller_config = load_composite_controller_config(
+        custom_fpath=args.custom_controller_config, default_controller=args.composite_controller, robot=args.robots[0]
+    )
 
     # Create argument configuration
     config = {

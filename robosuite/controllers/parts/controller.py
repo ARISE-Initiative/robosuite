@@ -218,7 +218,7 @@ class Controller(object, metaclass=abc.ABCMeta):
 
             if self.ref_name is not None:
                 self.update_reference_data()
-                
+
             self.joint_pos = np.array(self.sim.data.qpos[self.qpos_index])
             self.joint_vel = np.array(self.sim.data.qvel[self.qvel_index])
 

@@ -7,15 +7,13 @@ from copy import deepcopy
 
 import numpy as np
 
-from robosuite.utils.traj_utils import LinearInterpolator
-
 from robosuite.controllers.parts import arm as arm_controllers
 from robosuite.controllers.parts import base as base_controllers
 from robosuite.controllers.parts import generic
 from robosuite.controllers.parts import gripper as gripper_controllers
+from robosuite.utils.traj_utils import LinearInterpolator
 
 # from . import legs as legs_controllers
-
 
 
 def load_part_controller_config(custom_fpath=None, default_controller=None):
@@ -122,6 +120,7 @@ def arm_controller_factory(name, params):
             ori_interpolator.set_states(dim=4, ori="quat")
 
         from robosuite.controllers.arm.ik import InverseKinematicsController
+
         return InverseKinematicsController(
             interpolator_pos=interpolator,
             interpolator_ori=ori_interpolator,

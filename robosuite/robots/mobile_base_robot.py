@@ -58,7 +58,7 @@ class MobileBaseRobot(Robot):
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.base]),
             )
             self.part_controller_config[self.base] = load_part_controller_config(custom_fpath=controller_path)
-                
+
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
@@ -106,7 +106,7 @@ class MobileBaseRobot(Robot):
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.torso]),
             )
             self.part_controller_config[self.torso] = load_part_controller_config(custom_fpath=controller_path)
-                
+
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
@@ -307,7 +307,9 @@ class MobileBaseRobot(Robot):
 
         @sensor(modality=modality)
         def base_pos(obs_cache):
-            return np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))])
+            return np.array(
+                self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))]
+            )
 
         @sensor(modality=modality)
         def base_quat(obs_cache):
@@ -321,7 +323,9 @@ class MobileBaseRobot(Robot):
             @sensor(modality=modality)
             def base_to_eef_pos(obs_cache):
                 eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))])
+                base_pos = np.array(
+                    self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))]
+                )
 
                 eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
                 eef_mat = T.quat2mat(eef_quat)
@@ -336,7 +340,9 @@ class MobileBaseRobot(Robot):
             @sensor(modality=modality)
             def base_to_eef_quat(obs_cache):
                 eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
-                base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))])
+                base_pos = np.array(
+                    self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))]
+                )
 
                 eef_quat = T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
                 eef_mat = T.quat2mat(eef_quat)
