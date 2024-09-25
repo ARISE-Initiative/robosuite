@@ -260,8 +260,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    controller_config = load_controller_config(default_controller=args.controller)
-    composite_controller_config = load_composite_controller_config(
+    controller_config = load_composite_controller_config(
         default_controller=args.composite_controller, robot=args.robots[0]
     )
 
@@ -270,7 +269,6 @@ if __name__ == "__main__":
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
-        "composite_controller_configs": composite_controller_config,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
