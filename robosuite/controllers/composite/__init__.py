@@ -8,7 +8,7 @@ def composite_controller_factory(type, sim, robot_model, grippers, lite_physics)
     # Note: Currently we assume that the init arguments are same for all composite controllers. The situation might change given new controllers in the future, and we will adjust accodingly. 
 
     # The default composite controllers are explicitly initialized without using the COMPOSITE_CONTORLLERS
-    if type == "BASE":
+    if type == "DEFAULT":
         return CompositeController(sim, robot_model, grippers, lite_physics)
     elif type == "HYBRID_MOBILE_BASE":
         return HybridMobileBaseCompositeController(sim, robot_model, grippers, lite_physics)
