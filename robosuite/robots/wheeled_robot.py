@@ -63,15 +63,17 @@ class WheeledRobot(MobileBaseRobot):
         # override controller config with composite controller config values
         for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
             if not self.has_part(part_name):
-                ROBOSUITE_DEFAULT_LOGGER.warn(f"The config has defined for the controller {part_name}, but the robot does not have this component. Skipping, but make sure this is intended. Removing the controller config for {part_name} from self.part_controller_config.")
+                ROBOSUITE_DEFAULT_LOGGER.warn(
+                    f"The config has defined for the controller {part_name}, but the robot does not have this component. Skipping, but make sure this is intended. Removing the controller config for {part_name} from self.part_controller_config."
+                )
                 self.part_controller_config.pop(part_name, None)
                 continue
             if part_name in self.part_controller_config:
                 self.part_controller_config[part_name].update(controller_config)
-        
+
         self.composite_controller.load_controller_config(
-            self.part_controller_config, 
-            self.composite_controller_config.get("composite_controller_specific_configs", {})
+            self.part_controller_config,
+            self.composite_controller_config.get("composite_controller_specific_configs", {}),
         )
         self.enable_parts()
 
@@ -154,14 +156,11 @@ class WheeledRobot(MobileBaseRobot):
 
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
-                # currently assumes ee pose exists in the controller
-                if not hasattr(controller, "ee_pos") or not hasattr(controller, "ee_ori_mat"):
-                    continue
-                self.recent_ee_pose[arm].push(np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat))))
-                self.recent_ee_vel[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
+                self.recent_ee_pose[arm].push(np.concatenate((controller.ref_pos, T.mat2quat(controller.ref_ori_mat))))
+                self.recent_ee_vel[arm].push(np.concatenate((controller.ref_pos_vel, controller.ref_ori_vel)))
 
                 # Estimation of eef acceleration (averaged derivative of recent velocities)
-                self.recent_ee_vel_buffer[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
+                self.recent_ee_vel_buffer[arm].push(np.concatenate((controller.ref_pos_vel, controller.ref_ori_vel)))
                 diffs = np.vstack(
                     [
                         self.recent_ee_acc[arm].current,
