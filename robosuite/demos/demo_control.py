@@ -45,6 +45,7 @@ sequential qualitative behavior during the test is described below for each cont
 """
 
 from typing import Dict
+
 import robosuite as suite
 from robosuite.controllers import load_controller_config
 from robosuite.robots.legacy import Bimanual
@@ -132,8 +133,11 @@ if __name__ == "__main__":
     n = 0
     gripper_dim = 0
     for robot in env.robots:
-        gripper_dim = robot.gripper["right"].dof if isinstance(robot, Bimanual) or \
-            (isinstance(robot.gripper, Dict) and robot.gripper.get("right"))  else robot.gripper.dof
+        gripper_dim = (
+            robot.gripper["right"].dof
+            if isinstance(robot, Bimanual) or (isinstance(robot.gripper, Dict) and robot.gripper.get("right"))
+            else robot.gripper.dof
+        )
         n += int(robot.action_dim / (action_dim + gripper_dim))
 
     # Define neutral value

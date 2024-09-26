@@ -50,7 +50,7 @@ class Keyboard(Device):
 
         print("")
         print_command("Keys", "Command")
-        print_command("q", "reset simulation")
+        print_command("Ctrl+q", "reset simulation")
         print_command("spacebar", "toggle gripper (open/close)")
         print_command("b", "toggle arm/base mode (if applicable)")
         print_command("up-right-down-left", "move horizontally in x-y plane")

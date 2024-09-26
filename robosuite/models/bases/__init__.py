@@ -28,6 +28,7 @@ BASE_MAPPING = {
 
 ALL_BASES = BASE_MAPPING.keys()
 
+
 def register_base(target_class):
     BASE_MAPPING[target_class.__name__] = target_class
     return target_class

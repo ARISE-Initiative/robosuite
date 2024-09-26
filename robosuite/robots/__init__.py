@@ -35,10 +35,12 @@ target_type_mapping = {
     "LeggedRobot": LeggedRobot,
 }
 
+
 def register_robot_class(target_type, **kwargs):
     def decorator(target_class):
         # Store the class in the registry with additional arguments
         ROBOT_CLASS_MAPPING.update({target_class.__name__: target_type_mapping[target_type]})
 
         return target_class  # Return the class itself
+
     return decorator

@@ -14,7 +14,12 @@ from robosuite.environments.manipulation.two_arm_handover import TwoArmHandover
 from robosuite.environments.manipulation.two_arm_transport import TwoArmTransport
 
 from robosuite.environments import ALL_ENVIRONMENTS
-from robosuite.controllers import ALL_PART_CONTROLLERS, load_part_controller_config, ALL_COMPOSITE_CONTROLLERS, load_composite_controller_config
+from robosuite.controllers import (
+    ALL_PART_CONTROLLERS,
+    load_part_controller_config,
+    ALL_COMPOSITE_CONTROLLERS,
+    load_composite_controller_config,
+)
 from robosuite.robots import ALL_ROBOTS
 from robosuite.models.grippers import ALL_GRIPPERS
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
@@ -22,7 +27,9 @@ from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 try:
     import robosuite_menagerie
 except:
-    ROBOSUITE_DEFAULT_LOGGER.warn("Could not import robosuite_menagerie. Some robots may not be available. If you want to use these robots, please install robosuite_menagerie from source (https://github.com/ARISE-Initiative/robosuite_menagerie) or through pip install.")
+    ROBOSUITE_DEFAULT_LOGGER.warn(
+        "Could not import robosuite_menagerie. Some robots may not be available. If you want to use these robots, please install robosuite_menagerie from source (https://github.com/ARISE-Initiative/robosuite_menagerie) or through pip install."
+    )
 
 __version__ = "1.5.0"
 __logo__ = """

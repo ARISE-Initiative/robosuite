@@ -15,16 +15,16 @@ import h5py
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 import robosuite.macros as macros
 from robosuite import load_controller_config
+from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 from robosuite.utils.input_utils import input2action
-from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 from robosuite.utils.transform_utils import quat2axisangle
+from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right",
-    history: Dict[str, List] = None
+def collect_human_trajectory(
+    env, device, arm, env_configuration, end_effector: str = "right", history: Dict[str, List] = None
 ):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
@@ -64,14 +64,14 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         # Run environment step
         arm_actions = None
         if env.robots[0].is_mobile:
-            if int(count) >= len(history['right_eef_pos']):
+            if int(count) >= len(history["right_eef_pos"]):
                 print(f"Finished looping through the history. Count: {count}")
                 break
             # count = 0
-            left_target_pos = history['left_eef_pos'][int(count)]
-            right_target_pos = history['right_eef_pos'][int(count)]
-            left_target_ori = history['left_eef_quat_wxyz'][int(count)]
-            right_target_ori = history['right_eef_quat_wxyz'][int(count)]
+            left_target_pos = history["left_eef_pos"][int(count)]
+            right_target_pos = history["right_eef_pos"][int(count)]
+            left_target_ori = history["left_eef_quat_wxyz"][int(count)]
+            right_target_ori = history["right_eef_quat_wxyz"][int(count)]
 
             # convert to axis angle using quat2axisangle
             left_target_aa = quat2axisangle(np.roll(left_target_ori, -1))
@@ -80,14 +80,14 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             arm_actions = np.concatenate([right_target_pos, right_target_aa, left_target_pos, left_target_aa])
 
             input_action = np.zeros(8)
-            # add 
+            # add
             base_action = input_action[-5:-2]
             torso_action = input_action[-2:-1]
 
             right_action = [0.0] * 5
             right_action[0] = 0.0
 
-            action_dict =  {
+            action_dict = {
                 "gripper0_left_grip_site_pos": left_target_pos,
                 "gripper0_left_grip_site_axis_angle": left_target_aa,
                 "gripper0_right_grip_site_pos": right_target_pos,
@@ -108,7 +108,9 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     env.robots[0].enable_parts(base=False, right=True, left=True, torso=False)
         else:
             arm_actions = input_action
-            action = env.robots[0].create_action_vector({arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]})
+            action = env.robots[0].create_action_vector(
+                {arm: arm_actions[:-1], f"{end_effector}_gripper": arm_actions[-1:]}
+            )
 
         env.step(action)
         env.render()
@@ -237,10 +239,15 @@ if __name__ == "__main__":
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
     parser.add_argument(
-        "--composite-controller", type=str, default="NONE", help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'"
+        "--composite-controller",
+        type=str,
+        default="NONE",
+        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
     )
     # pkl file
-    parser.add_argument("--input-file", type=str, default=None, help="Path to the pkl file containing the controller config")
+    parser.add_argument(
+        "--input-file", type=str, default=None, help="Path to the pkl file containing the controller config"
+    )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
@@ -253,15 +260,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    controller_config = load_controller_config(default_controller=args.controller)
-    composite_controller_config = load_composite_controller_config(default_controller=args.composite_controller, robot=args.robots[0])
+    controller_config = load_composite_controller_config(
+        default_controller=args.composite_controller, robot=args.robots[0]
+    )
 
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
         "controller_configs": controller_config,
-        "composite_controller_configs": composite_controller_config,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
@@ -309,7 +316,8 @@ if __name__ == "__main__":
     os.makedirs(new_dir)
 
     import pickle
-    with open(args.input_file, 'rb') as f:
+
+    with open(args.input_file, "rb") as f:
         history = pickle.load(f)
 
     # collect demonstrations

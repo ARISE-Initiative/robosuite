@@ -1,4 +1,5 @@
 from typing import Dict, List
+
 import numpy as np
 
 from robosuite.controllers.parts.controller import Controller
@@ -132,8 +133,11 @@ class JointPositionController(Controller):
 
         # kp kd
         self.kp = self.nums2array(kp, self.control_dim)
-        self.kd = 2 * np.sqrt(self.kp) * damping_ratio if kwargs.get("kd", None) is None else \
-            self.nums2array(kwargs.get("kd", None), self.control_dim)
+        self.kd = (
+            2 * np.sqrt(self.kp) * damping_ratio
+            if kwargs.get("kd", None) is None
+            else self.nums2array(kwargs.get("kd", None), self.control_dim)
+        )
 
         # kp and kd limits
         self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
@@ -207,7 +211,7 @@ class JointPositionController(Controller):
         assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
 
         # scale delta appears to mess up action coming from subclassed IK controller; commenting out
-        # TODO: Add an option to skip self.scale_action to accommodate the actions from subclassed IK controller. Temporally hard-code the boolean variable here. Need to be fixed before official merging.  
+        # TODO: Add an option to skip self.scale_action to accommodate the actions from subclassed IK controller. Temporally hard-code the boolean variable here. Need to be fixed before official merging.
         use_scaled_action = False
         if delta is not None:
             if use_scaled_action:

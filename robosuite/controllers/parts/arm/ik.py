@@ -16,16 +16,14 @@ Attempting to run IK with any other robot will raise an error!
 from dataclasses import field
 from typing import Dict, List, Optional, Union
 
+import mujoco
 import numpy as np
 
-import mujoco
-from robosuite.utils.ik_utils import IKSolver, get_nullspace_gains
 import robosuite.utils.transform_utils as T
 from robosuite.controllers.parts.generic.joint_pos import JointPositionController
-from robosuite.utils.control_utils import *
-
 from robosuite.utils.binding_utils import MjSim
-from robosuite.utils.ik_utils import IKSolver
+from robosuite.utils.control_utils import *
+from robosuite.utils.ik_utils import IKSolver, get_nullspace_gains
 
 # Dict of supported ik robots
 SUPPORTED_IK_ROBOTS = {"Baxter", "Sawyer", "Panda", "GR1FixedLowerBody"}
@@ -125,9 +123,7 @@ class InverseKinematicsController(JointPositionController):
         # Verify robot is supported by IK
         assert robot_name in SUPPORTED_IK_ROBOTS, (
             "Error: Tried to instantiate IK controller for unsupported robot! "
-            "Inputted robot: {}, Supported robots: {}".format(
-                robot_name, SUPPORTED_IK_ROBOTS
-            )
+            "Inputted robot: {}, Supported robots: {}".format(robot_name, SUPPORTED_IK_ROBOTS)
         )
 
         # Initialize ik-specific attributes
@@ -165,7 +161,7 @@ class InverseKinematicsController(JointPositionController):
         self.user_sensitivity = 0.3
 
         self.nullspace_joint_weights = kwargs.get("nullspace_joint_weights", {})
-        self.joint_names = [sim.model.joint_id2name(i) for i in joint_indexes['joints']]
+        self.joint_names = [sim.model.joint_id2name(i) for i in joint_indexes["joints"]]
         self.integration_dt = kwargs.get("ik_integration_dt", 0.1)
         self.damping = kwargs.get("ik_pseudo_inverse_damping", 5e-1)
         self.max_dq = kwargs.get("ik_max_dq", 4.0)  # currently only used for multi-site ik
@@ -245,16 +241,16 @@ class InverseKinematicsController(JointPositionController):
             velocity_limits (np.array): Limits on joint velocities.
             use_delta: Whether or not to use delta commands. If so, use dpos, drot to compute joint positions.
                 If not, assume dpos, drot are absolute commands (in mujoco world frame).
-            dpos (Optional[np.array]): Desired change in end-effector position 
+            dpos (Optional[np.array]): Desired change in end-effector position
                 if use_delta=True, otherwise desired end-effector position.
-            drot (Optional[np.array]): Desired change in orientation for the reference site (e.g end effector) 
+            drot (Optional[np.array]): Desired change in orientation for the reference site (e.g end effector)
                 if use_delta=True, otherwise desired end-effector orientation.
             update_targets (bool): Whether to update ik target pos / ori attributes or not.
             Kpos (float): Position gain. Between 0 and 1.
                 0 means no movement, 1 means move end effector to desired position in one integration step.
             Kori (float): Orientation gain. Between 0 and 1.
             jac (Optional[np.array]): Precomputed jacobian matrix.
-    
+
         Returns:
             np.array: A flat array of joint position commands to apply to try and achieve the desired input control.
         """
@@ -266,17 +262,17 @@ class InverseKinematicsController(JointPositionController):
 
             num_ref_sites = 1 if isinstance(ref_name, str) else len(ref_name)
             if num_ref_sites == 1:
-                assert use_delta, "Currently, only delta commands are supported. Please set use_delta=True."  
+                assert use_delta, "Currently, only delta commands are supported. Please set use_delta=True."
                 # TODO: support absolute commands by using solve() from diffik_nullspace.py
                 twist = np.zeros(6)
                 error_quat = np.zeros(4)
-                diag = damping_pseudo_inv ** 2 * np.eye(len(twist))
+                diag = damping_pseudo_inv**2 * np.eye(len(twist))
                 eye = np.eye(len(joint_indices))
 
                 jac = np.zeros((6, sim.model.nv), dtype=np.float64)
                 twist = np.zeros(6)
                 error_quat = np.zeros(4)
-    
+
                 twist[:3] = Kpos * dpos / integration_dt
                 mujoco.mju_mat2Quat(error_quat, drot.reshape(-1))
                 mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
@@ -293,9 +289,7 @@ class InverseKinematicsController(JointPositionController):
                 jac = jac[:, dof_ids]
 
                 dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, twist)
-                dq += (eye - np.linalg.pinv(jac) @ jac) @ (
-                    Kn * (q0 - sim.data.qpos[dof_ids])
-                )
+                dq += (eye - np.linalg.pinv(jac) @ jac) @ (Kn * (q0 - sim.data.qpos[dof_ids]))
 
                 dq_abs_max = np.abs(dq).max()
                 if dq_abs_max > max_angvel:
@@ -307,13 +301,17 @@ class InverseKinematicsController(JointPositionController):
             else:
                 model = sim.model._model
                 data = sim.data._data
-                joint_names = [model.joint(i).name for i in range(model.njnt) if model.joint(i).type != 0 and ("gripper0" not in model.joint(i).name)]  # Exclude fixed joints
+                joint_names = [
+                    model.joint(i).name
+                    for i in range(model.njnt)
+                    if model.joint(i).type != 0 and ("gripper0" not in model.joint(i).name)
+                ]  # Exclude fixed joints
                 nullspace_gains = get_nullspace_gains(joint_names, nullspace_joint_weights)
-                robot_config =  {
-                    'end_effector_sites': ref_name,
-                    'joint_names': joint_names,
-                    'mocap_bodies': [],
-                    'nullspace_gains': nullspace_gains
+                robot_config = {
+                    "end_effector_sites": ref_name,
+                    "joint_names": joint_names,
+                    "mocap_bodies": [],
+                    "nullspace_gains": nullspace_gains,
                 }
                 ik_solver = IKSolver(
                     model,
@@ -323,7 +321,7 @@ class InverseKinematicsController(JointPositionController):
                     integration_dt=integration_dt,
                     max_dq=max_dq,
                     input_type="mocap",
-                    input_rotation_repr="quat_wxyz"
+                    input_rotation_repr="quat_wxyz",
                 )
                 if use_delta:
                     target_ori_mat = np.array([ik_solver.data.site(site_id).xmat for site_id in ik_solver.site_ids])
@@ -335,7 +333,12 @@ class InverseKinematicsController(JointPositionController):
                         target_ori[0] = T.quat_multiply(target_ori[0], T.mat2quat(drot))
                     else:
                         target_pos += dpos
-                        target_ori = np.array([T.quat_multiply(target_ori[i], T.mat2quat(drot[i])) for i in range(len(ik_solver.site_ids))])
+                        target_ori = np.array(
+                            [
+                                T.quat_multiply(target_ori[i], T.mat2quat(drot[i]))
+                                for i in range(len(ik_solver.site_ids))
+                            ]
+                        )
                 else:
                     target_pos = dpos
                     target_ori = np.array([np.ones(4) for _ in range(len(ik_solver.site_ids))])
@@ -346,13 +349,14 @@ class InverseKinematicsController(JointPositionController):
                 pos_dim = target_pos.shape[1]
                 target_action = np.empty(target_pos.shape[0] * (target_pos.shape[1] + target_ori.shape[1]))
                 for i in range(target_pos.shape[0]):
-                    target_action[i*(pos_dim+ori_dim):(i+1)*(pos_dim+ori_dim)] = \
-                        np.concatenate((target_pos[i], target_ori[i]))
+                    target_action[i * (pos_dim + ori_dim) : (i + 1) * (pos_dim + ori_dim)] = np.concatenate(
+                        (target_pos[i], target_ori[i])
+                    )
 
                 return ik_solver.solve(
-                    target_pos=target_pos, 
+                    target_pos=target_pos,
                     target_ori=target_ori,
-                    Kpos=Kpos, 
+                    Kpos=Kpos,
                     Kori=Kori,
                 )
 
@@ -376,25 +380,19 @@ class InverseKinematicsController(JointPositionController):
 
         if self.num_ref_sites > 1:
             delta = np.array(delta).reshape(self.num_ref_sites, 6)
-        
+
         # hardcoding to assumes 6D delta input for now
         (dpos, dquat) = self._clip_ik_input(delta[..., :3], delta[..., 3:6])
 
         # Set interpolated goals if necessary
         if self.interpolator_pos is not None:
             # Absolute position goal
-            self.interpolator_pos.set_goal(
-                dpos * self.user_sensitivity + self.reference_target_pos
-            )
+            self.interpolator_pos.set_goal(dpos * self.user_sensitivity + self.reference_target_pos)
 
         if self.interpolator_ori is not None:
             # Relative orientation goal
-            self.interpolator_ori.set_goal(
-                dquat
-            )  # goal is the relative change in orientation
-            self.ori_ref = np.array(
-                self.ref_ori_mat
-            )  # reference is the current orientation at start
+            self.interpolator_ori.set_goal(dquat)  # goal is the relative change in orientation
+            self.ori_ref = np.array(self.ref_ori_mat)  # reference is the current orientation at start
             self.relative_ori = np.zeros(3)  # relative orientation always starts at 0
 
         # Run ik prepropressing to convert pos, quat ori to desired positions
@@ -452,9 +450,7 @@ class InverseKinematicsController(JointPositionController):
 
         # Only update the position goals if we're interpolating
         if update_position_goal:
-            velocities = self.get_control(
-                dpos=(desired_pos - self.ref_pos), rotation=rotation
-            )
+            velocities = self.get_control(dpos=(desired_pos - self.ref_pos), rotation=rotation)
             super().set_goal(velocities)
 
         return super().run_controller()
@@ -476,7 +472,6 @@ class InverseKinematicsController(JointPositionController):
         else:
             self.reference_target_pos = self.ref_pos
             self.reference_target_orn = np.array([T.mat2quat(self.ref_ori_mat[i]) for i in range(self.num_ref_sites)])
-
 
     def _clip_ik_input(self, dpos, rotation):
         """
@@ -525,7 +520,9 @@ class InverseKinematicsController(JointPositionController):
             action = np.array(action).reshape(self.num_ref_sites, 6)
 
         # Clip action appropriately
-        dpos, rotation = self._clip_ik_input(action[..., :3], action[..., 3:6])  # hardcoded to assume 6dof control for now
+        dpos, rotation = self._clip_ik_input(
+            action[..., :3], action[..., 3:6]
+        )  # hardcoded to assume 6dof control for now
 
         if self.use_delta:
             if self.num_ref_sites == 1:
@@ -535,7 +532,9 @@ class InverseKinematicsController(JointPositionController):
             else:
                 # Update reference targets
                 self.reference_target_pos += dpos * self.user_sensitivity
-                self.reference_target_orn = np.array([T.quat_multiply(old_quat[i], rotation[i]) for i in range(self.num_ref_sites)])
+                self.reference_target_orn = np.array(
+                    [T.quat_multiply(old_quat[i], rotation[i]) for i in range(self.num_ref_sites)]
+                )
         else:
             # Update reference targets
             self.reference_target_pos = dpos
@@ -577,9 +576,7 @@ class InverseKinematicsController(JointPositionController):
                 - (np.array) minimum control values
                 - (np.array) maximum control values
         """
-        max_limit = np.concatenate(
-            [self.ik_pos_limit * np.ones(3), self.ik_ori_limit * np.ones(3)]
-        )
+        max_limit = np.concatenate([self.ik_pos_limit * np.ones(3), self.ik_ori_limit * np.ones(3)])
         return -max_limit, max_limit
 
     @property

@@ -19,6 +19,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 import mujoco
 import numpy as np
 
+from robosuite.utils.transform_utils import euler2mat
+
 
 def get_triangle_uvs(vertices: np.ndarray, triangles: np.ndarray, texture_type: Optional[mujoco.mjtTexture]):
     """Returns UV coordinates for a given mesh."""
@@ -392,12 +394,8 @@ def mesh_factory(
 
         if "transform" in config:
             if "rotate" in config["transform"]:
-                rotation = np.zeros(9)
-                quat = np.zeros(4)
                 euler = config["transform"]["rotate"]
-                seq = "xyz"
-                mujoco.mju_euler2Quat(quat, euler, seq)
-                mujoco.mju_quat2Mat(rotation, quat)
+                rotation = euler2mat(euler)
                 rotation = rotation.reshape((3, 3))
                 prim_mesh.rotate(rotation, center=(0, 0, 0))
             if "scale" in config["transform"]:

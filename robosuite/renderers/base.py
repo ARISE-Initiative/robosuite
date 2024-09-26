@@ -18,18 +18,7 @@ def load_renderer_config(renderer):
     Returns:
         dict: renderer default config.
     """
-    if renderer == "nvisii":
-        fname = "config/nvisii_config.json"
-    elif renderer == "mjviewer":
-        return {}
-    else:
-        raise ValueError(f"renderer type can only be  'nvisii', or 'mjviewer' got '{renderer}'")
-
-    dir_path = os.path.dirname(__file__)
-    with open(os.path.join(dir_path, fname)) as f:
-        config = json.load(f)
-
-    return config
+    return {}
 
 
 class Renderer:
@@ -53,11 +42,6 @@ class Renderer:
     @abc.abstractmethod
     def render(self, **kwargs):
         """Renders the current state with the specified renderer"""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def update(self):
-        """Updates the states in the renderer (for NVISII)"""
         raise NotImplementedError
 
     @abc.abstractmethod

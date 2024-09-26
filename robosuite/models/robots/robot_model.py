@@ -1,8 +1,8 @@
 from copy import deepcopy
 from typing import Optional
 
-import numpy as np
 import mujoco
+import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
 from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel
@@ -20,6 +20,7 @@ REGISTERED_ROBOTS = {}
 
 def register_robot(target_class):
     REGISTERED_ROBOTS[target_class.__name__] = target_class
+
 
 def create_robot(robot_name, *args, **kwargs):
     """
