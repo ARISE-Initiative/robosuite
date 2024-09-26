@@ -9,6 +9,3 @@ hidapi
 
 # required for demonstration utils
 h5py
-
-# required for nvisii renderer
-open3d

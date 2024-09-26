@@ -6,7 +6,6 @@ import numpy as np
 import robosuite as suite
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import load_controller_config
-from robosuite.renderers import load_renderer_config
 from robosuite.utils.input_utils import *
 
 
@@ -57,7 +56,7 @@ if __name__ == "__main__":
     print(suite.__logo__)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--renderer", type=str, default="mujoco", help="Valid options include mujoco, and nvisii")
+    parser.add_argument("--renderer", type=str, default="mujoco", help="Valid options include mujoco and default")
 
     args = parser.parse_args()
     renderer = args.renderer
@@ -96,7 +95,7 @@ if __name__ == "__main__":
 
     env = suite.make(
         **options,
-        has_renderer=False if renderer != "mujoco" else True,  # no on-screen renderer
+        has_renderer=True,  # no on-screen renderer
         has_offscreen_renderer=False,  # no off-screen renderer
         ignore_done=True,
         use_camera_obs=False,  # no camera observations
@@ -108,25 +107,11 @@ if __name__ == "__main__":
 
     low, high = env.action_spec
 
-    if renderer == "nvisii":
-
-        timesteps = 300
-        for i in range(timesteps):
-            action = np.random.uniform(low, high)
-            obs, reward, done, _ = env.step(action)
-
-            if i % 100 == 0:
-                env.render()
-
-    else:
-        if renderer == "mjviewer":
-            display_mjv_options()
-
-        # do visualization
-        for i in range(10000):
-            action = np.random.uniform(low, high)
-            obs, reward, done, _ = env.step(action)
-            env.render()
+    # do visualization
+    for i in range(10000):
+        action = np.random.uniform(low, high)
+        obs, reward, done, _ = env.step(action)
+        env.render()
 
     env.close_renderer()
     print("Done.")
