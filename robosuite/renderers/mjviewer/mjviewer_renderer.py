@@ -1,8 +1,17 @@
 from mujoco import viewer
 
+DEFAULT_FREE_CAM = {
+    "lookat": [0, 0, 1],
+    "distance": 2,
+    "azimuth": 180,
+    "elevation": -20,
+}
+
 
 class MjviewerRenderer:
     def __init__(self, env, camera_id=None, cam_config=None):
+        if cam_config is None:
+            cam_config = DEFAULT_FREE_CAM
         self.env = env
         self.camera_id = camera_id
         self.viewer = None
