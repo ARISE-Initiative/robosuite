@@ -7,6 +7,7 @@ import numpy as np
 import robosuite as suite
 from robosuite.controllers import load_controller_config
 
+
 def test_mujoco_renderer():
     env = suite.make(
         env_name="Lift",
@@ -30,6 +31,7 @@ def test_mujoco_renderer():
         obs, reward, done, _ = env.step(action)
         env.render()
 
+
 def test_default_renderer():
     env = suite.make(
         env_name="Lift",
@@ -52,6 +54,7 @@ def test_default_renderer():
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
         env.render()
+
 
 def test_offscreen_renderer():
     env = suite.make(

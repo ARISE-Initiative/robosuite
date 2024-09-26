@@ -152,7 +152,7 @@ class ManipulationEnv(RobotEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
         seed=None,
     ):

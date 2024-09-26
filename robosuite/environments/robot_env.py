@@ -145,7 +145,7 @@ class RobotEnv(MujocoEnv):
         camera_depths=False,
         camera_segmentations=None,
         robot_configs=None,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
         seed=None,
     ):

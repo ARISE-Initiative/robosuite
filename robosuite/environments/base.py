@@ -101,7 +101,7 @@ class MujocoEnv(metaclass=EnvMeta):
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
         seed=None,
     ):
