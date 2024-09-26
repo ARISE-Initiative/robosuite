@@ -158,7 +158,7 @@ class ToolHang(ManipulationEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # settings for table top

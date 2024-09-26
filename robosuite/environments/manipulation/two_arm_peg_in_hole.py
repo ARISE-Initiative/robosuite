@@ -186,7 +186,7 @@ class TwoArmPegInHole(TwoArmEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # Assert that the gripper type is None
