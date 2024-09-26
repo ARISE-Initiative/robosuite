@@ -141,7 +141,7 @@ class CompositeController:
         return low, high
 
 @register_composite_controller
-class HybridMobileBaseCompositeController(CompositeController):
+class HybridMobileBase(CompositeController):
     name="HYBRID_MOBILE_BASE"
     def set_goal(self, all_action):
         if not self.lite_physics:
@@ -170,7 +170,7 @@ class HybridMobileBaseCompositeController(CompositeController):
         return np.concatenate((low, [-1])), np.concatenate((high, [1]))
 
 @register_composite_controller
-class WholeBodyCompositeController(CompositeController):
+class WholeBody(CompositeController):
     name="WHOLE_BODY_COMPOSITE"
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)
@@ -199,7 +199,7 @@ class WholeBodyCompositeController(CompositeController):
 
         Examples of joint_action_policy could be an IK policy, a neural network policy, a model predictive controller, etc.
         """
-        raise NotImplementedError("WholeBodyCompositeController requires a joint action policy")
+        raise NotImplementedError("WholeBody CompositeController requires a joint action policy")
 
 
     def setup_action_split_idx(self):
@@ -232,7 +232,7 @@ class WholeBodyCompositeController(CompositeController):
         """
         Action split indices for the composite controller's input action space.
 
-        WholeBodyIK controller takes in a different action space from the
+        WholeBodyIK composite controller takes in a different action space from the
         underlying factorized controllers.
         """
         # add joint_action_policy's action split indexes first
@@ -333,7 +333,7 @@ class WholeBodyCompositeController(CompositeController):
         ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
 
 @register_composite_controller
-class WholeBodyIKCompositeController(WholeBodyCompositeController):
+class WholeBodyIK(WholeBody):
     name="WHOLE_BODY_IK"
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)

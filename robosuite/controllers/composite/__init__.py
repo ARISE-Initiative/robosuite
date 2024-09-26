@@ -1,4 +1,4 @@
-from .composite_controller import CompositeController, HybridMobileBaseCompositeController, WholeBodyIKCompositeController
+from .composite_controller import CompositeController, HybridMobileBase, WholeBodyIK
 from .composite_controller import COMPOSITE_CONTROLLERS_DICT
 
 ALL_COMPOSITE_CONTROLLERS = COMPOSITE_CONTROLLERS_DICT.keys()
@@ -11,8 +11,8 @@ def composite_controller_factory(type, sim, robot_model, grippers, lite_physics)
     if type == "BASE":
         return CompositeController(sim, robot_model, grippers, lite_physics)
     elif type == "HYBRID_MOBILE_BASE":
-        return HybridMobileBaseCompositeController(sim, robot_model, grippers, lite_physics)
+        return HybridMobileBase(sim, robot_model, grippers, lite_physics)
     elif type == "WHOLE_BODY_IK":
-        return WholeBodyIKCompositeController(sim, robot_model, grippers, lite_physics)
+        return WholeBodyIK(sim, robot_model, grippers, lite_physics)
     else:
         return COMPOSITE_CONTROLLERS_DICT[type](sim, robot_model, grippers, lite_physics)

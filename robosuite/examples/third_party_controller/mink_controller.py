@@ -13,7 +13,7 @@ from mink.tasks.exceptions import TargetNotSet
 from mink.tasks.frame_task import FrameTask
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.composite.composite_controller import register_composite_controller, WholeBodyCompositeController
+from robosuite.controllers.composite.composite_controller import register_composite_controller, WholeBody
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
@@ -77,7 +77,7 @@ FrameTask.compute_orientation_error = compute_orientation_error
 
 
 @register_composite_controller
-class WholeBodyIKCompositeController(WholeBodyCompositeController):
+class WholeBodyIK(WholeBody):
     name="WHOLE_BODY_IK"
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)
@@ -330,7 +330,7 @@ class IKSolverMink:
 
 
 @register_composite_controller
-class WholeBodyMinkIKCompositeController(WholeBodyCompositeController):
+class WholeBodyMinkIKCompositeController(WholeBody):
     name="WHOLE_BODY_MINK_IK"
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)
