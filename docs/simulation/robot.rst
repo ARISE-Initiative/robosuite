@@ -47,6 +47,8 @@ Manipulator Robot
   .. autoproperty:: _hand_ang_vel
 
 
+> TODO(YL): remove SingleArm and Bimanual classes from the documentation
+
 SingleArm Robot
 ---------------
 
