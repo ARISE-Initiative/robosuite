@@ -68,7 +68,9 @@ class CompositeController:
         for part_name in self.part_controller_config.keys():
             controller_params = self.part_controller_config[part_name]
             self.part_controllers[part_name] = controller_factory(
-                self.part_controller_config[part_name]["type"], controller_params
+                part_name=part_name,
+                controller_type=self.part_controller_config[part_name]["type"],
+                controller_params=controller_params,
             )
 
     def setup_action_split_idx(self):
@@ -151,7 +153,8 @@ class CompositeController:
 
 @register_composite_controller
 class HybridMobileBase(CompositeController):
-    name="HYBRID_MOBILE_BASE"
+    name = "HYBRID_MOBILE_BASE"
+
     def set_goal(self, all_action):
         if not self.lite_physics:
             self.sim.forward()
@@ -181,8 +184,11 @@ class HybridMobileBase(CompositeController):
 
 @register_composite_controller
 class WholeBody(CompositeController):
-    name="WHOLE_BODY_COMPOSITE"
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+    name = "WHOLE_BODY_COMPOSITE"
+
+    def __init__(
+        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
+    ):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
         self.joint_action_policy: IKSolver = None
@@ -342,8 +348,11 @@ class WholeBody(CompositeController):
 
 @register_composite_controller
 class WholeBodyIK(WholeBody):
-    name="WHOLE_BODY_IK"
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+    name = "WHOLE_BODY_IK"
+
+    def __init__(
+        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
+    ):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
     def __init__(

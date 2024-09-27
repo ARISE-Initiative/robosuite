@@ -139,21 +139,21 @@ def arm_controller_factory(name, params):
     raise ValueError("Unknown controller name: {}".format(name))
 
 
-def controller_factory(name, params):
-    if params["part_name"] in ["right", "left"]:
-        return arm_controller_factory(name, params)
-    elif params["part_name"] in ["right_gripper", "left_gripper"]:
-        return gripper_controller_factory(name, params)
-    elif params["part_name"] == "base":
-        return base_controller_factory(name, params)
-    elif params["part_name"] == "torso":
-        return torso_controller_factory(name, params)
-    elif params["part_name"] == "head":
-        return head_controller_factory(name, params)
-    elif params["part_name"] == "legs":
-        return legs_controller_factory(name, params)
+def controller_factory(part_name, controller_type, controller_params):
+    if part_name in ["right", "left"]:
+        return arm_controller_factory(controller_type, controller_params)
+    elif part_name in ["right_gripper", "left_gripper"]:
+        return gripper_controller_factory(controller_type, controller_params)
+    elif part_name == "base":
+        return base_controller_factory(controller_type, controller_params)
+    elif part_name == "torso":
+        return torso_controller_factory(controller_type, controller_params)
+    elif part_name == "head":
+        return head_controller_factory(controller_type, controller_params)
+    elif part_name == "legs":
+        return legs_controller_factory(controller_type, controller_params)
     else:
-        raise ValueError("Unknown controller part name: {}".format(params["part_name"]))
+        raise ValueError("Unknown controller part name: {}".format(part_name))
 
 
 def gripper_controller_factory(name, params):

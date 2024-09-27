@@ -98,6 +98,7 @@ def load_composite_controller_config(controller: str = None, robot: str = None) 
                 composite_controller_config["body_parts"][arm_name] = arm_config
         else:
             composite_controller_config["body_parts"][part_name] = part_config
+    composite_controller_config.pop("body_parts_controller_configs")
 
     # Return the loaded controller
     return composite_controller_config
