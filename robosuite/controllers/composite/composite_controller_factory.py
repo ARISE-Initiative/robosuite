@@ -34,24 +34,11 @@ def load_composite_controller_config(controller: str = None, robot: str = None) 
         AssertionError: [No controller specified]
     """
     composite_controller_config = None
-
-    if controller is None:
-        controller = "HYBRID_MOBILE_BASE"
-    controller_is_path = controller.endswith(".json")
     # First check if default controller is not None; if it is not, load the appropriate controller
-    if controller_is_path:
+    if isinstance(controller, str) and controller.endswith(".json"):
         controller_fpath = controller
         ROBOSUITE_DEFAULT_LOGGER.info("Loading custom controller configuration from: {} ...".format(controller))
     else:
-        # Assert that requested default controller is in the available default controllers
-        from robosuite.controllers.composite import ALL_COMPOSITE_CONTROLLERS
-
-        assert (
-            controller in ALL_COMPOSITE_CONTROLLERS
-        ), "Error: Unknown default controller specified. Requested {}, " "available controllers: {}".format(
-            controller, list(ALL_COMPOSITE_CONTROLLERS)
-        )
-
         if "GR1" in robot:
             robot_name = "gr1"
         elif "G1" in robot:
@@ -61,23 +48,9 @@ def load_composite_controller_config(controller: str = None, robot: str = None) 
         else:
             robot_name = robot.lower()
 
-        # Store the default controller config fpath associated with the requested controller
         controller_fpath = (
-            pathlib.Path(robosuite.__file__).parent
-            / f"controllers/config/robots/default_{controller.lower()}_{robot_name}.json"
+            pathlib.Path(robosuite.__file__).parent / f"controllers/config/robots/default_{robot_name}.json"
         )
-
-        if not controller_fpath.exists():
-            controller_fpath = (
-                pathlib.Path(robosuite.__file__).parent
-                / f"controllers/config/default/composite/{controller.lower()}.json"
-            )
-            ROBOSUITE_DEFAULT_LOGGER.warn(
-                f"Default controller config for {controller} not found for robot {robot}. Loading default controller config for {controller}. The default config is defined in {controller_fpath} "
-            )
-
-    # Assert that the fpath to load the controller is not empty
-    assert controller_fpath is not None, f"Error: Either custom_fpath or {controller} must be specified!"
 
     # Attempt to load the controller
     try:
