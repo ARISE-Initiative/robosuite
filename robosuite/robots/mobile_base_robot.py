@@ -136,6 +136,7 @@ class MobileBaseRobot(Robot):
         self.controller_config[self.head]["naming_prefix"] = self.robot_model.naming_prefix
         self.controller_config[self.head]["ndim"] = self._joint_split_idx
         self.controller_config[self.head]["policy_freq"] = self.control_freq
+        self.controller_config[self.head]["lite_physics"] = self.lite_physics
 
         ref_head_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.head_joints]
         ref_head_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.head_joints]
