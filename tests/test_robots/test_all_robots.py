@@ -6,14 +6,26 @@ This runs some basic sanity checks on the robots, namely, checking that:
 
 Obviously, if an environment crashes during runtime, that is considered a failure as well.
 """
-from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot
+from robosuite.robots import ROBOT_CLASS_MAPPING, \
+    FixedBaseRobot, WheeledRobot, LeggedRobot
 
 
-def test_fixed_base_robots():
+def test_robots():
     for name, robot in ROBOT_CLASS_MAPPING.items():
         if robot == FixedBaseRobot:
             print(f"Testing {name}")
             _test_contact_geoms(robot(name))
+        
+        elif robot == WheeledRobot:
+            print(f"Testing {name}")
+            _test_contact_geoms(robot(name))
+            
+        elif robot == LeggedRobot:
+            print(f"Testing {name}")
+            _test_contact_geoms(robot(name))
+        
+        else:
+            raise ValueError(f"Invalid robot type: {robot}")
 
 
 def _test_contact_geoms(robot):
@@ -24,5 +36,5 @@ def _test_contact_geoms(robot):
 
 
 if __name__ == "__main__":
-    test_fixed_base_robots()
+    test_robots()
     print("Robot tests completed.")

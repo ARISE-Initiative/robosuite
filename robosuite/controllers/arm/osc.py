@@ -352,7 +352,11 @@ class OperationalSpaceController(Controller):
 
         # directly set orientation
         if set_ori is not None:
-            raise NotImplementedError
+            # raise NotImplementedError
+            # TODO(YL): verify if this is correct
+            goal_origin_to_eef_ori = set_ori
+            self.goal_origin_to_eef_ori = goal_origin_to_eef_ori
+
         # otherwise use delta to set goal orientation
         else:
             # convert axis-angle value to rotation matrix
