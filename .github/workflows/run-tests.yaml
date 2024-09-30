@@ -37,10 +37,10 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    # Run the specified tests (MUJOCO_GL="glx" https://github.com/ARISE-Initiative/robosuite/issues/469)
+    # Run the specified tests
     - name: Test with pytest
       run: |
-        MUJOCO_GL="glx" python3 tests/test_robots/test_all_robots.py
-        MUJOCO_GL="glx" python3 tests/test_grippers/test_all_grippers.py
-        MUJOCO_GL="glx" python3 tests/test_environments/test_all_environments.py
-        MUJOCO_GL="glx" python3 tests/test_controllers/test_all_controllers.py
+        MUJOCO_GL="osmesa" python3 tests/test_robots/test_all_robots.py
+        MUJOCO_GL="osmesa" python3 tests/test_grippers/test_all_grippers.py
+        MUJOCO_GL="osmesa" python3 tests/test_environments/test_all_environments.py
+        MUJOCO_GL="osmesa" python3 tests/test_controllers/test_all_controllers.py
