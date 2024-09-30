@@ -1,7 +1,9 @@
 from collections import OrderedDict
+from typing import Dict, Optional, Union
 
 import numpy as np
 
+from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots import RobotModel
 from robosuite.utils.mjcf_utils import find_elements, find_elements_by_substring, string_to_array
 
@@ -15,7 +17,7 @@ class ManipulatorModel(RobotModel):
         idn (int or str): Number or some other unique identification string for this robot instance
     """
 
-    def __init__(self, fname, idn=0):
+    def __init__(self, fname: str, idn=0):
         # Always run super init first
         super().__init__(fname, idn=idn)
 
@@ -59,7 +61,7 @@ class ManipulatorModel(RobotModel):
 
         self._arms_joints = []
 
-    def add_gripper(self, gripper, arm_name=None):
+    def add_gripper(self, gripper: GripperModel, arm_name: Optional[str] = None):
         """
         Mounts @gripper to arm.
 
@@ -90,7 +92,8 @@ class ManipulatorModel(RobotModel):
         # Update cameras in this model
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
-    def update_joints(self):
+    def _update_joints(self):
+        """internal function to update joint lists"""
         for joint in self.all_joints:
             if "mobile" in joint:
                 self.base_joints.append(joint)
@@ -110,7 +113,8 @@ class ManipulatorModel(RobotModel):
             ):
                 self._arms_joints.append(joint)
 
-    def update_actuators(self):
+    def _update_actuators(self):
+        """internal function to update actuator lists"""
         for actuator in self.all_actuators:
             if "mobile" in actuator:
                 self.base_actuators.append(actuator)
@@ -136,16 +140,16 @@ class ManipulatorModel(RobotModel):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def eef_name(self):
+    def eef_name(self) -> Dict[str, str]:
         """
         Returns:
-            str or dict of str: Prefix-adjusted eef name for this robot. If bimanual robot, returns {"left", "right"}
+            dict of str: Prefix-adjusted eef name for this robot. If bimanual robot, returns {"left", "right"}
                 keyword-mapped eef names
         """
         return self.correct_naming(self._eef_name)
 
     @property
-    def models(self):
+    def models(self) -> list:
         """
         Returns a list of all m(sub-)models owned by this robot model. By default, this includes the gripper model,
         if specified
@@ -161,7 +165,7 @@ class ManipulatorModel(RobotModel):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def _important_sites(self):
+    def _important_sites(self) -> dict:
         """
         Returns:
             dict: (Default is no important sites; i.e.: empty dict)
@@ -169,14 +173,15 @@ class ManipulatorModel(RobotModel):
         return {}
 
     @property
-    def _eef_name(self):
+    def _eef_name(self) -> Dict[str, str]:
         """
         XML eef name for this robot to which grippers can be attached. Note that these should be the raw
         string names directly pulled from a robot's corresponding XML file, NOT the adjusted name with an
         auto-generated naming prefix
 
         Returns:
-            str: Raw XML eef name for this robot (default is "right_hand")
+            dict of str: eef name of this robot.
+            If bimanual robot, returns {"left", "right"} keyword-mapped eef names
         """
         return {"right": "right_hand"}
 
@@ -185,17 +190,17 @@ class ManipulatorModel(RobotModel):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def default_gripper(self):
+    def default_gripper(self) -> Dict[str, str]:
         """
         Defines the default gripper type for this robot that gets added to end effector
 
         Returns:
-            str: Default gripper name to add to this robot
+            dict: (Default is no gripper; i.e.: empty dict)
         """
         raise NotImplementedError
 
     @property
-    def arm_type(self):
+    def arm_type(self) -> str:
         """
         Type of robot arm. Should be either "bimanual" or "single" (or something else if it gets added in the future)
 
@@ -205,7 +210,7 @@ class ManipulatorModel(RobotModel):
         raise NotImplementedError
 
     @property
-    def base_xpos_offset(self):
+    def base_xpos_offset(self) -> Dict[str, Union[tuple, dict]]:
         """
         Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
         Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
@@ -222,7 +227,7 @@ class ManipulatorModel(RobotModel):
         raise NotImplementedError
 
     @property
-    def top_offset(self):
+    def top_offset(self) -> np.array:
         raise NotImplementedError
 
     @property

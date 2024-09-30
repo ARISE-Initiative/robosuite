@@ -25,14 +25,15 @@ Base Robot
   .. autoproperty:: dof
   .. autoproperty:: js_energy
   .. autoproperty:: joint_indexes
+  .. autoproperty:: is_mobile
   .. autoproperty:: _joint_positions
   .. autoproperty:: _joint_velocities
 
 
-Manipulator Robot
+Fixed Base Robot
 -----------------
 
-.. autoclass:: robosuite.robots.manipulator.Manipulator
+.. autoclass:: robosuite.robots.fixed_base_robot.FixedBaseRobot
 
   .. automethod:: grip_action
   .. autoproperty:: ee_ft_integral
@@ -47,39 +48,12 @@ Manipulator Robot
   .. autoproperty:: _hand_ang_vel
 
 
-> TODO(YL): remove SingleArm and Bimanual classes from the documentation
+Mobile Base Robot
+-----------------
 
-SingleArm Robot
----------------
+``WheeledRobot`` and ``LeggedRobot`` are two types of mobile base robots supported in robosuite.
 
-.. autoclass:: robosuite.robots.single_arm.SingleArm
-
-  .. automethod:: control
-  .. autoproperty:: ee_ft_integral
-  .. autoproperty:: ee_force
-  .. autoproperty:: ee_torque
-  .. autoproperty:: _hand_pose
-  .. autoproperty:: _hand_quat
-  .. autoproperty:: _hand_total_velocity
-  .. autoproperty:: _hand_pos
-  .. autoproperty:: _hand_orn
-  .. autoproperty:: _hand_vel
-  .. autoproperty:: _hand_ang_vel
-
-
-Bimanual Robot
---------------
-
-.. autoclass:: robosuite.robots.bimanual.Bimanual
+.. autoclass:: robosuite.robots.mobile_base_robot.MobileBaseRobot
 
   .. automethod:: control
-  .. autoproperty:: ee_ft_integral
-  .. autoproperty:: ee_force
-  .. autoproperty:: ee_torque
-  .. autoproperty:: _hand_pose
-  .. autoproperty:: _hand_quat
-  .. autoproperty:: _hand_total_velocity
-  .. autoproperty:: _hand_pos
-  .. autoproperty:: _hand_orn
-  .. autoproperty:: _hand_vel
-  .. autoproperty:: _hand_ang_vel
+  .. automethod:: reset

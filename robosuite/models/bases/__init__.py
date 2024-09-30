@@ -1,7 +1,9 @@
 from .mount_model import MountModel
+from .base_model import BaseModel
 from .base_factory import base_factory
 from .mobile_base_model import MobileBaseModel
 from .leg_base_model import LegBaseModel
+
 
 from .rethink_mount import RethinkMount
 from .rethink_minimal_mount import RethinkMinimalMount
