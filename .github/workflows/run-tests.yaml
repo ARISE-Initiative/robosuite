@@ -21,7 +21,7 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        apt-get update && apt-get install -y libgl1-mesa-glx libosmesa6 libosmesa6-dev
+        apt-get update && apt-get install -y libgl1-mesa-glx libgl1-mesa-dev libosmesa6-dev xvfb
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
