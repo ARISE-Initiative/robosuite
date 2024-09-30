@@ -39,7 +39,9 @@ def load_composite_controller_config(controller: str = None, robot: str = None) 
         controller_fpath = controller
         ROBOSUITE_DEFAULT_LOGGER.info("Loading custom controller configuration from: {} ...".format(controller))
     else:
-        if "GR1" in robot:
+        if "GR1FloatingBody" in robot:
+            robot_name = "gr1_floating_body"
+        elif "GR1" in robot:
             robot_name = "gr1"
         elif "G1" in robot:
             robot_name = "g1"

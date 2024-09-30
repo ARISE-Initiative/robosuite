@@ -1,4 +1,7 @@
+import os
 import pathlib
+import sys
+from contextlib import contextmanager
 from typing import Dict, List, Literal, Optional, Tuple
 
 import mink
@@ -10,7 +13,7 @@ from mink.tasks.exceptions import TargetNotSet
 from mink.tasks.frame_task import FrameTask
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.composite.composite_controller import register_composite_controller, WholeBody
+from robosuite.controllers.composite.composite_controller import WholeBody, register_composite_controller
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
@@ -68,6 +71,20 @@ def compute_orientation_error(self, configuration: Configuration) -> np.ndarray:
     return angle_diff
 
 
+@contextmanager
+def suppress_stdout():
+    """
+    helper function to supress logging info from mink controller
+    """
+    with open(os.devnull, "w") as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
+
+
 # monkey patch the FrameTask class for computing debugging errors
 FrameTask.compute_translation_error = compute_translation_error
 FrameTask.compute_orientation_error = compute_orientation_error
@@ -75,8 +92,11 @@ FrameTask.compute_orientation_error = compute_orientation_error
 
 @register_composite_controller
 class WholeBodyIK(WholeBody):
-    name="WHOLE_BODY_IK"
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+    name = "WHOLE_BODY_IK"
+
+    def __init__(
+        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
+    ):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
 
@@ -303,10 +323,12 @@ class IKSolverMink:
 
             # set target poses
             for task, target in zip(self.hand_tasks, targets):
-                se3_target = mink.SE3.from_matrix(target)
+                with suppress_stdout():
+                    se3_target = mink.SE3.from_matrix(target)
                 task.set_target(se3_target)
 
-        vel = mink.solve_ik(self.configuration, self.tasks, 1 / self.solve_freq, self.solver, 1e-5)
+        with suppress_stdout():
+            vel = mink.solve_ik(self.configuration, self.tasks, 1 / self.solve_freq, self.solver, 1e-5)
         self.configuration.integrate_inplace(vel, 1 / self.solve_freq)
 
         self.i += 1
@@ -318,8 +340,8 @@ class IKSolverMink:
             self.trask_translation_errors.append(task_translation_errors)
             self.task_orientation_errors.append(task_orientation_errors)
 
-            if self.i % 50:
-                print(f"Task errors: {task_translation_errors}")
+            # if self.i % 50:
+            #     print(f"Task errors: {task_translation_errors}")
 
         return self.configuration.data.qpos[self.robot_model_dof_ids]
 
@@ -347,8 +369,11 @@ class IKSolverMink:
 
 @register_composite_controller
 class WholeBodyMinkIK(WholeBody):
-    name="WHOLE_BODY_MINK_IK"
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
+    name = "WHOLE_BODY_MINK_IK"
+
+    def __init__(
+        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
+    ):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
     def _init_joint_action_policy(self):
