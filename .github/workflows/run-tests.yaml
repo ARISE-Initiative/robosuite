@@ -21,7 +21,7 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        apt-get update && apt-get install -y libgl1-mesa-glx libgl1-mesa-dev libosmesa6-dev 
+        apt-get update && apt-get install -y libgl1-mesa-glx libgl1-mesa-dev libosmesa6-dev libglfw3 libglew2.0
         python -m pip install --upgrade pip
         pip install pyrender
         pip install flake8 pytest
@@ -45,8 +45,8 @@ jobs:
     # https://github.com/ARISE-Initiative/robosuite/issues/469
     - name: Test with pytest
       run: |
-        export PYOPENGL_PLATFORM="osmesa"
-        export MUJOCO_GL="osmesa"
+        export PYOPENGL_PLATFORM="egl"
+        export MUJOCO_GL="egl"
         python3 tests/test_robots/test_all_robots.py
         python3 tests/test_grippers/test_all_grippers.py
         python3 tests/test_environments/test_all_environments.py
