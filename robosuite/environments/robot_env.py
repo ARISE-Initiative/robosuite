@@ -126,7 +126,6 @@ class RobotEnv(MujocoEnv):
         env_configuration="default",
         base_types="default",
         controller_configs=None,
-        composite_controller_configs=None,
         initialization_noise=None,
         use_camera_obs=True,
         has_renderer=False,
@@ -146,7 +145,7 @@ class RobotEnv(MujocoEnv):
         camera_depths=False,
         camera_segmentations=None,
         robot_configs=None,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
         seed=None,
     ):
@@ -164,11 +163,8 @@ class RobotEnv(MujocoEnv):
         # Robot base
         base_types = self._input2list(base_types, self.num_robots)
 
-        # Controller
-        # controller_configs = self._input2list(controller_configs, self.num_robots)
-
         # Composite Controller
-        composite_controller_configs = self._input2list(composite_controller_configs, self.num_robots)
+        controller_configs = self._input2list(controller_configs, self.num_robots)
 
         # Initialization Noise
         initialization_noise = self._input2list(initialization_noise, self.num_robots)
@@ -210,8 +206,7 @@ class RobotEnv(MujocoEnv):
         self.robot_configs = [
             dict(
                 **{
-                    # "controller_config": controller_configs[idx],
-                    "composite_controller_config": composite_controller_configs[idx],
+                    "composite_controller_config": controller_configs[idx],
                     "base_type": base_types[idx],
                     "initialization_noise": initialization_noise[idx],
                     "control_freq": control_freq,

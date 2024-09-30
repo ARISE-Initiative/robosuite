@@ -10,8 +10,9 @@ import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_base_robot import MobileBaseRobot
-from robosuite.utils.observables import sensor
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+from robosuite.utils.observables import sensor
+
 
 class LeggedRobot(MobileBaseRobot):
     """
@@ -53,7 +54,7 @@ class LeggedRobot(MobileBaseRobot):
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.legs]),
             )
             self.part_controller_config[self.legs] = load_controller_config(custom_fpath=controller_path)
-                
+
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
@@ -113,12 +114,17 @@ class LeggedRobot(MobileBaseRobot):
         # override controller config with composite controller config values
         for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
             if not self.has_part(part_name):
-                ROBOSUITE_DEFAULT_LOGGER.warn(f"The config has defined for the controller \"{part_name}\", but the robot does not have this component. Skipping, but make sure this is intended. Removing the controller config for {part_name} from self.part_controller_config.")
+                ROBOSUITE_DEFAULT_LOGGER.warn(
+                    f'The config has defined for the controller "{part_name}", but the robot does not have this component. Skipping, but make sure this is intended. Removing the controller config for {part_name} from self.part_controller_config.'
+                )
                 self.part_controller_config.pop(part_name, None)
                 continue
             if part_name in self.part_controller_config:
                 self.part_controller_config[part_name].update(controller_config)
-        self.composite_controller.load_controller_config(self.part_controller_config, self.composite_controller_config.get("composite_controller_specific_configs", {}))
+        self.composite_controller.load_controller_config(
+            self.part_controller_config,
+            self.composite_controller_config.get("composite_controller_specific_configs", {}),
+        )
         self.enable_parts()
 
     def load_model(self):
@@ -217,14 +223,11 @@ class LeggedRobot(MobileBaseRobot):
                     continue
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
-                # currently assumes ee pose exists in the controller
-                if not hasattr(controller, "ee_pos") or not hasattr(controller, "ee_ori_mat"):
-                    continue
-                self.recent_ee_pose[arm].push(np.concatenate((controller.ee_pos, T.mat2quat(controller.ee_ori_mat))))
-                self.recent_ee_vel[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
+                self.recent_ee_pose[arm].push(np.concatenate((controller.ref_pos, T.mat2quat(controller.ref_ori_mat))))
+                self.recent_ee_vel[arm].push(np.concatenate((controller.ref_pos_vel, controller.ref_ori_vel)))
 
                 # Estimation of eef acceleration (averaged derivative of recent velocities)
-                self.recent_ee_vel_buffer[arm].push(np.concatenate((controller.ee_pos_vel, controller.ee_ori_vel)))
+                self.recent_ee_vel_buffer[arm].push(np.concatenate((controller.ref_pos_vel, controller.ref_ori_vel)))
                 diffs = np.vstack(
                     [
                         self.recent_ee_acc[arm].current,

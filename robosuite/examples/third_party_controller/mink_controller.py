@@ -1,19 +1,16 @@
-from typing import Dict, List
-
 import pathlib
-from typing import Dict, List, Optional, Literal, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
+import mink
 import mujoco
 import mujoco.viewer
 import numpy as np
-
-import mink
 from mink.configuration import Configuration
 from mink.tasks.exceptions import TargetNotSet
 from mink.tasks.frame_task import FrameTask
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers.composite.composite_controller import register_composite_controller, WholeBodyCompositeController
+from robosuite.controllers.composite.composite_controller import register_composite_controller, WholeBody
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
@@ -34,7 +31,9 @@ def update(self, q: Optional[np.ndarray] = None, update_idxs: Optional[np.ndarra
     mujoco.mj_kinematics(self.model, self.data)
     mujoco.mj_comPos(self.model, self.data)
 
+
 Configuration.update = update
+
 
 def compute_translation_error(self, configuration: Configuration) -> np.ndarray:
     r"""Compute the translation part of the frame task error.
@@ -46,10 +45,9 @@ def compute_translation_error(self, configuration: Configuration) -> np.ndarray:
     if self.transform_target_to_world is None:
         raise TargetNotSet(self.__class__.__name__)
 
-    transform_frame_to_world = configuration.get_transform_frame_to_world(
-        self.frame_name, self.frame_type
-    )
+    transform_frame_to_world = configuration.get_transform_frame_to_world(self.frame_name, self.frame_type)
     return np.linalg.norm(self.transform_target_to_world.translation() - transform_frame_to_world.translation())
+
 
 def compute_orientation_error(self, configuration: Configuration) -> np.ndarray:
     r"""Compute the orientation part of the frame task error.
@@ -61,9 +59,7 @@ def compute_orientation_error(self, configuration: Configuration) -> np.ndarray:
     if self.transform_target_to_world is None:
         raise TargetNotSet(self.__class__.__name__)
 
-    transform_frame_to_world = configuration.get_transform_frame_to_world(
-        self.frame_name, self.frame_type
-    )
+    transform_frame_to_world = configuration.get_transform_frame_to_world(self.frame_name, self.frame_type)
 
     rot_src = self.transform_target_to_world.rotation().as_matrix()
     rot_tgt = transform_frame_to_world.rotation().as_matrix()
@@ -71,13 +67,14 @@ def compute_orientation_error(self, configuration: Configuration) -> np.ndarray:
     angle_diff = angle_diff * 180 / np.pi
     return angle_diff
 
+
 # monkey patch the FrameTask class for computing debugging errors
 FrameTask.compute_translation_error = compute_translation_error
 FrameTask.compute_orientation_error = compute_orientation_error
 
 
 @register_composite_controller
-class WholeBodyIKCompositeController(WholeBodyCompositeController):
+class WholeBodyIK(WholeBody):
     name="WHOLE_BODY_IK"
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)
@@ -123,10 +120,11 @@ class WeightedPostureTask(mink.PostureTask):
             f"lm_damping={self.lm_damping})"
         )
 
+
 class IKSolverMink:
     def __init__(
         self,
-        model: mujoco.MjModel, 
+        model: mujoco.MjModel,
         data: mujoco.MjData,
         site_names: List[str],
         robot_model: mujoco.MjModel,
@@ -152,7 +150,11 @@ class IKSolverMink:
         self.posture_task: WeightedPostureTask
 
         if robot_joint_names is None:
-            robot_joint_names: List[str] = [self.robot_model.joint(i).name for i in range(self.robot_model.njnt) if self.robot_model.joint(i).type != 0]  # Exclude fixed joints
+            robot_joint_names: List[str] = [
+                self.robot_model.joint(i).name
+                for i in range(self.robot_model.njnt)
+                if self.robot_model.joint(i).type != 0
+            ]  # Exclude fixed joints
         # get all ids for robot bodies
         # self.robot_body_ids: List[int] = np.array([self.robot_model.body(name).id for name in robot_joint_names])
         self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
@@ -198,7 +200,9 @@ class IKSolverMink:
 
         self.tasks = [self.posture_task]
 
-        self.hand_tasks = self._create_frame_tasks(self.site_names, position_cost=self.hand_pos_cost, orientation_cost=self.hand_ori_cost)
+        self.hand_tasks = self._create_frame_tasks(
+            self.site_names, position_cost=self.hand_pos_cost, orientation_cost=self.hand_ori_cost
+        )
         self.tasks.extend(self.hand_tasks)
 
     def _create_frame_tasks(self, frame_names: List[str], position_cost: float, orientation_cost: float):
@@ -209,7 +213,8 @@ class IKSolverMink:
                 position_cost=position_cost,
                 orientation_cost=orientation_cost,
                 lm_damping=1.0,
-            ) for frame in frame_names
+            )
+            for frame in frame_names
         ]
 
     def set_target_poses(self, target_poses: List[np.ndarray]):
@@ -235,16 +240,20 @@ class IKSolverMink:
         # update configuration's data to match self.data for the joints we care about
         self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
         self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
-        self.configuration.update(self.full_model_data.qpos[self.full_model_dof_ids], update_idxs=self.robot_model_dof_ids)
+        self.configuration.update(
+            self.full_model_data.qpos[self.full_model_dof_ids], update_idxs=self.robot_model_dof_ids
+        )
 
         if target_action is not None:
             target_action = target_action.reshape(len(self.site_names), -1)
-            target_pos = target_action[:, :self.pos_dim]
-            target_ori = target_action[:, self.pos_dim:]
+            target_pos = target_action[:, : self.pos_dim]
+            target_ori = target_action[:, self.pos_dim :]
             target_quat_wxyz = None
 
             if self.input_rotation_repr == "axis_angle":
-                target_quat_wxyz = np.array([np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))])
+                target_quat_wxyz = np.array(
+                    [np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))]
+                )
             elif self.input_rotation_repr == "mat":
                 target_quat_wxyz = np.array([np.roll(T.mat2quat(target_ori[i])) for i in range(len(target_ori))])
             elif self.input_rotation_repr == "quat_wxyz":
@@ -256,7 +265,12 @@ class IKSolverMink:
             if self.input_action_repr == "relative":
                 # decoupled pos and rotation deltas
                 target_pos += cur_pos
-                target_quat_xyzw = np.array([T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1)) for i in range(len(self.site_ids))])
+                target_quat_xyzw = np.array(
+                    [
+                        T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1))
+                        for i in range(len(self.site_ids))
+                    ]
+                )
                 target_quat_wxyz = np.array([np.roll(target_quat_xyzw[i], shift=1) for i in range(len(self.site_ids))])
             elif self.input_action_repr == "relative_pose":
                 cur_poses = np.zeros((len(self.site_ids), 4, 4))
@@ -277,7 +291,9 @@ class IKSolverMink:
 
                 # Split new target pose back into position and quaternion
                 target_pos = new_target_poses[:, :3, 3]
-                target_quat_wxyz = np.array([np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))])
+                target_quat_wxyz = np.array(
+                    [np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
+                )
 
             # create targets list shape is n_sites, 4, 4
             targets = [np.eye(4) for _ in range(len(self.site_names))]
@@ -330,7 +346,7 @@ class IKSolverMink:
 
 
 @register_composite_controller
-class WholeBodyMinkIKCompositeController(WholeBodyCompositeController):
+class WholeBodyMinkIK(WholeBody):
     name="WHOLE_BODY_MINK_IK"
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False):
         super().__init__(sim, robot_model, grippers, lite_physics)

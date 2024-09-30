@@ -4,8 +4,8 @@ import os
 from collections import OrderedDict
 from typing import Optional
 
-import numpy as np
 import mujoco
+import numpy as np
 
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
@@ -177,7 +177,7 @@ class Robot(object):
             # Add this gripper to the robot model
             self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
 
-        # calling `mujoco.MjModel.from_xml_path()` resets mujoco's internal XML model and thus 
+        # calling `mujoco.MjModel.from_xml_path()` resets mujoco's internal XML model and thus
         # affects get_xml() used in calls in binding_utils.py
         # https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html#mj-savelastxml
         # https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html#mj-freelastxml

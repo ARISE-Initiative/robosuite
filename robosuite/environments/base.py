@@ -101,7 +101,7 @@ class MujocoEnv(metaclass=EnvMeta):
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
         seed=None,
     ):
@@ -172,7 +172,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer_config is None and self.renderer != "mujoco":
             self.renderer_config = load_renderer_config(self.renderer)
 
-        if self.renderer == "mujoco" or self.renderer == "default":
+        if self.renderer == "mujoco":
             pass
         elif self.renderer == "mjviewer":
             from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
@@ -182,21 +182,9 @@ class MujocoEnv(metaclass=EnvMeta):
             else:
                 camera_id = None
             self.viewer = MjviewerRenderer(env=self, camera_id=camera_id, **self.renderer_config)
-        elif self.renderer == "nvisii":
-            from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
-
-            self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
-        elif self.renderer == "mjviewer":
-            from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
-
-            if self.render_camera is not None:
-                camera_id = self.sim.model.camera_name2id(self.render_camera)
-            else:
-                camera_id = None
-            self.viewer = MjviewerRenderer(env=self, camera_id=camera_id)
         else:
             raise ValueError(
-                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
+                f"{self.renderer} is not a valid renderer name. Valid options include mjviewer (native mujoco renderer), mujoco"
             )
 
     def initialize_time(self, control_freq):
@@ -276,7 +264,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # Use hard reset if requested
 
         if self.hard_reset and not self.deterministic_reset:
-            if self.renderer == "mujoco" or self.renderer == "default":
+            if self.renderer == "mujoco":
                 self._destroy_viewer()
                 self._destroy_sim()
             self._load_model()
@@ -325,7 +313,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
-            if self.renderer == "mujoco" or self.renderer == "default":
+            if self.renderer == "mujoco":
                 self.viewer = OpenCVRenderer(self.sim)
 
                 # Set the camera angle for viewing
@@ -369,6 +357,12 @@ class MujocoEnv(metaclass=EnvMeta):
             meta (dict): containing episode metadata
         """
         self._ep_meta = meta
+
+    def unset_ep_meta(self):
+        """
+        Unset episode meta data
+        """
+        self._ep_meta = {}
 
     def _update_observables(self, force=False):
         """
@@ -568,12 +562,6 @@ class MujocoEnv(metaclass=EnvMeta):
         for obj in self.model.mujoco_objects:
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
 
-    def set_camera_pos_quat(self, camera_pos, camera_quat):
-        if self.renderer in ["nvisii"]:
-            self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
-        else:
-            raise AttributeError("setting camera position and quat requires renderer to be NVISII.")
-
     def edit_model_xml(self, xml_str):
         """
         This function edits the model xml with custom changes, including resolving relative paths,
@@ -618,9 +606,8 @@ class MujocoEnv(metaclass=EnvMeta):
         Args:
             xml_string (str): Filepath to the xml file that will be loaded directly into the sim
         """
-        # if there is an active viewer window, destroy it
-        if self.renderer != "nvisii":
-            self.close()
+
+        self.close()
 
         # Since we are reloading from an xml_string, we are deterministically resetting
         self.deterministic_reset = True

@@ -7,15 +7,13 @@ from copy import deepcopy
 
 import numpy as np
 
-from robosuite.utils.traj_utils import LinearInterpolator
-
 from robosuite.controllers.parts import arm as arm_controllers
 from robosuite.controllers.parts import base as base_controllers
 from robosuite.controllers.parts import generic
 from robosuite.controllers.parts import gripper as gripper_controllers
+from robosuite.utils.traj_utils import LinearInterpolator
 
 # from . import legs as legs_controllers
-
 
 
 def load_part_controller_config(custom_fpath=None, default_controller=None):
@@ -122,6 +120,7 @@ def arm_controller_factory(name, params):
             ori_interpolator.set_states(dim=4, ori="quat")
 
         from robosuite.controllers.arm.ik import InverseKinematicsController
+
         return InverseKinematicsController(
             interpolator_pos=interpolator,
             interpolator_ori=ori_interpolator,
@@ -140,21 +139,21 @@ def arm_controller_factory(name, params):
     raise ValueError("Unknown controller name: {}".format(name))
 
 
-def controller_factory(name, params):
-    if params["part_name"] in ["right", "left"]:
-        return arm_controller_factory(name, params)
-    elif params["part_name"] in ["right_gripper", "left_gripper"]:
-        return gripper_controller_factory(name, params)
-    elif params["part_name"] == "base":
-        return base_controller_factory(name, params)
-    elif params["part_name"] == "torso":
-        return torso_controller_factory(name, params)
-    elif params["part_name"] == "head":
-        return head_controller_factory(name, params)
-    elif params["part_name"] == "legs":
-        return legs_controller_factory(name, params)
+def controller_factory(part_name, controller_type, controller_params):
+    if part_name in ["right", "left"]:
+        return arm_controller_factory(controller_type, controller_params)
+    elif part_name in ["right_gripper", "left_gripper"]:
+        return gripper_controller_factory(controller_type, controller_params)
+    elif part_name == "base":
+        return base_controller_factory(controller_type, controller_params)
+    elif part_name == "torso":
+        return torso_controller_factory(controller_type, controller_params)
+    elif part_name == "head":
+        return head_controller_factory(controller_type, controller_params)
+    elif part_name == "legs":
+        return legs_controller_factory(controller_type, controller_params)
     else:
-        raise ValueError("Unknown controller part name: {}".format(params["part_name"]))
+        raise ValueError("Unknown controller part name: {}".format(part_name))
 
 
 def gripper_controller_factory(name, params):

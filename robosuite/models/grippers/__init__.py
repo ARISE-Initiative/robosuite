@@ -10,7 +10,6 @@ from .panda_gripper import PandaGripper
 from .jaco_three_finger_gripper import JacoThreeFingerGripper, JacoThreeFingerDexterousGripper
 from .robotiq_140_gripper import Robotiq140Gripper
 from .wiping_gripper import WipingGripper
-from .google_gripper import GoogleGripper
 from .bd_gripper import BDGripper
 from .null_gripper import NullGripper
 from .inspire_hands import InspireLeftHand, InspireRightHand
@@ -25,7 +24,6 @@ GRIPPER_MAPPING = {
     "Robotiq140Gripper": Robotiq140Gripper,
     "RobotiqThreeFingerGripper": RobotiqThreeFingerGripper,
     "RobotiqThreeFingerDexterousGripper": RobotiqThreeFingerDexterousGripper,
-    "GoogleGripper": GoogleGripper,
     "BDGripper": BDGripper,
     "InspireLeftHand": InspireLeftHand,
     "InspireRightHand": InspireRightHand,
@@ -33,6 +31,7 @@ GRIPPER_MAPPING = {
 }
 
 ALL_GRIPPERS = GRIPPER_MAPPING.keys()
+
 
 def register_gripper(target_class):
     GRIPPER_MAPPING[target_class.__name__] = target_class

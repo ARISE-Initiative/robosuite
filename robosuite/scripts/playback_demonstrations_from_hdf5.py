@@ -101,6 +101,8 @@ if __name__ == "__main__":
             for state in states:
                 env.sim.set_state_from_flattened(state)
                 env.sim.forward()
+                if env.renderer == "mjviewer":
+                    env.viewer.update()
                 env.render()
 
     f.close()

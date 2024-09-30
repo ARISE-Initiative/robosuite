@@ -138,7 +138,6 @@ class Lift(ManipulationEnv):
         robots,
         env_configuration="default",
         controller_configs=None,
-        composite_controller_configs=None,
         gripper_types="default",
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
@@ -163,7 +162,7 @@ class Lift(ManipulationEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # settings for table top
@@ -185,7 +184,6 @@ class Lift(ManipulationEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            composite_controller_configs=composite_controller_configs,
             base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,

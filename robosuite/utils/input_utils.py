@@ -146,7 +146,9 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False):
     return list(robots)[k]
 
 
-def input2action(device, robot, active_arm="right", active_end_effector: str = "right", env_configuration=None, mirror_actions=False):
+def input2action(
+    device, robot, active_arm="right", active_end_effector: str = "right", env_configuration=None, mirror_actions=False
+):
     """
     Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
