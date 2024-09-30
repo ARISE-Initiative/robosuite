@@ -4,7 +4,7 @@ Defines the base class of all mounts
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.utils.mjcf_utils import MOUNT_COLLISION_COLOR   
+from robosuite.utils.mjcf_utils import MOUNT_COLLISION_COLOR
 
 
 class BaseModel(MujocoXMLModel):
