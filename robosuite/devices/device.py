@@ -56,6 +56,6 @@ class Device(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_controller_state(self):
+    def get_controller_state(self) -> dict:
         """Returns the current state of the device, a dictionary of pos, orn, grasp, and reset."""
         raise NotImplementedError
