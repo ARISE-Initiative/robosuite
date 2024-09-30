@@ -43,6 +43,7 @@ if __name__ == "__main__":
     parser.add_argument("--filepath", type=str, default=arena_file)
     args = parser.parse_args()
 
+    print("Loading model from: {}".format(args.filepath))
     model = mujoco.MjModel.from_xml_path(args.filepath)
     sim = MjSim(model)
 

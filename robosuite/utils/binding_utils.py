@@ -285,12 +285,6 @@ class MjModel(metaclass=_MjModelMeta):
         # make useful mappings such as _body_name2id and _body_id2name
         self.make_mappings()
 
-    @classmethod
-    def from_xml_path(cls, xml_path):
-        """Creates an MjModel instance from a path to a model XML file."""
-        model_ptr = _get_model_ptr_from_xml(xml_path=xml_path)
-        return cls(model_ptr)
-
     def __del__(self):
         # free mujoco model
         del self._model
