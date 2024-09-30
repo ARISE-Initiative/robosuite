@@ -156,7 +156,10 @@ class USDObject(abc.ABC):
         transformation_mat = utils_module.create_transform_matrix(rotation_matrix=mat, translation_vector=pos).T
         utils_module.set_attr(attr=self.transform_op, value=Gf.Matrix4d(transformation_mat.tolist()), frame=frame)
 
-        # TODO (ajoshi): update visibility in online case
+        # TODO (ajoshi): update visibility for online and offline cases
+        if not frame and not visible:
+            self.update_visibility(False, frame)
+
         if frame is not None:
             if visible and frame - self.last_visible_frame > 1:
                 # non consecutive visible frames

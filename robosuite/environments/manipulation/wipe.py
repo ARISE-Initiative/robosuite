@@ -187,7 +187,7 @@ class Wipe(ManipulationEnv):
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
         task_config=None,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # Assert that the gripper type is None
