@@ -29,9 +29,8 @@ def register_composite_controller(target_class):
 
 @register_composite_controller
 class CompositeController:
-    """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
-
-    name = "BASE"
+    """This is the parent class for all composite controllers. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
+    name="BASIC"
 
     def __init__(
         self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False

@@ -1,5 +1,5 @@
 {
-    "type": "BASE",
+    "type": "BASIC",
     "composite_controller_specific_configs": {
         "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
         "interpolation": null,

@@ -93,7 +93,7 @@ class LeggedRobot(MobileBaseRobot):
         """
         # Flag for loading urdf once (only applicable for IK controllers)
         self.composite_controller = composite_controller_factory(
-            type=self.composite_controller_config.get("type", "BASE"),
+            type=self.composite_controller_config.get("type", "BASIC"),
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
