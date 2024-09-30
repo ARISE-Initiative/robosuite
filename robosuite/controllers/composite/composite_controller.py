@@ -180,6 +180,26 @@ class HybridMobileBase(CompositeController):
         low, high = super().action_limits
         return np.concatenate((low, [-1])), np.concatenate((high, [1]))
 
+    def create_action_vector(self, action_dict):
+        """
+        A helper function that creates the action vector given a dictionary
+        """
+        full_action_vector = np.zeros(self.action_limits[0].shape)
+        for (part_name, action_vector) in action_dict.items():
+            if part_name not in self._action_split_indexes:
+                ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
+                continue
+            start_idx, end_idx = self._action_split_indexes[part_name]
+            if end_idx - start_idx == 0:
+                # skipping not controlling actions
+                continue
+            assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
+                f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
+            )
+            full_action_vector[start_idx:end_idx] = action_vector
+        full_action_vector[-1] = action_dict.get("base_mode", -1)
+        return full_action_vector
+
 
 @register_composite_controller
 class WholeBody(CompositeController):
@@ -200,7 +220,9 @@ class WholeBody(CompositeController):
         for part_name in self.part_controller_config.keys():
             controller_params = self.part_controller_config[part_name]
             self.part_controllers[part_name] = controller_factory(
-                self.part_controller_config[part_name]["type"], controller_params
+                part_name=part_name,
+                controller_type=self.part_controller_config[part_name]["type"],
+                controller_params=controller_params,
             )
         self._init_joint_action_policy()
 

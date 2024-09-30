@@ -2,10 +2,6 @@ from robosuite.models.robots import *
 
 
 class PandaOmron(Panda):
-    """
-    Variant of Panda robot with mobile base. Currently serves as placeholder class.
-    """
-
     @property
     def default_base(self):
         return "OmronMobileBase"
