@@ -26,7 +26,8 @@
         },
         "torso": {
             "type": "JOINT_POSITION",
-            "interpolation": "null"
+            "interpolation": "null",
+            "kp": 2000
         },
         "base": {
             "type": "JOINT_VELOCITY",
