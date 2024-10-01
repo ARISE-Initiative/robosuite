@@ -19,9 +19,6 @@ import numpy as np
 import robosuite as suite
 import robosuite.macros as macros
 from robosuite.controllers import load_composite_controller_config
-
-# mink-related imports
-from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 from robosuite.utils import transform_utils
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
@@ -317,6 +314,10 @@ if __name__ == "__main__":
         controller=args.controller,
         robot=args.robots[0],
     )
+
+    if controller_config["type"] == "WHOLE_BODY_MINK_IK":
+        # mink-speicific import. requires installing mink
+        from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 
     # Create argument configuration
     config = {
