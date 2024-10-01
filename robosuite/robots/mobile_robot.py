@@ -10,7 +10,7 @@ from robosuite.robots.robot import Robot
 from robosuite.utils.observables import Observable, sensor
 
 
-class MobileBaseRobot(Robot):
+class MobileRobot(Robot):
     """
     Initializes a robot with a fixed base.
     """
