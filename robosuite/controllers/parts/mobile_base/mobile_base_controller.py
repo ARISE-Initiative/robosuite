@@ -7,7 +7,7 @@ import numpy as np
 import robosuite.macros as macros
 
 
-class BaseController(object, metaclass=abc.ABCMeta):
+class MobileBaseController(object, metaclass=abc.ABCMeta):
     """
     General controller interface.
 

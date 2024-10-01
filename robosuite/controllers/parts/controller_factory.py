@@ -8,9 +8,9 @@ from copy import deepcopy
 import numpy as np
 
 from robosuite.controllers.parts import arm as arm_controllers
-from robosuite.controllers.parts import base as base_controllers
 from robosuite.controllers.parts import generic
 from robosuite.controllers.parts import gripper as gripper_controllers
+from robosuite.controllers.parts import mobile_base as mobile_base_controllers
 from robosuite.utils.traj_utils import LinearInterpolator
 
 # from . import legs as legs_controllers
@@ -145,7 +145,7 @@ def controller_factory(part_name, controller_type, controller_params):
     elif part_name in ["right_gripper", "left_gripper"]:
         return gripper_controller_factory(controller_type, controller_params)
     elif part_name == "base":
-        return base_controller_factory(controller_type, controller_params)
+        return mobile_base_controller_factory(controller_type, controller_params)
     elif part_name == "torso":
         return torso_controller_factory(controller_type, controller_params)
     elif part_name == "head":
@@ -165,12 +165,12 @@ def gripper_controller_factory(name, params):
     raise ValueError("Unknown controller name: {}".format(name))
 
 
-def base_controller_factory(name, params):
+def mobile_base_controller_factory(name, params):
     interpolator = None
     if name == "JOINT_VELOCITY":
-        return base_controllers.BaseJointVelocityController(interpolator=interpolator, **params)
+        return mobile_base_controllers.MobileBaseJointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
-        return base_controllers.BaseJointPositionController(interpolator=interpolator, **params)
+        raise NotImplementedError
     raise ValueError("Unknown controller name: {}".format(name))
 
 
