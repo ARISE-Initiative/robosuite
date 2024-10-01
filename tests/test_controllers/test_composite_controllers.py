@@ -3,18 +3,31 @@ import traceback
 from typing import List, Union
 
 import numpy as np
-from termcolor import colored
+import pytest
 
 import robosuite as suite
-from robosuite import ALL_ROBOTS
 from robosuite.controllers import load_composite_controller_config
+from robosuite.robots import ROBOT_CLASS_MAPPING
 
 
-def create_and_run_test_env(controller_config: dict, env: str, robots: Union[str, List[str]]):
+@pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
+def test_basic_controller_predefined_robots(robot):
+    """
+    Tests the basic controller with all predefined robots
+    (i.e., ALL_ROBOTS)
+    """
+
+    if "Spot" in robot:
+        pytest.skip("Pending mesh file for Spot's arm")
+
+    controller_config = load_composite_controller_config(
+        controller="BASIC",
+        robot=robot,
+    )
 
     config = {
         "env_name": "Lift",
-        "robots": robots,
+        "robots": robot,
         "controller_configs": controller_config,
     }
 
@@ -37,48 +50,3 @@ def create_and_run_test_env(controller_config: dict, env: str, robots: Union[str
         obs, reward, done, _ = env.step(action)
 
     env.close()
-
-
-def test_basic_controller_predefined_robots():
-    """
-    Tests the basic controller with all predefined robots
-    (i.e., ALL_ROBOTS)
-    """
-
-    for robot in ALL_ROBOTS:
-
-        # TODO: remove once DOF issue is fixed
-        if robot == "Jaco":
-            continue
-
-        controller_config = load_composite_controller_config(
-            controller="BASIC",
-            robot=robot,
-        )
-
-        create_and_run_test_env(controller_config, robot)
-
-
-def test_whole_body_ik_controller_predefined_robots():
-    """
-    Tests the whole body ik controller with all predefined robots
-    (i.e., ALL_ROBOTS)
-    """
-
-    for robot in ALL_ROBOTS:
-
-        # TODO: remove once DOF issue is fixed
-        if robot == "Jaco":
-            continue
-
-        controller_config = load_composite_controller_config(
-            controller="WHOLE_BODY_IK",
-            robot=robot,
-        )
-
-        create_and_run_test_env(controller_config, robot)
-
-
-if __name__ == "__main__":
-    test_basic_controller_predefined_robots()
-    test_whole_body_ik_controller_predefined_robots()

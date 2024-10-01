@@ -19,7 +19,6 @@ ROBOT_CLASS_MAPPING = {
     "Sawyer": FixedBaseRobot,
     "UR5e": FixedBaseRobot,
     "PandaOmron": WheeledRobot,
-    "GoogleRobot": WheeledRobot,
     "Tiago": WheeledRobot,
     "SpotArm": LeggedRobot,
     "GR1": LeggedRobot,
