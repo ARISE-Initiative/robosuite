@@ -23,8 +23,9 @@ jobs:
       run: |
         apt-cache search mesa
         apt-get update && apt-get install -y libgl1-mesa-glx libgl1-mesa-dev libosmesa6-dev libglfw3-dev libglew2.0 patchelf
+        apt-get install python3-opengl
         python -m pip install --upgrade pip
-        conda install conda-forge::mesalib
+        pip install PyOpenGL-accelerate
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
