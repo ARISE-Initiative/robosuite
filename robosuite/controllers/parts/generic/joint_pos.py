@@ -212,7 +212,7 @@ class JointPositionController(Controller):
 
         # scale delta appears to mess up action coming from subclassed IK controller; commenting out
         # TODO: Add an option to skip self.scale_action to accommodate the actions from subclassed IK controller. Temporally hard-code the boolean variable here. Need to be fixed before official merging.
-        use_scaled_action = False
+        use_scaled_action = True
         if delta is not None:
             if use_scaled_action:
                 scaled_delta = self.scale_action(delta)
