@@ -11,10 +11,6 @@ def test_basic_controller_predefined_robots(robot):
     Test to test the base controller with all predefined robots
     (i.e., ALL_ROBOTS)
     """
-
-    if "Spot" in robot:
-        pytest.skip("Pending mesh file for Spot's arm")
-
     controller_config = load_composite_controller_config(
         controller="BASIC",
         robot=robot,
