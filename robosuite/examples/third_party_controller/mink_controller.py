@@ -393,5 +393,5 @@ class WholeBodyMinkIK(WholeBody):
             posture_weights=self.composite_controller_specific_config.get("ik_posture_weights", {}),
             hand_pos_cost=self.composite_controller_specific_config.get("ik_hand_pos_cost", 1.0),
             hand_ori_cost=self.composite_controller_specific_config.get("ik_hand_ori_cost", 0.5),
-            debug=self.composite_controller_specific_config.get("ik_debug", False),
+            debug=self.composite_controller_specific_config.get("verbose", False),
         )

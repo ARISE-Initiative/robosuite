@@ -452,5 +452,5 @@ class WholeBodyIK(WholeBody):
             max_dq_torso=self.composite_controller_specific_config.get("ik_max_dq_torso", 0.2),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
             input_action_repr=self.composite_controller_specific_config.get("ik_input_action_repr", "axis_angle"),
-            debug=self.composite_controller_specific_config.get("ik_debug", False),
+            debug=self.composite_controller_specific_config.get("verbose", False),
         )

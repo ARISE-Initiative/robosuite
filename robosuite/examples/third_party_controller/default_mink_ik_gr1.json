@@ -9,7 +9,7 @@
             "ik_integration_dt": 1e-1,
             "ik_input_action_repr": "absolute",
             "ik_input_rotation_repr": "axis_angle",
-            "ik_debug": false,
+            "verbose": false,
             "ik_posture_weights": {
                 "robot0_torso_waist_yaw": 10.0,
                 "robot0_torso_waist_pitch": 10.0,
