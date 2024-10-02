@@ -3,7 +3,7 @@
     "composite_controller_specific_configs": {
         "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
         "interpolation": null,
-        "ik_target_part_names": ["torso", "head", "right", "left"],
+        "ik_controlled_part_names": ["torso", "head", "right", "left"],
         "max_dq": 4,
         "nullspace_joint_weights": {
             "robot0_torso_lift_joint": 100.0
@@ -13,7 +13,7 @@
         "ik_max_dq": 4.0,
         "ik_max_dq_torso": 0.2,
         "ik_input_rotation_repr": "axis_angle",
-        "ik_debug": false
+        "verbose": false
     },
     "body_parts_controller_configs": {
         "arms": {

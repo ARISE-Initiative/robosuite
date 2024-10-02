@@ -3,13 +3,13 @@
     "composite_controller_specific_configs": {
         "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
             "interpolation": null,
-            "ik_target_part_names": ["torso", "head", "right", "left"],
+            "ik_controlled_part_names": ["torso", "head", "right", "left"],
             "max_dq": 4,
             "ik_pseudo_inverse_damping": 5e-2,
             "ik_integration_dt": 1e-1,
             "ik_input_action_repr": "absolute",
             "ik_input_rotation_repr": "axis_angle",
-            "ik_debug": false,
+            "verbose": false,
             "ik_posture_weights": {
                 "robot0_torso_waist_yaw": 10.0,
                 "robot0_torso_waist_pitch": 10.0,

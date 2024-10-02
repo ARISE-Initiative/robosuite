@@ -22,6 +22,7 @@ parts/
 sdist/
 var/
 wheels/
+!robosuite/models/assets/robots/**/wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -116,3 +117,5 @@ mjkey.txt
 
 # private macros
 macros_private.py
+
+MUJOCO_LOG.TXT
