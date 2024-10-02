@@ -116,3 +116,5 @@ mjkey.txt
 
 # private macros
 macros_private.py
+
+MUJOCO_LOG.TXT
