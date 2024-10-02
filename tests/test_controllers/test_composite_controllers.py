@@ -2,17 +2,19 @@ import numpy as np
 import pytest
 
 import robosuite as suite
+from robosuite.controllers.composite.composite_controller import COMPOSITE_CONTROLLERS_DICT
 from robosuite.robots import ROBOT_CLASS_MAPPING
 from robosuite.controllers import load_composite_controller_config
 
+# New test for different composite controller types
+@pytest.mark.parametrize("controller_name", ["WHOLE_BODY_IK"])
 @pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
-def test_basic_controller_predefined_robots(robot):
+def test_composite_controllers(robot, controller_name):
     """
-    Test to test the base controller with all predefined robots
-    (i.e., ALL_ROBOTS)
+    Test to validate all composite controllers with predefined robots
     """
     controller_config = load_composite_controller_config(
-        controller="BASIC",
+        controller=controller_name,
         robot=robot,
     )
 

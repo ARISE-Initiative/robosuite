@@ -378,7 +378,7 @@ class WholeBodyMinkIK(WholeBody):
 
     def _init_joint_action_policy(self):
         joint_names: str = []
-        for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
+        for part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
             joint_names += self.part_controllers[part_name].joint_names
 
         self.joint_action_policy = IKSolverMink(
