@@ -378,7 +378,7 @@ class WholeBodyMinkIK(WholeBody):
 
     def _init_joint_action_policy(self):
         joint_names: str = []
-        for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
+        for part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
             joint_names += self.part_controllers[part_name].joint_names
 
         self.joint_action_policy = IKSolverMink(
@@ -393,5 +393,5 @@ class WholeBodyMinkIK(WholeBody):
             posture_weights=self.composite_controller_specific_config.get("ik_posture_weights", {}),
             hand_pos_cost=self.composite_controller_specific_config.get("ik_hand_pos_cost", 1.0),
             hand_ori_cost=self.composite_controller_specific_config.get("ik_hand_ori_cost", 0.5),
-            debug=self.composite_controller_specific_config.get("ik_debug", False),
+            debug=self.composite_controller_specific_config.get("verbose", False),
         )
