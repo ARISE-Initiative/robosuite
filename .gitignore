@@ -22,7 +22,7 @@ parts/
 sdist/
 var/
 wheels/
-!robosuite/models/assets/robots/tiago/meshes/wheels/
+!robosuite/models/assets/robots/**/wheels/
 *.egg-info/
 .installed.cfg
 *.egg
