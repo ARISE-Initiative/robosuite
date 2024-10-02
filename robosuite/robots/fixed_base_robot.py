@@ -54,18 +54,7 @@ class FixedBaseRobot(Robot):
         )
 
         self._load_arm_controllers()
-        # override controller config with composite controller config values
-        for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
-            if not self.has_part(part_name):
-                ROBOSUITE_DEFAULT_LOGGER.warn(
-                    f'The config has defined for the controller "{part_name}", ' \
-                    'but the robot does not have this component. Skipping, but make sure this is intended.' \
-                    'Removing the controller config for {part_name} from self.part_controller_config.'
-                )
-                self.part_controller_config.pop(part_name, None)
-                continue
-            if part_name in self.part_controller_config:
-                self.part_controller_config[part_name].update(controller_config)
+        self._update_part_controller_config()
 
         self.composite_controller.load_controller_config(
             self.part_controller_config,
