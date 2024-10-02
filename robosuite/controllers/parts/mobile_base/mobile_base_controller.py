@@ -60,7 +60,6 @@ class MobileBaseController(object, metaclass=abc.ABCMeta):
         self.qvel_index = joint_indexes["qvel"]
         self.joint_names = [self.sim.model.joint_id2name(joint_id) for joint_id in self.joint_index]
 
-
         # robot states
         self.joint_pos = None
         self.joint_vel = None
