@@ -1,5 +1,5 @@
 from .fixed_base_robot import FixedBaseRobot
-from .mobile_base_robot import MobileBaseRobot
+from .mobile_robot import MobileRobot
 from .wheeled_robot import WheeledRobot
 from .legged_robot import LeggedRobot
 
@@ -29,7 +29,7 @@ ROBOT_CLASS_MAPPING = {
 
 target_type_mapping = {
     "FixedBaseRobot": FixedBaseRobot,
-    "MobileBaseRobot": MobileBaseRobot,
+    "MobileRobot": MobileRobot,
     "WheeledRobot": WheeledRobot,
     "LeggedRobot": LeggedRobot,
 }

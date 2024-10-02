@@ -6,11 +6,11 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
-from robosuite.robots.mobile_base_robot import MobileBaseRobot
+from robosuite.robots.mobile_robot import MobileRobot
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 
-class WheeledRobot(MobileBaseRobot):
+class WheeledRobot(MobileRobot):
     """
     Initializes a robot with a wheeled base.
     """
@@ -54,7 +54,7 @@ class WheeledRobot(MobileBaseRobot):
 
         self._load_arm_controllers()
 
-        # default base, torso, and head controllers are inherited from MobileBaseRobot
+        # default base, torso, and head controllers are inherited from MobileRobot
         self._load_base_controller()
 
         self._load_head_controller()

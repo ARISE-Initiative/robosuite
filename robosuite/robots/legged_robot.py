@@ -9,12 +9,12 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.models.bases.leg_base_model import LegBaseModel
-from robosuite.robots.mobile_base_robot import MobileBaseRobot
+from robosuite.robots.mobile_robot import MobileRobot
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.observables import sensor
 
 
-class LeggedRobot(MobileBaseRobot):
+class LeggedRobot(MobileRobot):
     """
     Initializes a robot with a wheeled base.
     """
@@ -102,7 +102,7 @@ class LeggedRobot(MobileBaseRobot):
 
         self._load_arm_controllers()
 
-        # default base, torso, and head controllers are inherited from MobileBaseRobot
+        # default base, torso, and head controllers are inherited from MobileRobot
         self._load_base_controller()
 
         if self.is_legs_actuated:
