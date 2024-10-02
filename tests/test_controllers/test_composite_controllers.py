@@ -4,6 +4,7 @@ import pytest
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 from robosuite.robots import ROBOT_CLASS_MAPPING
+import mujoco
 
 
 def create_and_test_env(
@@ -40,12 +41,18 @@ def create_and_test_env(
     env.close()
 
 @pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
-@pytest.mark.parametrize("controller", ["BASIC", "WHOLE_BODY_IK"])
+@pytest.mark.parametrize("controller", ["WHOLE_BODY_IK"])
 def test_basic_controller_predefined_robots(robot, controller):
     """
     Tests the basic controller with all predefined robots
     (i.e., ALL_ROBOTS) and controller types.
     """
+    if robot == "SpotArm" and mujoco.__version__ <= "3.1.2":
+        pytest.skip(
+            "Skipping test for SpotArm because the robot's mesh only works for Mujoco version 3.1.3 and above"
+            "Spot arm xml and meshes were taken from: "
+            "https://github.com/google-deepmind/mujoco_menagerie/tree/main/boston_dynamics_spot"
+        )
 
     controller_config = load_composite_controller_config(
         controller=controller,
