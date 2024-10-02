@@ -24,28 +24,7 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def set_target(sim, target_pos=None, target_mat=None, mocap_name: str = "target"):
-    mocap_id = sim.model.body(mocap_name).mocapid[0]
-    if target_pos is not None:
-        sim.data.mocap_pos[mocap_id] = target_pos
-    if target_mat is not None:
-        # convert mat to quat
-        target_quat = np.empty(4)
-        mujoco.mju_mat2Quat(target_quat, target_mat.reshape(9, 1))
-        sim.data.mocap_quat[mocap_id] = target_quat
-
-
-def get_target(sim, mocap_name: str = "target"):
-    mocap_id = sim.model.body(mocap_name).mocapid[0]
-    target_pos = np.copy(sim.data.mocap_pos[mocap_id])
-    target_quat = np.copy(sim.data.mocap_quat[mocap_id])
-    target_mat = np.empty(9)
-    mujoco.mju_quat2Mat(target_mat, target_quat)
-    target_mat = target_mat.reshape(3, 3)
-    return target_pos, target_mat
-
-
-def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right", use_mocap: bool = False):
+def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -60,15 +39,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
     env.reset()
     env.render()
-    if use_mocap:
-        site_names: List[str] = env.robots[0].composite_controller.joint_action_policy.site_names
-        right_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site_names[0])]
-        right_mat = env.sim.data.site_xmat[env.sim.model.site_name2id(site_names[0])]
-        left_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site_names[1])]
-        left_mat = env.sim.data.site_xmat[env.sim.model.site_name2id(site_names[1])]
-
-        set_target(env.sim, right_pos, right_mat, "right_eef_target")
-        set_target(env.sim, left_pos, left_mat, "left_eef_target")
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
@@ -109,53 +79,12 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             break
 
         action_dict = {}
-        if "GR1" in active_robot.name and active_robot.composite_controller.name != "HYBRID_MOBILE_BASE":
-            # "relative" actions by default for now
-            action_dict = {
-                "gripper0_left_grip_site_pos": input_action[:3] * 0.1,
-                "gripper0_left_grip_site_axis_angle": input_action[3:6],
-                "gripper0_right_grip_site_pos": np.zeros(3),
-                "gripper0_right_grip_site_axis_angle": np.zeros(3),
-                "left_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-                "right_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-            }
-
-            if use_mocap:
-                right_pos, right_mat = get_target(env.sim, "right_eef_target")
-                left_pos, left_mat = get_target(env.sim, "left_eef_target")
-                # convert mat to quat wxyz
-                right_quat_wxyz = np.empty(4)
-                left_quat_wxyz = np.empty(4)
-                mujoco.mju_mat2Quat(right_quat_wxyz, right_mat.reshape(9, 1))
-                mujoco.mju_mat2Quat(left_quat_wxyz, left_mat.reshape(9, 1))
-
-                # convert to quat xyzw
-                right_quat_xyzw = np.roll(right_quat_wxyz, -1)
-                left_quat_xyzw = np.roll(left_quat_wxyz, -1)
-                # convert to axis angle
-                right_axis_angle = transform_utils.quat2axisangle(right_quat_xyzw)
-                left_axis_angle = transform_utils.quat2axisangle(left_quat_xyzw)
-
-                action_dict["gripper0_left_grip_site_pos"] = left_pos
-                action_dict["gripper0_right_grip_site_pos"] = right_pos
-                action_dict["gripper0_left_grip_site_axis_angle"] = left_axis_angle
-                action_dict["gripper0_right_grip_site_axis_angle"] = right_axis_angle
-        elif "Tiago" in env.robots[0].name and active_robot.composite_controller.name == "WHOLE_BODY_IK":
-            action_dict = {
-                "right_gripper": np.array([0.0]),
-                "left_gripper": np.array([0.0]),
-                "gripper0_left_grip_site_pos": np.array([-0.4189254, 0.22745755, 1.0597]) + input_action[:3] * 0.05,
-                "gripper0_left_grip_site_axis_angle": np.array([-2.1356914, 2.50323857, -2.45929076]),
-                "gripper0_right_grip_site_pos": np.array([-0.41931295, -0.22706004, 1.0566]),
-                "gripper0_right_grip_site_axis_angle": np.array([-1.26839518, 1.15421975, 0.99332174]),
-            }
-        else:
-            arm_actions = input_action[:6]
-            action_dict[arm] = arm_actions
-            if hasattr(active_robot, "base"):
-                base_action = input_action[-5:-2]
-                action_dict[active_robot.base] = base_action
-                action_dict["base_mode"] = input_action[-1]
+        arm_actions = input_action[:6]
+        action_dict[arm] = arm_actions
+        if hasattr(active_robot, "base"):
+            base_action = input_action[-5:-2]
+            action_dict[active_robot.base] = base_action
+            action_dict["base_mode"] = input_action[-1]
 
         if arm_using_gripper:
             action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
@@ -354,7 +283,6 @@ if __name__ == "__main__":
     env = DataCollectionWrapper(env, tmp_directory)
 
     # initialize device
-    use_mocap = False
     if args.device == "keyboard":
         from robosuite.devices import Keyboard
 
@@ -364,11 +292,8 @@ if __name__ == "__main__":
 
         device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     elif args.device == "mocap":
-        from robosuite.devices import Keyboard
-
-        device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-        use_mocap = True
         assert args.renderer == "mjviewer", "Mocap is only supported with the mjviewer renderer"
+        raise NotImplementedError
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
@@ -379,5 +304,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config, use_mocap=use_mocap)
+        collect_human_trajectory(env, device, args.arm, args.config)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
