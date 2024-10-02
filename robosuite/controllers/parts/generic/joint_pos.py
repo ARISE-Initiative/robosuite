@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 import numpy as np
 
@@ -104,7 +104,7 @@ class JointPositionController(Controller):
         lite_physics=False,
         qpos_limits=None,
         interpolator=None,
-        use_delta_input: bool = True,
+        input_type: Literal["delta", "absolute"] = "delta",
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -167,7 +167,10 @@ class JointPositionController(Controller):
         # interpolator
         self.interpolator = interpolator
 
-        self.use_delta_input = use_delta_input
+        self.input_type = input_type
+        assert self.input_type in ["delta", "absolute"], f"Input type must be delta or absolute, got: {self.input_type}"
+        if self.input_type == "absolute":
+            assert self.impedance_mode == "fixed", "Absolute input type is only supported for fixed impedance mode."
 
         # initialize
         self.goal_qpos = None
@@ -197,7 +200,7 @@ class JointPositionController(Controller):
         # Update state
         self.update()
 
-        if self.use_delta_input:
+        if self.input_type == "delta":
             # Parse action based on the impedance mode, and update kp / kd as necessary
             jnt_dim = len(self.qpos_index)
             if self.impedance_mode == "variable":
@@ -222,7 +225,7 @@ class JointPositionController(Controller):
             self.goal_qpos = set_goal_position(
                 scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
             )
-        else:
+        elif self.input_type == "absolute":
             self.goal_qpos = action
 
         if self.interpolator is not None:
