@@ -10,20 +10,15 @@ from robosuite.controllers import load_composite_controller_config
 from robosuite.robots import ROBOT_CLASS_MAPPING
 
 
-@pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
-def test_basic_controller_predefined_robots(robot):
-    """
-    Tests the basic controller with all predefined robots
-    (i.e., ALL_ROBOTS)
-    """
-    controller_config = load_composite_controller_config(
-        controller="BASIC",
-        robot=robot,
-    )
+def create_and_test_env(
+    env: str,
+    robots: Union[str, List[str]],
+    controller_config: dict,
+):
 
     config = {
-        "env_name": "Lift",
-        "robots": robot,
+        "env_name": env,
+        "robots": robots,
         "controller_configs": controller_config,
     }
 
@@ -46,3 +41,18 @@ def test_basic_controller_predefined_robots(robot):
         obs, reward, done, _ = env.step(action)
 
     env.close()
+
+
+@pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
+def test_basic_controller_predefined_robots(robot):
+    """
+    Tests the basic controller with all predefined robots
+    (i.e., ALL_ROBOTS)
+    """
+
+    controller_config = load_composite_controller_config(
+        controller="BASIC",
+        robot=robot,
+    )
+
+    create_and_test_env(env="Lift", robots=robot, controller_config=controller_config)
