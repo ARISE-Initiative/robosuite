@@ -42,7 +42,7 @@
                 "ramp_ratio": 0.2,
                 "gripper": {
                     "type": "GRIP"
-                },
+                }
             },
             "left": {
                 "type" : "JOINT_POSITION",
