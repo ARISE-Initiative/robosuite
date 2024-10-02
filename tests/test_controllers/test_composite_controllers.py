@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Dict
 import numpy as np
 import pytest
 import robosuite as suite
@@ -9,7 +9,7 @@ from robosuite.robots import ROBOT_CLASS_MAPPING
 def create_and_test_env(
     env: str,
     robots: Union[str, List[str]],
-    controller_config: dict,
+    controller_config: Dict,
 ):
 
     config = {
@@ -29,13 +29,15 @@ def create_and_test_env(
     )
     env.reset()
     low, high = env.action_spec
+    low = np.clip(low, -1, 1)
+    high = np.clip(high, -1, 1)
+
     # Runs a few steps of the simulation as a sanity check
     for i in range(10):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
 
     env.close()
-
 
 @pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
 def test_basic_controller_predefined_robots(robot):
