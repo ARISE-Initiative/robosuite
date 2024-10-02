@@ -22,7 +22,7 @@
         "ik_max_dq_torso": 0.2,
         "ik_input_action_repr": "absolute",
         "ik_input_rotation_repr": "axis_angle",
-        "ik_debug": true
+        "ik_debug": false
     },
     "body_parts_controller_configs": {
         "arms": {

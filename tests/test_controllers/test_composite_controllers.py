@@ -40,14 +40,15 @@ def create_and_test_env(
     env.close()
 
 @pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
-def test_basic_controller_predefined_robots(robot):
+@pytest.mark.parametrize("controller", ["BASIC", "WHOLE_BODY_IK"])
+def test_basic_controller_predefined_robots(robot, controller):
     """
     Tests the basic controller with all predefined robots
-    (i.e., ALL_ROBOTS)
+    (i.e., ALL_ROBOTS) and controller types.
     """
 
     controller_config = load_composite_controller_config(
-        controller="BASIC",
+        controller=controller,
         robot=robot,
     )
 

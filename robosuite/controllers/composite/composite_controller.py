@@ -421,7 +421,6 @@ class WholeBodyIK(WholeBody):
                 ROBOSUITE_DEFAULT_LOGGER.warning(f"Reference name '{ref_name}' specified in configuration"
                 " does not exist in the mujoco model. Removing ...")
 
-        print("valid_ref_names: ", valid_ref_names)
         # Update the configuration with only the valid reference names
         self.composite_controller_specific_config["ref_name"] = valid_ref_names
 
