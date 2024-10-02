@@ -109,18 +109,18 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                 base_action = input_action[-5:-2]
                 torso_action = input_action[-2:-1]
 
-            right_action = [0.0] * 5
-            right_action[0] = 0.0
+                right_action = [0.0] * 5
+                right_action[0] = 0.0
 
-            action_dict.update(
-                {
-                    arm: arm_actions,
-                    active_robot.base: base_action,
-                    # active_robot.head: base_action,
-                    # active_robot.torso: base_action
-                    # active_robot.torso: torso_action
-                }
-            )
+                action_dict.update(
+                    {
+                        arm: arm_actions,
+                        active_robot.base: base_action,
+                        # active_robot.head: base_action,
+                        # active_robot.torso: base_action
+                        # active_robot.torso: torso_action
+                    }
+                )
             if arm_using_gripper:
                 action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
                 prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
@@ -271,18 +271,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
-    parser.add_argument(
-        "--composite-controller",
-        type=str,
-        default=None,
-        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
-    )
-    parser.add_argument(
-        "--custom-controller-config",
-        type=str,
-        default=None,
-        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
-    )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
@@ -295,16 +283,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    composite_controller_config = load_composite_controller_config(
-        custom_fpath=args.custom_controller_config, default_controller=args.composite_controller, robot=args.robots[0]
-    )
+    composite_controller_config = load_composite_controller_config(controller=args.controller, robot=args.robots[0])
 
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
-        # "controller_configs": controller_config,
-        "composite_controller_configs": composite_controller_config,
+        "controller_configs": composite_controller_config,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
