@@ -219,21 +219,25 @@ def input2action(
     # populate delta actions for the arms
     for arm in robot.arms:
         ac_dict[f"{arm}_delta"] = np.zeros(6)
+        ac_dict[f"{arm}_abs"] = robot.part_controllers[arm].delta_to_abs_action(np.zeros(6))
         ac_dict[f"{arm}_gripper"] = np.zeros(robot.gripper[arm].dof)
 
     if robot.is_mobile:
         base_mode = bool(state["base_mode"])
         if base_mode is True:
-            arm_ac = np.zeros(6)
+            arm_delta = np.zeros(6)
             base_ac = np.array([dpos[0], dpos[1], drotation[2]])
             torso_ac = np.array([dpos[2]])
         else:
-            arm_ac = np.concatenate([dpos, drotation])
+            arm_delta = np.concatenate([dpos, drotation])
             base_ac = np.zeros(3)
             torso_ac = np.zeros(1)
 
+        controller = robot.part_controllers[active_arm]
+
         # populate action dict items
-        ac_dict[f"{active_arm}_delta"] = arm_ac
+        ac_dict[f"{active_arm}_delta"] = arm_delta
+        ac_dict[f"{active_arm}_abs"] = robot.part_controllers[active_arm].delta_to_abs_action(arm_delta)
         ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
         ac_dict["base"] = base_ac
         ac_dict["torso"] = torso_ac
@@ -245,6 +249,7 @@ def input2action(
 
     # clip actions between -1 and 1
     for (k, v) in ac_dict.items():
-        ac_dict[k] = np.clip(v, -1, 1)
+        if "abs" not in k:
+            ac_dict[k] = np.clip(v, -1, 1)
 
     return ac_dict

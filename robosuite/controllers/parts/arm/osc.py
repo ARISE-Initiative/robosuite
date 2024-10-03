@@ -213,7 +213,7 @@ class OperationalSpaceController(Controller):
         self.origin_pos = None
         self.origin_ori = None
 
-    def set_goal(self, action, set_pos=None, set_ori=None, update_wrt_origin=None):
+    def set_goal(self, action, update_wrt_origin=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
         delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
@@ -227,8 +227,6 @@ class OperationalSpaceController(Controller):
 
         Args:
             action (Iterable): Desired relative joint position goal state
-            set_pos (Iterable): If set, overrides @action and sets the desired absolute eef position goal state
-            set_ori (Iterable): IF set, overrides @action and sets the desired absolute eef orientation goal state
         """
         # Update state
         self.update()
@@ -245,38 +243,17 @@ class OperationalSpaceController(Controller):
         else:  # This is case "fixed"
             delta = action
 
-        # If we're using deltas, interpret actions as such
-        if self.use_delta:
-            if delta is not None:
-                scaled_delta = self.scale_action(delta)
-                if not self.use_ori and set_ori is None:
-                    # Set default control for ori since user isn't actively controlling ori
-                    set_ori = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
-            else:
-                scaled_delta = []
-        # Else, interpret actions as absolute values
-        else:
-            if set_pos is None:
-                set_pos = delta[:3]
-            # Set default control for ori if we're only using position control
-            if set_ori is None:
-                set_ori = (
-                    T.quat2mat(T.axisangle2quat(delta[3:6]))
-                    if self.use_ori
-                    else np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
-                )
-            # No scaling of values since these are absolute values
-            scaled_delta = delta
-
         if update_wrt_origin is not None:
             self.update_wrt_origin = update_wrt_origin
         else:
             self.update_wrt_origin = np.all(action == 0)
 
-        # TODO: refactor logic for delta vs non-delta based actions
+        # If we're using deltas, interpret actions as such
         if self.use_delta:
-            self.goal_origin_to_eef_ori = self.compute_goal_orientation(scaled_delta[3:], set_ori=set_ori)
-            self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[:3], set_pos=set_pos)
+            scaled_delta = self.scale_action(delta)
+            self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[0:3])
+            self.goal_origin_to_eef_ori = self.compute_goal_orientation(scaled_delta[3:6])
+        # Else, interpret actions as absolute values
         else:
             self.goal_origin_to_eef_pos = action[0:3]
             self.goal_origin_to_eef_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
@@ -329,7 +306,7 @@ class OperationalSpaceController(Controller):
         origin_pose_inv = T.pose_inv(origin_pose)
         return T.pose_in_A_to_pose_in_B(ee_pose, origin_pose_inv)
 
-    def compute_goal_orientation(self, delta, set_ori=None):
+    def compute_goal_orientation(self, delta):
         """
         Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
         @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
@@ -350,20 +327,15 @@ class OperationalSpaceController(Controller):
         if self.goal_origin_to_eef_ori is None:
             self.goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
 
-        # directly set orientation
-        if set_ori is not None:
-            raise NotImplementedError
-        # otherwise use delta to set goal orientation
-        else:
-            # convert axis-angle value to rotation matrix
-            quat_error = T.axisangle2quat(delta)
-            rotation_mat_error = T.quat2mat(quat_error)
+        # convert axis-angle value to rotation matrix
+        quat_error = T.axisangle2quat(delta)
+        rotation_mat_error = T.quat2mat(quat_error)
 
-            if self.update_wrt_origin:
-                goal_origin_to_eef_ori = np.dot(rotation_mat_error, self.goal_origin_to_eef_ori)
-            else:
-                curr_goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
-                goal_origin_to_eef_ori = np.dot(rotation_mat_error, curr_goal_origin_to_eef_ori)
+        if self.update_wrt_origin:
+            goal_origin_to_eef_ori = np.dot(rotation_mat_error, self.goal_origin_to_eef_ori)
+        else:
+            curr_goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
+            goal_origin_to_eef_ori = np.dot(rotation_mat_error, curr_goal_origin_to_eef_ori)
 
         # check for orientation limits
         if np.array(self.orientation_limits).any():
@@ -479,6 +451,8 @@ class OperationalSpaceController(Controller):
         self.goal_ori = np.array(self.ref_ori_mat)
         self.goal_pos = np.array(self.ref_pos)
 
+        self.update_wrt_origin = False
+
         # Also reset interpolators if required
 
         if self.interpolator_pos is not None:
@@ -516,6 +490,17 @@ class OperationalSpaceController(Controller):
         else:  # This is case "fixed"
             low, high = self.input_min, self.input_max
         return low, high
+
+    def delta_to_abs_action(self, delta_ac):
+        """
+        helper function that converts delta action into absolute action
+        """
+        arm_delta_scaled = self.scale_action(delta_ac)
+        abs_pos = self.compute_goal_pos(arm_delta_scaled[0:3])
+        abs_ori = self.compute_goal_orientation(arm_delta_scaled[3:6])
+        abs_rot = T.quat2axisangle(T.mat2quat(abs_ori))
+        abs_ac = np.concatenate([abs_pos, abs_rot])
+        return abs_ac
 
     @property
     def name(self):
