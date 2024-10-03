@@ -305,6 +305,10 @@ class JointPositionController(Controller):
             low, high = self.input_min, self.input_max
         return low, high
 
+    def delta_to_abs_action(self, delta_ac):
+        # no op function for now
+        return np.zeros(delta_ac.shape)
+
     @property
     def name(self):
         return "JOINT_POSITION"

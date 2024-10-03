@@ -2,6 +2,8 @@ import abc  # for abstract base class definitions
 
 import numpy as np
 
+import robosuite.utils.transform_utils as T
+
 
 class Device(metaclass=abc.ABCMeta):
     """
@@ -28,6 +30,8 @@ class Device(metaclass=abc.ABCMeta):
         self.active_arm_indices = [0] * len(self.all_robot_arms)
         self.active_robot = 0
         self.base_modes = [False] * len(self.all_robot_arms)
+
+        self._prev_target = {arm: None for arm in self.all_robot_arms[self.active_robot]}
 
     @property
     def active_arm(self):
@@ -128,9 +132,19 @@ class Device(metaclass=abc.ABCMeta):
         ac_dict = {}
         # populate delta actions for the arms
         for arm in robot.arms:
+            # OSC keys
             ac_dict[f"{arm}_delta"] = np.zeros(6)
             ac_dict[f"{arm}_abs"] = robot.part_controllers[arm].delta_to_abs_action(np.zeros(6))
             ac_dict[f"{arm}_gripper"] = np.zeros(robot.gripper[arm].dof)
+
+            # # mink keys
+            # new_pos, new_ori = self.get_updated_pose_target(
+            #     arm,
+            #     f"gripper0_{arm}_grip_site",
+            #     np.zeros(6),
+            # )
+            # ac_dict[f"gripper0_{arm}_grip_site_pos"] = new_pos
+            # ac_dict[f"gripper0_{arm}_grip_site_axis_angle"] = new_ori
 
         if robot.is_mobile:
             base_mode = bool(state["base_mode"])
@@ -145,12 +159,21 @@ class Device(metaclass=abc.ABCMeta):
 
             controller = robot.part_controllers[active_arm]
 
+            # # mink keys
+            # new_pos, new_ori = self.get_updated_pose_target(
+            #     active_arm,
+            #     f"gripper0_{active_arm}_grip_site",
+            #     arm_delta,
+            # )
+            # ac_dict[f"gripper0_{active_arm}_grip_site_pos"] = new_pos
+            # ac_dict[f"gripper0_{active_arm}_grip_site_axis_angle"] = new_ori
+
             # populate action dict items
             ac_dict[f"{active_arm}_delta"] = arm_delta
             ac_dict[f"{active_arm}_abs"] = robot.part_controllers[active_arm].delta_to_abs_action(arm_delta)
             ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
             ac_dict["base"] = base_ac
-            ac_dict["torso"] = torso_ac
+            # ac_dict["torso"] = torso_ac
             ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
         else:
             # Create action based on action space of individual robot
@@ -163,3 +186,26 @@ class Device(metaclass=abc.ABCMeta):
                 ac_dict[k] = np.clip(v, -1, 1)
 
         return ac_dict
+
+    def get_updated_pose_target(self, arm, site_name, delta, target_based_update=True):
+        if target_based_update is True and self._prev_target[arm] is not None:
+            curr_pos = self._prev_target[arm][0:3].copy()
+            curr_ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
+        else:
+            curr_pos = self.env.sim.data.get_site_xpos(site_name).copy()
+            curr_ori = self.env.sim.data.get_site_xmat(site_name).copy()
+
+        # self.env.sim.model.site_rgba[self.env.sim.model.site_name2id(site_name)] = [1.0, 0.0, 0.0, 1.0]
+
+        new_pos = curr_pos + delta[0:3] * 0.05
+        delta_ori = T.quat2mat(T.axisangle2quat(delta[3:6] * 0.01))
+        new_ori = np.dot(delta_ori, curr_ori)
+        new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
+        # new_axisangle = T.quat2axisangle(T.mat2quat(curr_ori))
+
+        self._prev_target[arm] = np.concatenate([new_pos, new_axisangle])
+
+        if arm == "right":
+            print(new_axisangle)
+
+        return new_pos, new_axisangle
