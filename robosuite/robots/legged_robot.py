@@ -10,8 +10,6 @@ import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_robot import MobileRobot
-from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
-from robosuite.utils.observables import sensor
 
 
 class LeggedRobot(MobileRobot):
@@ -110,7 +108,6 @@ class LeggedRobot(MobileRobot):
 
         self._load_head_controller()
         self._load_torso_controller()
-        self._update_part_controller_config()
 
         self._postprocess_part_controller_config()
         self.composite_controller.load_controller_config(
