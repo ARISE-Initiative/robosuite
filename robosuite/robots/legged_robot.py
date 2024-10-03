@@ -112,10 +112,7 @@ class LeggedRobot(MobileRobot):
         self._load_torso_controller()
         self._update_part_controller_config()
 
-<<<<<<< HEAD
-=======
         self._postprocess_part_controller_config()
->>>>>>> 9863a7317f2f25bc2d4f49cf760dfa6225df5f15
         self.composite_controller.load_controller_config(
             self.part_controller_config,
             self.composite_controller_config.get("composite_controller_specific_configs", {}),
