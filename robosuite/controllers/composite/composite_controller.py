@@ -1,7 +1,7 @@
 import json
 import re
 from collections import OrderedDict
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 
@@ -61,6 +61,7 @@ class CompositeController:
         self.part_controllers.clear()
         self._action_split_indexes.clear()
         self._init_controllers()
+        self._validate_composite_controller_specific_config()
         self.setup_action_split_idx()
 
     def _init_controllers(self):
@@ -71,6 +72,11 @@ class CompositeController:
                 controller_type=self.part_controller_config[part_name]["type"],
                 controller_params=controller_params,
             )
+
+    def _validate_composite_controller_specific_config(self):
+        """Some aspects of composite controller specific configs, if they exist,
+        may only be verified once the part controller are initialized."""
+        pass
 
     def setup_action_split_idx(self):
         previous_idx = 0
@@ -224,6 +230,8 @@ class WholeBody(CompositeController):
                 controller_type=self.part_controller_config[part_name]["type"],
                 controller_params=controller_params,
             )
+        # for whole body composite controller, validate before init_joint_action_policy
+        self._validate_composite_controller_specific_config()
         self._init_joint_action_policy()
 
     def _init_joint_action_policy(self):
@@ -246,13 +254,17 @@ class WholeBody(CompositeController):
         previous_idx = 0
         last_idx = 0
         # add joint_action_policy related body parts' action split index first
-        for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
-            last_idx += self.part_controllers[part_name].control_dim
+        for part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
+            try:
+                last_idx += self.part_controllers[part_name].control_dim
+            except KeyError as e:
+                import ipdb;ipdb.set_trace()
+                raise KeyError(f"Part name '{part_name}' not found in part_controllers: {e}")
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
         for part_name, controller in self.part_controllers.items():
-            if part_name not in self.composite_controller_specific_config["ik_target_part_names"]:
+            if part_name not in self.composite_controller_specific_config["ik_controlled_part_names"]:
                 if part_name in self.grippers.keys():
                     last_idx += self.grippers[part_name].dof
                 else:
@@ -275,7 +287,7 @@ class WholeBody(CompositeController):
         # prev and last index correspond to the IK solver indexes' last index
         previous_idx = last_idx = list(self._whole_body_controller_action_split_indexes.values())[-1][-1]
         for part_name, controller in self.part_controllers.items():
-            if part_name in self.composite_controller_specific_config["ik_target_part_names"]:
+            if part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
                 continue
             if part_name in self.grippers.keys():
                 last_idx += self.grippers[part_name].dof
@@ -314,7 +326,7 @@ class WholeBody(CompositeController):
         low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         for part_name, controller in self.part_controllers.items():
             # Exclude terms that the IK solver handles
-            if part_name in self.composite_controller_specific_config["ik_target_part_names"]:
+            if part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
                 continue
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():
@@ -381,10 +393,45 @@ class WholeBodyIK(WholeBody):
     ):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
+    def _validate_composite_controller_specific_config(self) -> None:
+        # Check that all ik_controlled_part_names exist in part_controllers
+        original_ik_controlled_parts = self.composite_controller_specific_config["ik_controlled_part_names"]
+        self.valid_ik_controlled_parts = []
+        valid_ref_names = []
+
+        assert "ref_name" in self.composite_controller_specific_config, \
+            "The 'ref_name' key is missing from composite_controller_specific_config."
+
+        for part in original_ik_controlled_parts:
+            if part in self.part_controllers:
+                self.valid_ik_controlled_parts.append(part)
+            else:
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"Part '{part}' specified in 'ik_controlled_part_names' "
+                    "does not exist in part_controllers. Removing ...")
+
+        # Update the configuration with only the valid parts
+        self.composite_controller_specific_config["ik_controlled_part_names"] = self.valid_ik_controlled_parts
+
+        # Loop through ref_names and validate against mujoco model
+        original_ref_names = self.composite_controller_specific_config.get("ref_name", [])
+        for ref_name in original_ref_names:
+            if ref_name in self.sim.model.site_names:  # Check if the site exists in the mujoco model
+                valid_ref_names.append(ref_name)
+            else:
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"Reference name '{ref_name}' specified in configuration"
+                " does not exist in the mujoco model. Removing ...")
+
+        # Update the configuration with only the valid reference names
+        self.composite_controller_specific_config["ref_name"] = valid_ref_names
+
     def _init_joint_action_policy(self):
         joint_names: str = []
-        for part_name in self.composite_controller_specific_config["ik_target_part_names"]:
-            joint_names += self.part_controllers[part_name].joint_names
+        for part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
+            if part_name in self.part_controllers:
+                joint_names += self.part_controllers[part_name].joint_names
+            else:
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"{part_name} is not a valid part name in part_controllers."
+                                                  " Skipping this part for IK control.")
 
         # Compute nullspace gains, Kn.
         Kn = get_nullspace_gains(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
@@ -405,5 +452,5 @@ class WholeBodyIK(WholeBody):
             max_dq_torso=self.composite_controller_specific_config.get("ik_max_dq_torso", 0.2),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
             input_action_repr=self.composite_controller_specific_config.get("ik_input_action_repr", "axis_angle"),
-            debug=self.composite_controller_specific_config.get("ik_debug", False),
+            debug=self.composite_controller_specific_config.get("verbose", False),
         )
