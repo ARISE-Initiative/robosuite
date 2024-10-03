@@ -59,8 +59,8 @@ class WheeledRobot(MobileRobot):
 
         self._load_head_controller()
         self._load_torso_controller()
-        self._update_part_controller_config()
 
+        self._postprocess_part_controller_config()
         self.composite_controller.load_controller_config(
             self.part_controller_config,
             self.composite_controller_config.get("composite_controller_specific_configs", {}),

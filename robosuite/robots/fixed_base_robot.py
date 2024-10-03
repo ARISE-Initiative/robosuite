@@ -8,6 +8,7 @@ from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.observables import sensor
 
 
@@ -54,8 +55,8 @@ class FixedBaseRobot(Robot):
         )
 
         self._load_arm_controllers()
-        self._update_part_controller_config()
 
+        self._postprocess_part_controller_config()
         self.composite_controller.load_controller_config(
             self.part_controller_config,
             self.composite_controller_config.get("composite_controller_specific_configs", {}),

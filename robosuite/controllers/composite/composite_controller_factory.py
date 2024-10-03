@@ -1,8 +1,9 @@
 import json
 import pathlib
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 
 import robosuite
+from robosuite.controllers.composite.composite_controller import COMPOSITE_CONTROLLERS_DICT
 from robosuite.controllers.parts.controller_factory import load_part_controller_config
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
@@ -21,7 +22,9 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
     Utility function that loads the desired composite controller and returns the loaded configuration as a dict
 
     Args:
-        controller: Name or path of the controller to load. If None, loads the default robot controller.
+        controller: Name or path of the controller to load. 
+            If None, robot must be specified and we load the robot's default controller in controllers/config/robots/.
+            If specified, must be a valid controller name or path to a controller config file.
         robot: Name of the robot to load the controller for.
 
     Returns:
@@ -32,7 +35,8 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
     """
     # Determine the controller file path
     if controller is None:
-        # Load default robot controller
+        assert robot is not None, "If controller is None, robot must be specified."
+        # Load robot's controller
         robot_name = _get_robot_name(robot)
         controller_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/robots/default_{robot_name}.json"
     elif isinstance(controller, str):
@@ -40,6 +44,7 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
             # Use the specified path directly
             controller_fpath = controller
         else:
+            assert controller in COMPOSITE_CONTROLLERS_DICT, f"Controller {controller} not found in COMPOSITE_CONTROLLERS_DICT"
             # Load from robosuite/controllers/config/default/composite/
             controller_name = controller.lower()
             controller_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/default/composite/{controller_name}.json"

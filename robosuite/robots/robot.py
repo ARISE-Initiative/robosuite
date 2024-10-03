@@ -139,16 +139,18 @@ class Robot(object):
         """
         raise NotImplementedError
 
-    def _update_part_controller_config(self):
+    def _postprocess_part_controller_config(self):
         """
         Update part_controller_config with values from composite_controller_config for each body part.
+        Remove unused parts that are not in the controller.
+        Called by _load_controller() function
         """
         for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
             if not self.has_part(part_name):
                 ROBOSUITE_DEFAULT_LOGGER.warn(
-                    f'The config has defined for the controller "{part_name}", ' \
-                    'but the robot does not have this component. Skipping, but make sure this is intended.' \
-                    'Removing the controller config for {part_name} from self.part_controller_config.'
+                    f'The config has defined for the controller "{part_name}", '
+                    "but the robot does not have this component. Skipping, but make sure this is intended."
+                    "Removing the controller config for {part_name} from self.part_controller_config."
                 )
                 self.part_controller_config.pop(part_name, None)
                 continue

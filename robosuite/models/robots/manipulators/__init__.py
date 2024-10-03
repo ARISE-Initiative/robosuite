@@ -8,4 +8,4 @@ from .iiwa_robot import IIWA
 from .ur5e_robot import UR5e
 from .bd_arm import BDArm
 from .tiago_robot import Tiago
-from .gr1_robot import GR1, GR1FixedLowerBody, GR1ArmsOnly
+from .gr1_robot import GR1, GR1FixedLowerBody, GR1ArmsOnly, GR1FloatingBody

@@ -2,8 +2,6 @@
 Script to test composite controllers:
 
 $ pytest -s tests/test_controllers/test_composite_controllers.py
-
-Note: this script should be run without the robots from robosuite_models installed, if testing the None controller.
 """
 
 from typing import List, Union, Dict
@@ -14,6 +12,17 @@ from robosuite.controllers import load_composite_controller_config
 from robosuite.robots import ROBOT_CLASS_MAPPING
 import mujoco
 
+
+def is_robosuite_robot(robot: str) -> bool:
+    """
+    robot is robosuite repo robot if can import robot class from robosuite.models.robots
+    """
+    try:
+        module = __import__("robosuite.models.robots", fromlist=[robot])
+        getattr(module, robot)
+        return True
+    except (ImportError, AttributeError):
+        return False
 
 def create_and_test_env(
     env: str,
@@ -61,6 +70,9 @@ def test_basic_controller_predefined_robots(robot, controller):
             "Spot arm xml and meshes were taken from: "
             "https://github.com/google-deepmind/mujoco_menagerie/tree/main/boston_dynamics_spot"
         )
+
+    if controller is None and not is_robosuite_robot(robot):
+        pytest.skip(f"Skipping test for non-robosuite robot {robot} with no specified controller.")
 
     # skip currently problematic robots
     if robot == "GR1":
