@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 import numpy as np
 
@@ -104,6 +104,7 @@ class JointPositionController(Controller):
         lite_physics=False,
         qpos_limits=None,
         interpolator=None,
+        input_type: Literal["delta", "absolute"] = "delta",
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -166,6 +167,11 @@ class JointPositionController(Controller):
         # interpolator
         self.interpolator = interpolator
 
+        self.input_type = input_type
+        assert self.input_type in ["delta", "absolute"], f"Input type must be delta or absolute, got: {self.input_type}"
+        if self.input_type == "absolute":
+            assert self.impedance_mode == "fixed", "Absolute input type is only supported for fixed impedance mode."
+
         # initialize
         self.goal_qpos = None
 
@@ -194,38 +200,32 @@ class JointPositionController(Controller):
         # Update state
         self.update()
 
-        # Parse action based on the impedance mode, and update kp / kd as necessary
-        jnt_dim = len(self.qpos_index)
-        if self.impedance_mode == "variable":
-            damping_ratio, kp, delta = action[:jnt_dim], action[jnt_dim : 2 * jnt_dim], action[2 * jnt_dim :]
-            self.kp = np.clip(kp, self.kp_min, self.kp_max)
-            self.kd = 2 * np.sqrt(self.kp) * np.clip(damping_ratio, self.damping_ratio_min, self.damping_ratio_max)
-        elif self.impedance_mode == "variable_kp":
-            kp, delta = action[:jnt_dim], action[jnt_dim:]
-            self.kp = np.clip(kp, self.kp_min, self.kp_max)
-            self.kd = 2 * np.sqrt(self.kp)  # critically damped
-        else:  # This is case "fixed"
-            delta = action
+        if self.input_type == "delta":
+            # Parse action based on the impedance mode, and update kp / kd as necessary
+            jnt_dim = len(self.qpos_index)
+            if self.impedance_mode == "variable":
+                damping_ratio, kp, delta = action[:jnt_dim], action[jnt_dim : 2 * jnt_dim], action[2 * jnt_dim :]
+                self.kp = np.clip(kp, self.kp_min, self.kp_max)
+                self.kd = 2 * np.sqrt(self.kp) * np.clip(damping_ratio, self.damping_ratio_min, self.damping_ratio_max)
+            elif self.impedance_mode == "variable_kp":
+                kp, delta = action[:jnt_dim], action[jnt_dim:]
+                self.kp = np.clip(kp, self.kp_min, self.kp_max)
+                self.kd = 2 * np.sqrt(self.kp)  # critically damped
+            else:  # This is case "fixed"
+                delta = action
 
-        # Check to make sure delta is size self.joint_dim
-        assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
+            # Check to make sure delta is size self.joint_dim
+            assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
 
-        # scale delta appears to mess up action coming from subclassed IK controller; commenting out
-        # TODO: Add an option to skip self.scale_action to accommodate the actions from subclassed IK controller. Temporally hard-code the boolean variable here. Need to be fixed before official merging.
-        use_scaled_action = True
-        if delta is not None:
-            if use_scaled_action:
+            if delta is not None:
                 scaled_delta = self.scale_action(delta)
             else:
-                scaled_delta = action
-        else:
-            scaled_delta = None
+                scaled_delta = None
 
-        if use_scaled_action:
             self.goal_qpos = set_goal_position(
                 scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
             )
-        else:
+        elif self.input_type == "absolute":
             self.goal_qpos = action
 
         if self.interpolator is not None:

@@ -71,7 +71,6 @@ def test_basic_controller_predefined_robots(robot, controller):
             "https://github.com/google-deepmind/mujoco_menagerie/tree/main/boston_dynamics_spot"
         )
 
-    # 
     if controller is None and not is_robosuite_robot(robot):
         pytest.skip(f"Skipping test for non-robosuite robot {robot} with no specified controller.")
 

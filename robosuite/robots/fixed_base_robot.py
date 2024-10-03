@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
