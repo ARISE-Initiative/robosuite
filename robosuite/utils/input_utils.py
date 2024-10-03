@@ -197,82 +197,54 @@ def input2action(
 
     # If we're resetting, immediately return None
     if reset:
-        return None, None
+        return None
 
     # Get controller reference
     controller = robot.part_controllers[active_arm]
     gripper_dof = robot.gripper[active_end_effector].dof
 
-    # First process the raw drotation
+    assert controller.name == "OSC_POSE", "only focusing on OSC_POSE for now"
+
+    # process raw device inputs
     drotation = raw_drotation[[1, 0, 2]]
-    if controller.name == "IK_POSE":
-        drotation[2] = -drotation[2]
-
-        # Scale rotation for teleoperation (tuned for IK)
-        drotation *= 10
-        dpos *= 5
-        # relative rotation of desired from current eef orientation
-        # map to quat
-        drotation = T.mat2quat(T.euler2mat(drotation))
-
-        # If we're using a non-forward facing configuration, need to adjust relative position / orientation
-        if env_configuration == "opposed":
-            # Swap x and y for pos and flip x,y signs for ori
-            dpos = dpos[[1, 0, 2]]
-            drotation[0] = -drotation[0]
-            drotation[1] = -drotation[1]
-            if active_arm == "left":
-                # x pos needs to be flipped
-                dpos[0] = -dpos[0]
-            else:
-                # y pos needs to be flipped
-                dpos[1] = -dpos[1]
-
-        # Lastly, map to axis angle form
-        drotation = T.quat2axisangle(drotation)
-
-    elif controller.name == "OSC_POSE" or controller.name == "JOINT_POSITION":
-        # Flip z
-        drotation[2] = -drotation[2]
-        # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
-        drotation = drotation * 1.5 if isinstance(device, Keyboard) else drotation * 50
-        dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
-    elif controller.name == "OSC_POSITION":
-        dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
-    else:
-        # No other controllers currently supported
-        print("Error: Unsupported controller specified -- Robot must have either an IK or OSC-based controller!")
-
+    # Flip z
+    drotation[2] = -drotation[2]
+    # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
+    drotation = drotation * 1.5 if isinstance(device, Keyboard) else drotation * 50
+    dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
     # map 0 to -1 (open) and map 1 to 1 (closed)
     grasp = 1 if grasp else -1
+
+    ac_dict = {}
+    # populate delta actions for the arms
+    for arm in robot.arms:
+        ac_dict[f"{arm}_delta"] = np.zeros(6)
 
     if robot.is_mobile:
         # assert controller.name == "OSC_POSE" or controller.name == "OSC_POSITION", "Mobile robots only currently supported by OSC_POSE controller"
         base_mode = bool(state["base_mode"])
         if base_mode is True:
             arm_ac = np.zeros(6)
-            base_ac = np.array([dpos[0], dpos[1], drotation[2], dpos[2]])
-            mode_ac = np.array([1])
+            base_ac = np.array([dpos[0], dpos[1], drotation[2]])
+            torso_ac = np.array([dpos[2]])
         else:
-            if controller.name == "OSC_POSITION":
-                arm_ac = dpos
-            else:
-                arm_ac = np.concatenate([dpos, drotation])
-            base_ac = np.zeros(4)
-            mode_ac = np.array([-1])
-        gripper_ac = np.array([grasp] * gripper_dof)
-        action = np.concatenate((arm_ac, gripper_ac, base_ac, mode_ac))
-        # clip actions between -1 and 1
-        action = np.clip(action, -1, 1)
-        return action, {"grasp": grasp, "mode": base_mode}
+            arm_ac = np.concatenate([dpos, drotation])
+            base_ac = np.zeros(3)
+            torso_ac = np.zeros(1)
+
+        # populate action dict items
+        ac_dict[f"{arm}_delta"] = arm_ac
+        ac_dict[f"{arm}_gripper"] = np.array([grasp] * gripper_dof)
+        ac_dict["base"] = base_ac
+        ac_dict["torso"] = torso_ac
+        ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
     else:
         # Create action based on action space of individual robot
-        if controller.name == "OSC_POSITION":
-            action = np.concatenate([dpos, [grasp] * gripper_dof])
-        else:
-            action = np.concatenate([dpos, drotation, [grasp] * gripper_dof])
+        ac_dict[f"{arm}_delta"] = np.concatenate([dpos, drotation])
+        ac_dict[f"{arm}_gripper"] = np.array([grasp] * gripper_dof)
 
-        # clip actions between -1 and 1
-        action = np.clip(action, -1, 1)
-        # Return the action and grasp
-        return action, grasp
+    # clip actions between -1 and 1
+    for (k, v) in ac_dict.items():
+        ac_dict[k] = np.clip(v, -1, 1)
+
+    return ac_dict
