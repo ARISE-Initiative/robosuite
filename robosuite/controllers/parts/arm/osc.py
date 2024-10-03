@@ -92,7 +92,7 @@ class OperationalSpaceController(Controller):
 
         control_ori (bool): Whether inputted actions will control both pos and ori or exclusively pos
 
-        control_delta (bool): Whether to control the robot using delta or absolute commands (where absolute commands
+        input_type (str): Whether to control the robot using delta or absolute commands (where absolute commands
             are taken in the world coordinate frame)
 
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
@@ -128,7 +128,7 @@ class OperationalSpaceController(Controller):
         interpolator_pos=None,
         interpolator_ori=None,
         control_ori=True,
-        control_delta=True,
+        input_type="delta",
         uncouple_pos_ori=True,
         lite_physics=False,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
@@ -146,7 +146,8 @@ class OperationalSpaceController(Controller):
         # Determine whether this is pos ori or just pos
         self.use_ori = control_ori
         # Determine whether we want to use delta or absolute values as inputs
-        self.use_delta = control_delta
+        self.input_type = input_type
+        assert self.input_type in ["delta", "absolute"], f"Input type must be delta or absolute, got: {self.input_type}"
 
         # Control dimension
         self.control_dim = 6 if self.use_ori else 3
@@ -249,14 +250,16 @@ class OperationalSpaceController(Controller):
             self.update_wrt_origin = np.all(action == 0)
 
         # If we're using deltas, interpret actions as such
-        if self.use_delta:
+        if self.input_type == "delta":
             scaled_delta = self.scale_action(delta)
             self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[0:3])
             self.goal_origin_to_eef_ori = self.compute_goal_orientation(scaled_delta[3:6])
         # Else, interpret actions as absolute values
-        else:
+        elif self.input_type == "absolute":
             self.goal_origin_to_eef_pos = action[0:3]
             self.goal_origin_to_eef_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
+        else:
+            raise ValueError(f"Unsupport input_type {self.input_type}")
 
         if self.interpolator_pos is not None:
             self.interpolator_pos.set_goal(self.goal_pos)

@@ -72,10 +72,13 @@ def collect_human_trajectory(env, device, arm, env_configuration):
 
         # set arm actions
         for arm in active_robot.arms:
-            if active_robot.part_controllers[arm].use_delta:
+            controller_input_type = active_robot.part_controllers[arm].input_type
+            if controller_input_type == "delta":
                 action_dict[arm] = input_ac_dict[f"{arm}_delta"]
-            else:
+            elif controller_input_type == "absolute":
                 action_dict[arm] = input_ac_dict[f"{arm}_abs"]
+            else:
+                raise ValueError
 
         # base actions
         if hasattr(active_robot, "base"):
