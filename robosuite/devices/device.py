@@ -1,5 +1,7 @@
 import abc  # for abstract base class definitions
 
+import numpy as np
+
 
 class Device(metaclass=abc.ABCMeta):
     """
@@ -59,3 +61,105 @@ class Device(metaclass=abc.ABCMeta):
     def get_controller_state(self):
         """Returns the current state of the device, a dictionary of pos, orn, grasp, and reset."""
         raise NotImplementedError
+
+    def _prescale_raw_actions(self, dpos, drotation):
+        raise NotImplementedError
+
+    def input2action(self, mirror_actions=False):
+        """
+        Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
+
+        If a reset is triggered from the device, immediately returns None. Else, returns the appropriate action
+
+        Args:
+            mirror_actions (bool): actions corresponding to viewing robot from behind.
+                first axis: left/right. second axis: back/forward. third axis: down/up.
+
+        Returns:
+            2-tuple:
+
+                - (None or np.array): Action interpreted from @device including any gripper action(s). None if we get a
+                    reset signal from the device
+                - (None or int): 1 if desired close, -1 if desired open gripper state. None if get a reset signal from the
+                    device
+
+        """
+        robot = self.env.robots[self.active_robot]
+        active_arm = self.active_arm
+
+        state = self.get_controller_state()
+        # Note: Devices output rotation with x and z flipped to account for robots starting with gripper facing down
+        #       Also note that the outputted rotation is an absolute rotation, while outputted dpos is delta pos
+        #       Raw delta rotations from neutral user input is captured in raw_drotation (roll, pitch, yaw)
+        dpos, rotation, raw_drotation, grasp, reset = (
+            state["dpos"],
+            state["rotation"],
+            state["raw_drotation"],
+            state["grasp"],
+            state["reset"],
+        )
+
+        if mirror_actions:
+            dpos[0], dpos[1] = dpos[1], dpos[0]
+            raw_drotation[0], raw_drotation[1] = raw_drotation[1], raw_drotation[0]
+
+            dpos[1] *= -1
+            raw_drotation[0] *= -1
+
+        # If we're resetting, immediately return None
+        if reset:
+            return None
+
+        # Get controller reference
+        controller = robot.part_controllers[active_arm]
+        gripper_dof = robot.gripper[active_arm].dof
+
+        assert controller.name == "OSC_POSE", "only focusing on OSC_POSE for now"
+
+        # process raw device inputs
+        drotation = raw_drotation[[1, 0, 2]]
+        # Flip z
+        drotation[2] = -drotation[2]
+        # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
+        dpos, drotation = self._prescale_raw_actions(dpos, drotation)
+        # map 0 to -1 (open) and map 1 to 1 (closed)
+        grasp = 1 if grasp else -1
+
+        ac_dict = {}
+        # populate delta actions for the arms
+        for arm in robot.arms:
+            ac_dict[f"{arm}_delta"] = np.zeros(6)
+            ac_dict[f"{arm}_abs"] = robot.part_controllers[arm].delta_to_abs_action(np.zeros(6))
+            ac_dict[f"{arm}_gripper"] = np.zeros(robot.gripper[arm].dof)
+
+        if robot.is_mobile:
+            base_mode = bool(state["base_mode"])
+            if base_mode is True:
+                arm_delta = np.zeros(6)
+                base_ac = np.array([dpos[0], dpos[1], drotation[2]])
+                torso_ac = np.array([dpos[2]])
+            else:
+                arm_delta = np.concatenate([dpos, drotation])
+                base_ac = np.zeros(3)
+                torso_ac = np.zeros(1)
+
+            controller = robot.part_controllers[active_arm]
+
+            # populate action dict items
+            ac_dict[f"{active_arm}_delta"] = arm_delta
+            ac_dict[f"{active_arm}_abs"] = robot.part_controllers[active_arm].delta_to_abs_action(arm_delta)
+            ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
+            ac_dict["base"] = base_ac
+            ac_dict["torso"] = torso_ac
+            ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
+        else:
+            # Create action based on action space of individual robot
+            ac_dict[f"{active_arm}_delta"] = np.concatenate([dpos, drotation])
+            ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
+
+        # clip actions between -1 and 1
+        for (k, v) in ac_dict.items():
+            if "abs" not in k:
+                ac_dict[k] = np.clip(v, -1, 1)
+
+        return ac_dict

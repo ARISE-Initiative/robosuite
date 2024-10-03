@@ -20,11 +20,10 @@ import robosuite as suite
 import robosuite.macros as macros
 from robosuite.controllers import load_composite_controller_config
 from robosuite.utils import transform_utils
-from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
+def collect_human_trajectory(env, device, arm, env_configuration):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -63,13 +62,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         active_arm = device.active_arm
 
         # Get the newest action
-        input_ac_dict = input2action(
-            device=device,
-            robot=active_robot,
-            active_arm=active_arm,
-            active_end_effector=end_effector,
-            env_configuration=env_configuration,
-        )
+        input_ac_dict = device.input2action()
 
         # If action is none, then this a reset so we should break
         if input_ac_dict is None:

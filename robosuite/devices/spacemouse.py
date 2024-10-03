@@ -352,6 +352,12 @@ class SpaceMouse(Device):
         except AttributeError as e:
             pass
 
+    def _prescale_raw_actions(self, dpos, drotation):
+        drotation = drotation * 50
+        dpos = dpos * 125
+
+        return dpos, drotation
+
 
 if __name__ == "__main__":
 
