@@ -60,11 +60,8 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
     while True:
         # Set active robot
         active_robot = env.robots[device.active_robot]
-        prev_gripper_actions = all_prev_gripper_actions[device.active_robot]
-
         arm = device.active_arm
-        # Check if we have gripper actions for the active arm
-        arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
+
         # Get the newest action
         input_ac_dict = input2action(
             device=device,
@@ -79,19 +76,25 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             break
 
         action_dict = {}
-        arm_actions = input_ac_dict[f"{arm}_delta"]
-        action_dict[arm] = arm_actions
+
+        # set arm actions
+        action_dict[arm] = input_ac_dict[f"{arm}_delta"]
+
+        # base actions
         if hasattr(active_robot, "base"):
             base_action = input_ac_dict["base"]
             action_dict[active_robot.base] = base_action
             action_dict["base_mode"] = input_ac_dict["base_mode"]
 
+        # torso actions
+        # TODO: need to uncomment this for GR1FloatingBody for now
         if hasattr(active_robot, "torso"):
             action_dict[active_robot.torso] = input_ac_dict["torso"]
 
-        if arm_using_gripper:
+        # gripper actions
+        if active_robot.gripper[arm].dof > 0:
             action_dict[f"{arm}_gripper"] = input_ac_dict[f"{arm}_gripper"]
-            prev_gripper_actions[f"{arm}_gripper"] = input_ac_dict[f"{arm}_gripper"]
+            all_prev_gripper_actions[device.active_robot][f"{arm}_gripper"] = input_ac_dict[f"{arm}_gripper"]
 
         # Maintain gripper state for each robot but only update the active robot with action
         env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]

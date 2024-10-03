@@ -219,9 +219,9 @@ def input2action(
     # populate delta actions for the arms
     for arm in robot.arms:
         ac_dict[f"{arm}_delta"] = np.zeros(6)
+        ac_dict[f"{arm}_gripper"] = np.zeros(robot.gripper[arm].dof)
 
     if robot.is_mobile:
-        # assert controller.name == "OSC_POSE" or controller.name == "OSC_POSITION", "Mobile robots only currently supported by OSC_POSE controller"
         base_mode = bool(state["base_mode"])
         if base_mode is True:
             arm_ac = np.zeros(6)
@@ -233,15 +233,15 @@ def input2action(
             torso_ac = np.zeros(1)
 
         # populate action dict items
-        ac_dict[f"{arm}_delta"] = arm_ac
-        ac_dict[f"{arm}_gripper"] = np.array([grasp] * gripper_dof)
+        ac_dict[f"{active_arm}_delta"] = arm_ac
+        ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
         ac_dict["base"] = base_ac
         ac_dict["torso"] = torso_ac
         ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
     else:
         # Create action based on action space of individual robot
-        ac_dict[f"{arm}_delta"] = np.concatenate([dpos, drotation])
-        ac_dict[f"{arm}_gripper"] = np.array([grasp] * gripper_dof)
+        ac_dict[f"{active_arm}_delta"] = np.concatenate([dpos, drotation])
+        ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
 
     # clip actions between -1 and 1
     for (k, v) in ac_dict.items():
