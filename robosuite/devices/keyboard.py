@@ -189,7 +189,7 @@ class Keyboard(Device):
         except AttributeError as e:
             pass
 
-    def prescale_raw_actions(self, dpos, drotation):
+    def _prescale_raw_actions(self, dpos, drotation):
         drotation = drotation * 1.5
         dpos = dpos * 75
 
