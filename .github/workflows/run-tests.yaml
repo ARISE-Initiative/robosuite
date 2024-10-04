@@ -21,18 +21,22 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        apt-cache search mesa
-        apt-get update && apt-get install -y libgl1-mesa-glx libgl1-mesa-dev libosmesa6-dev \
-          libglfw3-dev libglew2.0 patchelf python3-opengl
+        sudo apt-cache search mesa
+        sudo apt update
+        sudo apt install -y libgl1-mesa-glx libgl1-mesa-dev libosmesa6-dev python3-opengl mesa-utils
+        # check if OSMesa is installed
+        dpkg -L libosmesa6-dev
         python -m pip install --upgrade pip
-        pip install PyOpenGL-accelerate
         pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     # Install the current repo
     - name: Install robosuite
       run: |
         pip install -e .
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # NOTE(YL): pybullet-svl installation in "extra" is taking most of the time.
+        # One way to speed this up is to skip IK controller test.
+        if [ -f requirements-extra.txt ]; then pip install -r requirements-extra.txt; fi
 
     - name: Lint with flake8
       run: |
@@ -47,9 +51,8 @@ jobs:
     # https://github.com/ARISE-Initiative/robosuite/issues/469
     - name: Test with pytest
       run: |
-        # export PYOPENGL_PLATFORM="osmesa"
+        export PYOPENGL_PLATFORM="osmesa"
         export MUJOCO_GL="osmesa"
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
         python3 tests/test_robots/test_all_robots.py
         python3 tests/test_grippers/test_all_grippers.py
         python3 tests/test_environments/test_all_environments.py
