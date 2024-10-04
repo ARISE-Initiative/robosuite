@@ -52,14 +52,14 @@ class Keyboard(Device):
         print_command("Keys", "Command")
         print_command("Ctrl+q", "reset simulation")
         print_command("spacebar", "toggle gripper (open/close)")
-        print_command("b", "toggle arm/base mode (if applicable)")
         print_command("up-right-down-left", "move horizontally in x-y plane")
         print_command(".-;", "move vertically")
         print_command("o-p", "rotate (yaw)")
         print_command("y-h", "rotate (pitch)")
         print_command("e-r", "rotate (roll)")
-        print_command("s", "switch active arm if multi-armed robot")
-        print_command("=", "switch active robot if multi-robot environment")
+        print_command("b", "toggle arm/base mode (if applicable)")
+        print_command("s", "switch active arm (if multi-armed robot)")
+        print_command("=", "switch active robot (if multi-robot environment)")
         print("")
 
     def _reset_internal_state(self):

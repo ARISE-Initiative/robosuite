@@ -177,10 +177,10 @@ class SpaceMouse(Device):
         print_command("Move mouse laterally", "move arm horizontally in x-y plane")
         print_command("Move mouse vertically", "move arm vertically")
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
-        print_command("B", "Toggle arm/base mode (if applicable)")
         print_command("Control+C", "quit")
-        print_command("S", "Switch active arm if multi-armed robot")
-        print_command("=", "Switch active robot if multi-robot environment")
+        print_command("b", "toggle arm/base mode (if applicable)")
+        print_command("s", "switch active arm (if multi-armed robot)")
+        print_command("=", "switch active robot (if multi-robot environment)")
         print("")
 
     def _reset_internal_state(self):
