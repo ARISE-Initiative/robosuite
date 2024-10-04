@@ -3,6 +3,7 @@ import abc  # for abstract base class definitions
 import numpy as np
 
 import robosuite.utils.transform_utils as T
+from robosuite.controllers.parts.arm.osc import OperationalSpaceController
 
 
 class Device(metaclass=abc.ABCMeta):
@@ -134,17 +135,12 @@ class Device(metaclass=abc.ABCMeta):
         for arm in robot.arms:
             # OSC keys
             ac_dict[f"{arm}_delta"] = np.zeros(6)
-            ac_dict[f"{arm}_abs"] = robot.part_controllers[arm].delta_to_abs_action(np.zeros(6))
-            ac_dict[f"{arm}_gripper"] = np.zeros(robot.gripper[arm].dof)
-
-            # mink keys
-            new_pos, new_ori = self.get_updated_pose_target(
+            ac_dict[f"{arm}_abs"] = self.get_arm_pose_target(
+                robot,
                 arm,
-                f"gripper0_{arm}_grip_site",
-                np.zeros(6),
+                delta=np.zeros(6),
             )
-            ac_dict[f"gripper0_{arm}_grip_site_pos"] = new_pos
-            ac_dict[f"gripper0_{arm}_grip_site_axis_angle"] = new_ori
+            ac_dict[f"{arm}_gripper"] = np.zeros(robot.gripper[arm].dof)
 
         if robot.is_mobile:
             base_mode = bool(state["base_mode"])
@@ -157,20 +153,13 @@ class Device(metaclass=abc.ABCMeta):
                 base_ac = np.zeros(3)
                 torso_ac = np.zeros(1)
 
-            controller = robot.part_controllers[active_arm]
-
-            # mink keys
-            new_pos, new_ori = self.get_updated_pose_target(
-                active_arm,
-                f"gripper0_{active_arm}_grip_site",
-                arm_delta,
-            )
-            ac_dict[f"gripper0_{active_arm}_grip_site_pos"] = new_pos
-            ac_dict[f"gripper0_{active_arm}_grip_site_axis_angle"] = new_ori
-
             # populate action dict items
             ac_dict[f"{active_arm}_delta"] = arm_delta
-            ac_dict[f"{active_arm}_abs"] = robot.part_controllers[active_arm].delta_to_abs_action(arm_delta)
+            ac_dict[f"{active_arm}_abs"] = self.get_arm_pose_target(
+                robot,
+                active_arm,
+                delta=arm_delta,
+            )
             ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
             ac_dict["base"] = base_ac
             # ac_dict["torso"] = torso_ac
@@ -187,7 +176,15 @@ class Device(metaclass=abc.ABCMeta):
 
         return ac_dict
 
-    def get_updated_pose_target(self, arm, site_name, delta, target_based_update=True):
+    def get_arm_pose_target(self, robot, arm, delta, target_based_update=True):
+        # TODO: the logic between OSC and mink is fragmented right now. fix
+
+        # OSC
+        if isinstance(robot.part_controllers[arm], OperationalSpaceController):
+            return robot.part_controllers[arm].delta_to_abs_action(delta)
+
+        # else assume using the MinkController
+        site_name = f"gripper0_{arm}_grip_site"
         if target_based_update is True and self._prev_target[arm] is not None:
             curr_pos = self._prev_target[arm][0:3].copy()
             curr_ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
@@ -195,14 +192,15 @@ class Device(metaclass=abc.ABCMeta):
             curr_pos = self.env.sim.data.get_site_xpos(site_name).copy()
             curr_ori = self.env.sim.data.get_site_xmat(site_name).copy()
 
-        delta[0:3] *= 0.05
-        delta[3:6] *= 0.15
+        scaled_delta = delta.copy()
+        scaled_delta[0:3] *= 0.05
+        scaled_delta[3:6] *= 0.15
 
-        new_pos = curr_pos + delta[0:3]
-        delta_ori = T.quat2mat(T.axisangle2quat(delta[3:6]))
+        new_pos = curr_pos + scaled_delta[0:3]
+        delta_ori = T.quat2mat(T.axisangle2quat(scaled_delta[3:6]))
         new_ori = np.dot(delta_ori, curr_ori)
         new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
 
         self._prev_target[arm] = np.concatenate([new_pos, new_axisangle])
 
-        return new_pos, new_axisangle
+        return np.concatenate([new_pos, new_axisangle])
