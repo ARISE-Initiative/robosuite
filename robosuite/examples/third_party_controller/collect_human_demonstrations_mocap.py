@@ -20,7 +20,7 @@ import robosuite as suite
 import robosuite.examples.third_party_controller.mink_controller
 import robosuite.macros as macros
 from robosuite.controllers import load_composite_controller_config
-from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIKCompositeController
+from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 from robosuite.utils import transform_utils
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
@@ -318,18 +318,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
     )
-    parser.add_argument(
-        "--composite-controller",
-        type=str,
-        default=None,
-        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
-    )
-    parser.add_argument(
-        "--custom-controller-config",
-        type=str,
-        default=None,
-        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
-    )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
@@ -342,16 +330,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    composite_controller_config = load_composite_controller_config(
-        custom_fpath=args.custom_controller_config, default_controller=args.composite_controller, robot=args.robots[0]
-    )
+    composite_controller_config = load_composite_controller_config(controller=args.controller, robot=args.robots[0])
 
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
-        # "controller_configs": controller_config,
-        "composite_controller_configs": composite_controller_config,
+        "controller_configs": composite_controller_config,
+        # "composite_controller_configs": composite_controller_config,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
