@@ -1,15 +1,21 @@
 import copy
 import json
 import os
+import pathlib
 from collections import OrderedDict
 from typing import Optional
 
 import mujoco
 import numpy as np
 
+import robosuite
 import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory, load_part_controller_config
+from robosuite.controllers.composite.composite_controller_factory import (
+    is_old_controller_config,
+    load_composite_controller_config,
+)
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -65,6 +71,8 @@ class Robot(object):
         lite_physics=False,
     ):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
+        if composite_controller_config is not None and is_old_controller_config(composite_controller_config):
+            composite_controller_config = self._convert_old_controller_config(composite_controller_config, robot_type)
 
         # TODO: Merge self.part_controller_config and self.composite_controller_config into one
         self.part_controller_config = copy.deepcopy(composite_controller_config.get("body_parts", None))
@@ -156,6 +164,33 @@ class Robot(object):
                 continue
             if part_name in self.part_controller_config:
                 self.part_controller_config[part_name].update(controller_config)
+
+    def _convert_old_controller_config(self, old_controller_config, robot_type):
+        """
+        Convert old controller config to new controller config. If the robot
+        has a default controller config use that and override the arms with the
+        old controller config. If not just use the old controller config for arms.
+
+        Args:
+            old_controller_config (dict): Old controller config
+
+        Returns:
+            dict: New controller config
+        """
+        config_dir = pathlib.Path(robosuite.__file__).parent / "controllers/config/robots/"
+        name = robot_type.lower()
+        configs = os.listdir(config_dir)
+        if f"default_{name}.json" in configs:
+            new_controller_config = load_composite_controller_config(robot=name)
+        else:
+            print(f"Using old controller config for {name}")
+            new_controller_config = {}
+            new_controller_config["type"] = "BASIC"
+            new_controller_config["body_parts"] = {}
+
+        for arm in self.arms:
+            new_controller_config["body_parts"][arm] = copy.deepcopy(old_controller_config)
+        return new_controller_config
 
     def load_model(self):
         """
