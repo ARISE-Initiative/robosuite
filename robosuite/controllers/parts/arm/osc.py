@@ -214,7 +214,7 @@ class OperationalSpaceController(Controller):
         self.origin_pos = None
         self.origin_ori = None
 
-    def set_goal(self, action, update_wrt_origin=None):
+    def set_goal(self, action):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
         delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
@@ -243,11 +243,6 @@ class OperationalSpaceController(Controller):
             self.kd = 2 * np.sqrt(self.kp)  # critically damped
         else:  # This is case "fixed"
             delta = action
-
-        if update_wrt_origin is not None:
-            self.update_wrt_origin = update_wrt_origin
-        else:
-            self.update_wrt_origin = np.all(action == 0)
 
         # If we're using deltas, interpret actions as such
         if self.input_type == "delta":
@@ -286,16 +281,24 @@ class OperationalSpaceController(Controller):
         vec_origin_pos, _ = T.mat2pose(vec_origin_pose)
         return vec_origin_pos
 
-    def compute_goal_pos(self, delta, set_pos=None):
-        if set_pos is not None:
-            raise NotImplementedError
+    def goal_origin_to_eef_pose(self):
+        origin_pose = T.make_pose(self.origin_pos, self.origin_ori)
+        ee_pose = T.make_pose(self.ref_pos, self.ref_ori_mat)
+        origin_pose_inv = T.pose_inv(origin_pose)
+        return T.pose_in_A_to_pose_in_B(ee_pose, origin_pose_inv)
+
+    def compute_goal_pos(self, delta, goal_update_mode=None):
+        if goal_update_mode is None:
+            goal_update_mode = self._goal_update_mode
+
+        assert goal_update_mode in ["achieved", "target"]
 
         if self.goal_origin_to_eef_pos is None:
             self.goal_origin_to_eef_pos = self.world_to_origin_frame(self.ref_pos)
 
-        if self.update_wrt_origin:
+        if goal_update_mode == "target":
             goal_origin_to_eef_pos = self.goal_origin_to_eef_pos + delta
-        else:
+        elif goal_update_mode == "achieved":
             goal_origin_to_eef_pos = self.world_to_origin_frame(self.ref_pos) + delta
 
         if self.position_limits is not None:
@@ -303,13 +306,7 @@ class OperationalSpaceController(Controller):
 
         return goal_origin_to_eef_pos
 
-    def goal_origin_to_eef_pose(self):
-        origin_pose = T.make_pose(self.origin_pos, self.origin_ori)
-        ee_pose = T.make_pose(self.ref_pos, self.ref_ori_mat)
-        origin_pose_inv = T.pose_inv(origin_pose)
-        return T.pose_in_A_to_pose_in_B(ee_pose, origin_pose_inv)
-
-    def compute_goal_orientation(self, delta):
+    def compute_goal_orientation(self, delta, goal_update_mode=None):
         """
         Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
         @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
@@ -327,6 +324,9 @@ class OperationalSpaceController(Controller):
         Raises:
             ValueError: [Invalid orientation_limit shape]
         """
+        if goal_update_mode is None:
+            goal_update_mode = self._goal_update_mode
+
         if self.goal_origin_to_eef_ori is None:
             self.goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
 
@@ -334,11 +334,13 @@ class OperationalSpaceController(Controller):
         quat_error = T.axisangle2quat(delta)
         rotation_mat_error = T.quat2mat(quat_error)
 
-        if self.update_wrt_origin:
+        if self._goal_update_mode == "target":
             goal_origin_to_eef_ori = np.dot(rotation_mat_error, self.goal_origin_to_eef_ori)
-        else:
+        elif self._goal_update_mode == "achieved":
             curr_goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
             goal_origin_to_eef_ori = np.dot(rotation_mat_error, curr_goal_origin_to_eef_ori)
+        else:
+            raise ValueError
 
         # check for orientation limits
         if np.array(self.orientation_limits).any():
@@ -447,6 +449,9 @@ class OperationalSpaceController(Controller):
         # We also need to reset the goal in case the old goals were set to the initial confguration
         self.reset_goal()
 
+    def set_goal_update_mode(self, goal_update_mode):
+        self._goal_update_mode = goal_update_mode
+
     def reset_goal(self):
         """
         Resets the goal to the current state of the robot
@@ -454,7 +459,7 @@ class OperationalSpaceController(Controller):
         self.goal_ori = np.array(self.ref_ori_mat)
         self.goal_pos = np.array(self.ref_pos)
 
-        self.update_wrt_origin = False
+        self._goal_update_mode = "achieved"
 
         # Also reset interpolators if required
 
@@ -494,16 +499,15 @@ class OperationalSpaceController(Controller):
             low, high = self.input_min, self.input_max
         return low, high
 
-    def delta_to_abs_action(self, delta_ac):
+    def delta_to_abs_action(self, delta_ac, goal_update_mode):
         """
         helper function that converts delta action into absolute action
         """
-        arm_delta_scaled = self.scale_action(delta_ac)
-        abs_pos = self.compute_goal_pos(arm_delta_scaled[0:3])
-        abs_ori = self.compute_goal_orientation(arm_delta_scaled[3:6])
+        abs_pos = self.compute_goal_pos(delta_ac[0:3], goal_update_mode=goal_update_mode)
+        abs_ori = self.compute_goal_orientation(delta_ac[3:6], goal_update_mode=goal_update_mode)
         abs_rot = T.quat2axisangle(T.mat2quat(abs_ori))
-        abs_ac = np.concatenate([abs_pos, abs_rot])
-        return abs_ac
+        abs_action = np.concatenate([abs_pos, abs_rot])
+        return abs_action
 
     @property
     def name(self):

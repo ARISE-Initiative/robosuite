@@ -67,7 +67,7 @@ class Device(metaclass=abc.ABCMeta):
         """Returns the current state of the device, a dictionary of pos, orn, grasp, and reset."""
         raise NotImplementedError
 
-    def _prescale_raw_actions(self, dpos, drotation):
+    def _postprocess_device_outputs(self, dpos, drotation):
         raise NotImplementedError
 
     def input2action(self, mirror_actions=False):
@@ -126,7 +126,7 @@ class Device(metaclass=abc.ABCMeta):
         # Flip z
         drotation[2] = -drotation[2]
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
-        dpos, drotation = self._prescale_raw_actions(dpos, drotation)
+        dpos, drotation = self._postprocess_device_outputs(dpos, drotation)
         # map 0 to -1 (open) and map 1 to 1 (closed)
         grasp = 1 if grasp else -1
 
@@ -134,73 +134,91 @@ class Device(metaclass=abc.ABCMeta):
         # populate delta actions for the arms
         for arm in robot.arms:
             # OSC keys
-            ac_dict[f"{arm}_delta"] = np.zeros(6)
-            ac_dict[f"{arm}_abs"] = self.get_arm_pose_target(
+            arm_action = self.get_arm_action(
                 robot,
                 arm,
-                delta=np.zeros(6),
+                norm_delta=np.zeros(6),
             )
+            ac_dict[f"{arm}_abs"] = arm_action["abs"]
+            ac_dict[f"{arm}_delta"] = arm_action["delta"]
             ac_dict[f"{arm}_gripper"] = np.zeros(robot.gripper[arm].dof)
 
         if robot.is_mobile:
             base_mode = bool(state["base_mode"])
             if base_mode is True:
-                arm_delta = np.zeros(6)
+                arm_norm_delta = np.zeros(6)
                 base_ac = np.array([dpos[0], dpos[1], drotation[2]])
                 torso_ac = np.array([dpos[2]])
             else:
-                arm_delta = np.concatenate([dpos, drotation])
+                arm_norm_delta = np.concatenate([dpos, drotation])
                 base_ac = np.zeros(3)
                 torso_ac = np.zeros(1)
 
-            # populate action dict items
-            ac_dict[f"{active_arm}_delta"] = arm_delta
-            ac_dict[f"{active_arm}_abs"] = self.get_arm_pose_target(
-                robot,
-                active_arm,
-                delta=arm_delta,
-            )
-            ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
             ac_dict["base"] = base_ac
             # ac_dict["torso"] = torso_ac
             ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
         else:
-            # Create action based on action space of individual robot
-            ac_dict[f"{active_arm}_delta"] = np.concatenate([dpos, drotation])
-            ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
+            arm_norm_delta = np.concatenate([dpos, drotation])
+
+        # populate action dict items for arm and grippers
+        arm_action = self.get_arm_action(
+            robot,
+            active_arm,
+            norm_delta=arm_norm_delta,
+        )
+        ac_dict[f"{active_arm}_abs"] = arm_action["abs"]
+        ac_dict[f"{active_arm}_delta"] = arm_action["delta"]
+        ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
 
         # clip actions between -1 and 1
         for (k, v) in ac_dict.items():
-            if "abs" not in k and "site" not in k:
+            if "abs" not in k:
                 ac_dict[k] = np.clip(v, -1, 1)
 
         return ac_dict
 
-    def get_arm_pose_target(self, robot, arm, delta, target_based_update=True):
-        # TODO: the logic between OSC and mink is fragmented right now. fix
+    def get_arm_action(self, robot, arm, norm_delta, goal_update_mode="target"):
+        assert np.all(norm_delta <= 1.0) and np.all(norm_delta >= -1.0)
 
-        # OSC
-        if isinstance(robot.part_controllers[arm], OperationalSpaceController):
-            return robot.part_controllers[arm].delta_to_abs_action(delta)
+        assert goal_update_mode in [
+            "achieved",
+            "target",
+        ]  # update next target either based on achieved pose or current target pose
 
-        # else assume using the MinkController
-        site_name = f"gripper0_{arm}_grip_site"
-        if target_based_update is True and self._prev_target[arm] is not None:
-            curr_pos = self._prev_target[arm][0:3].copy()
-            curr_ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
+        arm_controller = robot.part_controllers[arm]
+        if isinstance(arm_controller, OperationalSpaceController):
+            # TODO: the logic between OSC and mink is fragmented right now. Unify
+            delta_action = arm_controller.scale_action(norm_delta.copy())
+            abs_action = arm_controller.delta_to_abs_action(delta_action, goal_update_mode=None)
+            return {
+                "delta": norm_delta,
+                "abs": abs_action,
+            }
+
+        if goal_update_mode == "achieved" or self._prev_target[arm] is None:
+            site_name = f"gripper0_{arm}_grip_site"
+            # update next target based on current achieved pose
+            pos = self.env.sim.data.get_site_xpos(site_name).copy()
+            ori = self.env.sim.data.get_site_xmat(site_name).copy()
         else:
-            curr_pos = self.env.sim.data.get_site_xpos(site_name).copy()
-            curr_ori = self.env.sim.data.get_site_xmat(site_name).copy()
+            # update next target based on previous target pose
+            pos = self._prev_target[arm][0:3].copy()
+            ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
 
-        scaled_delta = delta.copy()
-        scaled_delta[0:3] *= 0.05
-        scaled_delta[3:6] *= 0.15
+        delta_action = norm_delta.copy()
+        delta_action[0:3] *= 0.05
+        delta_action[3:6] *= 0.15
 
-        new_pos = curr_pos + scaled_delta[0:3]
-        delta_ori = T.quat2mat(T.axisangle2quat(scaled_delta[3:6]))
-        new_ori = np.dot(delta_ori, curr_ori)
+        # new positions computed in world frame coordinates
+        new_pos = pos + delta_action[0:3]
+        delta_ori = T.quat2mat(T.axisangle2quat(delta_action[3:6]))
+        new_ori = np.dot(delta_ori, ori)
         new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
 
-        self._prev_target[arm] = np.concatenate([new_pos, new_axisangle])
+        abs_action = np.concatenate([new_pos, new_axisangle])
+        self._prev_target[arm] = abs_action.copy()
 
-        return np.concatenate([new_pos, new_axisangle])
+        return {
+            "delta": delta_action,
+            "abs": abs_action,
+        }
