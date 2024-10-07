@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # Get controller config
     controller_config = load_composite_controller_config(
         controller=args.controller,
-        robot=args.robots[0],
+        robot=args.robots,
     )
 
     # Create argument configuration
@@ -70,9 +70,9 @@ if __name__ == "__main__":
     env.reset()
     low, high = env.action_spec
 
-    m, d = env.sim.model._model, env.sim.data._data
-
-    with mujoco.viewer.launch_passive(m, d) as viewer:
-        while viewer.is_running():
-            mujoco.mj_step(m, d)
-            viewer.sync()
+    while True:
+        env.reset()
+        for i in range(100):
+            action = np.random.uniform(low, high)
+            env.step(action)
+            env.render()
