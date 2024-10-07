@@ -248,12 +248,14 @@ class IKSolverMink:
     def action_split_indexes(self) -> Dict[str, Tuple[int, int]]:
         action_split_indexes: Dict[str, Tuple[int, int]] = {}
         previous_idx = 0
+
         for site_name in self.site_names:
             total_dim = self.pos_dim + self.rot_dim
             last_idx = previous_idx + total_dim
-            action_split_indexes[site_name + "_pos"] = (previous_idx, previous_idx + self.pos_dim)
-            action_split_indexes[site_name + f"_{self.input_rotation_repr}"] = (previous_idx + self.pos_dim, last_idx)
+            simplified_site_name = "left" if "left" in site_name else "right"  # hack to simplify site names
+            action_split_indexes[simplified_site_name] = (previous_idx, last_idx)
             previous_idx = last_idx
+
         return action_split_indexes
 
     def solve(self, target_action: Optional[np.ndarray] = None) -> np.ndarray:
@@ -381,10 +383,16 @@ class WholeBodyMinkIK(WholeBody):
         for part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
             joint_names += self.part_controllers[part_name].joint_names
 
+        default_site_names: List[str] = []
+        for arm in ['right', 'left']:
+            if arm  in self.part_controller_config:
+                default_site_names.append(self.part_controller_config[arm]["ref_name"])
+
         self.joint_action_policy = IKSolverMink(
             model=self.sim.model._model,
             data=self.sim.data._data,
-            site_names=self.composite_controller_specific_config["ref_name"],
+            site_names=self.composite_controller_specific_config["ref_name"] \
+                if "ref_name" in self.composite_controller_specific_config else default_site_names,
             robot_model=self.robot_model.mujoco_model,
             robot_joint_names=joint_names,
             input_action_repr=self.composite_controller_specific_config.get("ik_input_action_repr", "absolute"),
