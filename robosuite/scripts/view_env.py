@@ -8,13 +8,6 @@ import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 from robosuite.wrappers import VisualizationWrapper
 
-DEFAULT_FREE_CAM = {
-    "lookat": [0, 0, 0.7],
-    "distance": 1.5,
-    "azimuth": 180,
-    "elevation": -20,
-}
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -56,7 +49,6 @@ if __name__ == "__main__":
         **config,
         has_renderer=True,
         has_offscreen_renderer=False,
-        render_camera="agentview",
         ignore_done=True,
         use_camera_obs=False,
         reward_shaping=True,
