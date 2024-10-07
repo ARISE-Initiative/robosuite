@@ -1,12 +1,12 @@
 import argparse
 
-import numpy as np
 import mujoco
+import numpy as np
 from pynput import keyboard
 
 import robosuite as suite
-from robosuite.wrappers import VisualizationWrapper
 from robosuite.controllers import load_composite_controller_config
+from robosuite.wrappers import VisualizationWrapper
 
 DEFAULT_FREE_CAM = {
     "lookat": [0, 0, 0.7],
@@ -69,10 +69,6 @@ if __name__ == "__main__":
 
     env.reset()
     low, high = env.action_spec
-
-    # with open("env.xml", "w") as f:
-    #     f.write(env.model.get_xml())
-    # exit(0)
 
     m, d = env.sim.model._model, env.sim.data._data
 
