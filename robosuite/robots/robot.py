@@ -371,6 +371,18 @@ class Robot(object):
         def eef_quat(obs_cache):
             return T.mat2quat(self.sim.data.site_xmat[self.eef_site_id[arm]].reshape((3, 3)))
 
+        @sensor(modality=modality)
+        def eef_quat_deprecated(obs_cache):
+            """
+            Previous versions of robosuite<=1.4 use this buggy eef_quat
+            that takes its value from the body, instead of site as in eef_pos.
+
+            We provide this key for users of datasets collected with robosuite<=1.4 to handle conversions.
+
+            We will deprecate this key in a future version of robosuite.
+            """
+            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+
         # only consider prefix if there is more than one arm
         pf = f"{arm}_" if len(self.arms) > 1 else ""
 
