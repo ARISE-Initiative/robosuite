@@ -265,6 +265,9 @@ class IKSolverMink:
         
         We assume input_action is specified as self.input_type, self.input_ref_frame, self.input_rotation_repr.
         We also assume input_action has the following format: [site1_pos, site1_rot, site2_pos, site2_rot, ...].
+
+        By updating configuration's bose to match the actual base pose (in 'world' frame),
+        we're requiring our tasks' targets to be in the 'world' frame for mink.solve_ik().
         """
         # update configuration's base to match actual base
         self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
@@ -298,6 +301,8 @@ class IKSolverMink:
                 input_poses[i] = np.dot(base_pose, input_pose)
             input_pos = input_poses[:, :3, 3]
             input_quat_wxyz = np.array([np.roll(T.mat2quat(input_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))])
+        elif self.input_ref_frame == "eef":
+            raise NotImplementedError("Input reference frame 'eef' not yet implemented")
 
         if "delta" in self.input_type:
             cur_pos = np.array([self.configuration.data.site(site_id).xpos for site_id in self.site_ids])
