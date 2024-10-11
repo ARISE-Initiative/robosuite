@@ -259,12 +259,12 @@ class IKSolverMink:
 
         return action_split_indexes
 
-    def solve(self, target_action: np.ndarray) -> np.ndarray:
+    def solve(self, input_action: np.ndarray) -> np.ndarray:
         """
         Solve for the joint angles that achieve the desired target action.
         
-        We assume target_action is specified as self.input_type, self.input_ref_frame, self.input_rotation_repr.
-        We also assume target_action has the following format: [site1_pos, site1_rot, site2_pos, site2_rot, ...].
+        We assume input_action is specified as self.input_type, self.input_ref_frame, self.input_rotation_repr.
+        We also assume input_action has the following format: [site1_pos, site1_rot, site2_pos, site2_rot, ...].
         """
         # update configuration's base to match actual base
         self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
@@ -274,29 +274,40 @@ class IKSolverMink:
             self.full_model_data.qpos[self.full_model_dof_ids], update_idxs=self.robot_model_dof_ids
         )
 
-        target_action = target_action.reshape(len(self.site_names), -1)
-        target_pos = target_action[:, : self.pos_dim]
-        target_ori = target_action[:, self.pos_dim :]
+        input_action = input_action.reshape(len(self.site_names), -1)
+        input_pos = input_action[:, : self.pos_dim]
+        input_ori = input_action[:, self.pos_dim :]
 
-        target_quat_wxyz = None
+        input_quat_wxyz = None
         if self.input_rotation_repr == "axis_angle":
-            target_quat_wxyz = np.array(
-                [np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))]
+            input_quat_wxyz = np.array(
+                [np.roll(T.axisangle2quat(input_ori[i]), 1) for i in range(len(input_ori))]
             )
         elif self.input_rotation_repr == "mat":
-            target_quat_wxyz = np.array([np.roll(T.mat2quat(target_ori[i])) for i in range(len(target_ori))])
+            input_quat_wxyz = np.array([np.roll(T.mat2quat(input_ori[i])) for i in range(len(input_ori))])
         elif self.input_rotation_repr == "quat_wxyz":
-            target_quat_wxyz = target_ori
+            input_quat_wxyz = input_ori
+
+        if self.input_ref_frame == "base":
+            input_poses = np.zeros((len(self.site_ids), 4, 4))
+            for i in range(len(self.site_ids)):
+                base_pos = self.configuration.data.body("robot0_base").xpos
+                base_ori = self.configuration.data.body("robot0_base").xmat
+                base_pose = T.make_pose(base_pos, base_ori)
+                input_pose = T.make_pose(input_pos[i], T.quat2mat(np.roll(input_quat_wxyz[i], -1)))
+                input_poses[i] = np.dot(base_pose, input_pose)
+            input_pos = input_poses[:, :3, 3]
+            input_quat_wxyz = np.array([np.roll(T.mat2quat(input_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))])
 
         if "delta" in self.input_type:
             cur_pos = np.array([self.configuration.data.site(site_id).xpos for site_id in self.site_ids])
             cur_ori = np.array([self.configuration.data.site(site_id).xmat for site_id in self.site_ids])
         if self.input_type == "delta":
             # decoupled pos and rotation deltas
-            target_pos += cur_pos
+            target_pos = input_pos + cur_pos
             target_quat_xyzw = np.array(
                 [
-                    T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1))
+                    T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(input_quat_wxyz[i], -1))
                     for i in range(len(self.site_ids))
                 ]
             )
@@ -309,16 +320,21 @@ class IKSolverMink:
             # Convert target action to target pose
             delta_poses = np.zeros_like(cur_poses)
             for i in range(len(self.site_ids)):
-                delta_poses[i] = T.make_pose(target_pos[i], T.quat2mat(np.roll(target_quat_wxyz[i], -1)))
+                delta_poses[i] = T.make_pose(input_pos[i], T.quat2mat(np.roll(input_quat_wxyz[i], -1)))
 
             # Apply target pose to current pose
-            new_target_poses = np.array([np.dot(cur_poses[i], delta_poses[i]) for i in range(len(self.site_ids))])
+            target_poses = np.array([np.dot(cur_poses[i], delta_poses[i]) for i in range(len(self.site_ids))])
 
             # Split new target pose back into position and quaternion
-            target_pos = new_target_poses[:, :3, 3]
+            target_pos = target_poses[:, :3, 3]
             target_quat_wxyz = np.array(
-                [np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
+                [np.roll(T.mat2quat(target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
             )
+        elif self.input_type == "absolute":
+            target_pos = input_pos
+            target_quat_wxyz = input_quat_wxyz
+        else:
+            raise ValueError(f"Invalid input type: {self.input_type}")
 
         # create targets list shape is n_sites, 4, 4
         targets = [np.eye(4) for _ in range(len(self.site_names))]
