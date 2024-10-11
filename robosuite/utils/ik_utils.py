@@ -102,8 +102,8 @@ class IKSolver:
         for site_name in self.site_names:
             total_dim = self.pos_dim + self.rot_dim
             last_idx = previous_idx + total_dim
-            action_split_indexes[site_name + "_pos"] = (previous_idx, previous_idx + self.pos_dim)
-            action_split_indexes[site_name + f"_{self.input_rotation_repr}"] = (previous_idx + self.pos_dim, last_idx)
+            simplified_site_name = "left" if "left" in site_name else "right"  # hack to simplify site names
+            action_split_indexes[simplified_site_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
         return action_split_indexes
