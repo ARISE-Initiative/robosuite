@@ -259,6 +259,17 @@ class IKSolverMink:
 
         return action_split_indexes
 
+    # TODO: implement this method
+    def transform_frame(self, pose: np.ndarray, src_ref_frame: Literal['world', 'base'], dst_ref_frame: Literal["world", "base"]) -> np.ndarray:
+        raise NotImplementedError("transform_frame not yet implemented. Below is buggy.")
+        if src_ref_frame == 'base':
+            src_transform = self.configuration.get_transform_frame_to_world("robot0_base", src_ref_frame)
+            pose = src_transform.dot(pose)
+        if dst_ref_frame == 'base':
+            dst_transform = self.configuration.get_transform_frame_to_world("robot0_base", dst_ref_frame).inv()
+            pose = dst_transform.dot(pose)
+        return pose
+
     def solve(self, input_action: np.ndarray) -> np.ndarray:
         """
         Solve for the joint angles that achieve the desired target action.
