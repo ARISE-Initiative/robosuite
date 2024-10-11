@@ -51,6 +51,8 @@ if __name__ == "__main__":
             **config,
             has_renderer=True,
             has_offscreen_renderer=False,
+            renderer="mjviewer",
+            render_camera="free",
             ignore_done=True,
             use_camera_obs=False,
             reward_shaping=True,
@@ -65,7 +67,7 @@ if __name__ == "__main__":
         low, high = env.action_spec
 
         for i in range(200):
-            action = np.random.uniform(low, high)
+            action = np.zeros(len(low))
             env.step(action)
             env.render()
 
