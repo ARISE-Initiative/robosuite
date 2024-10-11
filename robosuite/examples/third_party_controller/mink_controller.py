@@ -149,8 +149,9 @@ class IKSolverMink:
         site_names: List[str],
         robot_model: mujoco.MjModel,
         robot_joint_names: Optional[List[str]] = None,
-        debug: bool = False,
-        input_action_repr: Literal["absolute", "relative", "relative_pose"] = "absolute",
+        verbose: bool = False,
+        input_type: Literal["absolute", "relative", "relative_pose"] = "absolute",
+        input_ref_frame: Literal["world", "base", "eef"] = "world",
         input_rotation_repr: Literal["quat_wxyz", "axis_angle"] = "axis_angle",
         posture_weights: Dict[str, float] = None,
         solve_freq: float = 20.0,
@@ -175,8 +176,7 @@ class IKSolverMink:
                 for i in range(self.robot_model.njnt)
                 if self.robot_model.joint(i).type != 0
             ]  # Exclude fixed joints
-        # get all ids for robot bodies
-        # self.robot_body_ids: List[int] = np.array([self.robot_model.body(name).id for name in robot_joint_names])
+
         self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
 
         self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name).id for name in robot_joint_names])
@@ -191,7 +191,8 @@ class IKSolverMink:
 
         self.solve_freq = solve_freq
 
-        self.input_action_repr = input_action_repr
+        self.input_type = input_type
+        self.input_ref_frame = input_ref_frame
         self.input_rotation_repr = input_rotation_repr
         ROTATION_REPRESENTATION_DIMS: Dict[str, int] = {"quat_wxyz": 4, "axis_angle": 3}
         self.rot_dim = ROTATION_REPRESENTATION_DIMS[input_rotation_repr]
@@ -201,8 +202,8 @@ class IKSolverMink:
         self.control_limits = np.array([-np.inf] * self.control_dim), np.array([np.inf] * self.control_dim)
 
         self.i = 0
-        self.debug = debug
-        if debug:
+        self.verbose = verbose
+        if verbose:
             self.task_errors: List[np.ndarray] = []
             self.trask_translation_errors: List[np.ndarray] = []
             self.task_orientation_errors: List[np.ndarray] = []
@@ -258,83 +259,85 @@ class IKSolverMink:
 
         return action_split_indexes
 
-    def solve(self, target_action: Optional[np.ndarray] = None) -> np.ndarray:
-        # update configuration's data to match self.data for the joints we care about
+    def solve(self, target_action: np.ndarray) -> np.ndarray:
+        """
+        Solve for the joint angles that achieve the desired target action.
+        
+        We assume target_action is specified as self.input_type, self.input_ref_frame, self.input_rotation_repr.
+        We also assume target_action has the following format: [site1_pos, site1_rot, site2_pos, site2_rot, ...].
+        """
+        # update configuration's base to match actual base
         self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
         self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
+        # update configuration's qpos to match actual qpos
         self.configuration.update(
             self.full_model_data.qpos[self.full_model_dof_ids], update_idxs=self.robot_model_dof_ids
         )
 
-        if target_action is not None:
-            target_action = target_action.reshape(len(self.site_names), -1)
-            target_pos = target_action[:, : self.pos_dim]
-            target_ori = target_action[:, self.pos_dim :]
-            target_quat_wxyz = None
+        target_action = target_action.reshape(len(self.site_names), -1)
+        target_pos = target_action[:, : self.pos_dim]
+        target_ori = target_action[:, self.pos_dim :]
 
-            if self.input_rotation_repr == "axis_angle":
-                target_quat_wxyz = np.array(
-                    [np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))]
-                )
-            elif self.input_rotation_repr == "mat":
-                target_quat_wxyz = np.array([np.roll(T.mat2quat(target_ori[i])) for i in range(len(target_ori))])
-            elif self.input_rotation_repr == "quat_wxyz":
-                target_quat_wxyz = target_ori
+        target_quat_wxyz = None
+        if self.input_rotation_repr == "axis_angle":
+            target_quat_wxyz = np.array(
+                [np.roll(T.axisangle2quat(target_ori[i]), 1) for i in range(len(target_ori))]
+            )
+        elif self.input_rotation_repr == "mat":
+            target_quat_wxyz = np.array([np.roll(T.mat2quat(target_ori[i])) for i in range(len(target_ori))])
+        elif self.input_rotation_repr == "quat_wxyz":
+            target_quat_wxyz = target_ori
 
-            if "relative" in self.input_action_repr:
-                cur_pos = np.array([self.configuration.data.site(site_id).xpos for site_id in self.site_ids])
-                cur_ori = np.array([self.configuration.data.site(site_id).xmat for site_id in self.site_ids])
-            if self.input_action_repr == "relative":
-                # decoupled pos and rotation deltas
-                target_pos += cur_pos
-                target_quat_xyzw = np.array(
-                    [
-                        T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1))
-                        for i in range(len(self.site_ids))
-                    ]
-                )
-                target_quat_wxyz = np.array([np.roll(target_quat_xyzw[i], shift=1) for i in range(len(self.site_ids))])
-            elif self.input_action_repr == "relative_pose":
-                cur_poses = np.zeros((len(self.site_ids), 4, 4))
-                for i in range(len(self.site_ids)):
-                    cur_poses[i, :3, :3] = cur_ori[i].reshape(3, 3)
-                    cur_poses[i, :3, 3] = cur_pos[i]
-                    cur_poses[i, 3, :] = [0, 0, 0, 1]
+        if "delta" in self.input_type:
+            cur_pos = np.array([self.configuration.data.site(site_id).xpos for site_id in self.site_ids])
+            cur_ori = np.array([self.configuration.data.site(site_id).xmat for site_id in self.site_ids])
+        if self.input_type == "delta":
+            # decoupled pos and rotation deltas
+            target_pos += cur_pos
+            target_quat_xyzw = np.array(
+                [
+                    T.quat_multiply(T.mat2quat(cur_ori[i].reshape(3, 3)), np.roll(target_quat_wxyz[i], -1))
+                    for i in range(len(self.site_ids))
+                ]
+            )
+            target_quat_wxyz = np.array([np.roll(target_quat_xyzw[i], shift=1) for i in range(len(self.site_ids))])
+        elif self.input_type == "delta_pose":
+            cur_poses = np.zeros((len(self.site_ids), 4, 4))
+            for i in range(len(self.site_ids)):
+                cur_poses[i] = T.make_pose(cur_pos[i], cur_ori[i])
 
-                # Convert target action to target pose
-                target_poses = np.zeros_like(cur_poses)
-                for i in range(len(self.site_ids)):
-                    target_poses[i, :3, :3] = T.quat2mat(target_quat_wxyz[i])
-                    target_poses[i, :3, 3] = target_pos[i]
-                    target_poses[i, 3, :] = [0, 0, 0, 1]
+            # Convert target action to target pose
+            delta_poses = np.zeros_like(cur_poses)
+            for i in range(len(self.site_ids)):
+                delta_poses[i] = T.make_pose(target_pos[i], T.quat2mat(np.roll(target_quat_wxyz[i], -1)))
 
-                # Apply target pose to current pose
-                new_target_poses = np.array([np.dot(cur_poses[i], target_poses[i]) for i in range(len(self.site_ids))])
+            # Apply target pose to current pose
+            new_target_poses = np.array([np.dot(cur_poses[i], delta_poses[i]) for i in range(len(self.site_ids))])
 
-                # Split new target pose back into position and quaternion
-                target_pos = new_target_poses[:, :3, 3]
-                target_quat_wxyz = np.array(
-                    [np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
-                )
+            # Split new target pose back into position and quaternion
+            target_pos = new_target_poses[:, :3, 3]
+            target_quat_wxyz = np.array(
+                [np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
+            )
 
-            # create targets list shape is n_sites, 4, 4
-            targets = [np.eye(4) for _ in range(len(self.site_names))]
-            for i, (pos, quat_wxyz) in enumerate(zip(target_pos, target_quat_wxyz)):
-                targets[i][:3, 3] = pos
-                targets[i][:3, :3] = T.quat2mat(np.roll(quat_wxyz, -1))
+        # create targets list shape is n_sites, 4, 4
+        targets = [np.eye(4) for _ in range(len(self.site_names))]
+        for i, (pos, quat_wxyz) in enumerate(zip(target_pos, target_quat_wxyz)):
+            targets[i][:3, 3] = pos
+            targets[i][:3, :3] = T.quat2mat(np.roll(quat_wxyz, -1))
 
-            # set target poses
-            for task, target in zip(self.hand_tasks, targets):
-                with suppress_stdout():
-                    se3_target = mink.SE3.from_matrix(target)
-                task.set_target(se3_target)
+        # set target poses
+        for task, target in zip(self.hand_tasks, targets):
+            with suppress_stdout():
+                se3_target = mink.SE3.from_matrix(target)
+            task.set_target(se3_target)
 
         with suppress_stdout():
             vel = mink.solve_ik(self.configuration, self.tasks, 1 / self.solve_freq, self.solver, 1e-5)
         self.configuration.integrate_inplace(vel, 1 / self.solve_freq)
 
         self.i += 1
-        if self.debug and self.i % 1 == 0:
+        if self.verbose and self.i % 1 == 0:
             task_errors = self._get_task_errors()
             task_translation_errors = self._get_task_translation_errors()
             task_orientation_errors = self._get_task_orientation_errors()
@@ -395,11 +398,11 @@ class WholeBodyMinkIK(WholeBody):
                 if "ref_name" in self.composite_controller_specific_config else default_site_names,
             robot_model=self.robot_model.mujoco_model,
             robot_joint_names=joint_names,
-            input_action_repr=self.composite_controller_specific_config.get("ik_input_action_repr", "absolute"),
+            input_type=self.composite_controller_specific_config.get("ik_input_type", "absolute"),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
             solve_freq=self.composite_controller_specific_config.get("ik_solve_freq", 20),
             posture_weights=self.composite_controller_specific_config.get("ik_posture_weights", {}),
             hand_pos_cost=self.composite_controller_specific_config.get("ik_hand_pos_cost", 1.0),
             hand_ori_cost=self.composite_controller_specific_config.get("ik_hand_ori_cost", 0.5),
-            debug=self.composite_controller_specific_config.get("verbose", False),
+            verbose=self.composite_controller_specific_config.get("ik_verbose", False),
         )
