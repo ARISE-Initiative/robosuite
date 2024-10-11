@@ -129,6 +129,7 @@ class OperationalSpaceController(Controller):
         interpolator_ori=None,
         control_ori=True,
         input_type="delta",
+        input_ref_frame="world",
         uncouple_pos_ori=True,
         lite_physics=False,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
@@ -148,6 +149,13 @@ class OperationalSpaceController(Controller):
         # Determine whether we want to use delta or absolute values as inputs
         self.input_type = input_type
         assert self.input_type in ["delta", "absolute"], f"Input type must be delta or absolute, got: {self.input_type}"
+
+        # determine reference frame wrt actions are set
+        self.input_ref_frame = input_ref_frame
+        assert self.input_ref_frame in [
+            "world",
+            "base",
+        ], f"Input reference frame must be world or base, got: {self.input_ref_frame}"
 
         # Control dimension
         self.control_dim = 6 if self.use_ori else 3
@@ -246,11 +254,26 @@ class OperationalSpaceController(Controller):
 
         # If we're using deltas, interpret actions as such
         if self.input_type == "delta":
+            if self.input_ref_frame == "world":
+                # convert deltas in world coordinate frame to base coordinate frame
+                x, y = delta[0], delta[1]
+                theta = T.mat2euler(self.ref_ori_mat)[2] - np.pi / 2
+                delta[0] = x * np.cos(theta) + y * np.sin(theta)
+                delta[1] = -x * np.sin(theta) + y * np.cos(theta)
+
+                roll = delta[3]
+                pitch = delta[4]
+                delta[3] = roll * np.cos(theta) + pitch * np.sin(theta)
+                delta[4] = -roll * np.sin(theta) + pitch * np.cos(theta)
+
             scaled_delta = self.scale_action(delta)
+
             self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[0:3])
             self.goal_origin_to_eef_ori = self.compute_goal_orientation(scaled_delta[3:6])
         # Else, interpret actions as absolute values
         elif self.input_type == "absolute":
+            if self.input_ref_frame == "world":
+                raise NotImplementedError
             self.goal_origin_to_eef_pos = action[0:3]
             self.goal_origin_to_eef_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
         else:
