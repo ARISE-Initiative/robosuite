@@ -806,9 +806,11 @@ class Robot(object):
 
             if self.has_gripper[arm]:
                 # Load gripper controllers
+                assert "gripper" in self.part_controller_config[arm], "Gripper controller config not found!"
                 gripper_name = self.get_gripper_name(arm)
                 self.part_controller_config[gripper_name] = {}
-                self.part_controller_config[gripper_name]["type"] = "GRIP"
+                self.part_controller_config[gripper_name]["type"] = self.part_controller_config[arm]['gripper']['type']
+                self.part_controller_config[gripper_name]["use_action_scaling"] = self.part_controller_config[arm]['gripper'].get('use_action_scaling', True)
                 self.part_controller_config[gripper_name]["robot_name"] = self.name
                 self.part_controller_config[gripper_name]["sim"] = self.sim
                 self.part_controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]

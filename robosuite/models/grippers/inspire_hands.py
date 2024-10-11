@@ -19,7 +19,6 @@ class InspireLeftHand(GripperModel):
         super().__init__(xml_path_completion("grippers/inspire_left_hand.xml"), idn=idn)
 
     def format_action(self, action):
-        action[0] = np.pi / 2
         return action[[0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]]
 
     @property
@@ -67,7 +66,6 @@ class InspireRightHand(GripperModel):
         super().__init__(xml_path_completion("grippers/inspire_right_hand.xml"), idn=idn)
 
     def format_action(self, action):
-        action[0] = np.pi / 2
         return action[[0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]]
 
     @property
