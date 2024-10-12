@@ -92,7 +92,7 @@ Controller Type: ``JOINT_TORQUE``
 
 Action Dimensions (not including gripper): ``n`` (number of joints)
 
-Since our controllers transform the desired values from the policies/solutions into joint torques, if these values are already joint torques, there is a one-to-one mapping between the reference value from the policy/solution and the output value from the joint torque controller at each step: :math:`\tau = \tau_d`
+Since our controllers transform the desired values from the policies/solutions into joint torques, if these values are already joint torques, there is a one-to-one mapping between the reference value from the policy/solution and the output value from the joint torque controller at each step: :math:`\tau = \tau_d`.
 
 .. math::
     \begin{equation}
@@ -119,14 +119,14 @@ Impedance: fixed
 
 Action Dimensions (not including gripper): ``n`` (number of joints)
 
-In joint position control, we create a proportional-derivative (PD) control law between the desired value provided by the policy/solution (interpreted as desired configuration for each joint) and the current joint positions of the robot. The control law that generates the joint torques to execute is parameterized by proportional and derivative gains, :math:`k_p`` and :math:`k_v`, and defined as
+In joint position control, we create a proportional-derivative (PD) control law between the desired value provided by the policy/solution (interpreted as desired configuration for each joint) and the current joint positions of the robot. The control law that generates the joint torques to execute is parameterized by proportional and derivative gains, :math:`k_p` and :math:`k_v`, and defined as
 
 .. math::
     \begin{equation}
     \tau = \Lambda \left[k_p \Delta_q - k_d\dot{q}\right]
     \end{equation} 
 
-where :math:`\Delta_q  = q_d - q`` is the difference between current and desired joint configurations, and :math:`\Lambda`` is the inertia matrix, that we use to scale the error to remove the dynamic effects of the mechanism. The stiffness and damping parameters, :math:`k_p` and :math:`k_d`, are determined in construction and kept fixed.
+where :math:`\Delta_q  = q_d - q` is the difference between current and desired joint configurations, and :math:`\Lambda` is the inertia matrix, that we use to scale the error to remove the dynamic effects of the mechanism. The stiffness and damping parameters, :math:`k_p` and :math:`k_d`, are determined in construction and kept fixed.
 
 Joint Space Control - Position with Variable Stiffness
 ***********************************************************
@@ -146,7 +146,7 @@ Impedance: variable
 
 Action Dimensions (not including gripper): ``3n`` (number of joints)
 
-Again, the control law is the same in the two previous control types, but now both the stiffness and damping parameters, :math:`k_p`` and :math:`k_d`, are controllable by the policy/solution and can be changed at each step.
+Again, the control law is the same in the two previous control types, but now both the stiffness and damping parameters, :math:`k_p` and :math:`k_d`, are controllable by the policy/solution and can be changed at each step.
 
 Operational Space Control - Pose with Fixed Impedance
 **********************************************************
@@ -173,7 +173,7 @@ Thus, the function that maps end-effector space position and orientation to low-
     \end{aligned}
     \end{equation}
 
-where :math:`\Lambda_p` and :math:`\Lambda_R` are the parts corresponding to position and orientation in :math:`\Lambda \in \mathbb{R}^{6\times6}`, the inertial matrix in the end-effector frame that decouples the end-effector motions, :math:`J_p`` and :math:`J_R`` are the position and orientation parts of the end-effector Jacobian, and :math:`\ominus` corresponds to the subtraction in :math:`\mathbb{SO}(3)`. The difference between current and desired position (:math:`\Delta_p= p_d - p`) and between current and desired orientation (:math:`\Delta_R = R_d \ominus R`) can be used as alternative policy action space, :math:`\mathcal{A}`. :math:`k_p^p`, :math:`k_p^d`, :math:`k_p^R`, and :math:`k_d^R` are vectors of proportional and derivative gains for position and orientation (parameters :math:`\kappa`), respectively, set once at initialization and kept fixed.
+where :math:`\Lambda_p` and :math:`\Lambda_R` are the parts corresponding to position and orientation in :math:`\Lambda \in \mathbb{R}^{6\times6}`, the inertial matrix in the end-effector frame that decouples the end-effector motions, :math:`J_p` and :math:`J_R` are the position and orientation parts of the end-effector Jacobian, and :math:`\ominus` corresponds to the subtraction in :math:`\mathbb{SO}(3)`. The difference between current and desired position (:math:`\Delta_p= p_d - p`) and between current and desired orientation (:math:`\Delta_R = R_d \ominus R`) can be used as alternative policy action space, :math:`\mathcal{A}`. :math:`k_p^p`, :math:`k_p^d`, :math:`k_p^R`, and :math:`k_d^R` are vectors of proportional and derivative gains for position and orientation (parameters :math:`\kappa`), respectively, set once at initialization and kept fixed.
 
 Operational Space Control - Pose with Variable Stiffness
 *************************************************************
