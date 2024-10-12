@@ -3,7 +3,7 @@ Robots
 
 .. figure:: ../images/robot_module.png
 
-**Robots** are a key component in **robosuite**, and serve as the embodiment of a given agent as well as the central interaction point within an environment and key interface to MuJoCo for the robot-related state and control. **robosuite** captures this level of abstraction with the `Robot <../simulation/robot>`_-based classes, with support for both single-armed and bimanual variations. In turn, the Robot class is centrally defined by a `RobotModel <../modeling/robot_model>`_, `MountModel <../modeling/robot_model.html#mount-model>`_, and `Controller(s) <../simulation/controller>`_. Subclasses of the :class:`RobotModel` class may also include additional models as well; for example, the `ManipulatorModel <../modeling/robot_model.html#manipulator-model>`_ class also includes `GripperModel(s) <../modeling/robot_model.html#gripper-model>`_ (with no gripper being represented by a dummy class).
+**Robots** are a key component in **robosuite**, and serve as the embodiment of a given agent as well as the central interaction point within an environment and key interface to MuJoCo for the robot-related state and control. **robosuite** captures this level of abstraction with the `Robot <../simulation/robot.html>`_-based classes, with support for both single-armed and bimanual variations. In turn, the Robot class is centrally defined by a `RobotModel <../modeling/robot_model.html>`_, `MountModel <../modeling/robot_model.html#mount-model>`_, and `Controller(s) <../simulation/controller.html>`_. Subclasses of the :class:`RobotModel` class may also include additional models as well; for example, the `ManipulatorModel <../modeling/robot_model.html#manipulator-model>`_ class also includes `GripperModel(s) <../modeling/robot_model.html#gripper-model>`_ (with no gripper being represented by a dummy class).
 
 The high-level features of **robosuite**'s robots are described as follows:
 
@@ -27,7 +27,7 @@ During a given simulation episode (each ``env.step(...)`` call), the environment
 
 Callables
 ---------
-At any given time, each robot has a set of ``properties`` whose real-time values can be accessed at any time. These include specifications for a given robot, such as its DoF, action dimension, and torque limits, as well as proprioceptive values, such as its joint positions and velocities. Additionally, if the robot is enabled with any sensors, those readings can also be polled as well. A full list of robot properties can be found in the `Robots API <../simulation/robot>`_ section.
+At any given time, each robot has a set of ``properties`` whose real-time values can be accessed at any time. These include specifications for a given robot, such as its DoF, action dimension, and torque limits, as well as proprioceptive values, such as its joint positions and velocities. Additionally, if the robot is enabled with any sensors, those readings can also be polled as well. A full list of robot properties can be found in the `Robots API <../simulation/robot.html>`_ section.
 
 Models
 ======
