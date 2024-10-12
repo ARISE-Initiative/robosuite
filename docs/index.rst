@@ -12,7 +12,7 @@ Welcome to robosuite's documentation!
 
    overview
    installation
-   quickstart
+   basicusage
    demos
 
 .. toctree::
