@@ -74,6 +74,7 @@ Welcome to robosuite's documentation!
    :caption: Miscellaneous
 
    references
+   changelog
    acknowledgement
 
 Indices and tables
