@@ -156,11 +156,11 @@ Impedance: fixed
 
 Action Dimensions (not including gripper): ``6``
 
-In the ``OSC_POSE`` controller, the desired value is the 6D pose (position and orientation) of a controlled frame. We follow the formalism from `[Khatib87] <https://ieeexplore.ieee.org/document/1087068>`_. Our control frame is always the ``eef_site`` defined in the [Gripper Model](../modeling/robot_model.html#gripper-model), placed at the end of the last link for robots without gripper or between the fingers for robots with gripper. The operational space control framework (OSC) computes the necessary joint torques to minimize the error between the desired and the current pose of the ``eef_site`` with the minimal kinematic energy. 
+In the ``OSC_POSE`` controller, the desired value is the 6D pose (position and orientation) of a controlled frame. We follow the formalism from `[Khatib87] <https://ieeexplore.ieee.org/document/1087068>`_. Our control frame is always the ``eef_site`` defined in the `Gripper Model <https://robosuite.ai/docs/modeling/robot_model.html#gripper-model>`_, placed at the end of the last link for robots without gripper or between the fingers for robots with gripper. The operational space control framework (OSC) computes the necessary joint torques to minimize the error between the desired and the current pose of the ``eef_site`` with the minimal kinematic energy. 
 
 Given a desired pose :math:`\mathbf{x}_{\mathit{des}}` and the current end-effector pose, , we first compute the end-effector acceleration that would help minimize the error between both, assumed. PD (proportional-derivative) control schema to improve convergence and stability. For that, we first decompose into a desired position, :math:`p_d \in \mathbb{R}^3`, and a desired orientation, :math:`R_d \in \mathbb{SO}(3)`. The end-effector acceleration to minimize the error should increase with the difference between desired end-effector pose and current pose, :math:`p` and :math:`R` (proportional term), and decrease with the current end-effector velocity, :math:`v` and :math:`\omega` (derivative term).
 
-We then compute the robot actuation (joint torques) to achieve the desired end-effector space accelerations leveraging the kinematic and dynamic models of the robot with the dynamically-consistent operational space formulation in [\[Khatib1995a\]](https://journals.sagepub.com/doi/10.1177/027836499501400103). First, we compute the wrenches at the end-effector that corresponds to the desired accelerations, :math:`{f}\in\mathbb{R}^{6}`.
+We then compute the robot actuation (joint torques) to achieve the desired end-effector space accelerations leveraging the kinematic and dynamic models of the robot with the dynamically-consistent operational space formulation in `[Khatib1995a] <https://journals.sagepub.com/doi/10.1177/027836499501400103>`_. First, we compute the wrenches at the end-effector that corresponds to the desired accelerations, :math:`{f}\in\mathbb{R}^{6}`.
 Then, we map the wrenches in end-effector space :math:`{f}` to joint torque commands with the end-effector Jacobian at the current joint configuration :math:`J=J(q)`: :math:`\tau = J^T{f}`. 
 
 Thus, the function that maps end-effector space position and orientation to low-level robot commands is (:math:`\textrm{ee} = \textrm{\it end-effector space}`):
@@ -198,7 +198,8 @@ The control law is the same as in the to previous controllers, but now both the 
 
 Configurations
 ---------------
-The config directory (found within the [Controllers](../source/robosuite.controllers.html) module) provides a set of default configuration files that hold default examples of parameters relevant to individual controllers. Note that when creating your controller config templates of a certain type of controller, the listed parameters in the default example are required and should be specified accordingly.
+
+The `config directory <https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/controllers/config>`_ provides a set of default configuration files that hold default examples of parameters relevant to individual controllers. Note that when creating your controller config templates of a certain type of controller, the listed parameters in the default example are required and should be specified accordingly.
 
 Note: Each robot has its own default controller configuration which is called by default unless a different controller config is called.
 
@@ -257,3 +258,4 @@ A custom controller configuration can also be used by simply creating a new conf
 
     # Create environment
     env = suite.make("Lift", robots="Panda", controller_configs=config, ... )
+
