@@ -30,6 +30,13 @@ Welcome to robosuite's documentation!
 
 .. toctree::
    :maxdepth: 1
+   :caption: Tutorials
+
+   tutorials/add_controller
+   tutorials/add_environment
+
+.. toctree::
+   :maxdepth: 1
    :caption: Simulation API
 
    simulation/robot
