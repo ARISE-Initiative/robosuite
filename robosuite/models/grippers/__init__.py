@@ -12,7 +12,7 @@ from .robotiq_140_gripper import Robotiq140Gripper
 from .wiping_gripper import WipingGripper
 from .bd_gripper import BDGripper
 from .null_gripper import NullGripper
-from .inspire_hands import InspireLeftHand, InspireRightHand
+from .inspire_hands import InspireLeftHand, InspireRightHand, InspireLeftHandForPanda, InspireRightHandForPanda
 
 GRIPPER_MAPPING = {
     "RethinkGripper": RethinkGripper,
@@ -27,6 +27,8 @@ GRIPPER_MAPPING = {
     "BDGripper": BDGripper,
     "InspireLeftHand": InspireLeftHand,
     "InspireRightHand": InspireRightHand,
+    "InspireLeftHandForPanda": InspireLeftHandForPanda,
+    "InspireRightHandForPanda": InspireRightHandForPanda,
     None: NullGripper,
 }
 
