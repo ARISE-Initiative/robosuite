@@ -30,7 +30,7 @@ class SpotArmFloating(SpotArm):
     def default_arms(self):
         return {"right": "BDArm"}
 
-class PandaDexR(Panda):
+class PandaDexRH(Panda):
     @property
     def default_gripper(self):
         return "Panda"
@@ -39,7 +39,7 @@ class PandaDexR(Panda):
     def default_gripper(self):
         return {"right": "InspireRightHand"}
 
-class PandaDexL(Panda):
+class PandaDexLH(Panda):
     @property
     def default_gripper(self):
         return "Panda"
