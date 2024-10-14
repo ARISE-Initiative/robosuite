@@ -37,7 +37,7 @@ class PandaDexRH(Panda):
 
     @property
     def default_gripper(self):
-        return {"right": "InspireRightHand"}
+        return {"right": "InspireRightHandForPanda"}
 
 class PandaDexLH(Panda):
     @property
@@ -46,4 +46,4 @@ class PandaDexLH(Panda):
 
     @property
     def default_gripper(self):
-        return {"right": "InspireLeftHand"}
+        return {"right": "InspireLeftHandForPanda"}

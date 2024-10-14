@@ -104,3 +104,26 @@ class InspireRightHand(GripperModel):
                              "r_ring_proximal_col", "r_ring_distal_col",
                              "r_pinky_proximal_col", "r_pinky_distal_col"],
         }
+    
+class InspireLeftHandForPanda(InspireLeftHand):
+    """
+    Dexterous left hand of GR1 robot
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this gripper instance
+    """
+
+    def __init__(self, idn=0):
+        super().__init__(xml_path_completion("grippers/inspire_left_hand_for_panda.xml"), idn=idn)
+
+    
+class InspireRightHandForPanda(InspireRightHand):
+    """
+    Dexterous right hand of GR1 robot
+
+    Args:
+        idn (int or str): Number or some other unique identification string for this gripper instance
+    """
+
+    def __init__(self, idn=0):
+        super().__init__(xml_path_completion("grippers/inspire_right_hand_for_panda.xml"), idn=idn)
