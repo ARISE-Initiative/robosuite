@@ -114,7 +114,7 @@ class InspireLeftHandForPanda(InspireLeftHand):
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("grippers/inspire_left_hand_for_panda.xml"), idn=idn)
+        super(InspireLeftHand, self).__init__(xml_path_completion("grippers/inspire_left_hand_for_panda.xml"), idn=idn)
 
     
 class InspireRightHandForPanda(InspireRightHand):
@@ -126,4 +126,4 @@ class InspireRightHandForPanda(InspireRightHand):
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("grippers/inspire_right_hand_for_panda.xml"), idn=idn)
+        super(InspireRightHand, self).__init__(xml_path_completion("grippers/inspire_right_hand_for_panda.xml"), idn=idn)
