@@ -4,7 +4,7 @@ from robosuite.models.robots.manipulators.manipulator_model import ManipulatorMo
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class BDArm(ManipulatorModel):
+class SpotArm(ManipulatorModel):
     """
     Spot Arm is a single-arm robot for mouting on the spot robot.
 
@@ -15,7 +15,7 @@ class BDArm(ManipulatorModel):
     arms = ["right"]
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("robots/bd_arm/robot.xml"), idn=idn)
+        super().__init__(xml_path_completion("robots/spot_arm/robot.xml"), idn=idn)
 
         # Set joint damping
         self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01)))
