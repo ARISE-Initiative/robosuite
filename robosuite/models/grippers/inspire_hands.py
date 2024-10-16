@@ -21,6 +21,8 @@ class InspireLeftHand(GripperModel):
     def format_action(self, action):
         # act like the <equality> tag in the xml
         # the tag is not working properly, so manually copy the value for finger joints
+        # act like the <equality> tag in the xml
+        # the tag is not working properly, so manually copy the value for finger joints
         return action[[0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]]
 
     @property
