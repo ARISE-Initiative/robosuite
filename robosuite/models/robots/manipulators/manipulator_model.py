@@ -188,7 +188,7 @@ class ManipulatorModel(RobotModel):
         raise NotImplementedError
     
     @property
-    def gripper_mount_offset(self):
+    def gripper_mount_pos_offset(self):
         """
         Define the custom offset of the gripper that is different from the one defined in xml.
 
@@ -198,9 +198,9 @@ class ManipulatorModel(RobotModel):
         return {}
 
     @property
-    def gripper_mount_quat(self):
+    def gripper_mount_quat_offset(self):
         """
-        Define the custom orientation of the gripper with respect to the arm. Return embpty dict by default unless specified. 
+        Define the custom orientation offset (?) of the gripper with respect to the arm. Return empty dict by default unless specified. The quaternion is in the wxyz format to match the mjcf format.
         """
         return {}
 
