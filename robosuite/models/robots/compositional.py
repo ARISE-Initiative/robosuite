@@ -1,6 +1,5 @@
 from robosuite.models.robots import *
 
-
 class PandaOmron(Panda):
     @property
     def default_base(self):
@@ -31,9 +30,6 @@ class SpotWithArmFloating(SpotArm):
         return {"right": "SpotArm"}
 
 class PandaDexRH(Panda):
-    @property
-    def default_gripper(self):
-        return "Panda"
 
     @property
     def default_gripper(self):
@@ -48,9 +44,6 @@ class PandaDexRH(Panda):
         return {"right": [0.5, -0.5, 0.5, 0.5]}
 
 class PandaDexLH(Panda):
-    @property
-    def default_gripper(self):
-        return "Panda"
 
     @property
     def default_gripper(self):
@@ -63,3 +56,34 @@ class PandaDexLH(Panda):
     @property
     def gripper_mount_quat_offset(self):
         return {"right": [0.5, -0.5, 0.5, 0.5]}
+
+class GR1Rethink(GR1ArmsOnly):
+
+    @property
+    def default_gripper(self):
+        return {"right": "RethinkGripper", "left": "RethinkGripper"}
+
+    @property
+    def gripper_mount_pos_offset(self):
+        return {"right": [0., 0., 0.], "left": [0., 0., 0.]}
+
+    @property
+    def gripper_mount_quat_offset(self):
+        return {"right": [0, 0, 1, 0], "left": [0, 0, 1, 0]}
+
+class SpotArmRethink(BDArm):
+    @property
+    def default_mount(self):
+        return "RethinkMount"
+
+    @property
+    def default_gripper(self):
+        return {"right": "RethinkGripper"}
+
+    @property
+    def gripper_mount_pos_offset(self):
+        return {"right": [0.05, 0., 0.]}
+
+    @property
+    def gripper_mount_quat_offset(self):
+        return {"right": [0.707107, 0, 0.707107, 0]}

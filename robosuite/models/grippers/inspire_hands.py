@@ -65,12 +65,13 @@ class InspireRightHand(GripperModel):
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("grippers/inspire_right_hand.xml"), idn=idn)
+        super().__init__(xml_path_completion("grippers/inspire_right_hand_equality.xml"), idn=idn)
 
     def format_action(self, action):
         # act like the <equality> tag in the xml
         # the tag is not working properly, so manually copy the value for finger joints
-        return action[[0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]]
+        # return action[[0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]]
+        return action
 
     @property
     def init_qpos(self):
