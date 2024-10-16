@@ -76,7 +76,6 @@ class ManipulatorModel(RobotModel):
             arm_name = self.eef_name
         if arm_name in self.grippers:
             raise ValueError("Attempts to add multiple grippers to one body")
-
         self.merge(gripper, merge_body=arm_name)
 
         self.grippers[arm_name] = gripper
@@ -187,6 +186,23 @@ class ManipulatorModel(RobotModel):
             str: Default gripper name to add to this robot
         """
         raise NotImplementedError
+    
+    @property
+    def gripper_mount_offset(self):
+        """
+        Define the custom offset of the gripper that is different from the one defined in xml.
+
+        Returns:
+            Empty dictionary unless specified.
+        """
+        return {}
+
+    @property
+    def gripper_mount_quat(self):
+        """
+        Define the custom orientation of the gripper with respect to the arm. Return embpty dict by default unless specified. 
+        """
+        return {}
 
     @property
     def arm_type(self):
