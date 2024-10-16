@@ -200,7 +200,8 @@ class ManipulatorModel(RobotModel):
     @property
     def gripper_mount_quat_offset(self):
         """
-        Define the custom orientation offset (?) of the gripper with respect to the arm. Return empty dict by default unless specified. The quaternion is in the wxyz format to match the mjcf format.
+        Define the custom orientation offset of the gripper with respect to the arm. Return empty dict by default unless specified. 
+        The quaternion is in the (w, x, y, z) format to match the mjcf format.
         """
         return {}
 
