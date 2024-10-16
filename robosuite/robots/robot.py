@@ -18,6 +18,7 @@ from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.observables import Observable, sensor
+from robosuite.utils.mjcf_utils import array_to_string
 
 
 class Robot(object):
@@ -192,6 +193,18 @@ class Robot(object):
             self.eef_rot_offset[arm] = T.quat_multiply(
                 self.robot_model.hand_rotation_offset[arm], self.gripper[arm].rotation_offset
             )
+
+            # Adjust gripper mount offset and quaternion if users specify custom values. This part is essential to support more flexible composition of new robots.
+            custom_gripper_mount_offset = self.robot_model.gripper_mount_offset.get(arm, None)
+            custom_gripper_mount_quat = self.robot_model.gripper_mount_quat.get(arm, None)
+            if custom_gripper_mount_offset is not None:
+                assert(len(custom_gripper_mount_offset) == 3)
+                # update an attribute inside an xml object
+                self.gripper[arm].worldbody.find("body").attrib["pos"] = array_to_string(custom_gripper_mount_offset)
+            if custom_gripper_mount_quat is not None:
+                assert(len(custom_gripper_mount_quat) == 4)
+                self.gripper[arm].worldbody.find("body").attrib["quat"] = array_to_string(custom_gripper_mount_quat)
+
             # Add this gripper to the robot model
             self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
 

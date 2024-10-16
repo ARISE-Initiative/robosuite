@@ -37,7 +37,15 @@ class PandaDexRH(Panda):
 
     @property
     def default_gripper(self):
-        return {"right": "InspireRightHandForPanda"}
+        return {"right": "InspireRightHand"}
+
+    @property
+    def gripper_mount_offset(self):
+        return {"right": [0., 0., 0.]}
+
+    @property
+    def gripper_mount_quat(self):
+        return {"right": [0.5, -0.5, 0.5, 0.5]}
 
 class PandaDexLH(Panda):
     @property
@@ -46,4 +54,12 @@ class PandaDexLH(Panda):
 
     @property
     def default_gripper(self):
-        return {"right": "InspireLeftHandForPanda"}
+        return {"right": "InspireLeftHand"}
+
+    @property
+    def gripper_mount_offset(self):
+        return {"right": [0., 0., 0.]}
+
+    @property
+    def gripper_mount_quat(self):
+        return {"right": [0.5, -0.5, 0.5, 0.5]}
