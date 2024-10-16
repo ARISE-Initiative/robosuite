@@ -28,6 +28,7 @@ ROBOT_CLASS_MAPPING = {
     "PandaDexRH": FixedBaseRobot,
     "PandaDexLH": FixedBaseRobot,
     "SpotArmRethink": FixedBaseRobot,
+    "SpotArmRobotiqGripper": FixedBaseRobot
 }
 
 target_type_mapping = {
