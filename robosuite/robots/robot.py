@@ -195,15 +195,17 @@ class Robot(object):
             )
 
             # Adjust gripper mount offset and quaternion if users specify custom values. This part is essential to support more flexible composition of new robots.
-            custom_gripper_mount_offset = self.robot_model.gripper_mount_offset.get(arm, None)
-            custom_gripper_mount_quat = self.robot_model.gripper_mount_quat.get(arm, None)
-            if custom_gripper_mount_offset is not None:
-                assert(len(custom_gripper_mount_offset) == 3)
+            custom_gripper_mount_pos_offset = self.robot_model.gripper_mount_pos_offset.get(arm, None)
+            custom_gripper_mount_quat_offset = self.robot_model.gripper_mount_quat_offset.get(arm, None)
+
+            # The offset of position and oriientation (quaternion) is assumed to be the very first body in the gripper xml.
+            if custom_gripper_mount_pos_offset is not None:
+                assert(len(custom_gripper_mount_pos_offset) == 3)
                 # update an attribute inside an xml object
-                self.gripper[arm].worldbody.find("body").attrib["pos"] = array_to_string(custom_gripper_mount_offset)
-            if custom_gripper_mount_quat is not None:
-                assert(len(custom_gripper_mount_quat) == 4)
-                self.gripper[arm].worldbody.find("body").attrib["quat"] = array_to_string(custom_gripper_mount_quat)
+                self.gripper[arm].worldbody.find("body").attrib["pos"] = array_to_string(custom_gripper_mount_pos_offset)
+            if custom_gripper_mount_quat_offset is not None:
+                assert(len(custom_gripper_mount_quat_offset) == 4)
+                self.gripper[arm].worldbody.find("body").attrib["quat"] = array_to_string(custom_gripper_mount_quat_offset)
 
             # Add this gripper to the robot model
             self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
