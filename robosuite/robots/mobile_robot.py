@@ -340,6 +340,26 @@ class MobileRobot(Robot):
 
             @sensor(modality=modality)
             def base_to_eef_quat(obs_cache):
+                """
+                Args:
+                    obs_cache (dict): A dictionary containing cached observations.
+                    
+                Returns:
+                    numpy.ndarray: The quaternion representing the orientation of the end effector *body*
+                    in the robot base coordinate frame.
+                
+                Note:
+                    In robosuite<=1.5, eef_quat has been queried from the body instead
+                    of the site and has thus been inconsistent with base_to_eef_pos, which queries the position 
+                    from the site. This inconsistency has been raised in issue 
+                    https://github.com/ARISE-Initiative/robosuite/issues/298
+                    
+                    Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
+                    New datasets should ideally use the logic in base_to_eef_quat_site.
+
+                    In a later robosuite release, we will directly update base_to_eef_quat to query
+                    the orientation from the site.
+                """
                 eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
                 base_pos = np.array(
                     self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))]
@@ -354,12 +374,49 @@ class MobileRobot(Robot):
                 T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
                 base_to_eef_mat = T_AB[:3, :3]
                 return T.mat2quat(base_to_eef_mat)
+            
+            @sensor(modality=modality)
+            def base_to_eef_quat_site(obs_cache):
+                """
+                Args:
+                    obs_cache (dict): A dictionary containing cached observations.
+                    
+                Returns:
+                    numpy.ndarray: The quaternion representing the orientation of the end effector *site*
+                    in the robot base coordinate frame.
+
+                Note:
+                    In robosuite<=1.5, eef_quat has been queried from the body instead
+                    of the site and has thus been inconsistent with base_to_eef_pos, which queries the position 
+                    from the site. This inconsistency has been raised in issue 
+                    https://github.com/ARISE-Initiative/robosuite/issues/298
+
+                    Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body,
+                    so we keep this key. New datasets should ideally use the logic in base_to_eef_quat_site.
+
+                    In a later robosuite release, we will directly update base_to_eef_quat to query
+                    the orientation from the site, and then remove this base_to_eef_quat_site key.
+                """
+                eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
+                base_pos = np.array(
+                    self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))]
+                )
+
+                eef_mat_site = self.sim.data.site_xmat[self.eef_site_id[arm]].reshape((3, 3))
+                base_mat = self.sim.data.get_site_xmat(self.robot_model.base.correct_naming("center"))
+
+                T_WA = np.vstack((np.hstack((base_mat, base_pos[:, None])), [0, 0, 0, 1]))
+                T_WB = np.vstack((np.hstack((eef_mat_site, eef_pos[:, None])), [0, 0, 0, 1]))
+                T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
+                base_to_eef_mat_site = T_AB[:3, :3]
+
+                return T.mat2quat(base_to_eef_mat_site)
 
             # only consider prefix if there is more than one arm
             pf = f"{arm}_" if len(self.arms) > 1 else ""
 
-            sensors += [base_to_eef_pos, base_to_eef_quat]
-            names += [f"base_to_{pf}eef_pos", f"base_to_{pf}eef_quat"]
+            sensors += [base_to_eef_pos, base_to_eef_quat, base_to_eef_quat_site]
+            names += [f"base_to_{pf}eef_pos", f"base_to_{pf}eef_quat", f"base_to_{pf}eef_quat_site"]
 
         return sensors, names
 
