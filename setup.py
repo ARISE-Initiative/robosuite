@@ -23,7 +23,7 @@ setup(
         "opencv-python",
         "pynput",
         "termcolor",
-        "pytest"
+        "pytest",
     ],
     eager_resources=["*"],
     include_package_data=True,

@@ -6,7 +6,7 @@ This runs some basic sanity checks on the robots, namely, checking that:
 
 Obviously, if an environment crashes during runtime, that is considered a failure as well.
 """
-from robosuite.robots import ROBOT_CLASS_MAPPING, SingleArm
+from robosuite.robots import ROBOT_CLASS_MAPPING
 
 
 def test_single_arm_robots():
@@ -15,6 +15,10 @@ def test_single_arm_robots():
             print(f"Testing {name}")
             _test_contact_geoms(robot(name))
 
+def test_all_robots():
+    for name, robot in ROBOT_CLASS_MAPPING.items():
+        print(f"Testing {name}")
+        _test_contact_geoms(robot(name))
 
 def _test_contact_geoms(robot):
     robot.load_model()
@@ -24,5 +28,6 @@ def _test_contact_geoms(robot):
 
 
 if __name__ == "__main__":
-    test_single_arm_robots()
+    # test_single_arm_robots()
+    test_all_robots()
     print("Robot tests completed.")
