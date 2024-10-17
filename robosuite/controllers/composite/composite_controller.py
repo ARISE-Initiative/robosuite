@@ -165,21 +165,22 @@ class HybridMobileBase(CompositeController):
         if not self.lite_physics:
             self.sim.forward()
 
+        action_mode = all_action[-1]
+        if action_mode > 0:
+            update_wrt_origin = True
+        else:
+            update_wrt_origin = False
+
         for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
             if part_name in self.grippers.keys():
                 action = self.grippers[part_name].format_action(action)
 
-            if part_name in self.arms and hasattr(controller, "set_goal_update_mode"):
-                action_mode = all_action[-1]
-                if action_mode > 0:
-                    goal_update_mode = "target"
-                else:
-                    goal_update_mode = "achieved"
-                controller.set_goal_update_mode(goal_update_mode)
-
-            controller.set_goal(action)
+            if part_name in self.arms:
+                controller.set_goal(action, update_wrt_origin=update_wrt_origin)
+            else:
+                controller.set_goal(action)
 
     @property
     def action_limits(self):
@@ -345,14 +346,6 @@ class WholeBody(CompositeController):
 
     def create_action_vector(self, action_dict: Dict[str, np.ndarray]) -> np.ndarray:
         full_action_vector = np.zeros(self.action_limits[0].shape)
-
-        # stopgap fix for mink / ik controllers: map generic action key names to whole body input names
-        for arm in ["right", "left"]:
-            if arm not in action_dict:
-                continue
-            action_dict[f"gripper0_{arm}_grip_site_pos"] = action_dict[arm][0:3]
-            action_dict[f"gripper0_{arm}_grip_site_axis_angle"] = action_dict[arm][3:6]
-
         for (part_name, action_vector) in action_dict.items():
             if part_name not in self._whole_body_controller_action_split_indexes:
                 ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")

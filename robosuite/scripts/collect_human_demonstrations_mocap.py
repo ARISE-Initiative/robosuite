@@ -17,10 +17,8 @@ import mujoco
 import numpy as np
 
 import robosuite as suite
-import robosuite.examples.third_party_controller.mink_controller
 import robosuite.macros as macros
 from robosuite.controllers import load_composite_controller_config
-from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 from robosuite.utils import transform_utils
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
@@ -28,7 +26,7 @@ from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 """
 Command for running GR1 + mocap (only works for GR1 b/c of site_names assumption)
 
-python robosuite/examples/third_party_controller/collect_human_demonstrations_mocap.py --environment Lift --robots GR1FixedLowerBody --device keyboard --camera frontview --custom-controller-config robosuite/examples/third_party_controller/default_mink_ik_gr1.json
+python robosuite/scripts/collect_human_demonstrations.py --robot GR1FixedLowerBody --camera frontview --device keyboard --composite-controller WHOLE_BODY_IK --renderer mjviewer --use-mocap
 
 Need to Esc; Tab; Scroll to Group Enable, then press Group 2. Then, double click on the mocap cube and Ctrl+left or right click.
 
@@ -115,10 +113,10 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             if "GR1" in env.robots[0].name:
                 # "relative" actions by default for now
                 action_dict = {
-                    "robot0_l_eef_site_pos": input_action[:3] * 0.1,
-                    "robot0_l_eef_site_axis_angle": input_action[3:6],
-                    "robot0_r_eef_site_pos": np.zeros(3),
-                    "robot0_r_eef_site_axis_angle": np.zeros(3),
+                    "gripper0_left_grip_site_pos": input_action[:3] * 0.1,
+                    "gripper0_left_grip_site_axis_angle": input_action[3:6],
+                    "gripper0_right_grip_site_pos": np.zeros(3),
+                    "gripper0_right_grip_site_axis_angle": np.zeros(3),
                     "left_gripper": np.array([0.0] * env.robots[0].gripper["left"].dof),
                     "right_gripper": np.array([0.0] * env.robots[0].gripper["right"].dof),
                 }
@@ -139,10 +137,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     right_axis_angle = transform_utils.quat2axisangle(right_quat_xyzw)
                     left_axis_angle = transform_utils.quat2axisangle(left_quat_xyzw)
 
-                    action_dict["robot0_l_eef_site_pos"] = left_pos
-                    action_dict["robot0_r_eef_site_pos"] = right_pos
-                    action_dict["robot0_l_eef_site_axis_angle"] = left_axis_angle
-                    action_dict["robot0_r_eef_site_axis_angle"] = right_axis_angle
                     action_dict["gripper0_left_grip_site_pos"] = left_pos
                     action_dict["gripper0_right_grip_site_pos"] = right_pos
                     action_dict["gripper0_left_grip_site_axis_angle"] = left_axis_angle
@@ -152,10 +146,10 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                 action_dict = {
                     "right_gripper": np.array([0.0]),
                     "left_gripper": np.array([0.0]),
-                    "robot0_l_eef_site_pos": np.array([-0.4189254, 0.22745755, 1.0597]) + input_action[:3] * 0.05,
-                    "robot0_l_eef_site_axis_angle": np.array([-2.1356914, 2.50323857, -2.45929076]),
-                    "robot0_r_eef_site_pos": np.array([-0.41931295, -0.22706004, 1.0566]),
-                    "robot0_r_eef_site_axis_angle": np.array([-1.26839518, 1.15421975, 0.99332174]),
+                    "gripper0_left_grip_site_pos": np.array([-0.4189254, 0.22745755, 1.0597]) + input_action[:3] * 0.05,
+                    "gripper0_left_grip_site_axis_angle": np.array([-2.1356914, 2.50323857, -2.45929076]),
+                    "gripper0_right_grip_site_pos": np.array([-0.41931295, -0.22706004, 1.0566]),
+                    "gripper0_right_grip_site_axis_angle": np.array([-1.26839518, 1.15421975, 0.99332174]),
                 }
             else:
                 action_dict = {}
@@ -315,8 +309,14 @@ if __name__ == "__main__":
     )
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
+    # parser.add_argument(
+    #     "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
+    # )
     parser.add_argument(
-        "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
+        "--composite-controller",
+        type=str,
+        default=None,
+        help="Choice of composite controller. Can be 'NONE' or 'WHOLE_BODY_IK'",
     )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
@@ -324,20 +324,26 @@ if __name__ == "__main__":
     parser.add_argument(
         "--renderer",
         type=str,
-        default="mjviewer",
+        default="mujoco",
         help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)",
     )
+    # add use mocap option
+    parser.add_argument("--use-mocap", action="store_true")
     args = parser.parse_args()
+    if args.use_mocap:
+        assert args.renderer == "mjviewer", "Mocap is only supported with the mjviewer renderer"
 
     # Get controller config
-    composite_controller_config = load_composite_controller_config(controller=args.controller, robot=args.robots[0])
+    composite_controller_config = load_composite_controller_config(
+        default_controller=args.composite_controller, robot=args.robots[0]
+    )
 
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
-        "controller_configs": composite_controller_config,
-        # "composite_controller_configs": composite_controller_config,
+        # "controller_configs": controller_config,
+        "composite_controller_configs": composite_controller_config,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
@@ -371,12 +377,11 @@ if __name__ == "__main__":
     if args.device == "keyboard":
         from robosuite.devices import Keyboard
 
-        device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+        device = Keyboard(env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
-        device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-
+        device = SpaceMouse(env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
@@ -387,5 +392,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config, use_mocap=True)
+        collect_human_trajectory(env, device, args.arm, args.config, end_effector="right", use_mocap=args.use_mocap)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

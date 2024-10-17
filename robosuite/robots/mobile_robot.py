@@ -7,7 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import load_part_controller_config
 from robosuite.robots.robot import Robot
-from robosuite.utils.observables import sensor
+from robosuite.utils.observables import Observable, sensor
 
 
 class MobileRobot(Robot):

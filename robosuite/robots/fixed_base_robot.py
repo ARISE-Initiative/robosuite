@@ -7,6 +7,8 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+from robosuite.utils.observables import sensor
 
 
 class FixedBaseRobot(Robot):
@@ -78,9 +80,6 @@ class FixedBaseRobot(Robot):
         """
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
-
-        self.composite_controller.update_state()
-        self.composite_controller.reset()
 
     def setup_references(self):
         """
