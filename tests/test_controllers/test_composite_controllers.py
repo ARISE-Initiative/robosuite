@@ -4,13 +4,15 @@ Script to test composite controllers:
 $ pytest -s tests/test_controllers/test_composite_controllers.py
 """
 
-from typing import List, Union, Dict
+from typing import Dict, List, Union
+
+import mujoco
 import numpy as np
 import pytest
+
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 from robosuite.robots import ROBOT_CLASS_MAPPING
-import mujoco
 
 
 def is_robosuite_robot(robot: str) -> bool:
@@ -23,6 +25,7 @@ def is_robosuite_robot(robot: str) -> bool:
         return True
     except (ImportError, AttributeError):
         return False
+
 
 def create_and_test_env(
     env: str,
@@ -56,6 +59,7 @@ def create_and_test_env(
         obs, reward, done, _ = env.step(action)
 
     env.close()
+
 
 @pytest.mark.parametrize("robot", ROBOT_CLASS_MAPPING.keys())
 @pytest.mark.parametrize("controller", [None, "BASIC", "WHOLE_BODY_IK"])

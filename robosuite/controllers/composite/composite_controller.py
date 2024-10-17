@@ -30,7 +30,8 @@ def register_composite_controller(target_class):
 @register_composite_controller
 class CompositeController:
     """This is the parent class for all composite controllers. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
-    name="BASIC"
+
+    name = "BASIC"
 
     def __init__(
         self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
@@ -258,7 +259,9 @@ class WholeBody(CompositeController):
             try:
                 last_idx += self.part_controllers[part_name].control_dim
             except KeyError as e:
-                import ipdb;ipdb.set_trace()
+                import ipdb
+
+                ipdb.set_trace()
                 raise KeyError(f"Part name '{part_name}' not found in part_controllers: {e}")
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
@@ -399,15 +402,18 @@ class WholeBodyIK(WholeBody):
         self.valid_ik_controlled_parts = []
         valid_ref_names = []
 
-        assert "ref_name" in self.composite_controller_specific_config, \
-            "The 'ref_name' key is missing from composite_controller_specific_config."
+        assert (
+            "ref_name" in self.composite_controller_specific_config
+        ), "The 'ref_name' key is missing from composite_controller_specific_config."
 
         for part in original_ik_controlled_parts:
             if part in self.part_controllers:
                 self.valid_ik_controlled_parts.append(part)
             else:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"Part '{part}' specified in 'ik_controlled_part_names' "
-                    "does not exist in part_controllers. Removing ...")
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Part '{part}' specified in 'ik_controlled_part_names' "
+                    "does not exist in part_controllers. Removing ..."
+                )
 
         # Update the configuration with only the valid parts
         self.composite_controller_specific_config["ik_controlled_part_names"] = self.valid_ik_controlled_parts
@@ -418,8 +424,10 @@ class WholeBodyIK(WholeBody):
             if ref_name in self.sim.model.site_names:  # Check if the site exists in the mujoco model
                 valid_ref_names.append(ref_name)
             else:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"Reference name '{ref_name}' specified in configuration"
-                " does not exist in the mujoco model. Removing ...")
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Reference name '{ref_name}' specified in configuration"
+                    " does not exist in the mujoco model. Removing ..."
+                )
 
         # Update the configuration with only the valid reference names
         self.composite_controller_specific_config["ref_name"] = valid_ref_names
@@ -430,8 +438,9 @@ class WholeBodyIK(WholeBody):
             if part_name in self.part_controllers:
                 joint_names += self.part_controllers[part_name].joint_names
             else:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"{part_name} is not a valid part name in part_controllers."
-                                                  " Skipping this part for IK control.")
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"{part_name} is not a valid part name in part_controllers." " Skipping this part for IK control."
+                )
 
         # Compute nullspace gains, Kn.
         Kn = get_nullspace_gains(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
