@@ -1,4 +1,4 @@
-<mujoco model="bd arm">
+<mujoco model="spot arm">
   <compiler angle="radian" />
   <option gravity="0 0 0"/>
   <option integrator="implicitfast" cone="elliptic" impratio="100"/>
@@ -30,7 +30,7 @@
   </asset>
 
   <default>
-    <default class="bd_arm">
+    <default class="spot_arm">
       <geom solref="0.004 1"/>
       <joint actuatorfrcrange="-1000 1000"/>
       <position kp="500" kv="40" inheritrange="1"/>
@@ -110,11 +110,11 @@
   </worldbody>
 
   <actuator>
-    <motor class="bd_arm" name="arm_sh0" joint="arm_sh0"/>
-    <motor class="bd_arm" name="arm_sh1" joint="arm_sh1"/>
-    <motor class="bd_arm" name="arm_el0" joint="arm_el0"/>
-    <motor class="bd_arm" name="arm_el1" joint="arm_el1"/>
-    <motor class="bd_arm" name="arm_wr0" joint="arm_wr0"/>
-    <motor class="bd_arm" name="arm_wr1" joint="arm_wr1"/>
+    <motor class="spot_arm" name="arm_sh0" joint="arm_sh0"/>
+    <motor class="spot_arm" name="arm_sh1" joint="arm_sh1"/>
+    <motor class="spot_arm" name="arm_el0" joint="arm_el0"/>
+    <motor class="spot_arm" name="arm_el1" joint="arm_el1"/>
+    <motor class="spot_arm" name="arm_wr0" joint="arm_wr0"/>
+    <motor class="spot_arm" name="arm_wr1" joint="arm_wr1"/>
   </actuator>
 </mujoco>

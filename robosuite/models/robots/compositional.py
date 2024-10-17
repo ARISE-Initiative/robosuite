@@ -11,21 +11,21 @@ class PandaOmron(Panda):
         return {"right": "Panda"}
 
 
-class SpotArm(BDArm):
+class SpotWithArm(SpotArm):
     @property
     def default_base(self):
         return "Spot"
 
     @property
     def default_arms(self):
-        return {"right": "BDArm"}
+        return {"right": "SpotArm"}
 
 
-class SpotArmFloating(SpotArm):
+class SpotWithArmFloating(SpotArm):
     @property
     def default_base(self):
         return "SpotFloating"
 
     @property
     def default_arms(self):
-        return {"right": "BDArm"}
+        return {"right": "SpotArm"}
