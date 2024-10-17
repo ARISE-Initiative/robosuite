@@ -72,7 +72,7 @@ class GR1(LeggedManipulatorModel):
         return {
             "bins": (-0.35, -0.1, 0.95),
             "empty": (-0.29, 0, 0.95),
-            "table": lambda table_length: (-0.17 - table_length / 2, 0, 0.95),
+            "table": lambda table_length: (-0.1 - table_length / 2, 0, 0.95),
         }
 
     @property
@@ -163,7 +163,7 @@ class GR1FloatingBody(GR1):
         return {
             "bins": (-0.35, -0.1, 0.97),
             "empty": (-0.29, 0, 0.97),
-            "table": lambda table_length: (-0.17 - table_length / 2, 0, 0.97),
+            "table": lambda table_length: (-0.1 - table_length / 2, 0, 0.97),
         }
 
 
