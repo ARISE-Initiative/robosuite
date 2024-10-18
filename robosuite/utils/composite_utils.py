@@ -6,19 +6,30 @@ from robosuite.robots import ROBOT_CLASS_MAPPING, register_robot_class, target_t
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.robot_utils import check_bimanual
 
+BASE_TARGET_MAPPING = {
+    "RethinkMount": "FixedBaseRobot",
+    "RethinkMinimalMount": "FixedBaseRobot",
+    "NullMount": "FixedBaseRobot",
+    "OmronMobileBase": "WheeledRobot",
+    "NullMobileBase": "WheeledRobot",
+    "NoActuationBase": "LeggedRobot",
+    "Spot": "LeggedRobot",
+    "SpotFloating": "LeggedRobot",
+}
 
-def get_target_type():
+
+def get_target_type(base):
     """
     Returns the target type of the robot
     """
-    pass
+    return BASE_TARGET_MAPPING[base]
 
 
 def create_composite_robot(
     name: str, robot: str, base: Optional[str] = None, grippers: Optional[Union[str, List[str], Tuple[str]]] = None
 ):
     """
-    Creates a composite robot
+    Factory function to create a composite robot
     """
 
     bimanual_robot = check_bimanual(robot)
@@ -32,12 +43,16 @@ def create_composite_robot(
             f"Grippers {grippers} supplied for single gripper robot.\
                                            Using gripper {grippers[0]}."
         )
+    if not base:
+        base = REGISTERED_ROBOTS[robot]().default_base
     if robot in ["Tiago", "GR1"] and base:
         ROBOSUITE_DEFAULT_LOGGER.warning(f"Defined custom base when using {robot} robot. Ignoring base.")
         if robot in ["Tiago"]:
             base = "NullMobileBase"
         elif robot == "GR1":
             base = "NoActuationBase"
+
+    target_type = get_target_type(base)
 
     class_dict = {
         "default_base": property(lambda self: base),
@@ -48,6 +63,6 @@ def create_composite_robot(
     }
 
     CustomCompositeRobotClass = type(name, (REGISTERED_ROBOTS[robot],), class_dict)
-    register_robot_class("FixedBaseRobot")(CustomCompositeRobotClass)
+    register_robot_class(target_type)(CustomCompositeRobotClass)
 
     return CustomCompositeRobotClass
