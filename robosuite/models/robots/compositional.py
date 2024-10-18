@@ -43,7 +43,7 @@ class SpotWithArm(SpotArm):
         return {
             "bins": (-1.05, -0.1, 0.3),
             "empty": (-1.1, 0, 0.3),
-            "table": lambda table_length: (-0.5 - table_length / 2, 0.0, 0.3),
+            "table": lambda table_length: (-0.5 - table_length / 2, 0.0, 0.46),
         }
 
 

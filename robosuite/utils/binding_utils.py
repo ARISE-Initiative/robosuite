@@ -1012,7 +1012,7 @@ class MjData(metaclass=_MjDataMeta):
 
     def set_joint_qpos(self, name, value):
         """
-        Set the velocities of a joint using name.
+        Set the position of a joint using name.
 
         Args:
             name (str): The name of a joint
@@ -1046,7 +1046,7 @@ class MjData(metaclass=_MjDataMeta):
 
     def set_joint_qvel(self, name, value):
         """
-        Set the velocities of a mjo using name.
+        Set the velocities of a joint using name.
 
         Args:
             name (str): The name of a joint
