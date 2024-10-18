@@ -72,6 +72,7 @@ class SimpleGripController(GripperController):
         policy_freq=20,
         qpos_limits=None,
         interpolator=None,
+        use_action_scaling=True,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
         super().__init__(
@@ -99,6 +100,9 @@ class SimpleGripController(GripperController):
 
         # interpolator
         self.interpolator = interpolator
+
+        # action scaling
+        self.use_action_scaling = use_action_scaling
 
         # initialize
         self.goal_qvel = None
@@ -129,9 +133,11 @@ class SimpleGripController(GripperController):
         delta = action
 
         # Check to make sure delta is size self.joint_dim
-        assert len(delta) == self.control_dim, "Delta qpos must be equal to the control dimension of the robot!"
+        assert len(delta) == self.control_dim, f"Delta qpos must be equal to the control dimension of the robot! Control dim: {self.control_dim}, Action (delta) dim: {len(delta)}"
 
-        scaled_delta = self.scale_action(delta)
+        scaled_delta = delta
+        if self.use_action_scaling:
+            scaled_delta = self.scale_action(delta)
 
         self.goal_qvel = scaled_delta
 
@@ -165,10 +171,12 @@ class SimpleGripController(GripperController):
         else:
             desired_qvel = np.array(self.goal_qvel)
 
-        ctrl_range = np.stack([self.actuator_min, self.actuator_max], axis=-1)
-        bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
-        weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
-        self.vels = bias + weight * desired_qvel
+        self.vels = desired_qvel
+        if self.use_action_scaling:
+            ctrl_range = np.stack([self.actuator_min, self.actuator_max], axis=-1)
+            bias = 0.5 * (ctrl_range[:, 1] + ctrl_range[:, 0])
+            weight = 0.5 * (ctrl_range[:, 1] - ctrl_range[:, 0])
+            self.vels = bias + weight * desired_qvel
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
