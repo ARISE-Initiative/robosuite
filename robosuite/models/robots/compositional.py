@@ -17,6 +17,10 @@ class PandaOmron(Panda):
         return np.array([0, np.pi / 16.0 - 0.2, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.4, np.pi / 4])
 
     @property
+    def init_torso_qpos(self):
+        return np.array([0.2])
+
+    @property
     def base_xpos_offset(self):
         return {
             "bins": (-0.6, -0.1, 0),
@@ -48,6 +52,13 @@ class SpotWithArm(SpotArm):
 
 
 class SpotWithArmFloating(SpotArm):
+    def __init__(self, idn=0):
+        super().__init__(idn=idn)
+
+    @property
+    def init_qpos(self):
+        return np.array([0.0, -2, 1.26, -0.335, 0.862, 0.0])
+
     @property
     def default_base(self):
         return "SpotFloating"
@@ -55,3 +66,11 @@ class SpotWithArmFloating(SpotArm):
     @property
     def default_arms(self):
         return {"right": "SpotArm"}
+
+    @property
+    def base_xpos_offset(self):
+        return {
+            "bins": (-0.7, -0.1, 0.7),
+            "empty": (-0.6, 0, 0.7),
+            "table": lambda table_length: (-0.5 - table_length / 2, 0.0, 0.7),
+        }

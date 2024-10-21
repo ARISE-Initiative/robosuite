@@ -236,6 +236,14 @@ class ManipulatorModel(RobotModel):
         raise NotImplementedError
 
     @property
+    def init_base_qpos(self):
+        return None
+
+    @property
+    def init_torso_qpos(self):
+        return None
+
+    @property
     def arm_actuators(self):
         """
         No need for name correcting because the prefix has been added during creation.
