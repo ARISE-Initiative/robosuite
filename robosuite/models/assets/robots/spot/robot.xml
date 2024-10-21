@@ -38,7 +38,7 @@
       <geom solref="0.004 1"/>
       <joint actuatorfrcrange="-1000 1000"/>
       <position kp="500" kv="40" inheritrange="1"/>
-      <motor ctrlrange="-33.5 33.5" ctrllimited="true"/>
+      <motor ctrlrange="-70 70" ctrllimited="true"/>
     </default>
     <default class="spot_visual">
       <joint actuatorfrcrange="-1000 1000"/>
@@ -87,7 +87,7 @@
               <joint class="spot_collision" name="fr_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.255648"/>
               <geom material="BlackAbs" mesh="front_right_lower_leg" class="spot_visual"/>
               <geom mesh="right_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="FR" class="spot_foot"/>
             </body>
           </body>
         </body>
@@ -111,7 +111,7 @@
               <joint class="spot_collision" name="fl_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.254402"/>
               <geom material="BlackAbs" mesh="front_left_lower_leg" class="spot_visual"/>
               <geom mesh="left_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="FL" class="spot_foot"/>
             </body>
           </body>
         </body>
@@ -135,7 +135,7 @@
               <joint class="spot_collision" name="hr_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.248282"/>
               <geom material="BlackAbs" mesh="rear_left_lower_leg" class="spot_visual"/>
               <geom mesh="right_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="RR" class="spot_foot"/>
             </body>
           </body>
         </body>
@@ -159,7 +159,7 @@
               <joint class="spot_collision" name="hl_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.247067"/>
               <geom material="BlackAbs" mesh="rear_left_lower_leg" class="spot_visual"/>
               <geom mesh="left_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="RL" class="spot_foot"/>
             </body>
           </body>
         </body>
