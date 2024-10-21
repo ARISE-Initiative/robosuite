@@ -6,16 +6,12 @@ from robosuite.controllers.composite.composite_controller_factory import load_co
 
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER as logger
 
-def check_parts(world_body, part_name, parts_dict):
-    for joint in world_body.findall(".//joint"):
-        if part_name in joint.attrib["name"] == part_name:
-            parts_dict[part_name].append(joint.attrib["name"])
 
-def check_robot_definition(robot_name):
+def check_robot_definition(robot_name: str):
 
     print(f"Loading {robot_name} ...")
     controller_config = load_composite_controller_config("BASIC")
-    robot = Robot(robot_type=robot_name,      composite_controller_config=controller_config, gripper_type=None)
+    robot = Robot(robot_type=robot_name, composite_controller_config=controller_config, gripper_type=None)
     logger.info(f"Succcessfully found the defined robot")
 
     robot.load_model()
