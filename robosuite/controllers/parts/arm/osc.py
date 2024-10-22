@@ -129,7 +129,7 @@ class OperationalSpaceController(Controller):
         interpolator_ori=None,
         control_ori=True,
         input_type="delta",
-        input_ref_frame="world",
+        input_ref_frame="base",
         uncouple_pos_ori=True,
         lite_physics=False,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
@@ -206,17 +206,13 @@ class OperationalSpaceController(Controller):
         # whether or not pos and ori want to be uncoupled
         self.uncoupling = uncouple_pos_ori
 
-        # initialize goals based on initial pos / ori
-        self.goal_ori = np.array(self.initial_ref_ori_mat)
-        self.goal_pos = np.array(self.initial_ref_pos)
+        # initialize goals
+        self.goal_pos = None
+        self.goal_ori = None
 
         # initialize orientation references
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
-
-        # initialize relative goal position and orientations
-        self.goal_origin_to_eef_pos = None
-        self.goal_origin_to_eef_ori = None
 
         # initialize origin pos and ori
         self.origin_pos = None
@@ -254,28 +250,13 @@ class OperationalSpaceController(Controller):
 
         # If we're using deltas, interpret actions as such
         if self.input_type == "delta":
-            if self.input_ref_frame == "world":
-                # convert deltas in world coordinate frame to base coordinate frame
-                x, y = delta[0], delta[1]
-                theta = T.mat2euler(self.ref_ori_mat)[2] - np.pi / 2
-                delta[0] = x * np.cos(theta) + y * np.sin(theta)
-                delta[1] = -x * np.sin(theta) + y * np.cos(theta)
-
-                roll = delta[3]
-                pitch = delta[4]
-                delta[3] = roll * np.cos(theta) + pitch * np.sin(theta)
-                delta[4] = -roll * np.sin(theta) + pitch * np.cos(theta)
-
             scaled_delta = self.scale_action(delta)
-
-            self.goal_origin_to_eef_pos = self.compute_goal_pos(scaled_delta[0:3])
-            self.goal_origin_to_eef_ori = self.compute_goal_orientation(scaled_delta[3:6])
+            self.goal_pos = self.compute_goal_pos(scaled_delta[0:3])
+            self.goal_ori = self.compute_goal_ori(scaled_delta[3:6])
         # Else, interpret actions as absolute values
         elif self.input_type == "absolute":
-            if self.input_ref_frame == "world":
-                raise NotImplementedError
-            self.goal_origin_to_eef_pos = action[0:3]
-            self.goal_origin_to_eef_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
+            self.goal_pos = action[0:3]
+            self.goal_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
         else:
             raise ValueError(f"Unsupport input_type {self.input_type}")
 
@@ -316,20 +297,30 @@ class OperationalSpaceController(Controller):
 
         assert goal_update_mode in ["achieved", "target"]
 
-        if self.goal_origin_to_eef_pos is None:
-            self.goal_origin_to_eef_pos = self.world_to_origin_frame(self.ref_pos)
+        if self.goal_pos is None:
+            if self.input_ref_frame == "base":
+                self.goal_pos = self.world_to_origin_frame(self.ref_pos)
+            elif self.input_ref_frame == "world":
+                self.goal_pos = self.ref_pos
+            else:
+                raise ValueError
 
         if goal_update_mode == "target":
-            goal_origin_to_eef_pos = self.goal_origin_to_eef_pos + delta
+            goal_pos = self.goal_pos + delta
         elif goal_update_mode == "achieved":
-            goal_origin_to_eef_pos = self.world_to_origin_frame(self.ref_pos) + delta
+            if self.input_ref_frame == "base":
+                goal_pos = self.world_to_origin_frame(self.ref_pos) + delta
+            elif self.input_ref_frame == "world":
+                goal_pos = self.ref_pos + delta
+            else:
+                raise ValueError
 
         if self.position_limits is not None:
             raise NotImplementedError
 
-        return goal_origin_to_eef_pos
+        return goal_pos
 
-    def compute_goal_orientation(self, delta, goal_update_mode=None):
+    def compute_goal_ori(self, delta, goal_update_mode=None):
         """
         Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
         @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
@@ -350,25 +341,35 @@ class OperationalSpaceController(Controller):
         if goal_update_mode is None:
             goal_update_mode = self._goal_update_mode
 
-        if self.goal_origin_to_eef_ori is None:
-            self.goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
+        if self.goal_ori is None:
+            if self.input_ref_frame == "base":
+                self.goal_ori = self.goal_origin_to_eef_pose()[:3, :3]
+            elif self.input_ref_frame == "world":
+                self.goal_ori = self.ref_ori_mat
+            else:
+                raise ValueError
 
         # convert axis-angle value to rotation matrix
         quat_error = T.axisangle2quat(delta)
         rotation_mat_error = T.quat2mat(quat_error)
 
         if self._goal_update_mode == "target":
-            goal_origin_to_eef_ori = np.dot(rotation_mat_error, self.goal_origin_to_eef_ori)
+            goal_ori = np.dot(rotation_mat_error, self.goal_ori)
         elif self._goal_update_mode == "achieved":
-            curr_goal_origin_to_eef_ori = self.goal_origin_to_eef_pose()[:3, :3]
-            goal_origin_to_eef_ori = np.dot(rotation_mat_error, curr_goal_origin_to_eef_ori)
+            if self.input_ref_frame == "base":
+                curr_goal_ori = self.goal_origin_to_eef_pose()[:3, :3]
+            elif self.input_ref_frame == "world":
+                curr_goal_ori = self.ref_ori_mat
+            else:
+                raise ValueError
+            goal_ori = np.dot(rotation_mat_error, curr_goal_ori)
         else:
             raise ValueError
 
         # check for orientation limits
         if np.array(self.orientation_limits).any():
             raise NotImplementedError
-        return goal_origin_to_eef_ori
+        return goal_ori
 
     def run_controller(self):
         """
@@ -385,17 +386,22 @@ class OperationalSpaceController(Controller):
         # Update state
         self.update()
 
-        desired_pos = None
+        desired_world_pos = None
         # Only linear interpolator is currently supported
         if self.interpolator_pos is not None:
             # Linear case
             if self.interpolator_pos.order == 1:
-                desired_pos = self.interpolator_pos.get_interpolated_goal()
+                desired_world_pos = self.interpolator_pos.get_interpolated_goal()
             else:
                 # Nonlinear case not currently supported
                 pass
         else:
-            desired_pos = self.origin_pos + np.dot(self.origin_ori, self.goal_origin_to_eef_pos)
+            if self.input_ref_frame == "base":
+                desired_world_pos = self.origin_pos + np.dot(self.origin_ori, self.goal_pos)
+            elif self.input_ref_frame == "world":
+                desired_world_pos = self.goal_pos
+            else:
+                raise ValueError
 
         if self.interpolator_ori is not None:
             # relative orientation based on difference between current ori and ref
@@ -403,11 +409,16 @@ class OperationalSpaceController(Controller):
 
             ori_error = self.interpolator_ori.get_interpolated_goal()
         else:
-            desired_ori = np.dot(self.origin_ori, self.goal_origin_to_eef_ori)
-            ori_error = orientation_error(desired_ori, self.ref_ori_mat)
+            if self.input_ref_frame == "base":
+                desired_world_ori = np.dot(self.origin_ori, self.goal_ori)
+            elif self.input_ref_frame == "world":
+                desired_world_ori = self.goal_ori
+            else:
+                raise ValueError
+            ori_error = orientation_error(desired_world_ori, self.ref_ori_mat)
 
         # Compute desired force and torque based on errors
-        position_error = desired_pos - self.ref_pos
+        position_error = desired_world_pos - self.ref_pos
         base_pos_vel = np.array(self.sim.data.get_site_xvelp(f"{self.naming_prefix}{self.part_name}_center"))
         vel_pos_error = -(self.ref_pos_vel - base_pos_vel)
 
@@ -527,7 +538,7 @@ class OperationalSpaceController(Controller):
         helper function that converts delta action into absolute action
         """
         abs_pos = self.compute_goal_pos(delta_ac[0:3], goal_update_mode=goal_update_mode)
-        abs_ori = self.compute_goal_orientation(delta_ac[3:6], goal_update_mode=goal_update_mode)
+        abs_ori = self.compute_goal_ori(delta_ac[3:6], goal_update_mode=goal_update_mode)
         abs_rot = T.quat2axisangle(T.mat2quat(abs_ori))
         abs_action = np.concatenate([abs_pos, abs_rot])
         return abs_action
