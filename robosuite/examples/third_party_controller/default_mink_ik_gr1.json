@@ -42,7 +42,8 @@
                 "interpolation": null,
                 "ramp_ratio": 0.2,
                 "gripper": {
-                    "type": "GRIP"
+                    "type": "GRIP",
+                    "use_action_scaling": false
                 }
             },
             "left": {
@@ -60,7 +61,8 @@
                 "interpolation": null,
                 "ramp_ratio": 0.2,
                 "gripper": {
-                    "type": "GRIP"
+                    "type": "GRIP",
+                    "use_action_scaling": false
                 }
             }
         },

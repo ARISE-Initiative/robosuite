@@ -93,5 +93,7 @@ def _get_robot_name(robot: str) -> str:
         return "g1"
     elif "H1" in robot:
         return "h1"
+    elif "PandaDex" in robot:
+        return "panda_dex"
     else:
         return robot.lower()
