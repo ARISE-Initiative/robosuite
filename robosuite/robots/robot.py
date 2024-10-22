@@ -17,6 +17,7 @@ from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+from robosuite.utils.mjcf_utils import array_to_string
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -192,6 +193,24 @@ class Robot(object):
             self.eef_rot_offset[arm] = T.quat_multiply(
                 self.robot_model.hand_rotation_offset[arm], self.gripper[arm].rotation_offset
             )
+
+            # Adjust gripper mount offset and quaternion if users specify custom values. This part is essential to support more flexible composition of new robots.
+            custom_gripper_mount_pos_offset = self.robot_model.gripper_mount_pos_offset.get(arm, None)
+            custom_gripper_mount_quat_offset = self.robot_model.gripper_mount_quat_offset.get(arm, None)
+
+            # The offset of position and oriientation (quaternion) is assumed to be the very first body in the gripper xml.
+            if custom_gripper_mount_pos_offset is not None:
+                assert len(custom_gripper_mount_pos_offset) == 3
+                # update an attribute inside an xml object
+                self.gripper[arm].worldbody.find("body").attrib["pos"] = array_to_string(
+                    custom_gripper_mount_pos_offset
+                )
+            if custom_gripper_mount_quat_offset is not None:
+                assert len(custom_gripper_mount_quat_offset) == 4
+                self.gripper[arm].worldbody.find("body").attrib["quat"] = array_to_string(
+                    custom_gripper_mount_quat_offset
+                )
+
             # Add this gripper to the robot model
             self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
 
@@ -271,6 +290,10 @@ class Robot(object):
             self.recent_ee_vel[arm] = DeltaBuffer(dim=6)
             self.recent_ee_vel_buffer[arm] = RingBuffer(dim=6, length=10)
             self.recent_ee_acc[arm] = DeltaBuffer(dim=6)
+
+        # reset internal variables for composite controller
+        self.composite_controller.update_state()
+        self.composite_controller.reset()
 
     def setup_references(self):
         """
@@ -819,9 +842,13 @@ class Robot(object):
 
             if self.has_gripper[arm]:
                 # Load gripper controllers
+                assert "gripper" in self.part_controller_config[arm], "Gripper controller config not found!"
                 gripper_name = self.get_gripper_name(arm)
                 self.part_controller_config[gripper_name] = {}
-                self.part_controller_config[gripper_name]["type"] = "GRIP"
+                self.part_controller_config[gripper_name]["type"] = self.part_controller_config[arm]["gripper"]["type"]
+                self.part_controller_config[gripper_name]["use_action_scaling"] = self.part_controller_config[arm][
+                    "gripper"
+                ].get("use_action_scaling", True)
                 self.part_controller_config[gripper_name]["robot_name"] = self.name
                 self.part_controller_config[gripper_name]["sim"] = self.sim
                 self.part_controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
