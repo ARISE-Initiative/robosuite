@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
@@ -149,7 +149,7 @@ class ManipulatorModel(RobotModel):
         return self.correct_naming(self._eef_name)
 
     @property
-    def models(self) -> list:
+    def models(self) -> List[Union[GripperModel, RobotModel]]:
         """
         Returns a list of all m(sub-)models owned by this robot model. By default, this includes the gripper model,
         if specified
@@ -165,7 +165,7 @@ class ManipulatorModel(RobotModel):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def _important_sites(self) -> dict:
+    def _important_sites(self) -> Dict[str, str]:
         """
         Returns:
             dict: (Default is no important sites; i.e.: empty dict)

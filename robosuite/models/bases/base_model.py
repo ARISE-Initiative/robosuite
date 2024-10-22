@@ -1,6 +1,8 @@
 """
 Defines the base class of all mounts
 """
+from typing import Dict, List
+
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
@@ -35,7 +37,7 @@ class BaseModel(MujocoXMLModel):
         raise NotImplementedError
 
     @property
-    def _important_sites(self) -> dict:
+    def _important_sites(self) -> Dict[str, str]:
         """
         Returns:
             dict: (Default is no important sites; i.e.: empty dict)
@@ -43,7 +45,7 @@ class BaseModel(MujocoXMLModel):
         return {}
 
     @property
-    def _important_geoms(self) -> dict:
+    def _important_geoms(self) -> Dict[str, List[str]]:
         """
         Returns:
              dict: (Default is no important geoms; i.e.: empty dict)
@@ -51,7 +53,7 @@ class BaseModel(MujocoXMLModel):
         return {}
 
     @property
-    def _important_sensors(self) -> dict:
+    def _important_sensors(self) -> Dict[str, str]:
         """
         Returns:
             dict: (Default is no sensors; i.e.: empty dict)

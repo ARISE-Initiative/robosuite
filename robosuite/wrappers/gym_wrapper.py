@@ -20,6 +20,8 @@ except ImportError:
         # Please check: https://github.com/openai/gym/releases/tag/0.26.0
         raise ImportError("Please ensure version of gym>=0.26.0 to use the GymWrapper.")
 
+from typing import Dict, Tuple
+
 from robosuite.wrappers import Wrapper
 
 
@@ -99,7 +101,7 @@ class GymWrapper(Wrapper, gym.Env):
         low, high = self.env.action_spec
         self.action_space = spaces.Box(low, high)
 
-    def _flatten_obs(self, obs_dict, verbose=False):
+    def _flatten_obs(self, obs_dict, verbose=False) -> np.ndarray:
         """
         Filters keys of interest out and concatenate the information.
 
@@ -118,13 +120,13 @@ class GymWrapper(Wrapper, gym.Env):
                 ob_lst.append(np.array(obs_dict[key]).flatten())
         return np.concatenate(ob_lst)
 
-    def _filter_obs(self, obs_dict) -> dict:
+    def _filter_obs(self, obs_dict) -> Dict:
         """
         Filters keys of interest out of the observation dictionary, returning a filterd dictionary.
         """
         return {key: obs_dict[key] for key in self.keys if key in obs_dict}
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed=None, options=None) -> Tuple[np.ndarray | Dict, Dict]:
         """
         Extends env reset method to return flattened observation instead of normal OrderedDict and optionally resets seed
 
@@ -141,7 +143,7 @@ class GymWrapper(Wrapper, gym.Env):
         obs = self._flatten_obs(ob_dict) if self.flatten_obs else self._filter_obs(ob_dict)
         return obs, {}
 
-    def step(self, action):
+    def step(self, action) -> Tuple[np.ndarray | Dict, float, bool, bool, Dict]:
         """
         Extends vanilla step() function call to return flattened observation instead of normal OrderedDict.
 

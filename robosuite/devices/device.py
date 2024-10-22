@@ -1,4 +1,5 @@
 import abc  # for abstract base class definitions
+from typing import Dict
 
 
 class Device(metaclass=abc.ABCMeta):
@@ -56,6 +57,6 @@ class Device(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_controller_state(self) -> dict:
+    def get_controller_state(self) -> Dict:
         """Returns the current state of the device, a dictionary of pos, orn, grasp, and reset."""
         raise NotImplementedError
