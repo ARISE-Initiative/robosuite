@@ -140,7 +140,7 @@ GR1
 - ...
 
 Create Your Own Robot
-------------
+----------------------
 
 <link_to_menagerine>
 

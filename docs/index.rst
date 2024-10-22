@@ -36,7 +36,7 @@ Welcome to robosuite's documentation!
    tutorials/add_environment
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :caption: Simulation API
 
    simulation/robot
