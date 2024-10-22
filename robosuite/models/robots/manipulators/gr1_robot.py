@@ -70,9 +70,9 @@ class GR1(LeggedManipulatorModel):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.35, -0.1, 0.95),
+            "bins": (-0.30, -0.1, 0.95),
             "empty": (-0.29, 0, 0.95),
-            "table": lambda table_length: (-0.1 - table_length / 2, 0, 0.95),
+            "table": lambda table_length: (-0.15 - table_length / 2, 0, 0.95),
         }
 
     @property
@@ -161,9 +161,9 @@ class GR1FloatingBody(GR1):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.35, -0.1, 0.97),
+            "bins": (-0.30, -0.1, 0.97),
             "empty": (-0.29, 0, 0.97),
-            "table": lambda table_length: (-0.1 - table_length / 2, 0, 0.97),
+            "table": lambda table_length: (-0.15 - table_length / 2, 0, 0.97),
         }
 
 

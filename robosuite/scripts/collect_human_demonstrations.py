@@ -78,13 +78,8 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
         # Run environment step
         action_dict = prev_gripper_actions.copy()
-        arm_actions = input_action[:6]
+        arm_actions = input_action[:6].copy()
         if active_robot.is_mobile:
-            # arm_actions = np.concatenate([arm_actions, ])
-
-            # Decide if it's one arm or two arms. The number of arms can be decided based on the attribute `arms` of the robot.
-            arm_actions = input_action[: 6 * len(env.robots[0].arms)].copy()
-
             if "GR1" in env.robots[0].name:
                 # "relative" actions by default for now
                 action_dict = {
@@ -95,7 +90,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     "left_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
                     "right_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
                 }
-            elif "Tiago" in env.robots[0].name and args.composite_controller == "WHOLE_BODY_IK":
+            elif "Tiago" in env.robots[0].name and args.controller == "WHOLE_BODY_IK":
                 action_dict = {
                     "right_gripper": np.array([0.0]),
                     "left_gripper": np.array([0.0]),
