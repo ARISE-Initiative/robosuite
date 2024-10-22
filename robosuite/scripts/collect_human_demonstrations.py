@@ -125,7 +125,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             if mode_action > 0:
                 active_robot.enable_parts(base=True, right=True, left=True, torso=True)
             else:
-                active_robot.enable_parts(base=False, right=True, left=True, torso=False)
+                active_robot.enable_parts(base=True, right=True, left=True, torso=True)
         else:
             action_dict.update({arm: arm_actions})
             if arm_using_gripper:
