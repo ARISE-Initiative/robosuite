@@ -45,9 +45,9 @@ class SpotWithArm(SpotArm):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-1.05, -0.1, 0.3),
-            "empty": (-1.1, 0, 0.3),
-            "table": lambda table_length: (-0.5 - table_length / 2, 0.0, 0.46),
+            "bins": (-1.05, -0.1, -0.22),
+            "empty": (-1.1, 0, -0.22),
+            "table": lambda table_length: (-0.5 - table_length / 2, 0.0, -0.22),
         }
 
 
@@ -70,9 +70,9 @@ class SpotWithArmFloating(SpotArm):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.7, -0.1, 0.7),
-            "empty": (-0.6, 0, 0.7),
-            "table": lambda table_length: (-0.5 - table_length / 2, 0.0, 0.7),
+            "bins": (-0.7, -0.1, 0.0),
+            "empty": (-0.6, 0, 0.0),
+            "table": lambda table_length: (-0.5 - table_length / 2, 0.0, 0.0),
         }
 
 
