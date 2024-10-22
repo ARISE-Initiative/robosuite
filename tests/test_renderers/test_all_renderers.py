@@ -5,14 +5,14 @@ Tests that all renderers are able to render properly.
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers import load_controller_config
+from robosuite.controllers import load_composite_controller_config
 
 
 def test_mujoco_renderer():
     env = suite.make(
         env_name="Lift",
         robots="Panda",
-        controller_configs=load_controller_config(default_controller="OSC_POSE"),
+        controller_configs=load_composite_controller_config(controller="BASIC"),
         has_renderer=True,
         has_offscreen_renderer=False,
         ignore_done=True,
@@ -36,7 +36,7 @@ def test_default_renderer():
     env = suite.make(
         env_name="Lift",
         robots="Panda",
-        controller_configs=load_controller_config(default_controller="OSC_POSE"),
+        controller_configs=load_composite_controller_config(controller="BASIC"),
         has_renderer=True,
         has_offscreen_renderer=False,
         ignore_done=True,
@@ -60,7 +60,7 @@ def test_offscreen_renderer():
     env = suite.make(
         env_name="Lift",
         robots="Panda",
-        controller_configs=load_controller_config(default_controller="OSC_POSE"),
+        controller_configs=load_composite_controller_config(controller="BASIC"),
         has_renderer=False,
         has_offscreen_renderer=True,
         ignore_done=True,
