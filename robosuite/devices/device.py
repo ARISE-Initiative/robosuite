@@ -105,11 +105,10 @@ class Device(metaclass=abc.ABCMeta):
         )
 
         if mirror_actions:
-            dpos[0], dpos[1] = dpos[1], dpos[0]
-            raw_drotation[0], raw_drotation[1] = raw_drotation[1], raw_drotation[0]
-
+            dpos[0] *= -1
             dpos[1] *= -1
             raw_drotation[0] *= -1
+            raw_drotation[1] *= -1
 
         # If we're resetting, immediately return None
         if reset:
