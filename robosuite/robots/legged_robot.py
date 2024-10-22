@@ -116,8 +116,6 @@ class LeggedRobot(MobileBaseRobot):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
 
-        self.composite_controller.update_state()
-        self.composite_controller.reset()
         # Set initial q pos of the legged base
         if isinstance(self.robot_model.base, LegBaseModel):
             # Set the initial joint positions of the legged base

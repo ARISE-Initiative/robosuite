@@ -238,6 +238,10 @@ class Robot(object):
             self.recent_ee_vel_buffer[arm] = RingBuffer(dim=6, length=10)
             self.recent_ee_acc[arm] = DeltaBuffer(dim=6)
 
+        # reset internal variables for composite controller
+        self.composite_controller.update_state()
+        self.composite_controller.reset()
+
     def setup_references(self):
         """
         Sets up necessary reference for robots, grippers, and objects.
