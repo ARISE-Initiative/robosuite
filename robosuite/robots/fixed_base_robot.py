@@ -79,9 +79,6 @@ class FixedBaseRobot(Robot):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
 
-        self.composite_controller.update_state()
-        self.composite_controller.reset()
-
     def setup_references(self):
         """
         Sets up necessary reference for robots, grippers, and objects.
