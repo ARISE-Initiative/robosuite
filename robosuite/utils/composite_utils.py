@@ -1,8 +1,7 @@
 from typing import List, Optional, Tuple, Union
 
-import robosuite as suite
 from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
-from robosuite.robots import ROBOT_CLASS_MAPPING, register_robot_class, target_type_mapping
+from robosuite.robots import register_robot_class
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.robot_utils import check_bimanual
 

@@ -17,11 +17,7 @@ def is_robosuite_robot(robot: str) -> bool:
         return False
 
 
-def create_and_test_env(
-    env: str,
-    robots: Union[str, List[str]],
-    controller_config: Dict,
-):
+def create_and_test_env(env: str, robots: Union[str, List[str]], controller_config: Dict, render=True):
 
     config = {
         "env_name": env,
@@ -31,7 +27,7 @@ def create_and_test_env(
 
     env = suite.make(
         **config,
-        has_renderer=True,
+        has_renderer=render,
         has_offscreen_renderer=False,
         ignore_done=True,
         use_camera_obs=False,
@@ -44,9 +40,10 @@ def create_and_test_env(
     high = np.clip(high, -1, 1)
 
     # Runs a few steps of the simulation as a sanity check
-    for i in range(100):
+    for i in range(200):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
-        env.render()
+        if render:
+            env.render()
 
     env.close()
