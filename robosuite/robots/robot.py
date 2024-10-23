@@ -151,7 +151,7 @@ class Robot(object):
                 ROBOSUITE_DEFAULT_LOGGER.warn(
                     f'The config has defined for the controller "{part_name}", '
                     "but the robot does not have this component. Skipping, but make sure this is intended."
-                    "Removing the controller config for {part_name} from self.part_controller_config."
+                    f"Removing the controller config for {part_name} from self.part_controller_config."
                 )
                 self.part_controller_config.pop(part_name, None)
                 continue
