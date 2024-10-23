@@ -5,7 +5,7 @@ import numpy as np
 import robosuite as suite
 import robosuite.utils.test_utils as tu
 from robosuite.controllers import load_composite_controller_config
-from robosuite.utils.composite_utils import create_composite_robot
+from robosuite.utils.robot_composition_utils import create_composite_robot
 
 if __name__ == "__main__":
 
