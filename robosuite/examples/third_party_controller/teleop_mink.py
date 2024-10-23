@@ -1,7 +1,7 @@
 """
-A script to teleop a robot using mink:
+A script to teleop a robot using mink and mj-viewer GUI + mocap + mouse:
 
-python robosuite/examples/third_party_controller/teleop_mink.py --controller robosuite/examples/third_party_controller/default_mink_ik_gr1.json --robots GR1FixedLowerBody --device mocap
+python robosuite/examples/third_party_controller/teleop_mink.py --controller robosuite/examples/third_party_controller/default_mink_ik_gr1.json --robots GR1FixedLowerBody --device mjgui
 """
 
 import argparse
