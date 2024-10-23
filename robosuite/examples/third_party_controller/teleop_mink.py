@@ -16,6 +16,7 @@ import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 
 # mink-related imports
+from robosuite.devices.mjgui import MJGUI
 from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 from robosuite.utils import transform_utils
 from robosuite.utils.input_utils import input2action
@@ -185,7 +186,9 @@ if __name__ == "__main__":
     # wrap the environment with data collection wrapper
     tmp_directory = "teleop-mink-data/{}".format(str(time.time()).replace(".", "_"))
     env = DataCollectionWrapper(env, tmp_directory)  # need this wrapper's reset for UI mocap dragging to work
-    device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-
+    if args.device == "keyboard":
+        device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+    elif args.device == "mjgui":
+        device = MJGUI(env=env)
     while True:
         collect_human_trajectory(env, device, args.arm, args.config)
