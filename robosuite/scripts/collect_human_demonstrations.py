@@ -78,13 +78,8 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
         # Run environment step
         action_dict = prev_gripper_actions.copy()
-        arm_actions = input_action[:6]
+        arm_actions = input_action[:6].copy()
         if active_robot.is_mobile:
-            # arm_actions = np.concatenate([arm_actions, ])
-
-            # Decide if it's one arm or two arms. The number of arms can be decided based on the attribute `arms` of the robot.
-            arm_actions = input_action[: 6 * len(env.robots[0].arms)].copy()
-
             if "GR1" in env.robots[0].name:
                 # "relative" actions by default for now
                 action_dict = {
@@ -95,7 +90,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
                     "left_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
                     "right_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
                 }
-            elif "Tiago" in env.robots[0].name and args.composite_controller == "WHOLE_BODY_IK":
+            elif "Tiago" in env.robots[0].name and args.controller == "WHOLE_BODY_IK":
                 action_dict = {
                     "right_gripper": np.array([0.0]),
                     "left_gripper": np.array([0.0]),
@@ -130,7 +125,7 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
             if mode_action > 0:
                 active_robot.enable_parts(base=True, right=True, left=True, torso=True)
             else:
-                active_robot.enable_parts(base=False, right=True, left=True, torso=False)
+                active_robot.enable_parts(base=True, right=True, left=True, torso=True)
         else:
             action_dict.update({arm: arm_actions})
             if arm_using_gripper:
@@ -259,7 +254,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--directory",
         type=str,
-        default=os.path.join(suite.models.assets_root, "demonstrations"),
+        default=os.path.join(suite.models.assets_root, "demonstrations_private"),
     )
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")

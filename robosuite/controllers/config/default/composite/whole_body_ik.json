@@ -3,7 +3,7 @@
     "composite_controller_specific_configs": {
         "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
         "interpolation": null,
-        "ik_controlled_part_names": ["torso", "head", "right", "left", "base", "legs"],
+        "actuation_part_names": ["torso", "head", "right", "left", "base", "legs"],
         "max_dq": 4,
         "nullspace_joint_weights": {
             "robot0_torso_waist_yaw": 100.0,
