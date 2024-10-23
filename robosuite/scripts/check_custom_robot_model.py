@@ -13,11 +13,13 @@ def check_xml_definition(root):
     # get all joints
     world_body = root.find(".//worldbody")
     parts_dict = {}
+    added_joints = []
     for part_name in ["torso", "head", "leg", "gripper", "base"]:
         parts_dict[part_name] = []
         for joint in world_body.findall(".//joint"):
-            if part_name in joint.attrib["name"]:
+            if part_name in joint.attrib["name"] and joint.attrib["name"] not in added_joints:
                 parts_dict[part_name].append(joint.attrib["name"])
+                added_joints.append(joint.attrib["name"])
     parts_dict["arm"] = []
 
     print(len(world_body.findall(".//joint")))
@@ -31,7 +33,6 @@ def check_xml_definition(root):
             parts_dict["arm"].append(joint.attrib["name"])
     total_counted_joints = sum([len(parts_dict[part_name]) for part_name in parts_dict.keys()])
     if total_counted_joints != len(world_body.findall(".//joint")):
-        logger.error(f"Error in {file}")
         logger.error(f"Counted {total_counted_joints} joints, but found {len(world_body.findall('.//joint'))} joints")
     else:
         logger.info(f"Your joint definition aligns with robosuite convention.")
