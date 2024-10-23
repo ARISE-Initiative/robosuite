@@ -259,16 +259,40 @@ class IKSolverMink:
 
         return action_split_indexes
 
-    # TODO: implement this method
-    def transform_frame(self, pose: np.ndarray, src_ref_frame: Literal['world', 'base'], dst_ref_frame: Literal["world", "base"]) -> np.ndarray:
-        raise NotImplementedError("transform_frame not yet implemented. Below is buggy.")
-        if src_ref_frame == 'base':
-            src_transform = self.configuration.get_transform_frame_to_world("robot0_base", src_ref_frame)
-            pose = src_transform.dot(pose)
-        if dst_ref_frame == 'base':
-            dst_transform = self.configuration.get_transform_frame_to_world("robot0_base", dst_ref_frame).inv()
-            pose = dst_transform.dot(pose)
-        return pose
+    def transform_pose(
+        self, 
+        src_frame_pose: np.ndarray, 
+        src_frame: Literal['world', 'base'], 
+        dst_frame: Literal["world", "base"]
+    ) -> np.ndarray:
+        """
+        Transforms src_frame_pose from src_frame to dst_frame.
+        """
+        if src_frame == dst_frame:
+            return src_frame_pose
+
+        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
+        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
+        self.configuration.update()
+
+        X_src_frame_pose = src_frame_pose
+        # convert src frame pose to world frame pose
+        if src_frame != "world":
+            X_W_src_frame = self.configuration.get_transform_frame_to_world(src_frame, "body").as_matrix()
+            X_W_pose = X_W_src_frame @ X_src_frame_pose
+        else:
+            X_W_pose = src_frame_pose
+
+        # now convert to destination frame
+        if dst_frame == "world":
+            X_dst_frame_pose = X_W_pose
+        elif dst_frame == "base":
+            X_dst_frame_W = np.linalg.inv(
+                self.configuration.get_transform_frame_to_world("robot0_base", "body").as_matrix()
+            ) # hardcode name of base
+            X_dst_frame_pose = X_dst_frame_W.dot(X_W_pose)
+
+        return X_dst_frame_pose
 
     def solve(self, input_action: np.ndarray) -> np.ndarray:
         """
@@ -306,7 +330,7 @@ class IKSolverMink:
             input_poses = np.zeros((len(self.site_ids), 4, 4))
             for i in range(len(self.site_ids)):
                 base_pos = self.configuration.data.body("robot0_base").xpos
-                base_ori = self.configuration.data.body("robot0_base").xmat
+                base_ori = self.configuration.data.body("robot0_base").xmat.reshape(3, 3)
                 base_pose = T.make_pose(base_pos, base_ori)
                 input_pose = T.make_pose(input_pos[i], T.quat2mat(np.roll(input_quat_wxyz[i], -1)))
                 input_poses[i] = np.dot(base_pose, input_pose)
@@ -431,6 +455,7 @@ class WholeBodyMinkIK(WholeBody):
             robot_model=self.robot_model.mujoco_model,
             robot_joint_names=joint_names,
             input_type=self.composite_controller_specific_config.get("ik_input_type", "absolute"),
+            input_ref_frame=self.composite_controller_specific_config.get("ik_input_ref_frame", "world"),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
             solve_freq=self.composite_controller_specific_config.get("ik_solve_freq", 20),
             posture_weights=self.composite_controller_specific_config.get("ik_posture_weights", {}),

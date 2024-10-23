@@ -107,10 +107,22 @@ class MJGUI(Device):
         for site_name in site_names:
             target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
             target_pos_world, target_ori_mat_world = get_mocap_pose(self.env.sim, f"{target_name_prefix}_eef_target")
-            # convert ori mat to axis angle
-            axis_angle_target = transform_utils.quat2axisangle(transform_utils.mat2quat(target_ori_mat_world))
-            action[target_name_prefix] = np.concatenate([target_pos_world, axis_angle_target])
+            # check if need to update frames
+            # TODO: should be more general
+            if self.env.robots[0].composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world") != "world":
+                target_pose = np.eye(4)
+                target_pose[:3, 3] = target_pos_world
+                target_pose[:3, :3] = target_ori_mat_world
+                target_pose = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                    src_frame_pose=target_pose, 
+                    src_frame="world", # mocap pose is world coordinates
+                    dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world")
+                )
+                target_pos, target_ori_mat = target_pose[:3, 3], target_pose[:3, :3]
 
+            # convert ori mat to axis angle
+            axis_angle_target = transform_utils.quat2axisangle(transform_utils.mat2quat(target_ori_mat))
+            action[target_name_prefix] = np.concatenate([target_pos, axis_angle_target])
             grasp = 1  # hardcode grasp action for now
             action[f"{target_name_prefix}_gripper"] = np.array([grasp] * gripper_dof)
 
