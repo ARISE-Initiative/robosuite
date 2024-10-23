@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 import numpy as np
 from robosuite.devices import Device
+from robosuite.utils import transform_utils
 from robosuite.utils.transform_utils import rotation_matrix
 import mujoco
 
@@ -39,7 +40,7 @@ class MJGUI(Device):
                         using this device.
     """
 
-    def __init__(self, env):
+    def __init__(self, env, active_end_effector: Optional[str] = "right"):
         super().__init__(env)
 
         self._display_controls()
@@ -47,6 +48,8 @@ class MJGUI(Device):
 
         self._reset_state = 0
         self._enabled = False
+
+        self.active_end_effector = active_end_effector
 
     @staticmethod
     def _display_controls():
@@ -99,10 +102,17 @@ class MJGUI(Device):
         from the controller itself.
         """
         action: Dict[str, np.ndarray] = {}
+        gripper_dof = self.env.robots[0].gripper[self.active_end_effector].dof
         site_names: List[str] = self.env.robots[0].composite_controller.joint_action_policy.site_names
         for site_name in site_names:
             target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
             target_pos_world, target_ori_mat_world = get_mocap_pose(self.env.sim, f"{target_name_prefix}_eef_target")
+            # convert ori mat to axis angle
+            axis_angle_target = transform_utils.quat2axisangle(transform_utils.mat2quat(target_ori_mat_world))
+            action[target_name_prefix] = np.concatenate([target_pos_world, axis_angle_target])
+
+            grasp = 1  # hardcode grasp action for now
+            action[f"{target_name_prefix}_gripper"] = np.array([grasp] * gripper_dof)
 
         # TODO: update action frames.
         # now convert actions to desired frames (take from controller)
