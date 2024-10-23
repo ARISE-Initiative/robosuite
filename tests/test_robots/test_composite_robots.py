@@ -9,6 +9,10 @@ import robosuite.utils.composite_utils as cu
 import robosuite.utils.test_utils as tu
 from robosuite.controllers import load_composite_controller_config
 from robosuite.models.grippers import GRIPPER_MAPPING
+import logging
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+
+ROBOSUITE_DEFAULT_LOGGER.setLevel(logging.ERROR)
 
 TEST_ROBOTS = ["Baxter", "IIWA", "Jaco", "Kinova3", "Panda", "Sawyer", "UR5e", "Tiago", "SpotArm", "GR1"]
 TEST_BASES = [
@@ -21,7 +25,6 @@ TEST_BASES = [
     "Spot",
     "SpotFloating",
 ]
-
 
 @pytest.mark.parametrize("robot", TEST_ROBOTS)
 @pytest.mark.parametrize("gripper", GRIPPER_MAPPING.keys())
