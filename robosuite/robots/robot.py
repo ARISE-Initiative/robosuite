@@ -115,6 +115,7 @@ class Robot(object):
         )
 
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
+        self.init_torso_qpos = None
 
         self.robot_joints = None  # xml joint names for robot
         self.base_pos = None  # Base position in world coordinates (x,y,z)
@@ -258,8 +259,12 @@ class Robot(object):
 
         if self.robot_model.init_base_qpos is not None:
             self.sim.data.qpos[self._ref_base_joint_pos_indexes] = self.robot_model.init_base_qpos
-        if self.robot_model.init_torso_qpos is not None:
-            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = self.robot_model.init_torso_qpos
+
+        init_torso_qpos = self.init_torso_qpos
+        if self.init_torso_qpos is None:
+            init_torso_qpos = self.robot_model.init_torso_qpos
+        if init_torso_qpos is not None:
+            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = init_torso_qpos
 
         # Load controllers
         self._load_controller()

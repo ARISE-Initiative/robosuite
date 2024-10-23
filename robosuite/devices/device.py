@@ -186,27 +186,35 @@ class Device(metaclass=abc.ABCMeta):
         ]  # update next target either based on achieved pose or current target pose
 
         # TODO: ideally separate kinematics from controller to unify frame conversion logic
-        if robot.composite_controller_config['type'] == "WHOLE_BODY_MINK_IK":
+        if robot.composite_controller_config["type"] == "WHOLE_BODY_MINK_IK":
             site_names: List[str] = self.env.robots[0].composite_controller.joint_action_policy.site_names
             for site_name in site_names:
                 target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
                 if arm != target_name_prefix:
                     continue
-                target_pos_world, target_ori_mat_world = self.env.sim.data.get_site_xpos(site_name), \
-                    self.env.sim.data.get_site_xmat(site_name)
+                target_pos_world, target_ori_mat_world = self.env.sim.data.get_site_xpos(
+                    site_name
+                ), self.env.sim.data.get_site_xmat(site_name)
                 # update based on received delta actions
                 target_pos_world += norm_delta[:3]
                 target_ori_mat_world = np.dot(T.quat2mat(T.axisangle2quat(norm_delta[3:])), target_ori_mat_world)
                 # check if need to update frames
                 # TODO: should be more general
-                if self.env.robots[0].composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world") != "world":
+                if (
+                    self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                        "ik_input_ref_frame", "world"
+                    )
+                    != "world"
+                ):
                     target_pose = np.eye(4)
                     target_pose[:3, 3] = target_pos_world
                     target_pose[:3, :3] = target_ori_mat_world
                     target_pose = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
-                        src_frame_pose=target_pose, 
-                        src_frame="world", # mocap pose is world coordinates
-                        dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world")
+                        src_frame_pose=target_pose,
+                        src_frame="world",  # mocap pose is world coordinates
+                        dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                            "ik_input_ref_frame", "world"
+                        ),
                     )
                     target_pos, target_ori_mat = target_pose[:3, 3], target_pose[:3, :3]
                 else:
@@ -215,13 +223,12 @@ class Device(metaclass=abc.ABCMeta):
                 # convert ori mat to axis angle
                 axis_angle_target = T.quat2axisangle(T.mat2quat(target_ori_mat))
                 abs_action = np.concatenate([target_pos, axis_angle_target])
-                
+
             return {
                 "delta": norm_delta,
                 "abs": abs_action,
             }
 
-        import ipdb; ipdb.set_trace()
         arm_controller = robot.part_controllers[arm]
         if isinstance(arm_controller, OperationalSpaceController):
             # TODO: the logic between OSC and mink is fragmented right now. Unify
