@@ -17,24 +17,6 @@ def validate_composite_controller_config(config: dict):
             raise ValueError
 
 
-def is_old_controller_config(config: dict):
-    """
-    Checks if the controller config is the old format. Does not check for
-    config validity, only the format type.
-
-    Args:
-        config (dict): Controller configuration
-
-    Returns:
-        bool: True if the config is in the old format, False otherwise
-    """
-
-    OLD_CONTROLLER_TYPES = ["JOINT_VELOCITY", "JOINT_TORQUE", "JOINT_POSITION", "OSC_POSITION", "OSC_POSE", "IK_POSE"]
-    if "body_parts_controller_configs" not in config and "type" in config:
-        return config["type"] in OLD_CONTROLLER_TYPES
-    return False
-
-
 def load_composite_controller_config(controller: Optional[str] = None, robot: Optional[str] = None) -> Optional[Dict]:
     """
     Utility function that loads the desired composite controller and returns the loaded configuration as a dict
