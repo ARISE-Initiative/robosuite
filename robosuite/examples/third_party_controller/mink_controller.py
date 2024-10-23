@@ -254,6 +254,8 @@ class IKSolverMink:
             total_dim = self.pos_dim + self.rot_dim
             last_idx = previous_idx + total_dim
             simplified_site_name = "left" if "left" in site_name else "right"  # hack to simplify site names
+            # goal is to specify the end effector actions as "left" or "right" instead of the actual site name
+            # we assume that the site names for the ik solver are unique and contain "left" or "right" in them
             action_split_indexes[simplified_site_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
@@ -393,7 +395,7 @@ class IKSolverMink:
         self.configuration.integrate_inplace(vel, 1 / self.solve_freq)
 
         self.i += 1
-        if self.verbose and self.i % 1 == 0:
+        if self.verbose:
             task_errors = self._get_task_errors()
             task_translation_errors = self._get_task_translation_errors()
             task_orientation_errors = self._get_task_orientation_errors()
@@ -401,8 +403,8 @@ class IKSolverMink:
             self.trask_translation_errors.append(task_translation_errors)
             self.task_orientation_errors.append(task_orientation_errors)
 
-            # if self.i % 50:
-            #     print(f"Task errors: {task_translation_errors}")
+            if self.i % 50:
+                print(f"Task errors: {task_translation_errors}")
 
         return self.configuration.data.qpos[self.robot_model_dof_ids]
 

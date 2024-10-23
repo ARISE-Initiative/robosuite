@@ -33,7 +33,7 @@ def get_mocap_pose(sim, mocap_name: str = "target") -> Tuple[np.ndarray, np.ndar
 
 class MJGUI(Device):
     """
-    Class for 'device' involving mujoco viewer and mocap bodies being dragged by users mouse.
+    Class for 'device' involving mujoco viewer and mocap bodies being dragged by user's mouse.
 
     Args:
         env (RobotEnv): The environment which contains the robot(s) to control
@@ -119,6 +119,8 @@ class MJGUI(Device):
                     dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world")
                 )
                 target_pos, target_ori_mat = target_pose[:3, 3], target_pose[:3, :3]
+            else:
+                target_pos, target_ori_mat = target_pos_world, target_ori_mat_world
 
             # convert ori mat to axis angle
             axis_angle_target = transform_utils.quat2axisangle(transform_utils.mat2quat(target_ori_mat))

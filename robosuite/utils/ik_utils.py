@@ -103,6 +103,8 @@ class IKSolver:
             total_dim = self.pos_dim + self.rot_dim
             last_idx = previous_idx + total_dim
             simplified_site_name = "left" if "left" in site_name else "right"  # hack to simplify site names
+            # goal is to specify the end effector actions as "left" or "right" instead of the actual site name
+            # we assume that the site names for the ik solver are unique and contain "left" or "right" in them
             action_split_indexes[simplified_site_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
