@@ -45,7 +45,7 @@ def test_composite_robot_base_combinations(robot, base):
     if tu.is_robosuite_robot(robot):
         if robot in ["Tiago", "GR1", "SpotArm"]:
             pytest.skip(f"Skipping {robot} for now since it we typically do not attach it to another base.")
-        elif base in ["NullMobileBase", "NoActuationBase", "SpotFloating"]:
+        elif base in ["NullMobileBase", "NoActuationBase", "Spot", "SpotFloating"]:
             pytest.skip(f"Skipping {base} for now since comopsite robots do not use {base}.")
         else:
             print(robot, base)
@@ -56,12 +56,3 @@ def test_composite_robot_base_combinations(robot, base):
             tu.create_and_test_env(
                 env="Lift", robots="CompositeRobot", controller_config=controller_config, render=True
             )
-
-
-def test_debug():
-    robot = "IIWA"
-    base = "OmronMobileBase"
-    grippers = "RethinkGripper"
-    composite_robot = cu.create_composite_robot(name="CompositeRobot", robot=robot, base=base, grippers=grippers)
-    controller_config = load_composite_controller_config(controller="BASIC", robot="CompositeRobot")
-    tu.create_and_test_env(env="Lift", robots="CompositeRobot", controller_config=controller_config, render=True)
