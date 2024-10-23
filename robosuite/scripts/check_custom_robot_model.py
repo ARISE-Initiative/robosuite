@@ -6,27 +6,14 @@ from robosuite.controllers.composite.composite_controller_factory import load_co
 
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER as logger
 
-def check_parts(world_body, part_name, parts_dict):
-    for joint in world_body.findall(".//joint"):
-        if part_name in joint.attrib["name"] == part_name:
-            parts_dict[part_name].append(joint.attrib["name"])
 
-def check_robot_definition(robot_name):
-
-    print(f"Loading {robot_name} ...")
-    controller_config = load_composite_controller_config("BASIC")
-    robot = Robot(robot_type=robot_name,      composite_controller_config=controller_config, gripper_type=None)
-    logger.info(f"Succcessfully found the defined robot")
-
-    robot.load_model()
-    robot_model = robot.robot_model
-    root = robot_model.tree.getroot()
+def check_xml_definition(root):
     logger.info(f"Successfully loaded the xml file of robot model.")
 
     # get all joints
     world_body = root.find(".//worldbody")
     parts_dict = {}
-    for part_name in ["torso", "head", "leg", "gripper"]:
+    for part_name in ["torso", "head", "leg", "gripper", "base"]:
         parts_dict[part_name] = []
         for joint in world_body.findall(".//joint"):
             if part_name in joint.attrib["name"]:
@@ -36,7 +23,7 @@ def check_robot_definition(robot_name):
     print(len(world_body.findall(".//joint")))
     for joint in world_body.findall(".//joint"):
         is_non_arm_part = False
-        for non_arm_part_name in ["torso", "head", "leg", "gripper"]:
+        for non_arm_part_name in ["torso", "head", "leg", "gripper", "base"]:
             if non_arm_part_name in joint.attrib["name"]:
                 is_non_arm_part = True
                 break
@@ -54,9 +41,22 @@ def check_robot_definition(robot_name):
         print("    • For each body part, you have defined the following joints:")
         for part_name in parts_dict.keys():
             print(f"        • {part_name} - {len(parts_dict[part_name])} joints: {parts_dict[part_name]}")
+    return parts_dict
+
+def check_registered_robot(robot_name):
+
+    print(f"Loading {robot_name} ...")
+    controller_config = load_composite_controller_config("BASIC")
+    robot = Robot(robot_type=robot_name,      composite_controller_config=controller_config, gripper_type=None)
+    logger.info(f"Succcessfully found the defined robot")
+
+    robot.load_model()
+    robot_model = robot.robot_model
+
+    root = robot_model.tree.getroot()
+    parts_dict = check_xml_definition(root)
 
     if parts_dict.get("arm") is not None and parts_dict["arm"] != []:
-    
         # checking the order of arm joints defined.
         arm_joint_names = parts_dict["arm"]
         first_arm_joint_name = arm_joint_names[0]
@@ -66,8 +66,8 @@ def check_robot_definition(robot_name):
         # check if the body for mounting exists
         num_arms = len(robot.arms)
 
-
         mount_names = [robot.robot_model._eef_name[name] for name in robot.robot_model._eef_name]
+        world_body = root.find(".//worldbody")
         for mount_name in mount_names[:num_arms]:
             # find the body name of mount_name in the worldbody
             mount_body = world_body.find(f".//body[@name='robot0_{mount_name}']")
@@ -80,7 +80,19 @@ def check_robot_definition(robot_name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--robot", type=str, default="Panda")
+    parser.add_argument("--robot", type=str, default=None)
+    parser.add_argument("--robot-xml-file", type=str, default=None)
     args = parser.parse_args()
+    if args.robot is None and args.robot_xml_file is None:
+        logger.error("Please provide either the robot name or the robot xml file.")
+        exit(1)
     if args.robot is not None:
-        check_robot_definition(args.robot)
+        check_registered_robot(args.robot)
+
+    if args.robot_xml_file is not None:
+        etree_root = ET.parse(args.robot_xml_file)
+        parts_dict = check_xml_definition(etree_root)
+        arm_joint_names = parts_dict["arm"]
+        first_arm_joint_name = arm_joint_names[0]
+        if "l_" in first_arm_joint_name or "left" in first_arm_joint_name:
+            logger.warning("Incorrect order of the arm joints. THe arm joints needs to be defined first for the right arm and then for the left arm.")
