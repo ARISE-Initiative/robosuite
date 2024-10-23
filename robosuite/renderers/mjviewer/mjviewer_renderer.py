@@ -41,8 +41,11 @@ class MjviewerRenderer:
                 self.viewer.cam.elevation = self.camera_config["elevation"]
 
             if self.camera_id is not None:
-                self.viewer.cam.type = 2
-                self.viewer.cam.fixedcamid = self.camera_id
+                if self.camera_id >= 0:
+                    self.viewer.cam.type = 2
+                    self.viewer.cam.fixedcamid = self.camera_id
+                else:
+                    self.viewer.cam.type = 0
 
         self.viewer.sync()
 

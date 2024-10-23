@@ -186,7 +186,7 @@ class ManipulatorModel(RobotModel):
             str: Default gripper name to add to this robot
         """
         raise NotImplementedError
-    
+
     @property
     def gripper_mount_pos_offset(self):
         """
@@ -201,9 +201,9 @@ class ManipulatorModel(RobotModel):
     @property
     def gripper_mount_quat_offset(self):
         """
-        Define the custom orientation offset of the gripper with respect to the arm. 
+        Define the custom orientation offset of the gripper with respect to the arm.
         The offset will applied to the first body in the gripper definition file.
-        Return empty dict by default unless specified. 
+        Return empty dict by default unless specified.
         The quaternion is in the (w, x, y, z) format to match the mjcf format.
         """
         return {}
@@ -254,6 +254,14 @@ class ManipulatorModel(RobotModel):
     @property
     def init_qpos(self):
         raise NotImplementedError
+
+    @property
+    def init_base_qpos(self):
+        return None
+
+    @property
+    def init_torso_qpos(self):
+        return None
 
     @property
     def arm_actuators(self):

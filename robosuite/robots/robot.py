@@ -256,6 +256,11 @@ class Robot(object):
         # Set initial position in sim
         self.sim.data.qpos[self._ref_joint_pos_indexes] = init_qpos
 
+        if self.robot_model.init_base_qpos is not None:
+            self.sim.data.qpos[self._ref_base_joint_pos_indexes] = self.robot_model.init_base_qpos
+        if self.robot_model.init_torso_qpos is not None:
+            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = self.robot_model.init_torso_qpos
+
         # Load controllers
         self._load_controller()
 
@@ -292,7 +297,7 @@ class Robot(object):
 
     def setup_references(self):
         """
-        Sets up necessary reference for robots, grippers, and objects.
+        Sets up necessary reference for robots, bases, grippers, and objects.
         """
         # indices for joints in qpos, qvel
         self.robot_joints = self.robot_model.joints
@@ -311,6 +316,14 @@ class Robot(object):
         self._ref_arm_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_arm_joints]
         self._ref_arm_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_arm_joints]
         self._ref_arm_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_arm_joints]
+
+        # indices for base joints
+        self._ref_base_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._base_joints
+        ]
+        self._ref_torso_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._torso_joints
+        ]
 
     def setup_observables(self):
         """
