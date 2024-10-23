@@ -254,7 +254,7 @@ class WholeBody(CompositeController):
         previous_idx = 0
         last_idx = 0
         # add joint_action_policy related body parts' action split index first
-        for part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
+        for part_name in self.composite_controller_specific_config["actuation_part_names"]:
             try:
                 last_idx += self.part_controllers[part_name].control_dim
             except KeyError as e:
@@ -264,7 +264,7 @@ class WholeBody(CompositeController):
             previous_idx = last_idx
 
         for part_name, controller in self.part_controllers.items():
-            if part_name not in self.composite_controller_specific_config["ik_controlled_part_names"]:
+            if part_name not in self.composite_controller_specific_config["actuation_part_names"]:
                 if part_name in self.grippers.keys():
                     last_idx += self.grippers[part_name].dof
                 else:
@@ -287,7 +287,7 @@ class WholeBody(CompositeController):
         # prev and last index correspond to the IK solver indexes' last index
         previous_idx = last_idx = list(self._whole_body_controller_action_split_indexes.values())[-1][-1]
         for part_name, controller in self.part_controllers.items():
-            if part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
+            if part_name in self.composite_controller_specific_config["actuation_part_names"]:
                 continue
             if part_name in self.grippers.keys():
                 last_idx += self.grippers[part_name].dof
@@ -326,7 +326,7 @@ class WholeBody(CompositeController):
         low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         for part_name, controller in self.part_controllers.items():
             # Exclude terms that the IK solver handles
-            if part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
+            if part_name in self.composite_controller_specific_config["actuation_part_names"]:
                 continue
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():
@@ -394,8 +394,8 @@ class WholeBodyIK(WholeBody):
         super().__init__(sim, robot_model, grippers, lite_physics)
 
     def _validate_composite_controller_specific_config(self) -> None:
-        # Check that all ik_controlled_part_names exist in part_controllers
-        original_ik_controlled_parts = self.composite_controller_specific_config["ik_controlled_part_names"]
+        # Check that all actuation_part_names exist in part_controllers
+        original_ik_controlled_parts = self.composite_controller_specific_config["actuation_part_names"]
         self.valid_ik_controlled_parts = []
         valid_ref_names = []
 
@@ -406,11 +406,11 @@ class WholeBodyIK(WholeBody):
             if part in self.part_controllers:
                 self.valid_ik_controlled_parts.append(part)
             else:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"Part '{part}' specified in 'ik_controlled_part_names' "
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"Part '{part}' specified in 'actuation_part_names' "
                     "does not exist in part_controllers. Removing ...")
 
         # Update the configuration with only the valid parts
-        self.composite_controller_specific_config["ik_controlled_part_names"] = self.valid_ik_controlled_parts
+        self.composite_controller_specific_config["actuation_part_names"] = self.valid_ik_controlled_parts
 
         # Loop through ref_names and validate against mujoco model
         original_ref_names = self.composite_controller_specific_config.get("ref_name", [])
@@ -426,7 +426,7 @@ class WholeBodyIK(WholeBody):
 
     def _init_joint_action_policy(self):
         joint_names: str = []
-        for part_name in self.composite_controller_specific_config["ik_controlled_part_names"]:
+        for part_name in self.composite_controller_specific_config["actuation_part_names"]:
             if part_name in self.part_controllers:
                 joint_names += self.part_controllers[part_name].joint_names
             else:

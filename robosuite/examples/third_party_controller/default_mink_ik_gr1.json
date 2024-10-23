@@ -3,7 +3,7 @@
     "composite_controller_specific_configs": {
         "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
             "interpolation": null,
-            "ik_controlled_part_names": ["torso", "head", "right", "left"],
+            "actuation_part_names": ["torso", "head", "right", "left"],
             "max_dq": 4,
             "ik_pseudo_inverse_damping": 5e-2,
             "ik_integration_dt": 1e-1,
