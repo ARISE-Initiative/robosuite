@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple, Union
 
-from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
+from robosuite.models.robots.robot_model import REGISTERED_ROBOTS, RobotModel
 from robosuite.robots import register_robot_class
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.robot_utils import check_bimanual
@@ -17,7 +17,7 @@ BASE_TARGET_MAPPING = {
 }
 
 
-def get_target_type(base):
+def get_target_type(base) -> str:
     """
     Returns the target type of the robot
     """
@@ -26,7 +26,7 @@ def get_target_type(base):
 
 def create_composite_robot(
     name: str, robot: str, base: Optional[str] = None, grippers: Optional[Union[str, List[str], Tuple[str]]] = None
-):
+) -> RobotModel:
     """
     Factory function to create a composite robot
     """

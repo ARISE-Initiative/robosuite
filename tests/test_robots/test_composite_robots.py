@@ -72,9 +72,7 @@ def test_composite_robot_base_combinations(robot, base):
         elif base in ["NullMobileBase", "NoActuationBase", "Spot", "SpotFloating"]:
             pytest.skip(f"Skipping {base} for now since comopsite robots do not use {base}.")
         else:
-            composite_robot = cu.create_composite_robot(
-                name="CompositeRobot", robot=robot, base=base, grippers="RethinkGripper"
-            )
+            cu.create_composite_robot(name="CompositeRobot", robot=robot, base=base, grippers="RethinkGripper")
             controller_config = load_composite_controller_config(controller="BASIC", robot="CompositeRobot")
             create_and_test_env(env="Lift", robots="CompositeRobot", controller_config=controller_config, render=False)
 
@@ -90,6 +88,6 @@ def test_composite_robot_gripper_combinations(robot, gripper):
         else:
             base = "RethinkMount"
 
-        composite_robot = cu.create_composite_robot(name="CompositeRobot", robot=robot, base=base, grippers=gripper)
+        cu.create_composite_robot(name="CompositeRobot", robot=robot, base=base, grippers=gripper)
         controller_config = load_composite_controller_config(controller="BASIC", robot="CompositeRobot")
         create_and_test_env(env="Lift", robots="CompositeRobot", controller_config=controller_config, render=False)
