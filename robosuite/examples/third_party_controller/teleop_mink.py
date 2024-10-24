@@ -1,7 +1,7 @@
 """
-A script to teleop a robot using mink:
+A script to teleop a robot using mink and mj-viewer GUI + mocap + mouse:
 
-python robosuite/examples/third_party_controller/teleop_mink.py --controller robosuite/examples/third_party_controller/default_mink_ik_gr1.json --robots GR1FixedLowerBody --device mocap
+python robosuite/examples/third_party_controller/teleop_mink.py --controller robosuite/examples/third_party_controller/default_mink_ik_gr1.json --robots GR1FixedLowerBody --device mjgui
 """
 
 import argparse
@@ -16,9 +16,8 @@ import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 
 # mink-related imports
+from robosuite.devices.mjgui import MJGUI
 from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
-from robosuite.utils import transform_utils
-from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import DataCollectionWrapper
 from robosuite.devices.keyboard import Keyboard
 
@@ -94,30 +93,13 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         # Check if we have gripper actions for the active arm
         arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
         # Get the newest action
-        input_action, grasp = input2action(
-            device=device,
-            robot=active_robot,
-            active_arm=arm,
-            active_end_effector=end_effector,
-            env_configuration=env_configuration,
-        )
-
-        # If action is none, then this a reset so we should break
-        if input_action is None:
-            break
-
-        action_dict = {}
-        for arm in active_robot.arms:
-            pos_target, mat_target = get_target_pose(env.sim, f"{arm}_eef_target")
-            axis_angle_target = transform_utils.quat2axisangle(transform_utils.mat2quat(mat_target))
-            action_dict[arm] = np.concatenate([pos_target, axis_angle_target])
+        action_dict = device.input2action()
 
         for gripper_name, gripper in active_robot.gripper.items():
             action_dict[f"{gripper_name}_gripper"] = np.zeros(gripper.dof)  # what's the 'do nothing' action for all grippers?
 
         if arm_using_gripper:
-            action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-            prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
+            prev_gripper_actions[f"{arm}_gripper"] = action_dict[f"{arm}_gripper"]
 
         # Maintain gripper state for each robot but only update the active robot with action
         env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
@@ -185,7 +167,9 @@ if __name__ == "__main__":
     # wrap the environment with data collection wrapper
     tmp_directory = "teleop-mink-data/{}".format(str(time.time()).replace(".", "_"))
     env = DataCollectionWrapper(env, tmp_directory)  # need this wrapper's reset for UI mocap dragging to work
-    device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-
+    if args.device == "keyboard":
+        device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+    elif args.device == "mjgui":
+        device = MJGUI(env=env)
     while True:
         collect_human_trajectory(env, device, args.arm, args.config)

@@ -38,7 +38,7 @@
       <geom solref="0.004 1"/>
       <joint actuatorfrcrange="-1000 1000"/>
       <position kp="500" kv="40" inheritrange="1"/>
-      <motor ctrlrange="-33.5 33.5" ctrllimited="true"/>
+      <motor ctrlrange="-70 70" ctrllimited="true"/>
     </default>
     <default class="spot_visual">
       <joint actuatorfrcrange="-1000 1000"/>
@@ -57,14 +57,14 @@
     </default>
   </default>
   <worldbody>
-    <body name="body" pos="0 0 0">
+    <body name="body" pos="0 0 -0.7">
       <freejoint/>
       <inertial pos="0.0063944 -9.81216e-05 0.000911379" mass="32.86" diaginertia="0.13144 0.13144 0.13144"/>
       <geom mesh="body_0" material="BlackAbs" class="spot_visual"/>
       <geom mesh="body_1" material="wrap" class="spot_visual"/>
       <geom mesh="body_collision" class="spot_collision"/>
       <body name="fixed_support" pos="0.292 0 0.188">
-        <body name="support" pos="0.0 0.0 0.0">
+        <body name="support" pos="0.0 0.0 0">
           <!-- add robot here -->
           <site name="center" type="sphere" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
         </body>
@@ -87,7 +87,7 @@
               <joint class="spot_collision" name="fr_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.255648"/>
               <geom material="BlackAbs" mesh="front_right_lower_leg" class="spot_visual"/>
               <geom mesh="right_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="FR" class="spot_foot"/>
             </body>
           </body>
         </body>
@@ -111,7 +111,7 @@
               <joint class="spot_collision" name="fl_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.254402"/>
               <geom material="BlackAbs" mesh="front_left_lower_leg" class="spot_visual"/>
               <geom mesh="left_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="FL" class="spot_foot"/>
             </body>
           </body>
         </body>
@@ -135,7 +135,7 @@
               <joint class="spot_collision" name="hr_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.248282"/>
               <geom material="BlackAbs" mesh="rear_left_lower_leg" class="spot_visual"/>
               <geom mesh="right_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="RR" class="spot_foot"/>
             </body>
           </body>
         </body>
@@ -159,7 +159,7 @@
               <joint class="spot_collision" name="hl_kn_leg_joint" axis="0 1 0" range="-2.7929 -0.247067"/>
               <geom material="BlackAbs" mesh="rear_left_lower_leg" class="spot_visual"/>
               <geom mesh="left_lower_leg_collision" class="spot_collision"/>
-              <geom class="spot_foot"/>
+              <geom name="RL" class="spot_foot"/>
             </body>
           </body>
         </body>

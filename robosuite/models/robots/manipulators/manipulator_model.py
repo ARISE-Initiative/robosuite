@@ -76,7 +76,6 @@ class ManipulatorModel(RobotModel):
             arm_name = self.eef_name
         if arm_name in self.grippers:
             raise ValueError("Attempts to add multiple grippers to one body")
-
         self.merge(gripper, merge_body=arm_name)
 
         self.grippers[arm_name] = gripper
@@ -189,6 +188,27 @@ class ManipulatorModel(RobotModel):
         raise NotImplementedError
 
     @property
+    def gripper_mount_pos_offset(self):
+        """
+        Define the custom offset of the gripper that is different from the one defined in xml.
+        The offset will applied to the first body in the gripper definition file.
+
+        Returns:
+            Empty dictionary unless specified.
+        """
+        return {}
+
+    @property
+    def gripper_mount_quat_offset(self):
+        """
+        Define the custom orientation offset of the gripper with respect to the arm.
+        The offset will applied to the first body in the gripper definition file.
+        Return empty dict by default unless specified.
+        The quaternion is in the (w, x, y, z) format to match the mjcf format.
+        """
+        return {}
+
+    @property
     def arm_type(self):
         """
         Type of robot arm. Should be either "bimanual" or "single" (or something else if it gets added in the future)
@@ -234,6 +254,14 @@ class ManipulatorModel(RobotModel):
     @property
     def init_qpos(self):
         raise NotImplementedError
+
+    @property
+    def init_base_qpos(self):
+        return None
+
+    @property
+    def init_torso_qpos(self):
+        return None
 
     @property
     def arm_actuators(self):

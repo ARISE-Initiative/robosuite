@@ -23,6 +23,7 @@ from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+from robosuite.utils.mjcf_utils import array_to_string
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -156,7 +157,7 @@ class Robot(object):
                 ROBOSUITE_DEFAULT_LOGGER.warn(
                     f'The config has defined for the controller "{part_name}", '
                     "but the robot does not have this component. Skipping, but make sure this is intended."
-                    "Removing the controller config for {part_name} from self.part_controller_config."
+                    f"Removing the controller config for {part_name} from self.part_controller_config."
                 )
                 self.part_controller_config.pop(part_name, None)
                 continue
@@ -198,6 +199,24 @@ class Robot(object):
             self.eef_rot_offset[arm] = T.quat_multiply(
                 self.robot_model.hand_rotation_offset[arm], self.gripper[arm].rotation_offset
             )
+
+            # Adjust gripper mount offset and quaternion if users specify custom values. This part is essential to support more flexible composition of new robots.
+            custom_gripper_mount_pos_offset = self.robot_model.gripper_mount_pos_offset.get(arm, None)
+            custom_gripper_mount_quat_offset = self.robot_model.gripper_mount_quat_offset.get(arm, None)
+
+            # The offset of position and oriientation (quaternion) is assumed to be the very first body in the gripper xml.
+            if custom_gripper_mount_pos_offset is not None:
+                assert len(custom_gripper_mount_pos_offset) == 3
+                # update an attribute inside an xml object
+                self.gripper[arm].worldbody.find("body").attrib["pos"] = array_to_string(
+                    custom_gripper_mount_pos_offset
+                )
+            if custom_gripper_mount_quat_offset is not None:
+                assert len(custom_gripper_mount_quat_offset) == 4
+                self.gripper[arm].worldbody.find("body").attrib["quat"] = array_to_string(
+                    custom_gripper_mount_quat_offset
+                )
+
             # Add this gripper to the robot model
             self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
 
@@ -243,6 +262,11 @@ class Robot(object):
         # Set initial position in sim
         self.sim.data.qpos[self._ref_joint_pos_indexes] = init_qpos
 
+        if self.robot_model.init_base_qpos is not None:
+            self.sim.data.qpos[self._ref_base_joint_pos_indexes] = self.robot_model.init_base_qpos
+        if self.robot_model.init_torso_qpos is not None:
+            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = self.robot_model.init_torso_qpos
+
         # Load controllers
         self._load_controller()
 
@@ -273,9 +297,13 @@ class Robot(object):
             self.recent_ee_vel_buffer[arm] = RingBuffer(dim=6, length=10)
             self.recent_ee_acc[arm] = DeltaBuffer(dim=6)
 
+        # reset internal variables for composite controller
+        self.composite_controller.update_state()
+        self.composite_controller.reset()
+
     def setup_references(self):
         """
-        Sets up necessary reference for robots, grippers, and objects.
+        Sets up necessary reference for robots, bases, grippers, and objects.
         """
         # indices for joints in qpos, qvel
         self.robot_joints = self.robot_model.joints
@@ -294,6 +322,14 @@ class Robot(object):
         self._ref_arm_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_arm_joints]
         self._ref_arm_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_arm_joints]
         self._ref_arm_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_arm_joints]
+
+        # indices for base joints
+        self._ref_base_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._base_joints
+        ]
+        self._ref_torso_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._torso_joints
+        ]
 
     def setup_observables(self):
         """
@@ -856,9 +892,13 @@ class Robot(object):
 
             if self.has_gripper[arm]:
                 # Load gripper controllers
+                assert "gripper" in self.part_controller_config[arm], "Gripper controller config not found!"
                 gripper_name = self.get_gripper_name(arm)
                 self.part_controller_config[gripper_name] = {}
-                self.part_controller_config[gripper_name]["type"] = "GRIP"
+                self.part_controller_config[gripper_name]["type"] = self.part_controller_config[arm]["gripper"]["type"]
+                self.part_controller_config[gripper_name]["use_action_scaling"] = self.part_controller_config[arm][
+                    "gripper"
+                ].get("use_action_scaling", True)
                 self.part_controller_config[gripper_name]["robot_name"] = self.name
                 self.part_controller_config[gripper_name]["sim"] = self.sim
                 self.part_controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
