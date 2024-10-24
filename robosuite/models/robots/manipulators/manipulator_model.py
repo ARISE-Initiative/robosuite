@@ -69,7 +69,7 @@ class ManipulatorModel(RobotModel):
 
         Args:
             gripper (GripperModel): gripper MJCF model
-            arm_name (str): name of arm mount -- 
+            arm_name (str): name of arm mount --
                             defaults add to all self.eef_name if not specified
 
         Raises:

@@ -4,7 +4,7 @@ from typing import Dict, List
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.models.bases import RobotBaseModel, LegBaseModel, MobileBaseModel, FixedBaseModel
+from robosuite.models.bases import FixedBaseModel, LegBaseModel, MobileBaseModel, RobotBaseModel
 from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
