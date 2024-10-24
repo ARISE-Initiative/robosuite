@@ -21,7 +21,7 @@ ROBOT_CLASS_MAPPING = {
     "Sawyer": FixedBaseRobot,
     "UR5e": FixedBaseRobot,
     "Tiago": WheeledRobot,
-    # "SpotArm": LeggedRobot, # TODO(YL) Error with inconsistent orientation
+    "SpotArm": LeggedRobot,  # TODO(YL) Error with inconsistent orientation
     # "SpotWithArm": LeggedRobot,
     # "SpotWithArmFloating": LeggedRobot,
     "PandaOmron": WheeledRobot,

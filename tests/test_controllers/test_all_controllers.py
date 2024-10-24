@@ -77,7 +77,7 @@ args = parser.parse_args()
 controllers = {
     "OSC_POSE": [7, 6, 0.1],
     "OSC_POSITION": [4, 3, 0.1],
-    # "IK_POSE": [7, 6, 0.01], # TODO (YL): will test this after mink is reintroduced
+    "IK_POSE": [7, 6, 0.01],
     "JOINT_POSITION": [8, 7, 0.2],
     "JOINT_VELOCITY": [8, 7, -0.1],
     "JOINT_TORQUE": [8, 7, 0.25],

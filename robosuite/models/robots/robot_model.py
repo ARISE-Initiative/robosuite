@@ -5,7 +5,7 @@ import mujoco
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.models.bases import MountModel, LegBaseModel, MobileBaseModel, RobotBaseModel
+from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel, RobotBaseModel
 from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 

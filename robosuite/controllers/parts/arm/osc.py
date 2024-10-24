@@ -460,7 +460,7 @@ class OperationalSpaceController(Controller):
         """
         Optional function to implement in subclass controllers that will take in @origin_pos and @origin_ori and update
         internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
-        is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
+        is based on mink and requires knowledge of simulator state deviations between mink and mujoco
 
         Args:
             origin_pos (3-tuple): x,y,z position of controller reference in mujoco world coordinates

@@ -34,9 +34,7 @@ jobs:
       run: |
         pip install -e .
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        # NOTE(YL): pybullet-svl installation in "extra" is taking most of the time.
-        # We will skip IK controller test, since pybullet-svl will be replaced with mink
-        # if [ -f requirements-extra.txt ]; then pip install -r requirements-extra.txt; fi
+        if [ -f requirements-extra.txt ]; then pip install -r requirements-extra.txt; fi
 
     - name: Lint with flake8
       run: |

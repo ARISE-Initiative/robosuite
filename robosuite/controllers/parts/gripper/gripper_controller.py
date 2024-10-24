@@ -139,7 +139,7 @@ class GripperController(object, metaclass=abc.ABCMeta):
         """
         Optional function to implement in subclass controllers that will take in @base_pos and @base_ori and update
         internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
-        is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
+        is based on mink and requires knowledge of simulator state deviations between mink and mujoco
 
         """
         raise NotImplementedError
