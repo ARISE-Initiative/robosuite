@@ -30,8 +30,15 @@ TEST_BASES = [
     "SpotFloating",
 ]
 
-
-def create_and_test_env(env: str, robots: Union[str, List[str]], controller_config: Dict, render=True):
+# If you would like to visualize the scene during testing,
+# set render to True and increase env_steps to a larger value.
+def create_and_test_env(
+    env: str,
+    robots: Union[str, List[str]],
+    controller_config: Dict,
+    render: bool = True,
+    env_steps: int = 20,
+):
 
     config = {
         "env_name": env,
@@ -54,7 +61,7 @@ def create_and_test_env(env: str, robots: Union[str, List[str]], controller_conf
     high = np.clip(high, -1, 1)
 
     # Runs a few steps of the simulation as a sanity check
-    for i in range(200):
+    for i in range(env_steps):
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
         if render:
