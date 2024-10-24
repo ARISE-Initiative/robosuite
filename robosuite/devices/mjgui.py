@@ -19,7 +19,7 @@ def set_mocap_pose(
         # convert mat to quat
         target_quat = np.empty(4)
         if target_mat.shape == (3, 3):
-            target_mat = target_mat.reshape(9, 1)
+            target_mat = target_mat.reshape(9, 1)  # 9-dim for mju_mat2Quat input
         mujoco.mju_mat2Quat(target_quat, target_mat)
         sim.data.mocap_quat[mocap_id] = target_quat
 
