@@ -136,13 +136,12 @@
           <body name="torso_fixed_link" pos="-0.062 0.0 0.193">
             <inertial pos="0.02435 -0.00464 0.15900" mass="14.01360" diaginertia="0.4 0.4 0.4"/>
             <geom type="mesh" material="LightGrey" contype="0" conaffinity="0" group="1" mesh="torso_fix"/>
-            <geom type="box" material="LightGrey" name="torso_fixed_collision_box_1" group="0" friction="1 0 0" size="0.4 0.25 0.04" pos="0.085 0.0 0.02"/>
-            <!-- <geom type="box" material="LightGrey" name="torso_fixed_collision_box_2" group="0" friction="1 0 0" size="0.25 0.25 0.1" pos="0 0 0.05"/> -->
-            <!-- <body name="torso_fixed_column_link" pos="-0.062 0 0.195">
+            <geom type="box" material="LightGrey" name="torso_fixed_collision_box_1" group="0" friction="1 0 0" size="0.25 0.25 0.04" pos="0.085 0.0 0.02"/>
+            <body name="torso_fixed_column_link" pos="0 0 0.195">
                             <inertial pos="0 0 0" mass="0.01" diaginertia="0.4 0.4 0.4"/>
-                            <geom type="box" material="DarkGrey" contype="0" conaffinity="0" group="1" size="0.18 0.2 0.55"/>
-                            <geom type="box" material="DarkGrey" name="torso_fixed_column_collision" group="0" friction="1 0 0" size="0.23 0.23 0.55"/>
-                        </body> -->
+                            <geom type="box" material="LightGrey" contype="0" conaffinity="0" group="1" size="0.10 0.10 0.3"/>
+                            <geom type="box" material="LightGrey" name="torso_fixed_column_collision" group="0" friction="1 0 0" size="0.10 0.10 0.3"/>
+                        </body>
             <!-- Torso lift link -->
             <body name="torso_lift_link" pos="0.0 0.0 0">
               <joint name="torso_lift_joint" type="slide" axis="0 0 1" damping="1000" range="0 0.35"/>
@@ -293,13 +292,13 @@
     <!-- End of robot definition -->
   </worldbody>
   <actuator>
-    <motor ctrllimited="true" ctrlrange="-100 100" joint="arm_right_1_joint" name="torq_right_j1"/>
+    <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_right_1_joint" name="torq_right_j1"/>
     <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_right_2_joint" name="torq_right_j2"/>
-    <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_right_3_joint" name="torq_right_j3"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_right_3_joint" name="torq_right_j3"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_right_4_joint" name="torq_right_j4"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_right_5_joint" name="torq_right_j5"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_right_6_joint" name="torq_right_j6"/>
-    <motor ctrllimited="true" ctrlrange="-100 100" joint="arm_left_1_joint" name="torq_left_j1"/>
+    <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_1_joint" name="torq_left_j1"/>
     <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_left_2_joint" name="torq_left_j2"/>
     <motor ctrllimited="true" ctrlrange="-50 50" joint="arm_left_3_joint" name="torq_left_j3"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_4_joint" name="torq_left_j4"/>
@@ -307,7 +306,6 @@
     <motor ctrllimited="true" ctrlrange="-15 15" joint="arm_left_6_joint" name="torq_left_j6"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_1_joint" name="torq_head_pitch"/>
     <motor ctrllimited="true" ctrlrange="-15 15" joint="head_2_joint" name="torq_head_yaw"/>
-    <!-- <motor ctrllimited="true" ctrlrange="-1000 1000" joint="torso_lift_joint" name="torq_torso_lift"/> -->
     <motor ctrllimited="true" ctrlrange="-1000.0 1000.0" joint="torso_lift_joint" name="torq_torso_lift" forcelimited="false"/>
   </actuator>
 </mujoco>

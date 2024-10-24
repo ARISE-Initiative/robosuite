@@ -30,7 +30,7 @@ class Panda(ManipulatorModel):
 
     @property
     def default_controller_config(self):
-        return {"right": "default_panda"}
+        return {"right": "osc_pose"}
 
     @property
     def init_qpos(self):
@@ -55,13 +55,3 @@ class Panda(ManipulatorModel):
     @property
     def arm_type(self):
         return "single"
-
-
-class PandaMobile(Panda):
-    """
-    Variant of Panda robot with mobile base. Currently serves as placeholder class.
-    """
-
-    @property
-    def default_base(self):
-        return "OmronMobileBase"

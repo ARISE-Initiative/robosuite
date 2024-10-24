@@ -112,7 +112,7 @@
                             <!-- Head roll -->
                             <body name="head_roll" pos="0 0 0">
                                 <inertial pos="-0.000539717 0.00299723 -0.00194711" quat="0.498775 0.509039 0.50481 0.487104" mass="0.0189574" diaginertia="5.66154e-06 3.71917e-06 3.07146e-06"/>
-                                <joint name="head_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.2617993877991494 0.2617993877991494" damping="7" armature="1.0" frictionloss="0.2"/>
+                                <joint name="head_roll" pos="0 0 0" axis="1 0 1.221e-05" range="-0.2617993877991494 0.2617993877991494" armature="1.0" frictionloss="0.2"/>
 
                                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" material="LightGrey" mesh="head_roll"/>
                                 <geom size="0.02 0.02 0.02" pos="0 0 -0.1" type="box" material="LightGrey"/>
@@ -198,6 +198,7 @@
 
                                                     <!-- right eef -->
                                                     <body name="right_eef" pos="0 0 0" quat="-0.707107 0 0 0.707107">
+                                                        <site name="r_eef_site" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="1" />
                                                         <body name="right_mount" quat="0 0 1 0"/>
                                                         <body name="right_hand_eef" pos="0 0 0"/>
                                                     </body>
@@ -278,6 +279,7 @@
 
                                                     <!-- left eef -->
                                                     <body name="left_eef" pos="0 0 0" quat="0.707107 0 0 0.707107">
+                                                        <site name="l_eef_site" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="1" />
                                                         <body name="left_mount" quat="0 0 1 0"/>
                                                         <body name="left_hand_eef" pos="0 0 0"/>
                                                     </body>
@@ -460,9 +462,9 @@
     <motor ctrllimited="true" ctrlrange="-20000 20000" joint="torso_waist_pitch" name="torso_waist_pitch"/>
     <motor ctrllimited="true" ctrlrange="-20000 20000" joint="torso_waist_roll" name="torso_waist_roll"/>
     <motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_yaw" name="head_yaw"/>
-    <motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_pitch" name="head_pitch"/>
     <motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_roll" name="head_roll"/>
-    
+    <motor ctrllimited="true" ctrlrange="-20000 20000" joint="head_pitch" name="head_pitch"/>
+
     <!-- Right arm motors -->
     <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_shoulder_pitch" name="r_shoulder_pitch"/>
     <motor ctrllimited="true" ctrlrange="-20000 20000" joint="r_shoulder_roll" name="r_shoulder_roll"/>

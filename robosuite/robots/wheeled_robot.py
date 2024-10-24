@@ -6,10 +6,11 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
-from robosuite.robots.mobile_base_robot import MobileBaseRobot
+from robosuite.robots.mobile_robot import MobileRobot
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 
-class WheeledRobot(MobileBaseRobot):
+class WheeledRobot(MobileRobot):
     """
     Initializes a robot with a wheeled base.
     """
@@ -18,7 +19,6 @@ class WheeledRobot(MobileBaseRobot):
         self,
         robot_type: str,
         idn=0,
-        controller_config=None,
         composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
@@ -30,7 +30,6 @@ class WheeledRobot(MobileBaseRobot):
         super().__init__(
             robot_type=robot_type,
             idn=idn,
-            controller_config=controller_config,
             composite_controller_config=composite_controller_config,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
@@ -45,9 +44,8 @@ class WheeledRobot(MobileBaseRobot):
         Loads controller to be used for dynamic trajectories
         """
         # Flag for loading urdf once (only applicable for IK controllers)
-
         self.composite_controller = composite_controller_factory(
-            type=self.composite_controller_config.get("type", "BASE"),
+            type=self.composite_controller_config.get("type", "BASIC"),
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
@@ -56,10 +54,17 @@ class WheeledRobot(MobileBaseRobot):
 
         self._load_arm_controllers()
 
+        # default base, torso, and head controllers are inherited from MobileRobot
         self._load_base_controller()
+
+        self._load_head_controller()
         self._load_torso_controller()
 
-        self.composite_controller.load_controller_config(self.controller_config)
+        self._postprocess_part_controller_config()
+        self.composite_controller.load_controller_config(
+            self.part_controller_config,
+            self.composite_controller_config.get("composite_controller_specific_configs", {}),
+        )
         self.enable_parts()
 
     def load_model(self):
@@ -79,9 +84,6 @@ class WheeledRobot(MobileBaseRobot):
         """
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
-
-        self.composite_controller.update_state()
-        self.composite_controller.reset()
 
     def setup_references(self):
         """
@@ -134,7 +136,11 @@ class WheeledRobot(MobileBaseRobot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
-                controller = self.controller[arm]
+                controller = self.part_controllers.get(arm, None)
+                if controller is None:
+                    # TODO: enable buffer update for whole body controllers not using individual arm controllers
+                    continue
+
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
                 self.recent_ee_pose[arm].push(np.concatenate((controller.ref_pos, T.mat2quat(controller.ref_ori_mat))))

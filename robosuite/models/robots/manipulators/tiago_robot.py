@@ -41,7 +41,12 @@ class Tiago(ManipulatorModel):
         Returns:
             dict: Dictionary containing arm-specific default controller config names
         """
-        return {"right": "default_tiago", "left": "default_tiago"}
+        return {
+            "right": "joint_position",
+            "left": "joint_position",
+            "head": "joint_position",
+            "torso": "joint_position",
+        }
 
     @property
     def init_qpos(self):
@@ -57,21 +62,21 @@ class Tiago(ManipulatorModel):
         # Arms half extended
         return np.array(
             [
+                0.1,
                 0,
                 0,
                 0,
-                0.952475,
-                -0.944335,
-                2.91383,
-                1.84749,
-                1.8846,
-                -0.5656,
-                0.60885,
-                -0.46326,
-                1.90067,
-                1.84749,
-                0.75384,
-                2.4,
+                -0.9,
+                1.45,
+                1.7,
+                -1.5,
+                0.5,
+                0,
+                -0.9,
+                1.45,
+                1.7,
+                -1.5,
+                0.5,
             ]
         )
 
@@ -80,7 +85,7 @@ class Tiago(ManipulatorModel):
         return {
             "bins": (-0.5, -0.1, 0),
             "empty": (-0.29, 0, 0),
-            "table": lambda table_length: (-0.35 - table_length / 2, 0, 0),
+            "table": lambda table_length: (-0.20 - table_length / 2, 0, 0),
         }
 
     @property

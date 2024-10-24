@@ -94,3 +94,7 @@ class LegBaseModel(RobotBaseModel):
         root.append(forward_joint)
         root.append(side_joint)
         root.append(yaw_joint)
+
+    @property
+    def default_base(self):
+        return "NullMobileBase"

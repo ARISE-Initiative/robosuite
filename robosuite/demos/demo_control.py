@@ -44,6 +44,8 @@ sequential qualitative behavior during the test is described below for each cont
 
 """
 
+from typing import Dict
+
 import robosuite as suite
 from robosuite.utils.input_utils import *
 
