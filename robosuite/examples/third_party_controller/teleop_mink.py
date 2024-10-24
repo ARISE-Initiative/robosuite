@@ -22,27 +22,6 @@ from robosuite.wrappers import DataCollectionWrapper
 from robosuite.devices.keyboard import Keyboard
 
 
-def set_target_pose(sim, target_pos=None, target_mat=None, mocap_name: str = "target"):
-    mocap_id = sim.model.body(mocap_name).mocapid[0]
-    if target_pos is not None:
-        sim.data.mocap_pos[mocap_id] = target_pos
-    if target_mat is not None:
-        # convert mat to quat
-        target_quat = np.empty(4)
-        mujoco.mju_mat2Quat(target_quat, target_mat.reshape(9, 1))
-        sim.data.mocap_quat[mocap_id] = target_quat
-
-
-def get_target_pose(sim, mocap_name: str = "target") -> Tuple[np.ndarray]:
-    mocap_id = sim.model.body(mocap_name).mocapid[0]
-    target_pos = np.copy(sim.data.mocap_pos[mocap_id])
-    target_quat = np.copy(sim.data.mocap_quat[mocap_id])
-    target_mat = np.empty(9)
-    mujoco.mju_quat2Mat(target_mat, target_quat)
-    target_mat = target_mat.reshape(3, 3)
-    return target_pos, target_mat
-
-
 def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
@@ -58,15 +37,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
     env.reset()
     env.render()
-
-    site_names: List[str] = env.robots[0].composite_controller.joint_action_policy.site_names
-    right_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site_names[0])]
-    right_mat = env.sim.data.site_xmat[env.sim.model.site_name2id(site_names[0])]
-    left_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site_names[1])]
-    left_mat = env.sim.data.site_xmat[env.sim.model.site_name2id(site_names[1])]
-
-    set_target_pose(env.sim, right_pos, right_mat, "right_eef_target")
-    set_target_pose(env.sim, left_pos, left_mat, "left_eef_target")
 
     device.start_control()
 

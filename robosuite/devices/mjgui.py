@@ -18,7 +18,9 @@ def set_mocap_pose(
     if target_mat is not None:
         # convert mat to quat
         target_quat = np.empty(4)
-        mujoco.mju_mat2Quat(target_quat, target_mat.reshape(9, 1))
+        if target_mat.shape == (3, 3):
+            target_mat = target_mat.reshape(9, 1)
+        mujoco.mju_mat2Quat(target_quat, target_mat)
         sim.data.mocap_quat[mocap_id] = target_quat
 
 def get_mocap_pose(sim, mocap_name: str = "target") -> Tuple[np.ndarray, np.ndarray]:
