@@ -422,7 +422,7 @@ class Robot(object):
                 In a later robosuite release, we will directly update eef_quat to query
                 the orientation from the site.
             """
-            return T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.eef_name[arm]).reshape((3, 3)))
+            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
 
         @sensor(modality=modality)
         def eef_quat_site(obs_cache):
