@@ -54,7 +54,7 @@ class CompositeController:
 
         self._applied_action_dict = {}
 
-    def load_controller_config(
+    def load_part_controller_config(
         self, part_controller_config, composite_controller_specific_config: Optional[Dict] = None
     ):
         self.part_controller_config = part_controller_config

@@ -10,7 +10,7 @@ import imageio
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers import load_controller_config
+from robosuite.controllers import load_part_controller_config
 from robosuite.utils.input_utils import *
 
 if __name__ == "__main__":
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         options["robots"] = choose_robots(exclude_bimanual=True)
 
     # Load the controller
-    options["controller_configs"] = load_controller_config(default_controller="OSC_POSE")
+    options["controller_configs"] = load_part_controller_config(default_controller="OSC_POSE")
 
     # initialize the task
     env = suite.make(

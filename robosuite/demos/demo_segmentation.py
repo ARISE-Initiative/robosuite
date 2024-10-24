@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image
 
 import robosuite as suite
-from robosuite.controllers import load_controller_config
+from robosuite.controllers import load_part_controller_config
 
 
 def randomize_colors(N, bright=True):
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     segmentation_level = args.segmentation_level  # Options are {instance, class, element}
 
     # Load the desired controller
-    options["controller_configs"] = load_controller_config(default_controller=controller_name)
+    options["controller_configs"] = load_part_controller_config(default_controller=controller_name)
 
     # initialize the task
     env = suite.make(

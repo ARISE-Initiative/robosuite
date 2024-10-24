@@ -53,7 +53,7 @@ class LeggedRobot(MobileRobot):
                 "..",
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.legs]),
             )
-            self.part_controller_config[self.legs] = load_controller_config(custom_fpath=controller_path)
+            self.part_controller_config[self.legs] = load_part_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,

@@ -16,7 +16,7 @@ import numpy as np
 
 import robosuite as suite
 import robosuite.macros as macros
-from robosuite import load_controller_config
+from robosuite import load_part_controller_config
 from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.utils.transform_utils import quat2axisangle

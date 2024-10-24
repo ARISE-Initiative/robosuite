@@ -40,12 +40,12 @@ def load_part_controller_config(custom_fpath=None, default_controller=None):
     if default_controller is not None:
 
         # Assert that requested default controller is in the available default controllers
-        from robosuite.controllers import ALL_CONTROLLERS
+        from robosuite.controllers import  ALL_PART_CONTROLLERS
 
         assert (
-            default_controller in ALL_CONTROLLERS
+            default_controller in  ALL_PART_CONTROLLERS
         ), "Error: Unknown default controller specified. Requested {}, " "available controllers: {}".format(
-            default_controller, list(ALL_CONTROLLERS)
+            default_controller, list( ALL_PART_CONTROLLERS)
         )
 
         # Store the default controller config fpath associated with the requested controller
@@ -62,6 +62,7 @@ def load_part_controller_config(custom_fpath=None, default_controller=None):
             controller_config = json.load(f)
     except FileNotFoundError:
         print("Error opening controller filepath at: {}. " "Please check filepath and try again.".format(custom_fpath))
+        exit(1)
 
     # Return the loaded controller
     return controller_config
