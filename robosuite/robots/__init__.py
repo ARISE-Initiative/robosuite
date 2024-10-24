@@ -21,6 +21,7 @@ ROBOT_CLASS_MAPPING = {
     "PandaOmron": WheeledRobot,
     "Tiago": WheeledRobot,
     "SpotWithArm": LeggedRobot,
+    "SpotWithArmFloating": LeggedRobot,
     "GR1": LeggedRobot,
     "GR1FixedLowerBody": LeggedRobot,
     "GR1ArmsOnly": LeggedRobot,
@@ -28,7 +29,7 @@ ROBOT_CLASS_MAPPING = {
     "PandaDexRH": FixedBaseRobot,
     "PandaDexLH": FixedBaseRobot,
     "SpotArmRethink": FixedBaseRobot,
-    "SpotArmRobotiqGripper": FixedBaseRobot
+    "SpotArmRobotiqGripper": FixedBaseRobot,
 }
 
 target_type_mapping = {

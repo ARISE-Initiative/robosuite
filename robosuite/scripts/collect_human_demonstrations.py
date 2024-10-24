@@ -81,8 +81,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
         action_dict = prev_gripper_actions.copy()
         arm_actions = input_action[:6].copy()
         if active_robot.is_mobile:
-            # arm_actions = np.concatenate([arm_actions, ])
-
             if "GR1" in active_robot.name and isinstance(active_robot.composite_controller, WholeBody):
                 # "relative" actions by default for now
                 action_dict = {

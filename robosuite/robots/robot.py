@@ -2,14 +2,11 @@ import copy
 import json
 import os
 from collections import OrderedDict
-from typing import Optional
 
-import mujoco
 import numpy as np
 
-import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_part_controller_config
+from robosuite.controllers import load_part_controller_config
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -151,7 +148,7 @@ class Robot(object):
                 ROBOSUITE_DEFAULT_LOGGER.warn(
                     f'The config has defined for the controller "{part_name}", '
                     "but the robot does not have this component. Skipping, but make sure this is intended."
-                    "Removing the controller config for {part_name} from self.part_controller_config."
+                    f"Removing the controller config for {part_name} from self.part_controller_config."
                 )
                 self.part_controller_config.pop(part_name, None)
                 continue
@@ -256,6 +253,11 @@ class Robot(object):
         # Set initial position in sim
         self.sim.data.qpos[self._ref_joint_pos_indexes] = init_qpos
 
+        if self.robot_model.init_base_qpos is not None:
+            self.sim.data.qpos[self._ref_base_joint_pos_indexes] = self.robot_model.init_base_qpos
+        if self.robot_model.init_torso_qpos is not None:
+            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = self.robot_model.init_torso_qpos
+
         # Load controllers
         self._load_controller()
 
@@ -292,7 +294,7 @@ class Robot(object):
 
     def setup_references(self):
         """
-        Sets up necessary reference for robots, grippers, and objects.
+        Sets up necessary reference for robots, bases, grippers, and objects.
         """
         # indices for joints in qpos, qvel
         self.robot_joints = self.robot_model.joints
@@ -311,6 +313,14 @@ class Robot(object):
         self._ref_arm_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_arm_joints]
         self._ref_arm_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_arm_joints]
         self._ref_arm_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_arm_joints]
+
+        # indices for base joints
+        self._ref_base_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._base_joints
+        ]
+        self._ref_torso_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._torso_joints
+        ]
 
     def setup_observables(self):
         """
@@ -392,13 +402,57 @@ class Robot(object):
 
         @sensor(modality=modality)
         def eef_quat(obs_cache):
-            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+            """
+            Args:
+                obs_cache (dict): A dictionary containing cached observations.
+                
+            Returns:
+                numpy.ndarray: The quaternion representing the orientation of the end effector *body*
+                in the mujoco world coordinate frame.
+            
+            Note:
+                In robosuite<=1.5, eef_quat has been queried from the body instead
+                of the site and has thus been inconsistent with the eef_pos, which queries from the site.
+
+                This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298.
+                
+                Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
+                New datasets should ideally use the logic in eef_quat_site.
+
+                In a later robosuite release, we will directly update eef_quat to query
+                the orientation from the site.
+            """
+            return T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.eef_name[arm]).reshape((3, 3)))
+
+        @sensor(modality=modality)
+        def eef_quat_site(obs_cache):
+            """
+            Args:
+                obs_cache (dict): A dictionary containing cached observations.
+
+            Returns:
+                numpy.ndarray: The quaternion representing the orientation of the end effector *site*
+                in the mujoco world coordinate frame.
+
+            Note:
+                In robosuite<=1.5, eef_quat_site has been queried from the body instead
+                of the site and has thus been inconsistent with the eef_pos, which queries from the site.
+
+                This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298
+                
+                Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
+                New datasets should ideally use the logic in eef_quat_site.
+
+                In a later robosuite release, we will directly update eef_quat to query
+                the orientation from the site, and then remove this eef_quat_site key.
+            """
+            return T.mat2quat(self.sim.data.site_xmat[self.eef_site_id[arm]].reshape((3, 3)))
 
         # only consider prefix if there is more than one arm
         pf = f"{arm}_" if len(self.arms) > 1 else ""
 
-        sensors = [eef_pos, eef_quat]
-        names = [f"{pf}eef_pos", f"{pf}eef_quat"]
+        sensors = [eef_pos, eef_quat, eef_quat_site]
+        names = [f"{pf}eef_pos", f"{pf}eef_quat", f"{pf}eef_quat_site"]
 
         # add in gripper sensors if this robot has a gripper
         if self.has_gripper[arm]:
