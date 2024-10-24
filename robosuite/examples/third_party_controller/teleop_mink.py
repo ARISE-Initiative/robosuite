@@ -5,24 +5,21 @@ python robosuite/examples/third_party_controller/teleop_mink.py --controller rob
 """
 
 import argparse
-import os
 import time
-from typing import List, Tuple
 
-import mujoco
 import numpy as np
 
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
-
-# mink-related imports
-from robosuite.devices.mjgui import MJGUI
-from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
-from robosuite.wrappers import DataCollectionWrapper
 from robosuite.devices.keyboard import Keyboard
+from robosuite.devices.mjgui import MJGUI
+from robosuite.wrappers import DataCollectionWrapper
+
+# mink-specific import
+from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 
 
-def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
+def collect_human_trajectory(env, device, arm):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -141,5 +138,5 @@ if __name__ == "__main__":
         device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     elif args.device == "mjgui":
         device = MJGUI(env=env)
-    while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
+
+    collect_human_trajectory(env, device, args.arm)
