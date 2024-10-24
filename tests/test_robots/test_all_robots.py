@@ -11,20 +11,11 @@ from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot, LeggedRobot, W
 
 def test_robots():
     for name, robot in ROBOT_CLASS_MAPPING.items():
-        if robot == FixedBaseRobot:
-            print(f"Testing {name}")
-            _test_contact_geoms(robot(name))
-
-        elif robot == WheeledRobot:
-            print(f"Testing {name}")
-            _test_contact_geoms(robot(name))
-
-        elif robot == LeggedRobot:
-            print(f"Testing {name}")
-            _test_contact_geoms(robot(name))
-
-        else:
+        print(f"Testing {name}")
+        if robot not in [FixedBaseRobot, WheeledRobot, LeggedRobot]:
             raise ValueError(f"Invalid robot type: {robot}")
+        else:
+            _test_contact_geoms(robot(name))
 
 
 def _test_contact_geoms(robot):

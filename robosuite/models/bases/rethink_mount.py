@@ -3,11 +3,11 @@ Rethink's Generic Mount (Officially used on Sawyer).
 """
 import numpy as np
 
-from robosuite.models.bases.mount_model import MountModel
+from robosuite.models.bases.mount_model import FixedBaseModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class RethinkMount(MountModel):
+class RethinkMount(FixedBaseModel):
     """
     Mount officially used for Rethink's Sawyer Robot. Includes a controller box and wheeled pedestal.
 

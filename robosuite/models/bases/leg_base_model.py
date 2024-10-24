@@ -5,11 +5,11 @@ from xml.etree import ElementTree as ET
 
 import numpy as np
 
-from robosuite.models.bases.base_model import BaseModel
+from robosuite.models.bases.robot_base_model import RobotBaseModel
 from robosuite.utils.mjcf_utils import find_elements, find_parent
 
 
-class LegBaseModel(BaseModel):
+class LegBaseModel(RobotBaseModel):
     @property
     def init_qpos(self):
         raise NotImplementedError

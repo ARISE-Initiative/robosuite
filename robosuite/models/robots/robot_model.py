@@ -4,7 +4,7 @@ from typing import Dict, List
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.models.bases import BaseModel, LegBaseModel, MobileBaseModel, MountModel
+from robosuite.models.bases import RobotBaseModel, LegBaseModel, MobileBaseModel, FixedBaseModel
 from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
@@ -98,7 +98,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         rot = mat2quat(euler2mat(rot))[[3, 0, 1, 2]]
         self._elements["root_body"].set("quat", array_to_string(rot))
 
-    def set_joint_attribute(self, attrib: str, values: np.ndarray, force=False):
+    def set_joint_attribute(self, attrib: str, values: np.ndarray, force=True):
         """
         Sets joint attributes, e.g.: friction loss, damping, etc.
 
@@ -119,11 +119,11 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             if force or joint.get(attrib, None) is None:
                 joint.set(attrib, array_to_string(np.array([values[i]])))
 
-    def add_base(self, base: BaseModel):
+    def add_base(self, base: RobotBaseModel):
         """
         Mounts a base to the robot. Bases are defined in robosuite.models.bases
         """
-        if isinstance(base, MountModel):
+        if isinstance(base, FixedBaseModel):
             self.add_mount(base)
         elif isinstance(base, MobileBaseModel):
             self.add_mobile_base(base)
@@ -132,14 +132,14 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         else:
             raise ValueError("Invalid base type to add to robot!")
 
-    def add_mount(self, mount: MountModel):
+    def add_mount(self, mount: FixedBaseModel):
         """
         Mounts @mount to arm.
 
         Throws error if robot already has a mount or if mount type i\s incorrect.
 
         Args:
-            mount (MountModel): mount MJCF model
+            mount (FixedBaseModel): mount MJCF model
 
         Raises:
             ValueError: [mount already added]

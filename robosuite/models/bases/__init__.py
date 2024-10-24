@@ -1,9 +1,8 @@
-from .mount_model import MountModel
-from .base_model import BaseModel
-from .base_factory import base_factory
+from .mount_model import FixedBaseModel
+from .robot_base_model import RobotBaseModel
+from .robot_base_factory import robot_base_factory
 from .mobile_base_model import MobileBaseModel
 from .leg_base_model import LegBaseModel
-
 
 from .rethink_mount import RethinkMount
 from .rethink_minimal_mount import RethinkMinimalMount
@@ -35,9 +34,6 @@ BASE_MAPPING = {
     "SpotFloating": SpotFloating,
     "Go2": Go2,
     "Go2Floating": Go2Floating,
-    # "Z1Base": Z1Base,
-    # "SpotBase": SpotBase,
-    # "NullLeggedBase": NullLeggedBase,
 }
 
 ALL_BASES = BASE_MAPPING.keys()

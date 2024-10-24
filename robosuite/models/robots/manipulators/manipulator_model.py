@@ -69,28 +69,28 @@ class ManipulatorModel(RobotModel):
 
         Args:
             gripper (GripperModel): gripper MJCF model
-            arm_name (str): name of arm mount -- defaults to self.eef_name if not specified
+            arm_name (str): name of arm mount -- 
+                            defaults add to all self.eef_name if not specified
 
         Raises:
             ValueError: [Multiple grippers]
         """
         if arm_name is None:
-            # TODO (YL): hack, better fix
-            if isinstance(self.eef_name, str):
-                arm_name = self.eef_name
-            else:
-                assert len(self.eef_name) == 1, "only support single insertion of gripper now"
-                arm_name = list(self.eef_name.values())[0]
+            assert isinstance(self.eef_name, dict), "only support single insertion of gripper now"
+            arm_names = list(self.eef_name.values())
+        else:
+            arm_names = [arm_name]
 
-        if arm_name in self.grippers:
-            raise ValueError("Attempts to add multiple grippers to one body")
+        for arm_name in arm_names:
+            if arm_name in self.grippers:
+                raise ValueError("Attempts to add multiple grippers to one body")
 
-        self.merge(gripper, merge_body=arm_name)
+            self.merge(gripper, merge_body=arm_name)
 
-        self.grippers[arm_name] = gripper
+            self.grippers[arm_name] = gripper
 
-        # Update cameras in this model
-        self.cameras = self.get_element_names(self.worldbody, "camera")
+            # Update cameras in this model
+            self.cameras = self.get_element_names(self.worldbody, "camera")
 
     def _update_joints(self):
         """internal function to update joint lists"""
