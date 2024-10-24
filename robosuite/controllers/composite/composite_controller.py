@@ -172,9 +172,16 @@ class HybridMobileBase(CompositeController):
                 action = self.grippers[part_name].format_action(action)
 
             if part_name in self.arms and hasattr(controller, "set_goal_update_mode"):
+                """
+                Query the last action dimension to determine if using
+                base mode (value > 0) or arm mode (value < 1).
+                If in base mode, update the new arm goal based on current desired goal,
+                to have the arm tracking with the reset of the moving base
+                as closely as possible without lagging or overshooting.
+                """
                 action_mode = all_action[-1]
                 if action_mode > 0:
-                    goal_update_mode = "target"
+                    goal_update_mode = "desired"
                 else:
                     goal_update_mode = "achieved"
                 controller.set_goal_update_mode(goal_update_mode)
