@@ -57,7 +57,7 @@ Robot Base Model
 
 The ``RobotBaseModel`` class represents the base of the robot. User can use ``add_base`` method in the ``RobotModel`` class to add a base model to the robot.
 
-There are mainly three types of base models: ``FixedBaseModel``, ``MobileBaseModel``, and ``LegBaseModel``.
+There are mainly three types of base models: ``MountModel``, ``MobileBaseModel``, and ``LegBaseModel``.
 
 .. autoclass:: robosuite.models.bases.robot_base_model.RobotBaseModel
 

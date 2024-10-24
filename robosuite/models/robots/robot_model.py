@@ -5,7 +5,7 @@ import mujoco
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.models.bases import FixedBaseModel, LegBaseModel, MobileBaseModel, RobotBaseModel
+from robosuite.models.bases import MountModel, LegBaseModel, MobileBaseModel, RobotBaseModel
 from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
@@ -131,7 +131,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         """
         Mounts a base to the robot. Bases are defined in robosuite.models.bases
         """
-        if isinstance(base, FixedBaseModel):
+        if isinstance(base, MountModel):
             self.add_mount(base)
         elif isinstance(base, MobileBaseModel):
             self.add_mobile_base(base)
@@ -140,14 +140,14 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         else:
             raise ValueError("Invalid base type to add to robot!")
 
-    def add_mount(self, mount: FixedBaseModel):
+    def add_mount(self, mount: MountModel):
         """
         Mounts @mount to arm.
 
         Throws error if robot already has a mount or if mount type i\s incorrect.
 
         Args:
-            mount (FixedBaseModel): mount MJCF model
+            mount (MountModel): mount MJCF model
 
         Raises:
             ValueError: [mount already added]

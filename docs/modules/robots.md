@@ -17,7 +17,7 @@ The high-level features of **robosuite**'s robots are described as follows:
 Below, we discuss the usage and functionality of the robots over the course of its program lifetime.
 
 #### Initialization
-During environment creation (`suite.make(...)`), individual robots are both instantiated and initialized. The desired RobotModel, FixedBaseModel, and Controller(s) (where multiple and / or additional models may be specified, e.g. for manipulator bimanual robots) are loaded into each robot, with the models being passed into the environment to compose the final MuJoCo simulation object. Each robot is then set to its initial state.
+During environment creation (`suite.make(...)`), individual robots are both instantiated and initialized. The desired RobotModel, MountModel, and Controller(s) (where multiple and / or additional models may be specified, e.g. for manipulator bimanual robots) are loaded into each robot, with the models being passed into the environment to compose the final MuJoCo simulation object. Each robot is then set to its initial state.
 
 #### Runtime
 During a given simulation episode (each `env.step(...)` call), the environment will receive a set of actions and distribute them accordingly to each robot, according to their respective action spaces. Each robot then converts these actions into low-level torques via their respective controllers, and directly execute these torques in the simulation. At the conclusion of the environment step, each robot will pass its set of robot-specific observations to the environment, which will then concatenate and append additional task-level observations before passing them as output from the `env.step(...)` call.

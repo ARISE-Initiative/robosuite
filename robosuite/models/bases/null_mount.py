@@ -3,11 +3,11 @@ Rethink's Generic Mount (Officially used on Sawyer).
 """
 import numpy as np
 
-from robosuite.models.bases.mount_model import FixedBaseModel
+from robosuite.models.bases.mount_model import MountModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class NullMount(FixedBaseModel):
+class NullMount(MountModel):
     """
     Dummy Mount to signify no mount.
 

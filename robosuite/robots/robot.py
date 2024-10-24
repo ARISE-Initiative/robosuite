@@ -574,11 +574,7 @@ class Robot(object):
         Returns:
             int: the active DoF of the robot (Number of robot joints + active gripper DoF).
         """
-        dof = self.robot_model.dof
-        for arm in self.arms:
-            if self.has_gripper[arm]:
-                dof += self.gripper[arm].dof
-        return dof
+        return self.robot_model.dof
 
     def pose_in_base_from_name(self, name):
         """

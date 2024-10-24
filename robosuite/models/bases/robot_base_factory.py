@@ -18,7 +18,7 @@ def robot_base_factory(name: Optional[str], idn=0) -> RobotBaseModel:
         idn (int or str): Number or some other unique identification string for this mount instance
 
     Returns:
-        RobotBaseModel class: e.g. MobileBaseModel, LegBaseModel, or FixedBaseModel instance
+        RobotBaseModel class: e.g. MobileBaseModel, LegBaseModel, or MountModel instance
 
     Raises:
         XMLError: [invalid XML]

@@ -1,4 +1,4 @@
-from .mount_model import FixedBaseModel
+from .mount_model import MountModel
 from .robot_base_model import RobotBaseModel
 from .robot_base_factory import robot_base_factory
 from .mobile_base_model import MobileBaseModel
