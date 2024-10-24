@@ -2,7 +2,7 @@ import argparse
 import json
 
 import robosuite as suite
-from robosuite import load_controller_config
+from robosuite import load_part_controller_config
 
 parser = argparse.ArgumentParser()
 
@@ -13,7 +13,7 @@ parser.add_argument("--config", type=str, default="opposed", help="Specified env
 args = parser.parse_args()
 
 
-controller_config = load_controller_config(default_controller="OSC_POSE")
+controller_config = load_part_controller_config(default_controller="OSC_POSE")
 config = {
     "env_name": args.environment,
     "robots": args.robots,

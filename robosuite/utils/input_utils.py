@@ -48,7 +48,7 @@ def choose_controller():
     """
     # get the list of all controllers
     controllers_info = suite.controllers.CONTROLLER_INFO
-    controllers = list(suite.ALL_CONTROLLERS)
+    controllers = list(suite.ALL_PART_CONTROLLERS)
 
     # Select controller to use
     print("Here is a list of controllers in the suite:\n")
@@ -146,7 +146,9 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False):
     return list(robots)[k]
 
 
-def input2action(device, robot, active_arm="right", env_configuration=None, mirror_actions=False):
+def input2action(
+    device, robot, active_arm="right", active_end_effector: str = "right", env_configuration=None, mirror_actions=False
+):
     """
     Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -157,10 +159,6 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
             Keyboard device class
 
         robot (Robot): Which robot we're controlling
-
-        active_arm (str): Only applicable for multi-armed setups (e.g.: multi-arm environments or bimanual robots).
-            Allows inputs to be converted correctly if the control type (e.g.: IK) is dependent on arm choice.
-            Choices are {right, left}
 
         env_configuration (str or None): Only applicable for multi-armed environments. Allows inputs to be converted
             correctly if the control type (e.g.: IK) is dependent on the environment setup. Options are:
@@ -202,18 +200,14 @@ def input2action(device, robot, active_arm="right", env_configuration=None, mirr
         return None, None
 
     # Get controller reference
-    controller = robot.controller[active_arm]
-    gripper_dof = robot.gripper[active_arm].dof
+    controller = robot.part_controllers[active_arm]
+    gripper_dof = robot.gripper[active_end_effector].dof
 
     # First process the raw drotation
     drotation = raw_drotation[[1, 0, 2]]
     if controller.name == "IK_POSE":
-        # If this is panda, want to swap x and y axis
-        if isinstance(robot.robot_model, Panda):
-            drotation = drotation[[1, 0, 2]]
-        else:
-            # Flip x
-            drotation[0] = -drotation[0]
+        drotation[2] = -drotation[2]
+
         # Scale rotation for teleoperation (tuned for IK)
         drotation *= 10
         dpos *= 5

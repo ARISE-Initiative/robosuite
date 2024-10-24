@@ -5,9 +5,8 @@ from collections import OrderedDict
 
 import numpy as np
 
-import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_controller_config
+from robosuite.controllers import load_part_controller_config
 from robosuite.models.bases import robot_base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -15,6 +14,7 @@ from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+from robosuite.utils.mjcf_utils import array_to_string
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -54,7 +54,6 @@ class Robot(object):
         self,
         robot_type: str,
         idn=0,
-        controller_config=None,
         composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
@@ -65,11 +64,13 @@ class Robot(object):
     ):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
-        self.controller_config = self._input2dict(copy.deepcopy(controller_config))
+        # TODO: Merge self.part_controller_config and self.composite_controller_config into one
         if composite_controller_config is not None:
             self.composite_controller_config = composite_controller_config
         else:
             self.composite_controller_config = {}
+        self.part_controller_config = copy.deepcopy(self.composite_controller_config.get("body_parts", {}))
+
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
         self.has_gripper = self._input2dict([gripper_type is not None for _, gripper_type in self.gripper_type.items()])
@@ -136,6 +137,24 @@ class Robot(object):
         """
         raise NotImplementedError
 
+    def _postprocess_part_controller_config(self):
+        """
+        Update part_controller_config with values from composite_controller_config for each body part.
+        Remove unused parts that are not in the controller.
+        Called by _load_controller() function
+        """
+        for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
+            if not self.has_part(part_name):
+                ROBOSUITE_DEFAULT_LOGGER.warn(
+                    f'The config has defined for the controller "{part_name}", '
+                    "but the robot does not have this component. Skipping, but make sure this is intended."
+                    f"Removing the controller config for {part_name} from self.part_controller_config."
+                )
+                self.part_controller_config.pop(part_name, None)
+                continue
+            if part_name in self.part_controller_config:
+                self.part_controller_config[part_name].update(controller_config)
+
     def load_model(self):
         """
         Loads robot and optionally add grippers.
@@ -171,8 +190,34 @@ class Robot(object):
             self.eef_rot_offset[arm] = T.quat_multiply(
                 self.robot_model.hand_rotation_offset[arm], self.gripper[arm].rotation_offset
             )
+
+            # Adjust gripper mount offset and quaternion if users specify custom values. This part is essential to support more flexible composition of new robots.
+            custom_gripper_mount_pos_offset = self.robot_model.gripper_mount_pos_offset.get(arm, None)
+            custom_gripper_mount_quat_offset = self.robot_model.gripper_mount_quat_offset.get(arm, None)
+
+            # The offset of position and oriientation (quaternion) is assumed to be the very first body in the gripper xml.
+            if custom_gripper_mount_pos_offset is not None:
+                assert len(custom_gripper_mount_pos_offset) == 3
+                # update an attribute inside an xml object
+                self.gripper[arm].worldbody.find("body").attrib["pos"] = array_to_string(
+                    custom_gripper_mount_pos_offset
+                )
+            if custom_gripper_mount_quat_offset is not None:
+                assert len(custom_gripper_mount_quat_offset) == 4
+                self.gripper[arm].worldbody.find("body").attrib["quat"] = array_to_string(
+                    custom_gripper_mount_quat_offset
+                )
+
             # Add this gripper to the robot model
             self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
+
+        # calling `mujoco.MjModel.from_xml_path()` resets mujoco's internal XML model and thus
+        # affects get_xml() used in calls in binding_utils.py
+        # https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html#mj-savelastxml
+        # https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html#mj-freelastxml
+        # our solution to requiring robot-only mujoco MjModels is to load the robot MjModels once first
+        # then using this mujoco MjModel herein
+        self.robot_model.set_mujoco_model()
 
     def reset_sim(self, sim: MjSim):
         """
@@ -208,6 +253,11 @@ class Robot(object):
         # Set initial position in sim
         self.sim.data.qpos[self._ref_joint_pos_indexes] = init_qpos
 
+        if self.robot_model.init_base_qpos is not None:
+            self.sim.data.qpos[self._ref_base_joint_pos_indexes] = self.robot_model.init_base_qpos
+        if self.robot_model.init_torso_qpos is not None:
+            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = self.robot_model.init_torso_qpos
+
         # Load controllers
         self._load_controller()
 
@@ -230,7 +280,7 @@ class Robot(object):
                 self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
 
             # Update base pos / ori references in controller (technically only needs to be called once)
-            # self.controller[arm].update_base_pose()
+            # self.part_controller[arm].update_base_pose()
             # Setup buffers for eef values
             self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
             self.recent_ee_pose[arm] = DeltaBuffer(dim=7)
@@ -238,9 +288,13 @@ class Robot(object):
             self.recent_ee_vel_buffer[arm] = RingBuffer(dim=6, length=10)
             self.recent_ee_acc[arm] = DeltaBuffer(dim=6)
 
+        # reset internal variables for composite controller
+        self.composite_controller.update_state()
+        self.composite_controller.reset()
+
     def setup_references(self):
         """
-        Sets up necessary reference for robots, grippers, and objects.
+        Sets up necessary reference for robots, bases, grippers, and objects.
         """
         # indices for joints in qpos, qvel
         self.robot_joints = self.robot_model.joints
@@ -259,6 +313,14 @@ class Robot(object):
         self._ref_arm_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_arm_joints]
         self._ref_arm_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_arm_joints]
         self._ref_arm_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_arm_joints]
+
+        # indices for base joints
+        self._ref_base_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._base_joints
+        ]
+        self._ref_torso_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._torso_joints
+        ]
 
     def setup_observables(self):
         """
@@ -340,13 +402,57 @@ class Robot(object):
 
         @sensor(modality=modality)
         def eef_quat(obs_cache):
-            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+            """
+            Args:
+                obs_cache (dict): A dictionary containing cached observations.
+
+            Returns:
+                numpy.ndarray: The quaternion representing the orientation of the end effector *body*
+                in the mujoco world coordinate frame.
+
+            Note:
+                In robosuite<=1.5, eef_quat has been queried from the body instead
+                of the site and has thus been inconsistent with the eef_pos, which queries from the site.
+
+                This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298.
+
+                Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
+                New datasets should ideally use the logic in eef_quat_site.
+
+                In a later robosuite release, we will directly update eef_quat to query
+                the orientation from the site.
+            """
+            return T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.eef_name[arm]).reshape((3, 3)))
+
+        @sensor(modality=modality)
+        def eef_quat_site(obs_cache):
+            """
+            Args:
+                obs_cache (dict): A dictionary containing cached observations.
+
+            Returns:
+                numpy.ndarray: The quaternion representing the orientation of the end effector *site*
+                in the mujoco world coordinate frame.
+
+            Note:
+                In robosuite<=1.5, eef_quat_site has been queried from the body instead
+                of the site and has thus been inconsistent with the eef_pos, which queries from the site.
+
+                This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298
+
+                Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
+                New datasets should ideally use the logic in eef_quat_site.
+
+                In a later robosuite release, we will directly update eef_quat to query
+                the orientation from the site, and then remove this eef_quat_site key.
+            """
+            return T.mat2quat(self.sim.data.site_xmat[self.eef_site_id[arm]].reshape((3, 3)))
 
         # only consider prefix if there is more than one arm
         pf = f"{arm}_" if len(self.arms) > 1 else ""
 
-        sensors = [eef_pos, eef_quat]
-        names = [f"{pf}eef_pos", f"{pf}eef_quat"]
+        sensors = [eef_pos, eef_quat, eef_quat_site]
+        names = [f"{pf}eef_pos", f"{pf}eef_quat", f"{pf}eef_quat_site"]
 
         # add in gripper sensors if this robot has a gripper
         if self.has_gripper[arm]:
@@ -729,69 +835,75 @@ class Robot(object):
 
         # Load controller configs for both left and right arm
         for arm in self.arms:
+            if arm not in self.part_controller_config:
+                self.part_controller_config[arm] = None
+
             # First, load the default controller if none is specified
-            if not self.controller_config[arm]:
+            if not self.part_controller_config[arm]:
                 # Need to update default for a single agent
                 controller_path = os.path.join(
                     os.path.dirname(__file__),
                     "..",
                     "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
                 )
-                self.controller_config[arm] = load_controller_config(custom_fpath=controller_path)
+                self.part_controller_config[arm] = load_part_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
             assert (
-                type(self.controller_config[arm]) == dict
+                type(self.part_controller_config[arm]) == dict
             ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-                type(self.controller_config[arm])
+                type(self.part_controller_config[arm])
             )
 
             # Add to the controller dict additional relevant params:
             #   the robot name, mujoco sim, eef_name, actuator_range, joint_indexes, timestep (model) freq,
             #   policy (control) freq, and ndim (# joints)
+            self.part_controller_config[arm]["robot_name"] = self.name
+            self.part_controller_config[arm]["sim"] = self.sim
+            self.part_controller_config[arm]["ref_name"] = self.gripper[arm].important_sites["grip_site"]
+            self.part_controller_config[arm]["part_name"] = arm
+            self.part_controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
 
-            self.controller_config[arm]["robot_name"] = self.name
-            self.controller_config[arm]["sim"] = self.sim
-            self.controller_config[arm]["ref_name"] = self.gripper[arm].important_sites["grip_site"]
-            self.controller_config[arm]["part_name"] = arm
-            self.controller_config[arm]["naming_prefix"] = self.robot_model.naming_prefix
-
-            self.controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
-            self.controller_config[arm]["ndim"] = self._joint_split_idx
-            self.controller_config[arm]["policy_freq"] = self.control_freq
-            self.controller_config[arm]["lite_physics"] = self.lite_physics
+            self.part_controller_config[arm]["eef_rot_offset"] = self.eef_rot_offset[arm]
+            self.part_controller_config[arm]["ndim"] = self._joint_split_idx
+            self.part_controller_config[arm]["policy_freq"] = self.control_freq
+            self.part_controller_config[arm]["lite_physics"] = self.lite_physics
             (start, end) = (None, self._joint_split_idx) if arm == "right" else (self._joint_split_idx, None)
-            self.controller_config[arm]["joint_indexes"] = {
+            self.part_controller_config[arm]["joint_indexes"] = {
                 "joints": self.arm_joint_indexes[start:end],
                 "qpos": self._ref_arm_joint_pos_indexes[start:end],
                 "qvel": self._ref_arm_joint_vel_indexes[start:end],
             }
-            self.controller_config[arm]["actuator_range"] = (
+            self.part_controller_config[arm]["actuator_range"] = (
                 self.torque_limits[0][start:end],
                 self.torque_limits[1][start:end],
             )
 
             # Only load urdf the first time this controller gets called
-            self.controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
+            self.part_controller_config[arm]["load_urdf"] = True if not urdf_loaded else False
             urdf_loaded = True
 
             # # Instantiate the relevant controller
 
             if self.has_gripper[arm]:
                 # Load gripper controllers
+                assert "gripper" in self.part_controller_config[arm], "Gripper controller config not found!"
                 gripper_name = self.get_gripper_name(arm)
-                self.controller_config[gripper_name] = {}
-                self.controller_config[gripper_name]["type"] = "GRIP"
-                self.controller_config[gripper_name]["robot_name"] = self.name
-                self.controller_config[gripper_name]["sim"] = self.sim
-                self.controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
-                self.controller_config[gripper_name]["part_name"] = gripper_name
-                self.controller_config[gripper_name]["naming_prefix"] = self.robot_model.naming_prefix
-                self.controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
-                self.controller_config[gripper_name]["policy_freq"] = self.control_freq
-                self.controller_config[gripper_name]["joint_indexes"] = {
+                self.part_controller_config[gripper_name] = {}
+                self.part_controller_config[gripper_name]["type"] = self.part_controller_config[arm]["gripper"]["type"]
+                self.part_controller_config[gripper_name]["use_action_scaling"] = self.part_controller_config[arm][
+                    "gripper"
+                ].get("use_action_scaling", True)
+                self.part_controller_config[gripper_name]["robot_name"] = self.name
+                self.part_controller_config[gripper_name]["sim"] = self.sim
+                self.part_controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]
+                self.part_controller_config[gripper_name]["part_name"] = gripper_name
+                self.part_controller_config[gripper_name]["naming_prefix"] = self.robot_model.naming_prefix
+                self.part_controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
+                self.part_controller_config[gripper_name]["policy_freq"] = self.control_freq
+                self.part_controller_config[gripper_name]["joint_indexes"] = {
                     "joints": self.gripper_joints[arm],
                     "actuators": self._ref_joint_gripper_actuator_indexes[arm],
                     "qpos": self._ref_gripper_joint_pos_indexes[arm],
@@ -800,7 +912,7 @@ class Robot(object):
                 low = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm], 0]
                 high = self.sim.model.actuator_ctrlrange[self._ref_joint_gripper_actuator_indexes[arm], 1]
 
-                self.controller_config[gripper_name]["actuator_range"] = (low, high)
+                self.part_controller_config[gripper_name]["actuator_range"] = (low, high)
 
     def enable_parts(self, right=True, left=True):
         self._enabled_parts = {
@@ -817,23 +929,29 @@ class Robot(object):
         """
         A helper function that creates the action vector given a dictionary
         """
-
-        full_action_vector = np.zeros(self.action_dim)
-        for (part_name, action_vector) in action_dict.items():
-            if part_name not in self._action_split_indexes:
-                ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
-                continue
-            start_idx, end_idx = self._action_split_indexes[part_name]
-            if end_idx - start_idx == 0:
-                # skipping not controlling actions
-                continue
-            assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
-                f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
-            )
-            full_action_vector[start_idx:end_idx] = action_vector
-        return full_action_vector
+        # check if there's a composite controller and if the controller has a create_action_vector method
+        if self.composite_controller is not None and hasattr(self.composite_controller, "create_action_vector"):
+            return self.composite_controller.create_action_vector(action_dict)
+        else:
+            full_action_vector = np.zeros(self.action_dim)
+            for (part_name, action_vector) in action_dict.items():
+                if part_name not in self._action_split_indexes:
+                    ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
+                    continue
+                start_idx, end_idx = self._action_split_indexes[part_name]
+                if end_idx - start_idx == 0:
+                    # skipping not controlling actions
+                    continue
+                assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
+                    f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
+                )
+                full_action_vector[start_idx:end_idx] = action_vector
+            return full_action_vector
 
     def print_action_info(self):
+        if self.composite_controller is not None and hasattr(self.composite_controller, "print_action_info"):
+            self.composite_controller.print_action_info()
+            return
         action_index_info = []
         action_dim_info = []
         for part_name, (start_idx, end_idx) in self._action_split_indexes.items():
@@ -847,6 +965,9 @@ class Robot(object):
         ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
 
     def print_action_info_dict(self):
+        if self.composite_controller is not None and hasattr(self.composite_controller, "print_action_info_dict"):
+            self.composite_controller.print_action_info_dict(name=self.name)
+            return
         info_dict = {}
         info_dict["Action Dimension"] = self.action_dim
         info_dict.update(dict(self._action_split_indexes))
@@ -857,6 +978,12 @@ class Robot(object):
     def get_gripper_name(self, arm):
         return f"{arm}_gripper"
 
+    def has_part(self, part_name):
+        if part_name in self._ref_joints_indexes_dict.keys() and len(self._ref_joints_indexes_dict[part_name]) > 0:
+            return True
+        else:
+            return False
+
     @property
     def _joint_split_idx(self):
         """
@@ -864,3 +991,13 @@ class Robot(object):
             int: the index that correctly splits the right arm from the left arm joints
         """
         return int(len(self.robot_arm_joints) / len(self.arms))
+
+    @property
+    def part_controllers(self):
+        """
+        Controller dictionary for the robot
+
+        Returns:
+            dict: Controller dictionary for the robot
+        """
+        return self.composite_controller.part_controllers

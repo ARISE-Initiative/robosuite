@@ -17,7 +17,7 @@ import cv2
 import numpy as np
 
 import robosuite as suite
-from robosuite import load_controller_config
+from robosuite import load_part_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.utils.observables import Observable, create_gaussian_noise_corrupter, create_uniform_sampled_delayer
 from robosuite.wrappers import VisualizationWrapper
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         raise ValueError
 
     # Get controller config
-    controller_config = load_controller_config(default_controller=controller_name)
+    controller_config = load_part_controller_config(default_controller=controller_name)
 
     # Create argument configuration
     config = {

@@ -31,3 +31,8 @@ GRIPPER_MAPPING = {
 }
 
 ALL_GRIPPERS = GRIPPER_MAPPING.keys()
+
+
+def register_gripper(target_class):
+    GRIPPER_MAPPING[target_class.__name__] = target_class
+    return target_class
