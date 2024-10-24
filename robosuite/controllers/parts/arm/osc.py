@@ -509,18 +509,19 @@ class OperationalSpaceController(Controller):
     def set_goal_update_mode(self, goal_update_mode):
         self._goal_update_mode = goal_update_mode
 
-    def reset_goal(self):
+    def reset_goal(self, goal_update_mode="achieved"):
         """
-        Resets the goal to the current state of the robot
+        Resets the goal to the current state of the robot.
+
+        Args:
+            goal_update_mode (str): set mode for updating controller goals,
+                either "achieved" (achieved position) or "desired" (desired goal).
         """
         self.goal_ori = np.array(self.ref_ori_mat)
         self.goal_pos = np.array(self.ref_pos)
 
-        """
-        By default, OSC always updates goals wrt the achieved position.
-        This can be modified to be configurable in the future if needed.
-        """
-        self._goal_update_mode = "achieved"
+        assert goal_update_mode in ["achieved", "desired"]
+        self._goal_update_mode = goal_update_mode
 
         # Also reset interpolators if required
 
