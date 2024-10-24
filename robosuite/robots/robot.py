@@ -1,21 +1,12 @@
 import copy
 import json
 import os
-import pathlib
 from collections import OrderedDict
-from typing import Optional
 
-import mujoco
 import numpy as np
 
-import robosuite
-import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_part_controller_config
-from robosuite.controllers.composite.composite_controller_factory import (
-    is_old_controller_config,
-    load_composite_controller_config,
-)
+from robosuite.controllers import load_part_controller_config
 from robosuite.models.bases import base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
