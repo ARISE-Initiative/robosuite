@@ -31,6 +31,7 @@
                 "orientation_limits": null,
                 "uncouple_pos_ori": true,
                 "input_type": "delta",
+                "input_ref_frame": "base",
                 "interpolation": null,
                 "ramp_ratio": 0.2,
                 "gripper": {
@@ -52,6 +53,7 @@
                 "orientation_limits": null,
                 "uncouple_pos_ori": true,
                 "input_type": "delta",
+                "input_ref_frame": "base",
                 "interpolation": null,
                 "ramp_ratio": 0.2,
                 "gripper": {
