@@ -13,10 +13,10 @@ import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 from robosuite.devices.keyboard import Keyboard
 from robosuite.devices.mjgui import MJGUI
-from robosuite.wrappers import DataCollectionWrapper
 
 # mink-specific import
 from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
+from robosuite.wrappers import DataCollectionWrapper
 
 
 def collect_human_trajectory(env, device, arm):

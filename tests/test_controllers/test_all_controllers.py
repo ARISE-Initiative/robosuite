@@ -61,12 +61,16 @@ test script.
 
 """
 import argparse
+import logging
 
 import numpy as np
 
 import robosuite as suite
 import robosuite.utils.transform_utils as T
-from robosuite import load_part_controller_config
+from robosuite import load_composite_controller_config
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+
+ROBOSUITE_DEFAULT_LOGGER.setLevel(logging.ERROR)
 
 # Arguments for this test script
 parser = argparse.ArgumentParser()
@@ -97,7 +101,7 @@ def test_all_controllers():
         neutral = np.zeros(action_dim)
 
         # Define controller path to load
-        controller_config = load_part_controller_config(default_controller=controller_name)
+        controller_config = load_composite_controller_config(controller="BASIC")
 
         # Now, create a test env for testing the controller on
         env = suite.make(
