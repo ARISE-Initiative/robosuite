@@ -99,7 +99,7 @@ class JointPositionController(Controller):
         kp_limits=(0, 300),
         damping_ratio_limits=(0, 100),
         policy_freq=20,
-        lite_physics=False,
+        lite_physics=True,
         qpos_limits=None,
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously

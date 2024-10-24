@@ -8,7 +8,7 @@ from robosuite.controllers import controller_factory, load_controller_config
 class CompositeController:
     """This is the basic class for composite controller. If you want to develop an advanced version of your controller, you should subclass from this composite controller."""
 
-    def __init__(self, sim, robot_model, grippers, lite_physics=False):
+    def __init__(self, sim, robot_model, grippers, lite_physics=True):
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model

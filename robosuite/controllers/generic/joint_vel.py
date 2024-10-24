@@ -69,7 +69,7 @@ class JointVelocityController(Controller):
         output_min=-1,
         kp=0.25,
         policy_freq=20,
-        lite_physics=False,
+        lite_physics=True,
         velocity_limits=None,
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously

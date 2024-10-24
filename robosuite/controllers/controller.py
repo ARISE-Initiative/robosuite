@@ -28,7 +28,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
-            This feature is set to False by default to preserve backward compatibility.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
     """
 
     def __init__(
@@ -39,7 +39,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         ref_name=None,
         part_name=None,
         naming_prefix=None,
-        lite_physics=False,
+        lite_physics=True,
     ):
 
         # Actuator range

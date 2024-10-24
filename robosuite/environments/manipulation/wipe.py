@@ -110,6 +110,9 @@ class Wipe(ManipulationEnv):
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
 
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
+
         horizon (int): Every episode lasts for exactly @horizon timesteps.
 
         ignore_done (bool): True if never terminating the environment (ignore @horizon).
@@ -178,6 +181,7 @@ class Wipe(ManipulationEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        lite_physics=True,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -275,6 +279,7 @@ class Wipe(ManipulationEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            lite_physics=lite_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
