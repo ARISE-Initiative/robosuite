@@ -77,14 +77,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--render", action="store_true", help="Whether to render this test or not for visual validation")
 args = parser.parse_args()
 
+# NOTE, TODO: this is no longer working, in preference to to the `test_composite_controller.py` script
+
 # Define the controllers to use (action_dim, num_test_steps, test_value)
 controllers = {
     "OSC_POSE": [7, 6, 0.1],
-    "OSC_POSITION": [4, 3, 0.1],
+    # "OSC_POSITION": [4, 3, 0.1],
     "IK_POSE": [7, 6, 0.01],
-    "JOINT_POSITION": [8, 7, 0.2],
-    "JOINT_VELOCITY": [8, 7, -0.1],
-    "JOINT_TORQUE": [8, 7, 0.25],
+    # "JOINT_POSITION": [8, 7, 0.2],
+    # "JOINT_VELOCITY": [8, 7, -0.1],
+    # "JOINT_TORQUE": [8, 7, 0.25],
 }
 
 # Define the number of timesteps to use per controller action as well as timesteps in between actions
