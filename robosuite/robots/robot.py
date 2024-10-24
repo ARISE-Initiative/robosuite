@@ -405,24 +405,24 @@ class Robot(object):
             """
             Args:
                 obs_cache (dict): A dictionary containing cached observations.
-                
+
             Returns:
                 numpy.ndarray: The quaternion representing the orientation of the end effector *body*
                 in the mujoco world coordinate frame.
-            
+
             Note:
                 In robosuite<=1.5, eef_quat has been queried from the body instead
                 of the site and has thus been inconsistent with the eef_pos, which queries from the site.
 
                 This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298.
-                
+
                 Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
                 New datasets should ideally use the logic in eef_quat_site.
 
                 In a later robosuite release, we will directly update eef_quat to query
                 the orientation from the site.
             """
-            return T.mat2quat(self.sim.data.get_body_xmat(self.robot_model.eef_name[arm]).reshape((3, 3)))
+            return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
 
         @sensor(modality=modality)
         def eef_quat_site(obs_cache):
@@ -439,7 +439,7 @@ class Robot(object):
                 of the site and has thus been inconsistent with the eef_pos, which queries from the site.
 
                 This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298
-                
+
                 Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
                 New datasets should ideally use the logic in eef_quat_site.
 
