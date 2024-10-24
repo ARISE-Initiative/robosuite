@@ -57,8 +57,16 @@ class CompositeController:
     def load_controller_config(
         self, part_controller_config, composite_controller_specific_config: Optional[Dict] = None
     ):
-        self.part_controller_config = part_controller_config
         self.composite_controller_specific_config = composite_controller_specific_config
+        body_part_ordering = self.composite_controller_specific_config.get("body_part_ordering", None)
+        if body_part_ordering is not None:
+            self.part_controller_config = OrderedDict()
+            assert len(body_part_ordering) == len(part_controller_config)
+            for part_name in body_part_ordering:
+                self.part_controller_config[part_name] = part_controller_config[part_name]
+        else:
+            self.part_controller_config = part_controller_config
+
         self.part_controllers.clear()
         self._action_split_indexes.clear()
         self._init_controllers()
