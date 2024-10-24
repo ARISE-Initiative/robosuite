@@ -92,7 +92,7 @@ if __name__ == "__main__":
     controller_name = choose_controller()
 
     # Load the desired controller
-    options["controller_configs"] = suite.load_controller_config(default_controller=controller_name)
+    options["controller_configs"] = suite.load_part_controller_config(default_controller=controller_name)
 
     # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value)
     controller_settings = {

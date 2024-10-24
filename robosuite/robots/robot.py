@@ -6,7 +6,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import load_part_controller_config
+from robosuite.controllers import load_composite_controller_config
 from robosuite.models.bases import robot_base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -828,22 +828,10 @@ class Robot(object):
 
     def _load_arm_controllers(self):
         urdf_loaded = False
+        # Load composite controller configs for both left and right arm
+        self.part_controller_config = load_composite_controller_config(robot=self.name)["body_parts"]
 
-        # Load controller configs for both left and right arm
         for arm in self.arms:
-            if arm not in self.part_controller_config:
-                self.part_controller_config[arm] = None
-
-            # First, load the default controller if none is specified
-            if not self.part_controller_config[arm]:
-                # Need to update default for a single agent
-                controller_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
-                )
-                self.part_controller_config[arm] = load_part_controller_config(custom_fpath=controller_path)
-
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}

@@ -36,7 +36,9 @@ def load_part_controller_config(custom_fpath=None, default_controller=None):
         AssertionError: [Unknown default controller name]
         AssertionError: [No controller specified]
     """
-    # First check if default controller is not None; if it is not, load the appropriate controller
+    # TODO (YL): this is nolonger usable, need to update
+    # First check if default controller is not None; if it
+    # is not, load the appropriate controller
     if default_controller is not None:
 
         # Assert that requested default controller is in the available default controllers

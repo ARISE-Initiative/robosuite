@@ -72,7 +72,7 @@ class InverseKinematicsController(JointPositionController):
         interpolator (Interpolator): Interpolator object to be used for interpolating from the current state to
             the goal state during each timestep between inputted actions
 
-        converge_steps (int): How many iterations to run the mink inverse kinematics solver to converge to a
+        converge_steps (int): How many iterations to run the inverse kinematics solver to converge to a
             solution
 
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
