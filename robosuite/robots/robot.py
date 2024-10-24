@@ -6,8 +6,8 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.models.bases import robot_base_factory
 from robosuite.controllers import load_part_controller_config
+from robosuite.models.bases import robot_base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
 from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
@@ -405,17 +405,17 @@ class Robot(object):
             """
             Args:
                 obs_cache (dict): A dictionary containing cached observations.
-                
+
             Returns:
                 numpy.ndarray: The quaternion representing the orientation of the end effector *body*
                 in the mujoco world coordinate frame.
-            
+
             Note:
                 In robosuite<=1.5, eef_quat has been queried from the body instead
                 of the site and has thus been inconsistent with the eef_pos, which queries from the site.
 
                 This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298.
-                
+
                 Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
                 New datasets should ideally use the logic in eef_quat_site.
 
@@ -439,7 +439,7 @@ class Robot(object):
                 of the site and has thus been inconsistent with the eef_pos, which queries from the site.
 
                 This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298
-                
+
                 Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
                 New datasets should ideally use the logic in eef_quat_site.
 

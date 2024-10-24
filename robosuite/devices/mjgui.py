@@ -1,16 +1,15 @@
 from typing import Dict, List, Optional, Tuple
+
+import mujoco
 import numpy as np
+
 from robosuite.devices import Device
 from robosuite.utils import transform_utils
 from robosuite.utils.transform_utils import rotation_matrix
-import mujoco
 
 
 def set_mocap_pose(
-    sim, 
-    target_pos: Optional[np.ndarray] = None, 
-    target_mat: Optional[np.ndarray] = None, 
-    mocap_name: str = "target"
+    sim, target_pos: Optional[np.ndarray] = None, target_mat: Optional[np.ndarray] = None, mocap_name: str = "target"
 ):
     mocap_id = sim.model.body(mocap_name).mocapid[0]
     if target_pos is not None:
@@ -20,6 +19,7 @@ def set_mocap_pose(
         target_quat = np.empty(4)
         mujoco.mju_mat2Quat(target_quat, target_mat.reshape(9, 1))
         sim.data.mocap_quat[mocap_id] = target_quat
+
 
 def get_mocap_pose(sim, mocap_name: str = "target") -> Tuple[np.ndarray, np.ndarray]:
     mocap_id = sim.model.body(mocap_name).mocapid[0]
@@ -57,8 +57,10 @@ class MJGUI(Device):
         Method to pretty print controls.
         """
         print("")
-        print("Mujoco viewer UI mouse 'device'. Use the mouse to drag mocap bodies. We use the mocap's coordinates " \
-              "to output actions.")
+        print(
+            "Mujoco viewer UI mouse 'device'. Use the mouse to drag mocap bodies. We use the mocap's coordinates "
+            "to output actions."
+        )
         print("")
 
     def start_control(self):
@@ -97,7 +99,7 @@ class MJGUI(Device):
 
     def input2action(self) -> Dict[str, np.ndarray]:
         """
-        Uses mocap body poses to determine action for robot. Obtain input_type 
+        Uses mocap body poses to determine action for robot. Obtain input_type
         (i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
         from the controller itself.
         """
@@ -109,14 +111,21 @@ class MJGUI(Device):
             target_pos_world, target_ori_mat_world = get_mocap_pose(self.env.sim, f"{target_name_prefix}_eef_target")
             # check if need to update frames
             # TODO: should be more general
-            if self.env.robots[0].composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world") != "world":
+            if (
+                self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                    "ik_input_ref_frame", "world"
+                )
+                != "world"
+            ):
                 target_pose = np.eye(4)
                 target_pose[:3, 3] = target_pos_world
                 target_pose[:3, :3] = target_ori_mat_world
                 target_pose = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
-                    src_frame_pose=target_pose, 
-                    src_frame="world", # mocap pose is world coordinates
-                    dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world")
+                    src_frame_pose=target_pose,
+                    src_frame="world",  # mocap pose is world coordinates
+                    dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                        "ik_input_ref_frame", "world"
+                    ),
                 )
                 target_pos, target_ori_mat = target_pose[:3, 3], target_pose[:3, :3]
             else:

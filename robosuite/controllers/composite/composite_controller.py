@@ -410,8 +410,10 @@ class WholeBodyIK(WholeBody):
             if part in self.part_controllers:
                 self.valid_ik_controlled_parts.append(part)
             else:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"Part '{part}' specified in 'actuation_part_names' "
-                    "does not exist in part_controllers. Removing ...")
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Part '{part}' specified in 'actuation_part_names' "
+                    "does not exist in part_controllers. Removing ..."
+                )
 
         # Update the configuration with only the valid parts
         self.composite_controller_specific_config["actuation_part_names"] = self.valid_ik_controlled_parts

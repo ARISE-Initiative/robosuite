@@ -262,10 +262,7 @@ class IKSolverMink:
         return action_split_indexes
 
     def transform_pose(
-        self, 
-        src_frame_pose: np.ndarray, 
-        src_frame: Literal['world', 'base'], 
-        dst_frame: Literal["world", "base"]
+        self, src_frame_pose: np.ndarray, src_frame: Literal["world", "base"], dst_frame: Literal["world", "base"]
     ) -> np.ndarray:
         """
         Transforms src_frame_pose from src_frame to dst_frame.
@@ -291,7 +288,7 @@ class IKSolverMink:
         elif dst_frame == "base":
             X_dst_frame_W = np.linalg.inv(
                 self.configuration.get_transform_frame_to_world("robot0_base", "body").as_matrix()
-            ) # hardcode name of base
+            )  # hardcode name of base
             X_dst_frame_pose = X_dst_frame_W.dot(X_W_pose)
 
         return X_dst_frame_pose
@@ -299,7 +296,7 @@ class IKSolverMink:
     def solve(self, input_action: np.ndarray) -> np.ndarray:
         """
         Solve for the joint angles that achieve the desired target action.
-        
+
         We assume input_action is specified as self.input_type, self.input_ref_frame, self.input_rotation_repr.
         We also assume input_action has the following format: [site1_pos, site1_rot, site2_pos, site2_rot, ...].
 
@@ -320,9 +317,7 @@ class IKSolverMink:
 
         input_quat_wxyz = None
         if self.input_rotation_repr == "axis_angle":
-            input_quat_wxyz = np.array(
-                [np.roll(T.axisangle2quat(input_ori[i]), 1) for i in range(len(input_ori))]
-            )
+            input_quat_wxyz = np.array([np.roll(T.axisangle2quat(input_ori[i]), 1) for i in range(len(input_ori))])
         elif self.input_rotation_repr == "mat":
             input_quat_wxyz = np.array([np.roll(T.mat2quat(input_ori[i])) for i in range(len(input_ori))])
         elif self.input_rotation_repr == "quat_wxyz":
@@ -337,7 +332,9 @@ class IKSolverMink:
                 input_pose = T.make_pose(input_pos[i], T.quat2mat(np.roll(input_quat_wxyz[i], -1)))
                 input_poses[i] = np.dot(base_pose, input_pose)
             input_pos = input_poses[:, :3, 3]
-            input_quat_wxyz = np.array([np.roll(T.mat2quat(input_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))])
+            input_quat_wxyz = np.array(
+                [np.roll(T.mat2quat(input_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
+            )
         elif self.input_ref_frame == "eef":
             raise NotImplementedError("Input reference frame 'eef' not yet implemented")
 
@@ -445,15 +442,16 @@ class WholeBodyMinkIK(WholeBody):
             joint_names += self.part_controllers[part_name].joint_names
 
         default_site_names: List[str] = []
-        for arm in ['right', 'left']:
-            if arm  in self.part_controller_config:
+        for arm in ["right", "left"]:
+            if arm in self.part_controller_config:
                 default_site_names.append(self.part_controller_config[arm]["ref_name"])
 
         self.joint_action_policy = IKSolverMink(
             model=self.sim.model._model,
             data=self.sim.data._data,
-            site_names=self.composite_controller_specific_config["ref_name"] \
-                if "ref_name" in self.composite_controller_specific_config else default_site_names,
+            site_names=self.composite_controller_specific_config["ref_name"]
+            if "ref_name" in self.composite_controller_specific_config
+            else default_site_names,
             robot_model=self.robot_model.mujoco_model,
             robot_joint_names=joint_names,
             input_type=self.composite_controller_specific_config.get("ik_input_type", "absolute"),

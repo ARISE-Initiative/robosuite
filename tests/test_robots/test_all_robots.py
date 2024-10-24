@@ -17,6 +17,7 @@ def test_all_robots():
         else:
             _test_contact_geoms(robot(name))
 
+
 def _test_contact_geoms(robot):
     robot.load_model()
     contact_geoms = robot.robot_model._contact_geoms
