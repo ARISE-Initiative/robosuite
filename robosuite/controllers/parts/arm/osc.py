@@ -92,8 +92,12 @@ class OperationalSpaceController(Controller):
 
         control_ori (bool): Whether inputted actions will control both pos and ori or exclusively pos
 
-        input_type (str): Whether to control the robot using delta or absolute commands (where absolute commands
-            are taken in the world coordinate frame)
+        input_type (str): Whether to control the robot using delta ("delta") or absolute commands ("absolute").
+            This is wrt the contorller reference frame (see input_ref_frame field)
+
+        input_ref_frame (str): Reference frame for controller. Current supported options are:
+            "base": actions are wrt to the robot body (i.e., the base)
+            "world": actions are wrt the world coordinate frame
 
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
 
