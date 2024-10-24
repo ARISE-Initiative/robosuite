@@ -30,7 +30,7 @@ class Panda(ManipulatorModel):
 
     @property
     def default_controller_config(self):
-        return {"right": "osc_pose"}
+        return {"right": "basic"}
 
     @property
     def init_qpos(self):

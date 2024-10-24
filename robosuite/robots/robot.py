@@ -65,11 +65,11 @@ class Robot(object):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
         # TODO: Merge self.part_controller_config and self.composite_controller_config into one
-        self.part_controller_config = copy.deepcopy(composite_controller_config.get("body_parts", None))
         if composite_controller_config is not None:
             self.composite_controller_config = composite_controller_config
         else:
             self.composite_controller_config = {}
+        self.part_controller_config = copy.deepcopy(self.composite_controller_config.get("body_parts", {}))
 
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
@@ -835,6 +835,9 @@ class Robot(object):
 
         # Load controller configs for both left and right arm
         for arm in self.arms:
+            if arm not in self.part_controller_config:
+                self.part_controller_config[arm] = None
+
             # First, load the default controller if none is specified
             if not self.part_controller_config[arm]:
                 # Need to update default for a single agent

@@ -48,7 +48,7 @@ def choose_controller():
     """
     # get the list of all controllers
     controllers_info = suite.controllers.CONTROLLER_INFO
-    controllers = list(suite. ALL_PART_CONTROLLERS)
+    controllers = list(suite.ALL_PART_CONTROLLERS)
 
     # Select controller to use
     print("Here is a list of controllers in the suite:\n")
