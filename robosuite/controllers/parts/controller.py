@@ -28,6 +28,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            Ignores all self.update() calls, unless set to force=True
             Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
     """
 
@@ -210,7 +211,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
             # no need to call sim.forward if using lite_physics
-            if self.lite_physics:
+            if self.lite_physics and not force:
                 pass
             else:
                 # BUG: Potential bug here. If there are more than two controlllers, the simulation will be forwarded multiple times.
