@@ -4,7 +4,7 @@ import numpy as np
 
 import robosuite as suite
 from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
-from robosuite.utils.input_utils import choose_environment, choose_robots, choose_multi_arm_config
+from robosuite.utils.input_utils import choose_environment, choose_multi_arm_config, choose_robots
 
 
 def str2bool(v):
