@@ -1,4 +1,5 @@
 <mujoco model="jaco_v2">
+    <compiler angle="radian"/>
     <actuator>
         <!-- Physical limits of the actuator. Pulled from raw actuator spec sheet, see:
          https://www.kinovarobotics.com/sites/default/files/AS-ACT-KA58-KA75-SP-INT-EN%20201804-1.2%20%28KINOVA%E2%84%A2%20Actuator%20series%20KA75%2B%20KA-58%20Specifications%29.pdf -->

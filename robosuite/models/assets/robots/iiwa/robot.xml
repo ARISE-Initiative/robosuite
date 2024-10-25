@@ -1,4 +1,5 @@
 <mujoco model="iiwa7">
+    <compiler angle="radian"/>
     <actuator>
         <!-- Physical limits of the actuator. -->
         <!-- Values taken from kuka_lbr_iiwa_brochure_en.pdf (see website) -->
