@@ -25,7 +25,7 @@ class MobileRobot(Robot):
         base_type="default",
         gripper_type="default",
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
     ):
         super().__init__(
             robot_type=robot_type,
@@ -343,17 +343,17 @@ class MobileRobot(Robot):
                 """
                 Args:
                     obs_cache (dict): A dictionary containing cached observations.
-                    
+
                 Returns:
                     numpy.ndarray: The quaternion representing the orientation of the end effector *body*
                     in the robot base coordinate frame.
-                
+
                 Note:
                     In robosuite<=1.5, eef_quat has been queried from the body instead
-                    of the site and has thus been inconsistent with base_to_eef_pos, which queries the position 
-                    from the site. This inconsistency has been raised in issue 
+                    of the site and has thus been inconsistent with base_to_eef_pos, which queries the position
+                    from the site. This inconsistency has been raised in issue
                     https://github.com/ARISE-Initiative/robosuite/issues/298
-                    
+
                     Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
                     New datasets should ideally use the logic in base_to_eef_quat_site.
 
@@ -374,21 +374,21 @@ class MobileRobot(Robot):
                 T_AB = np.matmul(np.linalg.inv(T_WA), T_WB)
                 base_to_eef_mat = T_AB[:3, :3]
                 return T.mat2quat(base_to_eef_mat)
-            
+
             @sensor(modality=modality)
             def base_to_eef_quat_site(obs_cache):
                 """
                 Args:
                     obs_cache (dict): A dictionary containing cached observations.
-                    
+
                 Returns:
                     numpy.ndarray: The quaternion representing the orientation of the end effector *site*
                     in the robot base coordinate frame.
 
                 Note:
                     In robosuite<=1.5, eef_quat has been queried from the body instead
-                    of the site and has thus been inconsistent with base_to_eef_pos, which queries the position 
-                    from the site. This inconsistency has been raised in issue 
+                    of the site and has thus been inconsistent with base_to_eef_pos, which queries the position
+                    from the site. This inconsistency has been raised in issue
                     https://github.com/ARISE-Initiative/robosuite/issues/298
 
                     Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body,

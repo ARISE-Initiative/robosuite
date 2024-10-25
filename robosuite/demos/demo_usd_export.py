@@ -17,8 +17,8 @@ import numpy as np
 
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
-from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.controllers.composite.composite_controller import WholeBody
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.usd import exporter
 from robosuite.wrappers import VisualizationWrapper
 

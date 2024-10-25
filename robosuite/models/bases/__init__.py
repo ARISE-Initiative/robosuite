@@ -1,5 +1,6 @@
 from .mount_model import MountModel
-from .base_factory import base_factory
+from .robot_base_model import RobotBaseModel
+from .robot_base_factory import robot_base_factory
 from .mobile_base_model import MobileBaseModel
 from .leg_base_model import LegBaseModel
 

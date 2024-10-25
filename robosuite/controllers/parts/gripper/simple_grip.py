@@ -133,7 +133,10 @@ class SimpleGripController(GripperController):
         delta = action
 
         # Check to make sure delta is size self.joint_dim
-        assert len(delta) == self.control_dim, f"Delta qpos must be equal to the control dimension of the robot! Control dim: {self.control_dim}, Action (delta) dim: {len(delta)}"
+        assert len(delta) == self.control_dim, (
+            f"Delta qpos must be equal to the control dimension of the robot!"
+            f"Expected {self.control_dim}, got {len(delta)}"
+        )
 
         scaled_delta = delta
         if self.use_action_scaling:

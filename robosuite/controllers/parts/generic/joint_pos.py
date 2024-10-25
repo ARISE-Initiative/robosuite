@@ -101,7 +101,7 @@ class JointPositionController(Controller):
         kp_limits=(0, 300),
         damping_ratio_limits=(0, 100),
         policy_freq=20,
-        lite_physics=False,
+        lite_physics=True,
         qpos_limits=None,
         interpolator=None,
         input_type: Literal["delta", "absolute"] = "delta",
@@ -174,9 +174,6 @@ class JointPositionController(Controller):
 
         # initialize
         self.goal_qpos = None
-
-    def update_base_pose(self):
-        pass
 
     def set_goal(self, action, set_qpos=None):
         """

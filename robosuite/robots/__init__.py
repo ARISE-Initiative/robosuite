@@ -10,6 +10,8 @@ from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 ALL_ROBOTS = REGISTERED_ROBOTS.keys()
 
 # Robot class mappings -- must be maintained manually
+# These are the main robot used. Remaining robots are located in
+# https://github.com/ARISE-Initiative/robosuite_models
 ROBOT_CLASS_MAPPING = {
     "Baxter": FixedBaseRobot,
     "IIWA": FixedBaseRobot,
@@ -18,18 +20,16 @@ ROBOT_CLASS_MAPPING = {
     "Panda": FixedBaseRobot,
     "Sawyer": FixedBaseRobot,
     "UR5e": FixedBaseRobot,
-    "PandaOmron": WheeledRobot,
-    "Tiago": WheeledRobot,
     "SpotWithArm": LeggedRobot,
     "SpotWithArmFloating": LeggedRobot,
+    "PandaOmron": WheeledRobot,
+    "Tiago": WheeledRobot,
     "GR1": LeggedRobot,
     "GR1FixedLowerBody": LeggedRobot,
     "GR1ArmsOnly": LeggedRobot,
     "GR1FloatingBody": LeggedRobot,
     "PandaDexRH": FixedBaseRobot,
     "PandaDexLH": FixedBaseRobot,
-    "SpotArmRethink": FixedBaseRobot,
-    "SpotArmRobotiqGripper": FixedBaseRobot,
 }
 
 target_type_mapping = {

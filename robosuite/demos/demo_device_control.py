@@ -43,9 +43,6 @@ Choice of using either inverse kinematics controller (ik) or operational space c
 Main difference is that user inputs with ik's rotations are always taken relative to eef coordinate frame, whereas
     user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
 
-    Notes:
-        OSC also tends to be more computationally efficient since IK relies on the backend pybullet IK solver.
-
 
 ***Choose environment specifics with the following arguments***
 
@@ -97,7 +94,6 @@ import numpy as np
 
 import robosuite as suite
 from robosuite import load_composite_controller_config
-from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
 
 if __name__ == "__main__":
@@ -182,19 +178,29 @@ if __name__ == "__main__":
 
         # Initialize device control
         device.start_control()
+        action_dict = device.input2action()
+
+        # get key with "delta" in it
+        action_key = [key for key in action_dict.keys() if "delta" in key]
+        assert len(action_key) == 1, "Error: Key with 'delta' in it not found!"
+        action_key = action_key[0]
+        gripper_key = [key for key in action_dict.keys() if "gripper" in key]
+        assert len(gripper_key) == 1, "Error: Key with 'gripper' in it not found!"
+        gripper_key = gripper_key[0]
 
         while True:
             # Set active robot
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
             # Get the newest action
-            action, grasp = input2action(
-                device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config
-            )
+            action_dict = device.input2action()
 
-            # If action is none, then this a reset so we should break
-            if action is None:
+            # If action_dict is none, then this a reset so we should break
+            if action_dict is None:
                 break
+
+            action = action_dict[action_key]
+            grasp = action_dict[gripper_key]
 
             # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
             # toggle arm control and / or camera viewing angle if requested

@@ -1,9 +1,8 @@
-from xml.etree import ElementTree as ET
 import argparse
+from xml.etree import ElementTree as ET
 
-from robosuite.robots.robot import Robot
 from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
-
+from robosuite.robots.robot import Robot
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER as logger
 
 
@@ -44,11 +43,12 @@ def check_xml_definition(root):
             print(f"        • {part_name} - {len(parts_dict[part_name])} joints: {parts_dict[part_name]}")
     return parts_dict
 
+
 def check_registered_robot(robot_name):
 
     print(f"Loading {robot_name} ...")
     controller_config = load_composite_controller_config("BASIC")
-    robot = Robot(robot_type=robot_name,      composite_controller_config=controller_config, gripper_type=None)
+    robot = Robot(robot_type=robot_name, composite_controller_config=controller_config, gripper_type=None)
     logger.info(f"Succcessfully found the defined robot")
 
     robot.load_model()
@@ -62,7 +62,9 @@ def check_registered_robot(robot_name):
         arm_joint_names = parts_dict["arm"]
         first_arm_joint_name = arm_joint_names[0]
         if "l_" in first_arm_joint_name or "left" in first_arm_joint_name:
-            logger.warning("Incorrect order of the arm joints. THe arm joints needs to be defined first for the right arm and then for the left arm.")
+            logger.warning(
+                "Incorrect order of the arm joints. THe arm joints needs to be defined first for the right arm and then for the left arm."
+            )
 
         # check if the body for mounting exists
         num_arms = len(robot.arms)
@@ -73,11 +75,16 @@ def check_registered_robot(robot_name):
             # find the body name of mount_name in the worldbody
             mount_body = world_body.find(f".//body[@name='robot0_{mount_name}']")
             if mount_body is None:
-                logger.error(f"Error: No body named '{mount_name}' found in the worldbody. Please make sure you have defined the body for mounting the arm.")
+                logger.error(
+                    f"Error: No body named '{mount_name}' found in the worldbody. Please make sure you have defined the body for mounting the arm."
+                )
                 exit(1)
         print("        • Grippers will be mounted on the following bodies ", mount_names[:num_arms])
 
-    logger.warning("Attention!!! Make sure your definition of the motors for arms are in the same order as the joints defined. This program does not check on this item.")
+    logger.warning(
+        "Attention!!! Make sure your definition of the motors for arms are in the same order as the joints defined. This program does not check on this item."
+    )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -96,4 +103,6 @@ if __name__ == "__main__":
         arm_joint_names = parts_dict["arm"]
         first_arm_joint_name = arm_joint_names[0]
         if "l_" in first_arm_joint_name or "left" in first_arm_joint_name:
-            logger.warning("Incorrect order of the arm joints. THe arm joints needs to be defined first for the right arm and then for the left arm.")
+            logger.warning(
+                "Incorrect order of the arm joints. THe arm joints needs to be defined first for the right arm and then for the left arm."
+            )

@@ -28,7 +28,8 @@ class Controller(object, metaclass=abc.ABCMeta):
         actuator_range (2-tuple of array of float): 2-Tuple (low, high) representing the robot joint actuator range
 
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
-            This feature is set to False by default to preserve backward compatibility.
+            Ignores all self.update() calls, unless set to force=True
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
     """
 
     def __init__(
@@ -39,7 +40,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         ref_name=None,
         part_name=None,
         naming_prefix=None,
-        lite_physics=False,
+        lite_physics=True,
     ):
 
         # Actuator range
@@ -210,7 +211,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Only run update if self.new_update or force flag is set
         if self.new_update or force:
             # no need to call sim.forward if using lite_physics
-            if self.lite_physics:
+            if self.lite_physics and not force:
                 pass
             else:
                 # BUG: Potential bug here. If there are more than two controlllers, the simulation will be forwarded multiple times.
@@ -230,20 +231,11 @@ class Controller(object, metaclass=abc.ABCMeta):
             # Clear self.new_update
             self.new_update = False
 
-    def update_base_pose(self):
-        """
-        Optional function to implement in subclass controllers that will take in @base_pos and @base_ori and update
-        internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
-        is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
-
-        """
-        raise NotImplementedError
-
     def update_origin(self, origin_pos, origin_ori):
         """
         Optional function to implement in subclass controllers that will take in @origin_pos and @origin_ori and update
-        internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
-        is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
+        internal configuration to account for changes in the respective states. Useful for controllers in which the origin
+        is a frame of reference that is dynamically changing, e.g., adapting the arm to move along with a moving base.
 
         Args:
             origin_pos (3-tuple): x,y,z position of controller reference in mujoco world coordinates
