@@ -1,97 +1,68 @@
 import argparse
+
 from omni.isaac.lab.app import AppLauncher
 
 parser = argparse.ArgumentParser(description="Settings for SimulationApp")
 
 # General arguments for robocasa script
-parser.add_argument(
-    "--dataset",
-    type=str,
-    required=True,
-    help="the hdf5 dataset"
-)
+parser.add_argument("--dataset", type=str, required=True, help="the hdf5 dataset")
 
 parser.add_argument(
-    "--ds_format",
-    type=str,
-    default="robomimic",
-    help="the format of the dataset. Can be robosuite or robomimic"
+    "--ds_format", type=str, default="robomimic", help="the format of the dataset. Can be robosuite or robomimic"
 )
 
 # episode is a list
 parser.add_argument(
     "--episode",
     type=int,
-    nargs='+',
+    nargs="+",
     default=[],
-    help="(optional) episode number(s) to render. Default is all episodes in the dataset"
+    help="(optional) episode number(s) to render. Default is all episodes in the dataset",
 )
 
 parser.add_argument(
-    "--output_directory",
-    type=str,
-    default=None,
-    help="(optional) directory to store outputs of USD rendering pipeline"
+    "--output_directory", type=str, default=None, help="(optional) directory to store outputs of USD rendering pipeline"
 )
 
 parser.add_argument(
     "--cameras",
     type=str,
-    nargs='+',
+    nargs="+",
     default=["agentview"],
     help="(optional) camera name(s) / image observation(s) to use for rendering on-screen or to video. Default is"
-            "None, which corresponds to a predefined camera for each env type",
+    "None, which corresponds to a predefined camera for each env type",
 )
 
 # Arguments to set up simulation app
 parser.add_argument(
-    "--width", 
-    type=int,
-    default=1280,
-    help="(optional) width of the viewport and generated images. Defaults to 1280"
+    "--width", type=int, default=1280, help="(optional) width of the viewport and generated images. Defaults to 1280"
 )
 
 parser.add_argument(
-    "--height",
-    type=int,
-    default=720,
-    help="(optional) height of the viewport and generated images. Defaults to 720"
+    "--height", type=int, default=720, help="(optional) height of the viewport and generated images. Defaults to 720"
 )
 
 parser.add_argument(
     "--renderer",
     type=str,
     default="RayTracedLighting",
-    help="(optional) rendering mode, can be RayTracedLighting or PathTracing. Defaults to RayTracedLighting"
+    help="(optional) rendering mode, can be RayTracedLighting or PathTracing. Defaults to RayTracedLighting",
 )
 
 parser.add_argument(
-    "--save_video",
-    action="store_true",
-    default=False,
-    help="(optional) save the rendered frames to a video file"
+    "--save_video", action="store_true", default=False, help="(optional) save the rendered frames to a video file"
 )
 
 parser.add_argument(
     "--online",
     action="store_true",
     default=False,
-    help="(optional) enable online rendering, will not save the usd file in this mode"
+    help="(optional) enable online rendering, will not save the usd file in this mode",
 )
 
-parser.add_argument(
-    "--skip_frames",
-    type=int,
-    default=1,
-    help="(optional) render every nth frame. Defaults to 1"
-)
+parser.add_argument("--skip_frames", type=int, default=1, help="(optional) render every nth frame. Defaults to 1")
 
-parser.add_argument(
-    "--hide_sites",
-    action="store_true",
-    default=False,
-    help="(optional) hide all sites in the scene"
-)
+parser.add_argument("--hide_sites", action="store_true", default=False, help="(optional) hide all sites in the scene")
 
 # Add arguments for launch
 AppLauncher.add_app_launcher_args(parser)
@@ -104,23 +75,23 @@ app_launcher = AppLauncher(args)
 simulation_app = app_launcher.app
 
 
-import os
 import json
-from enum import Enum
-from tqdm import tqdm
-import cv2
+import os
 import re
-import h5py
 import shutil
-import lxml.etree as ET
-from termcolor import colored
+from enum import Enum
 
+import carb.settings
+import cv2
+import h5py
+import lxml.etree as ET
 import omni
-import omni.replicator.core as rep
 import omni.isaac.core.utils.stage as stage_utils
 import omni.kit.app
-import carb.settings
+import omni.replicator.core as rep
 import omni.timeline
+from termcolor import colored
+from tqdm import tqdm
 
 # Robocasa imports
 try:
@@ -129,13 +100,14 @@ except ImportError:
     print("Warning: Robocasa not found.")
 
 try:
-    import mimicgen
     import dexmimicgen_environments
+    import mimicgen
 except ImportError:
     print("Warning: MimicGen not found.")
 
 # USD imports
 import mujoco
+
 import robosuite
 import robosuite.utils.usd.exporter as exporter
 
@@ -155,10 +127,11 @@ def make_sites_invisible(mujoco_xml):
 
     # Make all site elements invisible by setting rgba attribute
     for site in site_elements:
-        site.set('rgba', '0 0 0 0')  # Set rgba to fully transparent
+        site.set("rgba", "0 0 0 0")  # Set rgba to fully transparent
 
     # Return the modified XML string
-    return ET.tostring(root, encoding='unicode')
+    return ET.tostring(root, encoding="unicode")
+
 
 def reset_to(env, state):
     """
@@ -222,6 +195,7 @@ def reset_to(env, state):
     #     return get_observation()
     return None
 
+
 def get_env_metadata_from_dataset(dataset_path, ds_format="robomimic"):
     """
     Retrieves env metadata from dataset.
@@ -253,16 +227,18 @@ def get_env_metadata_from_dataset(dataset_path, ds_format="robomimic"):
     f.close()
     return env_meta
 
+
 class RobosuiteEnvInterface:
     """
     Env wrapper to load a robosuite demonstration
     """
+
     def __init__(self, dataset, episode, output_directory, cameras="agentview") -> None:
         self.dataset = dataset
         self.episode = episode
         self.output_directory = output_directory
         self.cameras = cameras
-        self.env = self.load_robosuite_environment() 
+        self.env = self.load_robosuite_environment()
         initial_state, self.states = self.get_states()
         reset_to(self.env, initial_state)
         self.exp = self.link_env_with_ov()
@@ -270,7 +246,7 @@ class RobosuiteEnvInterface:
 
     def load_robosuite_environment(self):
         """
-        Loads the specified robosuite demonstration and 
+        Loads the specified robosuite demonstration and
         """
         env_meta = get_env_metadata_from_dataset(dataset_path=self.dataset, ds_format=args.ds_format)
         env_kwargs = env_meta["env_kwargs"]
@@ -285,6 +261,7 @@ class RobosuiteEnvInterface:
         # assume all version number is single digit
         if env_meta["env_version"] < "v1.5.0":
             from robosuite.controllers import load_composite_controller_config
+
             if "composite_controller_configs" in env_kwargs:
                 del env_kwargs["composite_controller_configs"]
             robot = env_kwargs["robots"][0] if isinstance(env_kwargs["robots"], list) else env_kwargs["robots"]
@@ -297,14 +274,14 @@ class RobosuiteEnvInterface:
         env = robosuite.make(**env_kwargs)
 
         return env
-    
+
     def get_states(self):
         """
         Gets the initial state of the robosuite demonstration
         """
         f = h5py.File(self.dataset, "r+")
         ep = "demo_" + str(self.episode)
-        states = f["data/{}/states".format(ep)][()][::args.skip_frames]
+        states = f["data/{}/states".format(ep)][()][:: args.skip_frames]
         initial_state = dict(states=states[0])
         model_xml = f["data/{}".format(ep)].attrs["model_file"]
         if args.hide_sites:
@@ -313,7 +290,7 @@ class RobosuiteEnvInterface:
         initial_state["ep_meta"] = f["data/{}".format(ep)].attrs.get("ep_meta", None)
 
         return initial_state, states
-    
+
     def link_env_with_ov(self):
         """
         Loads the initial state of a robosuite scene into simulation
@@ -325,7 +302,7 @@ class RobosuiteEnvInterface:
         stage = None
         if args.online:
             stage = stage_utils.get_current_stage()
-        
+
         exp = exporter.USDExporter(
             model=model,
             output_directory_name=self.output_directory,
@@ -336,12 +313,7 @@ class RobosuiteEnvInterface:
             stage=stage,
         )
         exp.update_scene(data=data, scene_option=scene_option)
-        exp.add_light(
-            pos=[0, 0, 0],
-            intensity=1500,
-            light_type="dome",
-            light_name="dome_1"
-        )
+        exp.add_light(pos=[0, 0, 0], intensity=1500, light_type="dome", light_name="dome_1")
         return exp
 
     def update_simulation(self, index):
@@ -349,7 +321,7 @@ class RobosuiteEnvInterface:
         Renders a robosuite trajectory given the state at a given frame
         """
         state = self.states[index]
-        reset_to(self.env, {"states" : state})
+        reset_to(self.env, {"states": state})
         data = self.env.sim.data._data
         self.exp.update_scene(data=data, scene_option=scene_option)
 
@@ -358,14 +330,15 @@ class RobosuiteEnvInterface:
             self.exp.save_scene(filetype="usd")
         self.env.close()
 
+
 __version__ = "0.0.2"
 
-class RobosuiteWriter(rep.Writer):
 
+class RobosuiteWriter(rep.Writer):
     def __init__(
         self,
         output_dir: str = None,
-        image_output_format: str = 'png',
+        image_output_format: str = "png",
         rgb: bool = False,
         frame_padding: int = 4,
     ):
@@ -402,24 +375,26 @@ class RobosuiteWriter(rep.Writer):
 
             self._frame_id += 1
 
+
 rep.WriterRegistry.register(RobosuiteWriter)
+
 
 class RecorderState(Enum):
     READY = 0
     RUNNING = 1
     COMPLETED = 2
 
-class DataGenerator:
 
+class DataGenerator:
     def __init__(self, robosuite_env) -> None:
-        #State variables
+        # State variables
         self.recorder_state = RecorderState.READY
         self.writer = None
         self.render_products = []
         self.current_frame = 0
         self.robosuite_env = robosuite_env
 
-        #Define writer format
+        # Define writer format
         self.writer_name = "RobosuiteWriter"
 
         self.num_frames = self.robosuite_env.traj_len
@@ -443,7 +418,7 @@ class DataGenerator:
         else:
             print(f"{prim} is not a 'Camera' type.")
             return False
-        
+
     def _check_if_valid_resolution(self, resolution):
         width, height = resolution[0], resolution[1]
         MAX_RESOLUTION = (16000, 8000)  # 16K
@@ -454,7 +429,7 @@ class DataGenerator:
                 f"Invalid resolution: {width}x{height}. Must be between 1x1 and {MAX_RESOLUTION[0]}x{MAX_RESOLUTION[1]}."
             )
         return False
-    
+
     def load_stage(self):
         usd_path = os.path.join(self.output_dir, f"frames/frame_{self.num_frames + 1}.usd")
         print(f"Opening stage {usd_path}")
@@ -462,7 +437,7 @@ class DataGenerator:
         print("Stage loaded")
 
     def init_recorder(self):
-        #Open USD stage
+        # Open USD stage
         if not args.online:
             self.load_stage()
 
@@ -473,15 +448,15 @@ class DataGenerator:
         carb.settings.get_settings().set_bool("/app/hydraEngine/waitIdle", False)
         carb.settings.get_settings().set_bool("/app/asyncRendering", True)
         carb.settings.get_settings().set("/rtx/pathtracing/spp", 30)
-        carb.settings.get_settings().set_bool('/exts/omni.replicator.core/Orchestrator/enabled', True)
+        carb.settings.get_settings().set_bool("/exts/omni.replicator.core/Orchestrator/enabled", True)
 
-        #Create writer for capturing generated data
+        # Create writer for capturing generated data
         self.writer = rep.WriterRegistry.get(self.writer_name)
         self.writer.initialize(output_dir=self.output_dir, rgb=True)
 
         print("Writer Initiazed")
 
-        #Create render products
+        # Create render products
         for camera_name in args.cameras:
             resolution = (args.width, args.height)
             camera_path = f"/World/Camera_Xform_{camera_name}/Camera_{camera_name}"
@@ -493,7 +468,7 @@ class DataGenerator:
 
         print("Render products created")
 
-        #Attach render products to writers
+        # Attach render products to writers
         if self.render_products:
             self.writer.attach(self.render_products)
         else:
@@ -511,7 +486,7 @@ class DataGenerator:
             self.finish_recording()
 
     def run_recording_loop(self):
-        max_frames = self.num_frames if self.num_frames > 0 else 200 #Testing
+        max_frames = self.num_frames if self.num_frames > 0 else 200  # Testing
         print(f"Recording {max_frames} frames to: {self.output_dir}")
 
         for _ in range(self.initial_skip):
@@ -561,30 +536,32 @@ class DataGenerator:
         stage_utils.update_stage()
 
     def natural_sort_key(self, s):
-        return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', s)]
+        return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", s)]
 
     def create_video_from_frames(self, frame_folder, output_path, fps=30):
-        frames = [f for f in os.listdir(frame_folder) if f.endswith('.png')]
+        frames = [f for f in os.listdir(frame_folder) if f.endswith(".png")]
         frames.sort(key=self.natural_sort_key)
-        assert len(frames) == self.current_frame, f"Number of frames in folder ({len(frames)}) does not match number of frames rendered ({self.current_frame})"
+        assert (
+            len(frames) == self.current_frame
+        ), f"Number of frames in folder ({len(frames)}) does not match number of frames rendered ({self.current_frame})"
         if not frames:
             print(f"No frames found in {frame_folder}")
             return
-        
+
         first_frame = cv2.imread(os.path.join(frame_folder, frames[0]))
         height, width, layers = first_frame.shape
-        
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         video = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-        
+
         for frame in frames:
             video.write(cv2.imread(os.path.join(frame_folder, frame)))
-        
+
         video.release()
         print(f"Video saved: {output_path}")
 
     def process_folders(self):
-        videos_folder = os.path.join(self.output_dir, 'videos')
+        videos_folder = os.path.join(self.output_dir, "videos")
         os.makedirs(videos_folder, exist_ok=True)
 
         # Iterate over each camera folder in the output directory
@@ -600,6 +577,7 @@ class DataGenerator:
             # Create the video from the frames in the camera folder
             self.create_video_from_frames(camera_folder_path, output_path)
 
+
 def main():
     f = h5py.File(args.dataset, "r")
     total_episodes = args.episode
@@ -612,13 +590,13 @@ def main():
     if args.output_directory is None:
         # use the dataset directory
         args.output_directory = os.path.dirname(args.dataset)
-        
+
     for episode in total_episodes:
         output_directory = os.path.join(args.output_directory, dataset_name, "demo_" + str(episode))
         robosuite_env = RobosuiteEnvInterface(
-            dataset=args.dataset, 
-            episode=episode, 
-            output_directory=output_directory, 
+            dataset=args.dataset,
+            episode=episode,
+            output_directory=output_directory,
             cameras=args.cameras,
         )
         if not args.online:
@@ -635,14 +613,15 @@ def main():
 
         if args.save_video:
             data_generator.process_folders()
-        
+
         # remove all image frames
         for camera in args.cameras:
             camera_folder_path = os.path.join(output_directory, camera)
             if os.path.isdir(camera_folder_path):
                 shutil.rmtree(camera_folder_path)
-        
+
         print("Recording complete")
+
 
 if __name__ == "__main__":
     main()

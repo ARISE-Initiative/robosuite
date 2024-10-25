@@ -90,7 +90,6 @@ class LegBaseModel(RobotBaseModel):
         for key, value in yaw_joint_attributes.items():
             yaw_joint.set(key, value)
 
-
         forward_actuation_attributes = {
             "ctrllimited": "true",
             "ctrlrange": "-1.00 1.00",
@@ -98,7 +97,7 @@ class LegBaseModel(RobotBaseModel):
             "kv": "1000",
             "name": self.naming_prefix + "actuator_mobile_forward",
             "forcelimited": "true",
-            "forcerange": "-600 600"
+            "forcerange": "-600 600",
         }
         side_actuation_attributes = {
             "ctrllimited": "true",
@@ -107,7 +106,7 @@ class LegBaseModel(RobotBaseModel):
             "kv": "1000",
             "name": self.naming_prefix + "actuator_mobile_side",
             "forcelimited": "true",
-            "forcerange": "-600 600"
+            "forcerange": "-600 600",
         }
         yaw_actuation_attributes = {
             "ctrllimited": "true",
@@ -116,7 +115,7 @@ class LegBaseModel(RobotBaseModel):
             "kv": "1500",
             "name": self.naming_prefix + "actuator_mobile_yaw",
             "forcelimited": "true",
-            "forcerange": "-600 600"
+            "forcerange": "-600 600",
         }
 
         forward_actuation = ET.Element("velocity")

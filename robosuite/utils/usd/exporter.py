@@ -157,9 +157,7 @@ please set shareable to be false.
     def _initialize_output_directories(self) -> None:
         """Initializes output directories to store frames and assets"""
         self.output_directory_path = os.path.expanduser(self.output_directory_name)
-        ROBOSUITE_DEFAULT_LOGGER.info(
-            f"Outputting USD to {self.output_directory_path}"
-        )
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Outputting USD to {self.output_directory_path}")
         if not os.path.exists(self.output_directory_path):
             os.makedirs(self.output_directory_path)
 
