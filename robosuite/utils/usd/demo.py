@@ -32,8 +32,6 @@ def generate_usd_trajectory(local_args):
     exp = exporter.USDExporter(
         model=m,
         output_directory_name=pathlib.Path(local_args.model_path).stem,
-        output_directory_root=local_args.output_directory_root,
-        camera_names=local_args.camera_names,
     )
 
     cam = mujoco.MjvCamera()
