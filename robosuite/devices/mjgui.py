@@ -126,10 +126,10 @@ class MJGUI(Device):
 
             # convert ori mat to axis angle
             axis_angle_target = transform_utils.quat2axisangle(transform_utils.mat2quat(target_ori_mat))
-            action[target_name_prefix] = np.concatenate([target_pos, axis_angle_target])
+            action[target_name_prefix + "_abs"] = np.concatenate([target_pos, axis_angle_target])
             grasp = 1  # hardcode grasp action for now
             action[f"{target_name_prefix}_gripper"] = np.array([grasp] * gripper_dof)
 
-        # TODO: update action frames.
+        # TODO: enable delta actions. Currently only abs actions.
         # now convert actions to desired frames (take from controller)
         return action

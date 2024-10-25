@@ -392,9 +392,6 @@ class WholeBodyIK(WholeBody):
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
         super().__init__(sim, robot_model, grippers)
 
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
-        super().__init__(sim, robot_model, grippers)
-
     def _validate_composite_controller_specific_config(self) -> None:
         # Check that all actuation_part_names exist in part_controllers
         original_ik_controlled_parts = self.composite_controller_specific_config["actuation_part_names"]

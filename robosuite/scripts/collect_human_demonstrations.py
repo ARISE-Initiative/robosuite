@@ -6,24 +6,21 @@ The demonstrations can be played back using the `playback_demonstrations_from_hd
 
 import argparse
 import datetime
+from glob import glob
 import json
 import os
 import time
-from glob import glob
-from typing import List
 
 import h5py
-import mujoco
 import numpy as np
 
 import robosuite as suite
-import robosuite.macros as macros
 from robosuite.controllers import load_composite_controller_config
-from robosuite.utils import transform_utils
+from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration):
+def collect_human_trajectory(env, device, arm):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -33,7 +30,6 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         env (MujocoEnv): environment to control
         device (Device): to receive controls from the device
         arms (str): which arm to control (eg bimanual) 'right' or 'left'
-        env_configuration (str): specified environment configuration
     """
 
     env.reset()
@@ -59,7 +55,6 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     while True:
         # Set active robot
         active_robot = env.robots[device.active_robot]
-        active_arm = device.active_arm
 
         # Get the newest action
         input_ac_dict = device.input2action()
@@ -71,10 +66,13 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         from copy import deepcopy
 
         action_dict = deepcopy(input_ac_dict)  # {}
-
         # set arm actions
         for arm in active_robot.arms:
-            controller_input_type = active_robot.part_controllers[arm].input_type
+            if isinstance(active_robot.composite_controller, WholeBody):  # input type passed to joint_action_policy
+                controller_input_type = active_robot.composite_controller.joint_action_policy.input_type
+            else:
+                controller_input_type = active_robot.part_controllers[arm].input_type
+
             if controller_input_type == "delta":
                 action_dict[arm] = input_ac_dict[f"{arm}_delta"]
             elif controller_input_type == "absolute":
@@ -283,9 +281,11 @@ if __name__ == "__main__":
         from robosuite.devices import SpaceMouse
 
         device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-    elif args.device == "mocap":
+    elif args.device == "mjgui":
         assert args.renderer == "mjviewer", "Mocap is only supported with the mjviewer renderer"
-        raise NotImplementedError
+        from robosuite.devices.mjgui import MJGUI
+
+        device = MJGUI(env=env)
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
@@ -296,5 +296,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
+        collect_human_trajectory(env, device, args.arm)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
