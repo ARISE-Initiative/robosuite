@@ -6,10 +6,10 @@ The demonstrations can be played back using the `playback_demonstrations_from_hd
 
 import argparse
 import datetime
-from glob import glob
 import json
 import os
 import time
+from glob import glob
 
 import h5py
 import numpy as np
@@ -234,7 +234,7 @@ if __name__ == "__main__":
         robot=args.robots[0],
     )
 
-    if controller_config["type"] == "WHOLE_BODY_MINK_IK":
+    if controller_config["type"] == "WHOLE_BODY_IK":
         # mink-speicific import. requires installing mink
         from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 

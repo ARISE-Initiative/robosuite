@@ -75,6 +75,7 @@ class USDDomeLight:
         self.usd_light.GetExposureAttr().Set(0.0)
         self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
 
+
 class USDRectLight:
     """Class that handles the rectangle lights in the USD scene."""
 
@@ -103,6 +104,7 @@ class USDRectLight:
 
         self.usd_light.GetIntensityAttr().Set(intensity)
         self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
+
 
 class USDCylinderLight:
     """Class that handles the cylinder lights in the USD scene."""

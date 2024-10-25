@@ -47,14 +47,13 @@ def choose_controller():
         str: Chosen controller name
     """
     # get the list of all controllers
-    controllers_info = suite.controllers.CONTROLLER_INFO
-    controllers = list(suite.ALL_CONTROLLERS)
+    controllers = list(suite.ALL_COMPOSITE_CONTROLLERS)
 
     # Select controller to use
     print("Here is a list of controllers in the suite:\n")
 
     for k, controller in enumerate(controllers):
-        print("[{}] {} - {}".format(k, controller, controllers_info[controller]))
+        print("[{}] {}".format(k, controller))
     print()
     try:
         s = input("Choose a controller for the robot " + "(enter a number from 0 to {}): ".format(len(controllers) - 1))

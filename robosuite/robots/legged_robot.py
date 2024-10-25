@@ -7,7 +7,7 @@ from typing import Dict, List
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory
+from robosuite.controllers import composite_controller_factory, load_part_controller_config
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_robot import MobileRobot
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
@@ -53,7 +53,7 @@ class LeggedRobot(MobileRobot):
                 "..",
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.legs]),
             )
-            self.part_controller_config[self.legs] = load_controller_config(custom_fpath=controller_path)
+            self.part_controller_config[self.legs] = load_part_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,

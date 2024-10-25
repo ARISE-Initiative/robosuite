@@ -135,15 +135,6 @@ class GripperController(object, metaclass=abc.ABCMeta):
             # Clear self.new_update
             self.new_update = False
 
-    def update_base_pose(self):
-        """
-        Optional function to implement in subclass controllers that will take in @base_pos and @base_ori and update
-        internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
-        is based on pybullet and requires knowledge of simulator state deviations between pybullet and mujoco
-
-        """
-        raise NotImplementedError
-
     def update_initial_joints(self, initial_joints):
         """
         Updates the internal attribute self.initial_joints. This is useful for updating changes in controller-specific

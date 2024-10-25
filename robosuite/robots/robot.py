@@ -6,8 +6,8 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import load_part_controller_config
-from robosuite.models.bases import base_factory
+from robosuite.controllers import load_composite_controller_config, load_part_controller_config
+from robosuite.models.bases import robot_base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
 from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
@@ -65,11 +65,11 @@ class Robot(object):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
         # TODO: Merge self.part_controller_config and self.composite_controller_config into one
-        self.part_controller_config = copy.deepcopy(composite_controller_config.get("body_parts", None))
         if composite_controller_config is not None:
             self.composite_controller_config = composite_controller_config
         else:
-            self.composite_controller_config = {}
+            self.composite_controller_config = load_composite_controller_config(robot=robot_type)
+        self.part_controller_config = copy.deepcopy(self.composite_controller_config.get("body_parts", {}))
 
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
@@ -164,12 +164,12 @@ class Robot(object):
 
         # Add base if specified
         if self.base_type == "default":
-            self.robot_model.add_base(base=base_factory(self.robot_model.default_base, idn=self.idn))
+            self.robot_model.add_base(base=robot_base_factory(self.robot_model.default_base, idn=self.idn))
         else:
-            self.robot_model.add_base(base=base_factory(self.base_type, idn=self.idn))
+            self.robot_model.add_base(base=robot_base_factory(self.base_type, idn=self.idn))
 
-        self.robot_model.update_joints()
-        self.robot_model.update_actuators()
+        self.robot_model._update_joints()
+        self.robot_model._update_actuators()
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:
             self.init_qpos = self.robot_model.init_qpos
@@ -284,8 +284,6 @@ class Robot(object):
 
                 self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
 
-            # Update base pos / ori references in controller (technically only needs to be called once)
-            # self.part_controller[arm].update_base_pose()
             # Setup buffers for eef values
             self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
             self.recent_ee_pose[arm] = DeltaBuffer(dim=7)
@@ -579,8 +577,7 @@ class Robot(object):
         Returns:
             int: the active DoF of the robot (Number of robot joints + active gripper DoF).
         """
-        dof = self.robot_model.dof
-        return dof
+        return self.robot_model.dof
 
     def pose_in_base_from_name(self, name):
         """
@@ -834,19 +831,8 @@ class Robot(object):
 
     def _load_arm_controllers(self):
         urdf_loaded = False
-
-        # Load controller configs for both left and right arm
+        # Load composite controller configs for both left and right arm
         for arm in self.arms:
-            # First, load the default controller if none is specified
-            if not self.part_controller_config[arm]:
-                # Need to update default for a single agent
-                controller_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
-                )
-                self.part_controller_config[arm] = load_part_controller_config(custom_fpath=controller_path)
-
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}

@@ -1,4 +1,5 @@
 import json
+import os
 import pathlib
 from typing import Dict, Literal, Optional
 
@@ -41,6 +42,10 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
         controller_fpath = (
             pathlib.Path(robosuite.__file__).parent / f"controllers/config/robots/default_{robot_name}.json"
         )
+        if not os.path.exists(controller_fpath):
+            controller_fpath = (
+                pathlib.Path(robosuite.__file__).parent / "controllers/config/default/composite/basic.json"
+            )
     elif isinstance(controller, str):
         if controller.endswith(".json"):
             # Use the specified path directly

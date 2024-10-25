@@ -13,10 +13,10 @@ import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
 from robosuite.devices.keyboard import Keyboard
 from robosuite.devices.mjgui import MJGUI
-from robosuite.wrappers import DataCollectionWrapper
 
 # mink-specific import
 from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
+from robosuite.wrappers import DataCollectionWrapper
 
 
 def collect_human_trajectory(env, device, arm):
@@ -65,7 +65,9 @@ def collect_human_trajectory(env, device, arm):
         action_dict = {k.replace("_abs", ""): v for k, v in action_dict.items()}
 
         for gripper_name, gripper in active_robot.gripper.items():
-            action_dict[f"{gripper_name}_gripper"] = np.zeros(gripper.dof)  # what's the 'do nothing' action for all grippers?
+            action_dict[f"{gripper_name}_gripper"] = np.zeros(
+                gripper.dof
+            )  # what's the 'do nothing' action for all grippers?
 
         if arm_using_gripper:
             prev_gripper_actions[f"{arm}_gripper"] = action_dict[f"{arm}_gripper"]

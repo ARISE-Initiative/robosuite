@@ -1,5 +1,5 @@
 import abc
-from typing import Dict, List  # for abstract base class definitions
+from typing import Dict, List, Optional  # for abstract base class definitions
 
 import numpy as np
 
@@ -64,14 +64,14 @@ class Device(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_controller_state(self):
+    def get_controller_state(self) -> Dict:
         """Returns the current state of the device, a dictionary of pos, orn, grasp, and reset."""
         raise NotImplementedError
 
     def _postprocess_device_outputs(self, dpos, drotation):
         raise NotImplementedError
 
-    def input2action(self, mirror_actions=False):
+    def input2action(self, mirror_actions=False) -> Optional[Dict]:
         """
         Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -82,13 +82,8 @@ class Device(metaclass=abc.ABCMeta):
                 first axis: left/right. second axis: back/forward. third axis: down/up.
 
         Returns:
-            2-tuple:
-
-                - (None or np.array): Action interpreted from @device including any gripper action(s). None if we get a
-                    reset signal from the device
-                - (None or int): 1 if desired close, -1 if desired open gripper state. None if get a reset signal from the
-                    device
-
+            Optional[Dict]: Dictionary of actions to be fed into env.step()
+                            if reset is triggered, returns None
         """
         robot = self.env.robots[self.active_robot]
         active_arm = self.active_arm
@@ -186,7 +181,7 @@ class Device(metaclass=abc.ABCMeta):
         ]  # update next target either based on achieved pose or current target pose
 
         # TODO: ideally separate kinematics from controller to unify frame conversion logic
-        if robot.composite_controller_config["type"] == "WHOLE_BODY_MINK_IK":
+        if robot.composite_controller_config["type"] == "WHOLE_BODY_IK":
             site_names: List[str] = self.env.robots[0].composite_controller.joint_action_policy.site_names
             for site_name in site_names:
                 target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now

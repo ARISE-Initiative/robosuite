@@ -22,11 +22,14 @@ class InspireLeftHand(GripperModel):
         # the more correct way is to add <equality> tag in the xml
         # however the tag makes finger movement laggy, so manually copy the value for finger joints
         # 0 is thumb rot, no copying. Thumb bend has 3 joints, so copy 3 times. Other fingers has 2 joints, so copy 2 times.
-        return action[[0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]]
+        # TODO(YL): verify the correctness of the copied values
+        action = np.array(action)
+        indices = np.array([0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        return action[indices]
 
     @property
     def init_qpos(self):
-        return np.array([0.0] * 12)
+        return np.array([0.0] * self.dof)
 
     @property
     def speed(self):
@@ -34,7 +37,7 @@ class InspireLeftHand(GripperModel):
 
     @property
     def dof(self):
-        return 6
+        return 12
 
     @property
     def _important_geoms(self):
@@ -89,11 +92,13 @@ class InspireRightHand(GripperModel):
         # the more correct way is to add <equality> tag in the xml
         # however the tag makes finger movement laggy, so manually copy the value for finger joints
         # 0 is thumb rot, no copying. Thumb bend has 3 joints, so copy 3 times. Other fingers has 2 joints, so copy 2 times.
-        return action[[0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5]]
+        action = np.array(action)
+        indices = np.array([0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        return action[indices]
 
     @property
     def init_qpos(self):
-        return np.array([0.0] * 12)
+        return np.array([0.0] * self.dof)
 
     @property
     def speed(self):
@@ -101,7 +106,7 @@ class InspireRightHand(GripperModel):
 
     @property
     def dof(self):
-        return 6
+        return 12
 
     @property
     def _important_geoms(self):
