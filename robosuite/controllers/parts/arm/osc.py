@@ -92,8 +92,12 @@ class OperationalSpaceController(Controller):
 
         control_ori (bool): Whether inputted actions will control both pos and ori or exclusively pos
 
-        input_type (str): Whether to control the robot using delta or absolute commands (where absolute commands
-            are taken in the world coordinate frame)
+        input_type (str): Whether to control the robot using delta ("delta") or absolute commands ("absolute").
+            This is wrt the contorller reference frame (see input_ref_frame field)
+
+        input_ref_frame (str): Reference frame for controller. Current supported options are:
+            "base": actions are wrt to the robot body (i.e., the base)
+            "world": actions are wrt the world coordinate frame
 
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
 
@@ -292,12 +296,25 @@ class OperationalSpaceController(Controller):
         return T.pose_in_A_to_pose_in_B(ee_pose, origin_pose_inv)
 
     def compute_goal_pos(self, delta, goal_update_mode=None):
+        """
+        Compute new goal position, given a delta to update. Can either update the new goal based on
+        current achieved position or current deisred goal. Updating based on current deisred goal can be useful
+        if we want the robot to adhere with a sequence of target poses as closely as possible,
+        without lagging or overshooting.
+
+        Args:
+            delta (np.array): Desired relative change in position [x, y, z]
+            goal_update_mode (str): either "achieved" (achieved position) or "desired" (desired goal)
+
+        Returns:
+            np.array: updated goal position in the controller frame
+        """
         if goal_update_mode is None:
             goal_update_mode = self._goal_update_mode
-
-        assert goal_update_mode in ["achieved", "target"]
+        assert goal_update_mode in ["achieved", "desired"]
 
         if self.goal_pos is None:
+            # if goal is not already set, set it to current position (in controller ref frame)
             if self.input_ref_frame == "base":
                 self.goal_pos = self.world_to_origin_frame(self.ref_pos)
             elif self.input_ref_frame == "world":
@@ -305,9 +322,11 @@ class OperationalSpaceController(Controller):
             else:
                 raise ValueError
 
-        if goal_update_mode == "target":
+        if goal_update_mode == "desired":
+            # update new goal wrt current desired goal
             goal_pos = self.goal_pos + delta
         elif goal_update_mode == "achieved":
+            # update new goal wrt current achieved position
             if self.input_ref_frame == "base":
                 goal_pos = self.world_to_origin_frame(self.ref_pos) + delta
             elif self.input_ref_frame == "world":
@@ -316,32 +335,31 @@ class OperationalSpaceController(Controller):
                 raise ValueError
 
         if self.position_limits is not None:
+            # to be implemented later
             raise NotImplementedError
 
         return goal_pos
 
     def compute_goal_ori(self, delta, goal_update_mode=None):
         """
-        Calculates and returns the desired goal orientation, clipping the result accordingly to @orientation_limits.
-        @delta and @current_orientation must be specified if a relative goal is requested, else @set_ori must be
-        an orientation matrix specified to define a global orientation
+        Compute new goal orientation, given a delta to update. Can either update the new goal based on
+        current achieved position or current deisred goal. Updating based on current deisred goal can be useful
+        if we want the robot to adhere with a sequence of target poses as closely as possible,
+        without lagging or overshooting.
 
         Args:
             delta (np.array): Desired relative change in orientation, in axis-angle form [ax, ay, az]
-            current_orientation (np.array): Current orientation, in rotation matrix form
-            orientation_limit (None or np.array): 2d array defining the (min, max) limits of permissible orientation goal commands
-            set_ori (None or np.array): If set, will ignore @delta and set the goal orientation to this value
+            goal_update_mode (str): either "achieved" (achieved position) or "desired" (desired goal)
 
         Returns:
-            np.array: calculated goal orientation in absolute coordinates
-
-        Raises:
-            ValueError: [Invalid orientation_limit shape]
+            np.array: updated goal orientation in the controller frame
         """
         if goal_update_mode is None:
             goal_update_mode = self._goal_update_mode
+        assert goal_update_mode in ["achieved", "desired"]
 
         if self.goal_ori is None:
+            # if goal is not already set, set it to current orientation (in controller ref frame)
             if self.input_ref_frame == "base":
                 self.goal_ori = self.goal_origin_to_eef_pose()[:3, :3]
             elif self.input_ref_frame == "world":
@@ -353,9 +371,11 @@ class OperationalSpaceController(Controller):
         quat_error = T.axisangle2quat(delta)
         rotation_mat_error = T.quat2mat(quat_error)
 
-        if self._goal_update_mode == "target":
+        if self._goal_update_mode == "desired":
+            # update new goal wrt current desired goal
             goal_ori = np.dot(rotation_mat_error, self.goal_ori)
         elif self._goal_update_mode == "achieved":
+            # update new goal wrt current achieved orientation
             if self.input_ref_frame == "base":
                 curr_goal_ori = self.goal_origin_to_eef_pose()[:3, :3]
             elif self.input_ref_frame == "world":
@@ -368,6 +388,7 @@ class OperationalSpaceController(Controller):
 
         # check for orientation limits
         if np.array(self.orientation_limits).any():
+            # to be implemented later
             raise NotImplementedError
         return goal_ori
 
@@ -397,6 +418,7 @@ class OperationalSpaceController(Controller):
                 pass
         else:
             if self.input_ref_frame == "base":
+                # compute goal based on current base position and orientation
                 desired_world_pos = self.origin_pos + np.dot(self.origin_ori, self.goal_pos)
             elif self.input_ref_frame == "world":
                 desired_world_pos = self.goal_pos
@@ -410,6 +432,7 @@ class OperationalSpaceController(Controller):
             ori_error = self.interpolator_ori.get_interpolated_goal()
         else:
             if self.input_ref_frame == "base":
+                # compute goal based on current base orientation
                 desired_world_ori = np.dot(self.origin_ori, self.goal_ori)
             elif self.input_ref_frame == "world":
                 desired_world_ori = self.goal_ori
@@ -486,14 +509,19 @@ class OperationalSpaceController(Controller):
     def set_goal_update_mode(self, goal_update_mode):
         self._goal_update_mode = goal_update_mode
 
-    def reset_goal(self):
+    def reset_goal(self, goal_update_mode="achieved"):
         """
-        Resets the goal to the current state of the robot
+        Resets the goal to the current state of the robot.
+
+        Args:
+            goal_update_mode (str): set mode for updating controller goals,
+                either "achieved" (achieved position) or "desired" (desired goal).
         """
         self.goal_ori = np.array(self.ref_ori_mat)
         self.goal_pos = np.array(self.ref_pos)
 
-        self._goal_update_mode = "achieved"
+        assert goal_update_mode in ["achieved", "desired"]
+        self._goal_update_mode = goal_update_mode
 
         # Also reset interpolators if required
 

@@ -5,45 +5,21 @@ python robosuite/examples/third_party_controller/teleop_mink.py --controller rob
 """
 
 import argparse
-import os
 import time
-from typing import List, Tuple
 
-import mujoco
 import numpy as np
 
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
-
-# mink-related imports
-from robosuite.devices.mjgui import MJGUI
-from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
-from robosuite.wrappers import DataCollectionWrapper
 from robosuite.devices.keyboard import Keyboard
+from robosuite.devices.mjgui import MJGUI
+from robosuite.wrappers import DataCollectionWrapper
+
+# mink-specific import
+from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 
 
-def set_target_pose(sim, target_pos=None, target_mat=None, mocap_name: str = "target"):
-    mocap_id = sim.model.body(mocap_name).mocapid[0]
-    if target_pos is not None:
-        sim.data.mocap_pos[mocap_id] = target_pos
-    if target_mat is not None:
-        # convert mat to quat
-        target_quat = np.empty(4)
-        mujoco.mju_mat2Quat(target_quat, target_mat.reshape(9, 1))
-        sim.data.mocap_quat[mocap_id] = target_quat
-
-
-def get_target_pose(sim, mocap_name: str = "target") -> Tuple[np.ndarray]:
-    mocap_id = sim.model.body(mocap_name).mocapid[0]
-    target_pos = np.copy(sim.data.mocap_pos[mocap_id])
-    target_quat = np.copy(sim.data.mocap_quat[mocap_id])
-    target_mat = np.empty(9)
-    mujoco.mju_quat2Mat(target_mat, target_quat)
-    target_mat = target_mat.reshape(3, 3)
-    return target_pos, target_mat
-
-
-def collect_human_trajectory(env, device, arm, env_configuration, end_effector: str = "right"):
+def collect_human_trajectory(env, device, arm):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -58,15 +34,6 @@ def collect_human_trajectory(env, device, arm, env_configuration, end_effector: 
 
     env.reset()
     env.render()
-
-    site_names: List[str] = env.robots[0].composite_controller.joint_action_policy.site_names
-    right_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site_names[0])]
-    right_mat = env.sim.data.site_xmat[env.sim.model.site_name2id(site_names[0])]
-    left_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site_names[1])]
-    left_mat = env.sim.data.site_xmat[env.sim.model.site_name2id(site_names[1])]
-
-    set_target_pose(env.sim, right_pos, right_mat, "right_eef_target")
-    set_target_pose(env.sim, left_pos, left_mat, "left_eef_target")
 
     device.start_control()
 
@@ -171,5 +138,5 @@ if __name__ == "__main__":
         device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     elif args.device == "mjgui":
         device = MJGUI(env=env)
-    while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
+
+    collect_human_trajectory(env, device, args.arm)
