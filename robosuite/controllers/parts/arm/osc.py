@@ -489,8 +489,8 @@ class OperationalSpaceController(Controller):
     def update_origin(self, origin_pos, origin_ori):
         """
         Optional function to implement in subclass controllers that will take in @origin_pos and @origin_ori and update
-        internal configuration to account for changes in the respective states. Useful for controllers e.g. IK, which
-        is based on mink and requires knowledge of simulator state deviations between mink and mujoco
+        internal configuration to account for changes in the respective states. Useful for controllers in which the origin
+        is a frame of reference that is dynamically changing, e.g., adapting the arm to move along with a moving base.
 
         Args:
             origin_pos (3-tuple): x,y,z position of controller reference in mujoco world coordinates
