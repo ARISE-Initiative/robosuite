@@ -161,8 +161,6 @@ class HybridMobileBase(CompositeController):
     name = "HYBRID_MOBILE_BASE"
 
     def set_goal(self, all_action):
-        if not self.lite_physics:
-            self.sim.forward()
         action_mode = all_action[-1]
         if action_mode > 0:
             update_wrt_origin = True
