@@ -25,7 +25,7 @@ def get_robot_info_dict():
             arm_type = robot.arm_type
             gripper = robot.default_gripper
             info[key]["Base_Type"] = base_type
-            info[key]["Base_Model"] = robot_base_model
+            info[key]["Robot_Base_Model"] = robot_base_model
             info[key]["Arm_Type"] = arm_type
             info[key]["Gripper_Model"] = gripper
         except Exception as e:

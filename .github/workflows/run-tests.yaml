@@ -54,5 +54,4 @@ jobs:
         python3 tests/test_robots/test_all_robots.py
         python3 tests/test_grippers/test_all_grippers.py
         python3 tests/test_environments/test_all_environments.py
-        # python3 tests/test_controllers/test_all_controllers.py
         pytest tests/test_controllers/test_composite_controllers.py
