@@ -90,16 +90,6 @@ FrameTask.compute_translation_error = compute_translation_error
 FrameTask.compute_orientation_error = compute_orientation_error
 
 
-@register_composite_controller
-class WholeBodyIK(WholeBody):
-    name = "WHOLE_BODY_IK"
-
-    def __init__(
-        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
-    ):
-        super().__init__(sim, robot_model, grippers, lite_physics)
-
-
 class WeightedPostureTask(mink.PostureTask):
     def __init__(
         self, model: mujoco.MjModel, cost: float, weights: np.ndarray, lm_damping: float = 0.0, gain: float = 1.0
@@ -431,10 +421,8 @@ class IKSolverMink:
 class WholeBodyMinkIK(WholeBody):
     name = "WHOLE_BODY_MINK_IK"
 
-    def __init__(
-        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
-    ):
-        super().__init__(sim, robot_model, grippers, lite_physics)
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
+        super().__init__(sim, robot_model, grippers)
 
     def _init_joint_action_policy(self):
         joint_names: str = []

@@ -90,6 +90,8 @@ def _get_robot_name(robot: str) -> str:
     """Helper function to get the standardized robot name."""
     if "GR1FloatingBody" in robot:
         return "gr1_floating_body"
+    elif "GR1FixedLowerBody" in robot:
+        return "gr1_fixed_lower_body"
     elif "GR1" in robot:
         return "gr1"
     elif "G1" in robot:

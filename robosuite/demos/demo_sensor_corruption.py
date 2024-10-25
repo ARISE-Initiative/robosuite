@@ -17,7 +17,6 @@ import cv2
 import numpy as np
 
 import robosuite as suite
-from robosuite.utils.input_utils import input2action
 from robosuite.utils.observables import Observable, create_gaussian_noise_corrupter, create_uniform_sampled_delayer
 from robosuite.wrappers import VisualizationWrapper
 
@@ -189,9 +188,7 @@ if __name__ == "__main__":
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
             # Get the newest action
-            action, grasp = input2action(
-                device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config
-            )
+            action, grasp = device.input2action()
 
             # If action is none, then this a reset so we should break
             if action is None:
