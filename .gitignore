@@ -18,9 +18,11 @@ eggs/
 lib/
 lib64/
 parts/
+!robosuite/controllers/parts
 sdist/
 var/
 wheels/
+!robosuite/models/assets/robots/**/wheels/
 *.egg-info/
 .installed.cfg
 *.egg

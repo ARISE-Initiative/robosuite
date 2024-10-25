@@ -6,23 +6,21 @@ The demonstrations can be played back using the `playback_demonstrations_from_hd
 
 import argparse
 import datetime
+from glob import glob
 import json
 import os
-import shutil
 import time
-from glob import glob
 
 import h5py
 import numpy as np
 
 import robosuite as suite
-import robosuite.macros as macros
-from robosuite import load_controller_config
-from robosuite.utils.input_utils import input2action
+from robosuite.controllers import load_composite_controller_config
+from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, env_configuration):
+def collect_human_trajectory(env, device, arm):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -32,13 +30,10 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         env (MujocoEnv): environment to control
         device (Device): to receive controls from the device
         arms (str): which arm to control (eg bimanual) 'right' or 'left'
-        env_configuration (str): specified environment configuration
     """
 
     env.reset()
     env.render()
-
-    is_first = True
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
@@ -57,66 +52,39 @@ def collect_human_trajectory(env, device, arm, env_configuration):
     ]
 
     # Loop until we get a reset from the input or the task completes
-    count = 0
     while True:
         # Set active robot
         active_robot = env.robots[device.active_robot]
-        prev_gripper_actions = all_prev_gripper_actions[device.active_robot]
 
-        arm = device.active_arm
-        # Check if we have gripper actions for the active arm
-        arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
         # Get the newest action
-        input_action, grasp = input2action(
-            device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
-        )
+        input_ac_dict = device.input2action()
 
         # If action is none, then this a reset so we should break
-        if input_action is None:
+        if input_ac_dict is None:
             break
 
-        # Run environment step
-        action_dict = prev_gripper_actions.copy()
-        arm_actions = input_action[:6]
-        if active_robot.is_mobile:
-            # arm_actions = np.concatenate([arm_actions, ])
+        from copy import deepcopy
 
-            base_action = input_action[-5:-2]
-            torso_action = input_action[-2:-1]
-
-            right_action = [0.0] * 5
-            right_action[0] = 0.0
-
-            action_dict.update(
-                {
-                    arm: arm_actions,
-                    active_robot.base: base_action,
-                    # active_robot.head: base_action,
-                    # active_robot.torso: base_action
-                    # active_robot.torso: torso_action
-                }
-            )
-            if arm_using_gripper:
-                action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-                prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-            action = active_robot.create_action_vector(action_dict)
-            mode_action = input_action[-1]
-
-            if mode_action > 0:
-                active_robot.enable_parts(base=True, right=True, left=True, torso=True)
+        action_dict = deepcopy(input_ac_dict)  # {}
+        # set arm actions
+        for arm in active_robot.arms:
+            if isinstance(active_robot.composite_controller, WholeBody):  # input type passed to joint_action_policy
+                controller_input_type = active_robot.composite_controller.joint_action_policy.input_type
             else:
-                active_robot.enable_parts(base=False, right=True, left=True, torso=False)
-        else:
-            action_dict.update({arm: arm_actions})
-            if arm_using_gripper:
-                action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-                prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-            action = active_robot.create_action_vector(action_dict)
+                controller_input_type = active_robot.part_controllers[arm].input_type
+
+            if controller_input_type == "delta":
+                action_dict[arm] = input_ac_dict[f"{arm}_delta"]
+            elif controller_input_type == "absolute":
+                action_dict[arm] = input_ac_dict[f"{arm}_abs"]
+            else:
+                raise ValueError
 
         # Maintain gripper state for each robot but only update the active robot with action
         env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
-        env_action[device.active_robot] = action
+        env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
         env_action = np.concatenate(env_action)
+
         env.step(env_action)
         env.render()
 
@@ -244,7 +212,10 @@ if __name__ == "__main__":
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
     parser.add_argument(
-        "--controller", type=str, default="OSC_POSE", help="Choice of controller. Can be 'IK_POSE' or 'OSC_POSE'"
+        "--controller",
+        type=str,
+        default=None,
+        help="Choice of controller. Can be generic (eg. 'BASIC' or 'WHOLE_BODY_IK') or json file (see robosuite/controllers/config for examples)",
     )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
@@ -258,7 +229,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get controller config
-    controller_config = load_controller_config(default_controller=args.controller)
+    controller_config = load_composite_controller_config(
+        controller=args.controller,
+        robot=args.robots[0],
+    )
+
+    if controller_config["type"] == "WHOLE_BODY_MINK_IK":
+        # mink-speicific import. requires installing mink
+        from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 
     # Create argument configuration
     config = {
@@ -303,7 +281,11 @@ if __name__ == "__main__":
         from robosuite.devices import SpaceMouse
 
         device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+    elif args.device == "mjgui":
+        assert args.renderer == "mjviewer", "Mocap is only supported with the mjviewer renderer"
+        from robosuite.devices.mjgui import MJGUI
 
+        device = MJGUI(env=env)
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
@@ -314,5 +296,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.config)
+        collect_human_trajectory(env, device, args.arm)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

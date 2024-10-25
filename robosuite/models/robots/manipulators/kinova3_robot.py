@@ -27,7 +27,7 @@ class Kinova3(ManipulatorModel):
 
     @property
     def default_controller_config(self):
-        return {"right": "default_kinova3"}
+        return {"right": "osc_pose"}
 
     @property
     def init_qpos(self):

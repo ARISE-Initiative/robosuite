@@ -485,8 +485,8 @@ class TwoArmHandover(TwoArmEnv):
                             # Execute no-op action with gravity compensation
                             torques = np.concatenate(
                                 [
-                                    self.robots[0].controller["right"].torque_compensation,
-                                    self.robots[0].controller["left"].torque_compensation,
+                                    self.robots[0].part_controllers["right"].torque_compensation,
+                                    self.robots[0].part_controllers["left"].torque_compensation,
                                 ]
                             )
                             self.sim.data.ctrl[self.robots[0]._ref_arm_joint_actuator_indexes] = torques
@@ -502,7 +502,7 @@ class TwoArmHandover(TwoArmEnv):
                         # Execute gripper action
                         gripper_ac = [1] * self.robots[0].gripper["right"].dof
                         gripper_ac = self.robots[0].gripper["right"].format_action(gripper_ac)
-                        self.robots[0].controller["right_gripper"].set_goal(gripper_ac)
+                        self.robots[0].part_controllers["right_gripper"].set_goal(gripper_ac)
                         # Take forward step
                         self.sim.step()
 

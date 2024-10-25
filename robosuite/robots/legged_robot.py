@@ -2,17 +2,19 @@ import copy
 import os
 import time
 from collections import OrderedDict
+from typing import Dict, List
 
 import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.models.bases.leg_base_model import LegBaseModel
-from robosuite.robots.mobile_base_robot import MobileBaseRobot
+from robosuite.robots.mobile_robot import MobileRobot
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.observables import sensor
 
 
-class LeggedRobot(MobileBaseRobot):
+class LeggedRobot(MobileRobot):
     """
     Initializes a robot with a wheeled base.
     """
@@ -21,7 +23,6 @@ class LeggedRobot(MobileBaseRobot):
         self,
         robot_type: str,
         idn=0,
-        controller_config=None,
         composite_controller_config=None,
         initial_qpos=None,
         initialization_noise=None,
@@ -33,7 +34,6 @@ class LeggedRobot(MobileBaseRobot):
         super().__init__(
             robot_type=robot_type,
             idn=idn,
-            controller_config=controller_config,
             composite_controller_config=composite_controller_config,
             initial_qpos=initial_qpos,
             initialization_noise=initialization_noise,
@@ -44,22 +44,39 @@ class LeggedRobot(MobileBaseRobot):
         )
 
     def _load_leg_controllers(self):
-        self.controller_config[self.legs] = {}
-        self.controller_config[self.legs]["type"] = "JOINT_POSITION"
-        self.controller_config[self.legs]["interpolation"] = "linear"
-        self.controller_config[self.legs]["ramp_ratio"] = 1.0
-        self.controller_config[self.legs]["robot_name"] = self.name
+        if len(self._ref_actuators_indexes_dict[self.legs]) == 0:
+            return None
 
-        self.controller_config[self.legs]["sim"] = self.sim
-        self.controller_config[self.legs]["part_name"] = self.legs
-        self.controller_config[self.legs]["naming_prefix"] = self.robot_model.base.naming_prefix
-        self.controller_config[self.legs]["ndim"] = self.num_leg_joints
-        self.controller_config[self.legs]["policy_freq"] = self.control_freq
+        if self.part_controller_config.get(self.legs) is None:
+            controller_path = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.legs]),
+            )
+            self.part_controller_config[self.legs] = load_controller_config(custom_fpath=controller_path)
+
+            # Assert that the controller config is a dict file:
+            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
+            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
+            assert (
+                type(self.part_controller_config[self.legs]) == dict
+            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
+                type(self.part_controller_config[self.legs])
+            )
+        self.part_controller_config[self.legs] = {}
+        self.part_controller_config[self.legs]["ramp_ratio"] = 1.0
+        self.part_controller_config[self.legs]["robot_name"] = self.name
+
+        self.part_controller_config[self.legs]["sim"] = self.sim
+        self.part_controller_config[self.legs]["part_name"] = self.legs
+        self.part_controller_config[self.legs]["naming_prefix"] = self.robot_model.base.naming_prefix
+        self.part_controller_config[self.legs]["ndim"] = self.num_leg_joints
+        self.part_controller_config[self.legs]["policy_freq"] = self.control_freq
 
         ref_legs_joint_indexes = [self.sim.model.joint_name2id(x) for x in self.robot_model.legs_joints]
         ref_legs_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.legs_joints]
         ref_legs_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.legs_joints]
-        self.controller_config[self.legs]["joint_indexes"] = {
+        self.part_controller_config[self.legs]["joint_indexes"] = {
             "joints": ref_legs_joint_indexes,
             "qpos": ref_legs_joint_pos_indexes,
             "qvel": ref_legs_joint_vel_indexes,
@@ -68,25 +85,23 @@ class LeggedRobot(MobileBaseRobot):
         low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.legs], 0]
         high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[self.legs], 1]
 
-        self.controller_config[self.legs]["actuator_range"] = (low, high)
+        self.part_controller_config[self.legs]["actuator_range"] = (low, high)
 
     def _load_controller(self):
         """
         Loads controller to be used for dynamic trajectories
         """
         # Flag for loading urdf once (only applicable for IK controllers)
-
         self.composite_controller = composite_controller_factory(
-            type=self.composite_controller_config.get("type", "BASE"),
+            type=self.composite_controller_config.get("type", "BASIC"),
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
-            lite_physics=self.lite_physics,
         )
 
         self._load_arm_controllers()
 
-        # default base, torso, and head controllers are inherited from MobileBaseRobot
+        # default base, torso, and head controllers are inherited from MobileRobot
         self._load_base_controller()
 
         if self.is_legs_actuated:
@@ -94,8 +109,12 @@ class LeggedRobot(MobileBaseRobot):
 
         self._load_head_controller()
         self._load_torso_controller()
+        self._postprocess_part_controller_config()
 
-        self.composite_controller.load_controller_config(self.controller_config)
+        self.composite_controller.load_controller_config(
+            self.part_controller_config,
+            self.composite_controller_config.get("composite_controller_specific_configs", {}),
+        )
         self.enable_parts()
 
     def load_model(self):
@@ -132,7 +151,6 @@ class LeggedRobot(MobileBaseRobot):
 
         # Now, add references to gripper if necessary
         # indices for grippers in qpos, qvel
-
         self._ref_actuators_indexes_dict[self.legs] = [
             self.sim.model.actuator_name2id(actuator) for actuator in self.robot_model.legs_actuators
         ]
@@ -140,6 +158,7 @@ class LeggedRobot(MobileBaseRobot):
         self._ref_joints_indexes_dict[self.legs] = [
             self.sim.model.joint_name2id(joint) for joint in self.robot_model.legs_joints
         ]
+
         self._ref_legs_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.legs_joints]
         self._ref_legs_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_model.legs_joints]
 
@@ -186,7 +205,10 @@ class LeggedRobot(MobileBaseRobot):
             self.recent_torques.push(self.torques)
 
             for arm in self.arms:
-                controller = self.controller[arm]
+                controller = self.part_controllers.get(arm, None)
+                if controller is None:
+                    # TODO: enable buffer update for whole body controllers not using individual arm controllers
+                    continue
                 # Update arm-specific proprioceptive values
                 self.recent_ee_forcetorques[arm].push(np.concatenate((self.ee_force[arm], self.ee_torque[arm])))
                 self.recent_ee_pose[arm].push(np.concatenate((controller.ref_pos, T.mat2quat(controller.ref_ori_mat))))

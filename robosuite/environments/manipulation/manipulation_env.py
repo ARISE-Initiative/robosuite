@@ -4,7 +4,7 @@ import robosuite.utils.transform_utils as T
 from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
-from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot, MobileBaseRobot
+from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot, MobileRobot
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -128,7 +128,6 @@ class ManipulationEnv(RobotEnv):
         robots,
         env_configuration="default",
         controller_configs=None,
-        composite_controller_configs=None,
         base_types="default",
         gripper_types="default",
         initialization_noise=None,
@@ -173,7 +172,6 @@ class ManipulationEnv(RobotEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            composite_controller_configs=composite_controller_configs,
             base_types=base_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -488,5 +486,5 @@ class ManipulationEnv(RobotEnv):
             robots = [robots]
         for robot in robots:
             assert issubclass(ROBOT_CLASS_MAPPING[robot], FixedBaseRobot) or issubclass(
-                ROBOT_CLASS_MAPPING[robot], MobileBaseRobot
-            ), "Only manipulator robots supported for manipulation environment!"
+                ROBOT_CLASS_MAPPING[robot], MobileRobot
+            ), f"Only manipulator robots supported for manipulation environment! Got {ROBOT_CLASS_MAPPING[robot]}"
