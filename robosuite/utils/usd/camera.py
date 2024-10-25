@@ -41,7 +41,8 @@ class USDCamera:
         self.usd_camera.CreateFocalLengthAttr().Set(12)
         self.usd_camera.CreateFocusDistanceAttr().Set(400)
 
-        self.usd_camera.GetHorizontalApertureAttr().Set(12)
+        self.usd_camera.GetHorizontalApertureAttr().Set(17)
+        self.usd_camera.GetVerticalApertureAttr().Set(12)
 
         self.usd_camera.GetClippingRangeAttr().Set(Gf.Vec2f(1e-4, 1e6))
 
