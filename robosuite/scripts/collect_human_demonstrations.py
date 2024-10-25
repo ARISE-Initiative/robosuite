@@ -6,10 +6,10 @@ The demonstrations can be played back using the `playback_demonstrations_from_hd
 
 import argparse
 import datetime
-from glob import glob
 import json
 import os
 import time
+from glob import glob
 
 import h5py
 import numpy as np
