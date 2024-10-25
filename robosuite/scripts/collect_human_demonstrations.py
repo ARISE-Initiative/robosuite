@@ -234,7 +234,7 @@ if __name__ == "__main__":
         robot=args.robots[0],
     )
 
-    if controller_config["type"] == "WHOLE_BODY_MINK_IK":
+    if controller_config["type"] == "WHOLE_BODY_IK":
         # mink-speicific import. requires installing mink
         from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 

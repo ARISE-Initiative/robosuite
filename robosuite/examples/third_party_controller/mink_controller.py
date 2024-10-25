@@ -419,7 +419,7 @@ class IKSolverMink:
 
 @register_composite_controller
 class WholeBodyMinkIK(WholeBody):
-    name = "WHOLE_BODY_MINK_IK"
+    name = "WHOLE_BODY_IK"
 
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
         super().__init__(sim, robot_model, grippers)
