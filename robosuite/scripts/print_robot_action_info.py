@@ -2,18 +2,27 @@ import argparse
 import json
 
 import robosuite as suite
-from robosuite import load_part_controller_config
+from robosuite.controllers import load_composite_controller_config
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--environment", type=str, default="Lift")
 parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
 parser.add_argument("--config", type=str, default="opposed", help="Specified environment configuration if necessary")
+parser.add_argument(
+    "--controller",
+    type=str,
+    default=None,
+    help="Choice of controller. Can be generic (eg. 'BASIC' or 'WHOLE_BODY_IK') or json file (see robosuite/controllers/config for examples)",
+)
 
 args = parser.parse_args()
 
+controller_config = load_composite_controller_config(
+    controller=args.controller,
+    robot=args.robots[0],
+)
 
-controller_config = load_part_controller_config(default_controller="OSC_POSE")
 config = {
     "env_name": args.environment,
     "robots": args.robots,
