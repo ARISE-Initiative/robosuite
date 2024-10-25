@@ -3,7 +3,6 @@ Script to showcase domain randomization functionality.
 """
 
 import robosuite.macros as macros
-from robosuite.controllers import load_composite_controller_config
 from robosuite.utils.input_utils import *
 from robosuite.wrappers import DomainRandomizationWrapper
 
@@ -45,12 +44,6 @@ if __name__ == "__main__":
     # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
-
-    # Choose controller #TODO: this no longer work
-    # controller_name = choose_controller()
-
-    # Load the desired controller
-    options["controller_configs"] = load_composite_controller_config(controller="BASIC", robot=options["robots"])
 
     # initialize the task
     env = suite.make(

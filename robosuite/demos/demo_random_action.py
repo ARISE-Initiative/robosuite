@@ -1,4 +1,3 @@
-from robosuite.controllers import load_part_controller_config
 from robosuite.utils.input_utils import *
 
 if __name__ == "__main__":
@@ -36,12 +35,6 @@ if __name__ == "__main__":
     # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
-
-    # Choose controller
-    controller_name = choose_controller()
-
-    # Load the desired controller
-    options["controller_configs"] = load_part_controller_config(default_controller=controller_name)
 
     # initialize the task
     env = suite.make(

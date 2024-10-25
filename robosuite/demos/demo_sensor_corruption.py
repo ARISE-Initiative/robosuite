@@ -17,7 +17,6 @@ import cv2
 import numpy as np
 
 import robosuite as suite
-from robosuite import load_part_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.utils.observables import Observable, create_gaussian_noise_corrupter, create_uniform_sampled_delayer
 from robosuite.wrappers import VisualizationWrapper
@@ -34,7 +33,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--toggle-corruption-on-grasp", action="store_true", help="Toggle corruption ON / OFF on gripper action"
     )
-    parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
@@ -45,23 +43,10 @@ if __name__ == "__main__":
     parser.add_argument("--height", type=int, default=384)
     args = parser.parse_args()
 
-    # Import controller config for EE IK or OSC (pos/ori)
-    if args.controller == "ik":
-        controller_name = "IK_POSE"
-    elif args.controller == "osc":
-        controller_name = "OSC_POSE"
-    else:
-        print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
-        raise ValueError
-
-    # Get controller config
-    controller_config = load_part_controller_config(default_controller=controller_name)
-
     # Create argument configuration
     config = {
         "env_name": args.environment,
         "robots": args.robots,
-        "controller_configs": controller_config,
     }
 
     # Check if we're using a multi-armed environment and use env_configuration argument if so
