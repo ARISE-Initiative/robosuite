@@ -17,8 +17,8 @@ import numpy as np
 
 import robosuite as suite
 from robosuite.controllers import load_composite_controller_config
-from robosuite.utils.input_utils import input2action
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.utils.usd import exporter
 from robosuite.wrappers import VisualizationWrapper
 
@@ -123,82 +123,36 @@ if __name__ == "__main__":
     while True:
         # Set active robot
         active_robot = env.robots[device.active_robot]
-        prev_gripper_actions = all_prev_gripper_actions[device.active_robot]
 
-        arm = device.active_arm
-        # Check if we have gripper actions for the active arm
-        arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
         # Get the newest action
-        input_action, grasp = input2action(
-            device=device,
-            robot=active_robot,
-            active_arm=arm,
-            active_end_effector=args.arm,
-            env_configuration=args.config,
-        )
+        input_ac_dict = device.input2action()
 
         # If action is none, then this a reset so we should break
-        if input_action is None:
+        if input_ac_dict is None:
             break
 
-        # Run environment step
-        action_dict = prev_gripper_actions.copy()
-        arm_actions = input_action[:6].copy()
-        if active_robot.is_mobile:
-            if "GR1" in env.robots[0].name:
-                # "relative" actions by default for now
-                action_dict = {
-                    "gripper0_left_grip_site_pos": input_action[:3] * 0.1,
-                    "gripper0_left_grip_site_axis_angle": input_action[3:6],
-                    "gripper0_right_grip_site_pos": np.zeros(3),
-                    "gripper0_right_grip_site_axis_angle": np.zeros(3),
-                    "left_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-                    "right_gripper": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-                }
-            elif "Tiago" in env.robots[0].name and args.controller == "WHOLE_BODY_IK":
-                action_dict = {
-                    "right_gripper": np.array([0.0]),
-                    "left_gripper": np.array([0.0]),
-                    "gripper0_left_grip_site_pos": np.array([-0.4189254, 0.22745755, 1.0597]) + input_action[:3] * 0.05,
-                    "gripper0_left_grip_site_axis_angle": np.array([-2.1356914, 2.50323857, -2.45929076]),
-                    "gripper0_right_grip_site_pos": np.array([-0.41931295, -0.22706004, 1.0566]),
-                    "gripper0_right_grip_site_axis_angle": np.array([-1.26839518, 1.15421975, 0.99332174]),
-                }
+        from copy import deepcopy
+
+        action_dict = deepcopy(input_ac_dict)  # {}
+        # set arm actions
+        for arm in active_robot.arms:
+            if isinstance(active_robot.composite_controller, WholeBody):  # input type passed to joint_action_policy
+                controller_input_type = active_robot.composite_controller.joint_action_policy.input_type
             else:
-                action_dict = {}
-                base_action = input_action[-5:-2]
-                torso_action = input_action[-2:-1]
+                controller_input_type = active_robot.part_controllers[arm].input_type
 
-                right_action = [0.0] * 5
-                right_action[0] = 0.0
-
-                action_dict.update(
-                    {
-                        arm: arm_actions,
-                        active_robot.base: base_action,
-                    }
-                )
-            if arm_using_gripper:
-                action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-                prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-            action = active_robot.create_action_vector(action_dict)
-            mode_action = input_action[-1]
-
-            if mode_action > 0:
-                active_robot.enable_parts(base=True, right=True, left=True, torso=True)
+            if controller_input_type == "delta":
+                action_dict[arm] = input_ac_dict[f"{arm}_delta"]
+            elif controller_input_type == "absolute":
+                action_dict[arm] = input_ac_dict[f"{arm}_abs"]
             else:
-                active_robot.enable_parts(base=True, right=True, left=True, torso=True)
-        else:
-            action_dict.update({arm: arm_actions})
-            if arm_using_gripper:
-                action_dict[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-                prev_gripper_actions[f"{arm}_gripper"] = np.repeat(input_action[6:7], active_robot.gripper[arm].dof)
-            action = active_robot.create_action_vector(action_dict)
+                raise ValueError
 
         # Maintain gripper state for each robot but only update the active robot with action
         env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
-        env_action[device.active_robot] = action
+        env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
         env_action = np.concatenate(env_action)
+
         env.step(env_action)
         env.render()
         exp.update_scene(data, scene_option=scene_option)
