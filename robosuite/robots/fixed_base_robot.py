@@ -7,8 +7,6 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
-from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
-from robosuite.utils.observables import sensor
 
 
 class FixedBaseRobot(Robot):
@@ -50,7 +48,6 @@ class FixedBaseRobot(Robot):
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
-            lite_physics=self.lite_physics,
         )
 
         self._load_arm_controllers()

@@ -33,16 +33,12 @@ class CompositeController:
 
     name = "BASIC"
 
-    def __init__(
-        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
-    ):
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
         # TODO: grippers repeat with members inside robot_model. Currently having this additioanl field to make naming query easy.
         self.sim = sim
         self.robot_model = robot_model
 
         self.grippers = grippers
-
-        self.lite_physics = lite_physics
 
         self.part_controllers = OrderedDict()
 
@@ -57,8 +53,16 @@ class CompositeController:
     def load_controller_config(
         self, part_controller_config, composite_controller_specific_config: Optional[Dict] = None
     ):
-        self.part_controller_config = part_controller_config
         self.composite_controller_specific_config = composite_controller_specific_config
+        body_part_ordering = self.composite_controller_specific_config.get("body_part_ordering", None)
+        if body_part_ordering is not None:
+            self.part_controller_config = OrderedDict()
+            assert len(body_part_ordering) == len(part_controller_config)
+            for part_name in body_part_ordering:
+                self.part_controller_config[part_name] = part_controller_config[part_name]
+        else:
+            self.part_controller_config = part_controller_config
+
         self.part_controllers.clear()
         self._action_split_indexes.clear()
         self._init_controllers()
@@ -91,9 +95,6 @@ class CompositeController:
             previous_idx = last_idx
 
     def set_goal(self, all_action):
-        if not self.lite_physics:
-            self.sim.forward()
-
         for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
@@ -106,8 +107,6 @@ class CompositeController:
             controller.reset_goal()
 
     def run_controller(self, enabled_parts):
-        if not self.lite_physics:
-            self.sim.forward()
         self.update_state()
         self._applied_action_dict.clear()
         for part_name, controller in self.part_controllers.items():
@@ -162,9 +161,6 @@ class HybridMobileBase(CompositeController):
     name = "HYBRID_MOBILE_BASE"
 
     def set_goal(self, all_action):
-        if not self.lite_physics:
-            self.sim.forward()
-
         action_mode = all_action[-1]
         if action_mode > 0:
             update_wrt_origin = True
@@ -177,10 +173,22 @@ class HybridMobileBase(CompositeController):
             if part_name in self.grippers.keys():
                 action = self.grippers[part_name].format_action(action)
 
-            if part_name in self.arms:
-                controller.set_goal(action, update_wrt_origin=update_wrt_origin)
-            else:
-                controller.set_goal(action)
+            if part_name in self.arms and hasattr(controller, "set_goal_update_mode"):
+                """
+                Query the last action dimension to determine if using
+                base mode (value > 0) or arm mode (value < 1).
+                If in base mode, update the new arm goal based on current desired goal,
+                to have the arm tracking with the reset of the moving base
+                as closely as possible without lagging or overshooting.
+                """
+                action_mode = all_action[-1]
+                if action_mode > 0:
+                    goal_update_mode = "desired"
+                else:
+                    goal_update_mode = "achieved"
+                controller.set_goal_update_mode(goal_update_mode)
+
+            controller.set_goal(action)
 
     @property
     def action_limits(self):
@@ -212,10 +220,8 @@ class HybridMobileBase(CompositeController):
 class WholeBody(CompositeController):
     name = "WHOLE_BODY_COMPOSITE"
 
-    def __init__(
-        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
-    ):
-        super().__init__(sim, robot_model, grippers, lite_physics)
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
+        super().__init__(sim, robot_model, grippers)
 
         self.joint_action_policy: IKSolver = None
         # TODO: handle different types of joint action policies; joint_action_policy maps
@@ -300,9 +306,6 @@ class WholeBody(CompositeController):
             previous_idx = last_idx
 
     def set_goal(self, all_action):
-        if not self.lite_physics:
-            self.sim.forward()
-
         target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
         # create new all_action vector with the IK solver's actions first
         all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
@@ -386,15 +389,8 @@ class WholeBody(CompositeController):
 class WholeBodyIK(WholeBody):
     name = "WHOLE_BODY_IK"
 
-    def __init__(
-        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
-    ):
-        super().__init__(sim, robot_model, grippers, lite_physics)
-
-    def __init__(
-        self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel], lite_physics: bool = False
-    ):
-        super().__init__(sim, robot_model, grippers, lite_physics)
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
+        super().__init__(sim, robot_model, grippers)
 
     def _validate_composite_controller_specific_config(self) -> None:
         # Check that all actuation_part_names exist in part_controllers
@@ -410,8 +406,10 @@ class WholeBodyIK(WholeBody):
             if part in self.part_controllers:
                 self.valid_ik_controlled_parts.append(part)
             else:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"Part '{part}' specified in 'actuation_part_names' "
-                    "does not exist in part_controllers. Removing ...")
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Part '{part}' specified in 'actuation_part_names' "
+                    "does not exist in part_controllers. Removing ..."
+                )
 
         # Update the configuration with only the valid parts
         self.composite_controller_specific_config["actuation_part_names"] = self.valid_ik_controlled_parts

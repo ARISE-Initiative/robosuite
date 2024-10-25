@@ -61,6 +61,8 @@ def collect_human_trajectory(env, device, arm):
         arm_using_gripper = f"{arm}_gripper" in all_prev_gripper_actions[device.active_robot]
         # Get the newest action
         action_dict = device.input2action()
+        # remove _abs from the action keys
+        action_dict = {k.replace("_abs", ""): v for k, v in action_dict.items()}
 
         for gripper_name, gripper in active_robot.gripper.items():
             action_dict[f"{gripper_name}_gripper"] = np.zeros(gripper.dof)  # what's the 'do nothing' action for all grippers?
