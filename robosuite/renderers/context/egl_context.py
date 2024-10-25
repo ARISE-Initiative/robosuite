@@ -152,4 +152,8 @@ class EGLGLContext:
         self._context = None
 
     def __del__(self):
-        self.free()
+        try:
+            self.free()
+        except Exception:
+            # avoid getting OpenGL.error.GLError
+            pass

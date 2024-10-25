@@ -8,27 +8,47 @@ from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import CustomMaterial, array_to_string, find_elements
 from robosuite.utils.observables import Observable, sensor
 
+"""
+Offset functions for peg and hole objects. These are needed because the peg and 
+hole objects are placed on the robot relative to the robot's end effector. This
+means that based on the position/orientation of the end-effector, the peg and 
+hole may require different offsets to be placed correctly. For example, some of
+the humanoid robots are positioned such that changes in the z-direction result
+in translations going in the opposite direction. Hence, we flip the sign of the
+z-component of the offset for these robots.
+"""
+_flip_last_dim_fn = lambda offset: offset[:-1] + [-1 * offset[-1]]
+_OBJECT_POS_OFFSET_FN = {
+    "GR1FloatingBody": {
+        "peg": _flip_last_dim_fn,
+        "hole": _flip_last_dim_fn,
+    },
+    "GR1": {
+        "peg": _flip_last_dim_fn,
+        "hole": _flip_last_dim_fn,
+    },
+    "G1": {
+        "peg": _flip_last_dim_fn,
+        "hole": _flip_last_dim_fn,
+    },
+    "G1FloatingBody": {"peg": _flip_last_dim_fn, "hole": _flip_last_dim_fn},
+}
+
 
 class TwoArmPegInHole(TwoArmEnv):
     """
     This class corresponds to the peg-in-hole task for two robot arms.
 
     Args:
-        robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
-            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
-            Note: Must be either 2 single single-arm robots or 1 bimanual robot!
+        robots (str or list of str): Specification for specific robot(s)
+            Note: Must be either 2 robots or 1 bimanual robot!
 
-        env_configuration (str): Specifies how to position the robots within the environment. Can be either:
+        env_configuration (str): Specifies how to position the robots within the environment if two robots inputted. Can be either:
 
-            :`'bimanual'`: Only applicable for bimanual robot setups. Sets up the (single) bimanual robot on the -x
-                side of the table
-            :`'single-arm-parallel'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots next to each other on the -x side of the table
-            :`'single-arm-opposed'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots opposed from each others on the opposite +/-y sides of the table.
+            :`'parallel'`: Sets up the two robots next to each other on the -x side of the table
+            :`'opposed'`: Sets up the two robots opposed from each others on the opposite +/-y sides of the table.
 
-        Note that "default" corresponds to either "bimanual" if a bimanual robot is used or "single-arm-opposed" if two
-        single-arm robots are used.
+        Note that "default" "opposed" if two robots are used.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -166,7 +186,7 @@ class TwoArmPegInHole(TwoArmEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # Assert that the gripper type is None
@@ -187,7 +207,7 @@ class TwoArmPegInHole(TwoArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -269,11 +289,11 @@ class TwoArmPegInHole(TwoArmEnv):
         super()._load_model()
 
         # Adjust base pose(s) accordingly
-        if self.env_configuration == "bimanual":
+        if self.env_configuration == "single-robot":
             xpos = self.robots[0].robot_model.base_xpos_offset["empty"]
             self.robots[0].robot_model.set_base_xpos(xpos)
         else:
-            if self.env_configuration == "single-arm-opposed":
+            if self.env_configuration == "opposed":
                 # Set up robots facing towards each other by rotating them from their default position
                 for robot, rotation in zip(self.robots, (np.pi / 2, -np.pi / 2)):
                     xpos = robot.robot_model.base_xpos_offset["empty"]
@@ -281,7 +301,7 @@ class TwoArmPegInHole(TwoArmEnv):
                     xpos = T.euler2mat(rot) @ np.array(xpos)
                     robot.robot_model.set_base_xpos(xpos)
                     robot.robot_model.set_base_ori(rot)
-            else:  # "single-arm-parallel" configuration setting
+            else:  # "parallel" configuration setting
                 # Set up robots parallel to each other but offset from the center
                 for robot, offset in zip(self.robots, (-0.25, 0.25)):
                     xpos = robot.robot_model.base_xpos_offset["empty"]
@@ -330,23 +350,33 @@ class TwoArmPegInHole(TwoArmEnv):
         # Load hole object
         hole_obj = self.hole.get_obj()
         hole_obj.set("quat", "0 0 0.707 0.707")
-        hole_obj.set("pos", "0.11 0 0.17")
+        hole_robot = self.robots[0] if self.env_configuration == "single-robot" else self.robots[1]
+        # Get offset function for hole object based on the robot type
+        hole_offset_fn = _OBJECT_POS_OFFSET_FN.get(hole_robot.robot_model.__class__.__name__, {}).get(
+            "hole", lambda x: x
+        )
+        hole_obj.set("pos", array_to_string(hole_offset_fn([0.11, 0, 0.17])))
 
         # Load peg object
         peg_obj = self.peg.get_obj()
-        peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
+        # Get offset function for peg object based on the robot type
+        peg_pos_offset_fn = _OBJECT_POS_OFFSET_FN.get(self.robots[0].robot_model.__class__.__name__, {}).get(
+            "peg", lambda x: x
+        )
+        peg_obj.set("pos", array_to_string(peg_pos_offset_fn([0, 0, self.peg_length])))
 
         # Append appropriate objects to arms
-        if self.env_configuration == "bimanual":
-            r_eef, l_eef = [self.robots[0].robot_model.eef_name[arm] for arm in self.robots[0].arms]
-            r_model, l_model = [self.robots[0].robot_model, self.robots[0].robot_model]
+        if self.env_configuration == "single-robot":
+            eef0, eef1 = [self.robots[0].robot_model.eef_name[arm] for arm in self.robots[0].arms]
+            model0, model1 = [self.robots[0].robot_model, self.robots[0].robot_model]
         else:
-            r_eef, l_eef = [robot.robot_model.eef_name for robot in self.robots]
-            r_model, l_model = [self.robots[0].robot_model, self.robots[1].robot_model]
-        r_body = find_elements(root=r_model.worldbody, tags="body", attribs={"name": r_eef}, return_first=True)
-        l_body = find_elements(root=l_model.worldbody, tags="body", attribs={"name": l_eef}, return_first=True)
-        r_body.append(peg_obj)
-        l_body.append(hole_obj)
+            # Always place object on the right arm when 2 robots are used
+            eef0, eef1 = [robot.robot_model.eef_name["right"] for robot in self.robots]
+            model0, model1 = [self.robots[0].robot_model, self.robots[1].robot_model]
+        body1 = find_elements(root=model0.worldbody, tags="body", attribs={"name": eef0}, return_first=True)
+        body2 = find_elements(root=model1.worldbody, tags="body", attribs={"name": eef1}, return_first=True)
+        body1.append(peg_obj)
+        body2.append(hole_obj)
 
         # task includes arena, robot, and objects of interest
         # We don't add peg and hole directly since they were already appended to the robots
@@ -383,7 +413,7 @@ class TwoArmPegInHole(TwoArmEnv):
         # low-level object information
         if self.use_object_obs:
             # Get robot prefix and define observables modality
-            if self.env_configuration == "bimanual":
+            if self.env_configuration == "single-robot":
                 pf0 = self.robots[0].robot_model.naming_prefix + "right_"
                 pf1 = self.robots[0].robot_model.naming_prefix + "left_"
             else:

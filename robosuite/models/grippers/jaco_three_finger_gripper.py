@@ -71,11 +71,11 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
 
     @property
     def speed(self):
-        return 0.005
+        return 0.01
 
     @property
     def dof(self):
-        return 1
+        return 3
 
 
 class JacoThreeFingerDexterousGripper(JacoThreeFingerGripperBase):
@@ -100,7 +100,7 @@ class JacoThreeFingerDexterousGripper(JacoThreeFingerGripperBase):
 
     @property
     def speed(self):
-        return 0.005
+        return 0.01
 
     @property
     def dof(self):

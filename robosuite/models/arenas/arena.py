@@ -23,6 +23,56 @@ class Arena(MujocoXML):
         self.bottom_pos = np.zeros(3)
         self.floor = self.worldbody.find("./geom[@name='floor']")
 
+        # Add mocap bodies to self.root for mocap control in mjviewer UI for robot control
+        mocap_body_1 = new_body(name="left_eef_target", pos="0 0 -1", mocap=True)
+        mocap_body_1_geom = new_geom(
+            name="left_eef_target_box",
+            type="box",
+            size="0.05 0.05 0.05",
+            rgba="0.898 0.420 0.435 0.5",
+            conaffinity="0",
+            contype="0",
+            group="2",
+        )
+        mocap_body_1_sphere = new_geom(
+            name="left_eef_target_sphere",
+            type="sphere",
+            size="0.01",
+            pos="0 0 0",
+            rgba="0.898 0.420 0.435 0.8",
+            conaffinity="0",
+            contype="0",
+            group="2",
+        )
+        mocap_body_2 = new_body(name="right_eef_target", pos="0 0 -1", mocap=True)
+        mocap_body_2_geom = new_geom(
+            name="right_eef_target_box",
+            type="box",
+            size="0.05 0.05 0.05",
+            rgba="0.208 0.314 0.439 0.5",
+            conaffinity="0",
+            contype="0",
+            group="2",
+        )
+        mocap_body_2_sphere = new_geom(
+            name="right_eef_target_sphere",
+            type="sphere",
+            size="0.01",
+            pos="0 0 0",
+            rgba="0.208 0.314 0.439 0.8",
+            conaffinity="0",
+            contype="0",
+            group="2",
+        )
+        # Append the box and sphere geometries to their respective mocap bodies
+        mocap_body_1.append(mocap_body_1_geom)
+        mocap_body_1.append(mocap_body_1_sphere)
+        mocap_body_2.append(mocap_body_2_geom)
+        mocap_body_2.append(mocap_body_2_sphere)
+        # Add the mocap bodies to the world
+        self.worldbody.append(mocap_body_1)
+        self.worldbody.append(mocap_body_2)
+
         # Run any necessary post-processing on the model
         self._postprocess_arena()
 

@@ -44,9 +44,11 @@ sequential qualitative behavior during the test is described below for each cont
 
 """
 
+from typing import Dict
+
 import robosuite as suite
 from robosuite.controllers import load_controller_config
-from robosuite.robots import Bimanual
+from robosuite.robots.legacy import Bimanual
 from robosuite.utils.input_utils import *
 
 if __name__ == "__main__":
@@ -78,13 +80,15 @@ if __name__ == "__main__":
             for i in range(2):
                 print("Please choose Robot {}...\n".format(i))
                 options["robots"].append(choose_robots(exclude_bimanual=True))
-
+    # If a humanoid environment has been chosen, choose humanoid robots
+    elif "Humanoid" in options["env_name"]:
+        options["robots"] = choose_robots(use_humanoids=True)
     # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
 
     # Hacky way to grab joint dimension for now
-    joint_dim = 6 if options["robots"] == "UR5e" else 7
+    joint_dim = 6 if options["robots"] == "UR5e" else (16 if options["robots"] == "GR1" else 7)
 
     # Choose controller
     controller_name = choose_controller()
@@ -129,7 +133,11 @@ if __name__ == "__main__":
     n = 0
     gripper_dim = 0
     for robot in env.robots:
-        gripper_dim = robot.gripper["right"].dof if isinstance(robot, Bimanual) else robot.gripper.dof
+        gripper_dim = (
+            robot.gripper["right"].dof
+            if isinstance(robot, Bimanual) or (isinstance(robot.gripper, Dict) and robot.gripper.get("right"))
+            else robot.gripper.dof
+        )
         n += int(robot.action_dim / (action_dim + gripper_dim))
 
     # Define neutral value

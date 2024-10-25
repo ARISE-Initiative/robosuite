@@ -58,17 +58,14 @@ Main difference is that user inputs with ik's rotations are always taken relativ
         only accept a single single-armed robot name
 
     --config: Exclusively applicable and only should be specified for "TwoArm..." environments. Specifies the robot
-        configuration desired for the task. Options are {"bimanual", "single-arm-parallel", and "single-arm-opposed"}
+        configuration desired for the task. Options are {"parallel" and "opposed"}
 
-            -"bimanual": Sets up the environment for a single bimanual robot. Expects a single bimanual robot name to
-                be specified in the --robots argument
-
-            -"single-arm-parallel": Sets up the environment such that two single-armed robots are stationed next to
-                each other facing the same direction. Expects a 2-tuple of single-armed robot names to be specified
+            -"parallel": Sets up the environment such that two robots are stationed next to
+                each other facing the same direction. Expects a 2-tuple of robot names to be specified
                 in the --robots argument.
 
-            -"single-arm-opposed": Sets up the environment such that two single-armed robots are stationed opposed from
-                each other, facing each other from opposite directions. Expects a 2-tuple of single-armed robot names
+            -"opposed": Sets up the environment such that two robots are stationed opposed from
+                each other, facing each other from opposite directions. Expects a 2-tuple of robot names
                 to be specified in the --robots argument.
 
     --arm: Exclusively applicable and only should be specified for "TwoArm..." environments. Specifies which of the
@@ -89,7 +86,7 @@ Examples:
         $ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left --controller osc
 
     For two-arm multi single-arm robot environment:
-        $ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config single-arm-parallel --controller osc
+        $ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config parallel --controller osc
 
 
 """
@@ -99,7 +96,7 @@ import argparse
 import numpy as np
 
 import robosuite as suite
-from robosuite import load_controller_config
+from robosuite import load_composite_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
 
@@ -109,28 +106,22 @@ if __name__ == "__main__":
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
     parser.add_argument(
-        "--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary"
+        "--config", type=str, default="default", help="Specified environment configuration if necessary"
     )
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
     parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
-    parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
+    parser.add_argument("--controller", type=str, default="BASIC", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
     args = parser.parse_args()
 
-    # Import controller config for EE IK or OSC (pos/ori)
-    if args.controller == "ik":
-        controller_name = "IK_POSE"
-    elif args.controller == "osc":
-        controller_name = "OSC_POSE"
-    else:
-        print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
-        raise ValueError
-
     # Get controller config
-    controller_config = load_controller_config(default_controller=controller_name)
+    controller_config = load_composite_controller_config(
+        controller=args.controller,
+        robot=args.robots[0],
+    )
 
     # Create argument configuration
     config = {
@@ -168,12 +159,12 @@ if __name__ == "__main__":
     if args.device == "keyboard":
         from robosuite.devices import Keyboard
 
-        device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+        device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
         env.viewer.add_keypress_callback(device.on_press)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
-        device = SpaceMouse(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+        device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 

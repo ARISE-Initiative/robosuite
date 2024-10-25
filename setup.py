@@ -23,6 +23,7 @@ setup(
         "opencv-python",
         "pynput",
         "termcolor",
+        "pytest",
     ],
     eager_resources=["*"],
     include_package_data=True,
@@ -31,7 +32,7 @@ setup(
     author="Yuke Zhu",
     url="https://github.com/ARISE-Initiative/robosuite",
     author_email="yukez@cs.utexas.edu",
-    version="1.4.1",
+    version="1.5.0",
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
