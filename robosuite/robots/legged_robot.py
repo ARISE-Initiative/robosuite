@@ -29,7 +29,7 @@ class LeggedRobot(MobileRobot):
         base_type="default",
         gripper_type="default",
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
     ):
         super().__init__(
             robot_type=robot_type,

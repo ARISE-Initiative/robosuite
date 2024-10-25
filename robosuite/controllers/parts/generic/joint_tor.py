@@ -67,7 +67,7 @@ class JointTorqueController(Controller):
         output_max=0.05,
         output_min=-0.05,
         policy_freq=20,
-        lite_physics=False,
+        lite_physics=True,
         torque_limits=None,
         interpolator=None,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously

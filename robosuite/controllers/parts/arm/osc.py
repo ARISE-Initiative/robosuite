@@ -102,7 +102,7 @@ class OperationalSpaceController(Controller):
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
 
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
-            This feature is set to False by default to preserve backward compatibility.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
 
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
@@ -135,7 +135,7 @@ class OperationalSpaceController(Controller):
         input_type="delta",
         input_ref_frame="base",
         uncouple_pos_ori=True,
-        lite_physics=False,
+        lite_physics=True,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 

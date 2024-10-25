@@ -76,7 +76,7 @@ class MujocoEnv(metaclass=EnvMeta):
             in every simulated second. This sets the amount of simulation time
             that passes between every action input.
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
-            This feature is set to False by default to preserve backward compatibility.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
         horizon (int): Every episode lasts for exactly @horizon timesteps.
         ignore_done (bool): True if never terminating the environment (ignore @horizon).
         hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
@@ -97,7 +97,7 @@ class MujocoEnv(metaclass=EnvMeta):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,

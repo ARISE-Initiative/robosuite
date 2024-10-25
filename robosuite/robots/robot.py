@@ -60,7 +60,7 @@ class Robot(object):
         base_type="default",
         gripper_type="default",
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
     ):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
