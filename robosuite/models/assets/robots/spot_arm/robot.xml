@@ -1,5 +1,5 @@
 <mujoco model="spot arm">
-  <compiler angle="radian" autolimits="true"/>
+  <compiler angle="radian"/>
   <option integrator="implicitfast" cone="elliptic" impratio="100"/>
   <visual>
     <global ellipsoidinertia="true"/>

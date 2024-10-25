@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <mujoco model="baxter">
+  <compiler angle="radian"/>
   <asset>
     <!-- head H0 material and mesh -->
     <material name="Material_001.001" specular="0.5" shininess="0.225" rgba="0.121856 0.121856 0.121856 1.000000"/>

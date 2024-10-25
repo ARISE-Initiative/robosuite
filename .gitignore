@@ -119,5 +119,9 @@ MUJOCO_LOG.TXT
 # private macros
 macros_private.py
 
+robosuite_usd/
+
+MUJOCO_LOG.TXT
+
 # private demonstration files
 robosuite/models/assets/demonstrations_private

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <mujoco model="kinova3">
+  <compiler angle="radian"/>
   <actuator>
     <!-- Physical limits of the actuator. Pulled directly from datasheet. See pg 24 of:
          https://www.kinovarobotics.com/sites/default/files/UG-014_KINOVA_Gen3_Ultra_lightweight_robot_User_guide_EN_R06_0.pdf -->
