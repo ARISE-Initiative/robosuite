@@ -49,7 +49,6 @@ class WheeledRobot(MobileRobot):
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
-            lite_physics=self.lite_physics,
         )
 
         self._load_arm_controllers()
