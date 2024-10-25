@@ -12,12 +12,13 @@ Example:
 
 import argparse
 import sys
+from copy import deepcopy
 
 import cv2
 import numpy as np
 
 import robosuite as suite
-from robosuite.utils.input_utils import input2action
+from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.utils.observables import Observable, create_gaussian_noise_corrupter, create_uniform_sampled_delayer
 from robosuite.wrappers import VisualizationWrapper
 
@@ -184,54 +185,49 @@ if __name__ == "__main__":
         # Initialize device control
         device.start_control()
 
+        # Keep track of prev gripper actions when using since they are position-based and must be maintained when arms switched
+        all_prev_gripper_actions = [
+            {
+                f"{robot_arm}_gripper": np.repeat([0], robot.gripper[robot_arm].dof)
+                for robot_arm in robot.arms
+                if robot.gripper[robot_arm].dof > 0
+            }
+            for robot in env.robots
+        ]
+
         while True:
             # Set active robot
-            active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
+            active_robot = env.robots[device.active_robot]
 
             # Get the newest action
-            action, grasp = input2action(
-                device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config
-            )
+            input_ac_dict = device.input2action()
 
             # If action is none, then this a reset so we should break
-            if action is None:
+            if input_ac_dict is None:
                 break
 
-            # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
-            # toggle arm control and / or corruption if requested
-            if last_grasp < 0 < grasp:
-                if args.switch_on_grasp:
-                    args.arm = "left" if args.arm == "right" else "right"
-                if args.toggle_corruption_on_grasp:
-                    # Toggle corruption and update observable
-                    corruption_mode = 1 - corruption_mode
-                    for obs_name, settings in obs_settings.items():
-                        modify_obs(obs_name=obs_name, attrs=settings["attrs"], mods=settings["mods"]())
-            # Update last grasp
-            last_grasp = grasp
-
-            # Fill out the rest of the action space if necessary
-            rem_action_dim = env.action_dim - action.size
-            if rem_action_dim > 0:
-                # Initialize remaining action space
-                rem_action = np.zeros(rem_action_dim)
-                # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
-                if args.arm == "right":
-                    action = np.concatenate([action, rem_action])
-                elif args.arm == "left":
-                    action = np.concatenate([rem_action, action])
+            action_dict = deepcopy(input_ac_dict)  # {}
+            # set arm actions
+            for arm in active_robot.arms:
+                if isinstance(active_robot.composite_controller, WholeBody):  # input type passed to joint_action_policy
+                    controller_input_type = active_robot.composite_controller.joint_action_policy.input_type
                 else:
-                    # Only right and left arms supported
-                    print(
-                        "Error: Unsupported arm specified -- "
-                        "must be either 'right' or 'left'! Got: {}".format(args.arm)
-                    )
-            elif rem_action_dim < 0:
-                # We're in an environment with no gripper action space, so trim the action space to be the action dim
-                action = action[: env.action_dim]
+                    controller_input_type = active_robot.part_controllers[arm].input_type
+
+                if controller_input_type == "delta":
+                    action_dict[arm] = input_ac_dict[f"{arm}_delta"]
+                elif controller_input_type == "absolute":
+                    action_dict[arm] = input_ac_dict[f"{arm}_abs"]
+                else:
+                    raise ValueError
+
+            # Maintain gripper state for each robot but only update the active robot with action
+            env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
+            env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
+            env_action = np.concatenate(env_action)
 
             # Step through the simulation and render
-            obs, reward, done, info = env.step(action)
+            obs, reward, done, info = env.step(env_action)
 
             # Calculate and print out stats for proprio observation
             observed_value = obs[proprio_obs_name]

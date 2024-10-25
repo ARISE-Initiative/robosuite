@@ -6,7 +6,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import load_composite_controller_config
+from robosuite.controllers import load_composite_controller_config, load_part_controller_config
 from robosuite.models.bases import robot_base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -68,7 +68,7 @@ class Robot(object):
         if composite_controller_config is not None:
             self.composite_controller_config = composite_controller_config
         else:
-            self.composite_controller_config = {}
+            self.composite_controller_config = load_composite_controller_config(robot=robot_type)
         self.part_controller_config = copy.deepcopy(self.composite_controller_config.get("body_parts", {}))
 
         self.gripper = self._input2dict(None)
@@ -112,6 +112,7 @@ class Robot(object):
         )
 
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
+        self.init_torso_qpos = None
 
         self.robot_joints = None  # xml joint names for robot
         self.base_pos = None  # Base position in world coordinates (x,y,z)
@@ -255,8 +256,12 @@ class Robot(object):
 
         if self.robot_model.init_base_qpos is not None:
             self.sim.data.qpos[self._ref_base_joint_pos_indexes] = self.robot_model.init_base_qpos
-        if self.robot_model.init_torso_qpos is not None:
-            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = self.robot_model.init_torso_qpos
+
+        init_torso_qpos = self.init_torso_qpos
+        if self.init_torso_qpos is None:
+            init_torso_qpos = self.robot_model.init_torso_qpos
+        if init_torso_qpos is not None:
+            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = init_torso_qpos
 
         # Load controllers
         self._load_controller()
@@ -279,8 +284,6 @@ class Robot(object):
 
                 self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
 
-            # Update base pos / ori references in controller (technically only needs to be called once)
-            # self.part_controller[arm].update_base_pose()
             # Setup buffers for eef values
             self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
             self.recent_ee_pose[arm] = DeltaBuffer(dim=7)
@@ -829,8 +832,6 @@ class Robot(object):
     def _load_arm_controllers(self):
         urdf_loaded = False
         # Load composite controller configs for both left and right arm
-        self.part_controller_config = load_composite_controller_config(robot=self.name)["body_parts"]
-
         for arm in self.arms:
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,

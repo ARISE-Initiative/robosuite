@@ -20,8 +20,6 @@ ROBOT_CLASS_MAPPING = {
     "Panda": FixedBaseRobot,
     "Sawyer": FixedBaseRobot,
     "UR5e": FixedBaseRobot,
-    "Tiago": WheeledRobot,
-    "SpotArm": LeggedRobot,  # TODO(YL) Error with inconsistent orientation
     "SpotWithArm": LeggedRobot,
     "SpotWithArmFloating": LeggedRobot,
     "PandaOmron": WheeledRobot,
@@ -32,8 +30,6 @@ ROBOT_CLASS_MAPPING = {
     "GR1FloatingBody": LeggedRobot,
     "PandaDexRH": FixedBaseRobot,
     "PandaDexLH": FixedBaseRobot,
-    "SpotArmRethink": FixedBaseRobot,
-    "SpotArmRobotiqGripper": FixedBaseRobot,
 }
 
 target_type_mapping = {
