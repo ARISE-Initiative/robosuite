@@ -6,7 +6,7 @@ from collections import OrderedDict
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import load_composite_controller_config
+from robosuite.controllers import load_composite_controller_config, load_part_controller_config
 from robosuite.models.bases import robot_base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
@@ -832,8 +832,6 @@ class Robot(object):
     def _load_arm_controllers(self):
         urdf_loaded = False
         # Load composite controller configs for both left and right arm
-        self.part_controller_config = load_composite_controller_config(robot=self.name)["body_parts"]
-
         for arm in self.arms:
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
