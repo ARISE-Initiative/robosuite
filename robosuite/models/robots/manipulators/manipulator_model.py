@@ -97,7 +97,7 @@ class ManipulatorModel(RobotModel):
         for joint in self.all_joints:
             if "torso" in joint:
                 self.torso_joints.append(joint)
-            elif "base" in joint:
+            elif "mobile" in joint:
                 self.base_joints.append(joint)
             elif "head" in joint:
                 self.head_joints.append(joint)
@@ -118,7 +118,7 @@ class ManipulatorModel(RobotModel):
         for actuator in self.all_actuators:
             if "torso" in actuator:
                 self.torso_actuators.append(actuator)
-            elif "base" in actuator:
+            elif "mobile" in actuator:
                 self.base_actuators.append(actuator)
             elif "head" in actuator:
                 self.head_actuators.append(actuator)
