@@ -153,3 +153,10 @@ robosuite/models/assets/bases/meshes/**/*.png
 !robosuite/models/assets/bases/meshes/rethink_minimal_mount/**
 !robosuite/models/assets/bases/meshes/omron_mobile_base/**
 !robosuite/models/assets/bases/meshes/gr1_lowerbody_mount/**
+
+robosuite_usd/
+
+MUJOCO_LOG.TXT
+
+# private demonstration files
+robosuite/models/assets/demonstrations_private

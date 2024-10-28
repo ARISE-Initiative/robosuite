@@ -18,7 +18,7 @@ from robosuite.controllers import ALL_CONTROLLERS, load_controller_config
 from robosuite.robots import ALL_ROBOTS
 from robosuite.models.grippers import ALL_GRIPPERS
 
-__version__ = "1.5.0"
+__version__ = "1.4.5"
 __logo__ = """
       ;     /        ,--.
      ["]   ["]  ,<  |__**|
