@@ -43,9 +43,6 @@ Choice of using either inverse kinematics controller (ik) or operational space c
 Main difference is that user inputs with ik's rotations are always taken relative to eef coordinate frame, whereas
     user inputs with osc's rotations are taken relative to global frame (i.e.: static / camera frame of reference).
 
-    Notes:
-        OSC also tends to be more computationally efficient since IK relies on the backend pybullet IK solver.
-
 
 ***Choose environment specifics with the following arguments***
 
@@ -96,8 +93,7 @@ import argparse
 import numpy as np
 
 import robosuite as suite
-from robosuite import load_controller_config
-from robosuite.utils.input_utils import input2action
+from robosuite import load_composite_controller_config
 from robosuite.wrappers import VisualizationWrapper
 
 if __name__ == "__main__":
@@ -111,23 +107,17 @@ if __name__ == "__main__":
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
     parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
-    parser.add_argument("--controller", type=str, default="osc", help="Choice of controller. Can be 'ik' or 'osc'")
+    parser.add_argument("--controller", type=str, default="BASIC", help="Choice of controller. Can be 'ik' or 'osc'")
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
     args = parser.parse_args()
 
-    # Import controller config for EE IK or OSC (pos/ori)
-    if args.controller == "ik":
-        controller_name = "IK_POSE"
-    elif args.controller == "osc":
-        controller_name = "OSC_POSE"
-    else:
-        print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
-        raise ValueError
-
     # Get controller config
-    controller_config = load_controller_config(default_controller=controller_name)
+    controller_config = load_composite_controller_config(
+        controller=args.controller,
+        robot=args.robots[0],
+    )
 
     # Create argument configuration
     config = {
@@ -188,19 +178,29 @@ if __name__ == "__main__":
 
         # Initialize device control
         device.start_control()
+        action_dict = device.input2action()
+
+        # get key with "delta" in it
+        action_key = [key for key in action_dict.keys() if "delta" in key]
+        assert len(action_key) == 1, "Error: Key with 'delta' in it not found!"
+        action_key = action_key[0]
+        gripper_key = [key for key in action_dict.keys() if "gripper" in key]
+        assert len(gripper_key) == 1, "Error: Key with 'gripper' in it not found!"
+        gripper_key = gripper_key[0]
 
         while True:
             # Set active robot
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
             # Get the newest action
-            action, grasp = input2action(
-                device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config
-            )
+            action_dict = device.input2action()
 
-            # If action is none, then this a reset so we should break
-            if action is None:
+            # If action_dict is none, then this a reset so we should break
+            if action_dict is None:
                 break
+
+            action = action_dict[action_key]
+            grasp = action_dict[gripper_key]
 
             # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
             # toggle arm control and / or camera viewing angle if requested

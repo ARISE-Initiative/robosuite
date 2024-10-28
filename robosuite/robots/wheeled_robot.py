@@ -25,7 +25,7 @@ class WheeledRobot(MobileRobot):
         base_type="default",
         gripper_type="default",
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
     ):
         super().__init__(
             robot_type=robot_type,
@@ -49,7 +49,6 @@ class WheeledRobot(MobileRobot):
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
-            lite_physics=self.lite_physics,
         )
 
         self._load_arm_controllers()
@@ -84,9 +83,6 @@ class WheeledRobot(MobileRobot):
         """
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
-
-        self.composite_controller.update_state()
-        self.composite_controller.reset()
 
     def setup_references(self):
         """

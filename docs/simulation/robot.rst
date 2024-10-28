@@ -63,6 +63,12 @@ Fixed Base Robot
 Tabletop manipulators.
 
 .. autoclass:: robosuite.robots.fixed_base_robot.FixedBaseRobot
+Mobile Base Robot
+-----------------
+
+``WheeledRobot`` and ``LeggedRobot`` are two types of mobile base robots supported in robosuite.
+
+.. autoclass:: robosuite.robots.mobile_base_robot.MobileBaseRobot
 
   .. automethod:: _load_controller
   .. automethod:: load_model

@@ -124,11 +124,6 @@ class MjRenderContext:
             del self.con
             self._set_mujoco_context_and_buffers()
 
-    def upload_texture(self, tex_id):
-        """Uploads given texture to the GPU"""
-        self.gl_ctx.make_current()
-        mujoco.mjr_uploadTexture(self.model, self.con, tex_id)
-
     def render(self, width, height, camera_id=None, segmentation=False):
         viewport = mujoco.MjrRect(0, 0, width, height)
 
@@ -196,7 +191,7 @@ class MjRenderContext:
     def upload_texture(self, tex_id):
         """Uploads given texture to the GPU."""
         self.gl_ctx.make_current()
-        mujoco.mjr_uploadTexture(self.model, self.con, tex_id)
+        mujoco.mjr_uploadTexture(self.model._model, self.con, tex_id)
 
     def __del__(self):
         # free mujoco rendering context and GL rendering context
@@ -284,12 +279,6 @@ class MjModel(metaclass=_MjModelMeta):
 
         # make useful mappings such as _body_name2id and _body_id2name
         self.make_mappings()
-
-    @classmethod
-    def from_xml_path(cls, xml_path):
-        """Creates an MjModel instance from a path to a model XML file."""
-        model_ptr = _get_model_ptr_from_xml(xml_path=xml_path)
-        return cls(model_ptr)
 
     def __del__(self):
         # free mujoco model
@@ -428,12 +417,16 @@ class MjModel(metaclass=_MjModelMeta):
 
     def camera_id2name(self, id):
         """Get camera name from camera id."""
+        if id == -1:
+            return "free"
         if id not in self._camera_id2name:
             raise ValueError("No camera with id %d exists." % id)
         return self._camera_id2name[id]
 
     def camera_name2id(self, name):
         """Get camera id from  camera name."""
+        if name == "free":
+            return -1
         if name not in self._camera_name2id:
             raise ValueError(
                 'No "camera" with name %s exists. Available "camera" names = %s.' % (name, self.camera_names)
@@ -1008,7 +1001,7 @@ class MjData(metaclass=_MjDataMeta):
 
     def set_joint_qpos(self, name, value):
         """
-        Set the velocities of a joint using name.
+        Set the position of a joint using name.
 
         Args:
             name (str): The name of a joint
@@ -1042,7 +1035,7 @@ class MjData(metaclass=_MjDataMeta):
 
     def set_joint_qvel(self, name, value):
         """
-        Set the velocities of a mjo using name.
+        Set the velocities of a joint using name.
 
         Args:
             name (str): The name of a joint

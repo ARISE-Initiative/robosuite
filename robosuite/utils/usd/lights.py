@@ -74,3 +74,63 @@ class USDDomeLight:
         self.usd_light.GetIntensityAttr().Set(intensity)
         self.usd_light.GetExposureAttr().Set(0.0)
         self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
+
+
+class USDRectLight:
+    """Class that handles the rectangle lights in the USD scene."""
+
+    def __init__(self, stage: Usd.Stage, light_name: str, width: float, height: float):
+        self.stage = stage
+
+        xform_path = f"/World/Light_Xform_{light_name}"
+        light_path = f"{xform_path}/Light_{light_name}"
+        self.usd_xform = UsdGeom.Xform.Define(stage, xform_path)
+        self.usd_light = UsdLux.RectLight.Define(stage, light_path)
+        self.usd_prim = stage.GetPrimAtPath(light_path)
+
+        # we assume in mujoco that all lights are point lights
+        self.usd_light.GetWidthAttr().Set(width)
+        self.usd_light.GetHeightAttr().Set(height)
+
+        # defining ops required by update function
+        self.translate_op = self.usd_xform.AddTranslateOp()
+
+    def update(self, pos: np.ndarray, intensity: int, color: np.ndarray, frame: int):
+        """Updates the attributes of a rectangle light."""
+        self.translate_op.Set(Gf.Vec3d(pos.tolist()), frame)
+
+        if not np.any(pos):
+            intensity = 0
+
+        self.usd_light.GetIntensityAttr().Set(intensity)
+        self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))
+
+
+class USDCylinderLight:
+    """Class that handles the cylinder lights in the USD scene."""
+
+    def __init__(self, stage: Usd.Stage, light_name: str, length: float, radius: float):
+        self.stage = stage
+
+        xform_path = f"/World/Light_Xform_{light_name}"
+        light_path = f"{xform_path}/Light_{light_name}"
+        self.usd_xform = UsdGeom.Xform.Define(stage, xform_path)
+        self.usd_light = UsdLux.CylinderLight.Define(stage, light_path)
+        self.usd_prim = stage.GetPrimAtPath(light_path)
+
+        # we assume in mujoco that all lights are point lights
+        self.usd_light.GetRadiusAttr().Set(radius)
+        self.usd_light.GetLengthAttr().Set(length)
+
+        # defining ops required by update function
+        self.translate_op = self.usd_xform.AddTranslateOp()
+
+    def update(self, pos: np.ndarray, intensity: int, color: np.ndarray, frame: int):
+        """Updates the attributes of a cylinder light."""
+        self.translate_op.Set(Gf.Vec3d(pos.tolist()), frame)
+
+        if not np.any(pos):
+            intensity = 0
+
+        self.usd_light.GetIntensityAttr().Set(intensity)
+        self.usd_light.GetColorAttr().Set(Gf.Vec3d(color.tolist()))

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <mujoco model="ur5e">
+  <compiler angle="radian"/>
   <actuator>
     <!-- Physical limits of the actuator. -->
     <!-- Values taken from https://www.universal-robots.com/articles/ur-articles/max-joint-torques/ -->

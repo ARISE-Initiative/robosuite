@@ -2,21 +2,19 @@ import copy
 import json
 import os
 from collections import OrderedDict
-from typing import Optional
 
-import mujoco
 import numpy as np
 
-import robosuite.macros as macros
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory, load_part_controller_config
-from robosuite.models.bases import base_factory
+from robosuite.controllers import load_composite_controller_config, load_part_controller_config
+from robosuite.models.bases import robot_base_factory
 from robosuite.models.grippers import gripper_factory
 from robosuite.models.robots import create_robot
 from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.buffers import DeltaBuffer, RingBuffer
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+from robosuite.utils.mjcf_utils import array_to_string
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -62,16 +60,16 @@ class Robot(object):
         base_type="default",
         gripper_type="default",
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
     ):
         self.arms = REGISTERED_ROBOTS[robot_type].arms
 
         # TODO: Merge self.part_controller_config and self.composite_controller_config into one
-        self.part_controller_config = copy.deepcopy(composite_controller_config.get("body_parts", None))
         if composite_controller_config is not None:
             self.composite_controller_config = composite_controller_config
         else:
-            self.composite_controller_config = {}
+            self.composite_controller_config = load_composite_controller_config(robot=robot_type)
+        self.part_controller_config = copy.deepcopy(self.composite_controller_config.get("body_parts", {}))
 
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
@@ -114,6 +112,7 @@ class Robot(object):
         )
 
         self.init_qpos = initial_qpos  # n-dim list / array of robot joints
+        self.init_torso_qpos = None
 
         self.robot_joints = None  # xml joint names for robot
         self.base_pos = None  # Base position in world coordinates (x,y,z)
@@ -150,7 +149,7 @@ class Robot(object):
                 ROBOSUITE_DEFAULT_LOGGER.warn(
                     f'The config has defined for the controller "{part_name}", '
                     "but the robot does not have this component. Skipping, but make sure this is intended."
-                    "Removing the controller config for {part_name} from self.part_controller_config."
+                    f"Removing the controller config for {part_name} from self.part_controller_config."
                 )
                 self.part_controller_config.pop(part_name, None)
                 continue
@@ -165,9 +164,9 @@ class Robot(object):
 
         # Add base if specified
         if self.base_type == "default":
-            self.robot_model.add_base(base=base_factory(self.robot_model.default_base, idn=self.idn))
+            self.robot_model.add_base(base=robot_base_factory(self.robot_model.default_base, idn=self.idn))
         else:
-            self.robot_model.add_base(base=base_factory(self.base_type, idn=self.idn))
+            self.robot_model.add_base(base=robot_base_factory(self.base_type, idn=self.idn))
 
         self.robot_model.update_joints()
         self.robot_model.update_actuators()
@@ -192,6 +191,24 @@ class Robot(object):
             self.eef_rot_offset[arm] = T.quat_multiply(
                 self.robot_model.hand_rotation_offset[arm], self.gripper[arm].rotation_offset
             )
+
+            # Adjust gripper mount offset and quaternion if users specify custom values. This part is essential to support more flexible composition of new robots.
+            custom_gripper_mount_pos_offset = self.robot_model.gripper_mount_pos_offset.get(arm, None)
+            custom_gripper_mount_quat_offset = self.robot_model.gripper_mount_quat_offset.get(arm, None)
+
+            # The offset of position and oriientation (quaternion) is assumed to be the very first body in the gripper xml.
+            if custom_gripper_mount_pos_offset is not None:
+                assert len(custom_gripper_mount_pos_offset) == 3
+                # update an attribute inside an xml object
+                self.gripper[arm].worldbody.find("body").attrib["pos"] = array_to_string(
+                    custom_gripper_mount_pos_offset
+                )
+            if custom_gripper_mount_quat_offset is not None:
+                assert len(custom_gripper_mount_quat_offset) == 4
+                self.gripper[arm].worldbody.find("body").attrib["quat"] = array_to_string(
+                    custom_gripper_mount_quat_offset
+                )
+
             # Add this gripper to the robot model
             self.robot_model.add_gripper(self.gripper[arm], self.robot_model.eef_name[arm])
 
@@ -237,6 +254,15 @@ class Robot(object):
         # Set initial position in sim
         self.sim.data.qpos[self._ref_joint_pos_indexes] = init_qpos
 
+        if self.robot_model.init_base_qpos is not None:
+            self.sim.data.qpos[self._ref_base_joint_pos_indexes] = self.robot_model.init_base_qpos
+
+        init_torso_qpos = self.init_torso_qpos
+        if self.init_torso_qpos is None:
+            init_torso_qpos = self.robot_model.init_torso_qpos
+        if init_torso_qpos is not None:
+            self.sim.data.qpos[self._ref_torso_joint_pos_indexes] = init_torso_qpos
+
         # Load controllers
         self._load_controller()
 
@@ -258,8 +284,6 @@ class Robot(object):
 
                 self.gripper[arm].current_action = np.zeros(self.gripper[arm].dof)
 
-            # Update base pos / ori references in controller (technically only needs to be called once)
-            # self.part_controller[arm].update_base_pose()
             # Setup buffers for eef values
             self.recent_ee_forcetorques[arm] = DeltaBuffer(dim=6)
             self.recent_ee_pose[arm] = DeltaBuffer(dim=7)
@@ -267,9 +291,13 @@ class Robot(object):
             self.recent_ee_vel_buffer[arm] = RingBuffer(dim=6, length=10)
             self.recent_ee_acc[arm] = DeltaBuffer(dim=6)
 
+        # reset internal variables for composite controller
+        self.composite_controller.update_state()
+        self.composite_controller.reset()
+
     def setup_references(self):
         """
-        Sets up necessary reference for robots, grippers, and objects.
+        Sets up necessary reference for robots, bases, grippers, and objects.
         """
         # indices for joints in qpos, qvel
         self.robot_joints = self.robot_model.joints
@@ -288,6 +316,14 @@ class Robot(object):
         self._ref_arm_joint_indexes = [self.sim.model.joint_name2id(joint) for joint in self.robot_arm_joints]
         self._ref_arm_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_arm_joints]
         self._ref_arm_joint_vel_indexes = [self.sim.model.get_joint_qvel_addr(x) for x in self.robot_arm_joints]
+
+        # indices for base joints
+        self._ref_base_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._base_joints
+        ]
+        self._ref_torso_joint_pos_indexes = [
+            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._torso_joints
+        ]
 
     def setup_observables(self):
         """
@@ -369,13 +405,57 @@ class Robot(object):
 
         @sensor(modality=modality)
         def eef_quat(obs_cache):
+            """
+            Args:
+                obs_cache (dict): A dictionary containing cached observations.
+
+            Returns:
+                numpy.ndarray: The quaternion representing the orientation of the end effector *body*
+                in the mujoco world coordinate frame.
+
+            Note:
+                In robosuite<=1.5, eef_quat has been queried from the body instead
+                of the site and has thus been inconsistent with the eef_pos, which queries from the site.
+
+                This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298.
+
+                Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
+                New datasets should ideally use the logic in eef_quat_site.
+
+                In a later robosuite release, we will directly update eef_quat to query
+                the orientation from the site.
+            """
             return T.convert_quat(self.sim.data.get_body_xquat(self.robot_model.eef_name[arm]), to="xyzw")
+
+        @sensor(modality=modality)
+        def eef_quat_site(obs_cache):
+            """
+            Args:
+                obs_cache (dict): A dictionary containing cached observations.
+
+            Returns:
+                numpy.ndarray: The quaternion representing the orientation of the end effector *site*
+                in the mujoco world coordinate frame.
+
+            Note:
+                In robosuite<=1.5, eef_quat_site has been queried from the body instead
+                of the site and has thus been inconsistent with the eef_pos, which queries from the site.
+
+                This inconsistency has been raised in issue https://github.com/ARISE-Initiative/robosuite/issues/298
+
+                Datasets collected with robosuite<=1.4 have use the eef_quat queried from the body, so we keep this key.
+                New datasets should ideally use the logic in eef_quat_site.
+
+                In a later robosuite release, we will directly update eef_quat to query
+                the orientation from the site, and then remove this eef_quat_site key.
+            """
+            return T.mat2quat(self.sim.data.site_xmat[self.eef_site_id[arm]].reshape((3, 3)))
 
         # only consider prefix if there is more than one arm
         pf = f"{arm}_" if len(self.arms) > 1 else ""
 
-        sensors = [eef_pos, eef_quat]
-        names = [f"{pf}eef_pos", f"{pf}eef_quat"]
+        sensors = [eef_pos, eef_quat, eef_quat_site]
+        names = [f"{pf}eef_pos", f"{pf}eef_quat", f"{pf}eef_quat_site"]
 
         # add in gripper sensors if this robot has a gripper
         if self.has_gripper[arm]:
@@ -497,8 +577,7 @@ class Robot(object):
         Returns:
             int: the active DoF of the robot (Number of robot joints + active gripper DoF).
         """
-        dof = self.robot_model.dof
-        return dof
+        return self.robot_model.dof
 
     def pose_in_base_from_name(self, name):
         """
@@ -752,19 +831,8 @@ class Robot(object):
 
     def _load_arm_controllers(self):
         urdf_loaded = False
-
-        # Load controller configs for both left and right arm
+        # Load composite controller configs for both left and right arm
         for arm in self.arms:
-            # First, load the default controller if none is specified
-            if not self.part_controller_config[arm]:
-                # Need to update default for a single agent
-                controller_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    "controllers/config/{}.json".format(self.robot_model.default_controller_config[arm]),
-                )
-                self.part_controller_config[arm] = load_part_controller_config(custom_fpath=controller_path)
-
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
             #                                           OSC_POSITION, OSC_POSE, IK_POSE}
@@ -806,9 +874,13 @@ class Robot(object):
 
             if self.has_gripper[arm]:
                 # Load gripper controllers
+                assert "gripper" in self.part_controller_config[arm], "Gripper controller config not found!"
                 gripper_name = self.get_gripper_name(arm)
                 self.part_controller_config[gripper_name] = {}
-                self.part_controller_config[gripper_name]["type"] = "GRIP"
+                self.part_controller_config[gripper_name]["type"] = self.part_controller_config[arm]["gripper"]["type"]
+                self.part_controller_config[gripper_name]["use_action_scaling"] = self.part_controller_config[arm][
+                    "gripper"
+                ].get("use_action_scaling", True)
                 self.part_controller_config[gripper_name]["robot_name"] = self.name
                 self.part_controller_config[gripper_name]["sim"] = self.sim
                 self.part_controller_config[gripper_name]["eef_name"] = self.gripper[arm].important_sites["grip_site"]

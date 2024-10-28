@@ -1,4 +1,5 @@
 import json
+import os
 import pathlib
 from typing import Dict, Literal, Optional
 
@@ -22,7 +23,7 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
     Utility function that loads the desired composite controller and returns the loaded configuration as a dict
 
     Args:
-        controller: Name or path of the controller to load. 
+        controller: Name or path of the controller to load.
             If None, robot must be specified and we load the robot's default controller in controllers/config/robots/.
             If specified, must be a valid controller name or path to a controller config file.
         robot: Name of the robot to load the controller for.
@@ -38,16 +39,26 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
         assert robot is not None, "If controller is None, robot must be specified."
         # Load robot's controller
         robot_name = _get_robot_name(robot)
-        controller_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/robots/default_{robot_name}.json"
+        controller_fpath = (
+            pathlib.Path(robosuite.__file__).parent / f"controllers/config/robots/default_{robot_name}.json"
+        )
+        if not os.path.exists(controller_fpath):
+            controller_fpath = (
+                pathlib.Path(robosuite.__file__).parent / "controllers/config/default/composite/basic.json"
+            )
     elif isinstance(controller, str):
         if controller.endswith(".json"):
             # Use the specified path directly
             controller_fpath = controller
         else:
-            assert controller in REGISTERED_COMPOSITE_CONTROLLERS_DICT, f"Controller {controller} not found in REGISTERED_COMPOSITE_CONTROLLERS_DICT"
+            assert (
+                controller in REGISTERED_COMPOSITE_CONTROLLERS_DICT
+            ), f"Controller {controller} not found in COMPOSITE_CONTROLLERS_DICT"
             # Load from robosuite/controllers/config/default/composite/
             controller_name = controller.lower()
-            controller_fpath = pathlib.Path(robosuite.__file__).parent / f"controllers/config/default/composite/{controller_name}.json"
+            controller_fpath = (
+                pathlib.Path(robosuite.__file__).parent / f"controllers/config/default/composite/{controller_name}.json"
+            )
     else:
         raise ValueError("Controller must be None or a string.")
 
@@ -57,7 +68,9 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
             composite_controller_config = json.load(f)
         ROBOSUITE_DEFAULT_LOGGER.info(f"Loading controller configuration from: {controller_fpath}")
     except FileNotFoundError:
-        ROBOSUITE_DEFAULT_LOGGER.error(f"Error opening controller filepath at: {controller_fpath}. Please check filepath and try again.")
+        ROBOSUITE_DEFAULT_LOGGER.error(
+            f"Error opening controller filepath at: {controller_fpath}. Please check filepath and try again."
+        )
         raise
 
     validate_composite_controller_config(composite_controller_config)
@@ -72,15 +85,20 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
 
     return composite_controller_config
 
+
 def _get_robot_name(robot: str) -> str:
     """Helper function to get the standardized robot name."""
     if "GR1FloatingBody" in robot:
         return "gr1_floating_body"
+    elif "GR1FixedLowerBody" in robot:
+        return "gr1_fixed_lower_body"
     elif "GR1" in robot:
         return "gr1"
     elif "G1" in robot:
         return "g1"
     elif "H1" in robot:
         return "h1"
+    elif "PandaDex" in robot:
+        return "panda_dex"
     else:
         return robot.lower()

@@ -105,8 +105,9 @@ ENV/
 # mac
 .DS_Store
 
-# mujoco-key
+# mujoco files
 mjkey.txt
+MUJOCO_LOG.TXT
 
 .mujocomanip_temp_model.xml
 
@@ -118,4 +119,9 @@ mjkey.txt
 # private macros
 macros_private.py
 
+robosuite_usd/
+
 MUJOCO_LOG.TXT
+
+# private demonstration files
+robosuite/models/assets/demonstrations_private

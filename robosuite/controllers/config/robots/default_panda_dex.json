@@ -16,27 +16,15 @@
                 "position_limits": null,
                 "orientation_limits": null,
                 "uncouple_pos_ori": true,
-                "control_delta": true,
+                "input_type": "delta",
+                "input_ref_frame": "base",
                 "interpolation": null,
                 "ramp_ratio": 0.2,
                 "gripper": {
-                    "type": "GRIP"
+                    "type": "GRIP",
+                    "use_action_scaling": false
                 }
             }
-        },
-        "legs": {
-            "type" : "JOINT_POSITION",
-            "input_max": 1,
-            "input_min": -1,
-            "output_max": 0.5,
-            "output_min": -0.5,
-            "kd": 200,
-            "kv": 200,
-            "kp": 1000,
-            "velocity_limits": [-1,1],
-            "kp_limits": [0, 1000],
-            "interpolation": null,
-            "ramp_ratio": 0.2
         }
     }
 }

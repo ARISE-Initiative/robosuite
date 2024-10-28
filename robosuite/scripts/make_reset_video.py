@@ -10,7 +10,6 @@ import imageio
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 
 if __name__ == "__main__":
@@ -73,9 +72,6 @@ if __name__ == "__main__":
     # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
-
-    # Load the controller
-    options["controller_configs"] = load_controller_config(default_controller="OSC_POSE")
 
     # initialize the task
     env = suite.make(

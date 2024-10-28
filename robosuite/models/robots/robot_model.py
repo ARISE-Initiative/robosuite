@@ -1,18 +1,12 @@
 from copy import deepcopy
-from typing import Optional
+from typing import Dict, List, Optional
 
 import mujoco
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel
-from robosuite.utils.mjcf_utils import (
-    ROBOT_COLLISION_COLOR,
-    array_to_string,
-    find_elements,
-    find_parent,
-    string_to_array,
-)
+from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel, RobotBaseModel
+from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 REGISTERED_ROBOTS = {}
@@ -69,7 +63,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         idn (int or str): Number or some other unique identification string for this robot instance
     """
 
-    def __init__(self, fname, idn=0):
+    def __init__(self, fname: str, idn=0):
         super().__init__(fname, idn=idn)
 
         # Define other variables that get filled later
@@ -92,7 +86,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         else:
             self.mujoco_model = self.get_model()
 
-    def set_base_xpos(self, pos):
+    def set_base_xpos(self, pos: np.ndarray):
         """
         Places the robot on position @pos.
 
@@ -101,7 +95,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         """
         self._elements["root_body"].set("pos", array_to_string(pos - self.bottom_offset))
 
-    def set_base_ori(self, rot):
+    def set_base_ori(self, rot: np.ndarray):
         """
         Rotates robot by rotation @rot from its original orientation.
 
@@ -112,7 +106,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         rot = mat2quat(euler2mat(rot))[[3, 0, 1, 2]]
         self._elements["root_body"].set("quat", array_to_string(rot))
 
-    def set_joint_attribute(self, attrib, values, force=True):
+    def set_joint_attribute(self, attrib: str, values: np.ndarray, force=True):
         """
         Sets joint attributes, e.g.: friction loss, damping, etc.
 
@@ -133,7 +127,10 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             if force or joint.get(attrib, None) is None:
                 joint.set(attrib, array_to_string(np.array([values[i]])))
 
-    def add_base(self, base):
+    def add_base(self, base: RobotBaseModel):
+        """
+        Mounts a base to the robot. Bases are defined in robosuite.models.bases
+        """
         if isinstance(base, MountModel):
             self.add_mount(base)
         elif isinstance(base, MobileBaseModel):
@@ -141,9 +138,9 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         elif isinstance(base, LegBaseModel):
             self.add_leg_base(base)
         else:
-            raise ValueError
+            raise ValueError("Invalid base type to add to robot!")
 
-    def add_mount(self, mount):
+    def add_mount(self, mount: MountModel):
         """
         Mounts @mount to arm.
 
@@ -169,7 +166,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         # Update cameras in this model
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
-    def add_mobile_base(self, mobile_base):
+    def add_mobile_base(self, mobile_base: MobileBaseModel):
         """
         Mounts @mobile_base to arm.
 
@@ -218,7 +215,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         # Update cameras in this model
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
-    def add_leg_base(self, leg_base):
+    def add_leg_base(self, leg_base: LegBaseModel):
         """
         Mounts @mobile_base to arm.
 
@@ -284,11 +281,11 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def naming_prefix(self):
+    def naming_prefix(self) -> str:
         return "robot{}_".format(self.idn)
 
     @property
-    def dof(self):
+    def dof(self) -> int:
         """
         Defines the number of DOF of the robot
 
@@ -298,7 +295,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return len(self._joints)
 
     @property
-    def bottom_offset(self):
+    def bottom_offset(self) -> np.ndarray:
         """
         Returns vector from model root body to model bottom.
         By default, this is equivalent to this robot's mount's (bottom_offset - top_offset) + this robot's base offset
@@ -313,7 +310,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         )
 
     @property
-    def horizontal_radius(self):
+    def horizontal_radius(self) -> float:
         """
         Returns maximum distance from model root body to any radial point of the model. This method takes into
         account the mount horizontal radius as well
@@ -324,7 +321,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return max(self._horizontal_radius, self.base.horizontal_radius)
 
     @property
-    def models(self):
+    def models(self) -> List[MujocoXMLModel]:
         """
         Returns a list of all m(sub-)models owned by this robot model. By default, this includes the mount model,
         if specified
@@ -343,7 +340,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def default_base(self):
+    def default_base(self) -> str:
         """
         Defines the default mount type for this robot that gets added to root body (base)
 
@@ -353,17 +350,18 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def default_controller_config(self):
+    def default_controller_config(self) -> Dict[str, str]:
         """
         Defines the name of default controller config file in the controllers/config directory for this robot.
 
         Returns:
-            str: filename of default controller config for this robot
+            dict: Dictionary containing arm-specific default controller config names
+                e.g.: {"right": "default_panda", "left": "default_panda"}
         """
         raise NotImplementedError
 
     @property
-    def init_qpos(self):
+    def init_qpos(self) -> np.ndarray:
         """
         Defines the default rest qpos of this robot
 
@@ -373,7 +371,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def base_xpos_offset(self):
+    def base_xpos_offset(self) -> Dict[str, np.ndarray]:
         """
         Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
         Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
@@ -386,7 +384,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def top_offset(self):
+    def top_offset(self) -> np.ndarray:
         """
         Returns vector from model root body to model top.
         Useful for, e.g. placing models on a surface.
@@ -398,7 +396,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def _horizontal_radius(self):
+    def _horizontal_radius(self) -> float:
         """
         Returns maximum distance from model root body to any radial point of the model.
 
@@ -411,7 +409,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def _important_sites(self):
+    def _important_sites(self) -> Dict[str, str]:
         """
         Returns:
             dict: (Default is no important sites; i.e.: empty dict)
@@ -419,7 +417,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return {}
 
     @property
-    def _important_geoms(self):
+    def _important_geoms(self) -> Dict[str, List[str]]:
         """
         Returns:
              dict: (Default is no important geoms; i.e.: empty dict)
@@ -427,7 +425,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return {}
 
     @property
-    def _important_sensors(self):
+    def _important_sensors(self) -> Dict[str, str]:
         """
         Returns:
             dict: (Default is no sensors; i.e.: empty dict)
@@ -435,10 +433,10 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return {}
 
     @property
-    def all_joints(self):
+    def all_joints(self) -> List:
         """
         Returns:
-            list: (Default is no joints; i.e.: empty dict)
+            list: (Default is no joints; i.e.: empty list)
         """
         all_joints = []
         all_joints += self.joints
@@ -447,10 +445,10 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return all_joints
 
     @property
-    def all_actuators(self):
+    def all_actuators(self) -> List:
         """
         Returns:
-            list: (Default is no actuators; i.e.: empty dict)
+            list: (Default is no actuators; i.e.: empty list)
         """
         all_actuators = []
         all_actuators += self.actuators

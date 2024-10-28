@@ -10,10 +10,10 @@ Environments are created by calling `robosuite.make` with the name of the task a
 
 ```python
 import robosuite
-from robosuite.controllers import load_controller_config
+from robosuite.controllers import load_part_controller_config
 
 # load default controller parameters for Operational Space Control (OSC)
-controller_config = load_controller_config(default_controller="OSC_POSE")
+controller_config = load_part_controller_config(default_controller="OSC_POSE")
 
 # create an environment to visualize on-screen
 env = robosuite.make(

@@ -36,9 +36,6 @@ class ManipulationEnv(RobotEnv):
             overrides the default gripper. Should either be single str if same gripper type is to be used for all
             robots or else it should be a list of the same length as "robots" param
 
-        initial_qpos (None or tuple or list of tuples): If set, sets custom initial qpos values for robot models.
-            Default of None corresponds to defalt initial qpos values defined by robot model.
-
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -77,7 +74,7 @@ class ManipulationEnv(RobotEnv):
             simulation time that passes between every action input.
 
         lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
-            This feature is set to False by default to preserve backward compatibility.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
 
         horizon (int): Every episode lasts for exactly @horizon timesteps.
 
@@ -133,7 +130,6 @@ class ManipulationEnv(RobotEnv):
         controller_configs=None,
         base_types="default",
         gripper_types="default",
-        initial_qpos=None,
         initialization_noise=None,
         use_camera_obs=True,
         has_renderer=False,
@@ -143,7 +139,7 @@ class ManipulationEnv(RobotEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -163,18 +159,10 @@ class ManipulationEnv(RobotEnv):
         # Gripper
         gripper_types = self._input2list(gripper_types, num_robots)
 
-        # Initial qpos
-        if initial_qpos is not None:
-            if initial_qpos[0] is None or type(initial_qpos[0]) is list or type(initial_qpos[0]) is tuple:
-                initial_qpos = list(initial_qpos)
-            else:
-                initial_qpos = [initial_qpos for _ in range(num_robots)]
-
         # Robot configurations to pass to super call
         robot_configs = [
             {
                 "gripper_type": gripper_types[idx],
-                "initial_qpos": initial_qpos,
             }
             for idx in range(num_robots)
         ]

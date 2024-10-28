@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <mujoco model="tiago_dual">
+  <compiler angle="radian"/>
   <asset>
     <material name="DarkGrey" specular="0.5" shininess="0.45" rgba="0.1 0.1 0.1 1.0"/>
     <material name="Grey" specular="0.5" shininess="0.45" rgba="0.7 0.7 0.7 1.0"/>

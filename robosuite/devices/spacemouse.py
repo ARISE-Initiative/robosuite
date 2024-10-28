@@ -352,6 +352,15 @@ class SpaceMouse(Device):
         except AttributeError as e:
             pass
 
+    def _postprocess_device_outputs(self, dpos, drotation):
+        drotation = drotation * 50
+        dpos = dpos * 125
+
+        dpos = np.clip(dpos, -1, 1)
+        drotation = np.clip(drotation, -1, 1)
+
+        return dpos, drotation
+
 
 if __name__ == "__main__":
 

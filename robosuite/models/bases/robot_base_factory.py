@@ -2,19 +2,23 @@
 Defines a string based method of initializing mounts
 """
 
+from typing import Optional
 
-def base_factory(name, idn=0):
+from robosuite.models.bases.robot_base_model import RobotBaseModel
+
+
+def robot_base_factory(name: Optional[str], idn=0) -> RobotBaseModel:
     """
     Generator for grippers
 
-    Creates a MountModel instance with the provided name.
+    Creates a RobotBaseModel instance with the provided name.
 
     Args:
         name (None or str): the name of the mount class
         idn (int or str): Number or some other unique identification string for this mount instance
 
     Returns:
-        MountModel: requested mount instance
+        RobotBaseModel class: e.g. MobileBaseModel, LegBaseModel, or MountModel instance
 
     Raises:
         XMLError: [invalid XML]

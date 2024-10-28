@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <mujoco model="panda">
+  <compiler angle="radian"/>
   <actuator>
     <!-- Physical limits of the actuator. -->
     <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_j1"/>

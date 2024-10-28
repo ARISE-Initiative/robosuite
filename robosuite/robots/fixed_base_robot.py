@@ -4,11 +4,9 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
-from robosuite.utils.observables import sensor
 
 
 class FixedBaseRobot(Robot):
@@ -26,7 +24,7 @@ class FixedBaseRobot(Robot):
         base_type="default",
         gripper_type="default",
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
     ):
         super().__init__(
             robot_type=robot_type,
@@ -50,7 +48,6 @@ class FixedBaseRobot(Robot):
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
-            lite_physics=self.lite_physics,
         )
 
         self._load_arm_controllers()

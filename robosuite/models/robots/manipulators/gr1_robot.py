@@ -15,7 +15,7 @@ class GR1(LeggedManipulatorModel):
     arms = ["right", "left"]
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("robots/gr1/robot_ik.xml"), idn=idn)
+        super().__init__(xml_path_completion("robots/gr1/robot.xml"), idn=idn)
 
     @property
     def default_base(self):
@@ -61,14 +61,18 @@ class GR1(LeggedManipulatorModel):
             np.array: default initial qpos for the right, left arms
         """
         init_qpos = np.array([0.0] * 32)
+        right_arm_init = np.array([0.0, -0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
+        init_qpos[6:13] = right_arm_init
+        left_arm_init = np.array([0.0, 0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
+        init_qpos[13:20] = left_arm_init
         return init_qpos
 
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.5, -0.1, 0.95),
+            "bins": (-0.30, -0.1, 0.95),
             "empty": (-0.29, 0, 0.95),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.95),
+            "table": lambda table_length: (-0.15 - table_length / 2, 0, 0.95),
         }
 
     @property
@@ -114,6 +118,10 @@ class GR1FixedLowerBody(GR1):
             np.array: default initial qpos for the right, left arms
         """
         init_qpos = np.array([0.0] * 20)
+        right_arm_init = np.array([0.0, -0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
+        init_qpos[6:13] = right_arm_init
+        left_arm_init = np.array([0.0, 0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
+        init_qpos[13:20] = left_arm_init
         return init_qpos
 
     @property
@@ -140,9 +148,9 @@ class GR1FloatingBody(GR1):
             np.array: default initial qpos for the right, left arms
         """
         init_qpos = np.array([0.0] * 20)
-        right_arm_init = np.array([0.0, 0.2, 0.189, -1.43, 0.864, 0.0, 0.0])
+        right_arm_init = np.array([0.0, -0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
         init_qpos[6:13] = right_arm_init
-        left_arm_init = np.array([0.0, -0.2, -0.189, 1.06, -0.581, 0.0, 0.0])
+        left_arm_init = np.array([0.0, 0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
         init_qpos[13:20] = left_arm_init
         return init_qpos
 
@@ -153,9 +161,9 @@ class GR1FloatingBody(GR1):
     @property
     def base_xpos_offset(self):
         return {
-            "bins": (-0.5, -0.1, 0.97),
+            "bins": (-0.30, -0.1, 0.97),
             "empty": (-0.29, 0, 0.97),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.97),
+            "table": lambda table_length: (-0.15 - table_length / 2, 0, 0.97),
         }
 
 
@@ -180,8 +188,8 @@ class GR1ArmsOnly(GR1):
             np.array: default initial qpos for the right, left arms
         """
         init_qpos = np.array([0.0] * 14)
-        right_arm_init = np.array([0.0, 0.2, 0.189, -1.43, 0.864, 0.0, 0.0])
-        left_arm_init = np.array([0.0, -0.2, -0.189, 1.06, -0.581, 0.0, 0.0])
+        right_arm_init = np.array([0.0, -0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
+        left_arm_init = np.array([0.0, 0.1, 0.0, -1.57, 0.0, 0.0, 0.0])
         init_qpos[0:7] = right_arm_init
         init_qpos[7:14] = left_arm_init
         return init_qpos

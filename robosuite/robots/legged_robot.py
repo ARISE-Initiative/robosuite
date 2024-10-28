@@ -7,7 +7,7 @@ from typing import Dict, List
 import numpy as np
 
 import robosuite.utils.transform_utils as T
-from robosuite.controllers import composite_controller_factory
+from robosuite.controllers import composite_controller_factory, load_part_controller_config
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_robot import MobileRobot
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
@@ -29,7 +29,7 @@ class LeggedRobot(MobileRobot):
         base_type="default",
         gripper_type="default",
         control_freq=20,
-        lite_physics=False,
+        lite_physics=True,
     ):
         super().__init__(
             robot_type=robot_type,
@@ -53,7 +53,7 @@ class LeggedRobot(MobileRobot):
                 "..",
                 "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.legs]),
             )
-            self.part_controller_config[self.legs] = load_controller_config(custom_fpath=controller_path)
+            self.part_controller_config[self.legs] = load_part_controller_config(custom_fpath=controller_path)
 
             # Assert that the controller config is a dict file:
             #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
@@ -97,7 +97,6 @@ class LeggedRobot(MobileRobot):
             sim=self.sim,
             robot_model=self.robot_model,
             grippers={self.get_gripper_name(arm): self.gripper[arm] for arm in self.arms},
-            lite_physics=self.lite_physics,
         )
 
         self._load_arm_controllers()
@@ -136,8 +135,6 @@ class LeggedRobot(MobileRobot):
         # First, run the superclass method to reset the position and controller
         super().reset(deterministic)
 
-        self.composite_controller.update_state()
-        self.composite_controller.reset()
         # Set initial q pos of the legged base
         if isinstance(self.robot_model.base, LegBaseModel):
             # Set the initial joint positions of the legged base
