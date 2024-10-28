@@ -21,6 +21,7 @@
         "ik_max_dq": 4.0,
         "ik_max_dq_torso": 0.2,
         "ik_input_type": "absolute",
+        "ik_input_ref_frame": "base",
         "ik_input_rotation_repr": "axis_angle",
         "ik_verbose": true
     },
