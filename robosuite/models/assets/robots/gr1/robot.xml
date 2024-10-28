@@ -56,6 +56,7 @@
 		<camera mode="fixed" name="obs_hands" pos="0.3 0.000 1.535" xyaxes="0.000 1.000 0.000 -0.707 0.000 0.707" />
 		<geom name="floor" pos="0 0 -0.97" size="1 1 0.02" type="plane" material="grid" />
 		<body name="base">
+      		<freejoint/>
 			<inertial pos="-0.0508888 0.000109183 -0.0455794" quat="0.706855 0.707166 0.0123661 -0.0109307" mass="6.45117" diaginertia="0.0149302 0.0127972 0.00640923" />
 			<body name="whole_body">
 				<site name="pelvis" pos="0 0 0" size="0.06 0.06 0.06" rgba="1 0 0 0" type="sphere" group="1" />
