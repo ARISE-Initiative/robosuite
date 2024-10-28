@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Tuple
 import mujoco
 import numpy as np
 
+from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.devices import Device
 from robosuite.utils import transform_utils
 from robosuite.utils.transform_utils import rotation_matrix
@@ -82,6 +83,22 @@ class MJGUI(Device):
         """
         return dict()
 
+    def _get_site_names(self) -> List[str]:
+        """
+        Helper function to get the names of the sites used for mocap bodies.
+
+        TODO: unify this logic to be controller independent.
+
+        Returns:
+            List[str]: A list of site names.
+        """
+        if isinstance(self.env.robots[0].composite_controller, WholeBody):  # input type passed to joint_action_policy
+            site_names = self.env.robots[0].composite_controller.joint_action_policy.site_names
+        else:
+            site_name = f"gripper0_{self.active_arm}_grip_site"
+            site_names = [site_name]
+        return site_names
+
     def _reset_internal_state(self):
         """
         Resets internal state related to robot control
@@ -92,7 +109,7 @@ class MJGUI(Device):
         self.active_robot = 0
         self.base_modes = [False] * len(self.all_robot_arms)
 
-        site_names: List[str] = self.env.robots[0].composite_controller.joint_action_policy.site_names
+        site_names = self._get_site_names()
         for site_name in site_names:
             target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
             target_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(site_name)]
@@ -104,33 +121,44 @@ class MJGUI(Device):
         Uses mocap body poses to determine action for robot. Obtain input_type
         (i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
         from the controller itself.
+
+        TODO: unify this logic to be independent from controller type.
         """
         action: Dict[str, np.ndarray] = {}
         gripper_dof = self.env.robots[0].gripper[self.active_end_effector].dof
-        site_names: List[str] = self.env.robots[0].composite_controller.joint_action_policy.site_names
+        site_names = self._get_site_names()
         for site_name in site_names:
             target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
             target_pos_world, target_ori_mat_world = get_mocap_pose(self.env.sim, f"{target_name_prefix}_eef_target")
             # check if need to update frames
-            # TODO: should be more general
-            if (
-                self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                    "ik_input_ref_frame", "world"
-                )
-                != "world"
-            ):
-                target_pose = np.eye(4)
-                target_pose[:3, 3] = target_pos_world
-                target_pose[:3, :3] = target_ori_mat_world
-                target_pose = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
-                    src_frame_pose=target_pose,
-                    src_frame="world",  # mocap pose is world coordinates
-                    dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+            if isinstance(self.env.robots[0].composite_controller, WholeBody):
+                # TODO: should be more general
+                if (
+                    self.env.robots[0].composite_controller.composite_controller_specific_config.get(
                         "ik_input_ref_frame", "world"
-                    ),
-                )
-                target_pos, target_ori_mat = target_pose[:3, 3], target_pose[:3, :3]
+                    )
+                    != "world"
+                ):
+                    target_pose = np.eye(4)
+                    target_pose[:3, 3] = target_pos_world
+                    target_pose[:3, :3] = target_ori_mat_world
+                    target_pose = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                        src_frame_pose=target_pose,
+                        src_frame="world",  # mocap pose is world coordinates
+                        dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                            "ik_input_ref_frame", "world"
+                        ),
+                    )
+                    target_pos, target_ori_mat = target_pose[:3, 3], target_pose[:3, :3]
+                else:
+                    target_pos, target_ori_mat = target_pos_world, target_ori_mat_world
             else:
+                assert (
+                    self.env.robots[0].part_controllers[self.active_end_effector].input_ref_frame == "world"
+                    and self.env.robots[0].part_controllers[self.active_end_effector].input_type == "absolute"
+                ), "Only support world frame and absolute actions for now. You can modify the controller configs " \
+                "being used, e.g. in robosuite/controllers/config/robots/{robot_name}.json, " \
+                "robosuite/controllers/config/default/composite/{}.json to enable other options."
                 target_pos, target_ori_mat = target_pos_world, target_ori_mat_world
 
             # convert ori mat to axis angle
