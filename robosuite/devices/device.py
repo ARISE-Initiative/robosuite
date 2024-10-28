@@ -181,7 +181,7 @@ class Device(metaclass=abc.ABCMeta):
         ]  # update next target either based on achieved pose or current target pose
 
         # TODO: ideally separate kinematics from controller to unify frame conversion logic
-        if robot.composite_controller_config["type"] == "WHOLE_BODY_IK":
+        if robot.composite_controller_config["type"] == "WHOLE_BODY_MINK_IK":
             site_names: List[str] = self.env.robots[0].composite_controller.joint_action_policy.site_names
             for site_name in site_names:
                 target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now

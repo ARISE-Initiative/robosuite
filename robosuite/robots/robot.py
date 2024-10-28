@@ -168,8 +168,8 @@ class Robot(object):
         else:
             self.robot_model.add_base(base=robot_base_factory(self.base_type, idn=self.idn))
 
-        self.robot_model._update_joints()
-        self.robot_model._update_actuators()
+        self.robot_model.update_joints()
+        self.robot_model.update_actuators()
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:
             self.init_qpos = self.robot_model.init_qpos

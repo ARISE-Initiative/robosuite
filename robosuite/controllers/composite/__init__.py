@@ -1,4 +1,5 @@
 from .composite_controller import CompositeController, HybridMobileBase, WholeBodyIK
+from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 from .composite_controller import COMPOSITE_CONTROLLERS_DICT
 
 ALL_COMPOSITE_CONTROLLERS = COMPOSITE_CONTROLLERS_DICT.keys()
@@ -15,5 +16,7 @@ def composite_controller_factory(type, sim, robot_model, grippers):
         return HybridMobileBase(sim, robot_model, grippers)
     elif type == "WHOLE_BODY_IK":
         return WholeBodyIK(sim, robot_model, grippers)
+    elif type == "WHOLE_BODY_MINK_IK":
+        return WholeBodyMinkIK(sim, robot_model, grippers)
     else:
         return COMPOSITE_CONTROLLERS_DICT[type](sim, robot_model, grippers)
