@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple
 import mujoco
 import numpy as np
 
-from robosuite.controllers.composite.composite_controller import WholeBody
+from robosuite.controllers.composite.composite_controller import WholeBody, WholeBodyIK
 from robosuite.devices import Device
 from robosuite.utils import transform_utils
 from robosuite.utils.transform_utils import rotation_matrix
@@ -130,6 +130,16 @@ class MJGUI(Device):
         for site_name in site_names:
             target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
             target_pos_world, target_ori_mat_world = get_mocap_pose(self.env.sim, f"{target_name_prefix}_eef_target")
+
+            if isinstance(self.env.robots[0].composite_controller, WholeBodyIK):
+                assert self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                            "ik_input_ref_frame", "world"
+                        ) == "world", "Only support world frame for MJGui teleop for now. " \
+                            "Please modify the controller configs."
+                assert self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                            "ik_input_type", "absolute"
+                        ) == "absolute", "Only support absolute actions for MJGui teleop for now. " \
+                            "Please modify the controller configs."
             # check if need to update frames
             if isinstance(self.env.robots[0].composite_controller, WholeBody):
                 # TODO: should be more general
