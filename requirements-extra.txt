@@ -11,4 +11,4 @@ h5py
 mink
 
 # for extra robosuite_models
-robosuite_models==1.0.0
+robosuite-models==1.0.0
