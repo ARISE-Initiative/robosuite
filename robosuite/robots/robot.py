@@ -2,6 +2,7 @@ import copy
 import json
 import os
 from collections import OrderedDict
+from typing import Optional
 
 import numpy as np
 
@@ -612,6 +613,23 @@ class Robot(object):
         """
         self.sim.data.qpos[self._ref_joint_pos_indexes] = jpos
         self.sim.forward()
+
+    def set_gripper_joint_positions(self, jpos: np.ndarray, gripper_arm: Optional[str] = None):
+        """
+        Helper method to force gripper joint positions to the passed values.
+
+        Args:
+            jpos (np.array): Joint jpos to manually set the gripper to
+            gripper_arm: arm corresponding to the gripper for which to set the gripper joint jpos. 
+                If None, use default arm.
+        """
+        if gripper_arm is None:
+            gripper_arm = self.arms[0]
+        if self.has_gripper[gripper_arm]:
+            self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[gripper_arm]] = jpos
+            self.sim.forward()
+        else:
+            raise ValueError(f"No gripper found for arm {gripper_arm}")
 
     @property
     def js_energy(self):
