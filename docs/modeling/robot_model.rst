@@ -12,12 +12,9 @@ file and also contains relevant hard-coded information from that XML. This repre
   .. automethod:: set_base_ori
   .. automethod:: set_joint_attribute
   .. automethod:: add_base
-<<<<<<< HEAD
   .. automethod:: add_mount
   .. automethod:: add_mobile_base
   .. automethod:: add_leg_base
-=======
->>>>>>> 5bc8d3a256ebdd02c81ba8e32dc164fe4d98e9cf
   .. autoproperty:: dof
   .. autoproperty:: default_base
   .. autoproperty:: default_controller_config
