@@ -33,6 +33,14 @@ except:
         "source (https://github.com/ARISE-Initiative/robosuite_models) or through pip install."
     )
 
+try:
+    from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
+
+except:
+    ROBOSUITE_DEFAULT_LOGGER.warning(
+        "Could not load the mink-based whole-body IK. Make sure you install related import properly, otherwise you will not be able to use the default IK controller setting for GR1 robot."
+    )
+
 __version__ = "1.5.0"
 __logo__ = """
       ;     /        ,--.
