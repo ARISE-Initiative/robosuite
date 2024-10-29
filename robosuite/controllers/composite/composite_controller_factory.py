@@ -4,7 +4,7 @@ import pathlib
 from typing import Dict, Literal, Optional
 
 import robosuite
-from robosuite.controllers.composite.composite_controller import COMPOSITE_CONTROLLERS_DICT
+from robosuite.controllers.composite.composite_controller import REGISTERED_COMPOSITE_CONTROLLERS_DICT
 from robosuite.controllers.parts.controller_factory import load_part_controller_config
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
@@ -52,7 +52,7 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
             controller_fpath = controller
         else:
             assert (
-                controller in COMPOSITE_CONTROLLERS_DICT
+                controller in REGISTERED_COMPOSITE_CONTROLLERS_DICT
             ), f"Controller {controller} not found in COMPOSITE_CONTROLLERS_DICT"
             # Load from robosuite/controllers/config/default/composite/
             controller_name = controller.lower()

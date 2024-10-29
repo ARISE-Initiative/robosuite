@@ -42,6 +42,11 @@ extensions = [
     "sphinx.ext.autodoc",
     "recommonmark",  # use Sphinx-1.4 or newer
     "nbsphinx",
+    "sphinx_togglebutton",
+]
+
+myst_enable_extensions = [
+    "dollarmath",
 ]
 
 mathjax_config = {

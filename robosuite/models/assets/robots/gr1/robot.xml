@@ -97,7 +97,7 @@
 										<joint name="head_pitch" pos="0 0 0" axis="0.0 1.0 0.0" range="-0.2617993877991494 0.2617993877991494" />
 										<geom pos="0.0 0.0 0.0" type="mesh" contype="0" conaffinity="0" group="1" density="0" mass="0.1" material="Black" mesh="head_pitch" />
 										<geom size="0.05 0.05 0.05" type="box" material="LightGrey" />
-										<camera mode="fixed" name="robotview" pos="0.13 0 0.09" quat="0.6123724356957945 0.3535533905932738 -0.3535533905932738 -0.6123724356957945" />
+										<camera name="robotview" pos="0.13 0 0.09" xyaxes="0.00 -1.000 0.000 0.9 0.00 0.6" fovy="50"/>
 									</body>
 								</body>
 							</body>

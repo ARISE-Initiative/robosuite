@@ -64,6 +64,16 @@ parser.add_argument("--skip_frames", type=int, default=1, help="(optional) rende
 
 parser.add_argument("--hide_sites", action="store_true", default=False, help="(optional) hide all sites in the scene")
 
+parser.add_argument(
+    "--reload_model",
+    action="store_true",
+    default=False,
+)
+
+parser.add_argument(
+    "--keep_models", type=str, nargs="+", default=[], help="(optional) keep the model from the Mujoco XML file"
+)
+
 # Add arguments for launch
 AppLauncher.add_app_launcher_args(parser)
 # Parse the arguments
@@ -233,11 +243,15 @@ class RobosuiteEnvInterface:
     Env wrapper to load a robosuite demonstration
     """
 
-    def __init__(self, dataset, episode, output_directory, cameras="agentview") -> None:
+    def __init__(
+        self, dataset, episode, output_directory, cameras="agentview", reload_model=False, keep_models=[]
+    ) -> None:
         self.dataset = dataset
         self.episode = episode
         self.output_directory = output_directory
         self.cameras = cameras
+        self.reload_model = reload_model
+        self.keep_models = keep_models
         self.env = self.load_robosuite_environment()
         initial_state, self.states = self.get_states()
         reset_to(self.env, initial_state)
@@ -284,8 +298,23 @@ class RobosuiteEnvInterface:
         states = f["data/{}/states".format(ep)][()][:: args.skip_frames]
         initial_state = dict(states=states[0])
         model_xml = f["data/{}".format(ep)].attrs["model_file"]
+        if self.reload_model:
+            env_xml = self.env.sim.model.get_xml()
+            for name in self.keep_models:
+                root_model = ET.fromstring(model_xml)
+                root_env = ET.fromstring(env_xml)
+                body_model = root_model.find(".//body[@name='{}']".format(name))
+                body_env = root_env.find(".//body[@name='{}']".format(name))
+                # change the properties of the body in env to match the model
+                if body_model is not None and body_env is not None:
+                    for attr_name, attr_value in body_model.attrib.items():
+                        body_env.set(attr_name, attr_value)
+                    env_xml = ET.tostring(root_env, encoding="unicode")
+            model_xml = env_xml
+
         if args.hide_sites:
             model_xml = make_sites_invisible(model_xml)
+
         initial_state["model"] = model_xml
         initial_state["ep_meta"] = f["data/{}".format(ep)].attrs.get("ep_meta", None)
 
@@ -598,6 +627,8 @@ def main():
             episode=episode,
             output_directory=output_directory,
             cameras=args.cameras,
+            reload_model=args.reload_model,
+            keep_models=args.keep_models,
         )
         if not args.online:
             # generate the usd first, and close the env to save the usd

@@ -7,10 +7,11 @@
         "max_dq": 4,
         "ik_pseudo_inverse_damping": 5e-2,
         "ik_integration_dt": 1e-1,
-        "ik_input_action_repr": "absolute",
+        "ik_input_type": "absolute",
+        "ik_input_ref_frame": "base",
         "ik_input_rotation_repr": "axis_angle",
         "verbose": false,
-        "nullspace_joint_weights": {
+        "ik_posture_weights": {
             "robot0_torso_waist_yaw": 10.0,
             "robot0_torso_waist_pitch": 10.0,
             "robot0_torso_waist_roll": 200.0,
@@ -42,7 +43,8 @@
                 "interpolation": null,
                 "ramp_ratio": 0.2,
                 "gripper": {
-                    "type": "GRIP"
+                    "type": "GRIP",
+                    "use_action_scaling": false
                 }
             },
             "left": {
@@ -60,7 +62,8 @@
                 "interpolation": null,
                 "ramp_ratio": 0.2,
                 "gripper": {
-                    "type": "GRIP"
+                    "type": "GRIP",
+                    "use_action_scaling": false
                 }
             }
         },
