@@ -13,11 +13,14 @@ class Keyboard(Device):
     """
     A minimalistic driver class for a Keyboard.
     Args:
+        env (RobotEnv): The environment which contains the robot(s) to control
+                        using this device.
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
-    def __init__(self, pos_sensitivity=1.0, rot_sensitivity=1.0):
+    def __init__(self, env, pos_sensitivity=1.0, rot_sensitivity=1.0):
+        super().__init__(env)
 
         self._display_controls()
         self._reset_internal_state()
@@ -42,30 +45,34 @@ class Keyboard(Device):
         """
 
         def print_command(char, info):
-            char += " " * (10 - len(char))
+            char += " " * (30 - len(char))
             print("{}\t{}".format(char, info))
 
         print("")
         print_command("Keys", "Command")
-        print_command("q", "reset simulation")
+        print_command("Ctrl+q", "reset simulation")
         print_command("spacebar", "toggle gripper (open/close)")
-        print_command("w-a-s-d", "move arm horizontally in x-y plane")
-        print_command("r-f", "move arm vertically")
-        print_command("z-x", "rotate arm about x-axis")
-        print_command("t-g", "rotate arm about y-axis")
-        print_command("c-v", "rotate arm about z-axis")
+        print_command("up-right-down-left", "move horizontally in x-y plane")
+        print_command(".-;", "move vertically")
+        print_command("o-p", "rotate (yaw)")
+        print_command("y-h", "rotate (pitch)")
+        print_command("e-r", "rotate (roll)")
+        print_command("b", "toggle arm/base mode (if applicable)")
+        print_command("s", "switch active arm (if multi-armed robot)")
+        print_command("=", "switch active robot (if multi-robot environment)")
         print("")
 
     def _reset_internal_state(self):
         """
         Resets internal state of controller, except for the reset signal.
         """
+        super()._reset_internal_state()
+
         self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
         self.raw_drotation = np.zeros(3)  # immediate roll, pitch, yaw delta values from keyboard hits
         self.last_drotation = np.zeros(3)
         self.pos = np.zeros(3)  # (x, y, z)
         self.last_pos = np.zeros(3)
-        self.grasp = False
 
     def start_control(self):
         """
@@ -95,6 +102,7 @@ class Keyboard(Device):
             raw_drotation=raw_drotation,
             grasp=int(self.grasp),
             reset=self._reset_state,
+            base_mode=int(self.base_mode),
         )
 
     def on_press(self, key):
@@ -106,41 +114,41 @@ class Keyboard(Device):
 
         try:
             # controls for moving position
-            if key.char == "w":
+            if key == Key.up:
                 self.pos[0] -= self._pos_step * self.pos_sensitivity  # dec x
-            elif key.char == "s":
+            elif key == Key.down:
                 self.pos[0] += self._pos_step * self.pos_sensitivity  # inc x
-            elif key.char == "a":
+            elif key == Key.left:
                 self.pos[1] -= self._pos_step * self.pos_sensitivity  # dec y
-            elif key.char == "d":
+            elif key == Key.right:
                 self.pos[1] += self._pos_step * self.pos_sensitivity  # inc y
-            elif key.char == "f":
+            elif key.char == ".":
                 self.pos[2] -= self._pos_step * self.pos_sensitivity  # dec z
-            elif key.char == "r":
+            elif key.char == ";":
                 self.pos[2] += self._pos_step * self.pos_sensitivity  # inc z
 
             # controls for moving orientation
-            elif key.char == "z":
+            elif key.char == "e":
                 drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates x
                 self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
-            elif key.char == "x":
+            elif key.char == "r":
                 drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates x
                 self.raw_drotation[1] += 0.1 * self.rot_sensitivity
-            elif key.char == "t":
+            elif key.char == "y":
                 drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates y
                 self.raw_drotation[0] += 0.1 * self.rot_sensitivity
-            elif key.char == "g":
+            elif key.char == "h":
                 drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates y
                 self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
-            elif key.char == "c":
+            elif key.char == "p":
                 drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates z
                 self.raw_drotation[2] += 0.1 * self.rot_sensitivity
-            elif key.char == "v":
+            elif key.char == "o":
                 drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates z
                 self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
@@ -158,7 +166,13 @@ class Keyboard(Device):
         try:
             # controls for grasping
             if key == Key.space:
-                self.grasp = not self.grasp  # toggle gripper
+                self.grasp_states[self.active_robot][self.active_arm_index] = not self.grasp_states[self.active_robot][
+                    self.active_arm_index
+                ]  # toggle gripper
+
+            # controls for mobile base (only applicable if mobile base present)
+            elif key.char == "b":
+                self.base_modes[self.active_robot] = not self.base_modes[self.active_robot]  # toggle mobile base
 
             # user-commanded reset
             elif key.char == "q":
@@ -166,5 +180,20 @@ class Keyboard(Device):
                 self._enabled = False
                 self._reset_internal_state()
 
+            elif key.char == "s":
+                self.active_arm_index = (self.active_arm_index + 1) % len(self.all_robot_arms[self.active_robot])
+
+            elif key.char == "=":
+                self.active_robot = (self.active_robot + 1) % self.num_robots
+
         except AttributeError as e:
             pass
+
+    def _postprocess_device_outputs(self, dpos, drotation):
+        drotation = drotation * 1.5
+        dpos = dpos * 75
+
+        dpos = np.clip(dpos, -1, 1)
+        drotation = np.clip(drotation, -1, 1)
+
+        return dpos, drotation

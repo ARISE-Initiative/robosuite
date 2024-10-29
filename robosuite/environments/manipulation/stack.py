@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.tasks import ManipulationTask
@@ -12,7 +12,7 @@ from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
 
 
-class Stack(SingleArmEnv):
+class Stack(ManipulationEnv):
     """
     This class corresponds to the stacking task for a single robot arm.
 
@@ -89,6 +89,9 @@ class Stack(SingleArmEnv):
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
 
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
+
         horizon (int): Every episode lasts for exactly @horizon timesteps.
 
         ignore_done (bool): True if never terminating the environment (ignore @horizon).
@@ -154,6 +157,7 @@ class Stack(SingleArmEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        lite_physics=True,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -162,7 +166,7 @@ class Stack(SingleArmEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # settings for table top
@@ -184,7 +188,7 @@ class Stack(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -195,6 +199,7 @@ class Stack(SingleArmEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            lite_physics=lite_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
@@ -265,8 +270,12 @@ class Stack(SingleArmEnv):
         # reaching is successful when the gripper site is close to the center of the cube
         cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
         cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-        dist = np.linalg.norm(gripper_site_pos - cubeA_pos)
+        dist = min(
+            [
+                np.linalg.norm(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]] - cubeA_pos)
+                for arm in self.robots[0].arms
+            ]
+        )
         r_reach = (1 - np.tanh(10.0 * dist)) * 0.25
 
         # grasping reward
@@ -414,8 +423,7 @@ class Stack(SingleArmEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            pf = self.robots[0].robot_model.naming_prefix
+            # define observables modality
             modality = "object"
 
             # position and rotation of the first cube
@@ -436,22 +444,6 @@ class Stack(SingleArmEnv):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cubeB_body_id]), to="xyzw")
 
             @sensor(modality=modality)
-            def gripper_to_cubeA(obs_cache):
-                return (
-                    obs_cache["cubeA_pos"] - obs_cache[f"{pf}eef_pos"]
-                    if "cubeA_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            @sensor(modality=modality)
-            def gripper_to_cubeB(obs_cache):
-                return (
-                    obs_cache["cubeB_pos"] - obs_cache[f"{pf}eef_pos"]
-                    if "cubeB_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            @sensor(modality=modality)
             def cubeA_to_cubeB(obs_cache):
                 return (
                     obs_cache["cubeB_pos"] - obs_cache["cubeA_pos"]
@@ -459,7 +451,15 @@ class Stack(SingleArmEnv):
                     else np.zeros(3)
                 )
 
-            sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, gripper_to_cubeA, gripper_to_cubeB, cubeA_to_cubeB]
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+
+            sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, cubeA_to_cubeB]
+            sensors += [
+                self._get_obj_eef_sensor(full_pf, f"{cube}_pos", f"{arm_pf}gripper_to_{cube}", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+                for cube in ["cubeA", "cubeB"]
+            ]
             names = [s.__name__ for s in sensors]
 
             # Create observables

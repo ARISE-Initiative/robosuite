@@ -1,6 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from copy import deepcopy
 
 import numpy as np
 
@@ -47,7 +48,7 @@ class EnvMeta(type):
         cls = super().__new__(meta, name, bases, class_dict)
 
         # List all environments that should not be registered here.
-        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "SingleArmEnv", "TwoArmEnv"]
+        _unregistered_envs = ["MujocoEnv", "RobotEnv", "ManipulationEnv", "TwoArmEnv"]
 
         if cls.__name__ not in _unregistered_envs:
             register_env(cls)
@@ -74,12 +75,15 @@ class MujocoEnv(metaclass=EnvMeta):
         control_freq (float): how many control signals to receive
             in every simulated second. This sets the amount of simulation time
             that passes between every action input.
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
         horizon (int): Every episode lasts for exactly @horizon timesteps.
         ignore_done (bool): True if never terminating the environment (ignore @horizon).
         hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
             only calls sim.reset and resets all robosuite-internal variables
         renderer (str): string for the renderer to use
         renderer_config (dict): dictionary for the renderer configurations
+        seed (int): environment seed. Default is None, where environment is unseeded, ie. random
     Raises:
         ValueError: [Invalid renderer selection]
     """
@@ -93,20 +97,18 @@ class MujocoEnv(metaclass=EnvMeta):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        lite_physics=True,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
+        seed=None,
     ):
-        # If you're using an onscreen renderer, you must be also using an offscreen renderer!
-        if has_renderer and not has_offscreen_renderer:
-            has_offscreen_renderer = True
-
         # Rendering-specific attributes
         self.has_renderer = has_renderer
         # offscreen renderer needed for on-screen rendering
-        self.has_offscreen_renderer = has_renderer or has_offscreen_renderer
+        self.has_offscreen_renderer = (has_renderer and renderer != "mjviewer") or has_offscreen_renderer
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
@@ -117,10 +119,13 @@ class MujocoEnv(metaclass=EnvMeta):
         self._observables = {}  # Maps observable names to observable objects
         self._obs_cache = {}  # Maps observable names to pre-/partially-computed observable values
         self.control_freq = control_freq
+        self.lite_physics = lite_physics
         self.horizon = horizon
         self.ignore_done = ignore_done
         self.hard_reset = hard_reset
-        self._xml_processor = None  # Function to process model xml in _initialize_sim() call
+        # Function to process model xml in _initialize_sim() call
+        # include edit_model_xml function by default
+        self._xml_processors = [self.edit_model_xml]
         self.model = None
         self.cur_time = None
         self.model_timestep = None
@@ -130,6 +135,11 @@ class MujocoEnv(metaclass=EnvMeta):
         self.renderer = renderer
         self.renderer_config = renderer_config
 
+        self.seed = seed
+        self.rng = np.random.default_rng(seed)
+
+        self._ep_meta = {}
+
         # Load the model
         self._load_model()
 
@@ -138,6 +148,11 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # initializes the rendering
         self.initialize_renderer()
+
+        # the variables will be set later.
+        # need to set to None, in case these variables are referenced before being set
+        self.viewer = None
+        self.viewer_get_obs = None
 
         # Run all further internal (re-)initialization required
         self._reset_internal()
@@ -157,15 +172,19 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer_config is None and self.renderer != "mujoco":
             self.renderer_config = load_renderer_config(self.renderer)
 
-        if self.renderer == "mujoco" or self.renderer == "default":
+        if self.renderer == "mujoco":
             pass
-        elif self.renderer == "nvisii":
-            from robosuite.renderers.nvisii.nvisii_renderer import NVISIIRenderer
+        elif self.renderer == "mjviewer":
+            from robosuite.renderers.mjviewer.mjviewer_renderer import MjviewerRenderer
 
-            self.viewer = NVISIIRenderer(env=self, **self.renderer_config)
+            if self.render_camera is not None:
+                camera_id = self.sim.model.camera_name2id(self.render_camera)
+            else:
+                camera_id = None
+            self.viewer = MjviewerRenderer(env=self, camera_id=camera_id, **self.renderer_config)
         else:
             raise ValueError(
-                f"{self.renderer} is not a valid renderer name. Valid options include default (native mujoco renderer), and nvisii"
+                f"{self.renderer} is not a valid renderer name. Valid options include mjviewer (native mujoco renderer), mujoco"
             )
 
     def initialize_time(self, control_freq):
@@ -190,7 +209,7 @@ class MujocoEnv(metaclass=EnvMeta):
             processor (None or function): If set, processing method should take in a xml string and
                 return no arguments.
         """
-        self._xml_processor = processor
+        self._xml_processors.append(processor)
 
     def _load_model(self):
         """Loads an xml model, puts it in self.model"""
@@ -223,8 +242,8 @@ class MujocoEnv(metaclass=EnvMeta):
         xml = xml_string if xml_string else self.model.get_xml()
 
         # process the xml before initializing sim
-        if self._xml_processor is not None:
-            xml = self._xml_processor(xml)
+        for processor in self._xml_processors:
+            xml = processor(xml)
 
         # Create the simulation instance
         self.sim = MjSim.from_xml_string(xml)
@@ -245,7 +264,7 @@ class MujocoEnv(metaclass=EnvMeta):
         # Use hard reset if requested
 
         if self.hard_reset and not self.deterministic_reset:
-            if self.renderer == "mujoco" or self.renderer == "default":
+            if self.renderer == "mujoco":
                 self._destroy_viewer()
                 self._destroy_sim()
             self._load_model()
@@ -259,16 +278,13 @@ class MujocoEnv(metaclass=EnvMeta):
         self.sim.forward()
         # Setup observables, reloading if
         self._obs_cache = {}
-        if self.hard_reset:
-            # If we're using hard reset, must re-update sensor object references
-            if hasattr(self.viewer, "_setup_observables"):
-                _observables = self.viewer._setup_observables()
-            else:
-                _observables = self._setup_observables()
-            for obs_name, obs in _observables.items():
-                self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
+        self._reset_observables()
+
         # Make sure that all sites are toggled OFF by default
         self.visualize(vis_settings={vis: False for vis in self._visualizations})
+
+        # update sites as needed
+        self.update_state()
 
         if self.viewer is not None and self.renderer != "mujoco":
             self.viewer.reset()
@@ -282,17 +298,31 @@ class MujocoEnv(metaclass=EnvMeta):
         # Return new observations
         return observations
 
+    def _reset_observables(self):
+        if self.hard_reset:
+            # If we're using hard reset, must re-update sensor object references
+            if hasattr(self.viewer, "_setup_observables"):
+                _observables = self.viewer._setup_observables()
+            else:
+                _observables = self._setup_observables()
+            for obs_name, obs in _observables.items():
+                self.modify_observable(observable_name=obs_name, attribute="sensor", modifier=obs._sensor)
+
     def _reset_internal(self):
         """Resets simulation internal configurations."""
 
         # create visualization screen or renderer
         if self.has_renderer and self.viewer is None:
-            self.viewer = OpenCVRenderer(self.sim)
+            if self.renderer == "mujoco":
+                self.viewer = OpenCVRenderer(self.sim)
 
-            # Set the camera angle for viewing
-            if self.render_camera is not None:
-                camera_id = self.sim.model.camera_name2id(self.render_camera)
-                self.viewer.set_camera(camera_id)
+                # Set the camera angle for viewing
+                if self.render_camera is not None:
+                    camera_id = self.sim.model.camera_name2id(self.render_camera)
+                    self.viewer.set_camera(camera_id)
+
+            elif self.renderer == "mjviewer":
+                self.initialize_renderer()
 
         if self.has_offscreen_renderer:
             if self.sim._render_context_offscreen is None:
@@ -311,6 +341,28 @@ class MujocoEnv(metaclass=EnvMeta):
         self._obs_cache = {}
         for observable in self._observables.values():
             observable.reset()
+
+    def get_ep_meta(self):
+        """
+        Returns a dictionary containing episode metadata
+        Returns:
+            dict: episode metadata
+        """
+        return deepcopy(self._ep_meta)
+
+    def set_ep_meta(self, meta):
+        """
+        Set episode meta data
+        Args:
+            meta (dict): containing episode metadata
+        """
+        self._ep_meta = meta
+
+    def unset_ep_meta(self):
+        """
+        Unset episode meta data
+        """
+        self._ep_meta = {}
 
     def _update_observables(self, force=False):
         """
@@ -389,9 +441,15 @@ class MujocoEnv(metaclass=EnvMeta):
         # Loop through the simulation at the model timestep rate until we're ready to take the next policy step
         # (as defined by the control frequency specified at the environment level)
         for i in range(int(self.control_timestep / self.model_timestep)):
-            self.sim.forward()
+            if self.lite_physics:
+                self.sim.step1()
+            else:
+                self.sim.forward()
             self._pre_action(action, policy_step)
-            self.sim.step()
+            if self.lite_physics:
+                self.sim.step2()
+            else:
+                self.sim.step()
             self._update_observables()
             policy_step = False
 
@@ -401,6 +459,11 @@ class MujocoEnv(metaclass=EnvMeta):
         reward, done, info = self._post_action(action)
 
         if self.viewer is not None and self.renderer != "mujoco":
+            self.viewer.update()
+        elif self.has_renderer and self.renderer == "mjviewer" and self.viewer is None:
+            # need to launch again after it was destroyed
+            self.initialize_renderer()
+            # so that mujoco viewer renders
             self.viewer.update()
 
         observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
@@ -499,12 +562,6 @@ class MujocoEnv(metaclass=EnvMeta):
         for obj in self.model.mujoco_objects:
             obj.set_sites_visibility(sim=self.sim, visible=vis_settings["env"])
 
-    def set_camera_pos_quat(self, camera_pos, camera_quat):
-        if self.renderer in ["nvisii"]:
-            self.viewer.set_camera_pos_quat(camera_pos, camera_quat)
-        else:
-            raise AttributeError("setting camera position and quat requires renderer to be NVISII.")
-
     def edit_model_xml(self, xml_str):
         """
         This function edits the model xml with custom changes, including resolving relative paths,
@@ -531,11 +588,15 @@ class MujocoEnv(metaclass=EnvMeta):
             old_path = elem.get("file")
             if old_path is None:
                 continue
+
             old_path_split = old_path.split("/")
-            ind = max(loc for loc, val in enumerate(old_path_split) if val == "robosuite")  # last occurrence index
-            new_path_split = path_split + old_path_split[ind + 1 :]
-            new_path = "/".join(new_path_split)
-            elem.set("file", new_path)
+            # maybe replace all paths to robosuite assets
+            check_lst = [loc for loc, val in enumerate(old_path_split) if val == "robosuite"]
+            if len(check_lst) > 0:
+                ind = max(check_lst)  # last occurrence index
+                new_path_split = path_split + old_path_split[ind + 1 :]
+                new_path = "/".join(new_path_split)
+                elem.set("file", new_path)
 
         return ET.tostring(root, encoding="utf8").decode("utf8")
 
@@ -546,9 +607,7 @@ class MujocoEnv(metaclass=EnvMeta):
             xml_string (str): Filepath to the xml file that will be loaded directly into the sim
         """
 
-        # if there is an active viewer window, destroy it
-        if self.renderer != "nvisii":
-            self.close()
+        self.close()
 
         # Since we are reloading from an xml_string, we are deterministically resetting
         self.deterministic_reset = True
@@ -561,6 +620,12 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Turn off deterministic reset
         self.deterministic_reset = False
+
+    def update_state(self):
+        """
+        update internal state of environment (can be called after resetting simulation or after step)
+        """
+        pass
 
     def check_contact(self, geoms_1, geoms_2=None):
         """

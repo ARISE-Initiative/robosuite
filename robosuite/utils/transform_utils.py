@@ -411,7 +411,7 @@ def mat2euler(rmat, axes="sxyz"):
     j = _NEXT_AXIS[i + parity]
     k = _NEXT_AXIS[i - parity + 1]
 
-    M = np.array(rmat, dtype=np.float32, copy=False)[:3, :3]
+    M = np.asarray(rmat, dtype=np.float32)[:3, :3]
     if repetition:
         sy = math.sqrt(M[i, j] * M[i, j] + M[i, k] * M[i, k])
         if sy > EPS:
@@ -713,7 +713,7 @@ def rotation_matrix(angle, direction, point=None):
     M[:3, :3] = R
     if point is not None:
         # rotation not around origin
-        point = np.array(point[:3], dtype=np.float32, copy=False)
+        point = np.asarray(point[:3], dtype=np.float32)
         M[:3, 3] = point - np.dot(R, point)
     return M
 
@@ -846,7 +846,7 @@ def unit_vector(data, axis=None, out=None):
             return data
     else:
         if out is not data:
-            out[:] = np.array(data, copy=False)
+            out[:] = np.asarray(data)
         data = out
     length = np.atleast_1d(np.sum(data * data, axis))
     np.sqrt(length, length)
@@ -927,3 +927,21 @@ def matrix_inverse(matrix):
         np.array: 2d-array representing the matrix inverse
     """
     return np.linalg.inv(matrix)
+
+
+def rotate_2d_point(input, rot):
+    """
+    rotate a 2d vector counterclockwise
+
+    Args:
+        input (np.array): 1d-array representing 2d vector
+        rot (float): rotation value
+
+    Returns:
+        np.array: rotated 1d-array
+    """
+    input_x, input_y = input
+    x = input_x * np.cos(rot) - input_y * np.sin(rot)
+    y = input_x * np.sin(rot) + input_y * np.cos(rot)
+
+    return np.array([x, y])

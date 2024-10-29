@@ -42,22 +42,6 @@ if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["os
     else:
         os.environ["MUJOCO_GL"] = "egl"
 _MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
-if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
-    _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
-    if _SYSTEM == "Linux":
-        _VALID_MUJOCO_GL += ("glx", "egl", "osmesa")
-    elif _SYSTEM == "Windows":
-        _VALID_MUJOCO_GL += ("wgl",)
-    elif _SYSTEM == "Darwin":
-        _VALID_MUJOCO_GL += ("cgl",)
-    if _MUJOCO_GL not in _VALID_MUJOCO_GL:
-        raise RuntimeError(f"invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}")
-    if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
-        from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
-    elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
-        from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
-    else:
-        from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
 
 
 class MjRenderContext:
@@ -69,6 +53,25 @@ class MjRenderContext:
     """
 
     def __init__(self, sim, offscreen=True, device_id=-1, max_width=640, max_height=480):
+
+        # move this logic from outside to inside class to avoid multiprocessing issues
+        if _MUJOCO_GL not in ("disable", "disabled", "off", "false", "0"):
+            _VALID_MUJOCO_GL = ("enable", "enabled", "on", "true", "1", "glfw", "")
+            if _SYSTEM == "Linux":
+                _VALID_MUJOCO_GL += ("glx", "egl", "osmesa")
+            elif _SYSTEM == "Windows":
+                _VALID_MUJOCO_GL += ("wgl",)
+            elif _SYSTEM == "Darwin":
+                _VALID_MUJOCO_GL += ("cgl",)
+            if _MUJOCO_GL not in _VALID_MUJOCO_GL:
+                raise RuntimeError(f"invalid value for environment variable MUJOCO_GL: {_MUJOCO_GL}")
+            if _SYSTEM == "Linux" and _MUJOCO_GL == "osmesa":
+                from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
+            elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
+                from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
+            else:
+                from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
+
         assert offscreen, "only offscreen supported for now"
         self.sim = sim
         self.offscreen = offscreen
@@ -88,7 +91,8 @@ class MjRenderContext:
         self.data = sim.data
 
         # create default scene
-        self.scn = mujoco.MjvScene(sim.model._model, maxgeom=1000)
+        # set maxgeom to 10k to support large-scale scenes
+        self.scn = mujoco.MjvScene(sim.model._model, maxgeom=10000)
 
         # camera
         self.cam = mujoco.MjvCamera()
@@ -119,11 +123,6 @@ class MjRenderContext:
             self.con.free()
             del self.con
             self._set_mujoco_context_and_buffers()
-
-    def upload_texture(self, tex_id):
-        """Uploads given texture to the GPU"""
-        self.gl_ctx.make_current()
-        mujoco.mjr_uploadTexture(self.model, self.con, tex_id)
 
     def render(self, width, height, camera_id=None, segmentation=False):
         viewport = mujoco.MjrRect(0, 0, width, height)
@@ -172,7 +171,8 @@ class MjRenderContext:
 
         ret_img = rgb_img
         if segmentation:
-            seg_img = rgb_img[:, :, 0] + rgb_img[:, :, 1] * (2**8) + rgb_img[:, :, 2] * (2**16)
+            uint32_rgb_img = rgb_img.astype(np.int32)
+            seg_img = uint32_rgb_img[:, :, 0] + uint32_rgb_img[:, :, 1] * (2**8) + uint32_rgb_img[:, :, 2] * (2**16)
             seg_img[seg_img >= (self.scn.ngeom + 1)] = 0
             seg_ids = np.full((self.scn.ngeom + 1, 2), fill_value=-1, dtype=np.int32)
 
@@ -191,12 +191,16 @@ class MjRenderContext:
     def upload_texture(self, tex_id):
         """Uploads given texture to the GPU."""
         self.gl_ctx.make_current()
-        mujoco.mjr_uploadTexture(self.model, self.con, tex_id)
+        mujoco.mjr_uploadTexture(self.model._model, self.con, tex_id)
 
     def __del__(self):
         # free mujoco rendering context and GL rendering context
         self.con.free()
-        self.gl_ctx.free()
+        try:
+            self.gl_ctx.free()
+        except Exception:
+            # avoid getting OpenGL.error.GLError
+            pass
         del self.con
         del self.gl_ctx
         del self.scn
@@ -275,12 +279,6 @@ class MjModel(metaclass=_MjModelMeta):
 
         # make useful mappings such as _body_name2id and _body_id2name
         self.make_mappings()
-
-    @classmethod
-    def from_xml_path(cls, xml_path):
-        """Creates an MjModel instance from a path to a model XML file."""
-        model_ptr = _get_model_ptr_from_xml(xml_path=xml_path)
-        return cls(model_ptr)
 
     def __del__(self):
         # free mujoco model
@@ -419,12 +417,16 @@ class MjModel(metaclass=_MjModelMeta):
 
     def camera_id2name(self, id):
         """Get camera name from camera id."""
+        if id == -1:
+            return "free"
         if id not in self._camera_id2name:
             raise ValueError("No camera with id %d exists." % id)
         return self._camera_id2name[id]
 
     def camera_name2id(self, name):
         """Get camera id from  camera name."""
+        if name == "free":
+            return -1
         if name not in self._camera_name2id:
             raise ValueError(
                 'No "camera" with name %s exists. Available "camera" names = %s.' % (name, self.camera_names)
@@ -999,7 +1001,7 @@ class MjData(metaclass=_MjDataMeta):
 
     def set_joint_qpos(self, name, value):
         """
-        Set the velocities of a joint using name.
+        Set the position of a joint using name.
 
         Args:
             name (str): The name of a joint
@@ -1033,7 +1035,7 @@ class MjData(metaclass=_MjDataMeta):
 
     def set_joint_qvel(self, name, value):
         """
-        Set the velocities of a mjo using name.
+        Set the velocities of a joint using name.
 
         Args:
             name (str): The name of a joint
@@ -1090,6 +1092,14 @@ class MjSim:
     def step(self, with_udd=True):
         """Step simulation."""
         mujoco.mj_step(self.model._model, self.data._data)
+
+    def step1(self):
+        """Step1 (before actions are set)."""
+        mujoco.mj_step1(self.model._model, self.data._data)
+
+    def step2(self):
+        """Step2 (after actions are set)."""
+        mujoco.mj_step2(self.model._model, self.data._data)
 
     def render(
         self,

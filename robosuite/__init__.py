@@ -14,11 +14,34 @@ from robosuite.environments.manipulation.two_arm_handover import TwoArmHandover
 from robosuite.environments.manipulation.two_arm_transport import TwoArmTransport
 
 from robosuite.environments import ALL_ENVIRONMENTS
-from robosuite.controllers import ALL_CONTROLLERS, load_controller_config
+from robosuite.controllers import (
+    ALL_PART_CONTROLLERS,
+    load_part_controller_config,
+    ALL_COMPOSITE_CONTROLLERS,
+    load_composite_controller_config,
+)
 from robosuite.robots import ALL_ROBOTS
 from robosuite.models.grippers import ALL_GRIPPERS
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
-__version__ = "1.4.1"
+try:
+    import robosuite_models
+except:
+    ROBOSUITE_DEFAULT_LOGGER.warning(
+        "Could not import robosuite_models. Some robots may not be available. "
+        "If you want to use these robots, please install robosuite_models from "
+        "source (https://github.com/ARISE-Initiative/robosuite_models) or through pip install."
+    )
+
+try:
+    from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
+
+except:
+    ROBOSUITE_DEFAULT_LOGGER.warning(
+        "Could not load the mink-based whole-body IK. Make sure you install related import properly, otherwise you will not be able to use the default IK controller setting for GR1 robot."
+    )
+
+__version__ = "1.5.0"
 __logo__ = """
       ;     /        ,--.
      ["]   ["]  ,<  |__**|

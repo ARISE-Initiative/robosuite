@@ -12,20 +12,22 @@ class Jaco(ManipulatorModel):
         idn (int or str): Number or some other unique identification string for this robot instance
     """
 
+    arms = ["right"]
+
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/jaco/robot.xml"), idn=idn)
 
     @property
-    def default_mount(self):
+    def default_base(self):
         return "RethinkMount"
 
     @property
     def default_gripper(self):
-        return "JacoThreeFingerGripper"
+        return {"right": "JacoThreeFingerGripper"}
 
     @property
     def default_controller_config(self):
-        return "default_jaco"
+        return {"right": "default_jaco"}
 
     @property
     def init_qpos(self):

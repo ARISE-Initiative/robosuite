@@ -3,6 +3,7 @@ This file implements a wrapper for saving simulation states to disk.
 This data collection wrapper is useful for collecting demonstrations.
 """
 
+import json
 import os
 import time
 
@@ -67,6 +68,10 @@ class DataCollectionWrapper(Wrapper):
         self.has_interaction = False
 
         # save the task instance (will be saved on the first env interaction)
+
+        # NOTE: was previously self.env.model.get_xml(). Was causing the following issue in rare cases:
+        # ValueError: Error: eigenvalues of mesh inertia violate A + B >= C
+        # switching to self.env.sim.model.get_xml() does not create this issue
         self._current_task_instance_xml = self.env.sim.model.get_xml()
         self._current_task_instance_state = np.array(self.env.sim.get_state().flatten())
 
@@ -101,6 +106,11 @@ class DataCollectionWrapper(Wrapper):
         xml_path = os.path.join(self.ep_directory, "model.xml")
         with open(xml_path, "w") as f:
             f.write(self._current_task_instance_xml)
+
+        # save the episode info to json file
+        ep_meta_path = os.path.join(self.ep_directory, "ep_meta.json")
+        with open(ep_meta_path, "w") as f:
+            json.dump(self.env.get_ep_meta(), f)
 
         # save initial state and action
         assert len(self.states) == 0
@@ -167,6 +177,12 @@ class DataCollectionWrapper(Wrapper):
 
             info = {}
             info["actions"] = np.array(action)
+
+            # (if applicable) store absolute actions
+            step_info = ret[3]
+            if "action_abs" in step_info.keys():
+                info["actions_abs"] = np.array(step_info["action_abs"])
+
             self.action_infos.append(info)
 
         # check if the demonstration is successful

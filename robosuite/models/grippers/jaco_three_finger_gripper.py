@@ -67,15 +67,16 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
         """
         assert len(action) == self.dof
         self.current_action = np.clip(self.current_action - self.speed * np.sign(action), -1.0, 1.0)
-        return self.current_action
+        # NOTE(YL): format 1dof to default 3dof
+        return self.current_action * np.array([1, 1, 1])
 
     @property
     def speed(self):
-        return 0.005
+        return 0.01
 
     @property
     def dof(self):
-        return 1
+        return 3
 
 
 class JacoThreeFingerDexterousGripper(JacoThreeFingerGripperBase):
@@ -100,7 +101,7 @@ class JacoThreeFingerDexterousGripper(JacoThreeFingerGripperBase):
 
     @property
     def speed(self):
-        return 0.005
+        return 0.01
 
     @property
     def dof(self):

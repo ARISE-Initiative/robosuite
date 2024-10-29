@@ -62,12 +62,14 @@ class Robotiq85Gripper(Robotiq85GripperBase):
             AssertionError: [Invalid action dimension size]
         """
         assert len(action) == 1
-        self.current_action = np.clip(self.current_action + self.speed * np.sign(action), -1.0, 1.0)
+        self.current_action = np.clip(
+            self.current_action * np.array([1.0, 1.0]) + self.speed * np.sign(action), -1.0, 1.0
+        )
         return self.current_action
 
     @property
     def speed(self):
-        return 0.01
+        return 0.20
 
     @property
     def dof(self):

@@ -1,0 +1,94 @@
+<mujoco model="bd gripper">
+  <compiler angle="radian" />
+  <option gravity="0 0 0"/>
+  <option integrator="implicitfast" cone="elliptic" impratio="100"/>
+  <visual>
+    <global ellipsoidinertia="true"/>
+  </visual>
+
+<asset>
+    <material name="BlackAbs" rgba="0.1 0.1 0.1 1"/>
+    <material name="wrap" rgba="0.878431 0.666666 0.227450 1"/>
+    <mesh name="arm_link_wr1_0" file="meshes/bd_gripper/arm_link_wr1_0.obj"/>
+    <mesh name="arm_link_wr1_1" file="meshes/bd_gripper/arm_link_wr1_1.obj"/>
+    <mesh name="arm_link_fngr_0" file="meshes/bd_gripper/arm_link_fngr_0.obj"/>
+    <mesh name="arm_link_fngr_1" file="meshes/bd_gripper/arm_link_fngr_1.obj"/>
+    <mesh name="arm_link_wr1_coll" file="meshes/bd_gripper/arm_link_wr1.obj"/>
+
+    <mesh name="front_jaw_coll" file="meshes/bd_gripper/front_jaw.obj"/>
+    <mesh name="middle_jaw_coll" file="meshes/bd_gripper/middle_jaw.obj"/>
+    <mesh name="jaw_tooth_coll" file="meshes/bd_gripper/jaw_tooth.obj"/>
+    <mesh name="left_hinge_coll" file="meshes/bd_gripper/left_hinge.obj"/>
+    <mesh name="left_finger_coll" file="meshes/bd_gripper/left_finger.obj"/>
+    <mesh name="left_tooth_coll" file="meshes/bd_gripper/left_tooth.obj"/>
+    <mesh name="right_hinge_coll" file="meshes/bd_gripper/right_hinge.obj"/>
+    <mesh name="right_finger_coll" file="meshes/bd_gripper/right_finger.obj"/>
+    <mesh name="right_tooth_coll" file="meshes/bd_gripper/right_tooth.obj"/>
+  </asset>
+
+  <default>
+    <default class="spot_arm">
+      <geom solref="0.004 1"/>
+      <motor ctrlrange="-33.5 33.5"  ctrllimited="true"/>
+    </default>
+    <default class="spot_arm_visual">
+      <joint actuatorfrcrange="-1000 1000"/>
+      <position kp="500" kv="40" inheritrange="1"/>
+      <geom group="1" type="mesh" contype="0" conaffinity="0" solref="0.004 1"/>
+    </default>
+    <default class="spot_arm_collision">
+        <joint actuatorfrcrange="-1000 1000"/>
+        <position kp="500" kv="40" inheritrange="1"/>
+        <geom group="0" type="mesh" solref="0.004 1"/>
+    </default>
+  </default>
+
+  <worldbody>
+    <body name="right_gripper" pos="0 0 0" quat="1 0 0 0">
+        <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+        <inertial pos="0 0 0.0" quat="0.707107 0.707107 0 0" mass="0.3" diaginertia="0.09 0.07 0.05" />
+        <!-- This site was added for visualization. -->
+        <body name="eef" pos="0 0 0.0" quat="0.707 0. -0.707 0.">
+            <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 0.5" type="sphere" group="1"/>
+            <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+            <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+            <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+            <!-- This site was added for visualization. -->
+            <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+        </body>
+        <body name="stator">
+        <geom mesh="arm_link_wr1_0" material="wrap" class="spot_arm_visual"/>
+        <geom mesh="arm_link_wr1_1" material="BlackAbs" class="spot_arm_visual"/>
+        <geom class="spot_arm_collision" mesh="arm_link_wr1_coll"/>
+        <geom class="spot_arm_collision" mesh="front_jaw_coll"/>
+        <geom class="spot_arm_collision" mesh="middle_jaw_coll"/>
+        <geom class="spot_arm_collision" mesh="jaw_tooth_coll"/>
+        <body name="mover" pos="0.11745 0 0.01482">
+            <inertial pos="0.0478787 -0.000206768 -0.0162879" quat="0 1 0 1" mass="0.2"
+            diaginertia="0.000391278 0.000300713 0.000143996"/>
+            <joint name="arm_f1x" axis="0 1 0" range="-1.57 0"  damping="0.2" armature="1.0" frictionloss="0.1"/>
+            <geom mesh="arm_link_fngr_0" material="wrap" class="spot_arm_visual"/>
+            <geom mesh="arm_link_fngr_1" material="BlackAbs" class="spot_arm_visual"/>
+            <geom class="spot_arm_collision" mesh="left_hinge_coll"/>
+            <geom class="spot_arm_collision" mesh="left_finger_coll"/>
+            <geom class="spot_arm_collision" mesh="left_tooth_coll"/>
+            <geom class="spot_arm_collision" mesh="right_hinge_coll"/>
+            <geom class="spot_arm_collision" mesh="right_finger_coll"/>
+            <geom class="spot_arm_collision" mesh="right_tooth_coll"/>
+        </body>
+        </body>
+
+    </body>
+
+  </worldbody>
+  <contact>
+      <exclude name="exclude_two_bodies" body1="stator" body2="mover"/>
+  </contact>
+  <actuator>
+    <position class="spot_arm" name="arm_f1x" joint="arm_f1x" ctrllimited="true" ctrlrange="-1.57 0" forcelimited="true" forcerange="-200 200" kp="300" kv="40" />
+  </actuator>
+  <sensor>
+      <force name="force_ee" site="ft_frame"/>
+      <torque name="torque_ee" site="ft_frame"/>
+  </sensor>
+</mujoco>

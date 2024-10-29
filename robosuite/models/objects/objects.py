@@ -2,6 +2,8 @@ import copy
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 
+import numpy as np
+
 import robosuite.macros as macros
 from robosuite.models.base import MujocoModel, MujocoXML
 from robosuite.utils.mjcf_utils import (
@@ -295,7 +297,7 @@ class MujocoObject(MujocoModel):
         """
         Returns numpy array with dimensions of a bounding box around this object.
         """
-        return 2. * self.get_bounding_box_half_size()
+        return 2.0 * self.get_bounding_box_half_size()
 
 
 class MujocoXMLObject(MujocoObject, MujocoXML):
@@ -321,9 +323,11 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         duplicate_collision_geoms (bool): If set, will guarantee that each collision geom has a
             visual geom copy
+
+        scale (float or list of floats): 3D scale factor
     """
 
-    def __init__(self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True):
+    def __init__(self, fname, name, joints="default", obj_type="all", duplicate_collision_geoms=True, scale=None):
         MujocoXML.__init__(self, fname)
         # Set obj type and duplicate args
         assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
@@ -332,6 +336,9 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         # Set name
         self._name = name
+
+        # set scale
+        self._scale = scale
 
         # joints for this object
         if joints == "default":
@@ -349,12 +356,18 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         # Lastly, parse XML tree appropriately
         self._obj = self._get_object_subtree()
 
+        # scale
+        if self._scale is not None:
+            self.set_scale(self._scale)
+
         # Extract the appropriate private attributes for this
         self._get_object_properties()
 
     def _get_object_subtree(self):
         # Parse object
-        obj = copy.deepcopy(self.worldbody.find("./body/body[@name='object']"))
+        # this line used to be wrapped in deepcopy.
+        # removed this deepcopy line, as it creates discrepancies between obj and self.worldbody!
+        obj = self.worldbody.find("./body/body[@name='object']")
         # Rename this top level object body (will have self.naming_prefix added later)
         obj.attrib["name"] = "main"
         # Get all geom_pairs in this tree
@@ -441,16 +454,155 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         Returns:
             list: array of (parent, child) tuples where the child element is a geom type
         """
+        return self._get_elements(root, "geom", _parent)
+
+    def _get_elements(self, root, type, _parent=None):
+        """
+        Helper function to recursively search through element tree starting at @root and returns
+        a list of (parent, child) tuples where the child is a specific type of element
+
+        Args:
+            root (ET.Element): Root of xml element tree to start recursively searching through
+            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
+                during the recursive call
+
+        Returns:
+            list: array of (parent, child) tuples where the child element is of type
+        """
         # Initialize return array
-        geom_pairs = []
-        # If the parent exists and this is a geom element, we add this current (parent, element) combo to the output
-        if _parent is not None and root.tag == "geom":
-            geom_pairs.append((_parent, root))
+        elem_pairs = []
+        # If the parent exists and this is a desired element, we add this current (parent, element) combo to the output
+        if _parent is not None and root.tag == type:
+            elem_pairs.append((_parent, root))
         # Loop through all children elements recursively and add to pairs
         for child in root:
-            geom_pairs += self._get_geoms(child, _parent=root)
+            elem_pairs += self._get_elements(child, type, _parent=root)
+
         # Return all found pairs
-        return geom_pairs
+        return elem_pairs
+
+    def set_pos(self, pos):
+        """
+        Set position of object position is defined as center of bounding box
+
+        Args:
+            pos (list of floats): 3D position to set object (should be 3 dims)
+        """
+        self._obj.set("pos", array_to_string(pos))
+
+    def set_euler(self, euler):
+        """
+        Set Euler value object position
+
+        Args:
+            euler (list of floats): 3D Euler values (should be 3 dims)
+        """
+        self._obj.set("euler", array_to_string(euler))
+
+    @property
+    def rot(self):
+        rot = string_to_array(self._obj.get("euler", "0.0 0.0 0.0"))
+        return rot[2]
+
+    def set_scale(self, scale, obj=None):
+        """
+        Scales each geom, mesh, site, and body.
+        Called during initialization but can also be used externally
+
+        Args:
+            scale (float or list of floats): Scale factor (1 or 3 dims)
+            obj (ET.Element) Root object to apply. Defaults to root object of model
+        """
+        if obj is None:
+            obj = self._obj
+
+        self._scale = scale
+
+        # scale geoms
+        geom_pairs = self._get_geoms(obj)
+        for _, (_, element) in enumerate(geom_pairs):
+            g_pos = element.get("pos")
+            g_size = element.get("size")
+            if g_pos is not None:
+                g_pos = array_to_string(string_to_array(g_pos) * self._scale)
+                element.set("pos", g_pos)
+            if g_size is not None:
+                g_size_np = string_to_array(g_size)
+                # handle cases where size is not 3 dimensional
+                if len(g_size_np) == 3:
+                    g_size_np = g_size_np * self._scale
+                elif len(g_size_np) == 2:
+                    scale = np.array(self._scale).reshape(-1)
+                    if len(scale) == 1:
+                        g_size_np[1] *= scale
+                    elif len(scale) == 3:
+                        # g_size_np[0] *= np.mean(scale[:2])
+                        g_size_np[0] *= np.mean(scale[:2])  # width
+                        g_size_np[1] *= scale[2]  # height
+                    else:
+                        raise ValueError
+                else:
+                    raise ValueError
+                g_size = array_to_string(g_size_np)
+                element.set("size", g_size)
+
+        # scale meshes
+        meshes = self.asset.findall("mesh")
+        for elem in meshes:
+            m_scale = elem.get("scale")
+            if m_scale is not None:
+                m_scale = string_to_array(m_scale)
+            else:
+                m_scale = np.ones(3)
+
+            m_scale *= self._scale
+            elem.set("scale", array_to_string(m_scale))
+
+        # scale bodies
+        body_pairs = self._get_elements(obj, "body")
+        for (_, elem) in body_pairs:
+            b_pos = elem.get("pos")
+            if b_pos is not None:
+                b_pos = string_to_array(b_pos) * self._scale
+                elem.set("pos", array_to_string(b_pos))
+
+        # scale joints
+        joint_pairs = self._get_elements(obj, "joint")
+        for (_, elem) in joint_pairs:
+            j_pos = elem.get("pos")
+            if j_pos is not None:
+                j_pos = string_to_array(j_pos) * self._scale
+                elem.set("pos", array_to_string(j_pos))
+
+        # scale sites
+        site_pairs = self._get_elements(self.worldbody, "site")
+        for (_, elem) in site_pairs:
+            s_pos = elem.get("pos")
+            if s_pos is not None:
+                s_pos = string_to_array(s_pos) * self._scale
+                elem.set("pos", array_to_string(s_pos))
+
+            s_size = elem.get("size")
+            if s_size is not None:
+                s_size_np = string_to_array(s_size)
+                # handle cases where size is not 3 dimensional
+                if len(s_size_np) == 3:
+                    s_size_np = s_size_np * self._scale
+                elif len(s_size_np) == 2:
+                    scale = np.array(self._scale).reshape(-1)
+                    if len(scale) == 1:
+                        s_size_np *= scale
+                    elif len(scale) == 3:
+                        s_size_np[0] *= np.mean(scale[:2])  # width
+                        s_size_np[1] *= scale[2]  # height
+                    else:
+                        raise ValueError
+                elif len(s_size_np) == 1:
+                    s_size_np *= np.mean(self._scale)
+                else:
+                    raise ValueError
+                s_size = array_to_string(s_size_np)
+                elem.set("size", s_size)
 
     @property
     def bottom_offset(self):
@@ -474,6 +626,43 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
             "./body/site[@name='{}horizontal_radius_site']".format(self.naming_prefix)
         )
         return string_to_array(horizontal_radius_site.get("pos")) - self.bottom_offset
+
+    def _get_elements_by_name(self, geom_names, body_names=None, joint_names=None):
+        """
+        seaches for returns all geoms, bodies, and joints used for cabinet
+        called by _get_cab_components, as implemented in subclasses
+
+        for geoms, include both collision and visual geoms
+        """
+
+        # names of every geom
+        geoms = {geom_name: list() for geom_name in geom_names}
+        for geom_name in geoms.keys():
+            for postfix in ["", "_visual"]:
+                g = find_elements(
+                    root=self._obj,
+                    tags="geom",
+                    attribs={"name": self.name + "_" + geom_name + postfix},
+                    return_first=True,
+                )
+                geoms[geom_name].append(g)
+
+        # get bodies
+        bodies = dict()
+        if body_names is not None:
+            for body_name in body_names:
+                bodies[body_name] = find_elements(
+                    root=self._obj, tags="body", attribs={"name": self.name + "_" + body_name}, return_first=True
+                )
+
+        # get joints
+        joints = dict()
+        if joint_names is not None:
+            for joint_name in joint_names:
+                joints[joint_name] = find_elements(
+                    root=self._obj, tags="joint", attribs={"name": self.name + "_" + joint_name}, return_first=True
+                )
+        return geoms, bodies, joints
 
 
 class MujocoGeneratedObject(MujocoObject):
@@ -584,4 +773,4 @@ class MujocoGeneratedObject(MujocoObject):
         raise NotImplementedError
 
     def get_bounding_box_half_size(self):
-        return np.array([self.horizontal_radius, self.horizontal_radius, 0.]) - self.bottom_offset
+        return np.array([self.horizontal_radius, self.horizontal_radius, 0.0]) - self.bottom_offset

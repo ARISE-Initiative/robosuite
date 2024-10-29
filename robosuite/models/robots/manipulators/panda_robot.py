@@ -12,6 +12,8 @@ class Panda(ManipulatorModel):
         idn (int or str): Number or some other unique identification string for this robot instance
     """
 
+    arms = ["right"]
+
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/panda/robot.xml"), idn=idn)
 
@@ -19,16 +21,16 @@ class Panda(ManipulatorModel):
         self.set_joint_attribute(attrib="damping", values=np.array((0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01)))
 
     @property
-    def default_mount(self):
+    def default_base(self):
         return "RethinkMount"
 
     @property
     def default_gripper(self):
-        return "PandaGripper"
+        return {"right": "PandaGripper"}
 
     @property
     def default_controller_config(self):
-        return "default_panda"
+        return {"right": "default_panda"}
 
     @property
     def init_qpos(self):

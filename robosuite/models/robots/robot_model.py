@@ -1,7 +1,12 @@
+from copy import deepcopy
+from typing import Dict, List, Optional
+
+import mujoco
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, string_to_array
+from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel, RobotBaseModel
+from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 REGISTERED_ROBOTS = {}
@@ -58,11 +63,11 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         idn (int or str): Number or some other unique identification string for this robot instance
     """
 
-    def __init__(self, fname, idn=0):
+    def __init__(self, fname: str, idn=0):
         super().__init__(fname, idn=idn)
 
         # Define other variables that get filled later
-        self.mount = None
+        self.base = None
 
         # Get camera names for this robot
         self.cameras = self.get_element_names(self.worldbody, "camera")
@@ -73,8 +78,15 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         self.set_joint_attribute(
             attrib="armature", values=np.array([5.0 / (i + 1) for i in range(self.dof)]), force=False
         )
+        self.mujoco_model: Optional[mujoco.MjModel] = None
 
-    def set_base_xpos(self, pos):
+    def set_mujoco_model(self, mujoco_model: Optional[mujoco.MjModel] = None):
+        if mujoco_model is not None:
+            self.mujoco_model = mujoco_model
+        else:
+            self.mujoco_model = self.get_model()
+
+    def set_base_xpos(self, pos: np.ndarray):
         """
         Places the robot on position @pos.
 
@@ -83,7 +95,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         """
         self._elements["root_body"].set("pos", array_to_string(pos - self.bottom_offset))
 
-    def set_base_ori(self, rot):
+    def set_base_ori(self, rot: np.ndarray):
         """
         Rotates robot by rotation @rot from its original orientation.
 
@@ -94,7 +106,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         rot = mat2quat(euler2mat(rot))[[3, 0, 1, 2]]
         self._elements["root_body"].set("quat", array_to_string(rot))
 
-    def set_joint_attribute(self, attrib, values, force=True):
+    def set_joint_attribute(self, attrib: str, values: np.ndarray, force=True):
         """
         Sets joint attributes, e.g.: friction loss, damping, etc.
 
@@ -115,11 +127,24 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             if force or joint.get(attrib, None) is None:
                 joint.set(attrib, array_to_string(np.array([values[i]])))
 
-    def add_mount(self, mount):
+    def add_base(self, base: RobotBaseModel):
+        """
+        Mounts a base to the robot. Bases are defined in robosuite.models.bases
+        """
+        if isinstance(base, MountModel):
+            self.add_mount(base)
+        elif isinstance(base, MobileBaseModel):
+            self.add_mobile_base(base)
+        elif isinstance(base, LegBaseModel):
+            self.add_leg_base(base)
+        else:
+            raise ValueError("Invalid base type to add to robot!")
+
+    def add_mount(self, mount: MountModel):
         """
         Mounts @mount to arm.
 
-        Throws error if robot already has a mount or if mount type is incorrect.
+        Throws error if robot already has a mount or if mount type i\s incorrect.
 
         Args:
             mount (MountModel): mount MJCF model
@@ -127,7 +152,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Raises:
             ValueError: [mount already added]
         """
-        if self.mount is not None:
+        if self.base is not None:
             raise ValueError("Mount already added for this robot!")
 
         # First adjust mount's base position
@@ -136,7 +161,116 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
 
         self.merge(mount, merge_body=self.root_body)
 
-        self.mount = mount
+        self.base = mount
+
+        # Update cameras in this model
+        self.cameras = self.get_element_names(self.worldbody, "camera")
+
+    def add_mobile_base(self, mobile_base: MobileBaseModel):
+        """
+        Mounts @mobile_base to arm.
+
+        Throws error if robot already has a mobile base or if mobile base type is incorrect.
+
+        Args:
+            mobile base (MobileBaseModel): mount MJCF model
+
+        Raises:
+            ValueError: [mobile base already added]
+        """
+        if self.base is not None:
+            raise ValueError("Mobile base already added for this robot!")
+
+        # First adjust mount's base position
+        offset = self.base_offset - mobile_base.top_offset
+        mobile_base._elements["root_body"].set("pos", array_to_string(offset))
+
+        # if the mount is mobile, the robot should be "merged" into the mount,
+        # so that when the mount moves the robot moves along with it
+        merge_body = self.root_body
+        root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
+        for body in mobile_base.worldbody:
+            root.append(body)
+        arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
+
+        mount_support = find_elements(
+            root=self.worldbody, tags="body", attribs={"name": mobile_base.correct_naming("support")}, return_first=True
+        )
+        mount_support.append(deepcopy(arm_root))
+        root.remove(arm_root)
+        self.merge_assets(mobile_base)
+        for one_actuator in mobile_base.actuator:
+            self.actuator.append(one_actuator)
+        for one_sensor in mobile_base.sensor:
+            self.sensor.append(one_sensor)
+        for one_tendon in mobile_base.tendon:
+            self.tendon.append(one_tendon)
+        for one_equality in mobile_base.equality:
+            self.equality.append(one_equality)
+        for one_contact in mobile_base.contact:
+            self.contact.append(one_contact)
+
+        self.base = mobile_base
+
+        # Update cameras in this model
+        self.cameras = self.get_element_names(self.worldbody, "camera")
+
+    def add_leg_base(self, leg_base: LegBaseModel):
+        """
+        Mounts @mobile_base to arm.
+
+        Throws error if robot already has a mobile base or if mobile base type is incorrect.
+
+        Args:
+            mobile base (MobileBaseModel): mount MJCF model
+
+        Raises:
+            ValueError: [mobile base already added]
+        """
+        if self.base is not None:
+            raise ValueError("Mobile base already added for this robot!")
+
+        # First adjust mount's base position
+        offset = self.base_offset - leg_base.top_offset
+        leg_base._elements["root_body"].set("pos", array_to_string(offset))
+
+        # if the mount is mobile, the robot should be "merged" into the mount,
+        # so that when the mount moves the robot moves along with it
+        merge_body = self.root_body
+        root = find_elements(root=self.worldbody, tags="body", return_first=True)
+        for body in leg_base.worldbody:
+            root.append(body)
+        # import pdb; pdb.set_trace()
+
+        arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
+
+        mount_support = find_elements(
+            root=leg_base.worldbody,
+            tags="body",
+            attribs={"name": leg_base.correct_naming("support")},
+            return_first=True,
+        )
+
+        free_joint = find_elements(root=leg_base.worldbody, tags="freejoint", return_first=True)
+        if free_joint is not None:
+            root.append(deepcopy(free_joint))
+            free_joint_parent = find_parent(leg_base.worldbody, free_joint)
+            free_joint_parent.remove(free_joint)
+        mount_support.append(deepcopy(arm_root))
+        root.remove(arm_root)
+        self.merge_assets(leg_base)
+        for one_actuator in leg_base.actuator:
+            self.actuator.append(one_actuator)
+        for one_sensor in leg_base.sensor:
+            self.sensor.append(one_sensor)
+        for one_tendon in leg_base.tendon:
+            self.tendon.append(one_tendon)
+        for one_equality in leg_base.equality:
+            self.equality.append(one_equality)
+        for one_contact in leg_base.contact:
+            self.contact.append(one_contact)
+
+        self.base = leg_base
 
         # Update cameras in this model
         self.cameras = self.get_element_names(self.worldbody, "camera")
@@ -147,11 +281,11 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def naming_prefix(self):
+    def naming_prefix(self) -> str:
         return "robot{}_".format(self.idn)
 
     @property
-    def dof(self):
+    def dof(self) -> int:
         """
         Defines the number of DOF of the robot
 
@@ -161,7 +295,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return len(self._joints)
 
     @property
-    def bottom_offset(self):
+    def bottom_offset(self) -> np.ndarray:
         """
         Returns vector from model root body to model bottom.
         By default, this is equivalent to this robot's mount's (bottom_offset - top_offset) + this robot's base offset
@@ -170,13 +304,13 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             np.array: (dx, dy, dz) offset vector
         """
         return (
-            (self.mount.bottom_offset - self.mount.top_offset) + self._base_offset
-            if self.mount is not None
+            (self.base.bottom_offset - self.base.top_offset) + self._base_offset
+            if self.base is not None
             else self._base_offset
         )
 
     @property
-    def horizontal_radius(self):
+    def horizontal_radius(self) -> float:
         """
         Returns maximum distance from model root body to any radial point of the model. This method takes into
         account the mount horizontal radius as well
@@ -184,10 +318,10 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Returns:
             float: radius
         """
-        return max(self._horizontal_radius, self.mount.horizontal_radius)
+        return max(self._horizontal_radius, self.base.horizontal_radius)
 
     @property
-    def models(self):
+    def models(self) -> List[MujocoXMLModel]:
         """
         Returns a list of all m(sub-)models owned by this robot model. By default, this includes the mount model,
         if specified
@@ -195,7 +329,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         Returns:
             list: models owned by this object
         """
-        return [self.mount] if self.mount is not None else []
+        return [self.base] if self.base is not None else []
 
     @property
     def contact_geom_rgba(self):
@@ -206,27 +340,28 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
     # -------------------------------------------------------------------------------------- #
 
     @property
-    def default_mount(self):
+    def default_base(self) -> str:
         """
         Defines the default mount type for this robot that gets added to root body (base)
 
         Returns:
-            str: Default mount name to add to this robot
+            str: Default base name to add to this robot
         """
         raise NotImplementedError
 
     @property
-    def default_controller_config(self):
+    def default_controller_config(self) -> Dict[str, str]:
         """
         Defines the name of default controller config file in the controllers/config directory for this robot.
 
         Returns:
-            str: filename of default controller config for this robot
+            dict: Dictionary containing arm-specific default controller config names
+                e.g.: {"right": "default_panda", "left": "default_panda"}
         """
         raise NotImplementedError
 
     @property
-    def init_qpos(self):
+    def init_qpos(self) -> np.ndarray:
         """
         Defines the default rest qpos of this robot
 
@@ -236,7 +371,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def base_xpos_offset(self):
+    def base_xpos_offset(self) -> Dict[str, np.ndarray]:
         """
         Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
         Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
@@ -249,7 +384,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def top_offset(self):
+    def top_offset(self) -> np.ndarray:
         """
         Returns vector from model root body to model top.
         Useful for, e.g. placing models on a surface.
@@ -261,7 +396,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def _horizontal_radius(self):
+    def _horizontal_radius(self) -> float:
         """
         Returns maximum distance from model root body to any radial point of the model.
 
@@ -274,7 +409,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         raise NotImplementedError
 
     @property
-    def _important_sites(self):
+    def _important_sites(self) -> Dict[str, str]:
         """
         Returns:
             dict: (Default is no important sites; i.e.: empty dict)
@@ -282,7 +417,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return {}
 
     @property
-    def _important_geoms(self):
+    def _important_geoms(self) -> Dict[str, List[str]]:
         """
         Returns:
              dict: (Default is no important geoms; i.e.: empty dict)
@@ -290,9 +425,33 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         return {}
 
     @property
-    def _important_sensors(self):
+    def _important_sensors(self) -> Dict[str, str]:
         """
         Returns:
             dict: (Default is no sensors; i.e.: empty dict)
         """
         return {}
+
+    @property
+    def all_joints(self) -> List:
+        """
+        Returns:
+            list: (Default is no joints; i.e.: empty list)
+        """
+        all_joints = []
+        all_joints += self.joints
+        if self.base is not None:
+            all_joints += self.base.joints
+        return all_joints
+
+    @property
+    def all_actuators(self) -> List:
+        """
+        Returns:
+            list: (Default is no actuators; i.e.: empty list)
+        """
+        all_actuators = []
+        all_actuators += self.actuators
+        if self.base is not None:
+            all_actuators += self.base.actuators
+        return all_actuators

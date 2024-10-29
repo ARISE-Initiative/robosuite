@@ -10,7 +10,7 @@ import numpy as np
 
 import robosuite
 import robosuite.utils.camera_utils as CU
-from robosuite.controllers import load_controller_config
+from robosuite.controllers import load_composite_controller_config
 
 
 def test_camera_transforms():
@@ -24,7 +24,7 @@ def test_camera_transforms():
     env = robosuite.make(
         "Lift",
         robots=["Panda"],
-        controller_configs=load_controller_config(default_controller="OSC_POSE"),
+        controller_configs=load_composite_controller_config(controller="BASIC"),
         has_renderer=False,
         has_offscreen_renderer=True,
         ignore_done=True,

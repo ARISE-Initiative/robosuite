@@ -22,6 +22,7 @@ def _test_gripper(gripper):
     assert action is not None
 
     assert gripper.init_qpos is not None
+    assert len(gripper.init_qpos) == len(gripper.joints)
 
 
 if __name__ == "__main__":

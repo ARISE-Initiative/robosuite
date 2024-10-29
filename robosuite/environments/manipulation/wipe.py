@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import WipeArena
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.observables import Observable, sensor
@@ -43,7 +43,7 @@ DEFAULT_WIPE_CONFIG = {
 }
 
 
-class Wipe(SingleArmEnv):
+class Wipe(ManipulationEnv):
     """
     This class corresponds to the Wiping task for a single robot arm
 
@@ -109,6 +109,9 @@ class Wipe(SingleArmEnv):
 
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
+
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
 
         horizon (int): Every episode lasts for exactly @horizon timesteps.
 
@@ -178,6 +181,7 @@ class Wipe(SingleArmEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        lite_physics=True,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -187,7 +191,7 @@ class Wipe(SingleArmEnv):
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
         task_config=None,
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # Assert that the gripper type is None
@@ -250,10 +254,6 @@ class Wipe(SingleArmEnv):
             self.num_markers * self.unit_wiped_reward + horizon * (self.wipe_contact_reward + self.task_complete_reward)
         )
 
-        # ee resets
-        self.ee_force_bias = np.zeros(3)
-        self.ee_torque_bias = np.zeros(3)
-
         # set other wipe-specific attributes
         self.wiped_markers = []
         self.collisions = 0
@@ -268,7 +268,7 @@ class Wipe(SingleArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -279,6 +279,7 @@ class Wipe(SingleArmEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            lite_physics=lite_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
@@ -290,6 +291,87 @@ class Wipe(SingleArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
         )
+
+        # set after init to ensure self.robots is set
+        self.ee_force_bias = {arm: np.zeros(3) for arm in self.robots[0].arms}
+        self.ee_torque_bias = {arm: np.zeros(3) for arm in self.robots[0].arms}
+
+    def _get_active_markers(self, c_geoms):
+        """
+        Get the markers that are currently being wiped by the tool
+
+        Args:
+            c_geoms (list): List of corner geoms for the tool
+
+        Returns:
+            list: List of active markers
+        """
+        active_markers = []
+        corner1_id = self.sim.model.geom_name2id(c_geoms[0])
+        corner1_pos = np.array(self.sim.data.geom_xpos[corner1_id])
+        corner2_id = self.sim.model.geom_name2id(c_geoms[1])
+        corner2_pos = np.array(self.sim.data.geom_xpos[corner2_id])
+        corner3_id = self.sim.model.geom_name2id(c_geoms[2])
+        corner3_pos = np.array(self.sim.data.geom_xpos[corner3_id])
+        corner4_id = self.sim.model.geom_name2id(c_geoms[3])
+        corner4_pos = np.array(self.sim.data.geom_xpos[corner4_id])
+
+        # Unit vectors on my plane
+        v1 = corner1_pos - corner2_pos
+        v1 /= np.linalg.norm(v1)
+        v2 = corner4_pos - corner2_pos
+        v2 /= np.linalg.norm(v2)
+
+        # Corners of the tool in the coordinate frame of the plane
+        t1 = np.array([np.dot(corner1_pos - corner2_pos, v1), np.dot(corner1_pos - corner2_pos, v2)])
+        t2 = np.array([np.dot(corner2_pos - corner2_pos, v1), np.dot(corner2_pos - corner2_pos, v2)])
+        t3 = np.array([np.dot(corner3_pos - corner2_pos, v1), np.dot(corner3_pos - corner2_pos, v2)])
+        t4 = np.array([np.dot(corner4_pos - corner2_pos, v1), np.dot(corner4_pos - corner2_pos, v2)])
+
+        pp = [t1, t2, t4, t3]
+
+        # Normal of the plane defined by v1 and v2
+        n = np.cross(v1, v2)
+        n /= np.linalg.norm(n)
+
+        def isLeft(P0, P1, P2):
+            return (P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1])
+
+        def PointInRectangle(X, Y, Z, W, P):
+            return isLeft(X, Y, P) < 0 and isLeft(Y, Z, P) < 0 and isLeft(Z, W, P) < 0 and isLeft(W, X, P) < 0
+
+        # Only go into this computation if there are contact points
+        if self.sim.data.ncon != 0:
+
+            # Check each marker that is still active
+            for marker in self.model.mujoco_arena.markers:
+
+                # Current marker 3D location in world frame
+                marker_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
+
+                # We use the second tool corner as point on the plane and define the vector connecting
+                # the marker position to that point
+                v = marker_pos - corner2_pos
+
+                # Shortest distance between the center of the marker and the plane
+                dist = np.dot(v, n)
+
+                # Projection of the center of the marker onto the plane
+                projected_point = np.array(marker_pos) - dist * n
+
+                # Positive distances means the center of the marker is over the plane
+                # The plane is aligned with the bottom of the wiper and pointing up, so the marker would be over it
+                if dist > 0.0:
+                    # Distance smaller than this threshold means we are close to the plane on the upper part
+                    if dist < 0.02:
+                        # Write touching points and projected point in coordinates of the plane
+                        pp_2 = np.array(
+                            [np.dot(projected_point - corner2_pos, v1), np.dot(projected_point - corner2_pos, v2)]
+                        )
+                        # Check if marker is within the tool center:
+                        if PointInRectangle(pp[0], pp[1], pp[2], pp[3], pp_2):
+                            active_markers.append(marker)
+        return active_markers
 
     def reward(self, action=None):
         """
@@ -329,7 +411,12 @@ class Wipe(SingleArmEnv):
         """
         reward = 0
 
-        total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
+        total_force_ee = max(
+            [
+                np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques[arm].current[:3]))
+                for arm in self.robots[0].arms
+            ]
+        )
 
         # Neg Reward from collisions of the arm with the table
         if self.check_contact(self.robots[0].robot_model):
@@ -346,71 +433,9 @@ class Wipe(SingleArmEnv):
             active_markers = []
 
             # Current 3D location of the corners of the wiping tool in world frame
-            c_geoms = self.robots[0].gripper.important_geoms["corners"]
-            corner1_id = self.sim.model.geom_name2id(c_geoms[0])
-            corner1_pos = np.array(self.sim.data.geom_xpos[corner1_id])
-            corner2_id = self.sim.model.geom_name2id(c_geoms[1])
-            corner2_pos = np.array(self.sim.data.geom_xpos[corner2_id])
-            corner3_id = self.sim.model.geom_name2id(c_geoms[2])
-            corner3_pos = np.array(self.sim.data.geom_xpos[corner3_id])
-            corner4_id = self.sim.model.geom_name2id(c_geoms[3])
-            corner4_pos = np.array(self.sim.data.geom_xpos[corner4_id])
-
-            # Unit vectors on my plane
-            v1 = corner1_pos - corner2_pos
-            v1 /= np.linalg.norm(v1)
-            v2 = corner4_pos - corner2_pos
-            v2 /= np.linalg.norm(v2)
-
-            # Corners of the tool in the coordinate frame of the plane
-            t1 = np.array([np.dot(corner1_pos - corner2_pos, v1), np.dot(corner1_pos - corner2_pos, v2)])
-            t2 = np.array([np.dot(corner2_pos - corner2_pos, v1), np.dot(corner2_pos - corner2_pos, v2)])
-            t3 = np.array([np.dot(corner3_pos - corner2_pos, v1), np.dot(corner3_pos - corner2_pos, v2)])
-            t4 = np.array([np.dot(corner4_pos - corner2_pos, v1), np.dot(corner4_pos - corner2_pos, v2)])
-
-            pp = [t1, t2, t4, t3]
-
-            # Normal of the plane defined by v1 and v2
-            n = np.cross(v1, v2)
-            n /= np.linalg.norm(n)
-
-            def isLeft(P0, P1, P2):
-                return (P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1])
-
-            def PointInRectangle(X, Y, Z, W, P):
-                return isLeft(X, Y, P) < 0 and isLeft(Y, Z, P) < 0 and isLeft(Z, W, P) < 0 and isLeft(W, X, P) < 0
-
-            # Only go into this computation if there are contact points
-            if self.sim.data.ncon != 0:
-
-                # Check each marker that is still active
-                for marker in self.model.mujoco_arena.markers:
-
-                    # Current marker 3D location in world frame
-                    marker_pos = np.array(self.sim.data.body_xpos[self.sim.model.body_name2id(marker.root_body)])
-
-                    # We use the second tool corner as point on the plane and define the vector connecting
-                    # the marker position to that point
-                    v = marker_pos - corner2_pos
-
-                    # Shortest distance between the center of the marker and the plane
-                    dist = np.dot(v, n)
-
-                    # Projection of the center of the marker onto the plane
-                    projected_point = np.array(marker_pos) - dist * n
-
-                    # Positive distances means the center of the marker is over the plane
-                    # The plane is aligned with the bottom of the wiper and pointing up, so the marker would be over it
-                    if dist > 0.0:
-                        # Distance smaller than this threshold means we are close to the plane on the upper part
-                        if dist < 0.02:
-                            # Write touching points and projected point in coordinates of the plane
-                            pp_2 = np.array(
-                                [np.dot(projected_point - corner2_pos, v1), np.dot(projected_point - corner2_pos, v2)]
-                            )
-                            # Check if marker is within the tool center:
-                            if PointInRectangle(pp[0], pp[1], pp[2], pp[3], pp_2):
-                                active_markers.append(marker)
+            for arm in self.robots[0].arms:
+                c_geoms = self.robots[0].gripper[arm].important_geoms["corners"]
+                active_markers += self._get_active_markers(c_geoms)
 
             # Obtain the list of currently active (wiped) markers that where not wiped before
             # These are the markers we are wiping at this step
@@ -457,7 +482,9 @@ class Wipe(SingleArmEnv):
                         reward += 10.0 * self.wipe_contact_reward
 
                 # Penalize large accelerations
-                reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
+                reward -= self.ee_accel_penalty * max(
+                    [np.mean(abs(self.robots[0].recent_ee_acc[arm].current)) for arm in self.robots[0].arms]
+                )
 
             # Final reward if all wiped
             if len(self.wiped_markers) == self.num_markers:
@@ -568,17 +595,19 @@ class Wipe(SingleArmEnv):
                 names += ["proportion_wiped", "wipe_radius", "wipe_centroid"]
 
                 if self.use_robot_obs:
-                    # also use ego-centric obs
-                    @sensor(modality=modality)
-                    def gripper_to_wipe_centroid(obs_cache):
-                        return (
-                            obs_cache["wipe_centroid"] - obs_cache[f"{pf}eef_pos"]
-                            if "wipe_centroid" in obs_cache and f"{pf}eef_pos" in obs_cache
-                            else np.zeros(3)
-                        )
+                    arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+                    full_prefixes = self._get_arm_prefixes(self.robots[0])
 
-                    sensors.append(gripper_to_wipe_centroid)
-                    names.append("gripper_to_wipe_centroid")
+                    # also use ego-centric obs
+                    robot_obs_sensors = [
+                        self._get_obj_eef_sensor(
+                            full_pf, "wipe_centroid", f"{arm_pf}gripper_to_wipe_centroid", modality
+                        )
+                        for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+                    ]
+
+                    sensors.extend(robot_obs_sensors)
+                    names.extend([fn.__name__ for fn in robot_obs_sensors])
 
             else:
                 # use explicit representation of wiping objects
@@ -612,7 +641,6 @@ class Wipe(SingleArmEnv):
                 sensors (list): Array of sensors for the given marker
                 names (list): array of corresponding observable names
         """
-        pf = self.robots[0].robot_model.naming_prefix
 
         @sensor(modality=modality)
         def marker_pos(obs_cache):
@@ -626,17 +654,15 @@ class Wipe(SingleArmEnv):
         names = [f"marker{i}_pos", f"marker{i}_wiped"]
 
         if self.use_robot_obs:
-            # also use ego-centric obs
-            @sensor(modality=modality)
-            def gripper_to_marker(obs_cache):
-                return (
-                    obs_cache[f"marker{i}_pos"] - obs_cache[f"{pf}eef_pos"]
-                    if f"marker{i}_pos" in obs_cache and f"{pf}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
+            arm_prefixes = self._get_arm_prefixes(self.robots[0], include_robot_name=False)
+            full_prefixes = self._get_arm_prefixes(self.robots[0])
+            grippers_to_marker_fns = [
+                self._get_obj_eef_sensor(full_pf, f"marker{i}_pos", f"{arm_pf}gripper_to_marker{i}", modality)
+                for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+            ]
 
-            sensors.append(gripper_to_marker)
-            names.append(f"gripper_to_marker{i}")
+            sensors.extend(grippers_to_marker_fns)
+            names.extend([fn.__name__ for fn in grippers_to_marker_fns])
 
         return sensors, names
 
@@ -654,8 +680,8 @@ class Wipe(SingleArmEnv):
         self.f_excess = 0
 
         # ee resets - bias at initial state
-        self.ee_force_bias = np.zeros(3)
-        self.ee_torque_bias = np.zeros(3)
+        self.ee_force_bias = {arm: np.zeros(3) for arm in self.robots[0].arms}
+        self.ee_torque_bias = {arm: np.zeros(3) for arm in self.robots[0].arms}
 
     def _check_success(self):
         """
@@ -717,7 +743,7 @@ class Wipe(SingleArmEnv):
         reward, done, info = super()._post_action(action)
 
         # Update force bias
-        if np.linalg.norm(self.ee_force_bias) == 0:
+        if all([np.linalg.norm(self.ee_force_bias[arm]) == 0 for arm in self.ee_force_bias]):
             self.ee_force_bias = self.robots[0].ee_force
             self.ee_torque_bias = self.robots[0].ee_torque
 
@@ -748,7 +774,12 @@ class Wipe(SingleArmEnv):
                     marker_positions.append(marker_pos)
                     num_non_wiped_markers += 1
             wipe_centroid /= max(1, num_non_wiped_markers)
-            mean_pos_to_things_to_wipe = wipe_centroid - self._eef_xpos
+
+            # Mean position to things to wipe to the closest arm
+            mean_pos_to_things_to_wipe_list = [wipe_centroid - self._get_eef_xpos(arm) for arm in self.robots[0].arms]
+            mean_pos_to_things_to_wipe = mean_pos_to_things_to_wipe_list[
+                np.argmin([np.linalg.norm(x) for x in mean_pos_to_things_to_wipe_list])
+            ]
         # Radius of circle from centroid capturing all remaining wiping markers
         max_radius = 0
         if num_non_wiped_markers > 0:
@@ -756,13 +787,30 @@ class Wipe(SingleArmEnv):
         # Return all values
         return max_radius, wipe_centroid, mean_pos_to_things_to_wipe
 
+    def _get_eef_xpos(self, arm):
+        """
+        Grabs End Effector position as specifed by the arm argument
+
+        Args:
+            arm (str): Arm name
+
+        Returns:
+            np.array: End effector(x,y,z)
+        """
+        return np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id[arm]])
+
     @property
     def _has_gripper_contact(self):
         """
-        Determines whether the gripper is making contact with an object, as defined by the eef force surprassing
+        Determines whether the any of the grippers are making contact with an object, as defined by the eef force surprassing
         a certain threshold defined by self.contact_threshold
 
         Returns:
             bool: True if contact is surpasses given threshold magnitude
         """
-        return np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias) > self.contact_threshold
+        return any(
+            [
+                np.linalg.norm(self.robots[0].ee_force[arm] - self.ee_force_bias[arm]) > self.contact_threshold
+                for arm in self.robots[0].arms
+            ]
+        )
