@@ -2,6 +2,7 @@ import copy
 import json
 import os
 from collections import OrderedDict
+from typing import Optional
 
 import numpy as np
 
@@ -603,14 +604,27 @@ class Robot(object):
         pose_in_base = T.pose_in_A_to_pose_in_B(pose_in_world, world_pose_in_base)
         return pose_in_base
 
-    def set_robot_joint_positions(self, jpos):
+    def set_robot_joint_positions(self, jpos: np.ndarray):
         """
         Helper method to force robot joint positions to the passed values.
 
         Args:
-            jpos (np.array): Joint positions to manually set the robot to
+            jpos: Joint positions to manually set the robot to
         """
         self.sim.data.qpos[self._ref_joint_pos_indexes] = jpos
+        self.sim.forward()
+
+    def set_gripper_joint_positions(self, jpos: np.ndarray, gripper_arm: Optional[str] = None):
+        """
+        Helper method to force robot gripper joint positions to the passed values.
+
+        Args:
+            jpos: Joint positions to manually set the robot gripper to
+            gripper_arm: if None, set the gripper joint positions for the first gripper
+        """
+        gripper_arm = self.arms[0] if gripper_arm is None else gripper_arm
+        if self.has_gripper[gripper_arm]:
+            self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[gripper_arm]] = jpos
         self.sim.forward()
 
     @property
