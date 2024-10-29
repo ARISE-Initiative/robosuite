@@ -20,7 +20,7 @@ env = suite.make(
 env.reset()
 
 for i in range(1000):
-    action = np.random.randn(env.robots[0].dof) # sample random action
+    action = np.random.randn(*env.action_spec[0].shape)
     obs, reward, done, info = env.step(action)  # take action in the environment
     env.render()  # render on display
 ````
