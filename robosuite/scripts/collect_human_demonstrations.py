@@ -224,7 +224,7 @@ if __name__ == "__main__":
         "--renderer",
         type=str,
         default="mjviewer",
-        help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)",
+        help="Use Mujoco's builtin interactive viewer (mjviewer) or OpenCV viewer (mujoco)",
     )
     args = parser.parse_args()
 

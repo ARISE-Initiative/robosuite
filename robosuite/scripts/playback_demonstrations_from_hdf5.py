@@ -28,6 +28,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--folder",
         type=str,
+        required=True,
         help="Path to your demonstration folder that contains the demo.hdf5 file, e.g.: "
         "'path_to_assets_dir/demonstrations/YOUR_DEMONSTRATION'",
     ),
@@ -39,6 +40,7 @@ if __name__ == "__main__":
 
     demo_path = args.folder
     hdf5_path = os.path.join(demo_path, "demo.hdf5")
+
     f = h5py.File(hdf5_path, "r")
     env_name = f["data"].attrs["env"]
     env_info = json.loads(f["data"].attrs["env_info"])

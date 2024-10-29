@@ -47,22 +47,15 @@ class LeggedRobot(MobileRobot):
         if len(self._ref_actuators_indexes_dict[self.legs]) == 0:
             return None
 
-        if self.part_controller_config.get(self.legs) is None:
-            controller_path = os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "controllers/config/{}.json".format(self.robot_model.default_controller_config[self.legs]),
-            )
-            self.part_controller_config[self.legs] = load_part_controller_config(custom_fpath=controller_path)
-
-            # Assert that the controller config is a dict file:
-            #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
-            #                                           OSC_POSITION, OSC_POSE, IK_POSE}
-            assert (
-                type(self.part_controller_config[self.legs]) == dict
-            ), "Inputted controller config must be a dict! Instead, got type: {}".format(
-                type(self.part_controller_config[self.legs])
-            )
+        assert self.legs is not None, (
+            "Legs must be defined for legged robots in part_controller_config. "
+            "Please specify legs in controller configs."
+        )
+        assert (
+            type(self.part_controller_config[self.legs]) == dict
+        ), "Inputted controller config must be a dict! Instead, got type: {}".format(
+            type(self.part_controller_config[self.legs])
+        )
         self.part_controller_config[self.legs] = {}
         self.part_controller_config[self.legs]["ramp_ratio"] = 1.0
         self.part_controller_config[self.legs]["robot_name"] = self.name
