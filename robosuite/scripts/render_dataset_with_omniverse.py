@@ -60,19 +60,9 @@ parser.add_argument(
     help="(optional) enable online rendering, will not save the usd file in this mode",
 )
 
-parser.add_argument(
-    "--skip_frames", 
-    type=int, 
-    default=1, 
-    help="(optional) render every nth frame. Defaults to 1"
-)
+parser.add_argument("--skip_frames", type=int, default=1, help="(optional) render every nth frame. Defaults to 1")
 
-parser.add_argument(
-    "--hide_sites", 
-    action="store_true", 
-    default=False, 
-    help="(optional) hide all sites in the scene"
-)
+parser.add_argument("--hide_sites", action="store_true", default=False, help="(optional) hide all sites in the scene")
 
 parser.add_argument(
     "--reload_model",
@@ -81,11 +71,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--keep_models",
-    type=str,
-    nargs='+',
-    default=[],
-    help="(optional) keep the model from the Mujoco XML file"
+    "--keep_models", type=str, nargs="+", default=[], help="(optional) keep the model from the Mujoco XML file"
 )
 
 # Add arguments for launch
@@ -257,7 +243,9 @@ class RobosuiteEnvInterface:
     Env wrapper to load a robosuite demonstration
     """
 
-    def __init__(self, dataset, episode, output_directory, cameras="agentview", reload_model=False, keep_models=[]) -> None:
+    def __init__(
+        self, dataset, episode, output_directory, cameras="agentview", reload_model=False, keep_models=[]
+    ) -> None:
         self.dataset = dataset
         self.episode = episode
         self.output_directory = output_directory
@@ -321,7 +309,7 @@ class RobosuiteEnvInterface:
                 if body_model is not None and body_env is not None:
                     for attr_name, attr_value in body_model.attrib.items():
                         body_env.set(attr_name, attr_value)
-                    env_xml = ET.tostring(root_env, encoding='unicode')
+                    env_xml = ET.tostring(root_env, encoding="unicode")
             model_xml = env_xml
 
         if args.hide_sites:
@@ -640,7 +628,7 @@ def main():
             output_directory=output_directory,
             cameras=args.cameras,
             reload_model=args.reload_model,
-            keep_models=args.keep_models
+            keep_models=args.keep_models,
         )
         if not args.online:
             # generate the usd first, and close the env to save the usd

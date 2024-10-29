@@ -132,14 +132,18 @@ class MJGUI(Device):
             target_pos_world, target_ori_mat_world = get_mocap_pose(self.env.sim, f"{target_name_prefix}_eef_target")
 
             if isinstance(self.env.robots[0].composite_controller, WholeBodyIK):
-                assert self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                            "ik_input_ref_frame", "world"
-                        ) == "world", "Only support world frame for MJGui teleop for now. " \
-                            "Please modify the controller configs."
-                assert self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                            "ik_input_type", "absolute"
-                        ) == "absolute", "Only support absolute actions for MJGui teleop for now. " \
-                            "Please modify the controller configs."
+                assert (
+                    self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                        "ik_input_ref_frame", "world"
+                    )
+                    == "world"
+                ), ("Only support world frame for MJGui teleop for now. " "Please modify the controller configs.")
+                assert (
+                    self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                        "ik_input_type", "absolute"
+                    )
+                    == "absolute"
+                ), ("Only support absolute actions for MJGui teleop for now. " "Please modify the controller configs.")
             # check if need to update frames
             if isinstance(self.env.robots[0].composite_controller, WholeBody):
                 # TODO: should be more general
@@ -166,9 +170,11 @@ class MJGUI(Device):
                 assert (
                     self.env.robots[0].part_controllers[self.active_end_effector].input_ref_frame == "world"
                     and self.env.robots[0].part_controllers[self.active_end_effector].input_type == "absolute"
-                ), "Only support world frame and absolute actions for now. You can modify the controller configs " \
-                "being used, e.g. in robosuite/controllers/config/robots/{robot_name}.json, " \
-                "robosuite/controllers/config/default/composite/{}.json to enable other options."
+                ), (
+                    "Only support world frame and absolute actions for now. You can modify the controller configs "
+                    "being used, e.g. in robosuite/controllers/config/robots/{robot_name}.json, "
+                    "robosuite/controllers/config/default/composite/{}.json to enable other options."
+                )
                 target_pos, target_ori_mat = target_pos_world, target_ori_mat_world
 
             # convert ori mat to axis angle

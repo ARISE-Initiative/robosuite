@@ -47,8 +47,10 @@ class LeggedRobot(MobileRobot):
         if len(self._ref_actuators_indexes_dict[self.legs]) == 0:
             return None
 
-        assert self.legs is not None, "Legs must be defined for legged robots in part_controller_config. " \
-                                        "Please specify legs in controller configs."
+        assert self.legs is not None, (
+            "Legs must be defined for legged robots in part_controller_config. "
+            "Please specify legs in controller configs."
+        )
         assert (
             type(self.part_controller_config[self.legs]) == dict
         ), "Inputted controller config must be a dict! Instead, got type: {}".format(

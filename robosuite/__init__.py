@@ -27,8 +27,10 @@ from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 try:
     import robosuite_models
 except:
-    ROBOSUITE_DEFAULT_LOGGER.warn(
-        "Could not import robosuite_models. Some robots may not be available. If you want to use these robots, please install robosuite_models from source (https://github.com/ARISE-Initiative/robosuite_models) or through pip install."
+    ROBOSUITE_DEFAULT_LOGGER.warning(
+        "Could not import robosuite_models. Some robots may not be available. "
+        "If you want to use these robots, please install robosuite_models from "
+        "source (https://github.com/ARISE-Initiative/robosuite_models) or through pip install."
     )
 
 __version__ = "1.5.0"

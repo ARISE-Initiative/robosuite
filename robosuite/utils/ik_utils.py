@@ -147,8 +147,12 @@ class IKSolver:
             target_ori[right_index] = self.history["right_eef_quat_wxyz"][int(self.pkl_t)]
             self.full_model_data.mocap_pos[self.mocap_ids[left_index]] = self.history["left_eef_pos"][int(self.pkl_t)]
             self.full_model_data.mocap_pos[self.mocap_ids[right_index]] = self.history["right_eef_pos"][int(self.pkl_t)]
-            self.full_model_data.mocap_quat[self.mocap_ids[left_index]] = self.history["left_eef_quat_wxyz"][int(self.pkl_t)]
-            self.full_model_data.mocap_quat[self.mocap_ids[right_index]] = self.history["right_eef_quat_wxyz"][int(self.pkl_t)]
+            self.full_model_data.mocap_quat[self.mocap_ids[left_index]] = self.history["left_eef_quat_wxyz"][
+                int(self.pkl_t)
+            ]
+            self.full_model_data.mocap_quat[self.mocap_ids[right_index]] = self.history["right_eef_quat_wxyz"][
+                int(self.pkl_t)
+            ]
         else:
             raise ValueError(f"Invalid input type {self.input_type}")
 
@@ -168,7 +172,6 @@ class IKSolver:
         data.qpos[self.dof_ids] = qpos
         mujoco.mj_kinematics(self.full_model, data)
         return {name: data.site(site_id).xpos for name, site_id in zip(self.site_names, self.site_ids)}
-
 
     def transform_pose(
         self, src_frame_pose: np.ndarray, src_frame: Literal["world", "base"], dst_frame: Literal["world", "base"]
