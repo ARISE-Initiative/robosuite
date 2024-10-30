@@ -160,8 +160,8 @@ class MobileBaseController(object, metaclass=abc.ABCMeta):
         """
         self.initial_joint = np.array(initial_joints)
         self.update(force=True)
-        self.initial_ee_pos = self.ee_pos
-        self.initial_ee_ori_mat = self.ee_ori_mat
+        self.initial_ref_pos = self.ref_pos
+        self.initial_ref_ori_mat = self.ref_ori_mat
 
     def clip_torques(self, torques):
         """

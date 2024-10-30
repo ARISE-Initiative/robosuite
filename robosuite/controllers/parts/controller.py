@@ -258,8 +258,8 @@ class Controller(object, metaclass=abc.ABCMeta):
         self.update(force=True)
 
         if self.ref_name is not None:
-            self.initial_ee_pos = self.ee_pos
-            self.initial_ee_ori_mat = self.ee_ori_mat
+            self.initial_ref_pos = self.ref_pos
+            self.initial_ref_ori_mat = self.ref_ori_mat
 
     def clip_torques(self, torques):
         """
