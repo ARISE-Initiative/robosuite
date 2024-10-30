@@ -71,7 +71,7 @@ def step(env, action, current_torques):
         env.sim.forward()
         env._pre_action(action, policy_step)
         last_torques = current_torques
-        current_torques = env.robots[0].composite_controller.part_controllers['right'].torques
+        current_torques = env.robots[0].composite_controller.part_controllers["right"].torques
         summed_abs_delta_torques += np.abs(current_torques - last_torques)
         env.sim.step()
         policy_step = False
@@ -139,7 +139,9 @@ def test_linear_interpolator():
                 initial_state = [env.robots[0]._hand_pos["right"], T.mat2quat(env.robots[0]._hand_orn["right"])]
                 dstate = [
                     env.robots[0]._hand_pos["right"] - initial_state[0],
-                    T.mat2euler(T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn["right"]), initial_state[1]))),
+                    T.mat2euler(
+                        T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn["right"]), initial_state[1]))
+                    ),
                 ]
 
                 # Define the uniform trajectory action
@@ -168,7 +170,9 @@ def test_linear_interpolator():
                     timesteps[j] += 1
                     dstate = [
                         env.robots[0]._hand_pos["right"] - initial_state[0],
-                        T.mat2euler(T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn["right"]), initial_state[1]))),
+                        T.mat2euler(
+                            T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn["right"]), initial_state[1]))
+                        ),
                     ]
 
                 # When finished, print out the timestep results
