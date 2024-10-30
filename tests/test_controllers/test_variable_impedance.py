@@ -24,8 +24,6 @@ render the trajectories to allow for visual analysis of gains
 """
 
 import argparse
-import json
-import os
 
 import numpy as np
 
