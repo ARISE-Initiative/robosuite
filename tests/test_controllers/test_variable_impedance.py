@@ -24,12 +24,11 @@ render the trajectories to allow for visual analysis of gains
 """
 
 import argparse
-import json
-import os
 
 import numpy as np
 
 import robosuite as suite
+from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 
 # Define the rate of change when sweeping through kp / damping values
 num_timesteps_per_change = 10
@@ -56,19 +55,20 @@ def test_variable_impedance():
         # Define numpy seed so we guarantee consistent starting pos / ori for each trajectory
         np.random.seed(3)
 
-        # Define controller path to load
-        controller_path = os.path.join(
-            os.path.dirname(__file__), "../../robosuite", "controllers/config/{}.json".format(controller_name.lower())
-        )
-
-        # Load the controller
-        with open(controller_path) as f:
-            controller_config = json.load(f)
-
+        composite_controller_config = load_composite_controller_config(controller=None, robot="Sawyer")
+        controller_config = composite_controller_config["body_parts"]["right"]
+        controller_config["type"] = controller_name
         # Manually edit impedance settings
         controller_config["impedance_mode"] = "variable"
         controller_config["kp_limits"] = [0, 300]
         controller_config["damping_limits"] = [0, 10]
+
+        if controller_name == "OSC_POSITION":
+            controller_config["output_min"] = [0.05, 0.05, 0.05]
+            controller_config["output_max"] = [-0.05, -0.05, -0.05]
+        elif controller_name == "JOINT_POSITION":
+            controller_config["output_min"] = -1
+            controller_config["output_max"] = 1
 
         # Now, create a test env for testing the controller on
         env = suite.make(
@@ -79,7 +79,7 @@ def test_variable_impedance():
             use_camera_obs=False,
             horizon=10000,
             control_freq=20,
-            controller_configs=controller_config,
+            controller_configs=composite_controller_config,
         )
 
         # Setup printing options for numbers
@@ -116,7 +116,7 @@ def test_variable_impedance():
             # Hardcode the starting position for sawyer
             init_qpos = [-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628]
             env.robots[0].set_robot_joint_positions(init_qpos)
-            env.robots[0].controller.update_initial_joints(init_qpos)
+            env.robots[0].composite_controller.part_controllers["right"].update_initial_joints(init_qpos)
 
             # Notify user a new test is beginning
             print("\nTesting controller {} while sweeping {}...".format(controller_name, gain))
@@ -126,7 +126,7 @@ def test_variable_impedance():
                 env.viewer.set_camera(camera_id=0)
 
             # Keep track of relative changes in robot eef position
-            last_pos = env.robots[0]._hand_pos
+            last_pos = env.robots[0]._hand_pos["right"]
 
             # Initialize gains
             if gain == "kp":
@@ -155,7 +155,7 @@ def test_variable_impedance():
                     env.render()
 
                 # Update the current change in state
-                cur_pos = env.robots[0]._hand_pos
+                cur_pos = env.robots[0]._hand_pos["right"]
 
                 # If we're at the end of the increase, switch direction of traj and gain changes
                 if i == int(num_timesteps_per_change / percent_increase):

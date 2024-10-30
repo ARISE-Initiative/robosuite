@@ -76,7 +76,7 @@ class JacoThreeFingerGripper(JacoThreeFingerGripperBase):
 
     @property
     def dof(self):
-        return 3
+        return 1
 
 
 class JacoThreeFingerDexterousGripper(JacoThreeFingerGripperBase):
