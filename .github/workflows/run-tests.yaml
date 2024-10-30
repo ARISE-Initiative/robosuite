@@ -37,8 +37,10 @@ jobs:
           pip install -r requirements.txt
           pip install mink
         fi
-        if [ -f requirements-extra.txt ]; then pip install -r requirements-extra.txt; fi
-
+        if [ -f requirements-extra.txt ]; then 
+          pip install -r requirements-extra.txt
+          pip uninstall -y robosuite-models
+        fi
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
