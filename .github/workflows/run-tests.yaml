@@ -29,13 +29,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
 
-    # Install the current repo
+    # Install the current repo. We explictly install mink as it's supposed to be in requirements-extra, but we need it for passing CI test.
     - name: Install robosuite
       run: |
         pip install -e .
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        if [ -f requirements-extra.txt ]; then pip install -r requirements-extra.txt; fi
-
+        if [ -f requirements.txt ]; then 
+          pip install -r requirements.txt
+          pip install mink
+        fi
+        if [ -f requirements-extra.txt ]; then 
+          pip install -r requirements-extra.txt
+          pip uninstall -y robosuite-models
+        fi
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names

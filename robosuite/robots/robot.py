@@ -2,6 +2,7 @@ import copy
 import json
 import os
 from collections import OrderedDict
+from typing import Optional
 
 import numpy as np
 
@@ -168,8 +169,8 @@ class Robot(object):
         else:
             self.robot_model.add_base(base=robot_base_factory(self.base_type, idn=self.idn))
 
-        self.robot_model._update_joints()
-        self.robot_model._update_actuators()
+        self.robot_model.update_joints()
+        self.robot_model.update_actuators()
         # Use default from robot model for initial joint positions if not specified
         if self.init_qpos is None:
             self.init_qpos = self.robot_model.init_qpos
@@ -504,7 +505,7 @@ class Robot(object):
             bool: True if this arm is near its joint limits
         """
         tolerance = 0.1
-        for (qidx, (q, q_limits)) in enumerate(
+        for qidx, (q, q_limits) in enumerate(
             zip(self.sim.data.qpos[self._ref_joint_pos_indexes], self.sim.model.jnt_range[self._ref_joint_indexes])
         ):
             if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
@@ -612,6 +613,23 @@ class Robot(object):
         """
         self.sim.data.qpos[self._ref_joint_pos_indexes] = jpos
         self.sim.forward()
+
+    def set_gripper_joint_positions(self, jpos: np.ndarray, gripper_arm: Optional[str] = None):
+        """
+        Helper method to force gripper joint positions to the passed values.
+
+        Args:
+            jpos (np.array): Joint jpos to manually set the gripper to
+            gripper_arm: arm corresponding to the gripper for which to set the gripper joint jpos.
+                If None, use default arm.
+        """
+        if gripper_arm is None:
+            gripper_arm = self.arms[0]
+        if self.has_gripper[gripper_arm]:
+            self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[gripper_arm]] = jpos
+            self.sim.forward()
+        else:
+            raise ValueError(f"No gripper found for arm {gripper_arm}")
 
     @property
     def js_energy(self):
@@ -919,7 +937,7 @@ class Robot(object):
             return self.composite_controller.create_action_vector(action_dict)
         else:
             full_action_vector = np.zeros(self.action_dim)
-            for (part_name, action_vector) in action_dict.items():
+            for part_name, action_vector in action_dict.items():
                 if part_name not in self._action_split_indexes:
                     ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
                     continue

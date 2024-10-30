@@ -12,7 +12,7 @@ from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.ik_utils import IKSolver, get_nullspace_gains
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
-COMPOSITE_CONTROLLERS_DICT = {}
+REGISTERED_COMPOSITE_CONTROLLERS_DICT = {}
 
 
 def register_composite_controller(target_class):
@@ -23,7 +23,7 @@ def register_composite_controller(target_class):
         key = "_".join(re.sub(r"([A-Z0-9])", r" \1", target_class.__name__).split()).upper()
     else:
         key = target_class.name
-    COMPOSITE_CONTROLLERS_DICT[key] = target_class
+    REGISTERED_COMPOSITE_CONTROLLERS_DICT[key] = target_class
     return target_class
 
 

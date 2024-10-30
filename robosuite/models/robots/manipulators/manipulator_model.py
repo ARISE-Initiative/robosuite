@@ -92,7 +92,7 @@ class ManipulatorModel(RobotModel):
             # Update cameras in this model
             self.cameras = self.get_element_names(self.worldbody, "camera")
 
-    def _update_joints(self):
+    def update_joints(self):
         """internal function to update joint lists"""
         for joint in self.all_joints:
             if "torso" in joint:
@@ -113,7 +113,7 @@ class ManipulatorModel(RobotModel):
             ):
                 self._arms_joints.append(joint)
 
-    def _update_actuators(self):
+    def update_actuators(self):
         """internal function to update actuator lists"""
         for actuator in self.all_actuators:
             if "torso" in actuator:

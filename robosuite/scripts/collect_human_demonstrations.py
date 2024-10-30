@@ -84,6 +84,8 @@ def collect_human_trajectory(env, device, arm):
         env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
         env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
         env_action = np.concatenate(env_action)
+        for gripper_ac in all_prev_gripper_actions[device.active_robot]:
+            all_prev_gripper_actions[device.active_robot][gripper_ac] = action_dict[gripper_ac]
 
         env.step(env_action)
         env.render()
@@ -215,7 +217,7 @@ if __name__ == "__main__":
         "--controller",
         type=str,
         default=None,
-        help="Choice of controller. Can be generic (eg. 'BASIC' or 'WHOLE_BODY_IK') or json file (see robosuite/controllers/config for examples)",
+        help="Choice of controller. Can be generic (eg. 'BASIC' or 'WHOLE_BODY_MINK_IK') or json file (see robosuite/controllers/config for examples)",
     )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
@@ -224,7 +226,7 @@ if __name__ == "__main__":
         "--renderer",
         type=str,
         default="mjviewer",
-        help="Use the Nvisii viewer (Nvisii), OpenCV viewer (mujoco), or Mujoco's builtin interactive viewer (mjviewer)",
+        help="Use Mujoco's builtin interactive viewer (mjviewer) or OpenCV viewer (mujoco)",
     )
     args = parser.parse_args()
 
@@ -234,7 +236,7 @@ if __name__ == "__main__":
         robot=args.robots[0],
     )
 
-    if controller_config["type"] == "WHOLE_BODY_IK":
+    if controller_config["type"] == "WHOLE_BODY_MINK_IK":
         # mink-speicific import. requires installing mink
         from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 

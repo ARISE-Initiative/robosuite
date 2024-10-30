@@ -180,84 +180,88 @@ class Device(metaclass=abc.ABCMeta):
             "target",
         ]  # update next target either based on achieved pose or current target pose
 
-        # TODO: ideally separate kinematics from controller to unify frame conversion logic
-        if robot.composite_controller_config["type"] == "WHOLE_BODY_IK":
-            site_names: List[str] = self.env.robots[0].composite_controller.joint_action_policy.site_names
-            for site_name in site_names:
-                target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
-                if arm != target_name_prefix:
-                    continue
-                target_pos_world, target_ori_mat_world = self.env.sim.data.get_site_xpos(
-                    site_name
-                ), self.env.sim.data.get_site_xmat(site_name)
-                # update based on received delta actions
-                target_pos_world += norm_delta[:3]
-                target_ori_mat_world = np.dot(T.quat2mat(T.axisangle2quat(norm_delta[3:])), target_ori_mat_world)
-                # check if need to update frames
-                # TODO: should be more general
-                if (
-                    self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                        "ik_input_ref_frame", "world"
-                    )
-                    != "world"
-                ):
-                    target_pose = np.eye(4)
-                    target_pose[:3, 3] = target_pos_world
-                    target_pose[:3, :3] = target_ori_mat_world
-                    target_pose = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
-                        src_frame_pose=target_pose,
-                        src_frame="world",  # mocap pose is world coordinates
-                        dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                            "ik_input_ref_frame", "world"
-                        ),
-                    )
-                    target_pos, target_ori_mat = target_pose[:3, 3], target_pose[:3, :3]
-                else:
-                    target_pos, target_ori_mat = target_pos_world, target_ori_mat_world
-
-                # convert ori mat to axis angle
-                axis_angle_target = T.quat2axisangle(T.mat2quat(target_ori_mat))
-                abs_action = np.concatenate([target_pos, axis_angle_target])
-
-            return {
-                "delta": norm_delta,
-                "abs": abs_action,
-            }
-
-        arm_controller = robot.part_controllers[arm]
-        if isinstance(arm_controller, OperationalSpaceController):
-            # TODO: the logic between OSC and mink is fragmented right now. Unify
+        # TODO: the logic between OSC and while body based ik is fragmented right now. Unify
+        if isinstance(robot.part_controllers[arm], OperationalSpaceController):
+            arm_controller = robot.part_controllers[arm]
             delta_action = arm_controller.scale_action(norm_delta.copy())
             abs_action = arm_controller.delta_to_abs_action(delta_action, goal_update_mode=None)
             return {
                 "delta": norm_delta,
                 "abs": abs_action,
             }
+        elif robot.composite_controller_config["type"] in ["WHOLE_BODY_MINK_IK"]:
+            ref_frame = self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                "ik_input_ref_frame", "world"
+            )
 
-        if goal_update_mode == "achieved" or self._prev_target[arm] is None:
-            site_name = f"gripper0_{arm}_grip_site"
-            # update next target based on current achieved pose
-            pos = self.env.sim.data.get_site_xpos(site_name).copy()
-            ori = self.env.sim.data.get_site_xmat(site_name).copy()
+            delta_action = norm_delta.copy()
+            delta_action[0:3] *= 0.05
+            delta_action[3:6] *= 0.15
+
+            # general case
+            if goal_update_mode == "achieved" or self._prev_target[arm] is None:
+                site_name = f"gripper0_{arm}_grip_site"
+                # update next target based on current achieved pose
+                pos = self.env.sim.data.get_site_xpos(site_name).copy()
+                ori = self.env.sim.data.get_site_xmat(site_name).copy()
+                if ref_frame == "base":
+                    # convert target in world coordinate to
+                    pose_in_world = np.eye(4)
+                    pose_in_world[:3, 3] = pos
+                    pose_in_world[:3, :3] = ori
+                    pose_in_base = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                        src_frame_pose=pose_in_world,
+                        src_frame="world",  # mocap pose is world coordinates
+                        dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                            "ik_input_ref_frame", "world"
+                        ),
+                    )
+                    pos, ori = pose_in_base[:3, 3], pose_in_base[:3, :3]
+            else:
+                # update next target based on previous target pose
+                pos = self._prev_target[arm][0:3].copy()
+                ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
+
+            # new positions computed in world frame coordinates
+            new_pos = pos + delta_action[0:3]
+            delta_ori = T.quat2mat(T.axisangle2quat(delta_action[3:6]))
+            new_ori = np.dot(delta_ori, ori)
+            new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
+
+            abs_action = np.concatenate([new_pos, new_axisangle])
+            self._prev_target[arm] = abs_action.copy()
+
+            return {
+                "delta": delta_action,
+                "abs": abs_action,
+            }
+        elif robot.composite_controller_config["type"] in ["WHOLE_BODY_IK"]:
+            if goal_update_mode == "achieved" or self._prev_target[arm] is None:
+                site_name = f"gripper0_{arm}_grip_site"
+                # update next target based on current achieved pose
+                pos = self.env.sim.data.get_site_xpos(site_name).copy()
+                ori = self.env.sim.data.get_site_xmat(site_name).copy()
+            else:
+                # update next target based on previous target pose
+                pos = self._prev_target[arm][0:3].copy()
+                ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
+
+            delta_action = norm_delta.copy()
+            delta_action[0:3] *= 0.05
+            delta_action[3:6] *= 0.15
+
+            # new positions computed in world frame coordinates
+            new_pos = pos + delta_action[0:3]
+            delta_ori = T.quat2mat(T.axisangle2quat(delta_action[3:6]))
+            new_ori = np.dot(delta_ori, ori)
+            new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
+
+            abs_action = np.concatenate([new_pos, new_axisangle])
+            self._prev_target[arm] = abs_action.copy()
+
+            return {
+                "delta": delta_action,
+                "abs": abs_action,
+            }
         else:
-            # update next target based on previous target pose
-            pos = self._prev_target[arm][0:3].copy()
-            ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
-
-        delta_action = norm_delta.copy()
-        delta_action[0:3] *= 0.05
-        delta_action[3:6] *= 0.15
-
-        # new positions computed in world frame coordinates
-        new_pos = pos + delta_action[0:3]
-        delta_ori = T.quat2mat(T.axisangle2quat(delta_action[3:6]))
-        new_ori = np.dot(delta_ori, ori)
-        new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
-
-        abs_action = np.concatenate([new_pos, new_axisangle])
-        self._prev_target[arm] = abs_action.copy()
-
-        return {
-            "delta": delta_action,
-            "abs": abs_action,
-        }
+            raise NotImplementedError

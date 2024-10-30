@@ -1,7 +1,7 @@
 # Installation
 **robosuite** officially supports macOS and Linux on Python 3. It can be run with an on-screen display for visualization or in a headless mode for model training, with or without a GPU.
 
-The base installation requires the MuJoCo physics engine (with [mujoco](https://github.com/deepmind/mujoco), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate` or setting up a Conda environment by installing [Anaconda](https://www.anaconda.com/) and running `conda create -n robosuite python=3.8`.
+The base installation requires the MuJoCo physics engine (with [mujoco](https://github.com/deepmind/mujoco), refer to link for troubleshooting the installation and further instructions) and [numpy](http://www.numpy.org/). To avoid interfering with system packages, it is recommended to install it under a virtual environment by first running `virtualenv -p python3 . && source bin/activate` or setting up a Conda environment by installing [Anaconda](https://www.anaconda.com/) and running `conda create -n robosuite python=3.10`.
 
 ### Install from pip
 

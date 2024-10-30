@@ -32,7 +32,7 @@ def test_mujoco_renderer():
         env.render()
 
 
-def test_default_renderer():
+def test_mjviewer_renderer():
     env = suite.make(
         env_name="Lift",
         robots="Panda",
@@ -42,7 +42,7 @@ def test_default_renderer():
         ignore_done=True,
         use_camera_obs=False,
         control_freq=20,
-        renderer="default",
+        renderer="mjviewer",
     )
 
     env.reset()

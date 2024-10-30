@@ -59,3 +59,12 @@ At any given time, each robot has a set of `properties` whose real-time values c
 #### Baxter
 ![baxter_robot](../images/models/robot_model_Baxter.png)
 [Baxter](http://collabrobots.com/about-baxter-robot/) is an older but classic bimanual robot originally produced by Rethink Robotics but now owned by CoThink Robotics, and is equipped with two 7-DoF arms as well as an addition joint for controlling its swiveling display screen (inactive and disabled by default in **robosuite**). Each arm can be controlled independently in, and is the single multi-armed model currently supported in **robosuite**. Each arm is equipped with a `RethinkGripper` by default.
+
+## Robot Bases
+
+We provide a set of robot bases that can be added to the `RobotModel` via the `add_base(base: RobotBaseModel)` method. These bases can be static (e.g. `MountModel`) or movable (e.g. `MobileBaseModel` or `LegBaseModel`). This enables composability of robots with different bases, such as a mobile manipulator robot or a quadruped robot. Examples are shown in the [compositional.py](robosuite/models/robots/compositional.py).
+
+
+## Robosuite Models
+
+Other than the core robot models, we also provide more models for the `robosuite` ecosystem. Checkout this [robosuite_models](https://github.com/ARISE-Initiative/robosuite_models) repository for more details. This can also be installed via `pip install robosuite-models`.
