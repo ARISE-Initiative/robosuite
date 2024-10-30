@@ -28,8 +28,8 @@ import os
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 import robosuite.utils.transform_utils as T
+from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 
 # Define the threshold locations, delta values, and ratio #
 
