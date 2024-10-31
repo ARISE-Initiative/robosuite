@@ -62,7 +62,7 @@
     <mesh name="W2_0" file="obj_meshes/wrist/W2/W2_0.obj"/>
     <mesh name="W2_1" file="obj_meshes/wrist/W2/W2_1.obj"/>
     <mesh name="W2_2" file="obj_meshes/wrist/W2/W2_2.obj"/>
-    <mesh name="base_link_collision" file="meshes/torso/base_link_collision.stl"/>
+    <mesh name="base_link_collision" file="obj_meshes/torso/base_link_collision.stl"/>
   </asset>
   <default>
     <default class="viz">
