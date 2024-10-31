@@ -28,7 +28,7 @@ import os
 import numpy as np
 
 import robosuite as suite
-from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
+import robosuite.controllers.composite.composite_controller_factory as composite_controller_factory
 import robosuite.utils.transform_utils as T
 
 # Define the threshold locations, delta values, and ratio #
@@ -97,7 +97,7 @@ def test_linear_interpolator():
                 np.random.seed(3)
 
                 # load a composite controller
-                controller_config = load_composite_controller_config(
+                controller_config = composite_controller_factory.load_composite_controller_config(
                     controller=controller_name,
                     robot="Sawyer",
                 )
