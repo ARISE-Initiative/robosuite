@@ -28,6 +28,7 @@ import os
 import numpy as np
 
 import robosuite as suite
+import robosuite.controllers.composite.composite_controller_factory as composite_controller_factory
 import robosuite.utils.transform_utils as T
 
 # Define the threshold locations, delta values, and ratio #
@@ -70,7 +71,7 @@ def step(env, action, current_torques):
         env.sim.forward()
         env._pre_action(action, policy_step)
         last_torques = current_torques
-        current_torques = env.robots[0].torques
+        current_torques = env.robots[0].composite_controller.part_controllers["right"].torques
         summed_abs_delta_torques += np.abs(current_torques - last_torques)
         env.sim.step()
         policy_step = False
@@ -83,7 +84,7 @@ def step(env, action, current_torques):
 # Running the actual test #
 def test_linear_interpolator():
 
-    for controller_name in ["IK_POSE", "OSC_POSE"]:
+    for controller_name in [None, "BASIC"]:  # None corresponds to robot's default controller
 
         for traj in ["pos", "ori"]:
 
@@ -95,16 +96,11 @@ def test_linear_interpolator():
                 # Define numpy seed so we guarantee consistent starting pos / ori for each trajectory
                 np.random.seed(3)
 
-                # Define controller path to load
-                controller_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "../../robosuite",
-                    "controllers/config/{}.json".format(controller_name.lower()),
+                # load a composite controller
+                controller_config = composite_controller_factory.load_composite_controller_config(
+                    controller=controller_name,
+                    robot="Sawyer",
                 )
-                with open(controller_path) as f:
-                    controller_config = json.load(f)
-                    controller_config["interpolation"] = interpolator
-                    controller_config["ramp_ratio"] = 1.0
 
                 # Now, create a test env for testing the controller on
                 env = suite.make(
@@ -124,8 +120,8 @@ def test_linear_interpolator():
                 # Hardcode the starting position for sawyer
                 init_qpos = [-0.5538, -0.8208, 0.4155, 1.8409, -0.4955, 0.6482, 1.9628]
                 env.robots[0].set_robot_joint_positions(init_qpos)
-                env.robots[0].controller.update_initial_joints(init_qpos)
-                env.robots[0].controller.reset_goal()
+                env.robots[0].composite_controller.part_controllers["right"].update_initial_joints(init_qpos)
+                env.robots[0].composite_controller.part_controllers["right"].reset_goal()
 
                 # Notify user a new trajectory is beginning
                 print(
@@ -140,19 +136,21 @@ def test_linear_interpolator():
 
                 # Keep track of state of robot eef (pos, ori (euler)) and torques
                 current_torques = np.zeros(7)
-                initial_state = [env.robots[0]._hand_pos, T.mat2quat(env.robots[0]._hand_orn)]
+                initial_state = [env.robots[0]._hand_pos["right"], T.mat2quat(env.robots[0]._hand_orn["right"])]
                 dstate = [
-                    env.robots[0]._hand_pos - initial_state[0],
-                    T.mat2euler(T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn), initial_state[1]))),
+                    env.robots[0]._hand_pos["right"] - initial_state[0],
+                    T.mat2euler(
+                        T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn["right"]), initial_state[1]))
+                    ),
                 ]
 
                 # Define the uniform trajectory action
                 if traj == "pos":
-                    pos_act = pos_action_ik if controller_name == "IK_POSE" else pos_action_osc
+                    pos_act = pos_action_osc
                     rot_act = np.zeros(3)
                 else:
                     pos_act = np.zeros(3)
-                    rot_act = rot_action_ik if controller_name == "IK_POSE" else rot_action_osc
+                    rot_act = rot_action_osc
 
                 # Compose the action
                 action = np.concatenate([pos_act, rot_act, [0]])
@@ -171,8 +169,10 @@ def test_linear_interpolator():
                     summed_abs_delta_torques[j] += summed_torques
                     timesteps[j] += 1
                     dstate = [
-                        env.robots[0]._hand_pos - initial_state[0],
-                        T.mat2euler(T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn), initial_state[1]))),
+                        env.robots[0]._hand_pos["right"] - initial_state[0],
+                        T.mat2euler(
+                            T.quat2mat(T.quat_distance(T.mat2quat(env.robots[0]._hand_orn["right"]), initial_state[1]))
+                        ),
                     ]
 
                 # When finished, print out the timestep results

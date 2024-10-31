@@ -19,21 +19,27 @@ def test_all_environments():
     for env_name in envs:
         # Create config dict
         env_config = {"env_name": env_name}
-        for robot_name in ("Panda", "Sawyer", "Baxter"):
+        for robot_name in ("Panda", "Sawyer", "Baxter", "GR1"):
             # create an environment for learning on pixels
             config = None
             if "TwoArm" in env_name:
+                if robot_name == "GR1":
+                    continue
                 if robot_name == "Baxter":
                     robots = robot_name
                     config = "bimanual"
                 else:
                     robots = [robot_name, robot_name]
-                    config = "single-arm-opposed"
+                    config = "opposed"
                 # compile configuration specs
                 env_config["robots"] = robots
                 env_config["env_configuration"] = config
+            elif "Humanoid" in env_name:
+                if robot_name != "GR1":
+                    continue
+                env_config["robots"] = robot_name
             else:
-                if robot_name == "Baxter":
+                if robot_name == "Baxter" or robot_name == "GR1":
                     continue
                 env_config["robots"] = robot_name
 

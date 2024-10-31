@@ -21,6 +21,7 @@ import time
 from collections import namedtuple
 
 import numpy as np
+from pynput.keyboard import Controller, Key, Listener
 
 try:
     import hid
@@ -30,6 +31,8 @@ except ModuleNotFoundError as exc:
         "Only macOS is officially supported. Install the additional "
         "requirements with `pip install -r requirements-extra.txt`"
     ) from exc
+
+from pynput.keyboard import Controller, Key, Listener
 
 import robosuite.macros as macros
 from robosuite.devices import Device
@@ -105,19 +108,21 @@ class SpaceMouse(Device):
     You can look up its vendor/product id from this method.
 
     Args:
-        vendor_id (int): HID device vendor id
-        product_id (int): HID device product id
+        env (RobotEnv): The environment which contains the robot(s) to control
+                        using this device.
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
 
     def __init__(
         self,
+        env,
         vendor_id=macros.SPACEMOUSE_VENDOR_ID,
         product_id=macros.SPACEMOUSE_PRODUCT_ID,
         pos_sensitivity=1.0,
         rot_sensitivity=1.0,
     ):
+        super().__init__(env)
 
         print("Opening SpaceMouse device")
         self.vendor_id = vendor_id
@@ -149,6 +154,12 @@ class SpaceMouse(Device):
         self.thread.daemon = True
         self.thread.start()
 
+        # also add a keyboard for aux controls
+        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
+
+        # start listening
+        self.listener.start()
+
     @staticmethod
     def _display_controls():
         """
@@ -166,12 +177,18 @@ class SpaceMouse(Device):
         print_command("Move mouse laterally", "move arm horizontally in x-y plane")
         print_command("Move mouse vertically", "move arm vertically")
         print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
+        print_command("Control+C", "quit")
+        print_command("b", "toggle arm/base mode (if applicable)")
+        print_command("s", "switch active arm (if multi-armed robot)")
+        print_command("=", "switch active robot (if multi-robot environment)")
         print("")
 
     def _reset_internal_state(self):
         """
         Resets internal state of controller, except for the reset signal.
         """
+        super()._reset_internal_state()
+
         self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
         # Reset 6-DOF variables
         self.x, self.y, self.z = 0, 0, 0
@@ -213,6 +230,7 @@ class SpaceMouse(Device):
             raw_drotation=np.array([roll, pitch, yaw]),
             grasp=self.control_gripper,
             reset=self._reset_state,
+            base_mode=int(self.base_mode),
         )
 
     def run(self):
@@ -307,6 +325,41 @@ class SpaceMouse(Device):
         if self.single_click_and_hold:
             return 1.0
         return 0
+
+    def on_press(self, key):
+        """
+        Key handler for key presses.
+        Args:
+            key (str): key that was pressed
+        """
+        pass
+
+    def on_release(self, key):
+        """
+        Key handler for key releases.
+        Args:
+            key (str): key that was pressed
+        """
+        try:
+            # controls for mobile base (only applicable if mobile base present)
+            if key.char == "b":
+                self.base_modes[self.active_robot] = not self.base_modes[self.active_robot]  # toggle mobile base
+            elif key.char == "s":
+                self.active_arm_index = (self.active_arm_index + 1) % len(self.all_robot_arms[self.active_robot])
+            elif key.char == "=":
+                self.active_robot = (self.active_robot + 1) % self.num_robots
+
+        except AttributeError as e:
+            pass
+
+    def _postprocess_device_outputs(self, dpos, drotation):
+        drotation = drotation * 50
+        dpos = dpos * 125
+
+        dpos = np.clip(dpos, -1, 1)
+        drotation = np.clip(drotation, -1, 1)
+
+        return dpos, drotation
 
 
 if __name__ == "__main__":

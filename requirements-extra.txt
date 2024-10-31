@@ -1,6 +1,3 @@
-# required for IK controllers
-pybullet-svl>=3.1.6.4
-
 # required for GymWrapper
 gymnasium
 
@@ -10,5 +7,8 @@ hidapi
 # required for demonstration utils
 h5py
 
-# required for nvisii renderer
-open3d
+# for mujoco ik
+mink
+
+# for extra robosuite_models
+robosuite-models==1.0.0

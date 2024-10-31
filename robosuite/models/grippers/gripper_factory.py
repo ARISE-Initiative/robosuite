@@ -1,9 +1,12 @@
 """
 Defines a string based method of initializing grippers
 """
+from typing import Optional
+
+from robosuite.models.grippers.gripper_model import GripperModel
 
 
-def gripper_factory(name, idn=0):
+def gripper_factory(name: Optional[str], idn=0) -> GripperModel:
     """
     Generator for grippers
 
@@ -23,7 +26,7 @@ def gripper_factory(name, idn=0):
     from robosuite.models.grippers import ALL_GRIPPERS, GRIPPER_MAPPING
 
     # Make sure gripper is valid
-    assert name in GRIPPER_MAPPING, f"Unknown gripper name: {name}. Valid options are: {ALL_GRIPPERS}"
+    assert name in GRIPPER_MAPPING, f"Unknown end effector name: {name}. Valid options are: {ALL_GRIPPERS}"
 
     # Generate gripper
     return GRIPPER_MAPPING[name](idn=idn)

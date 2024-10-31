@@ -6,6 +6,7 @@ This runs some basic sanity checks on the environment, namely, checking that:
 
 Obviously, if an environment crashes during runtime, that is considered a failure as well.
 """
+
 from robosuite.models.grippers import GRIPPER_MAPPING
 
 
@@ -22,6 +23,7 @@ def _test_gripper(gripper):
     assert action is not None
 
     assert gripper.init_qpos is not None
+    assert len(gripper.init_qpos) == len(gripper.joints)
 
 
 if __name__ == "__main__":

@@ -927,3 +927,21 @@ def matrix_inverse(matrix):
         np.array: 2d-array representing the matrix inverse
     """
     return np.linalg.inv(matrix)
+
+
+def rotate_2d_point(input, rot):
+    """
+    rotate a 2d vector counterclockwise
+
+    Args:
+        input (np.array): 1d-array representing 2d vector
+        rot (float): rotation value
+
+    Returns:
+        np.array: rotated 1d-array
+    """
+    input_x, input_y = input
+    x = input_x * np.cos(rot) - input_y * np.sin(rot)
+    y = input_x * np.sin(rot) + input_y * np.cos(rot)
+
+    return np.array([x, y])

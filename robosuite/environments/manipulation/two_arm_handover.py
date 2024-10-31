@@ -16,21 +16,15 @@ class TwoArmHandover(TwoArmEnv):
     This class corresponds to the handover task for two robot arms.
 
     Args:
-        robots (str or list of str): Specification for specific robot arm(s) to be instantiated within this env
-            (e.g: "Sawyer" would generate one arm; ["Panda", "Panda", "Sawyer"] would generate three robot arms)
-            Note: Must be either 2 single single-arm robots or 1 bimanual robot!
+        robots (str or list of str): Specification for specific robot(s)
+            Note: Must be either 2 robots or 1 bimanual robot!
 
-        env_configuration (str): Specifies how to position the robots within the environment. Can be either:
+        env_configuration (str): Specifies how to position the robots within the environment if two robots inputted. Can be either:
 
-            :`'bimanual'`: Only applicable for bimanual robot setups. Sets up the (single) bimanual robot on the -x
-                side of the table
-            :`'single-arm-parallel'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots next to each other on the -x side of the table
-            :`'single-arm-opposed'`: Only applicable for multi single arm setups. Sets up the (two) single armed
-                robots opposed from each others on the opposite +/-y sides of the table.
+            :`'parallel'`: Sets up the two robots next to each other on the -x side of the table
+            :`'opposed'`: Sets up the two robots opposed from each others on the opposite +/-y sides of the table.
 
-        Note that "default" corresponds to either "bimanual" if a bimanual robot is used or "single-arm-opposed" if two
-        single-arm robots are used.
+        Note that "default" "opposed" if two robots are used.
 
         controller_configs (str or list of dict): If set, contains relevant controller parameters for creating a
             custom controller. Else, uses the default controller for this specific task. Should either be single
@@ -98,6 +92,9 @@ class TwoArmHandover(TwoArmEnv):
 
         control_freq (float): how many control signals to receive in every second. This sets the amount of
             simulation time that passes between every action input.
+
+        lite_physics (bool): Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+            Set to False to preserve backward compatibility with datasets collected in robosuite <= 1.4.1.
 
         horizon (int): Every episode lasts for exactly @horizon timesteps.
 
@@ -167,6 +164,7 @@ class TwoArmHandover(TwoArmEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
+        lite_physics=True,
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
@@ -175,7 +173,7 @@ class TwoArmHandover(TwoArmEnv):
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}
-        renderer="mujoco",
+        renderer="mjviewer",
         renderer_config=None,
     ):
         # Task settings
@@ -203,7 +201,7 @@ class TwoArmHandover(TwoArmEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            mount_types="default",
+            base_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
@@ -214,6 +212,7 @@ class TwoArmHandover(TwoArmEnv):
             render_visual_mesh=render_visual_mesh,
             render_gpu_device_id=render_gpu_device_id,
             control_freq=control_freq,
+            lite_physics=lite_physics,
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
@@ -312,11 +311,11 @@ class TwoArmHandover(TwoArmEnv):
         super()._load_model()
 
         # Adjust base pose(s) accordingly
-        if self.env_configuration == "bimanual":
+        if self.env_configuration == "single-robot":
             xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
             self.robots[0].robot_model.set_base_xpos(xpos)
         else:
-            if self.env_configuration == "single-arm-opposed":
+            if self.env_configuration == "opposed":
                 # Set up robots facing towards each other by rotating them from their default position
                 for robot, rotation, offset in zip(self.robots, (np.pi / 2, -np.pi / 2), (-0.25, 0.25)):
                     xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -325,7 +324,7 @@ class TwoArmHandover(TwoArmEnv):
                     xpos += np.array((0, offset, 0))
                     robot.robot_model.set_base_xpos(xpos)
                     robot.robot_model.set_base_ori(rot)
-            else:  # "single-arm-parallel" configuration setting
+            else:  # "parallel" configuration setting
                 # Set up robots parallel to each other but offset from the center
                 for robot, offset in zip(self.robots, (-0.6, 0.6)):
                     xpos = robot.robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -402,13 +401,6 @@ class TwoArmHandover(TwoArmEnv):
 
         # low-level object information
         if self.use_object_obs:
-            # Get robot prefix and define observables modality
-            if self.env_configuration == "bimanual":
-                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
-                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
-            else:
-                pf0 = self.robots[0].robot_model.naming_prefix
-                pf1 = self.robots[1].robot_model.naming_prefix
             modality = "object"
 
             # position and rotation of hammer
@@ -424,24 +416,32 @@ class TwoArmHandover(TwoArmEnv):
             def handle_xpos(obs_cache):
                 return np.array(self._handle_xpos)
 
-            @sensor(modality=modality)
-            def gripper0_to_handle(obs_cache):
-                return (
-                    obs_cache["handle_xpos"] - obs_cache[f"{pf0}eef_pos"]
-                    if "handle_xpos" in obs_cache and f"{pf0}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            @sensor(modality=modality)
-            def gripper1_to_handle(obs_cache):
-                return (
-                    obs_cache["handle_xpos"] - obs_cache[f"{pf1}eef_pos"]
-                    if "handle_xpos" in obs_cache and f"{pf1}eef_pos" in obs_cache
-                    else np.zeros(3)
-                )
-
-            sensors = [hammer_pos, hammer_quat, handle_xpos, gripper0_to_handle, gripper1_to_handle]
+            sensors = [hammer_pos, hammer_quat, handle_xpos]
             names = [s.__name__ for s in sensors]
+            arm_sensor_fns = []
+            if self.env_configuration == "single-robot":
+                # If single-robot, we only have one robot. gripper 0 is always right and gripper 1 is always left
+                pf0 = self.robots[0].robot_model.naming_prefix + "right_"
+                pf1 = self.robots[0].robot_model.naming_prefix + "left_"
+                prefixes = [pf0, pf1]
+                arm_sensor_fns = [
+                    self._get_obj_eef_sensor(full_pf, f"handle_xpos", f"gripper{i}_to_handle", modality)
+                    for i, full_pf in enumerate(prefixes)
+                ]
+            else:
+                # If not single-robot, we have two robots. gripper 0 is always the first robot's gripper and
+                # gripper 1 is always the second robot's gripper. However, must account for the fact that
+                # each robot may have multiple arms/grippers
+                robot_arm_prefixes = [self._get_arm_prefixes(robot, include_robot_name=False) for robot in self.robots]
+                robot_full_prefixes = [self._get_arm_prefixes(robot, include_robot_name=True) for robot in self.robots]
+                for i, (arm_prefixes, full_prefixes) in enumerate(zip(robot_arm_prefixes, robot_full_prefixes)):
+                    arm_sensor_fns += [
+                        self._get_obj_eef_sensor(full_pf, f"handle_xpos", f"{arm_pf}gripper{i}_to_handle", modality)
+                        for arm_pf, full_pf in zip(arm_prefixes, full_prefixes)
+                    ]
+
+            sensors += arm_sensor_fns
+            names += [s.__name__ for s in arm_sensor_fns]
 
             # Create observables
             for name, s in zip(names, sensors):
@@ -476,32 +476,33 @@ class TwoArmHandover(TwoArmEnv):
                     eef_rot_quat = T.mat2quat(T.euler2mat([np.pi - T.mat2euler(self._eef0_xmat)[2], 0, 0]))
                     obj_quat = T.quat_multiply(obj_quat, eef_rot_quat)
                     for j in range(100):
-                        # Set object in hand
+                        # Set object in hand always placing it in the right gripper
                         self.sim.data.set_joint_qpos(
                             obj.joints[0], np.concatenate([self._eef0_xpos, np.array(obj_quat)])
                         )
                         # Close gripper (action = 1) and prevent arm from moving
-                        if self.env_configuration == "bimanual":
+                        if self.env_configuration == "single-robot":
                             # Execute no-op action with gravity compensation
                             torques = np.concatenate(
                                 [
-                                    self.robots[0].controller["right"].torque_compensation,
-                                    self.robots[0].controller["left"].torque_compensation,
+                                    self.robots[0].part_controllers["right"].torque_compensation,
+                                    self.robots[0].part_controllers["left"].torque_compensation,
                                 ]
                             )
-                            self.sim.data.ctrl[self.robots[0]._ref_joint_actuator_indexes] = torques
-                            # Execute gripper action
-                            self.robots[0].grip_action(gripper=self.robots[0].gripper["right"], gripper_action=[1])
+                            self.sim.data.ctrl[self.robots[0]._ref_arm_joint_actuator_indexes] = torques
                         else:
+                            robot_noops = [
+                                np.concatenate([robot.controller[arm].torque_compensation for arm in robot.arms])
+                                for robot in self.robots
+                            ]
+
                             # Execute no-op action with gravity compensation
-                            self.sim.data.ctrl[self.robots[0]._ref_joint_actuator_indexes] = self.robots[
-                                0
-                            ].controller.torque_compensation
-                            self.sim.data.ctrl[self.robots[1]._ref_joint_actuator_indexes] = self.robots[
-                                1
-                            ].controller.torque_compensation
-                            # Execute gripper action
-                            self.robots[0].grip_action(gripper=self.robots[0].gripper, gripper_action=[1])
+                            self.sim.data.ctrl[self.robots[0]._ref_arm_joint_actuator_indexes] = robot_noops[0]
+                            self.sim.data.ctrl[self.robots[1]._ref_arm_joint_actuator_indexes] = robot_noops[1]
+                        # Execute gripper action
+                        gripper_ac = [1] * self.robots[0].gripper["right"].dof
+                        gripper_ac = self.robots[0].gripper["right"].format_action(gripper_ac)
+                        self.robots[0].part_controllers["right_gripper"].set_goal(gripper_ac)
                         # Take forward step
                         self.sim.step()
 
@@ -529,7 +530,7 @@ class TwoArmHandover(TwoArmEnv):
         # Check if any Arm's gripper is grasping the hammer handle
         (g0, g1) = (
             (self.robots[0].gripper["right"], self.robots[0].gripper["left"])
-            if self.env_configuration == "bimanual"
+            if self.env_configuration == "single-robot"
             else (self.robots[0].gripper, self.robots[1].gripper)
         )
         arm0_grasp_any = self._check_grasp(gripper=g0, object_geoms=self.hammer)
@@ -599,19 +600,19 @@ class TwoArmHandover(TwoArmEnv):
     @property
     def _gripper_0_to_handle(self):
         """
-        Calculate vector from the left gripper to the hammer handle.
+        Calculate vector from gripper0 to the hammer handle.
 
         Returns:
             np.array: (dx,dy,dz) distance vector between handle and EEF0
         """
-        return self._handle_xpos - self._eef0_xpos
+        return self._gripper0_to_target(self.hammer.handle_geoms[0], target_type="geom")
 
     @property
     def _gripper_1_to_handle(self):
         """
-        Calculate vector from the right gripper to the hammer handle.
+        Calculate vector from gripper1 to the hammer handle.
 
         Returns:
             np.array: (dx,dy,dz) distance vector between handle and EEF1
         """
-        return self._handle_xpos - self._eef1_xpos
+        return self._gripper1_to_target(self.hammer.handle_geoms[0], target_type="geom")

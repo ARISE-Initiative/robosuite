@@ -1,4 +1,5 @@
 <mujoco model="jaco_v2">
+    <compiler angle="radian"/>
     <actuator>
         <!-- Physical limits of the actuator. Pulled from raw actuator spec sheet, see:
          https://www.kinovarobotics.com/sites/default/files/AS-ACT-KA58-KA75-SP-INT-EN%20201804-1.2%20%28KINOVA%E2%84%A2%20Actuator%20series%20KA75%2B%20KA-58%20Specifications%29.pdf -->
@@ -34,6 +35,7 @@
             <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
             <!-- mount attached here -->
             <body name="j2s7s300_link_0" pos="0 0 0">
+                <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
                 <inertial pos="0 0 0.05" mass="4" diaginertia="0.4 0.4 0.4" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_jaco" mesh="base" />
                 <geom type="mesh" contype="0" conaffinity="1" material="carbon_jaco" mesh="base" name="base_collision"/>

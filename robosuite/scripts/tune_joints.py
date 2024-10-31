@@ -18,10 +18,9 @@ RELEVANT KEY PRESSES:
 import argparse
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
+from pynput.keyboard import Key, Listener
 
 import robosuite
-from robosuite.robots import SingleArm
 
 
 class KeyboardHandler:
@@ -179,12 +178,14 @@ class KeyboardHandler:
         """
         Toggle between arms in the environment to set as current active arm
         """
-        if isinstance(self.active_robot, SingleArm):
+        if len(self.active_robot.arms) == 1:
             self.active_robot_num = (self.active_robot_num + 1) % self.num_robots
             robot = self.active_robot_num
-        else:  # Bimanual case
+        elif len(self.active_robot.arms) == 2:
             self.active_arm = "left" if self.active_arm == "right" else "right"
             robot = self.active_arm
+        else:
+            raise ValueError("number of arms must be 1 or 2")
         # Reset joint being controlled to 1
         self.active_arm_joint = 1
         # Print out new robot to user
@@ -200,10 +201,10 @@ class KeyboardHandler:
             delta (float): Increment to alter specific joint by
         """
         self.current_joints_pos[i - 1] += delta
-        if isinstance(self.active_robot, SingleArm):
+        if len(self.active_robot.arms) == 1:
             robot = self.active_robot_num
             self.env.sim.data.qpos[self.active_robot._ref_joint_pos_indexes] = self.current_joints_pos
-        else:  # Bimanual case
+        elif len(self.active_robot.arms) == 2:
             robot = self.active_arm
             if self.active_arm == "right":
                 self.env.sim.data.qpos[
@@ -213,6 +214,8 @@ class KeyboardHandler:
                 self.env.sim.data.qpos[
                     self.active_robot._ref_joint_pos_indexes[self.num_joints :]
                 ] = self.current_joints_pos
+        else:
+            raise ValueError("number of arms must be 1 or 2")
         # Print out current joint positions to user
         print("Robot {} joint qpos: {}".format(robot, self.current_joints_pos))
 
@@ -230,10 +233,12 @@ class KeyboardHandler:
         Returns:
             int: number of joints for the current arm
         """
-        if isinstance(self.active_robot, SingleArm):
+        if len(self.active_robot.arms) == 1:
             return len(self.active_robot.torque_limits[0])
-        else:  # Bimanual arm case
+        elif len(self.active_robot.arms) == 2:
             return int(len(self.active_robot.torque_limits[0]) / 2)
+        else:
+            raise ValueError("number of arms must be 1 or 2")
 
 
 def print_command(char, info):

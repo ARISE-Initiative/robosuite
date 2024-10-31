@@ -10,10 +10,10 @@ Environments are created by calling `robosuite.make` with the name of the task a
 
 ```python
 import robosuite
-from robosuite.controllers import load_controller_config
+from robosuite.controllers import load_part_controller_config
 
 # load default controller parameters for Operational Space Control (OSC)
-controller_config = load_controller_config(default_controller="OSC_POSE")
+controller_config = load_part_controller_config(default_controller="OSC_POSE")
 
 # create an environment to visualize on-screen
 env = robosuite.make(
@@ -21,7 +21,7 @@ env = robosuite.make(
     robots=["Sawyer", "Panda"],             # load a Sawyer robot and a Panda robot
     gripper_types="default",                # use default grippers per robot arm
     controller_configs=controller_config,   # each arm is controlled using OSC
-    env_configuration="single-arm-opposed", # (two-arm envs only) arms face each other
+    env_configuration="opposed",            # (two-arm envs only) arms face each other
     has_renderer=True,                      # on-screen rendering
     render_camera="frontview",              # visualize the "frontview" camera
     has_offscreen_renderer=False,           # no off-screen rendering
@@ -37,7 +37,7 @@ env = robosuite.make(
     robots=["Sawyer", "Panda"],             # load a Sawyer robot and a Panda robot
     gripper_types="default",                # use default grippers per robot arm
     controller_configs=controller_config,   # each arm is controlled using OSC
-    env_configuration="single-arm-opposed", # (two-arm envs only) arms face each other
+    env_configuration="opposed",            # (two-arm envs only) arms face each other
     has_renderer=False,                     # no on-screen rendering
     has_offscreen_renderer=False,           # no off-screen rendering
     control_freq=20,                        # 20 hz control for applied actions
@@ -53,7 +53,7 @@ env = robosuite.make(
     robots=["Sawyer", "Panda"],             # load a Sawyer robot and a Panda robot
     gripper_types="default",                # use default grippers per robot arm
     controller_configs=controller_config,   # each arm is controlled using OSC
-    env_configuration="single-arm-opposed", # (two-arm envs only) arms face each other
+    env_configuration="opposed",            # (two-arm envs only) arms face each other
     has_renderer=False,                     # no on-screen rendering
     has_offscreen_renderer=True,            # off-screen rendering needed for image obs
     control_freq=20,                        # 20 hz control for applied actions
@@ -74,7 +74,7 @@ We provide a few additional details on a few keyword arguments below to highligh
 - `robots` : this argument can be used to easily instantiate tasks with different robot arms. For example, we could change the task to use two "Jaco" robots by passing `robots=["Jaco", "Jaco"]`. Once the environment is initialized, these robots (as captured by the [Robot](../simulation/robot.html#robot) class) can be accessed via the `robots` array attribute within the environment, i.e.: `env.robots[i]` for the `ith` robot arm in the environment.
 - `gripper_types` : this argument can be used to easily swap out different grippers for each robot arm. For example, suppose we want to swap the default grippers for the arms in the example above. We could just pass `gripper_types=["PandaGripper", "RethinkGripper"]` to achieve this. Note that a single type can also be used to automatically broadcast the same gripper type across all arms.
 - `controller_configs` : this argument can be used to easily replace the action space for each robot arm. For example, if we would like to control the arm using joint velocities instead of OSC, we could use `load_controller_config(default_controller="JOINT_VELOCITY")` in the example above. Similar to `gripper_types` this value can either be per-arm specific or a single configuration to broadcast to all robot arms.
-- `env_configuration` : this argument is mainly used for two-arm tasks to easily configure how the robots are oriented with respect to one another. For example, in the `TwoArmLift` environment, we could pass `env_configuration="single-arm-parallel"` instead so that the robot arms are located next to each other, instead of opposite each other
+- `env_configuration` : this argument is mainly used for two-arm tasks to easily configure how the robots are oriented with respect to one another. For example, in the `TwoArmLift` environment, we could pass `env_configuration="parallel"` instead so that the robot arms are located next to each other, instead of opposite each other
 - `placement_initializer` : this argument is optional, but can be used to specify a custom `ObjectPositionSampler` to override the default start state distribution for Mujoco objects. Samplers are responsible for sampling a set of valid, non-colliding placements for all of the objects in the scene at the start of each episode (e.g. when `env.reset()` is called).
 
 ## Interacting with an Environment

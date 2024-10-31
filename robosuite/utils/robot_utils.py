@@ -1,6 +1,6 @@
 # Utilities functions for working with robots
 
-from robosuite.robots import BIMANUAL_ROBOTS
+from robosuite.models.robots.robot_model import REGISTERED_ROBOTS
 
 
 def check_bimanual(robot_name):
@@ -13,4 +13,5 @@ def check_bimanual(robot_name):
     Returns:
         bool: True if the inputted robot is a bimanual robot
     """
-    return robot_name.lower() in BIMANUAL_ROBOTS
+    robot = REGISTERED_ROBOTS[robot_name]()
+    return robot.arm_type == "bimanual"

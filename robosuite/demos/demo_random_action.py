@@ -1,4 +1,3 @@
-from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 
 if __name__ == "__main__":
@@ -30,16 +29,12 @@ if __name__ == "__main__":
             for i in range(2):
                 print("Please choose Robot {}...\n".format(i))
                 options["robots"].append(choose_robots(exclude_bimanual=True))
-
+    # If a humanoid environment has been chosen, choose humanoid robots
+    elif "Humanoid" in options["env_name"]:
+        options["robots"] = choose_robots(use_humanoids=True)
     # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
-
-    # Choose controller
-    controller_name = choose_controller()
-
-    # Load the desired controller
-    options["controller_configs"] = load_controller_config(default_controller=controller_name)
 
     # initialize the task
     env = suite.make(
