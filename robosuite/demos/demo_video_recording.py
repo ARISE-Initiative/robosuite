@@ -67,3 +67,4 @@ if __name__ == "__main__":
             break
 
     writer.close()
+    print(f"Saved video to {args.video_path}")
