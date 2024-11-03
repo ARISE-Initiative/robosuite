@@ -94,6 +94,7 @@ import numpy as np
 
 import robosuite as suite
 from robosuite import load_composite_controller_config
+from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.wrappers import VisualizationWrapper
 
 if __name__ == "__main__":
@@ -107,7 +108,12 @@ if __name__ == "__main__":
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
     parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
-    parser.add_argument("--controller", type=str, default="BASIC", help="Choice of controller. Can be 'ik' or 'osc'")
+    parser.add_argument(
+        "--controller",
+        type=str,
+        default=None,
+        help="Choice of controller. Can be generic (eg. 'BASIC' or 'WHOLE_BODY_MINK_IK') or json file (see robosuite/controllers/config for examples)",
+    )
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
@@ -161,6 +167,10 @@ if __name__ == "__main__":
         from robosuite.devices import SpaceMouse
 
         device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+    elif args.device == "mjgui":
+        from robosuite.devices.mjgui import MJGUI
+
+        device = MJGUI(env=env)
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
@@ -178,61 +188,50 @@ if __name__ == "__main__":
 
         # Initialize device control
         device.start_control()
-        action_dict = device.input2action()
+        all_prev_gripper_actions = [
+            {
+                f"{robot_arm}_gripper": np.repeat([0], robot.gripper[robot_arm].dof)
+                for robot_arm in robot.arms
+                if robot.gripper[robot_arm].dof > 0
+            }
+            for robot in env.robots
+        ]
 
-        # get key with "delta" in it
-        action_key = [key for key in action_dict.keys() if "delta" in key]
-        assert len(action_key) == 1, "Error: Key with 'delta' in it not found!"
-        action_key = action_key[0]
-        gripper_key = [key for key in action_dict.keys() if "gripper" in key]
-        assert len(gripper_key) == 1, "Error: Key with 'gripper' in it not found!"
-        gripper_key = gripper_key[0]
-
+        # Loop until we get a reset from the input or the task completes
         while True:
             # Set active robot
-            active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
+            active_robot = env.robots[device.active_robot]
 
             # Get the newest action
-            action_dict = device.input2action()
+            input_ac_dict = device.input2action()
 
-            # If action_dict is none, then this a reset so we should break
-            if action_dict is None:
+            # If action is none, then this a reset so we should break
+            if input_ac_dict is None:
                 break
-            arm_action = action_dict[action_key]
-            grasp = action_dict[gripper_key]
-            action = np.concatenate([arm_action, grasp])
 
-            # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
-            # toggle arm control and / or camera viewing angle if requested
-            if last_grasp < 0 < grasp:
-                if args.switch_on_grasp:
-                    args.arm = "left" if args.arm == "right" else "right"
-                if args.toggle_camera_on_grasp:
-                    cam_id = (cam_id + 1) % num_cam
-                    env.viewer.set_camera(camera_id=cam_id)
-            # Update last grasp
-            last_grasp = grasp
+            from copy import deepcopy
 
-            # Fill out the rest of the action space if necessary
-            rem_action_dim = env.action_dim - action.size
-            if rem_action_dim > 0:
-                # Initialize remaining action space
-                rem_action = np.zeros(rem_action_dim)
-                # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
-                if args.arm == "right":
-                    action = np.concatenate([action, rem_action])
-                elif args.arm == "left":
-                    action = np.concatenate([rem_action, action])
+            action_dict = deepcopy(input_ac_dict)  # {}
+            # set arm actions
+            for arm in active_robot.arms:
+                if isinstance(active_robot.composite_controller, WholeBody):  # input type passed to joint_action_policy
+                    controller_input_type = active_robot.composite_controller.joint_action_policy.input_type
                 else:
-                    # Only right and left arms supported
-                    print(
-                        "Error: Unsupported arm specified -- "
-                        "must be either 'right' or 'left'! Got: {}".format(args.arm)
-                    )
-            elif rem_action_dim < 0:
-                # We're in an environment with no gripper action space, so trim the action space to be the action dim
-                action = action[: env.action_dim]
+                    controller_input_type = active_robot.part_controllers[arm].input_type
 
-            # Step through the simulation and render
-            obs, reward, done, info = env.step(action)
+                if controller_input_type == "delta":
+                    action_dict[arm] = input_ac_dict[f"{arm}_delta"]
+                elif controller_input_type == "absolute":
+                    action_dict[arm] = input_ac_dict[f"{arm}_abs"]
+                else:
+                    raise ValueError
+
+            # Maintain gripper state for each robot but only update the active robot with action
+            env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
+            env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
+            env_action = np.concatenate(env_action)
+            for gripper_ac in all_prev_gripper_actions[device.active_robot]:
+                all_prev_gripper_actions[device.active_robot][gripper_ac] = action_dict[gripper_ac]
+
+            env.step(env_action)
             env.render()
