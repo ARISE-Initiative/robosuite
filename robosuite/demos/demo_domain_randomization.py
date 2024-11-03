@@ -2,6 +2,8 @@
 Script to showcase domain randomization functionality.
 """
 
+import mujoco
+
 import robosuite.macros as macros
 from robosuite.utils.input_utils import *
 from robosuite.wrappers import DomainRandomizationWrapper
@@ -10,7 +12,7 @@ from robosuite.wrappers import DomainRandomizationWrapper
 macros.USING_INSTANCE_RANDOMIZATION = True
 
 if __name__ == "__main__":
-
+    assert mujoco.__version__ == "3.1.1", "Script requires mujoco-py version 3.1.1 to run"
     # Create dict to hold options that will be passed to env creation call
     options = {}
 

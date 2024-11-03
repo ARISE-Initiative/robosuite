@@ -61,10 +61,12 @@ def playback_trajectory(env, ep_dir):
         for state in states:
             env.sim.set_state_from_flattened(state)
             env.sim.forward()
+            env.viewer.update()
             env.render()
             t += 1
             if t % 100 == 0:
                 print(t)
+    env.close()
 
 
 if __name__ == "__main__":

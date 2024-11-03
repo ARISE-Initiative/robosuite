@@ -198,9 +198,9 @@ if __name__ == "__main__":
             # If action_dict is none, then this a reset so we should break
             if action_dict is None:
                 break
-
-            action = action_dict[action_key]
+            arm_action = action_dict[action_key]
             grasp = action_dict[gripper_key]
+            action = np.concatenate([arm_action, grasp])
 
             # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
             # toggle arm control and / or camera viewing angle if requested
