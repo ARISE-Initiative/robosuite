@@ -67,6 +67,35 @@ def choose_controller():
     return controllers[k]
 
 
+def choose_part_controller():
+    """
+    Prints out part controller options, and returns the requested part controller name
+
+    Returns:
+        str: Chosen part controller name
+    """
+    controllers = list(suite.ALL_PART_CONTROLLERS)
+
+    # Select controller to use
+    print("Here is a list of part controllers in the suite:\n")
+
+    for k, controller in enumerate(controllers):
+        print("[{}] {}".format(k, controller))
+    print()
+    try:
+        s = input(
+            "Choose a part controller for the robot " + "(enter a number from 0 to {}): ".format(len(controllers) - 1)
+        )
+        # parse input into a number within range
+        k = min(max(int(s), 0), len(controllers) - 1)
+    except:
+        k = 0
+        print("Input is not valid. Use {} by default.".format(controllers)[k])
+
+    # Return chosen controller
+    return controllers[k]
+
+
 def choose_multi_arm_config():
     """
     Prints out multi-arm environment configuration options, and returns the requested config name

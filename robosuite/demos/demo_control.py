@@ -89,10 +89,22 @@ if __name__ == "__main__":
     joint_dim = 6 if options["robots"] == "UR5e" else (16 if options["robots"] == "GR1" else 7)
 
     # Choose controller
-    controller_name = choose_controller()
+    controller_name = choose_part_controller()
+    part_controller_config = suite.load_part_controller_config(default_controller=controller_name)
+    # explicitly set the gripper type
+    part_controller_config["gripper"] = dict(
+        type="GRIP",
+    )
 
     # Load the desired controller
-    options["controller_configs"] = suite.load_part_controller_config(default_controller=controller_name)
+    controller_config = dict(
+        type="BASIC",
+        body_parts_controller_configs=dict(
+            left=part_controller_config,  # refer to arm
+            right=part_controller_config,  # refer to arm
+        ),
+    )
+    options["controller_configs"] = controller_config
 
     # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value)
     controller_settings = {

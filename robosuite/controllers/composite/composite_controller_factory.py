@@ -75,13 +75,13 @@ def load_composite_controller_config(controller: Optional[str] = None, robot: Op
 
     validate_composite_controller_config(composite_controller_config)
     body_parts_controller_configs = composite_controller_config.pop("body_parts_controller_configs", {})
-    composite_controller_config["body_parts"] = {}
+    composite_controller_config["body_parts_controller_configs"] = {}
     for part_name, part_config in body_parts_controller_configs.items():
         if part_name == "arms":
             for arm_name, arm_config in part_config.items():
-                composite_controller_config["body_parts"][arm_name] = arm_config
+                composite_controller_config["body_parts_controller_configs"][arm_name] = arm_config
         else:
-            composite_controller_config["body_parts"][part_name] = part_config
+            composite_controller_config["body_parts_controller_configs"][part_name] = part_config
 
     return composite_controller_config
 
