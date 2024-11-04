@@ -85,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument("--directory", type=str, default="/tmp/")
     parser.add_argument("--timesteps", type=int, default=1000)
     parser.add_argument(
-        "--max_fr", default=25, type=int, help="sleep when simluation runs faster than specified frame rate"
+        "--max_fr", default=20, type=int, help="Sleep when simluation runs faster than specified frame rate; 20 fps is real time."
     )
     args = parser.parse_args()
 
