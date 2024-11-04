@@ -20,7 +20,7 @@ from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm):
+def collect_human_trajectory(env, device, arm, max_fr):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -30,6 +30,7 @@ def collect_human_trajectory(env, device, arm):
         env (MujocoEnv): environment to control
         device (Device): to receive controls from the device
         arms (str): which arm to control (eg bimanual) 'right' or 'left'
+        max_fr (int): if specified, pause the simulation whenever simulation runs faster than max_fr
     """
 
     env.reset()
@@ -53,6 +54,8 @@ def collect_human_trajectory(env, device, arm):
 
     # Loop until we get a reset from the input or the task completes
     while True:
+        start = time.time()
+
         # Set active robot
         active_robot = env.robots[device.active_robot]
 
@@ -102,6 +105,13 @@ def collect_human_trajectory(env, device, arm):
                 task_completion_hold_count = 10  # reset count on first success timestep
         else:
             task_completion_hold_count = -1  # null the counter if there's no success
+
+        # limit frame rate if necessary
+        if max_fr is not None:
+            elapsed = time.time() - start
+            diff = 1 / max_fr - elapsed
+            if diff > 0:
+                time.sleep(diff)
 
     # cleanup for end of data collection episodes
     env.close()
@@ -228,6 +238,12 @@ if __name__ == "__main__":
         default="mjviewer",
         help="Use Mujoco's builtin interactive viewer (mjviewer) or OpenCV viewer (mujoco)",
     )
+    parser.add_argument(
+        "--max_fr",
+        default=20,
+        type=int,
+        help="Sleep when simluation runs faster than specified frame rate; 20 fps is real time.",
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -298,5 +314,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm)
+        collect_human_trajectory(env, device, args.arm, args.max_fr)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
