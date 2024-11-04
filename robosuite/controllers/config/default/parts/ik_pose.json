@@ -1,0 +1,7 @@
+{
+  "type" : "IK_POSE",
+  "ik_pos_limit": 0.02,
+  "ik_ori_limit": 0.05,
+  "interpolation": null,
+  "ramp_ratio": 0.2
+}
