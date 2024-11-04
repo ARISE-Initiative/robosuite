@@ -130,7 +130,7 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
 
 
 Additionally, `--pos_sensitivity` and `--rot_sensitivity` provide relative gains for increasing / decreasing the user input
-device sensitivity. The `--controller` argument determines the choice of using either inverse kinematics controller (`ik`) or operational space controller (`osc`). The main difference is that user inputs with `ik`'s rotations are always taken relative to eef coordinate frame, whereas user inputs with `osc`'s rotations are taken relative to global frame (i.e., static / camera frame of reference). `osc` also tends to be more computationally efficient since `ik` relies on the backend [mink](https://github.com/kevinzakka/mink) IK solver.
+device sensitivity.
 
 
 Furthermore, please choose environment specifics with the following arguments:
@@ -166,18 +166,16 @@ Furthermore, please choose environment specifics with the following arguments:
 Examples:
 * For normal single-arm environment:
 ```
-$ python demo_device_control.py --environment PickPlaceCan --robots Sawyer --controller osc
+$ python demo_device_control.py --environment PickPlaceCan --robots Sawyer
 ```
 * For two-arm bimanual environment:
 ```
-$ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left --controller osc
+$ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left
 ```
 * For two-arm multi single-arm robot environment:
 ```
-$ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config parallel --controller osc
+$ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config parallel
 ```
-In **robosuite**, we use this teleoperation script extensively for debugging environment designs, tuning reward functions, and collecting human demonstration data.
-
 
 ### Video Recording
 The `demo_video_recording.py` script shows how to record a video of robot roll-out with the `imageio` library. This script uses offscreen rendering. This is useful for generating qualitative videos of robot policy behaviors. The generated video is in the mp4 format. Example:
