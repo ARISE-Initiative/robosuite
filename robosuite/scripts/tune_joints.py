@@ -282,7 +282,7 @@ if __name__ == "__main__":
     np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
     # Define the controller
-    controller_config = robosuite.load_controller_config(default_controller="JOINT_POSITION")
+    controller_config = robosuite.load_composite_controller_config(controller="BASIC")
 
     # make the environment
     env = robosuite.make(
