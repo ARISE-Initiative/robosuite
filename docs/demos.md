@@ -99,9 +99,7 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
 
 * **Keyboard**
     We use the keyboard to control the end-effector of the robot.
-    The keyboard provides 6-DoF control commands through various keys.
-    The commands are mapped to joint velocities through an inverse kinematics
-    solver from Bullet physics.
+    The keyboard provides 6-DoF control commands through various keyboard keys.
 
     **Note:**
         To run this script with macOS, you must run it with root access.
