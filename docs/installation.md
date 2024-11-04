@@ -17,6 +17,12 @@ The base installation requires the MuJoCo physics engine (with [mujoco](https://
    $ python -m robosuite.demos.demo_random_action
    ```
 
+   <div class="admonition warning">
+   <p class="admonition-title">Attention Mac users!</p>
+
+   Mac users who wish to use the default mjviewer renderer need to prepend the "python" command with "mj": `mjpython ...`
+   </div>
+
 ### Install from source
 
 1. Clone the robosuite repository
@@ -40,6 +46,12 @@ The base installation requires the MuJoCo physics engine (with [mujoco](https://
    ```sh
    $ python robosuite/demos/demo_random_action.py
    ```
+
+   <div class="admonition warning">
+   <p class="admonition-title">Attention Mac users!</p>
+
+   Mac users who wish to use the default mjviewer renderer need to prepend the "python" command with "mj": `mjpython ...`
+   </div>
 
 ### Installing on Windows
 

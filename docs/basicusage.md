@@ -3,6 +3,12 @@
 ## Running Standardized Environments
 **robosuite** offers a set of standardized manipulation tasks for benchmarking purposes. These pre-defined environments can be easily instantiated with the `make` function. The APIs we provide to interact with our environments are simple and similar to the ones used by [OpenAI Gym](https://github.com/openai/gym/). Below is a minimalistic example of how to interact with an environment.
 
+<div class="admonition warning">
+<p class="admonition-title">Attention Mac users!</p>
+
+Mac users who wish to use the default mjviewer renderer need to prepend the "python" command with "mj": `mjpython ...`
+</div>
+
 ```python
 import numpy as np
 import robosuite as suite
