@@ -2,6 +2,12 @@
 
 We provide a collection of [demo scripts](https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/demos) to showcase the functionalities in **robosuite**.
 
+<div class="admonition warning">
+<p class="admonition-title">Attention Mac users!</p>
+
+For these scripts, Mac users who wish to use the default mjviewer renderer need to prepend the "python" command with "mj": `mjpython ...`
+</div>
+
 ### Environment Configuration
 The `demo_random_action.py` script is the starter demo script that you should try first. It highlights the modular design of our simulated environments. It enables users to create new simulation instances by choosing one [environment](modules/environments), one or more [robots](modules/robots), and their [controllers](modules/controllers) from the command line. The script creates an environment instance and controls the robots with uniform random actions drawn from the controller-specific action space. The list of all environments, robots, controllers, and gripper types supported in the current version of **robosuite** are defined by `suite.ALL_ENVIRONMENTS`, `suite.ALL_ROBOTS`, `suite. ALL_PART_CONTROLLERS`, and `suite.ALL_GRIPPERS` respectively.
 
