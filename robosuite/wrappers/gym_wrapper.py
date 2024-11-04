@@ -134,3 +134,9 @@ class GymWrapper(Wrapper, gym.Env):
         """
         # Dummy args used to mimic Wrapper interface
         return self.env.reward()
+
+    def close(self):
+        """
+        wrapper for calling underlying env close function
+        """
+        self.env.close()
