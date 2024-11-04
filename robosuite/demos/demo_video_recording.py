@@ -68,4 +68,3 @@ if __name__ == "__main__":
 
     writer.close()
     print(f"Video saved to {args.video_path}")
-
