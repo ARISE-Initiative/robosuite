@@ -123,6 +123,12 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
         This current implementation only supports macOS (Linux support can be added).
         Download and install the [driver](https://www.3dconnexion.com/service/drivers.html) before running the script.
 
+* **Mujoco GUI**
+        The Mujoco GUI provides a graphical user interface for viewing and interacting with a mujoco simulation. We use the GUI and a mouse to drag and drop mocap bodies, whose
+        poses are tracked by a controller. More specifically, once the mujoco GUI is loaded from running `python demo_device_control.py`, you first need to hit the <Tab> key to reach the interactive mujoco viewer state. Then, you should double click on
+        a mocap body. Finally, to drag the mocap body, you can hit to <Ctrl> or <Shift> key to translate or rotate the mocap body. For Mac users, you need to use `mjpython demo_device_control.py`. See the note from [mujoco](https://mujoco.readthedocs.io/en/stable/python.html#passive-viewer) for more details.
+
+
 Additionally, `--pos_sensitivity` and `--rot_sensitivity` provide relative gains for increasing / decreasing the user input
 device sensitivity. The `--controller` argument determines the choice of using either inverse kinematics controller (`ik`) or operational space controller (`osc`). The main difference is that user inputs with `ik`'s rotations are always taken relative to eef coordinate frame, whereas user inputs with `osc`'s rotations are taken relative to global frame (i.e., static / camera frame of reference). `osc` also tends to be more computationally efficient since `ik` relies on the backend [mink](https://github.com/kevinzakka/mink) IK solver.
 
