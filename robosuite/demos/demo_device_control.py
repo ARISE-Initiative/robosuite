@@ -89,6 +89,7 @@ Examples:
 """
 
 import argparse
+import time
 
 import numpy as np
 
@@ -111,6 +112,12 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="keyboard")
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
+    parser.add_argument(
+        "--max_fr",
+        default=20,
+        type=int,
+        help="Sleep when simluation runs faster than specified frame rate; 20 fps is real time.",
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -189,6 +196,8 @@ if __name__ == "__main__":
         gripper_key = gripper_key[0]
 
         while True:
+            start = time.time()
+
             # Set active robot
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
@@ -236,3 +245,10 @@ if __name__ == "__main__":
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
             env.render()
+
+            # limit frame rate if necessary
+            if args.max_fr is not None:
+                elapsed = time.time() - start
+                diff = 1 / args.max_fr - elapsed
+                if diff > 0:
+                    time.sleep(diff)
