@@ -65,7 +65,10 @@ if __name__ == "__main__":
     parser.add_argument("--env", type=str, default="Lift")
     parser.add_argument("--headless", action="store_true")
     parser.add_argument(
-        "--max_fr", default=20, type=int, help="Sleep when simluation runs faster than specified frame rate; 20 fps is real time."
+        "--max_fr",
+        default=20,
+        type=int,
+        help="Sleep when simluation runs faster than specified frame rate; 20 fps is real time.",
     )
 
     args = parser.parse_args()
