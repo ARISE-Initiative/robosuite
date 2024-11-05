@@ -9,7 +9,10 @@ To set up a new SpaceMouse controller:
        (make sure you run uninstall hid first if it is installed).
     3. Make sure SpaceMouse is connected before running the script
     4. (Optional) Based on the model of SpaceMouse, you might need to change the
-       vendor id and product id that correspond to the device.
+       vendor id and product id that correspond to the device in macros_private.
+    5. (Optional) You can also add a udev rule to allow access to the device without sudo.
+       Create a file named /etc/udev/rules.d/90-my-device.rules with the following content:
+       SUBSYSTEM=="usb", ATTR{idVendor}=="YOUR_VID_HEX", MODE="0666"
 
 For Linux support, you can find open-source Linux drivers and SDKs online.
     See http://spacenav.sourceforge.net/
@@ -128,7 +131,14 @@ class SpaceMouse(Device):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
-        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        try:
+            self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        except OSError:
+            print(
+                "Failed to open device. Make sure there are no other "
+                "processes using the device and rerun with sudo."
+            )
+            raise
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -365,6 +375,7 @@ class SpaceMouse(Device):
 if __name__ == "__main__":
 
     space_mouse = SpaceMouse()
-    for i in range(100):
+    space_mouse.start_control()
+    for i in range(1000):
         print(space_mouse.control, space_mouse.control_gripper)
         time.sleep(0.02)
