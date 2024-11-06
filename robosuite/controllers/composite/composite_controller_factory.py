@@ -19,9 +19,9 @@ def validate_composite_controller_config(config: dict):
             raise ValueError
 
 
-def is_arm_controller_config(config: Dict):
+def is_part_controller_config(config: Dict):
     """
-    Checks if a controller config is an arm part config as a opposed to a composite
+    Checks if a controller config is a part config as a opposed to a composite
     controller config.
 
     Args:
@@ -31,9 +31,9 @@ def is_arm_controller_config(config: Dict):
         bool: True if the config is in the for the arm-only, False otherwise
     """
 
-    ARM_CONTROLLER_TYPES = ["JOINT_VELOCITY", "JOINT_TORQUE", "JOINT_POSITION", "OSC_POSITION", "OSC_POSE", "IK_POSE"]
+    PART_CONTROLLER_TYPES = ["JOINT_VELOCITY", "JOINT_TORQUE", "JOINT_POSITION", "OSC_POSITION", "OSC_POSE", "IK_POSE"]
     if "body_parts_controller_configs" not in config and "type" in config:
-        return config["type"] in ARM_CONTROLLER_TYPES
+        return config["type"] in PART_CONTROLLER_TYPES
     return False
 
 
@@ -51,7 +51,7 @@ def refactor_composite_controller_config(controller_config, robot_type, arms):
     Returns:
         dict: New controller config
     """
-    if not is_arm_controller_config(controller_config):
+    if not is_part_controller_config(controller_config):
         return controller_config
 
     config_dir = pathlib.Path(robosuite.__file__).parent / "controllers/config/robots/"
