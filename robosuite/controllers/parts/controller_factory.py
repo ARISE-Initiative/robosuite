@@ -122,7 +122,7 @@ def arm_controller_factory(name, params):
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.set_states(dim=4, ori="quat")
 
-        from robosuite.controllers.arm.ik import InverseKinematicsController
+        from robosuite.controllers.parts.arm.ik import InverseKinematicsController
 
         return InverseKinematicsController(
             interpolator_pos=interpolator,

@@ -275,7 +275,6 @@ if __name__ == "__main__":
     print_command("t", "Toggle between robot arms in the environment")
     print_command("r", "Reset active arm joints to all 0s")
     print_command("up/down", "incr/decrement the active joint angle")
-    print_command("right/left", "incr/decrement the delta joint angle per up/down keypress")
     print("")
 
     # Setup printing options for numbers

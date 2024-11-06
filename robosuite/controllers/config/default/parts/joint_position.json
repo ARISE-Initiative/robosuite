@@ -1,15 +1,15 @@
 {
-  "type": "JOINT_POSITION",
-  "input_max": 1,
-  "input_min": -1,
-  "output_max": 0.05,
-  "output_min": -0.05,
-  "kp": 50,
-  "damping_ratio": 1,
-  "impedance_mode": "fixed",
-  "kp_limits": [0, 300],
-  "damping_ratio_limits": [0, 10],
-  "qpos_limits": null,
-  "interpolation": null,
-  "ramp_ratio": 0.2
-}
+    "type": "JOINT_POSITION",
+    "input_max": 1,
+    "input_min": -1,
+    "output_max": 0.05,
+    "output_min": -0.05,
+    "kp": 50,
+    "damping_ratio": 1,
+    "impedance_mode": "fixed",
+    "kp_limits": [0, 300],
+    "damping_ratio_limits": [0, 10],
+    "qpos_limits": null,
+    "interpolation": null,
+    "ramp_ratio": 0.2
+  }
