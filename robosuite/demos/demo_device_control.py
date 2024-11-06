@@ -113,7 +113,10 @@ if __name__ == "__main__":
     parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
     parser.add_argument(
-        "--max_fr", default=25, type=int, help="sleep when simluation runs faster than specified frame rate"
+        "--max_fr",
+        default=20,
+        type=int,
+        help="Sleep when simluation runs faster than specified frame rate; 20 fps is real time.",
     )
     args = parser.parse_args()
 

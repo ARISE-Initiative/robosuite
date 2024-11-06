@@ -57,5 +57,5 @@ if __name__ == "__main__":
             if terminated or truncated:
                 print("Episode finished after {} timesteps".format(t + 1))
                 observation, info = env.reset()
-                env.close()
                 break
+        env.close()
