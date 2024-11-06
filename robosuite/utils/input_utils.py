@@ -39,7 +39,7 @@ def choose_environment():
     return envs[k]
 
 
-def choose_controller():
+def choose_controller(part_controllers=False):
     """
     Prints out controller options, and returns the requested controller name
 
@@ -47,7 +47,7 @@ def choose_controller():
         str: Chosen controller name
     """
     # get the list of all controllers
-    controllers = list(suite.ALL_COMPOSITE_CONTROLLERS)
+    controllers = list(suite.ALL_PART_CONTROLLERS) if part_controllers else list(suite.ALL_COMPOSITE_CONTROLLERS)
 
     # Select controller to use
     print("Here is a list of controllers in the suite:\n")

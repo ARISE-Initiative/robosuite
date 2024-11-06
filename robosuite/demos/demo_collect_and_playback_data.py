@@ -47,7 +47,7 @@ def collect_random_trajectory(env, timesteps=1000, max_fr=None):
                 time.sleep(diff)
 
 
-def playback_trajectory(env, ep_dir):
+def playback_trajectory(env, ep_dir, max_fr=None):
     """Playback data from an episode.
 
     Args:
@@ -69,12 +69,21 @@ def playback_trajectory(env, ep_dir):
         dic = np.load(state_file)
         states = dic["states"]
         for state in states:
+            start = time.time()
             env.sim.set_state_from_flattened(state)
             env.sim.forward()
+            env.viewer.update()
             env.render()
             t += 1
             if t % 100 == 0:
                 print(t)
+
+            if max_fr is not None:
+                elapsed = time.time() - start
+                diff = 1 / max_fr - elapsed
+                if diff > 0:
+                    time.sleep(diff)
+    env.close()
 
 
 if __name__ == "__main__":
@@ -120,4 +129,4 @@ if __name__ == "__main__":
     _ = input("Press any key to begin the playback...")
     print("Playing back the data...")
     data_directory = env.ep_directory
-    playback_trajectory(env, data_directory)
+    playback_trajectory(env, data_directory, args.max_fr)
