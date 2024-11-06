@@ -298,7 +298,7 @@ class IKSolver:
 
         # get the desired joint angles by integrating the desired joint velocities
         self.q_des = self.full_model_data.qpos[self.dof_ids].copy()
-        # mujoco.mj_integratePos(self.full_model, q_des, dq, self.integration_dt)
+        # mujoco.mj_integratePos(self.full_model, self.q_des, self.dq, self.integration_dt)
         self.q_des += self.dq * self.integration_dt  # manually integrate q_des
 
         pre_clip_error = np.inf
@@ -310,9 +310,7 @@ class IKSolver:
             integrated_pos_np = np.array([integrated_pos[site] for site in integrated_pos])
             pre_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
             ROBOSUITE_DEFAULT_LOGGER.info(f"IK error before clipping based on joint ranges: {pre_clip_error}")
-            self.pre_clip_errors.append(pre_clip_error)
-
-        self.debug_iter += 1
+            # self.pre_clip_errors.append(pre_clip_error)
 
         # Set the control signal.
         np.clip(self.q_des, *self.full_model.jnt_range[self.dof_ids].T, out=self.q_des)
@@ -324,4 +322,6 @@ class IKSolver:
             post_clip_error = np.linalg.norm(target_pos - integrated_pos_np)
             ROBOSUITE_DEFAULT_LOGGER.info(f"IK error after clipping based on joint ranges: {post_clip_error}")
 
+        self.debug_iter += 1
+        
         return self.q_des

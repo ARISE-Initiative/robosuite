@@ -17,6 +17,7 @@ from robosuite.controllers.composite.composite_controller import WholeBody, regi
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 
 def update(self, q: Optional[np.ndarray] = None, update_idxs: Optional[np.ndarray] = None) -> None:
@@ -424,10 +425,59 @@ class WholeBodyMinkIK(WholeBody):
     def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
         super().__init__(sim, robot_model, grippers)
 
+    def _validate_composite_controller_specific_config(self) -> None:
+        # Check that all actuation_part_names exist in part_controllers
+        original_ik_controlled_parts = self.composite_controller_specific_config["actuation_part_names"]
+        self.valid_ik_controlled_parts = []
+        valid_ref_names = []
+
+        assert (
+            "ref_name" in self.composite_controller_specific_config
+        ), "The 'ref_name' key is missing from composite_controller_specific_config."
+
+        for part in original_ik_controlled_parts:
+            if part in self.part_controllers:
+                self.valid_ik_controlled_parts.append(part)
+            else:
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Part '{part}' specified in 'actuation_part_names' "
+                    "does not exist in part_controllers. Removing ..."
+                )
+
+        # Update the configuration with only the valid parts
+        self.composite_controller_specific_config["actuation_part_names"] = self.valid_ik_controlled_parts
+
+        # Loop through ref_names and validate against mujoco model
+        original_ref_names = self.composite_controller_specific_config.get("ref_name", [])
+        for ref_name in original_ref_names:
+            if ref_name in self.sim.model.site_names:  # Check if the site exists in the mujoco model
+                valid_ref_names.append(ref_name)
+            else:
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Reference name '{ref_name}' specified in configuration"
+                    " does not exist in the mujoco model. Removing ..."
+                )
+
+        # Update the configuration with only the valid reference names
+        self.composite_controller_specific_config["ref_name"] = valid_ref_names
+
+        # Check all the ik posture weights exist in the robot model
+        ik_posture_weights = self.composite_controller_specific_config.get("ik_posture_weights", {})
+        valid_posture_weights = {}
+        for weight_name in ik_posture_weights:
+            if weight_name in self.robot_model.joints:
+                valid_posture_weights[weight_name] = ik_posture_weights[weight_name]
+            else:
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"Ik posture weight '{weight_name}' does not exist in the robot model. Removing ...")
+
+        # Update the configuration with only the valid posture weights
+        self.composite_controller_specific_config["ik_posture_weights"] = valid_posture_weights
+
     def _init_joint_action_policy(self):
         joint_names: str = []
         for part_name in self.composite_controller_specific_config["actuation_part_names"]:
-            joint_names += self.part_controllers[part_name].joint_names
+            if part_name in self.part_controllers:
+                joint_names += self.part_controllers[part_name].joint_names
 
         default_site_names: List[str] = []
         for arm in ["right", "left"]:
