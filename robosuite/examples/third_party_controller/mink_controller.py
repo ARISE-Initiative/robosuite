@@ -468,7 +468,9 @@ class WholeBodyMinkIK(WholeBody):
             if weight_name in self.robot_model.joints:
                 valid_posture_weights[weight_name] = ik_posture_weights[weight_name]
             else:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"Ik posture weight '{weight_name}' does not exist in the robot model. Removing ...")
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Ik posture weight '{weight_name}' does not exist in the robot model. Removing ..."
+                )
 
         # Update the configuration with only the valid posture weights
         self.composite_controller_specific_config["ik_posture_weights"] = valid_posture_weights
