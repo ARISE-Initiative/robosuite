@@ -222,19 +222,19 @@ Controller Settings
 
 Loading a Controller
 ---------------------
-By default, if no controller configuration is specified during environment creation, then ``JOINT_VELOCITY`` controllers with robot-specific configurations will be used. 
+By default, user will use the `load_composite_controller_config()` method to create a controller configuration.
 
 Using a Default Controller Configuration
 *****************************************
-Any controller can be used with its default configuration, and can be easily loaded into a given environment by calling its name as shown below (where ``controller_name`` is one of acceptable controller ``type`` strings):
+Any controller can be used with its default configuration, and can be easily loaded into a given environment by calling its name as shown below (where ``controller`` is one of acceptable controller ``type`` strings):
 
 .. code-block:: python
 
     import robosuite as suite
-    from robosuite import load_controller_config
+    from robosuite import load_composite_controller_config
 
-    # Load the desired controller's default config as a dict
-    config = load_controller_config(default_controller=controller_name)
+    # Load the desired controller config with default Basic controller
+    config = load_composite_controller_config(controller="BASIC")
 
     # Create environment
     env = suite.make("Lift", robots="Panda", controller_configs=config, ... )
@@ -248,13 +248,13 @@ A custom controller configuration can also be used by simply creating a new conf
 .. code-block:: python
 
     import robosuite as suite
-    from robosuite import load_controller_config
+    from robosuite import load_composite_controller_config
 
     # Path to config file
     controller_fpath = "/your/custom/config/filepath/here/filename.json"
 
     # Import the file as a dict
-    config = load_controller_config(custom_fpath=controller_fpath)
+    config = load_composite_controller_config(controller=controller_fpath)
 
     # Create environment
     env = suite.make("Lift", robots="Panda", controller_configs=config, ... )
