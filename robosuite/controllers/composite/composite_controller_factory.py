@@ -62,11 +62,11 @@ def refactor_composite_controller_config(controller_config, robot_type, arms):
     else:
         new_controller_config = {}
         new_controller_config["type"] = "BASIC"
-        new_controller_config["body_parts"] = {}
+        new_controller_config["body_parts_controller_configs"] = {}
 
     for arm in arms:
-        new_controller_config["body_parts"][arm] = copy.deepcopy(controller_config)
-        new_controller_config["body_parts"][arm]["gripper"] = {"type": "GRIP"}
+        new_controller_config["body_parts_controller_configs"][arm] = copy.deepcopy(controller_config)
+        new_controller_config["body_parts_controller_configs"][arm]["gripper"] = {"type": "GRIP"}
     return new_controller_config
 
 
