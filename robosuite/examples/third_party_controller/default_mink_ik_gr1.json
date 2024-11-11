@@ -12,9 +12,9 @@
         "ik_input_rotation_repr": "axis_angle",
         "verbose": false,
         "ik_posture_weights": {
-            "robot0_torso_waist_yaw": 10.0,
-            "robot0_torso_waist_pitch": 10.0,
-            "robot0_torso_waist_roll": 200.0,
+            "robot0_torso_waist_yaw": 30.0,
+            "robot0_torso_waist_pitch": 100.0,
+            "robot0_torso_waist_roll": 100.0,
             "robot0_l_shoulder_pitch": 4.0,
             "robot0_r_shoulder_pitch": 4.0,
             "robot0_l_shoulder_roll": 3.0,

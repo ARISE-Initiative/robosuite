@@ -106,7 +106,6 @@ class GR1FixedLowerBody(GR1):
         # fix lower body
         self._remove_joint_actuation("leg")
         self._remove_free_joint()
-        self._reduce_pitch_and_roll_on_waist()
 
     @property
     def init_qpos(self):

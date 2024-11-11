@@ -47,13 +47,6 @@ class LeggedManipulatorModel(ManipulatorModel):
         for freejoint in self.worldbody.findall(".//freejoint"):
             find_parent(self.worldbody, freejoint).remove(freejoint)
 
-    def _reduce_pitch_and_roll_on_waist(self):
-        for joint in self.worldbody.findall(".//joint"):
-            # import xml.etree.ElementTree as ET
-            # print(ET.tostring(joint))
-            if "waist_pitch" in joint.get("name") or "waist_roll" in joint.get("name"):
-                joint.set("range", "-0.01 0.01")
-
     @property
     def legs_joints(self):
         """
