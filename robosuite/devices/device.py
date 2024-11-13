@@ -212,9 +212,7 @@ class Device(metaclass=abc.ABCMeta):
                     pose_in_base = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
                         src_frame_pose=pose_in_world,
                         src_frame="world",  # mocap pose is world coordinates
-                        dst_frame=self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                            "ik_input_ref_frame", "world"
-                        ),
+                        dst_frame=ref_frame,
                     )
                     pos, ori = pose_in_base[:3, 3], pose_in_base[:3, :3]
             else:

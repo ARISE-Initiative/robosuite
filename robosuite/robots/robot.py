@@ -70,7 +70,10 @@ class Robot(object):
             self.composite_controller_config = composite_controller_config
         else:
             self.composite_controller_config = load_composite_controller_config(robot=robot_type)
-        self.part_controller_config = copy.deepcopy(self.composite_controller_config.get("body_parts", {}))
+
+        self.part_controller_config = copy.deepcopy(
+            self.composite_controller_config.get("body_parts_controller_configs", {})
+        )
 
         self.gripper = self._input2dict(None)
         self.gripper_type = self._input2dict(gripper_type)
@@ -145,7 +148,9 @@ class Robot(object):
         Remove unused parts that are not in the controller.
         Called by _load_controller() function
         """
-        for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
+        for part_name, controller_config in self.composite_controller_config.get(
+            "body_parts_controller_configs", {}
+        ).items():
             if not self.has_part(part_name):
                 ROBOSUITE_DEFAULT_LOGGER.warn(
                     f'The config has defined for the controller "{part_name}", '

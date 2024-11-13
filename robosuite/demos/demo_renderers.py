@@ -1,10 +1,13 @@
 import argparse
+import time
 
 import numpy as np
 
 import robosuite as suite
 from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 from robosuite.utils.input_utils import choose_environment, choose_multi_arm_config, choose_robots
+
+MAX_FR = 25  # max frame rate for running simluation
 
 
 def str2bool(v):
@@ -104,9 +107,17 @@ if __name__ == "__main__":
 
     # do visualization
     for i in range(10000):
+        start = time.time()
+
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
         env.render()
+
+        # limit frame rate if necessary
+        elapsed = time.time() - start
+        diff = 1 / MAX_FR - elapsed
+        if diff > 0:
+            time.sleep(diff)
 
     env.close_renderer()
     print("Done.")

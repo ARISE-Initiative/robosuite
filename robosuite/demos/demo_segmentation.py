@@ -84,6 +84,7 @@ if __name__ == "__main__":
         camera_segmentations=segmentation_level,
         camera_heights=512,
         camera_widths=512,
+        renderer="mujoco",  # for segmentation
     )
     env.reset()
 

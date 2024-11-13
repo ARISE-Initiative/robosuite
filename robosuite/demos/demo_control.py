@@ -44,10 +44,14 @@ sequential qualitative behavior during the test is described below for each cont
 
 """
 
+import time
 from typing import Dict
 
 import robosuite as suite
+from robosuite.controllers.composite.composite_controller_factory import refactor_composite_controller_config
 from robosuite.utils.input_utils import *
+
+MAX_FR = 25  # max frame rate for running simluation
 
 if __name__ == "__main__":
 
@@ -89,10 +93,14 @@ if __name__ == "__main__":
     joint_dim = 6 if options["robots"] == "UR5e" else (16 if options["robots"] == "GR1" else 7)
 
     # Choose controller
-    controller_name = choose_controller()
+    controller_name = choose_controller(part_controllers=True)
 
     # Load the desired controller
-    options["controller_configs"] = suite.load_part_controller_config(default_controller=controller_name)
+    arm_controller_config = suite.load_part_controller_config(default_controller=controller_name)
+    robot = options["robots"][0] if isinstance(options["robots"], list) else options["robots"]
+    options["controller_configs"] = refactor_composite_controller_config(
+        arm_controller_config, robot, ["right", "left"]
+    )
 
     # Define the pre-defined controller actions to use (action_dim, num_test_steps, test_value)
     controller_settings = {
@@ -143,6 +151,7 @@ if __name__ == "__main__":
     while count < num_test_steps:
         action = neutral.copy()
         for i in range(steps_per_action):
+            start = time.time()
             if controller_name in {"IK_POSE", "OSC_POSE"} and count > 2:
                 # Set this value to be the scaled axis angle vector
                 vec = np.zeros(3)
@@ -153,10 +162,23 @@ if __name__ == "__main__":
             total_action = np.tile(action, n)
             env.step(total_action)
             env.render()
+
+            # limit frame rate if necessary
+            elapsed = time.time() - start
+            diff = 1 / MAX_FR - elapsed
+            if diff > 0:
+                time.sleep(diff)
         for i in range(steps_per_rest):
+            start = time.time()
             total_action = np.tile(neutral, n)
             env.step(total_action)
             env.render()
+
+            # limit frame rate if necessary
+            elapsed = time.time() - start
+            diff = 1 / MAX_FR - elapsed
+            if diff > 0:
+                time.sleep(diff)
         count += 1
 
     # Shut down this env before starting the next test

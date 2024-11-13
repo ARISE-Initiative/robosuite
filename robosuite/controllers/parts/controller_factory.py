@@ -52,7 +52,7 @@ def load_part_controller_config(custom_fpath=None, default_controller=None):
 
         # Store the default controller config fpath associated with the requested controller
         custom_fpath = os.path.join(
-            os.path.dirname(__file__), "..", "controllers/config/parts/{}.json".format(default_controller.lower())
+            os.path.dirname(__file__), "..", "config/default/parts/{}.json".format(default_controller.lower())
         )
 
     # Assert that the fpath to load the controller is not empty
@@ -122,7 +122,7 @@ def arm_controller_factory(name, params):
             ori_interpolator = deepcopy(interpolator)
             ori_interpolator.set_states(dim=4, ori="quat")
 
-        from robosuite.controllers.arm.ik import InverseKinematicsController
+        from robosuite.controllers.parts.arm.ik import InverseKinematicsController
 
         return InverseKinematicsController(
             interpolator_pos=interpolator,

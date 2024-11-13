@@ -2,6 +2,12 @@
 
 We provide a collection of [demo scripts](https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/demos) to showcase the functionalities in **robosuite**.
 
+<div class="admonition warning">
+<p class="admonition-title">Attention Mac users!</p>
+
+For these scripts, Mac users who wish to use the default mjviewer renderer need to prepend the "python" command with "mj": `mjpython ...`
+</div>
+
 ### Environment Configuration
 The `demo_random_action.py` script is the starter demo script that you should try first. It highlights the modular design of our simulated environments. It enables users to create new simulation instances by choosing one [environment](modules/environments), one or more [robots](modules/robots), and their [controllers](modules/controllers) from the command line. The script creates an environment instance and controls the robots with uniform random actions drawn from the controller-specific action space. The list of all environments, robots, controllers, and gripper types supported in the current version of **robosuite** are defined by `suite.ALL_ENVIRONMENTS`, `suite.ALL_ROBOTS`, `suite. ALL_PART_CONTROLLERS`, and `suite.ALL_GRIPPERS` respectively.
 
@@ -93,9 +99,7 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
 
 * **Keyboard**
     We use the keyboard to control the end-effector of the robot.
-    The keyboard provides 6-DoF control commands through various keys.
-    The commands are mapped to joint velocities through an inverse kinematics
-    solver from Bullet physics.
+    The keyboard provides 6-DoF control commands through various keyboard keys.
 
     **Note:**
         To run this script with macOS, you must run it with root access.
@@ -117,8 +121,14 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
         This current implementation only supports macOS (Linux support can be added).
         Download and install the [driver](https://www.3dconnexion.com/service/drivers.html) before running the script.
 
+* **Mujoco GUI**
+        The Mujoco GUI provides a graphical user interface for viewing and interacting with a mujoco simulation. We use the GUI and a mouse to drag and drop mocap bodies, whose
+        poses are tracked by a controller. More specifically, once the mujoco GUI is loaded from running `python demo_device_control.py`, you first need to hit the <Tab> key to reach the interactive mujoco viewer state. Then, you should double click on
+        a mocap body. Finally, to drag the mocap body, you can hit to <Ctrl> or <Shift> key to translate or rotate the mocap body. For Mac users, you need to use `mjpython demo_device_control.py`. See the note from [mujoco](https://mujoco.readthedocs.io/en/stable/python.html#passive-viewer) for more details.
+
+
 Additionally, `--pos_sensitivity` and `--rot_sensitivity` provide relative gains for increasing / decreasing the user input
-device sensitivity. The `--controller` argument determines the choice of using either inverse kinematics controller (`ik`) or operational space controller (`osc`). The main difference is that user inputs with `ik`'s rotations are always taken relative to eef coordinate frame, whereas user inputs with `osc`'s rotations are taken relative to global frame (i.e., static / camera frame of reference). `osc` also tends to be more computationally efficient since `ik` relies on the backend [mink](https://github.com/kevinzakka/mink) IK solver.
+device sensitivity.
 
 
 Furthermore, please choose environment specifics with the following arguments:
@@ -154,18 +164,16 @@ Furthermore, please choose environment specifics with the following arguments:
 Examples:
 * For normal single-arm environment:
 ```
-$ python demo_device_control.py --environment PickPlaceCan --robots Sawyer --controller osc
+$ python demo_device_control.py --environment PickPlaceCan --robots Sawyer
 ```
 * For two-arm bimanual environment:
 ```
-$ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left --controller osc
+$ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left
 ```
 * For two-arm multi single-arm robot environment:
 ```
-$ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config parallel --controller osc
+$ python demo_device_control.py --environment TwoArmLift --robots Sawyer Sawyer --config parallel
 ```
-In **robosuite**, we use this teleoperation script extensively for debugging environment designs, tuning reward functions, and collecting human demonstration data.
-
 
 ### Video Recording
 The `demo_video_recording.py` script shows how to record a video of robot roll-out with the `imageio` library. This script uses offscreen rendering. This is useful for generating qualitative videos of robot policy behaviors. The generated video is in the mp4 format. Example:

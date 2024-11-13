@@ -18,6 +18,7 @@ eggs/
 lib/
 lib64/
 parts/
+!robosuite/controllers/config/default/parts
 !robosuite/controllers/parts
 sdist/
 var/
