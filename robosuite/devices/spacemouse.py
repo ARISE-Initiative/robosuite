@@ -22,6 +22,7 @@ from collections import namedtuple
 
 import numpy as np
 from pynput.keyboard import Controller, Key, Listener
+
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 try:
