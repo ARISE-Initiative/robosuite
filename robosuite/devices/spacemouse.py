@@ -19,10 +19,10 @@ For Linux support, you can find open-source Linux drivers and SDKs online.
 import threading
 import time
 from collections import namedtuple
-from termcolor import colored
 
 import numpy as np
 from pynput.keyboard import Controller, Key, Listener
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 try:
     import hid
@@ -132,8 +132,10 @@ class SpaceMouse(Device):
         try:
             self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
         except OSError as e:
-            print("Failed to open SpaceMouse device: ", e)
-            print(colored("Consider killing other processes that may be using the device such as 3DconnexionHelper (killall 3DconnexionHelper)", "yellow"))
+            ROBOSUITE_DEFAULT_LOGGER.warning(
+                "Failed to open SpaceMouse device"
+                "Consider killing other processes that may be using the device such as 3DconnexionHelper (killall 3DconnexionHelper)"
+            )
             raise
 
         self.pos_sensitivity = pos_sensitivity
