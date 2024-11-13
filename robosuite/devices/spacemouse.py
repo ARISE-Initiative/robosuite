@@ -19,6 +19,7 @@ For Linux support, you can find open-source Linux drivers and SDKs online.
 import threading
 import time
 from collections import namedtuple
+from termcolor import colored
 
 import numpy as np
 from pynput.keyboard import Controller, Key, Listener
@@ -128,7 +129,12 @@ class SpaceMouse(Device):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
-        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        try:
+            self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        except OSError as e:
+            print("Failed to open SpaceMouse device: ", e)
+            print(colored("Consider killing other processes that may be using the device such as 3DconnexionHelper (killall 3DconnexionHelper)", "yellow"))
+            raise
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
