@@ -1,12 +1,11 @@
 import argparse
-import json
 import time
 
 import numpy as np
 
 import robosuite as suite
-import robosuite.utils.transform_utils as T
-from robosuite.utils.input_utils import *
+from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
+from robosuite.utils.input_utils import choose_environment, choose_multi_arm_config, choose_robots
 
 MAX_FR = 25  # max frame rate for running simluation
 
@@ -88,6 +87,9 @@ if __name__ == "__main__":
     # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
+
+    controller_config = load_composite_controller_config(robot=options["robots"])
+    options["controller_configs"] = controller_config
 
     env = suite.make(
         **options,
