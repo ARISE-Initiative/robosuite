@@ -371,7 +371,7 @@ class SpaceMouse(Device):
         Returns:
             dict: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
         """
-        controller_state = self.devices[self.active_arm_index].get_controller_state()
+        controller_state = self.devices[self.active_arm_index % len(self.devices)].get_controller_state()
         controller_state.update({"base_mode": int(self.base_mode)})
         return controller_state
 
