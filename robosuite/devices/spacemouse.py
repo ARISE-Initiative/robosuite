@@ -103,6 +103,20 @@ def convert(b1, b2):
 
 
 class SpaceMouseSdkWrapper:
+    """
+    A wrapper for interfacing with SpaceMouse devices using the HID library.
+
+    This class provides methods to initialize the device, configure sensitivity settings,
+    handle 6-DOF input data, and run a listener thread to continuously receive input
+    from the SpaceMouse hardware.
+
+    Args:
+        product_id (int): The unique identifier for the SpaceMouse model.
+        device_path (str): Path to the device as detected by the HID library.
+        pos_sensitivity (float): Scaling factor for position commands.
+        rot_sensitivity (float): Scaling factor for rotational commands.
+    """
+
     def __init__(self, product_id, device_path, pos_sensitivity, rot_sensitivity):
         self.product_id = product_id
         self.device = hid.device()
@@ -287,6 +301,8 @@ class SpaceMouse(Device):
     Args:
         env (RobotEnv): The environment which contains the robot(s) to control
                         using this device.
+        vendor_id (int): The vendor ID used to locate the device.
+        product_id (int): Currently unused. The product ID is retrieved from hid.enumerate().
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
@@ -376,6 +392,16 @@ class SpaceMouse(Device):
         return controller_state
 
     def input2action(self, mirror_actions=False) -> Optional[Dict]:
+        """
+        Processes input from all space mice and computes the final action for the robot.
+
+        Args:
+            mirror_actions (bool): Whether to mirror the actions for a mirrored setup.
+
+        Returns:
+            Optional[Dict]: A dictionary containing the computed actions for the active arm,
+            or None if a reset is triggered.
+        """
         final_ac = None
         original_arm_index = self.active_arm_index
         for i in range(len(self.devices)):
