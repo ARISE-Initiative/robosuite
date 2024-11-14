@@ -325,12 +325,12 @@ class SpaceMouse(Device):
 
         product_id_path_pairs = set()
         for device in hid.enumerate():
-            if device['vendor_id'] == vendor_id:
-                product_id_path_pairs.add((device['product_id'], device['path']))
+            if device["vendor_id"] == vendor_id:
+                product_id_path_pairs.add((device["product_id"], device["path"]))
         product_id_path_pairs = sorted(list(product_id_path_pairs))
 
         self.devices = []
-        for (product_id, path) in product_id_path_pairs:
+        for product_id, path in product_id_path_pairs:
             self.devices.append(SpaceMouseSdkWrapper(product_id, path, pos_sensitivity, rot_sensitivity))
 
         # also add a keyboard for aux controls
@@ -406,7 +406,7 @@ class SpaceMouse(Device):
         original_arm_index = self.active_arm_index
         for i in range(len(self.devices)):
             ac_dict = super().input2action(mirror_actions)
-            if ac_dict is None: # reset from any space mouse
+            if ac_dict is None:  # reset from any space mouse
                 for device in self.devices:
                     device._reset_state = 1
                     device._enabled = False
@@ -467,9 +467,11 @@ if __name__ == "__main__":
     space_mice = []
     device_pathes = set()
     for device in hid.enumerate():
-        if device['vendor_id'] == vendor_id and device['path'] not in device_pathes:
-            space_mice.append(SpaceMouseSdkWrapper(device['product_id'], device['path'], pos_sensitivity, rot_sensitivity))
-            device_pathes.add(device['path'])
+        if device["vendor_id"] == vendor_id and device["path"] not in device_pathes:
+            space_mice.append(
+                SpaceMouseSdkWrapper(device["product_id"], device["path"], pos_sensitivity, rot_sensitivity)
+            )
+            device_pathes.add(device["path"])
 
     for space_mouse in space_mice:
         space_mouse.start_control()
