@@ -23,6 +23,8 @@ from collections import namedtuple
 import numpy as np
 from pynput.keyboard import Controller, Key, Listener
 
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
+
 try:
     import hid
 except ModuleNotFoundError as exc:
@@ -128,7 +130,14 @@ class SpaceMouse(Device):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
-        self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        try:
+            self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+        except OSError as e:
+            ROBOSUITE_DEFAULT_LOGGER.warning(
+                "Failed to open SpaceMouse device"
+                "Consider killing other processes that may be using the device such as 3DconnexionHelper (killall 3DconnexionHelper)"
+            )
+            raise
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
