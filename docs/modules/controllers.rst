@@ -30,7 +30,7 @@ An example of the controller config file is shown below (many parameters are omi
 
         {
         "type": "BASIC",
-        "body_parts_controller_configs": {
+        "body_parts": {
             "arms": {
                 "right": {
                     "type": "OSC_POSE",

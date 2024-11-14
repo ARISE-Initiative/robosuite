@@ -25,7 +25,7 @@
         "ik_input_rotation_repr": "axis_angle",
         "ik_verbose": true
     },
-    "body_parts_controller_configs": {
+    "body_parts": {
         "arms": {
             "right": {
                 "type" : "JOINT_POSITION",

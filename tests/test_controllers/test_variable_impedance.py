@@ -56,7 +56,7 @@ def test_variable_impedance():
         np.random.seed(3)
 
         composite_controller_config = load_composite_controller_config(controller=None, robot="Sawyer")
-        controller_config = composite_controller_config["body_parts_controller_configs"]["right"]
+        controller_config = composite_controller_config["body_parts"]["right"]
         controller_config["type"] = controller_name
         # Manually edit impedance settings
         controller_config["impedance_mode"] = "variable"
