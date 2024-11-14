@@ -26,7 +26,7 @@
         "ik_hand_ori_cost": 0.5,
         "use_joint_angle_action_input": false
     },
-    "body_parts_controller_configs": {
+    "body_parts": {
         "arms": {
             "right": {
                 "type" : "JOINT_POSITION",

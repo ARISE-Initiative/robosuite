@@ -16,7 +16,7 @@
         "ik_input_rotation_repr": "axis_angle",
         "verbose": false
     },
-    "body_parts_controller_configs": {
+    "body_parts": {
         "arms": {
             "right": {
                 "type": "OSC_POSE",
