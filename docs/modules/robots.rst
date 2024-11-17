@@ -14,7 +14,7 @@ The high-level features of **robosuite**'s robots are described as follows:
 * **Self-Enclosed Abstraction**: For a given task and environment, any information relevant to the specific robot instance can be found within the properties and methods within that instance. This means that each robot is responsible for directly setting its initial state within the simulation at the start of each episode, and also directly controls the robot in simulation via torques outputted by its controller's transformed actions.
 
 Usage
-======
+=====
 Below, we discuss the usage and functionality of the robots over the course of its program lifetime.
 
 Initialization
@@ -35,7 +35,6 @@ Models
 
 Manipulators
 ------------
-**robosuite** currently supports seven commercially-available manipulator robot models. We briefly describe each individual model along with its features below:
 
 .. list-table::
    :widths: 15 50 35
