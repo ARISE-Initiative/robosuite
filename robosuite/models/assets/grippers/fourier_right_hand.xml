@@ -1,0 +1,227 @@
+<mujoco model="fourier right hand">
+  <statistic center="0.3 0 0.4" extent="1"/>
+  <compiler angle="radian" meshdir="./" autolimits="true"/>
+
+  <visual>
+      <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+      <rgba haze="0.15 0.25 0.35 1"/>
+      <global azimuth="120" elevation="20"/>
+  </visual>
+
+  <default>
+      <joint damping="1"/>
+      <muscle ctrllimited="true" ctrlrange="0 100"/>
+      <motor ctrllimited="true" ctrlrange="-3 3" gear="1"/>
+      <position ctrllimited="true" kp="10"/>
+  </default>
+
+  <asset>
+    <mesh name="R_hand_base_link_vis" file="meshes/fourier_hands/R_hand_base_link.STL"/>
+    <mesh name="R_hand_base_link_col" file="meshes/fourier_hands/R_hand_base_link.STL"/>
+
+    <mesh name="R_thumb_proximal_base_link_vis" file="meshes/fourier_hands/R_thumb_proximal_base_link.STL"/>
+    <mesh name="R_thumb_proximal_base_link_col" file="meshes/fourier_hands/R_thumb_proximal_base_link.STL"/>
+
+    <mesh name="R_thumb_proximal_link_vis" file="meshes/fourier_hands/R_thumb_proximal_link.STL"/>
+    <mesh name="R_thumb_proximal_link_col" file="meshes/fourier_hands/R_thumb_proximal_link.STL"/>
+
+    <mesh name="R_thumb_distal_link_vis" file="meshes/fourier_hands/R_thumb_distal_link.STL"/>
+    <mesh name="R_thumb_distal_link_col" file="meshes/fourier_hands/R_thumb_distal_link.STL"/>
+
+    <mesh name="R_index_proximal_link_vis" file="meshes/fourier_hands/R_index_proximal_link.STL"/>
+    <mesh name="R_index_proximal_link_col" file="meshes/fourier_hands/R_index_proximal_link.STL"/>
+
+    <mesh name="R_index_intermediate_link_vis" file="meshes/fourier_hands/R_index_intermediate_link.STL"/>
+    <mesh name="R_index_intermediate_link_col" file="meshes/fourier_hands/R_index_intermediate_link.STL"/>
+
+    <mesh name="R_middle_proximal_link_vis" file="meshes/fourier_hands/R_middle_proximal_link.STL"/>
+    <mesh name="R_middle_proximal_link_col" file="meshes/fourier_hands/R_middle_proximal_link.STL"/>
+
+    <mesh name="R_middle_intermediate_link_vis" file="meshes/fourier_hands/R_middle_intermediate_link.STL"/>
+    <mesh name="R_middle_intermediate_link_col" file="meshes/fourier_hands/R_middle_intermediate_link.STL"/>
+
+    <mesh name="R_ring_proximal_link_vis" file="meshes/fourier_hands/R_ring_proximal_link.STL"/>
+    <mesh name="R_ring_proximal_link_col" file="meshes/fourier_hands/R_ring_proximal_link.STL"/>
+
+    <mesh name="R_ring_intermediate_link_vis" file="meshes/fourier_hands/R_ring_intermediate_link.STL"/>
+    <mesh name="R_ring_intermediate_link_col" file="meshes/fourier_hands/R_ring_intermediate_link.STL"/>
+
+    <mesh name="R_pinky_proximal_link_vis" file="meshes/fourier_hands/R_pinky_proximal_link.STL"/>
+    <mesh name="R_pinky_proximal_link_col" file="meshes/fourier_hands/R_pinky_proximal_link.STL"/>
+
+    <mesh name="R_pinky_intermediate_link_vis" file="meshes/fourier_hands/R_pinky_intermediate_link.STL"/>
+    <mesh name="R_pinky_intermediate_link_col" file="meshes/fourier_hands/R_pinky_intermediate_link.STL"/>
+
+
+    <material name="site_right_hand" rgba="0.1882 0.1882 0.1882 0"/>
+
+    <material name="r_base_material" rgba="0 0 0 1"/>
+    <material name="r_thumb_material" rgba="0 0 0 1"/>
+    <material name="r_index_material" rgba="0 0 0 1"/>
+    <material name="r_middle_material" rgba="0 0 0 1"/>
+    <material name="r_ring_material" rgba="0 0 0 1"/>
+    <material name="r_pinky_material" rgba="0 0 0 1"/>
+
+    <material name="r_thumb_distal_material" rgba="0 0 0 1"/>
+  </asset>
+
+  <worldbody>
+    <body name="right_hand" pos="0 0 0" quat="0.7071068 0 0 0.7071068">
+      <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="1"/>
+      <!-- <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/> -->
+      <body name="eef" pos="0 0 0" quat="0.707 0. -0.707 0.">
+          <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 1 0 1" type="sphere" group="2"/>
+          <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+          <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+          <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+          <!-- This site was added for visualization. -->
+          <site name="grip_site_cylinder" pos="0 0 0" quat="-0.5 -0.5 -0.5 0.5" size="0.005 0.5" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+      </body>
+
+      <!-- Palm -->
+      <body name="r_palm" pos="0 0 0">
+        <geom name="r_palm_vis" type="mesh" material="r_base_material" mesh="R_hand_base_link_vis" group="1" contype="0" conaffinity="0"/>
+        <geom name="r_palm_col" type="mesh" mass="0.1" mesh="R_hand_base_link_col"/>
+        
+        <!-- Thumb -->
+        <body name="r_thumb" pos="0. 0. 0.">
+          <body name="R_thumb_proximal_base_link" pos="0.021995 0.015502 -0.024995" quat="-3.67321e-06 1 0 0">
+            <!-- <inertial pos="0.0110212 -2.455e-05 -0.00077678" quat="0.134704 0.715534 0.132621 0.672516" mass="0.00948218" diaginertia="9.76605e-07 9.4591e-07 2.97485e-07"/> -->
+            <joint name="R_thumb_proximal_yaw_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+            <geom name="R_thumb_proximal_base_link_vis" type="mesh" material="r_thumb_material" mesh="R_thumb_proximal_base_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="R_thumb_proximal_base_link_col" type="mesh" mass="0.1" mesh="R_thumb_proximal_base_link_col"/>
+
+            <body name="R_thumb_proximal_link" pos="0.02175 0 0" quat="0.70707 0.707143 4.31666e-06 -4.31711e-06">
+              <!-- <inertial pos="0.032189 0.000287 -2.839e-05" quat="-0.00477539 0.707723 0.000955857 0.706473" mass="0.0740524" diaginertia="3.41901e-05 3.22813e-05 1.13186e-05"/> -->
+              <joint name="R_thumb_proximal_pitch_joint" pos="0 0 0" axis="0 0 1" range="0 1.22" actuatorfrcrange="-10 10"/>
+              <geom name="R_thumb_proximal_link_vis" type="mesh" material="r_thumb_material" mesh="R_thumb_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="R_thumb_proximal_link_col" type="mesh" mass="0.1" mesh="R_thumb_proximal_link_col"/>
+              <site name="site_R_thumb_proximal_link" size="0.01" material="site_right_hand"/>
+              <body name="R_thumb_distal_link" pos="0.061444 0.0082822 0" quat="1 0 0 6.105e-06">
+                <!-- <inertial pos="0.013732 -0.00277415 0" quat="0.484106 0.484106 0.515404 0.515404" mass="0.0197414" diaginertia="2.33564e-06 2.19e-06 8.94358e-07"/> -->
+                <joint name="R_thumb_distal_joint" pos="0 0 0" axis="0 0 1" range="0 1.23" actuatorfrcrange="-10 10"/>
+                <geom name="R_thumb_distal_link_vis" type="mesh" material="r_thumb_material" mesh="R_thumb_distal_link_vis" group="1" contype="0" conaffinity="0"/>
+                <geom name="R_thumb_distal_link_col" type="mesh" mass="0.1" mesh="R_thumb_distal_link_col"/>
+                <site name="site_R_thumb_distal_link" size="0.01" material="site_right_hand"/>
+              </body>
+            </body>
+          </body>
+        </body>
+        <!-- End of Thumb -->
+
+        <!-- Index -->
+        <body name="l_index" pos="0 0 0">
+          <body name="R_index_proximal_link" pos="0.026864 0.012307 -0.095892" quat="2.00728e-05 -0.725387 -2.80225e-05 0.688341">
+            <!-- <inertial pos="0.00959983 0.0004431 2.96e-06" quat="0.0148503 0.706951 -0.0148503 0.706951" mass="0.0191177" diaginertia="3.85e-06 3.71504e-06 8.54956e-07"/> -->
+            <joint name="R_index_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <geom name="R_index_proximal_link_vis" type="mesh" material="r_index_material" mesh="R_index_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="R_index_proximal_link_col" type="mesh" mass="0.1" mesh="R_index_proximal_link_col"/>
+            <site name="site_R_index_proximal_link" size="0.01" material="site_right_hand"/>
+
+            <body name="R_index_intermediate_link" pos="0.031532 -0.0054551 0">
+              <!-- <inertial pos="0.0180044 0.00299919 -9.23e-06" quat="0.535589 0.535589 0.461675 0.461675" mass="0.0129254" diaginertia="2.04726e-06 2.04e-06 3.32737e-07"/> -->
+              <joint name="R_index_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <geom name="R_index_intermediate_link_vis" type="mesh" material="r_index_material" mesh="R_index_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="R_index_intermediate_link_col" type="mesh" mass="0.1" mesh="R_index_intermediate_link_col"/>
+              <site name="site_R_index_intermediate_link" size="0.01" material="site_right_hand"/>
+
+            </body>
+          </body>
+        </body>
+        <!-- End of Index -->
+
+        <!-- Middle -->
+        <body name="l_middle" pos="0 0 0">
+          <body name="R_middle_proximal_link" pos="0.0084962 0.012307 -0.097896" quat="3.09284e-05 -0.707113 -3.61231e-05 0.707101">
+            <!-- <inertial pos="0.00955708 0.00071862 2.96e-06" quat="0.00741272 0.707068 -0.00741272 0.707068" mass="0.0191177" diaginertia="3.85e-06 3.72126e-06 8.58742e-07"/> -->
+            <joint name="R_middle_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <geom name="R_middle_proximal_link_vis" type="mesh" material="r_middle_material" mesh="R_middle_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="R_middle_proximal_link_col" type="mesh" mass="0.1" mesh="R_middle_proximal_link_col"/>
+            <site name="site_R_middle_proximal_link" size="0.01" material="site_right_hand"/>
+
+            <body name="R_middle_intermediate_link" pos="0.031662 -0.0046408 0">
+              <!-- <inertial pos="0.02128 0.0040831 -9.98e-06" quat="0.51865 0.51865 0.480627 0.480627" mass="0.01535" diaginertia="3.29677e-06 3.29e-06 3.93234e-07"/> -->
+              <joint name="R_middle_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <geom name="R_middle_intermediate_link_vis" type="mesh" material="r_middle_material" mesh="R_middle_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="R_middle_intermediate_link_col" type="mesh" mass="0.1" mesh="R_middle_intermediate_link_col"/>
+              <site name="site_R_middle_intermediate_link" size="0.01" material="site_right_hand"/>
+
+            </body>
+          </body>
+        </body>
+        <!-- End of Middle -->
+
+        <!-- Ring -->
+        <body name="l_ring" pos="0 0 0">
+          <body name="R_ring_proximal_link" pos="-0.009965 0.012307 -0.097841" quat="-2.66449e-06 -0.688341 -2.52842e-06 0.725387">
+            <!-- <inertial pos="0.00959986 0.00044244 2.96e-06" quat="0.0148503 0.706951 -0.0148503 0.706951" mass="0.0191177" diaginertia="3.85e-06 3.71504e-06 8.54956e-07"/> -->
+            <joint name="R_ring_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <geom name="R_ring_proximal_link_vis" type="mesh" material="r_ring_material" mesh="R_ring_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="R_ring_proximal_link_col" type="mesh" mass="0.1" mesh="R_ring_proximal_link_col"/>
+            <site name="site_R_ring_proximal_link" size="0.01" material="site_right_hand"/>
+            <body name="R_ring_intermediate_link" pos="0.031531 -0.0054572 0">
+              <!-- <inertial pos="0.018005 0.002998 -9.23e-06" quat="0.535589 0.535589 0.461675 0.461675" mass="0.012925" diaginertia="2.04726e-06 2.04e-06 3.32737e-07"/> -->
+              <joint name="R_ring_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <geom name="R_ring_intermediate_link_vis" type="mesh" material="r_ring_material" mesh="R_ring_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="R_ring_intermediate_link_col" type="mesh" mass="0.1" mesh="R_ring_intermediate_link_col"/>
+              <site name="site_R_ring_intermediate_link" size="0.01" material="site_right_hand"/>
+            </body>
+          </body>
+        </body>
+        <!-- End of Ring -->
+
+        <!-- Pinky -->
+        <body name="l_pinky" pos="0 0 0">
+          <body name="R_pinky_proximal_link" pos="-0.028232 0.012307 -0.095916" quat="3.85697e-05 -0.669139 -1.12538e-05 0.743137">
+            <!-- <inertial pos="0.00964414 9.378e-05 2.96e-06" quat="0.0249034 0.706668 -0.0249034 0.706668" mass="0.0191177" diaginertia="3.85e-06 3.71411e-06 8.65886e-07"/> -->
+            <joint name="R_pinky_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <geom name="R_pinky_proximal_link_vis" type="mesh" material="r_pinky_material" mesh="R_pinky_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="R_pinky_proximal_link_col" type="mesh" mass="0.1" mesh="R_pinky_proximal_link_col"/>
+            <site name="site_R_pinky_proximal_link" size="0.01" material="site_right_hand"/>
+            <body name="R_pinky_intermediate_link" pos="0.031338 -0.0064763 0" quat="1 0 0 3.3988e-05">
+              <!-- <inertial pos="0.0160962 0.00118598 -8.72e-06" quat="0.0923521 0.70105 -0.0923521 0.70105" mass="0.00568707" diaginertia="6.7e-07 6.54856e-07 1.35144e-07"/> -->
+              <joint name="R_pinky_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <geom name="R_pinky_intermediate_link_vis" type="mesh" material="r_pinky_material" mesh="R_pinky_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="R_pinky_intermediate_link_col" type="mesh" mass="0.1" mesh="R_pinky_intermediate_link_col"/>
+              <site name="site_R_pinky_intermediate_link" size="0.01" material="site_right_hand"/>
+            </body>
+          </body>
+        </body>
+        <!-- End of Pinky -->
+      </body>
+      <!-- End of Palm -->
+    </body>
+  </worldbody>
+  <contact>
+    <exclude name="exclude_rh_palm_thumb_base" body1="r_palm" body2="R_thumb_proximal_base_link"/>
+    <exclude name="exclude_rh_thumb_base_proximal" body1="R_thumb_proximal_base_link" body2="R_thumb_proximal_link"/>
+    <exclude name="exclude_rh_thumb_proximal_distal" body1="R_thumb_proximal_link" body2="R_thumb_distal_link"/>
+    <exclude name="exclude_rh_palm_index_base" body1="r_palm" body2="R_index_proximal_link"/>
+    <exclude name="exclude_rh_index_proximal_intermediate" body1="R_index_proximal_link" body2="R_index_intermediate_link"/>
+    <exclude name="exclude_rh_palm_middle_base" body1="r_palm" body2="R_middle_proximal_link"/>
+    <exclude name="exclude_rh_middle_proximal_intermediate" body1="R_middle_proximal_link" body2="R_middle_intermediate_link"/>
+    <exclude name="exclude_rh_palm_ring_base" body1="r_palm" body2="R_ring_proximal_link"/>
+    <exclude name="exclude_rh_ring_proximal_intermediate" body1="R_ring_proximal_link" body2="R_ring_intermediate_link"/>
+    <exclude name="exclude_rh_palm_pinky_base" body1="r_palm" body2="R_pinky_proximal_link"/>
+    <exclude name="exclude_rh_pinky_proximal_intermediate" body1="R_pinky_proximal_link" body2="R_pinky_intermediate_link"/>
+  </contact>
+
+  <actuator>
+    <position joint="R_pinky_intermediate_joint" name="R_pinky_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_pinky_proximal_joint" name="R_pinky_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_ring_intermediate_joint" name="R_ring_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_ring_proximal_joint" name="R_ring_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_middle_intermediate_joint" name="R_middle_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_middle_proximal_joint" name="R_middle_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_index_intermediate_joint" name="R_index_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_index_proximal_joint" name="R_index_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_thumb_distal_joint" name="R_thumb_distal_joint_drive" ctrlrange="0 1.23" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_thumb_proximal_pitch_joint" name="R_thumb_proximal_pitch_joint_drive" ctrlrange="0 1.22" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="R_thumb_proximal_yaw_joint" name="R_thumb_proximal_yaw_joint_drive" ctrlrange="0 1.74"  kp="4" forcelimited="true" forcerange="-20 20"/>
+  </actuator>
+
+  <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+  </sensor>
+</mujoco>
