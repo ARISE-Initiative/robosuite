@@ -228,6 +228,7 @@ class WholeBody(CompositeController):
         # task space actions (such as end effector poses) to joint actions (such as joint angles or joint torques)
 
         self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
+        self._latest_all_joint_angle_action: Optional[np.ndarray] = None
 
     def _init_controllers(self):
         for part_name in self.part_controller_config.keys():
@@ -309,6 +310,7 @@ class WholeBody(CompositeController):
         target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
         # create new all_action vector with the IK solver's actions first
         all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
+        self._latest_all_joint_angle_action = all_action
         for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
