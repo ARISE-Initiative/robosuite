@@ -85,20 +85,17 @@
         <!-- Thumb -->
         <body name="l_thumb" pos="0. 0. 0.">
           <body name="L_thumb_proximal_base_link" pos="0.022 -0.015498 -0.025093" quat="1 0 -6.105e-06 0">
-            <!-- <inertial pos="0.011017 -2.4767e-05 0.00077605" quat="-0.132621 0.672516 -0.134704 0.715534" mass="0.00948527" diaginertia="9.76605e-07 9.4591e-07 2.97485e-07"/> -->
-            <joint name="L_thumb_proximal_yaw_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+            <joint name="L_thumb_proximal_yaw_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
             <geom name="L_thumb_proximal_base_link_vis" type="mesh" material="l_thumb_material" mesh="L_thumb_proximal_base_link_vis" group="1" contype="0" conaffinity="0"/>
             <geom name="L_thumb_proximal_base_link_col" type="mesh" mass="0.1" mesh="L_thumb_proximal_base_link_col"/>
             <body name="L_thumb_proximal_link" pos="0.02175 0 0" quat="0.707141 -0.707073 0 0">
               <site name="site_L_thumb_proximal_link" size="0.01" material="site_left_hand"/>
-              <!-- <inertial pos="0.0319631 -0.00014118 -2.861e-05" quat="-7.34947e-05 0.707728 -0.00352251 0.706476" mass="0.0734761" diaginertia="3.37601e-05 3.18304e-05 1.13094e-05"/> -->
-              <joint name="L_thumb_proximal_pitch_joint" pos="0 0 0" axis="0 0 1" range="0 1.22" actuatorfrcrange="-10 10"/>
+              <joint name="L_thumb_proximal_pitch_joint" pos="0 0 0" axis="0 0 1" range="0 1.22" actuatorfrcrange="-10 10" damping="1"/>
               <geom name="L_thumb_proximal_link_vis" type="mesh" material="l_thumb_material" mesh="L_thumb_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
               <geom name="L_thumb_proximal_link_col" type="mesh" mass="0.1" mesh="L_thumb_proximal_link_col"/>
               <body name="L_thumb_distal_link" pos="0.061549 0.0074616 0" quat="1 0 0 6.105e-06">
                 <site name="site_L_thumb_distal_link" size="0.01" material="site_left_hand"/>
-                <!-- <inertial pos="0.0132153 -0.00326134 0" quat="0.485436 0.485436 0.514151 0.514151" mass="0.0203177" diaginertia="2.48518e-06 2.34e-06 9.14825e-07"/> -->
-                <joint name="L_thumb_distal_joint" pos="0 0 0" axis="0 0 1" range="0 1.23" actuatorfrcrange="-10 10"/>
+                <joint name="L_thumb_distal_joint" pos="0 0 0" axis="0 0 1" range="0 1.23" actuatorfrcrange="-10 10" damping="1"/>
                 <geom name="L_thumb_distal_link_vis" type="mesh" material="l_thumb_material" mesh="L_thumb_distal_link_vis" group="1" contype="0" conaffinity="0"/>
                 <geom name="L_thumb_distal_link_col" type="mesh" mass="0.1" mesh="L_thumb_distal_link_col"/>
               </body>
@@ -111,14 +108,12 @@
         <body name="l_index" pos="0 0 0">
           <body name="L_index_proximal_link" pos="0.026869 -0.012293 -0.095989" quat="0.725387 2.48047e-05 0.688341 2.35323e-05">
             <site name="site_L_index_proximal_link" size="0.01" material="site_left_hand"/>
-            <!-- <inertial pos="0.0095993 0.000443 2.96e-06" quat="0.0148503 0.706951 -0.0148503 0.706951" mass="0.019117" diaginertia="3.85e-06 3.71504e-06 8.54956e-07"/> -->
-            <joint name="L_index_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <joint name="L_index_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
             <geom name="L_index_proximal_link_vis" type="mesh" material="l_index_material" mesh="L_index_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
             <geom name="L_index_proximal_link_col" type="mesh" mass="0.1" mesh="L_index_proximal_link_col"/>
             <body name="L_index_intermediate_link" pos="0.031532 -0.0054551 0" quat="1 0 0 -3.4128e-05">
               <site name="site_L_index_intermediate_link" size="0.01" material="site_left_hand"/>
-              <!-- <inertial pos="0.0180042 0.00300042 -9.23e-06" quat="0.535589 0.535589 0.461675 0.461675" mass="0.0129254" diaginertia="2.04726e-06 2.04e-06 3.32737e-07"/> -->
-              <joint name="L_index_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <joint name="L_index_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
               <geom name="L_index_intermediate_link_vis" type="mesh" material="l_index_material" mesh="L_index_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
               <geom name="L_index_intermediate_link_col" type="mesh" mass="0.1" mesh="L_index_intermediate_link_col"/>
             </body>
@@ -130,14 +125,12 @@
         <body name="l_middle" pos="0 0 0">
           <body name="L_middle_proximal_link" pos="0.0085012 -0.012293 -0.097993" quat="0.707113 3.35258e-05 0.707101 3.35258e-05">
             <site name="site_L_middle_proximal_link" size="0.01" material="site_left_hand"/>
-            <!-- <inertial pos="0.00955708 0.00071862 2.96e-06" quat="0.00741272 0.707068 -0.00741272 0.707068" mass="0.0191177" diaginertia="3.85e-06 3.72126e-06 8.58742e-07"/> -->
-            <joint name="L_middle_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <joint name="L_middle_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
             <geom name="L_middle_proximal_link_vis" type="mesh" material="l_middle_material" mesh="L_middle_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
             <geom name="L_middle_proximal_link_col" type="mesh" mass="0.1" mesh="L_middle_proximal_link_col"/>
             <body name="L_middle_intermediate_link" pos="0.031662 -0.0046408 0" quat="1 0 0 -3.4175e-05">
               <site name="site_L_middle_intermediate_link" size="0.01" material="site_left_hand"/>
-              <!-- <inertial pos="0.0212793 0.00408456 -9.98e-06" quat="0.51865 0.51865 0.480627 0.480627" mass="0.0153501" diaginertia="3.29677e-06 3.29e-06 3.93234e-07"/> -->
-              <joint name="L_middle_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <joint name="L_middle_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
               <geom name="L_middle_intermediate_link_vis" type="mesh" material="l_middle_material" mesh="L_middle_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
               <geom name="L_middle_intermediate_link_col" type="mesh" mass="0.1" mesh="L_middle_intermediate_link_col"/>
             </body>
@@ -149,14 +142,12 @@
         <body name="l_ring" pos="0 0 0">
           <body name="L_ring_proximal_link" pos="-0.00996 -0.012293 -0.097938" quat="0.688341 2.39435e-05 0.725387 2.39435e-05">
             <site name="site_L_ring_proximal_link" size="0.01" material="site_left_hand"/>
-            <!-- <inertial pos="0.00959983 0.0004431 2.96e-06" quat="0.0148503 0.706951 -0.0148503 0.706951" mass="0.0191177" diaginertia="3.85e-06 3.71504e-06 8.54956e-07"/> -->
-            <joint name="L_ring_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <joint name="L_ring_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
             <geom name="L_ring_proximal_link_vis" type="mesh" material="l_ring_material" mesh="L_ring_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
             <geom name="L_ring_proximal_link_col" type="mesh" mass="0.1" mesh="L_ring_proximal_link_col"/>
             <body name="L_ring_intermediate_link" pos="0.031532 -0.0054551 0" quat="1 0 0 -3.4128e-05">
               <site name="site_L_ring_intermediate_link" size="0.01" material="site_left_hand"/>
-              <!-- <inertial pos="0.0180042 0.00300042 -9.23e-06" quat="0.535589 0.535589 0.461675 0.461675" mass="0.0129254" diaginertia="2.04726e-06 2.04e-06 3.32737e-07"/> -->
-              <joint name="L_ring_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <joint name="L_ring_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
               <geom name="L_ring_intermediate_link_vis" type="mesh" material="l_ring_material" mesh="L_ring_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
               <geom name="L_ring_intermediate_link_col" type="mesh" mass="0.1" mesh="L_ring_intermediate_link_col"/>
             </body>
@@ -167,14 +158,12 @@
         <body name="l_pinky" pos="0 0 0">
           <body name="L_pinky_proximal_link" pos="-0.028227 -0.012293 -0.096013" quat="0.669139 2.56274e-05 0.743137 2.56274e-05">
             <site name="site_L_pinky_proximal_link" size="0.01" material="site_left_hand"/>
-            <!-- <inertial pos="0.00964414 9.378e-05 2.96e-06" quat="0.0249034 0.706668 -0.0249034 0.706668" mass="0.0191177" diaginertia="3.85e-06 3.71411e-06 8.65886e-07"/> -->
-            <joint name="L_pinky_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10"/>
+            <joint name="L_pinky_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
             <geom name="L_pinky_proximal_link_vis" type="mesh" material="l_pinky_material" mesh="L_pinky_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
             <geom name="L_pinky_proximal_link_col" type="mesh" mass="0.1" mesh="L_pinky_proximal_link_col"/>
             <body name="L_pinky_intermediate_link" pos="0.031338 -0.0064763 0" quat="1 0 0 -3.3988e-05">
               <site name="site_L_pinky_intermediate_link" size="0.01" material="site_left_hand"/>
-              <!-- <inertial pos="0.016096 0.00118817 -8.72e-06" quat="0.0923521 0.70105 -0.0923521 0.70105" mass="0.00568707" diaginertia="6.7e-07 6.54856e-07 1.35144e-07"/> -->
-              <joint name="L_pinky_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10"/>
+              <joint name="L_pinky_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
               <geom name="L_pinky_intermediate_link_vis" type="mesh" material="l_pinky_material" mesh="L_pinky_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
               <geom name="L_pinky_intermediate_link_col" type="mesh" mass="0.1" mesh="L_pinky_intermediate_link_col"/>
             </body>
@@ -185,19 +174,6 @@
       <!-- End of Palm -->
     </body>
   </worldbody>
-  <contact>
-    <exclude name="exclude_lh_palm_thumb_base" body1="l_palm" body2="L_thumb_proximal_base_link"/>
-    <exclude name="exclude_lh_thumb_base_proximal" body1="L_thumb_proximal_base_link" body2="L_thumb_proximal_link"/>
-    <exclude name="exclude_lh_thumb_proximal_distal" body1="L_thumb_proximal_link" body2="L_thumb_distal_link"/>
-    <exclude name="exclude_lh_palm_index_base" body1="l_palm" body2="L_index_proximal_link"/>
-    <exclude name="exclude_lh_index_proximal_intermediate" body1="L_index_proximal_link" body2="L_index_intermediate_link"/>
-    <exclude name="exclude_lh_palm_middle_base" body1="l_palm" body2="L_middle_proximal_link"/>
-    <exclude name="exclude_lh_middle_proximal_intermediate" body1="L_middle_proximal_link" body2="L_middle_intermediate_link"/>
-    <exclude name="exclude_lh_palm_ring_base" body1="l_palm" body2="L_ring_proximal_link"/>
-    <exclude name="exclude_lh_ring_proximal_intermediate" body1="L_ring_proximal_link" body2="L_ring_intermediate_link"/>
-    <exclude name="exclude_lh_palm_pinky_base" body1="l_palm" body2="L_pinky_proximal_link"/>
-    <exclude name="exclude_lh_pinky_proximal_intermediate" body1="L_pinky_proximal_link" body2="L_pinky_intermediate_link"/>
-  </contact>
 
   <actuator>
     <position joint="L_pinky_intermediate_joint" name="L_pinky_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
