@@ -6,7 +6,7 @@
 
 The high-level features of **robosuite**'s robots are described as follows:
 
-* **Diverse and Realistic Models**: **robosuite** provides models for 20 commercially-available robots (including the humanoid GR1 Robot), 15 grippers (including the inspire dextrous hand model), and 6 controllers, with model properties either taken directly from the company website or raw spec sheets.
+* **Diverse and Realistic Models**: **robosuite** provides models for 20 commercially-available robots (including the humanoid GR1 Robot), 15 grippers (including the inspire dexterous hand model), and 6 controllers, with model properties either taken directly from the company website or raw spec sheets.
 
 * **Modularized Support**: Robots are designed to be plug-n-play -- any combinations of robots, models, and controllers can be used, assuming the given environment is intended for the desired robot configuration. Because each robot is assigned a unique ID number, multiple instances of identical robots can be instantiated within the simulation without error.
 
