@@ -332,7 +332,7 @@ class WholeBody(CompositeController):
         """
         if self._use_joint_angle_action_input:
             return super().action_limits
-        
+
         low, high = [], []
         # assumption: IK solver's actions come first
         low_c, high_c = self.joint_action_policy.control_limits
