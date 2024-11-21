@@ -10,7 +10,8 @@
     "kp_limits": [0, 300],
     "damping_ratio_limits": [0, 10],
     "position_limits": null,
-    "control_delta": true,
+    "input_type": "delta",
+    "input_ref_frame": "base",
     "interpolation": null,
     "ramp_ratio": 0.2
   }
