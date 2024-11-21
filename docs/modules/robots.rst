@@ -96,21 +96,23 @@ Manipulators
      - .. image:: ../images/models/robot_model_GR1_isaac.png
           :width: 90%
           :align: center
-     - - **DoF:** 14
+     - - **DoF:** 24
        - **Default Gripper:** InspireHands
        - **Default Base:** NoActuationBase
+       - **Variants**: GR1FixedLowerBody, GR1FloatingBody, GR1ArmsOnly
    * - **Spot**
      - .. image:: ../images/models/robot_model_Spot_isaac.png
           :width: 90%
           :align: center
-     - - **DoF:** 14
+     - - **DoF:** 19
        - **Default Gripper:** BDGripper
        - **Default Base:** Spot
+       - **Variants**: SpotWithArmFloating
    * - **Tiago**
      - .. image:: ../images/models/robot_model_Tiago_isaac.png
           :width: 90%
           :align: center
-     - - **DoF:** 14
+     - - **DoF:** 20
        - **Default Gripper:** Robotiq85Gripper
        - **Default Base:** NullMobileBase
 
@@ -138,7 +140,7 @@ Grippers
      - .. image:: ../images/models/jaco_gripper.png
           :width: 90%
           :align: center
-     - - **DoF:** 1 (3 for dextrous version)
+     - - **DoF:** 1 (3 for dexterous version)
    * - **Panda Gripper**
      - .. image:: ../images/models/panda_gripper.png
           :width: 90%
