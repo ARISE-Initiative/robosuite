@@ -45,8 +45,6 @@ We have included an example script that illustrates how demonstrations can be lo
 
 We have included some sample demonstrations for each task at `models/assets/demonstrations`.
 
-Our sister project [RoboTurk](http://roboturk.stanford.edu) has also collected several human demonstration datasets across different tasks and humans, including pilot datasets of more than a thousand demonstrations for two tasks in our suite via crowdsourcing. You can find detailed information about the RoboTurk datasets [here](roboturk).
-
 
 ## Structure of collected demonstrations
 

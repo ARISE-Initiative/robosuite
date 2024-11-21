@@ -9,5 +9,6 @@
 - [Andrew Kondrich](http://www.andrewkondrich.com/), [Jonathan Booher](https://web.stanford.edu/~jaustinb/) (domain randomization)
 - [Albert Tung](https://www.linkedin.com/in/albert-tung3/) (demonstration collection)
 - [Divyansh Jha](https://github.com/divyanshj16), [Fei Xia](http://fxia.me/) (robosuite v1.3 renderers)
+- [Zhenyu Jiang](https://zhenyujiang.me/), [Yuqi Xie](https://xieleo5.github.io/), [You Liang Tan](https://youliangtan.github.io/), (robosuite v1.5)
 
 We wholeheartedly welcome the community to contribute to our project through issues and pull requests. New contributors will be added to the list above.
