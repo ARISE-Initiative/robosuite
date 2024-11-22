@@ -123,7 +123,7 @@ class Device(metaclass=abc.ABCMeta):
         # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
         dpos, drotation = self._postprocess_device_outputs(dpos, drotation)
         # map 0 to -1 (open) and map 1 to 1 (closed)
-        grasp = 1.0 if grasp else -1.0
+        grasp = 1 if grasp else -1
 
         ac_dict = {}
         # populate delta actions for the arms
@@ -166,7 +166,7 @@ class Device(metaclass=abc.ABCMeta):
         ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
 
         # clip actions between -1 and 1
-        for k, v in ac_dict.items():
+        for (k, v) in ac_dict.items():
             if "abs" not in k:
                 ac_dict[k] = np.clip(v, -1, 1)
 
