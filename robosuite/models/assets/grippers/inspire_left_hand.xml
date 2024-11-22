@@ -236,18 +236,18 @@
     </contact>
 
   <actuator>
-        <position joint="joint_l_thumb_proximal_1" name="thumb_proximal_1_drive" ctrlrange="0 1.3"  kp="4" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_thumb_proximal_2" name="thumb_proximal_2_drive" ctrlrange="0 0.68" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_thumb_middle" name="thumb_middle_drive" ctrlrange="0 0.68" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_thumb_distal" name="thumb_distal_drive" ctrlrange="0 0.77" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_index_proximal" name="index_proximal_drive" ctrlrange="0 1.62"  kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_index_distal" name="index_distal_drive" ctrlrange="0 1.82" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_middle_proximal" name="middle_proximal_drive" ctrlrange="0 1.62" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_middle_distal" name="middle_distal_drive" ctrlrange="0 1.82" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_ring_proximal" name="ring_proximal_drive" ctrlrange="0 1.62" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_ring_distal" name="ring_distal_drive" ctrlrange="0 1.75" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_pinky_proximal" name="pinky_proximal_drive" ctrlrange="0 1.62" kp="2" forcelimited="true" forcerange="-20 20"/>
-        <position joint="joint_l_pinky_distal" name="pinky_distal_drive" ctrlrange="0 1.87" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_pinky_distal" name="pinky_distal_drive" ctrlrange="0 1.87" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_pinky_proximal" name="pinky_proximal_drive" ctrlrange="0 1.62" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_ring_distal" name="ring_distal_drive" ctrlrange="0 1.75" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_ring_proximal" name="ring_proximal_drive" ctrlrange="0 1.62" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_middle_distal" name="middle_distal_drive" ctrlrange="0 1.82" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_middle_proximal" name="middle_proximal_drive" ctrlrange="0 1.62" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_index_distal" name="index_distal_drive" ctrlrange="0 1.82" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_index_proximal" name="index_proximal_drive" ctrlrange="0 1.62"  kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_thumb_distal" name="thumb_distal_drive" ctrlrange="0 0.77" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_thumb_middle" name="thumb_middle_drive" ctrlrange="0 0.68" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_thumb_proximal_2" name="thumb_proximal_2_drive" ctrlrange="0 0.68" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="joint_l_thumb_proximal_1" name="thumb_proximal_1_drive" ctrlrange="0 1.3"  kp="4" forcelimited="true" forcerange="-20 20"/>
   </actuator>
 
   <sensor>
