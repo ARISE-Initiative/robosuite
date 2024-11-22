@@ -102,7 +102,7 @@ def convert(b1, b2):
     return scale_to_control(to_int16(b1, b2))
 
 
-class SpaceMouseSdkWrapper:
+class SpaceMouseListener:
     """
     A wrapper for interfacing with SpaceMouse devices using the HID library.
 
@@ -329,9 +329,9 @@ class SpaceMouse(Device):
                 product_id_path_pairs.add((device["product_id"], device["path"]))
         product_id_path_pairs = sorted(list(product_id_path_pairs))
 
-        self.devices = []
+        self.listeners = []
         for product_id, path in product_id_path_pairs:
-            self.devices.append(SpaceMouseSdkWrapper(product_id, path, pos_sensitivity, rot_sensitivity))
+            self.listeners.append(SpaceMouseListener(product_id, path, pos_sensitivity, rot_sensitivity))
 
         # also add a keyboard for aux controls
         self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
@@ -368,8 +368,8 @@ class SpaceMouse(Device):
         """
         super()._reset_internal_state()
 
-        for device in self.devices:
-            device._reset_internal_state()
+        for listener in self.listeners:
+            listener._reset_internal_state()
 
     def start_control(self):
         """
@@ -377,8 +377,8 @@ class SpaceMouse(Device):
         start receiving commands.
         """
         self._reset_internal_state()
-        for device in self.devices:
-            device.start_control()
+        for listener in self.listeners:
+            listener.start_control()
 
     def get_controller_state(self):
         """
@@ -387,7 +387,7 @@ class SpaceMouse(Device):
         Returns:
             dict: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
         """
-        controller_state = self.devices[self.active_arm_index % len(self.devices)].get_controller_state()
+        controller_state = self.listeners[self.active_arm_index % len(self.listeners)].get_controller_state()
         controller_state.update({"base_mode": int(self.base_mode)})
         return controller_state
 
@@ -404,12 +404,12 @@ class SpaceMouse(Device):
         """
         final_ac = None
         original_arm_index = self.active_arm_index
-        for i in range(len(self.devices)):
+        for i in range(len(self.listeners)):
             ac_dict = super().input2action(mirror_actions)
             if ac_dict is None:  # reset from any space mouse
-                for device in self.devices:
-                    device._reset_state = 1
-                    device._enabled = False
+                for listener in self.listeners:
+                    listener._reset_state = 1
+                    listener._enabled = False
                 self._reset_internal_state()
                 return None
             elif final_ac is None:
@@ -469,7 +469,7 @@ if __name__ == "__main__":
     for device in hid.enumerate():
         if device["vendor_id"] == vendor_id and device["path"] not in device_pathes:
             space_mice.append(
-                SpaceMouseSdkWrapper(device["product_id"], device["path"], pos_sensitivity, rot_sensitivity)
+                SpaceMouseListener(device["product_id"], device["path"], pos_sensitivity, rot_sensitivity)
             )
             device_pathes.add(device["path"])
 
