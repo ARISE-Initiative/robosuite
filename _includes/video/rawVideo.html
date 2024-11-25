@@ -1,0 +1,8 @@
+<!-- Feel free to change the width and height to your desired video size. -->
+
+<div class="embed-container">
+  <video style="max-width: 100%; height: auto;" autoplay loop muted playsinline controls>
+    <source src="{{ '/assets/' | append: include.fileName | absolute_url }}" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
