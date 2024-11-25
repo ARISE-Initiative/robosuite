@@ -1,0 +1,651 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Human Demonstrations &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'algorithms/demonstrations';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sim-to-Real Transfer" href="sim2real.html" />
+    <link rel="prev" title="Benchmarking" href="benchmarking.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/algorithms/demonstrations.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Human Demonstrations</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collecting-human-demonstrations">Collecting Human Demonstrations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-controls">Keyboard controls</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse-controls">3Dconnexion SpaceMouse controls</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#replaying-human-demonstrations">Replaying Human Demonstrations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#existing-datasets">Existing Datasets</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-of-collected-demonstrations">Structure of collected demonstrations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-demonstrations-for-learning">Using Demonstrations for Learning</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#warnings">Warnings</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="human-demonstrations">
+<h1>Human Demonstrations<a class="headerlink" href="#human-demonstrations" title="Link to this heading">#</a></h1>
+<section id="collecting-human-demonstrations">
+<h2>Collecting Human Demonstrations<a class="headerlink" href="#collecting-human-demonstrations" title="Link to this heading">#</a></h2>
+<p>We provide teleoperation utilities that allow users to control the robots with input devices, such as the keyboard and the <a class="reference external" href="https://www.3dconnexion.com/spacemouse_compact/en/">SpaceMouse</a>. Such functionality allows us to collect a dataset of human demonstrations for learning. We provide an example script to illustrate how to collect demonstrations. Our <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/collect_human_demonstrations.py">collect_human_demonstrations</a> script takes the following arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">directory:</span></code> path to a folder for where to store the pickle file of collected demonstrations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">environment:</span></code> name of the environment you would like to collect the demonstrations for</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">device:</span></code> either “keyboard” or “spacemouse”</p></li>
+</ul>
+<section id="keyboard-controls">
+<h3>Keyboard controls<a class="headerlink" href="#keyboard-controls" title="Link to this heading">#</a></h3>
+<p>Note that the rendering window must be active for these commands to work.</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th style="text-align: center;">Keys</th>
+<th style="text-align: center;">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">q</td>
+<td style="text-align: center;">reset simulation</td>
+</tr>
+<tr>
+<td style="text-align: center;">spacebar</td>
+<td style="text-align: center;">toggle gripper (open/close)</td>
+</tr>
+<tr>
+<td style="text-align: center;">w-a-s-d</td>
+<td style="text-align: center;">move arm horizontally in x-y plane</td>
+</tr>
+<tr>
+<td style="text-align: center;">r-f</td>
+<td style="text-align: center;">move arm vertically</td>
+</tr>
+<tr>
+<td style="text-align: center;">z-x</td>
+<td style="text-align: center;">rotate arm about x-axis</td>
+</tr>
+<tr>
+<td style="text-align: center;">t-g</td>
+<td style="text-align: center;">rotate arm about y-axis</td>
+</tr>
+<tr>
+<td style="text-align: center;">c-v</td>
+<td style="text-align: center;">rotate arm about z-axis</td>
+</tr>
+<tr>
+<td style="text-align: center;">ESC</td>
+<td style="text-align: center;">quit</td>
+</tr>
+</tbody>
+</table></section>
+<section id="dconnexion-spacemouse-controls">
+<h3>3Dconnexion SpaceMouse controls<a class="headerlink" href="#dconnexion-spacemouse-controls" title="Link to this heading">#</a></h3>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th style="text-align: center;">Control</th>
+<th style="text-align: center;">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Right button</td>
+<td style="text-align: center;">reset simulation</td>
+</tr>
+<tr>
+<td style="text-align: center;">Left button (hold)</td>
+<td style="text-align: center;">close gripper</td>
+</tr>
+<tr>
+<td style="text-align: center;">Move mouse laterally</td>
+<td style="text-align: center;">move arm horizontally in x-y plane</td>
+</tr>
+<tr>
+<td style="text-align: center;">Move mouse vertically</td>
+<td style="text-align: center;">move arm vertically</td>
+</tr>
+<tr>
+<td style="text-align: center;">Twist mouse about an axis</td>
+<td style="text-align: center;">rotate arm about a corresponding axis</td>
+</tr>
+<tr>
+<td style="text-align: center;">ESC (keyboard)</td>
+<td style="text-align: center;">quit</td>
+</tr>
+</tbody>
+</table></section>
+</section>
+<section id="replaying-human-demonstrations">
+<h2>Replaying Human Demonstrations<a class="headerlink" href="#replaying-human-demonstrations" title="Link to this heading">#</a></h2>
+<p>We have included an example script that illustrates how demonstrations can be loaded and played back. Our <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/playback_demonstrations_from_hdf5.py">playback_demonstrations_from_hdf5</a> script selects demonstration episodes at random from a demonstration pickle file and replays them.</p>
+</section>
+<section id="existing-datasets">
+<h2>Existing Datasets<a class="headerlink" href="#existing-datasets" title="Link to this heading">#</a></h2>
+<p>We have included some sample demonstrations for each task at <code class="docutils literal notranslate"><span class="pre">models/assets/demonstrations</span></code>.</p>
+</section>
+<section id="structure-of-collected-demonstrations">
+<h2>Structure of collected demonstrations<a class="headerlink" href="#structure-of-collected-demonstrations" title="Link to this heading">#</a></h2>
+<p>Every set of demonstrations is collected as a <code class="docutils literal notranslate"><span class="pre">demo.hdf5</span></code> file. The <code class="docutils literal notranslate"><span class="pre">demo.hdf5</span></code> file is structured as follows.</p>
+<ul>
+<li><p>data (group)</p>
+<ul>
+<li><p>date (attribute) - date of collection</p></li>
+<li><p>time (attribute) - time of collection</p></li>
+<li><p>repository_version (attribute) - repository version used during collection</p></li>
+<li><p>env (attribute) - environment name on which demos were collected</p></li>
+<li><p>demo1 (group) - group for the first demonstration (every demonstration has a group)</p>
+<ul class="simple">
+<li><p>model_file (attribute) - the xml string corresponding to the MJCF mujoco model</p></li>
+<li><p>states (dataset) - flattened mujoco states, ordered by time</p></li>
+<li><p>actions (dataset) - environment actions, ordered by time</p></li>
+</ul>
+</li>
+<li><p>demo2 (group) - group for the second demonstration</p>
+<p>…</p>
+<p>(and so on)</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>The reason for storing mujoco states instead of raw observations is to make it easy to retrieve different kinds of observations in a postprocessing step. This also saves disk space (image datasets are much larger).</p>
+</section>
+<section id="using-demonstrations-for-learning">
+<h2>Using Demonstrations for Learning<a class="headerlink" href="#using-demonstrations-for-learning" title="Link to this heading">#</a></h2>
+<p>We have recently released the <a class="reference external" href="https://arise-initiative.github.io/robomimic-web/">robomimic</a> framework, which makes it easy to train policies using your own <a class="reference external" href="https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#robosuite-hdf5-datasets">datasets collected with robosuite</a>, and other publically released datasets (such as those collected with RoboTurk). The framework also contains many useful examples for how to integrate hdf5 datasets into your own learning pipeline.</p>
+<p>The robosuite repository also has some utilities for using the demonstrations to alter the start state distribution of training episodes for learning RL policies - this have proved effective in <a class="reference external" href="https://arxiv.org/abs/1802.09564">several</a> <a class="reference external" href="https://arxiv.org/abs/1807.06919">prior</a> <a class="reference external" href="https://arxiv.org/abs/1804.02717">works</a>. For example, we provide a generic utility for setting various types of learning curriculums which dictate how to sample from demonstration episodes when doing an environment reset. For more information see the <code class="docutils literal notranslate"><span class="pre">DemoSamplerWrapper</span></code> class.</p>
+</section>
+<section id="warnings">
+<h2>Warnings<a class="headerlink" href="#warnings" title="Link to this heading">#</a></h2>
+<p>We have verified that deterministic action playback works specifically when playing back demonstrations on the <em>same machine</em> that the demonstrations were originally collected upon. However, this means that deterministic action playback is NOT guaranteed (in fact, very unlikely) to work across platforms or even across different machines using the same OS.</p>
+<p>While action playback trajectories are quite similar even if not completely identical to the original collected state trajectories, they do tend to drift over time, and should not be relied upon to accurately replicate demonstrations. Instead, we recommend directly setting states to reproduce the collected trajectories, as shown in <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/playback_demonstrations_from_hdf5.py">playback_demonstrations_from_hdf5</a>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="benchmarking.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Benchmarking</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="sim2real.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Sim-to-Real Transfer</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collecting-human-demonstrations">Collecting Human Demonstrations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-controls">Keyboard controls</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse-controls">3Dconnexion SpaceMouse controls</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#replaying-human-demonstrations">Replaying Human Demonstrations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#existing-datasets">Existing Datasets</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-of-collected-demonstrations">Structure of collected demonstrations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-demonstrations-for-learning">Using Demonstrations for Learning</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#warnings">Warnings</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

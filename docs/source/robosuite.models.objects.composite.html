@@ -1,0 +1,828 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>robosuite.models.objects.composite package &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.models.objects.composite';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="robosuite.models.objects.composite_body package" href="robosuite.models.objects.composite_body.html" />
+    <link rel="prev" title="robosuite.models.objects package" href="robosuite.models.objects.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/source/robosuite.models.objects.composite.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>robosuite.models.objects.composite package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hammer">robosuite.models.objects.composite.hammer module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject"><code class="docutils literal notranslate"><span class="pre">HammerObject</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.all_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.all_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.bottom_offset"><code class="docutils literal notranslate"><span class="pre">HammerObject.bottom_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.claw_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.claw_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.face_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.face_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.handle_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.handle_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.head_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.head_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">HammerObject.horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.init_quat"><code class="docutils literal notranslate"><span class="pre">HammerObject.init_quat</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.top_offset"><code class="docutils literal notranslate"><span class="pre">HammerObject.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.pot_with_handles">robosuite.models.objects.composite.pot_with_handles module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.bottom_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.bottom_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle0_geoms"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle0_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle1_geoms"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle1_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_distance"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle_distance</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_geoms"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.important_sites"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.top_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite">Module contents</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="robosuite-models-objects-composite-package">
+<h1>robosuite.models.objects.composite package<a class="headerlink" href="#robosuite-models-objects-composite-package" title="Link to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-robosuite.models.objects.composite.hammer">
+<span id="robosuite-models-objects-composite-hammer-module"></span><h2>robosuite.models.objects.composite.hammer module<a class="headerlink" href="#module-robosuite.models.objects.composite.hammer" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.hammer.</span></span><span class="sig-name descname"><span class="pre">HammerObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'box'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.015,</span> <span class="pre">0.02)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.1,</span> <span class="pre">0.25)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(100,</span> <span class="pre">250)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3.0,</span> <span class="pre">5.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_density_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_texture</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_handle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_face</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_claw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates a Hammer object with a cylindrical or box-shaped handle, cubic head, cylindrical face and triangular claw
+(used in Handover task)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of this Hammer object</p></li>
+<li><p><strong>handle_shape</strong> (<em>str</em>) – Either “box”, for a box-shaped handle, or “cylinder”, for a cylindrically-shaped handle</p></li>
+<li><p><strong>handle_radius</strong> (<em>float</em><em> or </em><em>2-array</em><em> of </em><em>float</em>) – Either specific or range of values to draw randomly from
+uniformly for the handle radius</p></li>
+<li><p><strong>handle_length</strong> (<em>float</em><em> or </em><em>2-array</em><em> of </em><em>float</em>) – Either specific or range of values to draw randomly from
+uniformly for the handle length</p></li>
+<li><p><strong>handle_density</strong> (<em>float</em><em> or </em><em>2-array</em><em> of </em><em>float</em>) – Either specific or range of values to draw randomly from
+uniformly for the handle density (in SI units). Note that this value is scaled x4 for the hammer head</p></li>
+<li><p><strong>handle_friction</strong> (<em>float</em><em> or </em><em>2-array</em><em> of </em><em>float</em>) – Either specific or range of values to draw randomly from
+uniformly for the handle friction. Note that Mujoco default values are used for the head</p></li>
+<li><p><strong>head_density_ratio</strong> (<em>float</em>) – Ratio of density of handle to head (including face and claw)</p></li>
+<li><p><strong>use_texture</strong> (<em>bool</em>) – If true, geoms will be defined by realistic textures and rgba values will be ignored</p></li>
+<li><p><strong>rgba_handle</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets handle rgba values</p></li>
+<li><p><strong>rgba_head</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets handle rgba values</p></li>
+<li><p><strong>rgba_face</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets handle rgba values</p></li>
+<li><p><strong>rgba_claw</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets handle rgba values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [Invalid handle shape]</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.all_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.all_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to all hammer components</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.bottom_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.bottom_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model bottom.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.claw_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">claw_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.claw_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to hammer claw</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.face_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">face_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.face_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to hammer face</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.handle_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.handle_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to hammer handle</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.head_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.head_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to hammer head</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.horizontal_radius">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.horizontal_radius" title="Link to this definition">#</a></dt>
+<dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
+<p>Helps us put models programmatically without them flying away due to a huge initial contact force.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>radius</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.init_quat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_quat</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.init_quat" title="Link to this definition">#</a></dt>
+<dd><p>Generates a new random orientation for the hammer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x, y, z, w) quaternion orientation for the hammer</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hammer.HammerObject.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hammer.HammerObject.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.objects.composite.pot_with_handles">
+<span id="robosuite-models-objects-composite-pot-with-handles-module"></span><h2>robosuite.models.objects.composite.pot_with_handles module<a class="headerlink" href="#module-robosuite.models.objects.composite.pot_with_handles" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.pot_with_handles.</span></span><span class="sig-name descname"><span class="pre">PotWithHandlesObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body_half_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.07,</span> <span class="pre">0.07,</span> <span class="pre">0.07)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.09</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.09</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_texture</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_body</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_handle_0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba_handle_1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solid_handle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates the Pot object with side handles (used in TwoArmLift)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of this Pot object</p></li>
+<li><p><strong>body_half_size</strong> (<em>3-array</em><em> of </em><em>float</em>) – If specified, defines the (x,y,z) half-dimensions of the main pot
+body. Otherwise, defaults to [0.07, 0.07, 0.07]</p></li>
+<li><p><strong>handle_radius</strong> (<em>float</em>) – Determines the pot handle radius</p></li>
+<li><p><strong>handle_length</strong> (<em>float</em>) – Determines the pot handle length</p></li>
+<li><p><strong>handle_width</strong> (<em>float</em>) – Determines the pot handle width</p></li>
+<li><p><strong>handle_friction</strong> (<em>float</em>) – Friction value to use for pot handles. Defauls to 1.0</p></li>
+<li><p><strong>density</strong> (<em>float</em>) – Density value to use for all geoms. Defaults to 1000</p></li>
+<li><p><strong>use_texture</strong> (<em>bool</em>) – If true, geoms will be defined by realistic textures and rgba values will be ignored</p></li>
+<li><p><strong>rgba_body</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets pot body rgba values</p></li>
+<li><p><strong>rgba_handle_0</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets handle 0 rgba values</p></li>
+<li><p><strong>rgba_handle_1</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets handle 1 rgba values</p></li>
+<li><p><strong>solid_handle</strong> (<em>bool</em>) – If true, uses a single geom to represent the handle</p></li>
+<li><p><strong>thickness</strong> (<em>float</em>) – How thick to make the pot body walls</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.bottom_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.bottom_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model bottom.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle0_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle0_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle0_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to handle0 (green handle)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle1_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle1_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle1_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to handle1 (blue handle)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_distance">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_distance</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_distance" title="Link to this definition">#</a></dt>
+<dd><p>Calculates how far apart the handles are</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>handle distance</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to both handles</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.horizontal_radius">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.horizontal_radius" title="Link to this definition">#</a></dt>
+<dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
+<p>Helps us put models programmatically without them flying away due to a huge initial contact force.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>radius</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.important_sites">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">important_sites</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.important_sites" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: In addition to any default sites for this object, also provides the following entries</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd"><cite>‘handle0’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of handle0 location site</p>
+</dd>
+<dt class="field-even"><cite>‘handle1’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Name of handle1 location site</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.objects.composite">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.models.objects.composite" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="robosuite.models.objects.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">robosuite.models.objects package</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="robosuite.models.objects.composite_body.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">robosuite.models.objects.composite_body package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hammer">robosuite.models.objects.composite.hammer module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject"><code class="docutils literal notranslate"><span class="pre">HammerObject</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.all_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.all_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.bottom_offset"><code class="docutils literal notranslate"><span class="pre">HammerObject.bottom_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.claw_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.claw_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.face_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.face_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.handle_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.handle_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.head_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.head_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">HammerObject.horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.init_quat"><code class="docutils literal notranslate"><span class="pre">HammerObject.init_quat</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.top_offset"><code class="docutils literal notranslate"><span class="pre">HammerObject.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.pot_with_handles">robosuite.models.objects.composite.pot_with_handles module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.bottom_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.bottom_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle0_geoms"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle0_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle1_geoms"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle1_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_distance"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle_distance</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.handle_geoms"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.handle_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.important_sites"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.top_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite">Module contents</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

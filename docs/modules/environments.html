@@ -1,0 +1,821 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Environments &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'modules/environments';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sensors" href="sensors.html" />
+    <link rel="prev" title="Objects" href="objects.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="robots.html">Robots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="objects.html">Objects</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/modules/environments.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Environments</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#making-an-environment">Making an Environment</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#modular-design">Modular Design</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interacting-with-an-environment">Interacting with an Environment</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#policy-loop">Policy Loop</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observations">Observations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rewards-and-termination">Rewards and Termination</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#task-models">Task Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#task-descriptions">Task Descriptions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#single-arm-tasks">Single-Arm Tasks</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#block-lifting">Block Lifting</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#block-stacking">Block Stacking</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pick-and-place">Pick-and-Place</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#nut-assembly">Nut Assembly</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#door-opening">Door Opening</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#table-wiping">Table Wiping</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-tasks">Two-Arm Tasks</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-lifting">Two Arm Lifting</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-peg-in-hole">Two Arm Peg-In-Hole</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-handover">Two Arm Handover</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="environments">
+<h1>Environments<a class="headerlink" href="#environments" title="Link to this heading">#</a></h1>
+<p>Environments are the main <strong>robosuite</strong> API objects that external code will interact with. Each environment corresponds to a robot manipulation task and provides a standard interface for an agent to interact with the environment. While <strong>robosuite</strong> can support environments from different robotic domains, the current release focuses is on manipulation environments.</p>
+<p>Next, we will describe how to create an environment, how to interact with an environment, and how each environment creates a simulated task in the MuJoCo physics engine. We will use the <code class="docutils literal notranslate"><span class="pre">TwoArmLift</span></code> environment as a running example for each section.</p>
+<section id="making-an-environment">
+<h2>Making an Environment<a class="headerlink" href="#making-an-environment" title="Link to this heading">#</a></h2>
+<p>Environments are created by calling <code class="docutils literal notranslate"><span class="pre">robosuite.make</span></code> with the name of the task and with a set of arguments that configure environment properties. We provide a few examples of different use cases below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span>
+<span class="kn">from</span> <span class="nn">robosuite.controllers</span> <span class="kn">import</span> <span class="n">load_composite_controller_config</span>
+
+<span class="c1"># BASIC controller: arms controlled using OSC, mobile base (if present) using JOINT_VELOCITY, other parts controlled using JOINT_POSITION </span>
+<span class="n">controller_config</span> <span class="o">=</span> <span class="n">load_composite_controller_config</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="s2">&quot;BASIC&quot;</span><span class="p">)</span>
+
+<span class="c1"># create an environment to visualize on-screen</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">robosuite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
+    <span class="s2">&quot;TwoArmLift&quot;</span><span class="p">,</span>
+    <span class="n">robots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Sawyer&quot;</span><span class="p">,</span> <span class="s2">&quot;Panda&quot;</span><span class="p">],</span>             <span class="c1"># load a Sawyer robot and a Panda robot</span>
+    <span class="n">gripper_types</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>                <span class="c1"># use default grippers per robot arm</span>
+    <span class="n">controller_configs</span><span class="o">=</span><span class="n">controller_config</span><span class="p">,</span>   <span class="c1"># arms controlled via OSC, other parts via JOINT_POSITION/JOINT_VELOCITY</span>
+    <span class="n">env_configuration</span><span class="o">=</span><span class="s2">&quot;opposed&quot;</span><span class="p">,</span>            <span class="c1"># (two-arm envs only) arms face each other</span>
+    <span class="n">has_renderer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                      <span class="c1"># on-screen rendering</span>
+    <span class="n">render_camera</span><span class="o">=</span><span class="s2">&quot;frontview&quot;</span><span class="p">,</span>              <span class="c1"># visualize the &quot;frontview&quot; camera</span>
+    <span class="n">has_offscreen_renderer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>           <span class="c1"># no off-screen rendering</span>
+    <span class="n">control_freq</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                        <span class="c1"># 20 hz control for applied actions</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>                            <span class="c1"># each episode terminates after 200 steps</span>
+    <span class="n">use_object_obs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                   <span class="c1"># no observations needed</span>
+    <span class="n">use_camera_obs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                   <span class="c1"># no observations needed</span>
+<span class="p">)</span>
+
+<span class="c1"># create an environment for policy learning from low-dimensional observations</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">robosuite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
+    <span class="s2">&quot;TwoArmLift&quot;</span><span class="p">,</span>
+    <span class="n">robots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Sawyer&quot;</span><span class="p">,</span> <span class="s2">&quot;Panda&quot;</span><span class="p">],</span>             <span class="c1"># load a Sawyer robot and a Panda robot</span>
+    <span class="n">gripper_types</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>                <span class="c1"># use default grippers per robot arm</span>
+    <span class="n">controller_configs</span><span class="o">=</span><span class="n">controller_config</span><span class="p">,</span>   <span class="c1"># arms controlled via OSC, other parts via JOINT_POSITION/JOINT_VELOCITY</span>
+    <span class="n">env_configuration</span><span class="o">=</span><span class="s2">&quot;opposed&quot;</span><span class="p">,</span>            <span class="c1"># (two-arm envs only) arms face each other</span>
+    <span class="n">has_renderer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                     <span class="c1"># no on-screen rendering</span>
+    <span class="n">has_offscreen_renderer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>           <span class="c1"># no off-screen rendering</span>
+    <span class="n">control_freq</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                        <span class="c1"># 20 hz control for applied actions</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>                            <span class="c1"># each episode terminates after 200 steps</span>
+    <span class="n">use_object_obs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                    <span class="c1"># provide object observations to agent</span>
+    <span class="n">use_camera_obs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                   <span class="c1"># don&#39;t provide image observations to agent</span>
+    <span class="n">reward_shaping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                    <span class="c1"># use a dense reward signal for learning</span>
+<span class="p">)</span>
+
+<span class="c1"># create an environment for policy learning from pixels</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">robosuite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
+    <span class="s2">&quot;TwoArmLift&quot;</span><span class="p">,</span>
+    <span class="n">robots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Sawyer&quot;</span><span class="p">,</span> <span class="s2">&quot;Panda&quot;</span><span class="p">],</span>             <span class="c1"># load a Sawyer robot and a Panda robot</span>
+    <span class="n">gripper_types</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>                <span class="c1"># use default grippers per robot arm</span>
+    <span class="n">controller_configs</span><span class="o">=</span><span class="n">controller_config</span><span class="p">,</span>   <span class="c1"># arms controlled via OSC, other parts via JOINT_POSITION/JOINT_VELOCITY</span>
+    <span class="n">env_configuration</span><span class="o">=</span><span class="s2">&quot;opposed&quot;</span><span class="p">,</span>            <span class="c1"># (two-arm envs only) arms face each other</span>
+    <span class="n">has_renderer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                     <span class="c1"># no on-screen rendering</span>
+    <span class="n">has_offscreen_renderer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>            <span class="c1"># off-screen rendering needed for image obs</span>
+    <span class="n">control_freq</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                        <span class="c1"># 20 hz control for applied actions</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>                            <span class="c1"># each episode terminates after 200 steps</span>
+    <span class="n">use_object_obs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                   <span class="c1"># don&#39;t provide object observations to agent</span>
+    <span class="n">use_camera_obs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                   <span class="c1"># provide image observations to agent</span>
+    <span class="n">camera_names</span><span class="o">=</span><span class="s2">&quot;agentview&quot;</span><span class="p">,</span>               <span class="c1"># use &quot;agentview&quot; camera for observations</span>
+    <span class="n">camera_heights</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span>                      <span class="c1"># image height</span>
+    <span class="n">camera_widths</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span>                       <span class="c1"># image width</span>
+    <span class="n">reward_shaping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                    <span class="c1"># use a dense reward signal for learning</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<section id="modular-design">
+<h3>Modular Design<a class="headerlink" href="#modular-design" title="Link to this heading">#</a></h3>
+<p>We provide a few additional details on a few keyword arguments below to highlight the modular structure of creating <strong>robosuite</strong> environments, and how easy it is to configure different environment features.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">robots</span></code> : this argument can be used to easily instantiate tasks with different robot arms. For example, we could change the task to use two “Jaco” robots by passing <code class="docutils literal notranslate"><span class="pre">robots=[&quot;Jaco&quot;,</span> <span class="pre">&quot;Jaco&quot;]</span></code>. Once the environment is initialized, these robots (as captured by the <a class="reference external" href="../simulation/robot.html#robot">Robot</a> class) can be accessed via the <code class="docutils literal notranslate"><span class="pre">robots</span></code> array attribute within the environment, i.e.: <code class="docutils literal notranslate"><span class="pre">env.robots[i]</span></code> for the <code class="docutils literal notranslate"><span class="pre">ith</span></code> robot arm in the environment.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gripper_types</span></code> : this argument can be used to easily swap out different grippers for each robot arm. For example, suppose we want to swap the default grippers for the arms in the example above. We could just pass <code class="docutils literal notranslate"><span class="pre">gripper_types=[&quot;PandaGripper&quot;,</span> <span class="pre">&quot;RethinkGripper&quot;]</span></code> to achieve this. Note that a single type can also be used to automatically broadcast the same gripper type across all arms.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">controller_configs</span></code> : this argument can be used to easily replace the action space for each robot. For example, if we would like to control the robot using IK instead of OSC, we could use <code class="docutils literal notranslate"><span class="pre">load_composite_controller_config(controller=&quot;WHOLE_BODY_IK&quot;)</span></code> in the example above.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">env_configuration</span></code> : this argument is mainly used for two-arm tasks to easily configure how the robots are oriented with respect to one another. For example, in the <code class="docutils literal notranslate"><span class="pre">TwoArmLift</span></code> environment, we could pass <code class="docutils literal notranslate"><span class="pre">env_configuration=&quot;parallel&quot;</span></code> instead so that the robot arms are located next to each other, instead of opposite each other</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">placement_initializer</span></code> : this argument is optional, but can be used to specify a custom <code class="docutils literal notranslate"><span class="pre">ObjectPositionSampler</span></code> to override the default start state distribution for Mujoco objects. Samplers are responsible for sampling a set of valid, non-colliding placements for all of the objects in the scene at the start of each episode (e.g. when <code class="docutils literal notranslate"><span class="pre">env.reset()</span></code> is called).</p></li>
+</ul>
+</section>
+</section>
+<section id="interacting-with-an-environment">
+<h2>Interacting with an Environment<a class="headerlink" href="#interacting-with-an-environment" title="Link to this heading">#</a></h2>
+<section id="policy-loop">
+<h3>Policy Loop<a class="headerlink" href="#policy-loop" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># this example assumes an env has already been created, and performs one agent rollout</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">get_policy_action</span><span class="p">(</span><span class="n">obs</span><span class="p">):</span>
+    <span class="c1"># a trained policy could be used here, but we choose a random action</span>
+    <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+
+<span class="c1"># reset the environment to prepare for a rollout</span>
+<span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+<span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">ret</span> <span class="o">=</span> <span class="mf">0.</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">get_policy_action</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>         <span class="c1"># use observation to decide on an action</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="c1"># play action</span>
+    <span class="n">ret</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rollout completed with return </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ret</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="observations">
+<h3>Observations<a class="headerlink" href="#observations" title="Link to this heading">#</a></h3>
+<p><strong>robosuite</strong> observations are dictionaries that include key-value pairs per modality. This makes it easy for agents to work with modalities of different shapes (for example, flat proprioception observations, and pixel observations). Note that any observation entry ending with <code class="docutils literal notranslate"><span class="pre">*-state</span></code> represents a concatenation of all individual observations that belong to <code class="docutils literal notranslate"><span class="pre">*</span></code> modality. Below, we list commonly used observation keys.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">robot0_proprio-state</span></code>, <code class="docutils literal notranslate"><span class="pre">robot1_proprio-state</span></code> : proprioception observations for each robot arm. This includes the arm joint positions (encoded using <code class="docutils literal notranslate"><span class="pre">sin</span></code> and <code class="docutils literal notranslate"><span class="pre">cos</span></code>), arm joint velocities, end effector pose, gripper finger positions, and gripper finger velocities. The shape for this modality is flat (e.g. <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">object-state</span></code> : task-specific object observations. For example, the <code class="docutils literal notranslate"><span class="pre">TwoArmLift</span></code> environment provides the pose of the pot, the position of each handle, and the relative position of each robot gripper with respect to each handle. The shape for this modality is flat (e.g. <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{camera_name}_image</span></code> : image observations for camera with name <code class="docutils literal notranslate"><span class="pre">camera_name</span></code>. The shape for this modality is <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W,</span> <span class="pre">3)</span></code> where <code class="docutils literal notranslate"><span class="pre">H</span></code> and <code class="docutils literal notranslate"><span class="pre">W</span></code> are the height and width of the image respectively. By default, the returned image convention is mujoco’s native <code class="docutils literal notranslate"><span class="pre">opengl</span></code> (”flipped”). This can alternatively be set to <code class="docutils literal notranslate"><span class="pre">opencv</span></code> convention (unflipped) via the <code class="docutils literal notranslate"><span class="pre">IMAGE_CONVENTION</span></code> macro in <code class="docutils literal notranslate"><span class="pre">macros.py</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{camera_name}_depth</span></code> : depth image observations for camera with name <code class="docutils literal notranslate"><span class="pre">camera_name</span></code>. The shape for this modality is <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W)</span></code> where <code class="docutils literal notranslate"><span class="pre">H</span></code> and <code class="docutils literal notranslate"><span class="pre">W</span></code> are the height and width of the image respectively. By default, the returned image convention is mujoco’s native <code class="docutils literal notranslate"><span class="pre">opengl</span></code> (”flipped”). This can alternatively be set to <code class="docutils literal notranslate"><span class="pre">opencv</span></code> convention (unflipped) via the <code class="docutils literal notranslate"><span class="pre">IMAGE_CONVENTION</span></code> macro in <code class="docutils literal notranslate"><span class="pre">macros.py</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image-state</span></code> : (optional) stacked image observations. Note that this is disabled by default, and can be toggled via the <code class="docutils literal notranslate"><span class="pre">CONCATENATE_IMAGES</span></code> macro in <code class="docutils literal notranslate"><span class="pre">macros.py</span></code>.</p></li>
+</ul>
+</section>
+<section id="rewards-and-termination">
+<h3>Rewards and Termination<a class="headerlink" href="#rewards-and-termination" title="Link to this heading">#</a></h3>
+<p>Each environment implements a reward function in the <code class="docutils literal notranslate"><span class="pre">reward</span></code> method of each environment class. The reward can be either be a binary success or failure reward (nonzero if the current state is a task completion state) or a dense, shaped reward that is crafted to be (mostly) non-negative and non-decreasing along trajectories that solve the task. The reward function that is used is determined by the <code class="docutils literal notranslate"><span class="pre">reward_shaping</span></code> argument. The binary success check that is used to compute the sparse reward is implemented in the  <code class="docutils literal notranslate"><span class="pre">_check_success</span></code> method of each environment class.</p>
+<p>Importantly, <strong>robosuite</strong> environments do not terminate if a success criterion is reached, but always continue for a fixed number of timesteps, determined by the <code class="docutils literal notranslate"><span class="pre">horizon</span></code> argument. This is a standard design decision for reinforcement learning in robot manipulation domains.</p>
+<p>We provide an example via the reward function and success criteria for <code class="docutils literal notranslate"><span class="pre">TwoArmLift</span></code> below.  Note that for simplicity, we provide function aliases instead of actual implementation details so that the logic remains easy to follow:</p>
+<p>For the success criteria, we simply want to check if the pot is successfully lifted above a certain height threshold over the table, and return <code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code> accordingly.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_check_success</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">pot_height</span> <span class="o">=</span> <span class="n">get_pot_height</span><span class="p">()</span>
+    <span class="n">table_height</span> <span class="o">=</span> <span class="n">get_table_height</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">pot_height</span> <span class="o">&gt;</span> <span class="n">table_height</span> <span class="o">+</span> <span class="mf">0.10</span>
+</pre></div>
+</div>
+<p>The reward function is a bit more involved. First, we initialize our reward variable to 0 and grab relevant sensory data from the environment, checking to see if the pot is tilted or not.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">pot_tilt</span> <span class="o">=</span> <span class="n">get_pot_tilt</span><span class="p">()</span>
+
+    <span class="c1"># check if the pot is tilted more than 30 degrees</span>
+    <span class="n">cos_30</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">direction_coef</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">pot_tilt</span> <span class="o">&gt;=</span> <span class="n">cos_30</span> <span class="k">else</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Next, we first check to see if we have completed the task (the pot being lifted above the table and not overly tilted), and if so, apply the un-normalized reward.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_success</span><span class="p">():</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">direction_coef</span>
+</pre></div>
+</div>
+<p>Otherwise, we’ll only provide partial rewards if we’re using reward shaping, and calculate the appropriate reward.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_shaping</span><span class="p">:</span>
+        
+        <span class="c1"># lifting reward (smooth value between [0, 1.5])</span>
+        <span class="n">pot_height</span> <span class="o">=</span> <span class="n">get_pot_height</span><span class="p">()</span>
+        <span class="n">r_lift</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">pot_height</span> <span class="o">-</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mf">0.15</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="mf">10.</span> <span class="o">*</span> <span class="n">direction_coef</span> <span class="o">*</span> <span class="n">r_lift</span>
+        
+        <span class="c1"># reaching reward (smooth value between [0, 1])</span>
+        <span class="n">left_hand_handle_distance</span> <span class="o">=</span> <span class="n">get_left_distance</span><span class="p">()</span>
+        <span class="n">right_hand_handle_distance</span> <span class="o">=</span> <span class="n">get_right_distance</span><span class="p">()</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">left_hand_handle_distance</span><span class="p">))</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">right_hand_handle_distance</span><span class="p">))</span>
+        
+        <span class="c1"># grasping reward (discrete values between [0, 0.5])</span>
+        <span class="n">left_hand_handle_contact</span> <span class="o">=</span> <span class="n">is_left_contact</span><span class="p">()</span>
+        <span class="n">right_hand_handle_contact</span> <span class="o">=</span> <span class="n">is_right_contact</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">left_hand_handle_contact</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.25</span>
+        <span class="k">if</span> <span class="n">right_hand_handle_contact</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.5</span>
+</pre></div>
+</div>
+<p>Lastly, we need to normalize our reward and then re-scale its value to <code class="docutils literal notranslate"><span class="pre">reward_scale</span></code> if it is specified before finally returning the calculated reward.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">reward</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_scale</span> <span class="o">/</span> <span class="mf">3.0</span>
+        
+    <span class="k">return</span> <span class="n">reward</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="task-models">
+<h2>Task Models<a class="headerlink" href="#task-models" title="Link to this heading">#</a></h2>
+<p>Every environment owns its own <code class="docutils literal notranslate"><span class="pre">MJCF</span></code> model that sets up the MuJoCo physics simulation by loading the robots, the workspace, and the objects into the simulator appropriately. This MuJoCo simulation model is programmatically instantiated in the <code class="docutils literal notranslate"><span class="pre">_load_model</span></code> function of each environment, by creating an instance of the <code class="docutils literal notranslate"><span class="pre">Task</span></code> class.</p>
+<p>Each <code class="docutils literal notranslate"><span class="pre">Task</span></code> class instance owns an <code class="docutils literal notranslate"><span class="pre">Arena</span></code> model, a list of <code class="docutils literal notranslate"><span class="pre">RobotModel</span></code> instances, and a list of <code class="docutils literal notranslate"><span class="pre">ObjectModel</span></code> instances. These are <strong>robosuite</strong> classes that introduce a useful abstraction in order to make designing scenes in MuJoCo easy. Every <code class="docutils literal notranslate"><span class="pre">Arena</span></code> is based off of an xml that defines the workspace (for example, table or bins) and camera locations. Every <code class="docutils literal notranslate"><span class="pre">RobotModel</span></code> is a MuJoCo model of representing an arbitrary robot (for <code class="docutils literal notranslate"><span class="pre">ManipulationModel</span></code>s, this represent armed robots, e.g. Sawyer, Panda, etc.). Every <code class="docutils literal notranslate"><span class="pre">ObjectModel</span></code> corresponds to a physical object loaded into the simulation (e.g. cube, pot with handles, etc.).</p>
+</section>
+<section id="task-descriptions">
+<h2>Task Descriptions<a class="headerlink" href="#task-descriptions" title="Link to this heading">#</a></h2>
+<p>While <strong>robosuite</strong> can support environments from different robotic domains, the current release focuses is on manipulation environments (<code class="docutils literal notranslate"><span class="pre">ManipulationEnv</span></code>), We provide a brief description of each environment below. For benchmarking results on these standardized environments, please check out the <a class="reference internal" href="../algorithms/benchmarking.html"><span class="doc">Benchmarking</span></a> page.</p>
+<section id="single-arm-tasks">
+<h3>Single-Arm Tasks<a class="headerlink" href="#single-arm-tasks" title="Link to this heading">#</a></h3>
+<section id="block-lifting">
+<h4>Block Lifting<a class="headerlink" href="#block-lifting" title="Link to this heading">#</a></h4>
+<p><img alt="env_lift" src="../_images/env_lift.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: A cube is placed on the tabletop in front of a single robot arm.</p></li>
+<li><p><strong>Goal</strong>: The robot arm must lift the cube above a certain height.</p></li>
+<li><p><strong>Start State Distribution</strong>: The cube location is randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+<section id="block-stacking">
+<h4>Block Stacking<a class="headerlink" href="#block-stacking" title="Link to this heading">#</a></h4>
+<p><img alt="env_stack" src="../_images/env_stack.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: Two cubes are placed on the tabletop in front of a single robot arm.</p></li>
+<li><p><strong>Goal</strong>: The robot must place one cube on top of the other cube.</p></li>
+<li><p><strong>Start State Distribution</strong>: The cube locations are randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+<section id="pick-and-place">
+<h4>Pick-and-Place<a class="headerlink" href="#pick-and-place" title="Link to this heading">#</a></h4>
+<p><img alt="env_pick_place" src="../_images/env_pick_place.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: Four objects are placed in a bin in front of a single robot arm. There are four containers next to the bin.</p></li>
+<li><p><strong>Goal</strong>: The robot must place each object into its corresponding container. This task also has easier single-object variants.</p></li>
+<li><p><strong>Start State Distribution</strong>: The object locations are randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+<section id="nut-assembly">
+<h4>Nut Assembly<a class="headerlink" href="#nut-assembly" title="Link to this heading">#</a></h4>
+<p><img alt="env_nut_assembly" src="../_images/env_nut_assembly.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: Two colored pegs (one square and one round) are mounted on the tabletop, and two colored nuts (one square and one round) are placed on the table in front of a single robot arm.</p></li>
+<li><p><strong>Goal</strong>: The robot must fit the square nut onto the square peg and the round nut onto the round peg. This task also has easier single nut-and-peg variants.</p></li>
+<li><p><strong>Start State Distribution</strong>: The nut locations are randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+<section id="door-opening">
+<h4>Door Opening<a class="headerlink" href="#door-opening" title="Link to this heading">#</a></h4>
+<p><img alt="env_door" src="../_images/env_door.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: A door with a handle is mounted in free space in front of a single robot arm.</p></li>
+<li><p><strong>Goal</strong>: The robot arm must learn to turn the handle and open the door.</p></li>
+<li><p><strong>Start State Distribution</strong>: The door location is randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+<section id="table-wiping">
+<h4>Table Wiping<a class="headerlink" href="#table-wiping" title="Link to this heading">#</a></h4>
+<p><img alt="env_door" src="../_images/env_wipe.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: A table with a whiteboard surface and some markings is placed in front of a single robot arm, which has a whiteboard eraser mounted on its hand.</p></li>
+<li><p><strong>Goal</strong>: The robot arm must learn to wipe the whiteboard surface and clean all of the markings.</p></li>
+<li><p><strong>Start State Distribution</strong>: The whiteboard markings are randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+</section>
+<section id="two-arm-tasks">
+<h3>Two-Arm Tasks<a class="headerlink" href="#two-arm-tasks" title="Link to this heading">#</a></h3>
+<section id="two-arm-lifting">
+<h4>Two Arm Lifting<a class="headerlink" href="#two-arm-lifting" title="Link to this heading">#</a></h4>
+<p><img alt="env_two_arm_lift" src="../_images/env_two_arm_lift.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: A large pot with two handles is placed on a table top. Two robot arms are placed on the same side of the table or on opposite ends of the table.</p></li>
+<li><p><strong>Goal</strong>: The two robot arms must each grab a handle and lift the pot together, above a certain height, while keeping the pot level.</p></li>
+<li><p><strong>Start State Distribution</strong>: The pot location is randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+<section id="two-arm-peg-in-hole">
+<h4>Two Arm Peg-In-Hole<a class="headerlink" href="#two-arm-peg-in-hole" title="Link to this heading">#</a></h4>
+<p><img alt="env_two_arm_peg_in_hole" src="../_images/env_two_arm_peg_in_hole.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: Two robot arms are placed either next to each other or opposite each other. One robot arm holds a board with a square hole in the center, and the other robot arm holds a long peg.</p></li>
+<li><p><strong>Goal</strong>: The two robot arms must coordinate to insert the peg into the hole.</p></li>
+<li><p><strong>Start State Distribution</strong>: The initial arm configurations are randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+<section id="two-arm-handover">
+<h4>Two Arm Handover<a class="headerlink" href="#two-arm-handover" title="Link to this heading">#</a></h4>
+<p><img alt="env_two_arm_handover" src="../_images/env_two_arm_handover.png" /></p>
+<ul class="simple">
+<li><p><strong>Scene Description</strong>: A hammer is placed on a narrow table. Two robot arms are placed on the same side of the table or on opposite ends of the table.</p></li>
+<li><p><strong>Goal</strong>: The two robot arms must coordinate so that the arm closer to the hammer picks it up and hands it to the other arm.</p></li>
+<li><p><strong>Start State Distribution</strong>: The hammer location and size is randomized at the beginning of each episode.</p></li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="objects.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Objects</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="sensors.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Sensors</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#making-an-environment">Making an Environment</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#modular-design">Modular Design</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interacting-with-an-environment">Interacting with an Environment</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#policy-loop">Policy Loop</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observations">Observations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rewards-and-termination">Rewards and Termination</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#task-models">Task Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#task-descriptions">Task Descriptions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#single-arm-tasks">Single-Arm Tasks</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#block-lifting">Block Lifting</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#block-stacking">Block Stacking</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pick-and-place">Pick-and-Place</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#nut-assembly">Nut Assembly</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#door-opening">Door Opening</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#table-wiping">Table Wiping</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-tasks">Two-Arm Tasks</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-lifting">Two Arm Lifting</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-peg-in-hole">Two Arm Peg-In-Hole</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#two-arm-handover">Two Arm Handover</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

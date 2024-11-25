@@ -1,0 +1,1184 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Robot Model &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'modeling/robot_model';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Object Model" href="object_model.html" />
+    <link rel="prev" title="Mujoco Model" href="mujoco_model.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/modeling/robot_model.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Robot Model</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Robot Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel"><code class="docutils literal notranslate"><span class="pre">RobotModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.set_base_xpos"><code class="docutils literal notranslate"><span class="pre">RobotModel.set_base_xpos()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.set_base_ori"><code class="docutils literal notranslate"><span class="pre">RobotModel.set_base_ori()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.set_joint_attribute"><code class="docutils literal notranslate"><span class="pre">RobotModel.set_joint_attribute()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_base()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_mount"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_mount()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_mobile_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_mobile_base()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_leg_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_leg_base()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.dof"><code class="docutils literal notranslate"><span class="pre">RobotModel.dof</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.default_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.default_controller_config"><code class="docutils literal notranslate"><span class="pre">RobotModel.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.init_qpos"><code class="docutils literal notranslate"><span class="pre">RobotModel.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">RobotModel.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._horizontal_radius"><code class="docutils literal notranslate"><span class="pre">RobotModel._horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._important_sites"><code class="docutils literal notranslate"><span class="pre">RobotModel._important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._important_geoms"><code class="docutils literal notranslate"><span class="pre">RobotModel._important_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._important_sensors"><code class="docutils literal notranslate"><span class="pre">RobotModel._important_sensors</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manipulator-model">Manipulator Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.add_gripper()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.eef_name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel._important_sites"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel._important_sites</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gripper-model">Gripper Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel"><code class="docutils literal notranslate"><span class="pre">GripperModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.format_action"><code class="docutils literal notranslate"><span class="pre">GripperModel.format_action()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.speed"><code class="docutils literal notranslate"><span class="pre">GripperModel.speed</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.dof"><code class="docutils literal notranslate"><span class="pre">GripperModel.dof</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.init_qpos"><code class="docutils literal notranslate"><span class="pre">GripperModel.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel._important_sites"><code class="docutils literal notranslate"><span class="pre">GripperModel._important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel._important_geoms"><code class="docutils literal notranslate"><span class="pre">GripperModel._important_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel._important_sensors"><code class="docutils literal notranslate"><span class="pre">GripperModel._important_sensors</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robot-base-model">Robot Base Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.top_offset"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel.top_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel.horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.naming_prefix"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel.naming_prefix</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_sites"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel._important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_geoms"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel._important_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_sensors"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel._important_sensors</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="robot-model">
+<h1>Robot Model<a class="headerlink" href="#robot-model" title="Link to this heading">#</a></h1>
+<section id="id1">
+<h2>Robot Model<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">RobotModel</span></code> class serves as a direct intermediary class that reads in information from a corresponding robot XML
+file and also contains relevant hard-coded information from that XML. This represents an arbitrary robot optionally equipped with a mount via the <code class="docutils literal notranslate"><span class="pre">RobotBaseModel</span></code> class and is the core modeling component of the higher-level <code class="docutils literal notranslate"><span class="pre">Robot</span></code> class used in simulation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.robot_model.</span></span><span class="sig-name descname"><span class="pre">RobotModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel" title="Link to this definition">#</a></dt>
+<dd><p>Base class for all robot models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – Path to relevant xml file from which to create this robot instance</p></li>
+<li><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.set_base_xpos">
+<span class="sig-name descname"><span class="pre">set_base_xpos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.set_base_xpos" title="Link to this definition">#</a></dt>
+<dd><p>Places the robot on position &#64;pos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pos</strong> (<em>3-array</em>) – (x,y,z) position to place robot base</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.set_base_ori">
+<span class="sig-name descname"><span class="pre">set_base_ori</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.set_base_ori" title="Link to this definition">#</a></dt>
+<dd><p>Rotates robot by rotation &#64;rot from its original orientation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rot</strong> (<em>3-array</em>) – (r,p,y) euler angles specifying the orientation for the robot base</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.set_joint_attribute">
+<span class="sig-name descname"><span class="pre">set_joint_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attrib</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.set_joint_attribute" title="Link to this definition">#</a></dt>
+<dd><p>Sets joint attributes, e.g.: friction loss, damping, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attrib</strong> (<em>str</em>) – Attribute to set for all joints</p></li>
+<li><p><strong>values</strong> (<em>n-array</em>) – Values to set for each joint</p></li>
+<li><p><strong>force</strong> (<em>bool</em>) – If True, will automatically override any pre-existing value. Otherwise, if a value already
+exists for this value, it will be skipped</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Inconsistent dimension sizes]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_base">
+<span class="sig-name descname"><span class="pre">add_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="robosuite.models.bases.robot_base_model.RobotBaseModel"><span class="pre">RobotBaseModel</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_base" title="Link to this definition">#</a></dt>
+<dd><p>Mounts a base to the robot. Bases are defined in robosuite.models.bases</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_mount">
+<span class="sig-name descname"><span class="pre">add_mount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MountModel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_mount" title="Link to this definition">#</a></dt>
+<dd><p>Mounts &#64;mount to arm.</p>
+<p>Throws error if robot already has a mount or if mount type is incorrect.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mount</strong> (<em>MountModel</em>) – mount MJCF model</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [mount already added]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_mobile_base">
+<span class="sig-name descname"><span class="pre">add_mobile_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mobile_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MobileBaseModel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_mobile_base" title="Link to this definition">#</a></dt>
+<dd><p>Mounts &#64;mobile_base to arm.</p>
+<p>Throws error if robot already has a mobile base or if mobile base type is incorrect.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>base</strong> (<em>mobile</em>) – mount MJCF model</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [mobile base already added]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_leg_base">
+<span class="sig-name descname"><span class="pre">add_leg_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leg_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LegBaseModel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_leg_base" title="Link to this definition">#</a></dt>
+<dd><p>Mounts &#64;mobile_base to arm.</p>
+<p>Throws error if robot already has a mobile base or if mobile base type is incorrect.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>base</strong> (<em>mobile</em>) – mount MJCF model</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [mobile base already added]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.dof">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.dof" title="Link to this definition">#</a></dt>
+<dd><p>Defines the number of DOF of the robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>robot DOF</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dict mapping arena names to robot offsets from the global origin (dict entries may also be lambdas</dt><dd><p>for variable offsets)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel._horizontal_radius">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_horizontal_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel._horizontal_radius" title="Link to this definition">#</a></dt>
+<dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
+<p>Helps us put models programmatically without them flying away due to a huge initial contact force.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>radius</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel._important_sites">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_sites</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel._important_sites" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: (Default is no important sites; i.e.: empty dict)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel._important_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_geoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel._important_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: (Default is no important geoms; i.e.: empty dict)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel._important_sensors">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_sensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel._important_sensors" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: (Default is no sensors; i.e.: empty dict)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="manipulator-model">
+<h2>Manipulator Model<a class="headerlink" href="#manipulator-model" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ManipulatorModel</span></code> class extends from the base <code class="docutils literal notranslate"><span class="pre">RobotModel</span></code> class, and represents an armed, mounted robot with an optional gripper attached to its end effector. In conjunction with the corresponding <code class="docutils literal notranslate"><span class="pre">GripperModel</span></code> class and <code class="docutils literal notranslate"><span class="pre">RobotBaseModel</span></code> class, this serves as the core modeling component of the higher-level <code class="docutils literal notranslate"><span class="pre">Manipulator</span></code> class used in simulation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.manipulator_model.</span></span><span class="sig-name descname"><span class="pre">ManipulatorModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="Link to this definition">#</a></dt>
+<dd><p>Base class for all manipulator models (robot arm(s) with gripper(s)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – Path to relevant xml file from which to create this robot instance</p></li>
+<li><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper">
+<span class="sig-name descname"><span class="pre">add_gripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gripper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../source/robosuite.models.grippers.html#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><span class="pre">GripperModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arm_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Mounts &#64;gripper to arm.</p>
+<p>Throws error if robot already has a gripper or gripper type is incorrect.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gripper</strong> (<a class="reference internal" href="../source/robosuite.models.grippers.html#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><em>GripperModel</em></a>) – gripper MJCF model</p></li>
+<li><p><strong>arm_name</strong> (<em>str</em>) – name of arm mount –
+defaults add to all self.eef_name if not specified</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [Multiple grippers]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eef_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict of str: Prefix-adjusted eef name for this robot. If bimanual robot, returns {“left”, “right”}</p>
+<blockquote>
+<div><p>keyword-mapped eef names</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel._important_sites">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_sites</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel._important_sites" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: (Default is no important sites; i.e.: empty dict)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="gripper-model">
+<h2>Gripper Model<a class="headerlink" href="#gripper-model" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">GripperModel</span></code> class serves as a direct intermediary class that reads in information from a corresponding gripper XML file and also contains relevant hard-coded information from that XML. In conjunction with the <code class="docutils literal notranslate"><span class="pre">ManipulatorModel</span></code> class, this serves as the core modeling component of the higher-level <cite>Manipulator</cite> class used in simulation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.gripper_model.</span></span><span class="sig-name descname"><span class="pre">GripperModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel" title="Link to this definition">#</a></dt>
+<dd><p>Base class for grippers</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – Path to relevant xml file to create this gripper instance</p></li>
+<li><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this gripper instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.format_action">
+<span class="sig-name descname"><span class="pre">format_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.format_action" title="Link to this definition">#</a></dt>
+<dd><p>Given (-1,1) abstract control as np-array
+returns the (-1,1) control signals
+for underlying actuators as 1-d np array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.speed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.speed" title="Link to this definition">#</a></dt>
+<dd><p>How quickly the gripper opens / closes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Speed of the gripper</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.dof">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.dof" title="Link to this definition">#</a></dt>
+<dd><p>Defines the number of DOF of the gripper</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gripper DOF</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest (open) qpos of the gripper</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this gripper</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel._important_sites">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_sites</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel._important_sites" title="Link to this definition">#</a></dt>
+<dd><p>Sites used to aid visualization by human. (usually “grip_site” and “grip_cylinder”)
+(and should be hidden from robots)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘grip_site’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of grip actuation intersection location site</p>
+</dd>
+<dt class="field-even"><cite>’grip_cylinder’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Name of grip actuation z-axis location site</p>
+</dd>
+<dt class="field-odd"><cite>’ee’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of end effector site</p>
+</dd>
+<dt class="field-even"><cite>’ee_x’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Name of end effector site (x-axis)</p>
+</dd>
+<dt class="field-odd"><cite>’ee_y’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of end effector site (y-axis)</p>
+</dd>
+<dt class="field-even"><cite>’ee_z’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Name of end effector site (z-axis)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel._important_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_geoms</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel._important_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Geoms corresponding to important components of the gripper (by default, left_finger, right_finger,
+left_fingerpad, right_fingerpad).
+Note that these are the raw string names directly pulled from a gripper’s corresponding XML file,
+NOT the adjusted name with an auto-generated naming prefix</p>
+<p>Note that this should be a dict of lists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Raw XML important geoms, where each set of geoms are grouped as a list and are
+organized by keyword string entries into a dict</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict of list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel._important_sensors">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_sensors</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel._important_sensors" title="Link to this definition">#</a></dt>
+<dd><p>Sensor names for each gripper (usually “force_ee” and “torque_ee”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘force_ee’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of force eef sensor for this gripper</p>
+</dd>
+<dt class="field-even"><cite>’torque_ee’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Name of torque eef sensor for this gripper</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="robot-base-model">
+<h2>Robot Base Model<a class="headerlink" href="#robot-base-model" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">RobotBaseModel</span></code> class represents the base of the robot. User can use <code class="docutils literal notranslate"><span class="pre">add_base</span></code> method in the <code class="docutils literal notranslate"><span class="pre">RobotModel</span></code> class to add a base model to the robot.</p>
+<p>There are mainly three types of base models: <code class="docutils literal notranslate"><span class="pre">MountModel</span></code>, <code class="docutils literal notranslate"><span class="pre">MobileBaseModel</span></code>, and <code class="docutils literal notranslate"><span class="pre">LegBaseModel</span></code>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.robot_base_model.</span></span><span class="sig-name descname"><span class="pre">RobotBaseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="Link to this definition">#</a></dt>
+<dd><p>Base class for mounts that will be attached to robots. Note that this model’s root body will be directly
+appended to the robot’s root body, so all offsets should be taken relative to that.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – Path to relevant xml file to create this mount instance</p></li>
+<li><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this gripper instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">array</span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+This should correspond to the distance from the root body to the actual mounting surface
+location of this mount.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel.horizontal_radius">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.horizontal_radius" title="Link to this definition">#</a></dt>
+<dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
+<p>Helps us put models programmatically without them flying away due to a huge initial contact force.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>radius</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel.naming_prefix">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.naming_prefix" title="Link to this definition">#</a></dt>
+<dd><p>Generates a standardized prefix to prevent naming collisions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Prefix unique to this model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel._important_sites">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_sites</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_sites" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: (Default is no important sites; i.e.: empty dict)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel._important_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_geoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: (Default is no important geoms; i.e.: empty dict)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel._important_sensors">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_important_sensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_sensors" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict: (Default is no sensors; i.e.: empty dict)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="mujoco_model.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Mujoco Model</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="object_model.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Object Model</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Robot Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel"><code class="docutils literal notranslate"><span class="pre">RobotModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.set_base_xpos"><code class="docutils literal notranslate"><span class="pre">RobotModel.set_base_xpos()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.set_base_ori"><code class="docutils literal notranslate"><span class="pre">RobotModel.set_base_ori()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.set_joint_attribute"><code class="docutils literal notranslate"><span class="pre">RobotModel.set_joint_attribute()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_base()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_mount"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_mount()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_mobile_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_mobile_base()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.add_leg_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.add_leg_base()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.dof"><code class="docutils literal notranslate"><span class="pre">RobotModel.dof</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.default_base"><code class="docutils literal notranslate"><span class="pre">RobotModel.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.default_controller_config"><code class="docutils literal notranslate"><span class="pre">RobotModel.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.init_qpos"><code class="docutils literal notranslate"><span class="pre">RobotModel.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">RobotModel.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._horizontal_radius"><code class="docutils literal notranslate"><span class="pre">RobotModel._horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._important_sites"><code class="docutils literal notranslate"><span class="pre">RobotModel._important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._important_geoms"><code class="docutils literal notranslate"><span class="pre">RobotModel._important_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.robot_model.RobotModel._important_sensors"><code class="docutils literal notranslate"><span class="pre">RobotModel._important_sensors</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manipulator-model">Manipulator Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.add_gripper()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.eef_name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel._important_sites"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel._important_sites</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gripper-model">Gripper Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel"><code class="docutils literal notranslate"><span class="pre">GripperModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.format_action"><code class="docutils literal notranslate"><span class="pre">GripperModel.format_action()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.speed"><code class="docutils literal notranslate"><span class="pre">GripperModel.speed</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.dof"><code class="docutils literal notranslate"><span class="pre">GripperModel.dof</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel.init_qpos"><code class="docutils literal notranslate"><span class="pre">GripperModel.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel._important_sites"><code class="docutils literal notranslate"><span class="pre">GripperModel._important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel._important_geoms"><code class="docutils literal notranslate"><span class="pre">GripperModel._important_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.grippers.gripper_model.GripperModel._important_sensors"><code class="docutils literal notranslate"><span class="pre">GripperModel._important_sensors</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robot-base-model">Robot Base Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.top_offset"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel.top_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel.horizontal_radius</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.naming_prefix"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel.naming_prefix</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_sites"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel._important_sites</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_geoms"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel._important_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.bases.robot_base_model.RobotBaseModel._important_sensors"><code class="docutils literal notranslate"><span class="pre">RobotBaseModel._important_sensors</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

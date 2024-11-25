@@ -1,0 +1,671 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Sim-to-Real Transfer &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'algorithms/sim2real';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Projects using robosuite" href="../references.html" />
+    <link rel="prev" title="Human Demonstrations" href="demonstrations.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/algorithms/sim2real.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Sim-to-Real Transfer</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visuals">Visuals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamics">Dynamics</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#opt-global-parameters">Opt (Global) Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#body-parameters">Body Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geom-parameters">Geom Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-parameters">Joint parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensors">Sensors</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="sim-to-real-transfer">
+<h1>Sim-to-Real Transfer<a class="headerlink" href="#sim-to-real-transfer" title="Link to this heading">#</a></h1>
+<p>This page covers the randomization techniques to narrow the reality gap of our robotics simulation. These techniques, which concerns about <a class="reference internal" href="#visuals"><span class="std std-ref">visual observations</span></a>, <a class="reference internal" href="#dynamics"><span class="std std-ref">system dynamics</span></a>, and <a class="reference internal" href="#sensors"><span class="std std-ref">sensors</span></a>, are employed to improve the efficacy of transferring our simulation-trained models to the real world.</p>
+<section id="visuals">
+<h2>Visuals<a class="headerlink" href="#visuals" title="Link to this heading">#</a></h2>
+<p>It is well shown that randomizing the visuals in simulation can play an important role in sim2real applications. <strong>robosuite</strong> provides various <code class="docutils literal notranslate"><span class="pre">Modder</span></code> classes to control different aspects of the visual environment. This includes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">CameraModder</span></code>: Modder for controlling camera parameters, including FOV and pose</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TextureModder</span></code>: Modder for controlling visual objects’ appearances, including texture and material properties</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LightingModder</span></code>: Modder for controlling lighting parameters, including light source properties and pose</p></li>
+</ul>
+<p>Each of these Modders can be used by the user to directly override default simulation settings, or to randomize their respective properties mid-sim. We provide <a class="reference external" href="../demos.html#domain-randomization">demo_domain_randomization.py</a> to showcase all of these modders being applied to randomize an environment during every sim step.</p>
+</section>
+<section id="dynamics">
+<h2>Dynamics<a class="headerlink" href="#dynamics" title="Link to this heading">#</a></h2>
+<p>In order to achieve reasonable runtime speeds, many physics simulation platforms often must simplify the underlying physics model. Mujoco is no different, and as a result, many parameters such as friction, damping, and contact constraints do not fully capture real-world dynamics.</p>
+<p>To better compensate for this, <strong>robosuite</strong> provides the <code class="docutils literal notranslate"><span class="pre">DynamicsModder</span></code> class, which can control individual dynamics parameters for each model within an environment. Theses parameters are sorted by element group, and briefly described below (for more information, please see <a class="reference external" href="http://www.mujoco.org/book/XMLreference.html">Mujoco XML Reference</a>):</p>
+<section id="opt-global-parameters">
+<h3>Opt (Global) Parameters<a class="headerlink" href="#opt-global-parameters" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">density</span></code>: Density of the medium (i.e.: air)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">viscosity</span></code>: Viscosity of the medium (i.e.: air)</p></li>
+</ul>
+</section>
+<section id="body-parameters">
+<h3>Body Parameters<a class="headerlink" href="#body-parameters" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">position</span></code>: (x, y, z) Position of the body relative to its parent body</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">quaternion</span></code>: (qw, qx, qy, qz) Quaternion of the body relative to its parent body</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inertia</span></code>: (ixx, iyy, izz) diagonal components of the inertia matrix associated with this body</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mass</span></code>: mass of the body</p></li>
+</ul>
+</section>
+<section id="geom-parameters">
+<h3>Geom Parameters<a class="headerlink" href="#geom-parameters" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">friction</span></code>: (sliding, torsional, rolling) friction values for this geom</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solref</span></code>: (timeconst, dampratio) contact solver values for this geom</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solimp</span></code>: (dmin, dmax, width, midpoint, power) contact solver impedance values for this geom</p></li>
+</ul>
+</section>
+<section id="joint-parameters">
+<h3>Joint parameters<a class="headerlink" href="#joint-parameters" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">stiffness</span></code>: Stiffness for this joint</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frictionloss</span></code>: Friction loss associated with this joint</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">damping</span></code>: Damping value for this joint</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">armature</span></code>: Gear inertia for this joint</p></li>
+</ul>
+<p>This <code class="docutils literal notranslate"><span class="pre">DynamicsModder</span></code> follows the same basic API as the other <code class="docutils literal notranslate"><span class="pre">Modder</span></code> classes, and allows per-parameter and per-group randomization enabling. Apart from randomization, this modder can also be instantiated to selectively modify values at runtime. A brief example is given below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
+<span class="kn">from</span> <span class="nn">robosuite.utils.mjmod</span> <span class="kn">import</span> <span class="n">DynamicsModder</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Create environment and modder</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">suite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;Lift&quot;</span><span class="p">,</span> <span class="n">robots</span><span class="o">=</span><span class="s2">&quot;Panda&quot;</span><span class="p">)</span>
+<span class="n">modder</span> <span class="o">=</span> <span class="n">DynamicsModder</span><span class="p">(</span><span class="n">sim</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="c1"># Define function for easy printing</span>
+<span class="n">cube_body_id</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">body_name2id</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">root_body</span><span class="p">)</span>
+<span class="n">cube_geom_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geom_name2id</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">contact_geoms</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">print_params</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cube mass: </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">body_mass</span><span class="p">[</span><span class="n">cube_body_id</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cube frictions: </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geom_friction</span><span class="p">[</span><span class="n">cube_geom_ids</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+<span class="c1"># Print out initial parameter values</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INITIAL VALUES&quot;</span><span class="p">)</span>
+<span class="n">print_params</span><span class="p">()</span>
+
+<span class="c1"># Modify the cube&#39;s properties</span>
+<span class="n">modder</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">root_body</span><span class="p">,</span> <span class="s2">&quot;mass&quot;</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>                                <span class="c1"># make the cube really heavy</span>
+<span class="k">for</span> <span class="n">geom_name</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">contact_geoms</span><span class="p">:</span>
+    <span class="n">modder</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">geom_name</span><span class="p">,</span> <span class="s2">&quot;friction&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">])</span>           <span class="c1"># greatly increase the friction</span>
+<span class="n">modder</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>                                                   <span class="c1"># make sure the changes propagate in sim</span>
+
+<span class="c1"># Print out modified parameter values</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;MODIFIED VALUES&quot;</span><span class="p">)</span>
+<span class="n">print_params</span><span class="p">()</span>
+
+<span class="c1"># We can also restore defaults (original values) at any time</span>
+<span class="n">modder</span><span class="o">.</span><span class="n">restore_defaults</span><span class="p">()</span>
+
+<span class="c1"># Print out restored initial parameter values</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RESTORED VALUES&quot;</span><span class="p">)</span>
+<span class="n">print_params</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Running <a class="reference external" href="../demos.html#domain-randomization">demo_domain_randomization.py</a> is another method for demo’ing (albeit an extreme example of) this functionality.</p>
+<p>Note that the modder already has some sanity checks in place to prevent presumably undesired / non-sensical behavior, such as adding damping / frictionloss to a free joint or setting a non-zero stiffness value to a joint that is normally non-stiff to begin with.</p>
+</section>
+</section>
+<section id="sensors">
+<h2>Sensors<a class="headerlink" href="#sensors" title="Link to this heading">#</a></h2>
+<p>By default, Mujoco sensors are deterministic and delay-free, which is often an unrealistic assumption to make in the real world. To better close this domain gap, <strong>robosuite</strong> provides a realistic, customizable interface via the <a class="reference external" href="../source/robosuite.utils.html#module-robosuite.utils.observables">Observable</a> class API. Observables model realistic sensor sampling, in which ground truth data is sampled (<code class="docutils literal notranslate"><span class="pre">sensor</span></code>), passed through a corrupting function (<code class="docutils literal notranslate"><span class="pre">corrupter</span></code>), and then finally passed through a filtering function (<code class="docutils literal notranslate"><span class="pre">filter</span></code>). Moreover, each observable has its own <code class="docutils literal notranslate"><span class="pre">sampling_rate</span></code> and <code class="docutils literal notranslate"><span class="pre">delayer</span></code> function which simulates sensor delay. While default values are used to instantiate each observable during environment creation, each of these components can be modified by the user at runtime using <code class="docutils literal notranslate"><span class="pre">env.modify_observable(...)</span></code> . Moreover, each observable is assigned a modality, and are grouped together in the returned observation dictionary during the <code class="docutils literal notranslate"><span class="pre">env.step()</span></code> call. For example, if an environment consists of camera observations and a single robot’s proprioceptive observations, the observation dict structure might look as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;frontview_image&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>    <span class="c1"># this has modality &quot;image&quot;</span>
+    <span class="s2">&quot;frontview_depth&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>    <span class="c1"># this has modality &quot;image&quot;</span>
+    <span class="s2">&quot;robot0_joint_pos&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>   <span class="c1"># this has modality &quot;robot0_proprio&quot;</span>
+    <span class="s2">&quot;robot0_gripper_pos&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="c1"># this has modality &quot;robot0_proprio&quot;</span>
+    <span class="s2">&quot;image-state&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>           <span class="c1"># this is a concatenation of all image observations</span>
+    <span class="s2">&quot;robot0_proprio-state&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>  <span class="c1"># this is a concatenation of all robot0_proprio observations</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that for memory efficiency the <code class="docutils literal notranslate"><span class="pre">image-state</span></code> is not returned by default (this can be toggled in <code class="docutils literal notranslate"><span class="pre">robosuite/macros.py</span></code>).</p>
+<p>We showcase how the <code class="docutils literal notranslate"><span class="pre">Observable</span></code> functionality can be used to model sensor corruption and delay via <a class="reference external" href="../demos.html#sensor-realism">demo_sensor_corruption.py</a>. We also highlight that each of the <code class="docutils literal notranslate"><span class="pre">sensor</span></code>, <code class="docutils literal notranslate"><span class="pre">corrupter</span></code>, and <code class="docutils literal notranslate"><span class="pre">filter</span></code> functions can be arbitrarily specified to suit the end-user’s usage. For example, a common use case for these observables is to keep track of sampled values from a sensor operating at a higher frequency than the environment step (control) frequency. In this case, the <code class="docutils literal notranslate"><span class="pre">filter</span></code> function can be leveraged to keep track of the real-time sensor values as they’re being sampled. We provide a minimal script showcasing this ability below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">robosuite.utils.buffers</span> <span class="kn">import</span> <span class="n">RingBuffer</span>
+
+<span class="c1"># Create env instance</span>
+<span class="n">control_freq</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">suite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;Lift&quot;</span><span class="p">,</span> <span class="n">robots</span><span class="o">=</span><span class="s2">&quot;Panda&quot;</span><span class="p">,</span> <span class="n">has_offscreen_renderer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_camera_obs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">control_freq</span><span class="o">=</span><span class="n">control_freq</span><span class="p">)</span>
+
+<span class="c1"># Define a ringbuffer to store joint position values</span>
+<span class="n">buffer</span> <span class="o">=</span> <span class="n">RingBuffer</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">robots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">dof</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Create a function that we&#39;ll use as the &quot;filter&quot; for the joint position Observable</span>
+<span class="c1"># This is a pass-through operation, but we record the value every time it gets called</span>
+<span class="c1"># As per the Observables API, this should take in an arbitrary numeric and return the same type / shape</span>
+<span class="k">def</span> <span class="nf">filter_fcn</span><span class="p">(</span><span class="n">corrupted_value</span><span class="p">):</span>
+    <span class="c1"># Record the inputted value</span>
+    <span class="n">buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">corrupted_value</span><span class="p">)</span>
+    <span class="c1"># Return this value (no-op performed)</span>
+    <span class="k">return</span> <span class="n">corrupted_value</span>
+
+<span class="c1"># Now, let&#39;s enable the joint position Observable with this filter function</span>
+<span class="n">env</span><span class="o">.</span><span class="n">modify_observable</span><span class="p">(</span>
+    <span class="n">observable_name</span><span class="o">=</span><span class="s2">&quot;robot0_joint_pos&quot;</span><span class="p">,</span>
+    <span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;filter&quot;</span><span class="p">,</span>
+    <span class="n">modifier</span><span class="o">=</span><span class="n">filter_fcn</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Let&#39;s also increase the sampling rate to showcase the Observable&#39;s ability to update multiple times per env step</span>
+<span class="n">obs_sampling_freq</span> <span class="o">=</span> <span class="n">control_freq</span> <span class="o">*</span> <span class="mi">4</span>
+<span class="n">env</span><span class="o">.</span><span class="n">modify_observable</span><span class="p">(</span>
+    <span class="n">observable_name</span><span class="o">=</span><span class="s2">&quot;robot0_joint_pos&quot;</span><span class="p">,</span>
+    <span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;sampling_rate&quot;</span><span class="p">,</span>
+    <span class="n">modifier</span><span class="o">=</span><span class="n">obs_sampling_freq</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Take a single environment step with positive joint velocity actions</span>
+<span class="n">arm_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">robots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">robot_model</span><span class="o">.</span><span class="n">dof</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span>
+<span class="n">gripper_action</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">arm_action</span><span class="p">,</span> <span class="n">gripper_action</span><span class="p">])</span>
+<span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+<span class="c1"># Now we can analyze what values were recorded</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Policy Frequency: </span><span class="si">{</span><span class="n">control_freq</span><span class="si">}</span><span class="s2">, Observable Sampling Frequency: </span><span class="si">{</span><span class="n">obs_sampling_freq</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of recorded samples after 1 policy step: </span><span class="si">{</span><span class="n">buffer</span><span class="o">.</span><span class="n">_size</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">buffer</span><span class="o">.</span><span class="n">_size</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recorded value </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">buffer</span><span class="o">.</span><span class="n">buf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="demonstrations.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Human Demonstrations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../references.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Projects using robosuite</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visuals">Visuals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamics">Dynamics</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#opt-global-parameters">Opt (Global) Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#body-parameters">Body Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geom-parameters">Geom Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-parameters">Joint parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensors">Sensors</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

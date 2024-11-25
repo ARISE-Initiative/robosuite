@@ -1,0 +1,1259 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>robosuite.environments package &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.environments';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="robosuite.environments.manipulation package" href="robosuite.environments.manipulation.html" />
+    <link rel="prev" title="robosuite.devices package" href="robosuite.devices.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">robosuite.environments package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/source/robosuite.environments.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>robosuite.environments package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.base">robosuite.environments.base module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.EnvMeta"><code class="docutils literal notranslate"><span class="pre">EnvMeta</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv"><code class="docutils literal notranslate"><span class="pre">MujocoEnv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.action_dim"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.action_dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.action_spec"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.action_spec</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.active_observables"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.active_observables</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.add_observable"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.add_observable()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.check_contact"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.check_contact()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.clear_objects"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.clear_objects()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.close"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.close()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.close_renderer"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.close_renderer()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.edit_model_xml"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.edit_model_xml()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.enabled_observables"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.enabled_observables</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.get_contacts"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.get_contacts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.get_ep_meta"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.get_ep_meta()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.get_pixel_obs"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.get_pixel_obs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.initialize_renderer"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.initialize_renderer()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.initialize_time"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.initialize_time()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.modify_observable"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.modify_observable()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.observation_modalities"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.observation_modalities</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.observation_names"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.observation_names</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.observation_spec"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.observation_spec()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.render"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.render()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.reset"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.reset_from_xml_string"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.reset_from_xml_string()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.reward"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.reward()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.set_ep_meta"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.set_ep_meta()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.set_xml_processor"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.set_xml_processor()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.step"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.step()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.unset_ep_meta"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.unset_ep_meta()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.update_state"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.update_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.visualize"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.visualize()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.make"><code class="docutils literal notranslate"><span class="pre">make()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.register_env"><code class="docutils literal notranslate"><span class="pre">register_env()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.robot_env">robosuite.environments.robot_env module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv"><code class="docutils literal notranslate"><span class="pre">RobotEnv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.action_dim"><code class="docutils literal notranslate"><span class="pre">RobotEnv.action_dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.action_spec"><code class="docutils literal notranslate"><span class="pre">RobotEnv.action_spec</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.reward"><code class="docutils literal notranslate"><span class="pre">RobotEnv.reward()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.visualize"><code class="docutils literal notranslate"><span class="pre">RobotEnv.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments">Module contents</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="robosuite-environments-package">
+<h1>robosuite.environments package<a class="headerlink" href="#robosuite-environments-package" title="Link to this heading">#</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.door">robosuite.environments.manipulation.door module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.door.Door"><code class="docutils literal notranslate"><span class="pre">Door</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.door.Door.reward"><code class="docutils literal notranslate"><span class="pre">Door.reward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.door.Door.visualize"><code class="docutils literal notranslate"><span class="pre">Door.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.lift">robosuite.environments.manipulation.lift module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.lift.Lift"><code class="docutils literal notranslate"><span class="pre">Lift</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.lift.Lift.reward"><code class="docutils literal notranslate"><span class="pre">Lift.reward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.lift.Lift.visualize"><code class="docutils literal notranslate"><span class="pre">Lift.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.manipulation_env">robosuite.environments.manipulation.manipulation_env module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.manipulation_env.ManipulationEnv"><code class="docutils literal notranslate"><span class="pre">ManipulationEnv</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.nut_assembly">robosuite.environments.manipulation.nut_assembly module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssembly"><code class="docutils literal notranslate"><span class="pre">NutAssembly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssembly.on_peg"><code class="docutils literal notranslate"><span class="pre">NutAssembly.on_peg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssembly.reward"><code class="docutils literal notranslate"><span class="pre">NutAssembly.reward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssembly.staged_rewards"><code class="docutils literal notranslate"><span class="pre">NutAssembly.staged_rewards()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssembly.visualize"><code class="docutils literal notranslate"><span class="pre">NutAssembly.visualize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssemblyRound"><code class="docutils literal notranslate"><span class="pre">NutAssemblyRound</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssemblySingle"><code class="docutils literal notranslate"><span class="pre">NutAssemblySingle</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssemblySquare"><code class="docutils literal notranslate"><span class="pre">NutAssemblySquare</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.pick_place">robosuite.environments.manipulation.pick_place module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlace"><code class="docutils literal notranslate"><span class="pre">PickPlace</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlace.not_in_bin"><code class="docutils literal notranslate"><span class="pre">PickPlace.not_in_bin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlace.reward"><code class="docutils literal notranslate"><span class="pre">PickPlace.reward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlace.staged_rewards"><code class="docutils literal notranslate"><span class="pre">PickPlace.staged_rewards()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlace.visualize"><code class="docutils literal notranslate"><span class="pre">PickPlace.visualize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlaceBread"><code class="docutils literal notranslate"><span class="pre">PickPlaceBread</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlaceCan"><code class="docutils literal notranslate"><span class="pre">PickPlaceCan</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlaceCereal"><code class="docutils literal notranslate"><span class="pre">PickPlaceCereal</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlaceMilk"><code class="docutils literal notranslate"><span class="pre">PickPlaceMilk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlaceSingle"><code class="docutils literal notranslate"><span class="pre">PickPlaceSingle</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite-environments-manipulation-single-arm-env-module">robosuite.environments.manipulation.single_arm_env module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.stack">robosuite.environments.manipulation.stack module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.stack.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.stack.Stack.reward"><code class="docutils literal notranslate"><span class="pre">Stack.reward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.stack.Stack.staged_rewards"><code class="docutils literal notranslate"><span class="pre">Stack.staged_rewards()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.stack.Stack.visualize"><code class="docutils literal notranslate"><span class="pre">Stack.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_env">robosuite.environments.manipulation.two_arm_env module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_env.TwoArmEnv"><code class="docutils literal notranslate"><span class="pre">TwoArmEnv</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_handover">robosuite.environments.manipulation.two_arm_handover module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_handover.TwoArmHandover"><code class="docutils literal notranslate"><span class="pre">TwoArmHandover</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_handover.TwoArmHandover.reward"><code class="docutils literal notranslate"><span class="pre">TwoArmHandover.reward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_lift">robosuite.environments.manipulation.two_arm_lift module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_lift.TwoArmLift"><code class="docutils literal notranslate"><span class="pre">TwoArmLift</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_lift.TwoArmLift.reward"><code class="docutils literal notranslate"><span class="pre">TwoArmLift.reward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_lift.TwoArmLift.visualize"><code class="docutils literal notranslate"><span class="pre">TwoArmLift.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_peg_in_hole">robosuite.environments.manipulation.two_arm_peg_in_hole module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_peg_in_hole.TwoArmPegInHole"><code class="docutils literal notranslate"><span class="pre">TwoArmPegInHole</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.two_arm_peg_in_hole.TwoArmPegInHole.reward"><code class="docutils literal notranslate"><span class="pre">TwoArmPegInHole.reward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.wipe">robosuite.environments.manipulation.wipe module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.wipe.Wipe"><code class="docutils literal notranslate"><span class="pre">Wipe</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite.environments.manipulation.wipe.Wipe.reward"><code class="docutils literal notranslate"><span class="pre">Wipe.reward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-robosuite.environments.base">
+<span id="robosuite-environments-base-module"></span><h2>robosuite.environments.base module<a class="headerlink" href="#module-robosuite.environments.base" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.environments.base.EnvMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.environments.base.</span></span><span class="sig-name descname"><span class="pre">EnvMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.EnvMeta" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></p>
+<p>Metaclass for registering environments</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.environments.base.</span></span><span class="sig-name descname"><span class="pre">MujocoEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">has_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_offscreen_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frontview'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_collision_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_visual_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_gpu_device_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_done</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mjviewer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initializes a Mujoco Environment.
+:param has_renderer: If true, render the simulation state in</p>
+<blockquote>
+<div><p>a viewer instead of headless mode.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>has_offscreen_renderer</strong> (<em>bool</em>) – True if using off-screen rendering.</p></li>
+<li><p><strong>render_camera</strong> (<em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
+will result in the default angle being applied, which is useful as it can be dragged / panned by
+the user using the mouse</p></li>
+<li><p><strong>render_collision_mesh</strong> (<em>bool</em>) – True if rendering collision meshes
+in camera. False otherwise.</p></li>
+<li><p><strong>render_visual_mesh</strong> (<em>bool</em>) – True if rendering visual meshes
+in camera. False otherwise.</p></li>
+<li><p><strong>render_gpu_device_id</strong> (<em>int</em>) – corresponds to the GPU device id to use for offscreen rendering.
+Defaults to -1, in which case the device will be inferred from environment variables
+(GPUS or CUDA_VISIBLE_DEVICES).</p></li>
+<li><p><strong>control_freq</strong> (<em>float</em>) – how many control signals to receive
+in every simulated second. This sets the amount of simulation time
+that passes between every action input.</p></li>
+<li><p><strong>lite_physics</strong> (<em>bool</em>) – Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+Set to False to preserve backward compatibility with datasets collected in robosuite &lt;= 1.4.1.</p></li>
+<li><p><strong>horizon</strong> (<em>int</em>) – Every episode lasts for exactly &#64;horizon timesteps.</p></li>
+<li><p><strong>ignore_done</strong> (<em>bool</em>) – True if never terminating the environment (ignore &#64;horizon).</p></li>
+<li><p><strong>hard_reset</strong> (<em>bool</em>) – If True, re-loads model, sim, and render object upon a reset call, else,
+only calls sim.reset and resets all robosuite-internal variables</p></li>
+<li><p><strong>renderer</strong> (<em>str</em>) – string for the renderer to use</p></li>
+<li><p><strong>renderer_config</strong> (<em>dict</em>) – dictionary for the renderer configurations</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – environment seed. Default is None, where environment is unseeded, ie. random</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [Invalid renderer selection]</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.action_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_dim</span></span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.action_dim" title="Link to this definition">#</a></dt>
+<dd><p>Size of the action space
+:returns: Action space dimension
+:rtype: int</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.action_spec">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_spec</span></span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.action_spec" title="Link to this definition">#</a></dt>
+<dd><p>Action specification should be implemented in subclasses.
+Action space is represented by a tuple of (low, high), which are two numpy
+vectors that specify the min/max action limits per dimension.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.active_observables">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">active_observables</span></span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.active_observables" title="Link to this definition">#</a></dt>
+<dd><p>Grabs all names of active observables for this environment. An observable is considered active if its value is
+being returned in the observation dict from _get_observations() call or from the step() call (assuming this
+observable is enabled).
+:returns: All active observation names
+:rtype: set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.add_observable">
+<span class="sig-name descname"><span class="pre">add_observable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.add_observable" title="Link to this definition">#</a></dt>
+<dd><p>Adds an observable to this environment.
+:param observable: Observable instance.
+:type observable: Observable</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.check_contact">
+<span class="sig-name descname"><span class="pre">check_contact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoms_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geoms_2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.check_contact" title="Link to this definition">#</a></dt>
+<dd><p>Finds contact between two geom groups.
+:param geoms_1: an individual geom name or list of geom names or a model. If</p>
+<blockquote>
+<div><p>a MujocoModel is specified, the geoms checked will be its contact_geoms</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>geoms_2</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em> or </em><a class="reference internal" href="robosuite.models.html#robosuite.models.base.MujocoModel" title="robosuite.models.base.MujocoModel"><em>MujocoModel</em></a><em> or </em><em>None</em>) – another individual geom name or list of geom names.
+If a MujocoModel is specified, the geoms checked will be its contact_geoms. If None, will check
+any collision with &#64;geoms_1 to any other geom in the environment</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if any geom in &#64;geoms_1 is in contact with any geom in &#64;geoms_2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.clear_objects">
+<span class="sig-name descname"><span class="pre">clear_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.clear_objects" title="Link to this definition">#</a></dt>
+<dd><p>Clears objects with the name &#64;object_names out of the task space. This is useful
+for supporting task modes with single types of objects, as in
+&#64;self.single_object_mode without changing the model definition.
+:param object_names: Name of object(s) to remove from the task workspace
+:type object_names: str or list of str</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.close" title="Link to this definition">#</a></dt>
+<dd><p>Do any cleanup necessary here.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.close_renderer">
+<span class="sig-name descname"><span class="pre">close_renderer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.close_renderer" title="Link to this definition">#</a></dt>
+<dd><p>Closes the renderer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.edit_model_xml">
+<span class="sig-name descname"><span class="pre">edit_model_xml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xml_str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.edit_model_xml" title="Link to this definition">#</a></dt>
+<dd><p>This function edits the model xml with custom changes, including resolving relative paths,
+applying changes retroactively to existing demonstration files, and other custom scripts.
+Environment subclasses should modify this function to add environment-specific xml editing features.
+:param xml_str: Mujoco sim demonstration XML file as string
+:type xml_str: str</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Edited xml file as string</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.enabled_observables">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enabled_observables</span></span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.enabled_observables" title="Link to this definition">#</a></dt>
+<dd><p>Grabs all names of enabled observables for this environment. An observable is considered enabled if its values
+are being continually computed / updated at each simulation timestep.
+:returns: All enabled observation names
+:rtype: set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.get_contacts">
+<span class="sig-name descname"><span class="pre">get_contacts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.get_contacts" title="Link to this definition">#</a></dt>
+<dd><p>Checks for any contacts with &#64;model (as defined by &#64;model’s contact_geoms) and returns the set of
+geom names currently in contact with that model (excluding the geoms that are part of the model itself).
+:param model: Model to check contacts for.
+:type model: MujocoModel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Unique geoms that are actively in contact with this model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>set</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AssertionError</strong> – [Invalid input type]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.get_ep_meta">
+<span class="sig-name descname"><span class="pre">get_ep_meta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.get_ep_meta" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dictionary containing episode metadata
+:returns: episode metadata
+:rtype: dict</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.get_pixel_obs">
+<span class="sig-name descname"><span class="pre">get_pixel_obs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.get_pixel_obs" title="Link to this definition">#</a></dt>
+<dd><p>Gets the pixel observations for the environment from the specified renderer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.initialize_renderer">
+<span class="sig-name descname"><span class="pre">initialize_renderer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.initialize_renderer" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.initialize_time">
+<span class="sig-name descname"><span class="pre">initialize_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">control_freq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.initialize_time" title="Link to this definition">#</a></dt>
+<dd><p>Initializes the time constants used for simulation.
+:param control_freq: Hz rate to run control loop at within the simulation
+:type control_freq: float</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.modify_observable">
+<span class="sig-name descname"><span class="pre">modify_observable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observable_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modifier</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.modify_observable" title="Link to this definition">#</a></dt>
+<dd><p>Modifies observable with associated name &#64;observable_name, replacing the given &#64;attribute with &#64;modifier.
+:param observable_name: Observable to modify
+:type observable_name: str
+:param attribute: Observable attribute to modify.</p>
+<blockquote>
+<div><p>Options are {<cite>‘sensor’</cite>, <cite>‘corrupter’</cite>,`’filter’<cite>,  `’delayer’</cite>, <cite>‘sampling_rate’</cite>,
+<cite>‘enabled’</cite>, <cite>‘active’</cite>}</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modifier</strong> (<em>any</em>) – New function / value to replace with for observable. If a function, new signature should
+match the function being replaced.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.observation_modalities">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_modalities</span></span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.observation_modalities" title="Link to this definition">#</a></dt>
+<dd><p>Modalities for this environment’s observations
+:returns: All observation modalities
+:rtype: set</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.observation_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_names</span></span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.observation_names" title="Link to this definition">#</a></dt>
+<dd><p>Grabs all names for this environment’s observables
+:returns: All observation names
+:rtype: set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.observation_spec">
+<span class="sig-name descname"><span class="pre">observation_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.observation_spec" title="Link to this definition">#</a></dt>
+<dd><p>Returns an observation as observation specification.
+An alternative design is to return an OrderedDict where the keys
+are the observation names and the values are the shapes of observations.
+We leave this alternative implementation commented out, as we find the
+current design is easier to use in practice.
+:returns: Observations from the environment
+:rtype: OrderedDict</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.render" title="Link to this definition">#</a></dt>
+<dd><p>Renders to an on-screen window.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.reset" title="Link to this definition">#</a></dt>
+<dd><p>Resets simulation.
+:returns: Environment observation space after reset occurs
+:rtype: OrderedDict</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.reset_from_xml_string">
+<span class="sig-name descname"><span class="pre">reset_from_xml_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xml_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.reset_from_xml_string" title="Link to this definition">#</a></dt>
+<dd><p>Reloads the environment from an XML description of the environment.
+:param xml_string: Filepath to the xml file that will be loaded directly into the sim
+:type xml_string: str</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.reward">
+<span class="sig-name descname"><span class="pre">reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.reward" title="Link to this definition">#</a></dt>
+<dd><p>Reward should be a function of state and action
+:param action: Action to execute within the environment
+:type action: np.array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Reward from environment</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.set_ep_meta">
+<span class="sig-name descname"><span class="pre">set_ep_meta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.set_ep_meta" title="Link to this definition">#</a></dt>
+<dd><p>Set episode meta data
+:param meta: containing episode metadata
+:type meta: dict</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.set_xml_processor">
+<span class="sig-name descname"><span class="pre">set_xml_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.set_xml_processor" title="Link to this definition">#</a></dt>
+<dd><p>Sets the processor function that xml string will be passed to inside _initialize_sim() calls.
+:param processor: If set, processing method should take in a xml string and</p>
+<blockquote>
+<div><p>return no arguments.</p>
+</div></blockquote>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.step" title="Link to this definition">#</a></dt>
+<dd><p>Takes a step in simulation with control command &#64;action.
+:param action: Action to execute within the environment
+:type action: np.array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>(OrderedDict) observations from the environment</p></li>
+<li><p>(float) reward from the environment</p></li>
+<li><p>(bool) whether the current episode is completed or not</p></li>
+<li><p>(dict) misc information</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>4-tuple</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – [Steps past episode termination]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.unset_ep_meta">
+<span class="sig-name descname"><span class="pre">unset_ep_meta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.unset_ep_meta" title="Link to this definition">#</a></dt>
+<dd><p>Unset episode meta data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.update_state">
+<span class="sig-name descname"><span class="pre">update_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.update_state" title="Link to this definition">#</a></dt>
+<dd><p>update internal state of environment (can be called after resetting simulation or after step)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.base.MujocoEnv.visualize">
+<span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vis_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.MujocoEnv.visualize" title="Link to this definition">#</a></dt>
+<dd><p>Do any needed visualization here
+:param vis_settings: Visualization keywords mapped to T/F, determining whether that specific</p>
+<blockquote>
+<div><p>component should be visualized. Should have “env” keyword as well as any other relevant
+options specified.</p>
+</div></blockquote>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.environments.base.make">
+<span class="sig-prename descclassname"><span class="pre">robosuite.environments.base.</span></span><span class="sig-name descname"><span class="pre">make</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.make" title="Link to this definition">#</a></dt>
+<dd><p>Instantiates a robosuite environment.
+This method attempts to mirror the equivalent functionality of gym.make in a somewhat sloppy way.
+:param env_name: Name of the robosuite environment to initialize
+:type env_name: str
+:param *args: Additional arguments to pass to the specific environment class initializer
+:param **kwargs: Additional arguments to pass to the specific environment class initializer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Desired robosuite environment</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#robosuite.environments.base.MujocoEnv" title="robosuite.environments.base.MujocoEnv">MujocoEnv</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – [Invalid environment name]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.environments.base.register_env">
+<span class="sig-prename descclassname"><span class="pre">robosuite.environments.base.</span></span><span class="sig-name descname"><span class="pre">register_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_class</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.base.register_env" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-robosuite.environments.robot_env">
+<span id="robosuite-environments-robot-env-module"></span><h2>robosuite.environments.robot_env module<a class="headerlink" href="#module-robosuite.environments.robot_env" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.environments.robot_env.RobotEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.environments.robot_env.</span></span><span class="sig-name descname"><span class="pre">RobotEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controller_configs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_camera_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_offscreen_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frontview'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_collision_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_visual_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_gpu_device_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_done</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'agentview'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_heights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_widths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_depths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_segmentations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot_configs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mjviewer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.robot_env.RobotEnv" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.environments.base.MujocoEnv" title="robosuite.environments.base.MujocoEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">MujocoEnv</span></code></a></p>
+<p>Initializes a robot environment in Mujoco.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robots</strong> – Specification for specific robot(s) to be instantiated within this env</p></li>
+<li><p><strong>env_configuration</strong> (<em>str</em>) – Specifies how to position the robot(s) within the environment. Default is “default”,
+which should be interpreted accordingly by any subclasses.</p></li>
+<li><p><strong>controller_configs</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>dict</em>) – If set, contains relevant controller parameters for creating a
+custom controller. Else, uses the default controller for this specific task. Should either be single
+dict if same controller is to be used for all robots or else it should be a list of the same length as
+“robots” param</p></li>
+<li><p><strong>mount_types</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of mount, used to instantiate mount models from mount factory.
+Default is “default”, which is the default mount associated with the robot(s) the ‘robots’ specification.
+None results in no mount, and any other (valid) model overrides the default mount. Should either be
+single str if same mount type is to be used for all robots or else it should be a list of the same
+length as “robots” param</p></li>
+<li><p><strong>initialization_noise</strong> (<em>dict</em><em> or </em><em>list</em><em> of </em><em>dict</em>) – <p>Dict containing the initialization noise parameters.
+The expected keys and corresponding value types are specified below:</p>
+<dl class="field-list simple">
+<dt class="field-odd"><cite>’magnitude’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>The scale factor of uni-variate random noise applied to each of a robot’s given initial
+joint positions. Setting this value to <cite>None</cite> or 0.0 results in no noise being applied.
+If “gaussian” type of noise is applied then this magnitude scales the standard deviation applied,
+If “uniform” type of noise is applied then this magnitude sets the bounds of the sampling range</p>
+</dd>
+<dt class="field-even"><cite>’type’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Type of noise to apply. Can either specify “gaussian” or “uniform”</p>
+</dd>
+</dl>
+<p>Should either be single dict if same noise value is to be used for all robots or else it should be a
+list of the same length as “robots” param</p>
+<dl class="field-list simple">
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specifying “default” will automatically use the default noise settings.
+Specifying None will automatically create the required dict with “magnitude” set to 0.0.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>use_camera_obs</strong> (<em>bool</em>) – if True, every observation includes rendered image(s)</p></li>
+<li><p><strong>has_renderer</strong> (<em>bool</em>) – If true, render the simulation state in
+a viewer instead of headless mode.</p></li>
+<li><p><strong>has_offscreen_renderer</strong> (<em>bool</em>) – True if using off-screen rendering</p></li>
+<li><p><strong>render_camera</strong> (<em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
+will result in the default angle being applied, which is useful as it can be dragged / panned by
+the user using the mouse</p></li>
+<li><p><strong>render_collision_mesh</strong> (<em>bool</em>) – True if rendering collision meshes in camera. False otherwise.</p></li>
+<li><p><strong>render_visual_mesh</strong> (<em>bool</em>) – True if rendering visual meshes in camera. False otherwise.</p></li>
+<li><p><strong>render_gpu_device_id</strong> (<em>int</em>) – corresponds to the GPU device id to use for offscreen rendering.
+Defaults to -1, in which case the device will be inferred from environment variables
+(GPUS or CUDA_VISIBLE_DEVICES).</p></li>
+<li><p><strong>control_freq</strong> (<em>float</em>) – how many control signals to receive in every second. This sets the amount of
+simulation time that passes between every action input.</p></li>
+<li><p><strong>lite_physics</strong> (<em>bool</em>) – Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+Set to False to preserve backward compatibility with datasets collected in robosuite &lt;= 1.4.1.</p></li>
+<li><p><strong>horizon</strong> (<em>int</em>) – Every episode lasts for exactly &#64;horizon timesteps.</p></li>
+<li><p><strong>ignore_done</strong> (<em>bool</em>) – True if never terminating the environment (ignore &#64;horizon).</p></li>
+<li><p><strong>hard_reset</strong> (<em>bool</em>) – If True, re-loads model, sim, and render object upon a reset call, else,
+only calls sim.reset and resets all robosuite-internal variables</p></li>
+<li><p><strong>camera_names</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – <p>name of camera to be rendered. Should either be single str if
+same name is to be used for all cameras’ rendering or else it should be a list of cameras to render.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>At least one camera must be specified if &#64;use_camera_obs is True.</p>
+</dd>
+<dt class="field-even">Note<span class="colon">:</span></dt>
+<dd class="field-even"><p>To render all robots’ cameras of a certain type (e.g.: “robotview” or “eye_in_hand”), use the
+convention “all-{name}” (e.g.: “all-robotview”) to automatically render all camera images from each
+robot’s camera list).</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>camera_heights</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>int</em>) – height of camera frame. Should either be single int if
+same height is to be used for all cameras’ frames or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_widths</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>int</em>) – width of camera frame. Should either be single int if
+same width is to be used for all cameras’ frames or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_depths</strong> (<em>bool</em><em> or </em><em>list</em><em> of </em><em>bool</em>) – True if rendering RGB-D, and RGB otherwise. Should either be single
+bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_segmentations</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em> or </em><em>list</em><em> of </em><em>list</em><em> of </em><em>str</em>) – <p>Camera segmentation(s) to use
+for each camera. Valid options are:</p>
+<blockquote>
+<div><p><cite>None</cite>: no segmentation sensor used
+<cite>‘instance’</cite>: segmentation at the class-instance level
+<cite>‘class’</cite>: segmentation at the class level
+<cite>‘element’</cite>: segmentation at the per-geom level</p>
+</div></blockquote>
+<p>If not None, multiple types of segmentations can be specified. A [list of str / str or None] specifies
+[multiple / a single] segmentation(s) to use for all cameras. A list of list of str specifies per-camera
+segmentation setting(s) to use.</p>
+</p></li>
+<li><p><strong>robot_configs</strong> (<em>list</em><em> of </em><em>dict</em>) – Per-robot configurations set from any subclass initializers.</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – environment seed. Default is None, where environment is unseeded, ie. random</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – [Camera obs require offscreen renderer]</p></li>
+<li><p><strong>ValueError</strong> – [Camera name must be specified to use camera obs]</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.robot_env.RobotEnv.action_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_dim</span></span><a class="headerlink" href="#robosuite.environments.robot_env.RobotEnv.action_dim" title="Link to this definition">#</a></dt>
+<dd><p>Size of the action space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space dimension</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.environments.robot_env.RobotEnv.action_spec">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_spec</span></span><a class="headerlink" href="#robosuite.environments.robot_env.RobotEnv.action_spec" title="Link to this definition">#</a></dt>
+<dd><p>Action space (low, high) for this environment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>(np.array) minimum (low) action values</p></li>
+<li><p>(np.array) maximum (high) action values</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>2-tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.robot_env.RobotEnv.reward">
+<span class="sig-name descname"><span class="pre">reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.robot_env.RobotEnv.reward" title="Link to this definition">#</a></dt>
+<dd><p>Runs superclass method by default</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.robot_env.RobotEnv.visualize">
+<span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vis_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.robot_env.RobotEnv.visualize" title="Link to this definition">#</a></dt>
+<dd><p>In addition to super call, visualizes robots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vis_settings</strong> (<em>dict</em>) – Visualization keywords mapped to T/F, determining whether that specific
+component should be visualized. Should have “robots” keyword as well as any other relevant
+options specified.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.environments">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.environments" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="robosuite.devices.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">robosuite.devices package</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="robosuite.environments.manipulation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">robosuite.environments.manipulation package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.base">robosuite.environments.base module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.EnvMeta"><code class="docutils literal notranslate"><span class="pre">EnvMeta</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv"><code class="docutils literal notranslate"><span class="pre">MujocoEnv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.action_dim"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.action_dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.action_spec"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.action_spec</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.active_observables"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.active_observables</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.add_observable"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.add_observable()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.check_contact"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.check_contact()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.clear_objects"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.clear_objects()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.close"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.close()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.close_renderer"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.close_renderer()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.edit_model_xml"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.edit_model_xml()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.enabled_observables"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.enabled_observables</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.get_contacts"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.get_contacts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.get_ep_meta"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.get_ep_meta()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.get_pixel_obs"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.get_pixel_obs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.initialize_renderer"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.initialize_renderer()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.initialize_time"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.initialize_time()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.modify_observable"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.modify_observable()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.observation_modalities"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.observation_modalities</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.observation_names"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.observation_names</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.observation_spec"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.observation_spec()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.render"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.render()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.reset"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.reset_from_xml_string"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.reset_from_xml_string()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.reward"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.reward()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.set_ep_meta"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.set_ep_meta()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.set_xml_processor"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.set_xml_processor()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.step"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.step()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.unset_ep_meta"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.unset_ep_meta()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.update_state"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.update_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.MujocoEnv.visualize"><code class="docutils literal notranslate"><span class="pre">MujocoEnv.visualize()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.make"><code class="docutils literal notranslate"><span class="pre">make()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.base.register_env"><code class="docutils literal notranslate"><span class="pre">register_env()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.robot_env">robosuite.environments.robot_env module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv"><code class="docutils literal notranslate"><span class="pre">RobotEnv</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.action_dim"><code class="docutils literal notranslate"><span class="pre">RobotEnv.action_dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.action_spec"><code class="docutils literal notranslate"><span class="pre">RobotEnv.action_spec</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.reward"><code class="docutils literal notranslate"><span class="pre">RobotEnv.reward()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.robot_env.RobotEnv.visualize"><code class="docutils literal notranslate"><span class="pre">RobotEnv.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments">Module contents</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

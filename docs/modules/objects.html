@@ -1,0 +1,661 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Objects &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'modules/objects';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Environments" href="environments.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="controllers.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="robots.html">Robots</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../source/robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/modules/objects.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Objects</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-create-a-custom-object">How to create a custom object</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mujocoobject-class">The MujocoObject class</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-xmlobject">Creating a XMLObject</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-procedurally-generated-object">Creating a procedurally generated object</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#placing-objects">Placing Objects</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="objects">
+<h1>Objects<a class="headerlink" href="#objects" title="Link to this heading">#</a></h1>
+<section id="how-to-create-a-custom-object">
+<h2>How to create a custom object<a class="headerlink" href="#how-to-create-a-custom-object" title="Link to this heading">#</a></h2>
+<p>Objects, such as boxes and cans, are essential to building manipulation environments. We designed the <a class="reference external" href="../source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoObject">MujocoObject</a> interfaces to standardize and simplify the procedure for importing 3D models into the scene or procedurally generate new objects. MuJoCo defines models via the <a class="reference external" href="http://www.mujoco.org/book/modeling.html">MJCF</a> XML format. These MJCF files can either be stored as XML files on disk and loaded into simulator, or be created on-the-fly by code prior to simulation. Based on these two mechanisms of how MJCF models are created, we offer two main ways of creating your own object:</p>
+<ul class="simple">
+<li><p>Define an object in an MJCF XML file;</p></li>
+<li><p>Use procedural generation APIs to dynamically create an MJCF model.</p></li>
+</ul>
+</section>
+<section id="the-mujocoobject-class">
+<h2>The MujocoObject class<a class="headerlink" href="#the-mujocoobject-class" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MujocoObject</span><span class="p">(</span><span class="n">MujocoModel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+        
+        <span class="o">...</span>
+
+        <span class="c1"># Attributes that should be filled in within the subclass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Attributes that are auto-filled by _get_object_properties call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_body</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bodies</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_joints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actuators</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contact_geoms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visual_geoms</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">MujocoObject</span></code> is the base class of all objects. One must note that it is not a subclass of <code class="docutils literal notranslate"><span class="pre">MujocoXML</span></code>, but does extend from the unifying <code class="docutils literal notranslate"><span class="pre">MujocoModel</span></code> class from which all simulation models (including robots, grippers, etc.) should extend from. All of the attributes shown above prepended with a <code class="docutils literal notranslate"><span class="pre">_</span></code> are intended to be private variables and not accessed by external objects. Instead, any of these properties can be accessed via its public version, without the <code class="docutils literal notranslate"><span class="pre">_</span></code> (e.g.: to access all the object’s joints, call <code class="docutils literal notranslate"><span class="pre">obj.joints</span></code> instead of <code class="docutils literal notranslate"><span class="pre">obj._joints</span></code>). This is because all public attributes are automatically post-processed from their private counterparts and have naming prefixes appended to it.</p>
+<p>The XML of an object is generated once during initialization via the <code class="docutils literal notranslate"><span class="pre">_get_object_subtree</span></code> call, after which any external object can extract a reference to this XML via the <code class="docutils literal notranslate"><span class="pre">get_obj</span></code> call.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">_get_object_subtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Additionally, objects are usually placed relatively. For example, we want to put an object on a table or place a cube on top of another. Instance methods <code class="docutils literal notranslate"><span class="pre">get_bottom_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">get_top_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">get_horizontal_radius</span></code> provide the necessary information to place objects properly.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">get_bottom_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_top_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_horizontal_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>This allows us to do things like the following.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">table_top</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">bottom_offset</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_bottom_offset</span><span class="p">()</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">table_top</span> <span class="o">-</span> <span class="n">bottom_offset</span>                             <span class="c1"># pos + bottom_offset = table_top</span>
+<span class="n">obj_xml</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_obj</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;pos&quot;</span><span class="p">,</span> <span class="n">array_to_string</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>    <span class="c1"># Set the top-level body of this object</span>
+</pre></div>
+</div>
+</section>
+<section id="creating-a-xmlobject">
+<h2>Creating a XMLObject<a class="headerlink" href="#creating-a-xmlobject" title="Link to this heading">#</a></h2>
+<p>One can use MuJoCo MJCF XML to generate an object, either as a composition of primitive <a class="reference external" href="http://mujoco.org/book/modeling.html#geom">geoms</a> or imported from STL files of triangulated <a class="reference external" href="http://www.mujoco.org/book/modeling.html#mesh">meshes</a>. An example is <code class="docutils literal notranslate"><span class="pre">robosuite.models.objects.xml_objects.BreadObject</span></code>. Its <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/objects/xml_objects.py#L49">python definition</a> is short. Note that all <code class="docutils literal notranslate"><span class="pre">MujocoXMLObject</span></code> classes require both a <code class="docutils literal notranslate"><span class="pre">fname</span></code> and <code class="docutils literal notranslate"><span class="pre">name</span></code> argument, the former which specifies the filepath to the raw XML file and the latter which specifies the in-sim name of the object instantiated. The optional <code class="docutils literal notranslate"><span class="pre">joints</span></code> argument can also specify a custom set of joints to apply to the given object (defaults to “default”, which is a single free joint). This joint argument determines the DOF of the object as a whole and does not interfere with the joints already in the object. Additionally, the type of object created can be specified via the <code class="docutils literal notranslate"><span class="pre">obj_type</span></code> argument, and must be one of (<code class="docutils literal notranslate"><span class="pre">'collision'</span></code>, <code class="docutils literal notranslate"><span class="pre">'visual'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'all'</span></code>). Lastly, setting <code class="docutils literal notranslate"><span class="pre">duplicate_collision_geoms</span></code> makes sure that all collision geoms automatically have an associated visual geom as well. Generally, the normal use case is to define a single class corresponding to a specific XML file, as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BreadObject</span><span class="p">(</span><span class="n">MujocoXMLObject</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xml_path_completion</span><span class="p">(</span><span class="s2">&quot;objects/bread.xml&quot;</span><span class="p">),</span>
+                         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">joints</span><span class="o">=</span><span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">,</span> <span class="n">damping</span><span class="o">=</span><span class="s2">&quot;0.0005&quot;</span><span class="p">)],</span>
+                         <span class="n">obj_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">duplicate_collision_geoms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the corresponding XML file, a few key definitions must be present. The top-level, un-named body must contain as immediate children tags (a) the actual object bodie(s) (the top-level <strong>must</strong> be named <code class="docutils literal notranslate"><span class="pre">object</span></code>) and (b) three site tags named <code class="docutils literal notranslate"><span class="pre">bottom_site</span></code>, <code class="docutils literal notranslate"><span class="pre">top_site</span></code>, and <code class="docutils literal notranslate"><span class="pre">horizontal_radius_site</span></code> and whose <code class="docutils literal notranslate"><span class="pre">pos</span></code> values must be specified. The example for the <code class="docutils literal notranslate"><span class="pre">BreadObject</span></code>, <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/assets/objects/bread.xml">bread.xml</a>, is shown below:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;mujoco</span><span class="w"> </span><span class="na">model=</span><span class="s">&quot;bread&quot;</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;asset&gt;</span>
+<span class="w">    </span><span class="nt">&lt;mesh</span><span class="w"> </span><span class="na">file=</span><span class="s">&quot;meshes/bread.stl&quot;</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;bread_mesh&quot;</span><span class="w"> </span><span class="na">scale=</span><span class="s">&quot;0.8 0.8 0.8&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;texture</span><span class="w"> </span><span class="na">file=</span><span class="s">&quot;../textures/bread.png&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;2d&quot;</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;tex-bread&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;material</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;bread&quot;</span><span class="w"> </span><span class="na">reflectance=</span><span class="s">&quot;0.7&quot;</span><span class="w"> </span><span class="na">texrepeat=</span><span class="s">&quot;15 15&quot;</span><span class="w"> </span><span class="na">texture=</span><span class="s">&quot;tex-bread&quot;</span><span class="w"> </span><span class="na">texuniform=</span><span class="s">&quot;true&quot;</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/asset&gt;</span>
+<span class="w">  </span><span class="nt">&lt;worldbody&gt;</span>
+<span class="w">    </span><span class="nt">&lt;body&gt;</span>
+<span class="w">      </span><span class="nt">&lt;body</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;object&quot;</span><span class="nt">&gt;</span>
+<span class="w">        </span><span class="nt">&lt;geom</span><span class="w"> </span><span class="na">pos=</span><span class="s">&quot;0 0 0&quot;</span><span class="w"> </span><span class="na">mesh=</span><span class="s">&quot;bread_mesh&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;mesh&quot;</span><span class="w"> </span><span class="na">solimp=</span><span class="s">&quot;0.998 0.998 0.001&quot;</span><span class="w"> </span><span class="na">solref=</span><span class="s">&quot;0.001 1&quot;</span><span class="w"> </span><span class="na">density=</span><span class="s">&quot;50&quot;</span><span class="w"> </span><span class="na">friction=</span><span class="s">&quot;0.95 0.3 0.1&quot;</span><span class="w">  </span><span class="na">material=</span><span class="s">&quot;bread&quot;</span><span class="w"> </span><span class="na">group=</span><span class="s">&quot;0&quot;</span><span class="w"> </span><span class="na">condim=</span><span class="s">&quot;4&quot;</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;/body&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">rgba=</span><span class="s">&quot;0 0 0 0&quot;</span><span class="w"> </span><span class="na">size=</span><span class="s">&quot;0.005&quot;</span><span class="w"> </span><span class="na">pos=</span><span class="s">&quot;0 0 -0.045&quot;</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;bottom_site&quot;</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">rgba=</span><span class="s">&quot;0 0 0 0&quot;</span><span class="w"> </span><span class="na">size=</span><span class="s">&quot;0.005&quot;</span><span class="w"> </span><span class="na">pos=</span><span class="s">&quot;0 0 0.03&quot;</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;top_site&quot;</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;site</span><span class="w"> </span><span class="na">rgba=</span><span class="s">&quot;0 0 0 0&quot;</span><span class="w"> </span><span class="na">size=</span><span class="s">&quot;0.005&quot;</span><span class="w"> </span><span class="na">pos=</span><span class="s">&quot;0.03 0.03 0&quot;</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;horizontal_radius_site&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/body&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/worldbody&gt;</span>
+<span class="nt">&lt;/mujoco&gt;</span>
+</pre></div>
+</div>
+<p>Concretely,</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_get_object_subtree</span></code> looks for the object bodie(s) as defined by all nested bodie(s) beginning with the <code class="docutils literal notranslate"><span class="pre">object</span></code>-named body tag.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bottom_site</span></code> should be the bottom of the object, i.e. contact point with the surface it is placed on.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">top_site</span></code> should be the top of the object, i.e. contact point if something is placed on it.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">horizontal_radius_site</span></code> can be any point on a circle in the x-y plane that does not intersect the object. This allows us to place multiple objects without having them collide into one another.</p></li>
+</ul>
+</section>
+<section id="creating-a-procedurally-generated-object">
+<h2>Creating a procedurally generated object<a class="headerlink" href="#creating-a-procedurally-generated-object" title="Link to this heading">#</a></h2>
+<p>Procedurally generated objects have been used in <a class="reference external" href="https://arxiv.org/abs/1802.09564">several</a> <a class="reference external" href="https://arxiv.org/abs/1806.09266">recent</a> <a class="reference external" href="https://arxiv.org/abs/1709.07857">works</a> to train control policies with improved robustness and generalization. Here you can programmatically generate an MJCF XML of an object from scratch using <code class="docutils literal notranslate"><span class="pre">xml.etree.ElementTree</span></code>, and compose an object of multiple geom primitives. The base class for this type of object is <code class="docutils literal notranslate"><span class="pre">MujocoGeneratedObject</span></code>.
+<strong>robosuite</strong> natively supports all Mujoco primitive objects with procedurally-generated <code class="docutils literal notranslate"><span class="pre">PrimitiveObject</span></code> classes (<code class="docutils literal notranslate"><span class="pre">BoxObject</span></code>, <code class="docutils literal notranslate"><span class="pre">BallObject</span></code>, <code class="docutils literal notranslate"><span class="pre">CapsuleObject</span></code>, and <code class="docutils literal notranslate"><span class="pre">CylinderObject</span></code>).</p>
+<p>Additionally, <strong>robosuite</strong> supports custom, complex objects that can be defined by collections of primitive geoms (the <a class="reference external" href="../source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject">CompositeObject</a> class) or even other objects (the <a class="reference external" href="../source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeBodyObject">CompositeBodyObject</a> class). The APIs for each of these classes have been standardized for ease of usage, and interested readers should consult the docstrings for each of these classes, as well as provided examples of each class (<a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/objects/composite/hammer.py#L10">HammerObject</a>, <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/objects/composite_body/hinged_box.py#L8">HingedBoxObject</a>).</p>
+<p>It should also be noted that all of the above classes extending from the <code class="docutils literal notranslate"><span class="pre">MujocoGenereatedObject</span></code> class automatically supports custom texture definitions on a per-geom level, where specific texture images can be mapped to individual geoms. The above <code class="docutils literal notranslate"><span class="pre">HammerObject</span></code> showcases an example applying custom textures to different geoms of the resulting object.</p>
+</section>
+<section id="placing-objects">
+<h2>Placing Objects<a class="headerlink" href="#placing-objects" title="Link to this heading">#</a></h2>
+<p>Object locations are initialized on every environment reset using instances of the <a class="reference external" href="../source/robosuite.utils.html#robosuite.utils.placement_samplers.ObjectPositionSampler">ObjectPositionSampler</a> class. Object samplers use the <code class="docutils literal notranslate"><span class="pre">bottom_site</span></code> and <code class="docutils literal notranslate"><span class="pre">top_site</span></code> sites of each object in order to place objects on top of other objects, and the <code class="docutils literal notranslate"><span class="pre">horizontal_radius_site</span></code> site in order to ensure that objects do not collide with one another. The most basic sampler is the <a class="reference external" href="../source/robosuite.utils.html#robosuite.utils.placement_samplers.UniformRandomSampler">UniformRandomSampler</a> class - this just uses rejection sampling to place objects randomly. As an example, consider the following code snippet from the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method of the <code class="docutils literal notranslate"><span class="pre">Lift</span></code> environment class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">placement_initializer</span> <span class="o">=</span> <span class="n">UniformRandomSampler</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ObjectSampler&quot;</span><span class="p">,</span>
+    <span class="n">mujoco_objects</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="p">,</span>
+    <span class="n">x_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">],</span>
+    <span class="n">y_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">],</span>
+    <span class="n">rotation_axis</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span>
+    <span class="n">rotation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ensure_object_boundary_in_range</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ensure_valid_placement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">reference_pos</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_offset</span><span class="p">,</span>
+    <span class="n">z_offset</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This will sample the <code class="docutils literal notranslate"><span class="pre">self.cube</span></code>’s object location uniformly at random in a box of size <code class="docutils literal notranslate"><span class="pre">0.03</span></code> (<code class="docutils literal notranslate"><span class="pre">x_range</span></code>, <code class="docutils literal notranslate"><span class="pre">y_range</span></code>) with random (<code class="docutils literal notranslate"><span class="pre">rotation</span></code>) z-rotation (<code class="docutils literal notranslate"><span class="pre">rotation_axis</span></code>), and with an offset of <code class="docutils literal notranslate"><span class="pre">0.01</span></code> (<code class="docutils literal notranslate"><span class="pre">z_offset</span></code>) above the table surface location (<code class="docutils literal notranslate"><span class="pre">reference_pos</span></code>). The sampler will also make sure that the entire object boundary falls within the sampling box size (<code class="docutils literal notranslate"><span class="pre">ensure_object_boundary_in_range</span></code>) and does not collide with any placed objects (<code class="docutils literal notranslate"><span class="pre">ensure_valid_placement</span></code>).</p>
+<p>Another common sampler is the <a class="reference external" href="../source/robosuite.utils.html#robosuite.utils.placement_samplers.SequentialCompositeSampler">SequentialCompositeSampler</a>, which is useful for composing multiple arbitrary placement samplers together. As an example, consider the following code snippet from the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method of the <code class="docutils literal notranslate"><span class="pre">NutAssembly</span></code> environment class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Establish named references to each nut object</span>
+<span class="n">nut_names</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;SquareNut&quot;</span><span class="p">,</span> <span class="s2">&quot;RoundNut&quot;</span><span class="p">)</span>
+
+<span class="c1"># Initialize the top-level sampler</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">placement_initializer</span> <span class="o">=</span> <span class="n">SequentialCompositeSampler</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ObjectSampler&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create individual samplers per nut</span>
+<span class="k">for</span> <span class="n">nut_name</span><span class="p">,</span> <span class="n">default_y_range</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">nut_names</span><span class="p">,</span> <span class="p">([</span><span class="mf">0.11</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.225</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.11</span><span class="p">])):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">placement_initializer</span><span class="o">.</span><span class="n">append_sampler</span><span class="p">(</span>
+        <span class="n">sampler</span><span class="o">=</span><span class="n">UniformRandomSampler</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nut_name</span><span class="si">}</span><span class="s2">Sampler&quot;</span><span class="p">,</span>
+            <span class="n">x_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.115</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.11</span><span class="p">],</span>
+            <span class="n">y_range</span><span class="o">=</span><span class="n">default_y_range</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">rotation_axis</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span>
+            <span class="n">ensure_object_boundary_in_range</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ensure_valid_placement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">reference_pos</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_offset</span><span class="p">,</span>
+            <span class="n">z_offset</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+   
+<span class="c1"># No objects have been assigned to any samplers yet, so we do that now</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">nut_cls</span><span class="p">,</span> <span class="n">nut_name</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">SquareNutObject</span><span class="p">,</span> <span class="n">RoundNutObject</span><span class="p">),</span>
+        <span class="n">nut_names</span><span class="p">,</span>
+<span class="p">)):</span>
+    <span class="n">nut</span> <span class="o">=</span> <span class="n">nut_cls</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">nut_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">placement_initializer</span><span class="o">.</span><span class="n">add_objects_to_sampler</span><span class="p">(</span><span class="n">sampler_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nut_name</span><span class="si">}</span><span class="s2">Sampler&quot;</span><span class="p">,</span> <span class="n">mujoco_objects</span><span class="o">=</span><span class="n">nut</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The code snippet above results in two <code class="docutils literal notranslate"><span class="pre">UniformRandomSampler</span></code> instances being used to place the nuts onto the table surface - one for each type of nut. Notice this also allows the nuts to be initialized in separate regions of the table, and with arbitrary sampling settings. The <code class="docutils literal notranslate"><span class="pre">SequentialCompositeSampler</span></code> makes it easy to compose multiple placement initializers together and assign objects to each sub-sampler in a modular way.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="controllers.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">&lt;no title&gt;</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="environments.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Environments</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-create-a-custom-object">How to create a custom object</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mujocoobject-class">The MujocoObject class</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-xmlobject">Creating a XMLObject</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-procedurally-generated-object">Creating a procedurally generated object</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#placing-objects">Placing Objects</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

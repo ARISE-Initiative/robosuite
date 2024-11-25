@@ -1,0 +1,2095 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>robosuite.models.robots.manipulators package &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.models.robots.manipulators';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="robosuite.models.tasks package" href="robosuite.models.tasks.html" />
+    <link rel="prev" title="robosuite.models.robots package" href="robosuite.models.robots.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="robosuite.models.robots.html">robosuite.models.robots package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/source/robosuite.models.robots.manipulators.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>robosuite.models.robots.manipulators package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.baxter_robot">robosuite.models.robots.manipulators.baxter_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter"><code class="docutils literal notranslate"><span class="pre">Baxter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.arm_type"><code class="docutils literal notranslate"><span class="pre">Baxter.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.arms"><code class="docutils literal notranslate"><span class="pre">Baxter.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Baxter.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_base"><code class="docutils literal notranslate"><span class="pre">Baxter.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Baxter.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_gripper"><code class="docutils literal notranslate"><span class="pre">Baxter.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.init_qpos"><code class="docutils literal notranslate"><span class="pre">Baxter.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.top_offset"><code class="docutils literal notranslate"><span class="pre">Baxter.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.iiwa_robot">robosuite.models.robots.manipulators.iiwa_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA"><code class="docutils literal notranslate"><span class="pre">IIWA</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.arm_type"><code class="docutils literal notranslate"><span class="pre">IIWA.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.arms"><code class="docutils literal notranslate"><span class="pre">IIWA.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">IIWA.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_base"><code class="docutils literal notranslate"><span class="pre">IIWA.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_controller_config"><code class="docutils literal notranslate"><span class="pre">IIWA.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_gripper"><code class="docutils literal notranslate"><span class="pre">IIWA.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.init_qpos"><code class="docutils literal notranslate"><span class="pre">IIWA.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.top_offset"><code class="docutils literal notranslate"><span class="pre">IIWA.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.jaco_robot">robosuite.models.robots.manipulators.jaco_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco"><code class="docutils literal notranslate"><span class="pre">Jaco</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.arm_type"><code class="docutils literal notranslate"><span class="pre">Jaco.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.arms"><code class="docutils literal notranslate"><span class="pre">Jaco.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Jaco.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_base"><code class="docutils literal notranslate"><span class="pre">Jaco.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Jaco.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_gripper"><code class="docutils literal notranslate"><span class="pre">Jaco.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.init_qpos"><code class="docutils literal notranslate"><span class="pre">Jaco.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.top_offset"><code class="docutils literal notranslate"><span class="pre">Jaco.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.kinova3_robot">robosuite.models.robots.manipulators.kinova3_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3"><code class="docutils literal notranslate"><span class="pre">Kinova3</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arm_type"><code class="docutils literal notranslate"><span class="pre">Kinova3.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arms"><code class="docutils literal notranslate"><span class="pre">Kinova3.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Kinova3.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_base"><code class="docutils literal notranslate"><span class="pre">Kinova3.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Kinova3.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_gripper"><code class="docutils literal notranslate"><span class="pre">Kinova3.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.init_qpos"><code class="docutils literal notranslate"><span class="pre">Kinova3.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.top_offset"><code class="docutils literal notranslate"><span class="pre">Kinova3.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.manipulator_model">robosuite.models.robots.manipulators.manipulator_model module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.add_gripper()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_base"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_controller_config"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.eef_name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_pos_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.gripper_mount_pos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_quat_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.gripper_mount_quat_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.head_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.head_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_base_qpos"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.init_base_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_qpos"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_torso_qpos"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.init_torso_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.legs_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.legs_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.models"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.models</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.top_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.top_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.torso_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.torso_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.update_actuators()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.update_joints()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.panda_robot">robosuite.models.robots.manipulators.panda_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda"><code class="docutils literal notranslate"><span class="pre">Panda</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.arm_type"><code class="docutils literal notranslate"><span class="pre">Panda.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.arms"><code class="docutils literal notranslate"><span class="pre">Panda.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Panda.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_base"><code class="docutils literal notranslate"><span class="pre">Panda.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Panda.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_gripper"><code class="docutils literal notranslate"><span class="pre">Panda.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.init_qpos"><code class="docutils literal notranslate"><span class="pre">Panda.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.top_offset"><code class="docutils literal notranslate"><span class="pre">Panda.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.sawyer_robot">robosuite.models.robots.manipulators.sawyer_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer"><code class="docutils literal notranslate"><span class="pre">Sawyer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arm_type"><code class="docutils literal notranslate"><span class="pre">Sawyer.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arms"><code class="docutils literal notranslate"><span class="pre">Sawyer.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Sawyer.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_base"><code class="docutils literal notranslate"><span class="pre">Sawyer.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Sawyer.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_gripper"><code class="docutils literal notranslate"><span class="pre">Sawyer.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.init_qpos"><code class="docutils literal notranslate"><span class="pre">Sawyer.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.top_offset"><code class="docutils literal notranslate"><span class="pre">Sawyer.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.ur5e_robot">robosuite.models.robots.manipulators.ur5e_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e"><code class="docutils literal notranslate"><span class="pre">UR5e</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.arm_type"><code class="docutils literal notranslate"><span class="pre">UR5e.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.arms"><code class="docutils literal notranslate"><span class="pre">UR5e.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">UR5e.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_base"><code class="docutils literal notranslate"><span class="pre">UR5e.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_controller_config"><code class="docutils literal notranslate"><span class="pre">UR5e.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_gripper"><code class="docutils literal notranslate"><span class="pre">UR5e.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.init_qpos"><code class="docutils literal notranslate"><span class="pre">UR5e.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.top_offset"><code class="docutils literal notranslate"><span class="pre">UR5e.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators">Module contents</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="robosuite-models-robots-manipulators-package">
+<h1>robosuite.models.robots.manipulators package<a class="headerlink" href="#robosuite-models-robots-manipulators-package" title="Link to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-robosuite.models.robots.manipulators.baxter_robot">
+<span id="robosuite-models-robots-manipulators-baxter-robot-module"></span><h2>robosuite.models.robots.manipulators.baxter_robot module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.baxter_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.baxter_robot.</span></span><span class="sig-name descname"><span class="pre">Baxter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a></p>
+<p>Baxter is a hunky bimanual robot designed by Rethink Robotics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.arms">
+<span class="sig-name descname"><span class="pre">arms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['right',</span> <span class="pre">'left']</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Since this is bimanual robot, returns dict with <cite>‘right’</cite>, <cite>‘left’</cite> keywords corresponding to their respective
+values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing arm-specific default controller config names</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Since this is bimanual robot, returns dict with <cite>‘right’</cite>, <cite>‘left’</cite> keywords corresponding to their respective
+values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing arm-specific gripper names</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Since this is bimanual robot, returns [right, left] array corresponding to respective values</p>
+<p>Note that this is a pose such that the arms are half extended</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>default initial qpos for the right, left arms</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.baxter_robot.Baxter.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators.iiwa_robot">
+<span id="robosuite-models-robots-manipulators-iiwa-robot-module"></span><h2>robosuite.models.robots.manipulators.iiwa_robot module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.iiwa_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.iiwa_robot.</span></span><span class="sig-name descname"><span class="pre">IIWA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a></p>
+<p>IIWA is a bright and spunky robot created by KUKA</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.arms">
+<span class="sig-name descname"><span class="pre">arms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['right']</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.iiwa_robot.IIWA.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators.jaco_robot">
+<span id="robosuite-models-robots-manipulators-jaco-robot-module"></span><h2>robosuite.models.robots.manipulators.jaco_robot module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.jaco_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.jaco_robot.</span></span><span class="sig-name descname"><span class="pre">Jaco</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a></p>
+<p>Jaco is a kind and assistive robot created by Kinova</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.arms">
+<span class="sig-name descname"><span class="pre">arms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['right']</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.jaco_robot.Jaco.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators.kinova3_robot">
+<span id="robosuite-models-robots-manipulators-kinova3-robot-module"></span><h2>robosuite.models.robots.manipulators.kinova3_robot module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.kinova3_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.kinova3_robot.</span></span><span class="sig-name descname"><span class="pre">Kinova3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a></p>
+<p>The Gen3 robot is the sparkly newest addition to the Kinova line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arms">
+<span class="sig-name descname"><span class="pre">arms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['right']</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.kinova3_robot.Kinova3.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators.manipulator_model">
+<span id="robosuite-models-robots-manipulators-manipulator-model-module"></span><h2>robosuite.models.robots.manipulators.manipulator_model module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.manipulator_model" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.manipulator_model.</span></span><span class="sig-name descname"><span class="pre">ManipulatorModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.robots.html#robosuite.models.robots.robot_model.RobotModel" title="robosuite.models.robots.robot_model.RobotModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotModel</span></code></a></p>
+<p>Base class for all manipulator models (robot arm(s) with gripper(s)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – Path to relevant xml file from which to create this robot instance</p></li>
+<li><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper">
+<span class="sig-name descname"><span class="pre">add_gripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gripper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="robosuite.models.grippers.html#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><span class="pre">GripperModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arm_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Mounts &#64;gripper to arm.</p>
+<p>Throws error if robot already has a gripper or gripper type is incorrect.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gripper</strong> (<a class="reference internal" href="robosuite.models.grippers.html#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><em>GripperModel</em></a>) – gripper MJCF model</p></li>
+<li><p><strong>arm_name</strong> (<em>str</em>) – name of arm mount –
+defaults add to all self.eef_name if not specified</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [Multiple grippers]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_actuators">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_actuators</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_actuators" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no actuators; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_joints</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_joints" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no joints; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_actuators">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_actuators</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_actuators" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no actuators; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_joints</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_joints" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no joints; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eef_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+dict of str: Prefix-adjusted eef name for this robot. If bimanual robot, returns {“left”, “right”}</p>
+<blockquote>
+<div><p>keyword-mapped eef names</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_pos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gripper_mount_pos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_pos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Define the custom offset of the gripper that is different from the one defined in xml.
+The offset will applied to the first body in the gripper definition file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Empty dictionary unless specified.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_quat_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gripper_mount_quat_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_quat_offset" title="Link to this definition">#</a></dt>
+<dd><p>Define the custom orientation offset of the gripper with respect to the arm.
+The offset will applied to the first body in the gripper definition file.
+Return empty dict by default unless specified.
+The quaternion is in the (w, x, y, z) format to match the mjcf format.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_actuators">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_actuators</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_actuators" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no actuators; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_joints</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_joints" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no joints; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_base_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_base_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_base_qpos" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_torso_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_torso_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_torso_qpos" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_actuators">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">legs_actuators</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_actuators" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no actuators; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">legs_joints</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_joints" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no joints; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.models">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">models</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="robosuite.models.grippers.html#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><span class="pre">GripperModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="robosuite.models.robots.html#robosuite.models.robots.robot_model.RobotModel" title="robosuite.models.robots.robot_model.RobotModel"><span class="pre">RobotModel</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.models" title="Link to this definition">#</a></dt>
+<dd><p>Returns a list of all m(sub-)models owned by this robot model. By default, this includes the gripper model,
+if specified</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>models owned by this object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">array</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_actuators">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torso_actuators</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_actuators" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no actuators; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torso_joints</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_joints" title="Link to this definition">#</a></dt>
+<dd><p>No need for name correcting because the prefix has been added during creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no joints; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_actuators">
+<span class="sig-name descname"><span class="pre">update_actuators</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_actuators" title="Link to this definition">#</a></dt>
+<dd><p>internal function to update actuator lists</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_joints">
+<span class="sig-name descname"><span class="pre">update_joints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_joints" title="Link to this definition">#</a></dt>
+<dd><p>internal function to update joint lists</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators.panda_robot">
+<span id="robosuite-models-robots-manipulators-panda-robot-module"></span><h2>robosuite.models.robots.manipulators.panda_robot module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.panda_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.panda_robot.</span></span><span class="sig-name descname"><span class="pre">Panda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a></p>
+<p>Panda is a sensitive single-arm robot designed by Franka.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.arms">
+<span class="sig-name descname"><span class="pre">arms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['right']</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.panda_robot.Panda.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.panda_robot.Panda.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators.sawyer_robot">
+<span id="robosuite-models-robots-manipulators-sawyer-robot-module"></span><h2>robosuite.models.robots.manipulators.sawyer_robot module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.sawyer_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.sawyer_robot.</span></span><span class="sig-name descname"><span class="pre">Sawyer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a></p>
+<p>Sawyer is a witty single-arm robot designed by Rethink Robotics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arms">
+<span class="sig-name descname"><span class="pre">arms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['right']</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.sawyer_robot.Sawyer.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators.ur5e_robot">
+<span id="robosuite-models-robots-manipulators-ur5e-robot-module"></span><h2>robosuite.models.robots.manipulators.ur5e_robot module<a class="headerlink" href="#module-robosuite.models.robots.manipulators.ur5e_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.robots.manipulators.ur5e_robot.</span></span><span class="sig-name descname"><span class="pre">UR5e</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel" title="robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a></p>
+<p>UR5e is a sleek and elegant new robot created by Universal Robots</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idn</strong> (<em>int</em><em> or </em><em>str</em>) – Number or some other unique identification string for this robot instance</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.arm_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_type</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.arm_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of robot arm. Should be either “bimanual” or “single” (or something else if it gets added in the future)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.arms">
+<span class="sig-name descname"><span class="pre">arms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['right']</span></em><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.base_xpos_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_xpos_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.base_xpos_offset" title="Link to this definition">#</a></dt>
+<dd><p>Defines the dict of various (x,y,z) tuple offsets relative to specific arenas placed at (0,0,0)
+Assumes robot is facing forwards (in the +x direction) when determining offset. Should have entries for each
+manipulator arena case; i.e.: “bins”, “empty”, and “table”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="field-list simple">
+<dt class="field-odd"><cite>‘bins’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>(x,y,z) robot offset if placed in bins arena</p>
+</dd>
+<dt class="field-even"><cite>’empty’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>(x,y,z) robot offset if placed in the empty arena</p>
+</dd>
+<dt class="field-odd"><cite>’table’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>lambda function that takes in table_length and returns corresponding (x,y,z) offset
+if placed in the table arena</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_base" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default mount type for this robot that gets added to root body (base)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default base name to add to this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_controller_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_controller_config</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_controller_config" title="Link to this definition">#</a></dt>
+<dd><p>Defines the name of default controller config file in the controllers/config directory for this robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing arm-specific default controller config names</dt><dd><p>e.g.: {“right”: “default_panda”, “left”: “default_panda”}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_gripper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_gripper</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default gripper type for this robot that gets added to end effector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Default is no gripper; i.e.: empty dict)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.init_qpos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.init_qpos" title="Link to this definition">#</a></dt>
+<dd><p>Defines the default rest qpos of this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default init qpos of this robot</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.robots.manipulators.ur5e_robot.UR5e.top_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.top_offset" title="Link to this definition">#</a></dt>
+<dd><p>Returns vector from model root body to model top.
+Useful for, e.g. placing models on a surface.
+Must be defined by subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dx, dy, dz) offset vector</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.robots.manipulators">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.models.robots.manipulators" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="robosuite.models.robots.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">robosuite.models.robots package</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="robosuite.models.tasks.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">robosuite.models.tasks package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.baxter_robot">robosuite.models.robots.manipulators.baxter_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter"><code class="docutils literal notranslate"><span class="pre">Baxter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.arm_type"><code class="docutils literal notranslate"><span class="pre">Baxter.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.arms"><code class="docutils literal notranslate"><span class="pre">Baxter.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Baxter.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_base"><code class="docutils literal notranslate"><span class="pre">Baxter.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Baxter.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.default_gripper"><code class="docutils literal notranslate"><span class="pre">Baxter.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.init_qpos"><code class="docutils literal notranslate"><span class="pre">Baxter.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.baxter_robot.Baxter.top_offset"><code class="docutils literal notranslate"><span class="pre">Baxter.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.iiwa_robot">robosuite.models.robots.manipulators.iiwa_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA"><code class="docutils literal notranslate"><span class="pre">IIWA</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.arm_type"><code class="docutils literal notranslate"><span class="pre">IIWA.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.arms"><code class="docutils literal notranslate"><span class="pre">IIWA.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">IIWA.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_base"><code class="docutils literal notranslate"><span class="pre">IIWA.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_controller_config"><code class="docutils literal notranslate"><span class="pre">IIWA.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.default_gripper"><code class="docutils literal notranslate"><span class="pre">IIWA.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.init_qpos"><code class="docutils literal notranslate"><span class="pre">IIWA.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.iiwa_robot.IIWA.top_offset"><code class="docutils literal notranslate"><span class="pre">IIWA.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.jaco_robot">robosuite.models.robots.manipulators.jaco_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco"><code class="docutils literal notranslate"><span class="pre">Jaco</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.arm_type"><code class="docutils literal notranslate"><span class="pre">Jaco.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.arms"><code class="docutils literal notranslate"><span class="pre">Jaco.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Jaco.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_base"><code class="docutils literal notranslate"><span class="pre">Jaco.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Jaco.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.default_gripper"><code class="docutils literal notranslate"><span class="pre">Jaco.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.init_qpos"><code class="docutils literal notranslate"><span class="pre">Jaco.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.jaco_robot.Jaco.top_offset"><code class="docutils literal notranslate"><span class="pre">Jaco.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.kinova3_robot">robosuite.models.robots.manipulators.kinova3_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3"><code class="docutils literal notranslate"><span class="pre">Kinova3</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arm_type"><code class="docutils literal notranslate"><span class="pre">Kinova3.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.arms"><code class="docutils literal notranslate"><span class="pre">Kinova3.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Kinova3.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_base"><code class="docutils literal notranslate"><span class="pre">Kinova3.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Kinova3.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.default_gripper"><code class="docutils literal notranslate"><span class="pre">Kinova3.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.init_qpos"><code class="docutils literal notranslate"><span class="pre">Kinova3.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.kinova3_robot.Kinova3.top_offset"><code class="docutils literal notranslate"><span class="pre">Kinova3.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.manipulator_model">robosuite.models.robots.manipulators.manipulator_model module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.add_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.add_gripper()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.arm_type"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_base"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_controller_config"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.default_gripper"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.eef_name"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.eef_name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_pos_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.gripper_mount_pos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.gripper_mount_quat_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.gripper_mount_quat_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.head_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.head_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.head_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_base_qpos"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.init_base_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_qpos"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.init_torso_qpos"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.init_torso_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.legs_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.legs_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.legs_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.models"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.models</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.top_offset"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.top_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.torso_actuators</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.torso_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.torso_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_actuators"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.update_actuators()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.manipulator_model.ManipulatorModel.update_joints"><code class="docutils literal notranslate"><span class="pre">ManipulatorModel.update_joints()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.panda_robot">robosuite.models.robots.manipulators.panda_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda"><code class="docutils literal notranslate"><span class="pre">Panda</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.arm_type"><code class="docutils literal notranslate"><span class="pre">Panda.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.arms"><code class="docutils literal notranslate"><span class="pre">Panda.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Panda.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_base"><code class="docutils literal notranslate"><span class="pre">Panda.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Panda.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.default_gripper"><code class="docutils literal notranslate"><span class="pre">Panda.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.init_qpos"><code class="docutils literal notranslate"><span class="pre">Panda.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.panda_robot.Panda.top_offset"><code class="docutils literal notranslate"><span class="pre">Panda.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.sawyer_robot">robosuite.models.robots.manipulators.sawyer_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer"><code class="docutils literal notranslate"><span class="pre">Sawyer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arm_type"><code class="docutils literal notranslate"><span class="pre">Sawyer.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.arms"><code class="docutils literal notranslate"><span class="pre">Sawyer.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">Sawyer.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_base"><code class="docutils literal notranslate"><span class="pre">Sawyer.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_controller_config"><code class="docutils literal notranslate"><span class="pre">Sawyer.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.default_gripper"><code class="docutils literal notranslate"><span class="pre">Sawyer.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.init_qpos"><code class="docutils literal notranslate"><span class="pre">Sawyer.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.sawyer_robot.Sawyer.top_offset"><code class="docutils literal notranslate"><span class="pre">Sawyer.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators.ur5e_robot">robosuite.models.robots.manipulators.ur5e_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e"><code class="docutils literal notranslate"><span class="pre">UR5e</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.arm_type"><code class="docutils literal notranslate"><span class="pre">UR5e.arm_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.arms"><code class="docutils literal notranslate"><span class="pre">UR5e.arms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.base_xpos_offset"><code class="docutils literal notranslate"><span class="pre">UR5e.base_xpos_offset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_base"><code class="docutils literal notranslate"><span class="pre">UR5e.default_base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_controller_config"><code class="docutils literal notranslate"><span class="pre">UR5e.default_controller_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.default_gripper"><code class="docutils literal notranslate"><span class="pre">UR5e.default_gripper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.init_qpos"><code class="docutils literal notranslate"><span class="pre">UR5e.init_qpos</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.robots.manipulators.ur5e_robot.UR5e.top_offset"><code class="docutils literal notranslate"><span class="pre">UR5e.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.robots.manipulators">Module contents</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
