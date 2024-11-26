@@ -1,3 +1,7 @@
 theme: jekyll-theme-cayman
 baseurl: ""
 url: "https://robosuite.ai"
+include:
+  - "_static"
+  - "_sources"
+  - "_images"
