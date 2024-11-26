@@ -1,7 +1,7 @@
 Device
 ======
 
-Devices allow for direct real-time interfacing with the MuJoCo simulation. The current support devices are ``Keyboard`` and ``SpaceMouse``.
+Devices allow for direct real-time interfacing with the MuJoCo simulation. The currently supported devices are ``Keyboard``. ``SpaceMouse`` and ``MjGUI``.
 
 Base Device
 -----------
