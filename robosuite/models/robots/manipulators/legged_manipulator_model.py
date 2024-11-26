@@ -35,6 +35,12 @@ class LeggedManipulatorModel(ManipulatorModel):
                 parent_body = find_parent(self.actuator, motor)
                 parent_body.remove(motor)
                 self._actuators.remove(motor.get("name").replace(self.naming_prefix, ""))
+        for fixed in self.tendon.findall(".//fixed"):
+            for joint in fixed.findall(".//joint"):
+                if part_name in joint.get("joint"):
+                    parent_body = find_parent(self.tendon, fixed)
+                    parent_body.remove(fixed)
+                    break
 
     def _remove_free_joint(self):
         # remove freejoint
