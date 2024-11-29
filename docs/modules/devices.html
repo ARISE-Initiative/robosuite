@@ -381,6 +381,7 @@
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard">Keyboard</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse">3Dconnexion SpaceMouse</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco-gui-device">Mujoco GUI Device</a></li>
 </ul>
             </nav>
         </div>
@@ -409,7 +410,7 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">q</td>
+<td style="text-align: left;">Ctrl+q</td>
 <td style="text-align: left;">reset simulation</td>
 </tr>
 <tr>
@@ -417,24 +418,36 @@
 <td style="text-align: left;">toggle gripper (open/close)</td>
 </tr>
 <tr>
-<td style="text-align: left;">w-a-s-d</td>
-<td style="text-align: left;">move arm horizontally in x-y plane</td>
+<td style="text-align: left;">up-right-down-left</td>
+<td style="text-align: left;">move horizontally in x-y plane</td>
 </tr>
 <tr>
-<td style="text-align: left;">r-f</td>
-<td style="text-align: left;">move arm vertically</td>
+<td style="text-align: left;">.-;</td>
+<td style="text-align: left;">move vertically</td>
 </tr>
 <tr>
-<td style="text-align: left;">z-x</td>
-<td style="text-align: left;">rotate arm about x-axis</td>
+<td style="text-align: left;">o-p</td>
+<td style="text-align: left;">rotate (yaw)</td>
 </tr>
 <tr>
-<td style="text-align: left;">t-g</td>
-<td style="text-align: left;">rotate arm about y-axis</td>
+<td style="text-align: left;">y-h</td>
+<td style="text-align: left;">rotate (pitch)</td>
 </tr>
 <tr>
-<td style="text-align: left;">c-v</td>
-<td style="text-align: left;">rotate arm about z-axis</td>
+<td style="text-align: left;">e-r</td>
+<td style="text-align: left;">rotate (roll)</td>
+</tr>
+<tr>
+<td style="text-align: left;">b</td>
+<td style="text-align: left;">toggle arm/base mode (if appli cable)</td>
+</tr>
+<tr>
+<td style="text-align: left;">s</td>
+<td style="text-align: left;">switch active arm (if multi-armed robot)</td>
+</tr>
+<tr>
+<td style="text-align: left;">=</td>
+<td style="text-align: left;">switch active robot (if multi-robot env)</td>
 </tr>
 <tr>
 <td style="text-align: left;">ESC</td>
@@ -480,6 +493,30 @@
 </tr>
 </tbody>
 </table></section>
+<section id="mujoco-gui-device">
+<h2>Mujoco GUI Device<a class="headerlink" href="#mujoco-gui-device" title="Link to this heading">#</a></h2>
+<p>To use the Mujoco GUI device for teleoperation, follow these steps:</p>
+<ol class="simple">
+<li><p>Set renderer as <code class="docutils literal notranslate"><span class="pre">&quot;mjviewer&quot;</span></code>. For example:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="n">suite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
+    <span class="o">**</span><span class="n">options</span><span class="p">,</span>
+    <span class="n">renderer</span><span class="o">=</span><span class="s2">&quot;mjviewer&quot;</span><span class="p">,</span>
+    <span class="n">has_renderer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">has_offscreen_renderer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_done</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">use_camera_obs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Note: if using Mac, please use <code class="docutils literal notranslate"><span class="pre">mjpython</span></code> instead of <code class="docutils literal notranslate"><span class="pre">python</span></code>. For example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">mjpython</span> <span class="pre">robosuite/scripts/collect_human_demonstrations.py</span> <span class="pre">--environment</span> <span class="pre">Lift</span> <span class="pre">--robots</span> <span class="pre">Panda</span> <span class="pre">--device</span> <span class="pre">mjgui</span> <span class="pre">--camera</span> <span class="pre">frontview</span> <span class="pre">--controller</span> <span class="pre">WHOLE_BODY_IK</span></code></p>
+<ol class="simple">
+<li><p>Double click on a mocap body to select a body to drag, then:</p></li>
+</ol>
+<p>On Linux: <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + right click to drag the body’s position. <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + left click to control the body’s orientation.
+On Mac: <code class="docutils literal notranslate"><span class="pre">fn</span></code> + <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + right click.</p>
+</section>
 </section>
 
 
@@ -530,6 +567,7 @@
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard">Keyboard</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse">3Dconnexion SpaceMouse</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco-gui-device">Mujoco GUI Device</a></li>
 </ul>
   </nav></div>
 

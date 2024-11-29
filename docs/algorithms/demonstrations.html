@@ -379,11 +379,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collecting-human-demonstrations">Collecting Human Demonstrations</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-controls">Keyboard controls</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse-controls">3Dconnexion SpaceMouse controls</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collecting-human-demonstrations">Collecting Human Demonstrations</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#replaying-human-demonstrations">Replaying Human Demonstrations</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#existing-datasets">Existing Datasets</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-of-collected-demonstrations">Structure of collected demonstrations</a></li>
@@ -404,93 +400,13 @@
 <h1>Human Demonstrations<a class="headerlink" href="#human-demonstrations" title="Link to this heading">#</a></h1>
 <section id="collecting-human-demonstrations">
 <h2>Collecting Human Demonstrations<a class="headerlink" href="#collecting-human-demonstrations" title="Link to this heading">#</a></h2>
-<p>We provide teleoperation utilities that allow users to control the robots with input devices, such as the keyboard and the <a class="reference external" href="https://www.3dconnexion.com/spacemouse_compact/en/">SpaceMouse</a>. Such functionality allows us to collect a dataset of human demonstrations for learning. We provide an example script to illustrate how to collect demonstrations. Our <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/collect_human_demonstrations.py">collect_human_demonstrations</a> script takes the following arguments:</p>
+<p>We provide teleoperation utilities that allow users to control the robots with input devices, such as the keyboard, <a class="reference external" href="https://www.3dconnexion.com/spacemouse_compact/en/">SpaceMouse</a> and mujoco-gui. Such functionality allows us to collect a dataset of human demonstrations for learning. We provide an example script to illustrate how to collect demonstrations. Our <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/collect_human_demonstrations.py">collect_human_demonstrations</a> script takes the following arguments:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">directory:</span></code> path to a folder for where to store the pickle file of collected demonstrations</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">environment:</span></code> name of the environment you would like to collect the demonstrations for</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">device:</span></code> either “keyboard” or “spacemouse”</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">device:</span></code> either “keyboard” or “spacemouse” or “mjgui”</p></li>
 </ul>
-<section id="keyboard-controls">
-<h3>Keyboard controls<a class="headerlink" href="#keyboard-controls" title="Link to this heading">#</a></h3>
-<p>Note that the rendering window must be active for these commands to work.</p>
-<table border="1" class="docutils">
-<thead>
-<tr>
-<th style="text-align: center;">Keys</th>
-<th style="text-align: center;">Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">q</td>
-<td style="text-align: center;">reset simulation</td>
-</tr>
-<tr>
-<td style="text-align: center;">spacebar</td>
-<td style="text-align: center;">toggle gripper (open/close)</td>
-</tr>
-<tr>
-<td style="text-align: center;">w-a-s-d</td>
-<td style="text-align: center;">move arm horizontally in x-y plane</td>
-</tr>
-<tr>
-<td style="text-align: center;">r-f</td>
-<td style="text-align: center;">move arm vertically</td>
-</tr>
-<tr>
-<td style="text-align: center;">z-x</td>
-<td style="text-align: center;">rotate arm about x-axis</td>
-</tr>
-<tr>
-<td style="text-align: center;">t-g</td>
-<td style="text-align: center;">rotate arm about y-axis</td>
-</tr>
-<tr>
-<td style="text-align: center;">c-v</td>
-<td style="text-align: center;">rotate arm about z-axis</td>
-</tr>
-<tr>
-<td style="text-align: center;">ESC</td>
-<td style="text-align: center;">quit</td>
-</tr>
-</tbody>
-</table></section>
-<section id="dconnexion-spacemouse-controls">
-<h3>3Dconnexion SpaceMouse controls<a class="headerlink" href="#dconnexion-spacemouse-controls" title="Link to this heading">#</a></h3>
-<table border="1" class="docutils">
-<thead>
-<tr>
-<th style="text-align: center;">Control</th>
-<th style="text-align: center;">Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">Right button</td>
-<td style="text-align: center;">reset simulation</td>
-</tr>
-<tr>
-<td style="text-align: center;">Left button (hold)</td>
-<td style="text-align: center;">close gripper</td>
-</tr>
-<tr>
-<td style="text-align: center;">Move mouse laterally</td>
-<td style="text-align: center;">move arm horizontally in x-y plane</td>
-</tr>
-<tr>
-<td style="text-align: center;">Move mouse vertically</td>
-<td style="text-align: center;">move arm vertically</td>
-</tr>
-<tr>
-<td style="text-align: center;">Twist mouse about an axis</td>
-<td style="text-align: center;">rotate arm about a corresponding axis</td>
-</tr>
-<tr>
-<td style="text-align: center;">ESC (keyboard)</td>
-<td style="text-align: center;">quit</td>
-</tr>
-</tbody>
-</table></section>
+<p>See the <a class="reference external" href="https://robosuite.ai/docs/modules/devices.html">devices page</a> for details on how to use the devices.</p>
 </section>
 <section id="replaying-human-demonstrations">
 <h2>Replaying Human Demonstrations<a class="headerlink" href="#replaying-human-demonstrations" title="Link to this heading">#</a></h2>
@@ -528,7 +444,7 @@
 </section>
 <section id="using-demonstrations-for-learning">
 <h2>Using Demonstrations for Learning<a class="headerlink" href="#using-demonstrations-for-learning" title="Link to this heading">#</a></h2>
-<p>We have recently released the <a class="reference external" href="https://arise-initiative.github.io/robomimic-web/">robomimic</a> framework, which makes it easy to train policies using your own <a class="reference external" href="https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#robosuite-hdf5-datasets">datasets collected with robosuite</a>, and other publically released datasets (such as those collected with RoboTurk). The framework also contains many useful examples for how to integrate hdf5 datasets into your own learning pipeline.</p>
+<p>The <a class="reference external" href="https://arise-initiative.github.io/robomimic-web/">robomimic</a> framework makes it easy to train policies using your own <a class="reference external" href="https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#robosuite-hdf5-datasets">datasets collected with robosuite</a>. The framework also contains many useful examples for how to integrate hdf5 datasets into your own learning pipeline.</p>
 <p>The robosuite repository also has some utilities for using the demonstrations to alter the start state distribution of training episodes for learning RL policies - this have proved effective in <a class="reference external" href="https://arxiv.org/abs/1802.09564">several</a> <a class="reference external" href="https://arxiv.org/abs/1807.06919">prior</a> <a class="reference external" href="https://arxiv.org/abs/1804.02717">works</a>. For example, we provide a generic utility for setting various types of learning curriculums which dictate how to sample from demonstration episodes when doing an environment reset. For more information see the <code class="docutils literal notranslate"><span class="pre">DemoSamplerWrapper</span></code> class.</p>
 </section>
 <section id="warnings">
@@ -584,11 +500,7 @@
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collecting-human-demonstrations">Collecting Human Demonstrations</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-controls">Keyboard controls</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse-controls">3Dconnexion SpaceMouse controls</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collecting-human-demonstrations">Collecting Human Demonstrations</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#replaying-human-demonstrations">Replaying Human Demonstrations</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#existing-datasets">Existing Datasets</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-of-collected-demonstrations">Structure of collected demonstrations</a></li>
