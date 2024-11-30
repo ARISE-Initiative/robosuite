@@ -2,6 +2,7 @@
 This file contains utility classes and functions for logging to stdout and stderr
 Adapted from robomimic: https://github.com/ARISE-Initiative/robomimic/blob/master/robomimic/utils/log_utils.py
 """
+import inspect
 import logging
 import os
 import time
@@ -95,6 +96,52 @@ class DefaultLogger:
         """
         logger = logging.getLogger(self.logger_name)
         return logger
+
+
+def format_message(level: str, message: str) -> str:
+    """
+    Format a message with colors based on the level and include file and line number.
+
+    Args:
+        level (str): The logging level (e.g., "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL").
+        message (str): The message to format.
+
+    Returns:
+        str: The formatted message with file and line number.
+    """
+    # Get the caller's file name and line number
+    frame = inspect.currentframe().f_back
+    filename = frame.f_code.co_filename
+    lineno = frame.f_lineno
+
+    # Level-based coloring
+    level_colors = {
+        "DEBUG": "blue",
+        "INFO": "green",
+        "WARNING": "yellow",
+        "ERROR": "red",
+        "CRITICAL": "red",
+    }
+    attrs = ["bold"]
+    if level == "CRITICAL":
+        attrs.append("reverse")
+
+    color = level_colors.get(level, "white")
+    formatted_message = colored(f"[{level}] {filename}:{lineno} - {message}", color, attrs=attrs)
+    return formatted_message
+
+
+def rs_assert(condition: bool, message: str):
+    """
+    Assert a condition and raise an error with a formatted message if the condition fails.
+
+    Args:
+        condition (bool): The condition to check.
+        message (str): The error message to display if the assertion fails.
+    """
+    if not condition:
+        formatted_message = format_message("ERROR", message)
+        raise AssertionError(formatted_message)
 
 
 ROBOSUITE_DEFAULT_LOGGER = DefaultLogger(
