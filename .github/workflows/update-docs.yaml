@@ -43,4 +43,13 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: docs/_build/html
         destination_dir: docs
-        enable_jekyll: true
+    
+    # Remove .nojekyll from root directory if it exists
+    - name: Remove .nojekyll file
+      run: |
+        if [ -f .nojekyll ]; then
+          rm .nojekyll
+          echo ".nojekyll file removed"
+        else
+          echo ".nojekyll file does not exist, skipping."
+        fi
