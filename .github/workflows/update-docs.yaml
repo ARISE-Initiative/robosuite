@@ -43,3 +43,20 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: docs/_build/html
         destination_dir: docs
+    
+    # Remove .nojekyll from root directory if it exists
+    - name: Remove .nojekyll file
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin gh-pages
+        git checkout gh-pages
+        if [ -f .nojekyll ]; then
+          rm .nojekyll
+          git add .nojekyll
+          git commit -m "Remove .nojekyll file"
+          git push origin gh-pages
+          echo ".nojekyll file removed"
+        else
+          echo ".nojekyll file does not exist, skipping."
+        fi
