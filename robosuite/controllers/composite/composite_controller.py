@@ -43,6 +43,7 @@ class CompositeController:
         self.part_controllers = OrderedDict()
 
         self._action_split_indexes = OrderedDict()
+        self._action_split_joint_names = OrderedDict()
 
         self.part_controller_config = None
 
@@ -65,6 +66,7 @@ class CompositeController:
 
         self.part_controllers.clear()
         self._action_split_indexes.clear()
+        self._action_split_joint_names.clear()
         self._init_controllers()
         self._validate_composite_controller_specific_config()
         self.setup_action_split_idx()
@@ -91,6 +93,7 @@ class CompositeController:
                 last_idx += self.grippers[part_name].dof
             else:
                 last_idx += controller.control_dim
+            self._action_split_joint_names[part_name] = controller.joint_names
             self._action_split_indexes[part_name] = (previous_idx, last_idx)
             previous_idx = last_idx
 
@@ -154,6 +157,52 @@ class CompositeController:
                 low_c, high_c = controller.control_limits
                 low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         return low, high
+
+    def create_action_vector(self, action_dict: Dict[str, np.ndarray]) -> np.ndarray:
+        """
+        A helper function that creates the action vector given a dictionary
+        """
+        full_action_vector = np.zeros(self.action_limits[0].shape)
+        for (part_name, action_vector) in action_dict.items():
+            if part_name not in self._action_split_indexes:
+                ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
+                continue
+            start_idx, end_idx = self._action_split_indexes[part_name]
+            if end_idx - start_idx == 0:
+                # skipping not controlled actions
+                continue
+            assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
+                f"Action vecto(end_idx - start_idx) for {part_name} is not the correct size. Expected {end_idx} for {part_name}, got {len(action_vector)}"
+            )
+            full_action_vector[start_idx:end_idx] = action_vector
+        return full_action_vector
+
+    def print_action_info(self):
+        action_index_info = []
+        action_dim_info = []
+        joint_names_info = []
+        for part_name, (start_idx, end_idx) in self._action_split_indexes.items():
+            action_dim_info.append(f"{part_name}: {(end_idx - start_idx)} dim")
+            action_index_info.append(f"{part_name}: {start_idx}:{end_idx}")
+            joint_names_info.append(f"{part_name}: {self._action_split_joint_names[part_name]}")
+
+        action_dim_info_str = ", ".join(action_dim_info)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Dimensions: [{action_dim_info_str}]")
+
+        action_index_info_str = ", ".join(action_index_info)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
+
+        joint_names_info_str = ", ".join(joint_names_info)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Joint Names: [{joint_names_info_str}]")
+
+    def print_action_info_dict(self, name: str = ""):
+        info_dict = {}
+        info_dict["Action Dimension"] = self.action_limits[0].shape
+        info_dict["Action Split Indexes"] = dict(self._action_split_indexes)
+        info_dict["Action Split Joint Names"] = dict(self._action_split_joint_names)
+
+        info_dict_str = f"\nAction Info for {name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
+        ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
 
 
 @register_composite_controller
