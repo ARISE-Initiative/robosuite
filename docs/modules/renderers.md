@@ -35,10 +35,10 @@ Path tracing typically offers higher quality and is ideal for offline learning. 
 
 ### Rendering Speed
 
-Below, we present a table showing the estimated frames per second when using these renderers. Note that the exact speed of rendering might depend on your machine and scene size. Larger scenes may take longer to render. Additionally, changing renderer inputs such as samples per pixel (spp) or max bounces might affect rendering speeds. The values below are estimates using the `Lift` task with an NVIDIA GeForce RTX 4070 Ti. We use an spp of 64 when rendering with path tracing.
+Below, we present a table showing the estimated frames per second when using these renderers. Note that the exact speed of rendering might depend on your machine and scene size. Larger scenes may take longer to render. Additionally, changing renderer inputs such as samples per pixel (spp) or max bounces might affect rendering speeds. The values below are estimates using the `Lift` task with an NVIDIA GeForce RTX 4090. We use an spp of 64 when rendering with path tracing.
 
 | Renderer       | Estimated FPS |
 |----------------|---------------|
-| MuJoCo         | 80-90         |
-| Ray Tracing    | 40-60         |
-| Path Tracing   | 1-2           |
+| MuJoCo         | 3500          |
+| Ray Tracing    | 58            |
+| Path Tracing   | 2.8           |
