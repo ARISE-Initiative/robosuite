@@ -113,7 +113,7 @@ class EGLGLContext:
         del max_width, max_height  # unused
         num_configs = ctypes.c_long()
         config_size = 1
-        config = EGL.EGLConfig()
+        config_ptr = EGL.EGLConfig()  # Makes an opaque pointer
         EGL.eglReleaseThread()
         global EGL_DISPLAY
         if EGL_DISPLAY is None:
@@ -126,14 +126,14 @@ class EGLGLContext:
                     "required for creating a headless rendering context."
                 )
             atexit.register(EGL.eglTerminate, EGL_DISPLAY)
-        EGL.eglChooseConfig(EGL_DISPLAY, EGL_ATTRIBUTES, ctypes.byref(config), config_size, num_configs)
+        EGL.eglChooseConfig(EGL_DISPLAY, EGL_ATTRIBUTES, config_ptr, config_size, num_configs)
         if num_configs.value < 1:
             raise RuntimeError(
                 "EGL failed to find a framebuffer configuration that matches the "
                 "desired attributes: {}".format(EGL_ATTRIBUTES)
             )
         EGL.eglBindAPI(EGL.EGL_OPENGL_API)
-        self._context = EGL.eglCreateContext(EGL_DISPLAY, config, EGL.EGL_NO_CONTEXT, None)
+        self._context = EGL.eglCreateContext(EGL_DISPLAY, config_ptr, EGL.EGL_NO_CONTEXT, None)
         if not self._context:
             raise RuntimeError("Cannot create an EGL context.")
 

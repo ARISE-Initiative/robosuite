@@ -66,7 +66,6 @@ Welcome to robosuite's documentation!
    algorithms/benchmarking
    algorithms/demonstrations
    algorithms/sim2real
-   algorithms/roboturk
 
 .. toctree::
    :maxdepth: 1

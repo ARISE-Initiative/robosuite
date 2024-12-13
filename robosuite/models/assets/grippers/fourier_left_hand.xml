@@ -1,0 +1,196 @@
+<mujoco model="fourier left hand">
+  <statistic center="0.3 0 0.4" extent="1"/>
+  <compiler angle="radian" meshdir="./" autolimits="true"/>
+
+  <visual>
+      <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+      <rgba haze="0.15 0.25 0.35 1"/>
+      <global azimuth="120" elevation="20"/>
+  </visual>
+
+  <default>
+      <joint damping="1"/>
+      <muscle ctrllimited="true" ctrlrange="0 100"/>
+      <motor ctrllimited="true" ctrlrange="-3 3" gear="1"/>
+      <position ctrllimited="true" kp="10"/>
+  </default>
+
+  <asset>
+    <mesh name="L_hand_base_link_vis" file="meshes/fourier_hands/L_hand_base_link.STL"/>
+    <mesh name="L_hand_base_link_col" file="meshes/fourier_hands/L_hand_base_link.STL"/>
+
+    <mesh name="L_thumb_proximal_base_link_vis" file="meshes/fourier_hands/L_thumb_proximal_base_link.STL"/>
+    <mesh name="L_thumb_proximal_base_link_col" file="meshes/fourier_hands/L_thumb_proximal_base_link.STL"/>
+
+    <mesh name="L_thumb_proximal_link_vis" file="meshes/fourier_hands/L_thumb_proximal_link.STL"/>
+    <mesh name="L_thumb_proximal_link_col" file="meshes/fourier_hands/L_thumb_proximal_link.STL"/>
+
+    <mesh name="L_thumb_distal_link_vis" file="meshes/fourier_hands/L_thumb_distal_link.STL"/>
+    <mesh name="L_thumb_distal_link_col" file="meshes/fourier_hands/L_thumb_distal_link.STL"/>
+
+    <mesh name="L_index_proximal_link_vis" file="meshes/fourier_hands/L_index_proximal_link.STL"/>
+    <mesh name="L_index_proximal_link_col" file="meshes/fourier_hands/L_index_proximal_link.STL"/>
+
+    <mesh name="L_index_intermediate_link_vis" file="meshes/fourier_hands/L_index_intermediate_link.STL"/>
+    <mesh name="L_index_intermediate_link_col" file="meshes/fourier_hands/L_index_intermediate_link.STL"/>
+
+    <mesh name="L_middle_proximal_link_vis" file="meshes/fourier_hands/L_middle_proximal_link.STL"/>
+    <mesh name="L_middle_proximal_link_col" file="meshes/fourier_hands/L_middle_proximal_link.STL"/>
+
+    <mesh name="L_middle_intermediate_link_vis" file="meshes/fourier_hands/L_middle_intermediate_link.STL"/>
+    <mesh name="L_middle_intermediate_link_col" file="meshes/fourier_hands/L_middle_intermediate_link.STL"/>
+
+    <mesh name="L_ring_proximal_link_vis" file="meshes/fourier_hands/L_ring_proximal_link.STL"/>
+    <mesh name="L_ring_proximal_link_col" file="meshes/fourier_hands/L_ring_proximal_link.STL"/>
+
+    <mesh name="L_ring_intermediate_link_vis" file="meshes/fourier_hands/L_ring_intermediate_link.STL"/>
+    <mesh name="L_ring_intermediate_link_col" file="meshes/fourier_hands/L_ring_intermediate_link.STL"/>
+
+    <mesh name="L_pinky_proximal_link_vis" file="meshes/fourier_hands/L_pinky_proximal_link.STL"/>
+    <mesh name="L_pinky_proximal_link_col" file="meshes/fourier_hands/L_pinky_proximal_link.STL"/>
+
+    <mesh name="L_pinky_intermediate_link_vis" file="meshes/fourier_hands/L_pinky_intermediate_link.STL"/>
+    <mesh name="L_pinky_intermediate_link_col" file="meshes/fourier_hands/L_pinky_intermediate_link.STL"/>
+
+    <material name="site_left_hand" rgba="0.1882 0.1882 0.1882 0"/>
+
+    <material name="l_base_material" rgba="0 0 0 1"/>
+    <material name="l_thumb_material" rgba="0 0 0 1"/>
+    <material name="l_index_material" rgba="0 0 0 1"/>
+    <material name="l_middle_material" rgba="0 0 0 1"/>
+    <material name="l_ring_material" rgba="0 0 0 1"/>
+    <material name="l_pinky_material" rgba="0 0 0 1"/>
+
+    <material name="l_thumb_distal_material" rgba="0 0 0 1"/>
+  </asset>
+
+  <worldbody>
+    <body name="left_hand" pos="0 0 0" quat="0.7071068 0 0 -0.7071068">
+      <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="1"/>
+      <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
+      <body name="eef" pos="0 0 0" quat="0.707 0. -0.707 0.">
+          <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 1 0 1" type="sphere" group="2"/>
+          <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+          <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+          <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+          <!-- This site was added for visualization. -->
+          <site name="grip_site_cylinder" pos="0 0 0" quat="-0.5 -0.5 -0.5 0.5" size="0.005 0.5" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+      </body>
+
+      <!-- Palm  -->
+      <body name="l_palm" pos="0 0 0">
+        <geom name="l_palm_vis" type="mesh" material="l_base_material" mesh="L_hand_base_link_vis" group="1" contype="0" conaffinity="0"/>
+        <geom name="l_palm_col" type="mesh" mass="0.1" mesh="L_hand_base_link_col"/>
+
+        <!-- Thumb -->
+        <body name="l_thumb" pos="0. 0. 0.">
+          <body name="L_thumb_proximal_base_link" pos="0.022 -0.015498 -0.025093" quat="1 0 -6.105e-06 0">
+            <joint name="L_thumb_proximal_yaw_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
+            <geom name="L_thumb_proximal_base_link_vis" type="mesh" material="l_thumb_material" mesh="L_thumb_proximal_base_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="L_thumb_proximal_base_link_col" type="mesh" mass="0.1" mesh="L_thumb_proximal_base_link_col"/>
+            <body name="L_thumb_proximal_link" pos="0.02175 0 0" quat="0.707141 -0.707073 0 0">
+              <site name="site_L_thumb_proximal_link" size="0.01" material="site_left_hand"/>
+              <joint name="L_thumb_proximal_pitch_joint" pos="0 0 0" axis="0 0 1" range="0 1.22" actuatorfrcrange="-10 10" damping="1"/>
+              <geom name="L_thumb_proximal_link_vis" type="mesh" material="l_thumb_material" mesh="L_thumb_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="L_thumb_proximal_link_col" type="mesh" mass="0.1" mesh="L_thumb_proximal_link_col"/>
+              <body name="L_thumb_distal_link" pos="0.061549 0.0074616 0" quat="1 0 0 6.105e-06">
+                <site name="site_L_thumb_distal_link" size="0.01" material="site_left_hand"/>
+                <joint name="L_thumb_distal_joint" pos="0 0 0" axis="0 0 1" range="0 1.23" actuatorfrcrange="-10 10" damping="1"/>
+                <geom name="L_thumb_distal_link_vis" type="mesh" material="l_thumb_material" mesh="L_thumb_distal_link_vis" group="1" contype="0" conaffinity="0"/>
+                <geom name="L_thumb_distal_link_col" type="mesh" mass="0.1" mesh="L_thumb_distal_link_col"/>
+              </body>
+            </body>
+          </body>
+        </body>
+        <!-- End of Thumb -->
+
+        <!-- Index -->
+        <body name="l_index" pos="0 0 0">
+          <body name="L_index_proximal_link" pos="0.026869 -0.012293 -0.095989" quat="0.725387 2.48047e-05 0.688341 2.35323e-05">
+            <site name="site_L_index_proximal_link" size="0.01" material="site_left_hand"/>
+            <joint name="L_index_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
+            <geom name="L_index_proximal_link_vis" type="mesh" material="l_index_material" mesh="L_index_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="L_index_proximal_link_col" type="mesh" mass="0.1" mesh="L_index_proximal_link_col"/>
+            <body name="L_index_intermediate_link" pos="0.031532 -0.0054551 0" quat="1 0 0 -3.4128e-05">
+              <site name="site_L_index_intermediate_link" size="0.01" material="site_left_hand"/>
+              <joint name="L_index_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
+              <geom name="L_index_intermediate_link_vis" type="mesh" material="l_index_material" mesh="L_index_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="L_index_intermediate_link_col" type="mesh" mass="0.1" mesh="L_index_intermediate_link_col"/>
+            </body>
+          </body>
+        </body>
+        <!-- End of Index -->
+
+        <!-- Middle -->
+        <body name="l_middle" pos="0 0 0">
+          <body name="L_middle_proximal_link" pos="0.0085012 -0.012293 -0.097993" quat="0.707113 3.35258e-05 0.707101 3.35258e-05">
+            <site name="site_L_middle_proximal_link" size="0.01" material="site_left_hand"/>
+            <joint name="L_middle_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
+            <geom name="L_middle_proximal_link_vis" type="mesh" material="l_middle_material" mesh="L_middle_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="L_middle_proximal_link_col" type="mesh" mass="0.1" mesh="L_middle_proximal_link_col"/>
+            <body name="L_middle_intermediate_link" pos="0.031662 -0.0046408 0" quat="1 0 0 -3.4175e-05">
+              <site name="site_L_middle_intermediate_link" size="0.01" material="site_left_hand"/>
+              <joint name="L_middle_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
+              <geom name="L_middle_intermediate_link_vis" type="mesh" material="l_middle_material" mesh="L_middle_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="L_middle_intermediate_link_col" type="mesh" mass="0.1" mesh="L_middle_intermediate_link_col"/>
+            </body>
+          </body>
+        </body>
+        <!-- End of Middle -->
+
+        <!-- Ring -->
+        <body name="l_ring" pos="0 0 0">
+          <body name="L_ring_proximal_link" pos="-0.00996 -0.012293 -0.097938" quat="0.688341 2.39435e-05 0.725387 2.39435e-05">
+            <site name="site_L_ring_proximal_link" size="0.01" material="site_left_hand"/>
+            <joint name="L_ring_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
+            <geom name="L_ring_proximal_link_vis" type="mesh" material="l_ring_material" mesh="L_ring_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="L_ring_proximal_link_col" type="mesh" mass="0.1" mesh="L_ring_proximal_link_col"/>
+            <body name="L_ring_intermediate_link" pos="0.031532 -0.0054551 0" quat="1 0 0 -3.4128e-05">
+              <site name="site_L_ring_intermediate_link" size="0.01" material="site_left_hand"/>
+              <joint name="L_ring_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
+              <geom name="L_ring_intermediate_link_vis" type="mesh" material="l_ring_material" mesh="L_ring_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="L_ring_intermediate_link_col" type="mesh" mass="0.1" mesh="L_ring_intermediate_link_col"/>
+            </body>
+          </body>
+        </body>
+
+        <!-- Pinky finger -->
+        <body name="l_pinky" pos="0 0 0">
+          <body name="L_pinky_proximal_link" pos="-0.028227 -0.012293 -0.096013" quat="0.669139 2.56274e-05 0.743137 2.56274e-05">
+            <site name="site_L_pinky_proximal_link" size="0.01" material="site_left_hand"/>
+            <joint name="L_pinky_proximal_joint" pos="0 0 0" axis="0 0 -1" range="0 1.57" actuatorfrcrange="-10 10" damping="1"/>
+            <geom name="L_pinky_proximal_link_vis" type="mesh" material="l_pinky_material" mesh="L_pinky_proximal_link_vis" group="1" contype="0" conaffinity="0"/>
+            <geom name="L_pinky_proximal_link_col" type="mesh" mass="0.1" mesh="L_pinky_proximal_link_col"/>
+            <body name="L_pinky_intermediate_link" pos="0.031338 -0.0064763 0" quat="1 0 0 -3.3988e-05">
+              <site name="site_L_pinky_intermediate_link" size="0.01" material="site_left_hand"/>
+              <joint name="L_pinky_intermediate_joint" pos="0 0 0" axis="0 0 -1" range="0 1.74" actuatorfrcrange="-10 10" damping="1"/>
+              <geom name="L_pinky_intermediate_link_vis" type="mesh" material="l_pinky_material" mesh="L_pinky_intermediate_link_vis" group="1" contype="0" conaffinity="0"/>
+              <geom name="L_pinky_intermediate_link_col" type="mesh" mass="0.1" mesh="L_pinky_intermediate_link_col"/>
+            </body>
+          </body>
+        </body>
+        <!-- End of Pinky finger -->
+      </body>
+      <!-- End of Palm -->
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position joint="L_pinky_intermediate_joint" name="L_pinky_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_pinky_proximal_joint" name="L_pinky_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_ring_intermediate_joint" name="L_ring_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_ring_proximal_joint" name="L_ring_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_middle_intermediate_joint" name="L_middle_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_middle_proximal_joint" name="L_middle_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_index_intermediate_joint" name="L_index_intermediate_joint_drive" ctrlrange="0 1.74" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_index_proximal_joint" name="L_index_proximal_joint_drive" ctrlrange="0 1.57" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_thumb_distal_joint" name="L_thumb_distal_joint_drive" ctrlrange="0 1.23" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_thumb_proximal_pitch_joint" name="L_thumb_proximal_pitch_joint_drive" ctrlrange="0 1.22" kp="2" forcelimited="true" forcerange="-20 20"/>
+    <position joint="L_thumb_proximal_yaw_joint" name="L_thumb_proximal_yaw_joint_drive" ctrlrange="0 1.74"  kp="4" forcelimited="true" forcerange="-20 20"/>
+  </actuator>
+
+  <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+  </sensor>
+</mujoco>

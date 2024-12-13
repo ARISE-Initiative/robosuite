@@ -186,9 +186,10 @@ class LeggedRobot(MobileRobot):
         for part_name, applied_action in applied_action_dict.items():
             applied_action_low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 0]
             applied_action_high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 1]
-            applied_action = np.clip(applied_action, applied_action_low, applied_action_high)
-
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[part_name]] = applied_action
+            actuator_indexes = self._ref_actuators_indexes_dict[part_name]
+            actuator_gears = self.sim.model.actuator_gear[actuator_indexes, 0]
+            applied_action = np.clip(applied_action / actuator_gears, applied_action_low, applied_action_high)
+            self.sim.data.ctrl[actuator_indexes] = applied_action
 
         # If this is a policy step, also update buffers holding recent values of interest
         if policy_step:

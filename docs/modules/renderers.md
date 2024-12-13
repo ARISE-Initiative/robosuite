@@ -1,6 +1,6 @@
 # Renderers
 
-[Renderers](../source/robosuite.renderers) are used to visualize the simulation, and can be used either in on-screen mode or headless (off-screen) mode. Renderers are also responsible for generating image-based observations that are returned from a given environment, and compute virtual images of the environment based on the properties defined in the cameras.
+[Renderers](../source/robosuite.renderers) are used to visualize the simulation and can be used either in on-screen mode or headless (off-screen) mode. Renderers are also responsible for generating image-based observations that are returned from a given environment, and compute virtual images of the environment based on the properties defined in the cameras.
 
 Currently, the following ground-truth vision modalities are supported by the MuJoCo renderer:
 
