@@ -4,16 +4,28 @@ Controllers
 Composite Controllers
 ---------------------
 
+Robosuite's composite controllers assumes that a robot consists of multiple "body parts", such as arms, torso, head, base, and legs, and that each body part has
+a "body part" controller (e.g., OSC_POSE, JOINT_POSITION). The composite controller orchestrates these body part controllers.
+
 Basic
 ******
 
+The "Basic" composite controller consists of individual part controllers that operate independently to control various parts of the robot, such as arms, torso, head, base, and legs.
+Each part can be assigned a specific controller type (e.g., OSC_POSE, JOINT_POSITION) depending on the desired control behavior for that part. 
+For example, arms may use OSC_POSE for precise end-effector control, while the base may use JOINT_VELOCITY for movement across the ground. 
 
-WholeBody IK
+
+WholeBodyIK
 *************
 
+The "WholeBodyIK" composite controller takes in end effector targets, and converts them into joint angle targets for the corresponding body parts' joints.
 
-ThirdParty Controllers
+
+Third-party Controllers
 ***********************
+
+Third-party controllers integrate custom or external control algorithms into robosuite. Examples include [mink](https://github.com/kevinzakka/mink). We provide 
+an example of adding a third part controller in [this tutorial](https://robosuite.ai/docs/tutorials/add_controller.html).
 
 
 Workflow of Loading Configs
