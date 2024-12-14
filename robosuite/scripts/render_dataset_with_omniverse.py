@@ -74,6 +74,23 @@ parser.add_argument(
     "--keep_models", type=str, nargs="+", default=[], help="(optional) keep the model from the Mujoco XML file"
 )
 
+# adding rendering types
+parser.add_argument(
+    "--rgb",
+    action="store_true",
+    default=False,
+)
+parser.add_argument(
+    "--normals",
+    action="store_true",
+    default=False,
+)
+parser.add_argument(
+    "--semantic_segmentation",
+    action="store_true",
+    default=False,
+)
+
 # Add arguments for launch
 AppLauncher.add_app_launcher_args(parser)
 # Parse the arguments
@@ -102,6 +119,8 @@ import omni.replicator.core as rep
 import omni.timeline
 from termcolor import colored
 from tqdm import tqdm
+import numpy as np
+from pxr import Semantics
 
 # Robocasa imports
 try:
@@ -124,6 +143,11 @@ import robosuite.utils.usd.exporter as exporter
 scene_option = mujoco.MjvOption()
 scene_option.geomgroup = [0, 1, 0, 0, 0, 0]
 
+render_modalities = {
+    "rgb": args.rgb,
+    "normals": args.normals,
+    "semantic_segmentation": args.semantic_segmentation
+}
 
 def make_sites_invisible(mujoco_xml):
     """
@@ -343,6 +367,22 @@ class RobosuiteEnvInterface:
         )
         exp.update_scene(data=data, scene_option=scene_option)
         exp.add_light(pos=[0, 0, 0], intensity=1500, light_type="dome", light_name="dome_1")
+
+        # adds semantic information to objects in the scene
+        if args.semantic_segmentation:
+            for geom in exp.scene.geoms:
+                geom_id = geom.objid
+                geom_name = exp._get_geom_name(geom)
+                if geom_id in self.env.model._geom_ids_to_classes:
+                    semantic_value = self.env.model._geom_ids_to_classes[geom_id]
+                    prim = exp.geom_refs[geom_name].usd_prim
+                    instance_name = f"class_{semantic_value}"
+                    sem = Semantics.SemanticsAPI.Apply(prim, instance_name)
+                    sem.CreateSemanticTypeAttr()
+                    sem.CreateSemanticDataAttr()
+                    sem.GetSemanticTypeAttr().Set("class")
+                    sem.GetSemanticDataAttr().Set(semantic_value)
+
         return exp
 
     def update_simulation(self, index):
@@ -369,6 +409,8 @@ class RobosuiteWriter(rep.Writer):
         output_dir: str = None,
         image_output_format: str = "png",
         rgb: bool = False,
+        normals: bool = False,
+        semantic_segmentation: bool = False,
         frame_padding: int = 4,
     ):
         self._output_dir = output_dir
@@ -385,9 +427,16 @@ class RobosuiteWriter(rep.Writer):
         self.data_structure = "annotator"
         self.write_ready = False
 
-        # RGB
+        self.rgb = rgb
+        self.normals = normals
+        self.semantic_segmentation = semantic_segmentation
+
         if rgb:
             self.annotators.append(rep.AnnotatorRegistry.get_annotator("rgb"))
+        if normals:
+            self.annotators.append(rep.AnnotatorRegistry.get_annotator("normals"))
+        if semantic_segmentation:
+            self.annotators.append(rep.AnnotatorRegistry.get_annotator("semantic_segmentation", {"colorize": True}))
 
     def write(self, data: dict):
         """Write function called from the OgnWriter node on every frame to process annotator output.
@@ -399,7 +448,17 @@ class RobosuiteWriter(rep.Writer):
             for annotator_name, annotator_data in data["annotators"].items():
                 for idx, (render_product_name, anno_rp_data) in enumerate(annotator_data.items()):
                     if annotator_name == "rgb":
-                        filepath = os.path.join(args.cameras[idx], f"rgb_{self._frame_id}.{self._image_output_format}")
+                        filepath = os.path.join(args.cameras[idx], "rgb", f"rgb_{self._frame_id}.{self._image_output_format}")
+                        self._backend.write_image(filepath, anno_rp_data["data"])
+                    elif annotator_name == "normals":
+                        normals = anno_rp_data["data"][..., :3]
+                        norm_lengths = np.linalg.norm(normals, axis=-1, keepdims=True)
+                        normals_normalized = normals / np.clip(norm_lengths, 1e-8, None)
+                        img = ((normals_normalized + 1) / 2 * 255).astype(np.uint8)
+                        filepath = os.path.join(args.cameras[idx], "normals", f"normals_{self._frame_id}.{self._image_output_format}")
+                        self._backend.write_image(filepath, img)
+                    elif annotator_name == "semantic_segmentation":
+                        filepath = os.path.join(args.cameras[idx], "semantic_segmentation", f"semantic_segmentation_{self._frame_id}.{self._image_output_format}")
                         self._backend.write_image(filepath, anno_rp_data["data"])
 
             self._frame_id += 1
@@ -481,7 +540,10 @@ class DataGenerator:
 
         # Create writer for capturing generated data
         self.writer = rep.WriterRegistry.get(self.writer_name)
-        self.writer.initialize(output_dir=self.output_dir, rgb=True)
+        self.writer.initialize(output_dir=self.output_dir,
+                               rgb=args.rgb,
+                               normals=args.normals,
+                               semantic_segmentation=args.semantic_segmentation)
 
         print("Writer Initiazed")
 
@@ -589,23 +651,29 @@ class DataGenerator:
         video.release()
         print(f"Video saved: {output_path}")
 
+    def create_video(self, videos_folder, camera, data_type):
+        camera_folder_path = os.path.join(self.output_dir, camera, data_type) # temp, change to render type
+        if not os.path.isdir(camera_folder_path):
+            return
+
+        # Construct output filename and path
+        output_filename = f"{camera}_{data_type}.mp4"
+        output_path = os.path.join(videos_folder, output_filename)
+
+        # Create the video from the frames in the camera folder
+        self.create_video_from_frames(camera_folder_path, output_path)
+
     def process_folders(self):
         videos_folder = os.path.join(self.output_dir, "videos")
         os.makedirs(videos_folder, exist_ok=True)
 
         # Iterate over each camera folder in the output directory
         for camera in args.cameras:
-            camera_folder_path = os.path.join(self.output_dir, camera)
-            if not os.path.isdir(camera_folder_path):
-                continue
-
-            # Construct output filename and path
-            output_filename = f"{camera}_rgb.mp4"
-            output_path = os.path.join(videos_folder, output_filename)
-
-            # Create the video from the frames in the camera folder
-            self.create_video_from_frames(camera_folder_path, output_path)
-
+            for render_modality, selected in render_modalities.items():
+                if selected:
+                    self.create_video(videos_folder=videos_folder,
+                                      camera=camera,
+                                      data_type=render_modality)
 
 def main():
     f = h5py.File(args.dataset, "r")
