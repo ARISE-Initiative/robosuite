@@ -23,7 +23,8 @@ jobs:
       run: |
         sudo apt-cache search mesa
         sudo apt update
-        sudo apt install -y libgl1-mesa-glx libgl1-mesa-dev libosmesa6-dev python3-opengl mesa-utils
+        sudo apt install -y libglx-mesa0 libgl1-mesa-dev libosmesa6-dev python3-opengl mesa-utils
+
         # check if OSMesa is installed
         dpkg -L libosmesa6-dev
         python -m pip install --upgrade pip
