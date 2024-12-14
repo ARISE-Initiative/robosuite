@@ -5,27 +5,35 @@ Composite Controllers
 ---------------------
 
 Robosuite's composite controllers assumes that a robot consists of multiple "body parts", such as arms, torso, head, base, and legs, and that each body part has
-a "body part" controller (e.g., OSC_POSE, JOINT_POSITION). The composite controller orchestrates these body part controllers.
+a "body part" controller (e.g., ``OSC_POSE``, ``JOINT_POSITION``). The composite controller orchestrates these body part controllers.
+Composite controllers are controllers that are composed of multiple body-part controllers. 
+They are used to control the entire robot, including all of its parts. 
 
-Basic
+When an action vector is commanded to the robot, the action will be split into multiple body-part actions, each of which will be sent to the corresponding body-part 
+controller. To understand the action split, use the function ``robosuite.robots.robot.print_action_info()``. 
+To create the action easily, we also provide a helper function ``robosuite.robots.robot.create_action_vector()`` which takes the action dictionary as 
+inputs and return the action vector with correct dimensions. For controller actions whose input dimentions does not match the robot's degrees of freedoms, 
+you need to write your own ``create_action_vector()`` function inside the custom composite controller so that the robot's function can retrieve the information properly.
+
+**Basic**
 ******
 
 The "Basic" composite controller consists of individual part controllers that operate independently to control various parts of the robot, such as arms, torso, head, base, and legs.
-Each part can be assigned a specific controller type (e.g., OSC_POSE, JOINT_POSITION) depending on the desired control behavior for that part. 
-For example, arms may use OSC_POSE for precise end-effector control, while the base may use JOINT_VELOCITY for movement across the ground. 
+Each part can be assigned a specific controller type (e.g., ``OSC_POSE``, ``JOINT_POSITION``) depending on the desired control behavior for that part. 
+For example, arms may use ``OSC_POSE`` for precise end-effector control, while the base may use JOINT_VELOCITY for movement across the ground. 
 
 
-WholeBodyIK
+**WholeBodyIK**
 *************
 
 The "WholeBodyIK" composite controller takes in end effector targets, and converts them into joint angle targets for the corresponding body parts' joints.
 
 
-Third-party Controllers
+**Third-party Controllers**
 ***********************
 
-Third-party controllers integrate custom or external control algorithms into robosuite. Examples include [mink](https://github.com/kevinzakka/mink). We provide 
-an example of adding a third part controller in [this tutorial](https://robosuite.ai/docs/tutorials/add_controller.html).
+Third-party controllers integrate custom or external control algorithms into robosuite. Examples include https://github.com/kevinzakka/mink. We provide 
+an example of adding a third part controller in https://robosuite.ai/docs/tutorials/add_controller.html.
 
 
 Workflow of Loading Configs
