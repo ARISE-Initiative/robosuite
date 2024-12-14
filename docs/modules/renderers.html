@@ -56,7 +56,7 @@
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Adding Third Party Controllers" href="../tutorials/add_controller.html" />
+    <link rel="next" title="Controllers" href="controllers.html" />
     <link rel="prev" title="I/O Devices" href="devices.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -169,6 +169,7 @@
 <li class="toctree-l1"><a class="reference internal" href="sensors.html">Sensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devices.html">I/O Devices</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Renderers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="controllers.html">Controllers</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -379,7 +380,13 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco">MuJoCo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco-default-renderer">MuJoCo Default Renderer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#isaac-rendering">Isaac Rendering</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ray-tracing">Ray tracing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-tracing">Path tracing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-speed">Rendering Speed</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -401,11 +408,50 @@
 <li><p><strong>Segmentation</strong>: 1-channel frames with pixel values corresponding to integer IDs for various objects. Segmentation can
 occur by class, instance, or geom, and is set during environment construction with the <code class="docutils literal notranslate"><span class="pre">camera_segmentations</span></code> argument.</p></li>
 </ul>
-<p>Additional modalities are supported by a subset of the renderers. In <strong>robosuite</strong>, the user has the following rendering options:</p>
-<p><img alt="Comparison of renderer options" src="../_images/renderers.png" /></p>
-<section id="mujoco">
-<h2>MuJoCo<a class="headerlink" href="#mujoco" title="Link to this heading">#</a></h2>
+<p><strong>robosuite</strong> presents the following rendering options:</p>
+<!-- ![Comparison of renderer options](../images/renderers/renderers.png "Comparison of renderer options") --><section id="mujoco-default-renderer">
+<h2>MuJoCo Default Renderer<a class="headerlink" href="#mujoco-default-renderer" title="Link to this heading">#</a></h2>
 <p>MuJoCo exposes users to an OpenGL context supported by <a class="reference external" href="https://mujoco.readthedocs.io/en/latest/python.html#rendering">mujoco</a>. Based on <a class="reference external" href="https://www.opengl.org/">OpenGL</a>, our assets and environment definitions have been tuned to look good with this renderer. The rendered frames can be displayed in a window with <a class="reference external" href="https://pythonexamples.org/python-opencv-imshow/">OpenCV’s imshow</a>.</p>
+<p><img alt="MuJoCo rendering" src="../_images/gr1_cereal_mujoco.png" /></p>
+</section>
+<section id="isaac-rendering">
+<h2>Isaac Rendering<a class="headerlink" href="#isaac-rendering" title="Link to this heading">#</a></h2>
+<p>Users are also able to render using photorealistic methods through Isaac Sim. Specifically, we users are able to choose between two rendering modes: ray tracing and path tracing. For more information about Isaac Sim rendering options, please visit <a class="reference external" href="https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer.html">here</a>. Isaac renderers are only available to those who are running on a Linux or Windows machine.</p>
+<section id="ray-tracing">
+<h3>Ray tracing<a class="headerlink" href="#ray-tracing" title="Link to this heading">#</a></h3>
+<p><img alt="Ray tracing" src="../_images/gr1_cereal_ray_tracing.png" /></p>
+<p>Ray tracing can be performed in real time. We are currently working on enhancing the rendering pipeline to support an online viewer with ray tracing capabilities.</p>
+</section>
+<section id="path-tracing">
+<h3>Path tracing<a class="headerlink" href="#path-tracing" title="Link to this heading">#</a></h3>
+<p><img alt="Path tracing" src="../_images/gr1_cereal_path_tracing.png" /></p>
+<p>Path tracing typically offers higher quality and is ideal for offline learning. If you have the time to collect data and plan to train algorithms using offline data, we recommend using path tracing for its photorealistic results.</p>
+</section>
+<section id="rendering-speed">
+<h3>Rendering Speed<a class="headerlink" href="#rendering-speed" title="Link to this heading">#</a></h3>
+<p>Below, we present a table showing the estimated frames per second when using these renderers. Note that the exact speed of rendering might depend on your machine and scene size. Larger scenes may take longer to render. Additionally, changing renderer inputs such as samples per pixel (spp) or max bounces might affect rendering speeds. The values below are estimates using the <code class="docutils literal notranslate"><span class="pre">Lift</span></code> task with an NVIDIA GeForce RTX 4090. We use an spp of 64 when rendering with path tracing.</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Renderer</th>
+<th>Estimated FPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MuJoCo</td>
+<td>3500</td>
+</tr>
+<tr>
+<td>Ray Tracing</td>
+<td>58</td>
+</tr>
+<tr>
+<td>Path Tracing</td>
+<td>2.8</td>
+</tr>
+</tbody>
+</table></section>
 </section>
 </section>
 
@@ -430,11 +476,11 @@ occur by class, instance, or geom, and is set during environment construction wi
       </div>
     </a>
     <a class="right-next"
-       href="../tutorials/add_controller.html"
+       href="controllers.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Adding Third Party Controllers</p>
+        <p class="prev-next-title">Controllers</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -455,7 +501,13 @@ occur by class, instance, or geom, and is set during environment construction wi
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco">MuJoCo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco-default-renderer">MuJoCo Default Renderer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#isaac-rendering">Isaac Rendering</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ray-tracing">Ray tracing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-tracing">Path tracing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-speed">Rendering Speed</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

@@ -169,6 +169,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/controllers.html">Controllers</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -398,6 +399,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.actuator_length"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_length</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.actuator_moment"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_moment</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.actuator_velocity"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_velocity</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.bind"><code class="docutils literal notranslate"><span class="pre">MjData.bind</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.body"><code class="docutils literal notranslate"><span class="pre">MjData.body</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.body_xmat"><code class="docutils literal notranslate"><span class="pre">MjData.body_xmat</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.body_xpos"><code class="docutils literal notranslate"><span class="pre">MjData.body_xpos</span></code></a></li>
@@ -629,6 +631,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.actuator_trnid"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_trnid</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.actuator_trntype"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_trntype</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.actuator_user"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_user</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.bind"><code class="docutils literal notranslate"><span class="pre">MjModel.bind</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.body"><code class="docutils literal notranslate"><span class="pre">MjModel.body</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.body_bvhadr"><code class="docutils literal notranslate"><span class="pre">MjModel.body_bvhadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.body_bvhnum"><code class="docutils literal notranslate"><span class="pre">MjModel.body_bvhnum</span></code></a></li>
@@ -896,6 +899,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nB"><code class="docutils literal notranslate"><span class="pre">MjModel.nB</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nC"><code class="docutils literal notranslate"><span class="pre">MjModel.nC</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nD"><code class="docutils literal notranslate"><span class="pre">MjModel.nD</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nJmom"><code class="docutils literal notranslate"><span class="pre">MjModel.nJmom</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nM"><code class="docutils literal notranslate"><span class="pre">MjModel.nM</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.na"><code class="docutils literal notranslate"><span class="pre">MjModel.na</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.name_actuatoradr"><code class="docutils literal notranslate"><span class="pre">MjModel.name_actuatoradr</span></code></a></li>
@@ -1547,6 +1551,11 @@ The properties without docstrings are defined in mujoco source code from <a clas
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.actuator_velocity">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actuator_velocity</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.actuator_velocity" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.bind">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bind</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.bind" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -3096,6 +3105,11 @@ changed occasionally, although this is done explicitly by the user.</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjModel.bind">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bind</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjModel.bind" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjModel.body">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">body</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjModel.body" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -4455,6 +4469,11 @@ Returns:
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjModel.nD">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nD</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjModel.nD" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjModel.nJmom">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nJmom</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjModel.nJmom" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -9458,6 +9477,7 @@ between 0 and 1.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.actuator_length"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_length</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.actuator_moment"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_moment</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.actuator_velocity"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_velocity</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.bind"><code class="docutils literal notranslate"><span class="pre">MjData.bind</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.body"><code class="docutils literal notranslate"><span class="pre">MjData.body</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.body_xmat"><code class="docutils literal notranslate"><span class="pre">MjData.body_xmat</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.body_xpos"><code class="docutils literal notranslate"><span class="pre">MjData.body_xpos</span></code></a></li>
@@ -9689,6 +9709,7 @@ between 0 and 1.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.actuator_trnid"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_trnid</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.actuator_trntype"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_trntype</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.actuator_user"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_user</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.bind"><code class="docutils literal notranslate"><span class="pre">MjModel.bind</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.body"><code class="docutils literal notranslate"><span class="pre">MjModel.body</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.body_bvhadr"><code class="docutils literal notranslate"><span class="pre">MjModel.body_bvhadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.body_bvhnum"><code class="docutils literal notranslate"><span class="pre">MjModel.body_bvhnum</span></code></a></li>
@@ -9956,6 +9977,7 @@ between 0 and 1.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nB"><code class="docutils literal notranslate"><span class="pre">MjModel.nB</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nC"><code class="docutils literal notranslate"><span class="pre">MjModel.nC</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nD"><code class="docutils literal notranslate"><span class="pre">MjModel.nD</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nJmom"><code class="docutils literal notranslate"><span class="pre">MjModel.nJmom</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.nM"><code class="docutils literal notranslate"><span class="pre">MjModel.nM</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.na"><code class="docutils literal notranslate"><span class="pre">MjModel.na</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjModel.name_actuatoradr"><code class="docutils literal notranslate"><span class="pre">MjModel.name_actuatoradr</span></code></a></li>

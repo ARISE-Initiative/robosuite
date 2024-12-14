@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>&lt;no title&gt; &#8212; robosuite 1.5 documentation</title>
+    <title>Controllers &#8212; robosuite 1.5 documentation</title>
   
   
   
@@ -52,12 +52,15 @@
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area", "displayMath": [["\\[", "\\]"]]}})</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]]}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'modules/controllers';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Objects" href="objects.html" />
-    <link rel="prev" title="Robots" href="robots.html" />
+    <link rel="next" title="Adding Third Party Controllers" href="../tutorials/add_controller.html" />
+    <link rel="prev" title="Renderers" href="renderers.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.5" />
@@ -161,7 +164,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="robots.html">Robots</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objects.html">Objects</a></li>
@@ -169,6 +172,7 @@
 <li class="toctree-l1"><a class="reference internal" href="sensors.html">Sensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devices.html">I/O Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="renderers.html">Renderers</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Controllers</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -293,7 +297,7 @@
       
       
       
-      <li><a href="../_sources/modules/controllers.ipynb" target="_blank"
+      <li><a href="../_sources/modules/controllers.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -303,7 +307,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.ipynb</span>
+<span class="btn__text-container">.rst</span>
 </a>
 </li>
       
@@ -369,7 +373,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1><no title></h1>
+    <h1>Controllers</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -378,9 +382,35 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="simple visible nav section-nav flex-column">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#composite-controllers">Composite Controllers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic"><strong>Basic</strong></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wholebodyik"><strong>WholeBodyIK</strong></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#third-party-controllers"><strong>Third-party Controllers</strong></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-of-loading-configs">Workflow of Loading Configs</a></li>
 </ul>
-
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-controllers">Part Controllers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-torque">Joint Space Control - Torque</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-velocity">Joint Space Control - Velocity</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-position-with-fixed-impedance">Joint Space Control - Position with Fixed Impedance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-position-with-variable-stiffness">Joint Space Control - Position with Variable Stiffness</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-position-with-variable-impedance">Joint Space Control - Position with Variable Impedance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-space-control-pose-with-fixed-impedance">Operational Space Control - Pose with Fixed Impedance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-space-control-pose-with-variable-stiffness">Operational Space Control - Pose with Variable Stiffness</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-space-control-pose-with-variable-impedance">Operational Space Control - Pose with Variable Impedance</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configurations">Configurations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#controller-settings">Controller Settings</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-a-controller">Loading a Controller</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-default-controller-configuration">Using a Default Controller Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-custom-controller-configuration">Using a Custom Controller Configuration</a></li>
+</ul>
+</li>
+</ul>
             </nav>
         </div>
     </div>
@@ -391,245 +421,229 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <dl>
-<dt>{</dt><dd><dl>
-<dt>“cells”: [</dt><dd><dl>
-<dt>{</dt><dd><p>“cell_type”: “markdown”,
-“metadata”: {},
-“source”: [</p>
-<blockquote>
-<div><p>“# Controllers  n”,
-“n”,
-“Controllers are used to determine the type of high-level control over a given robot arm. While all arms are directly controlled via their joint torques, the inputted action space for a given environment can vary depending on the type of desired control. Our controller options include <cite>OSC_POSE</cite>, <cite>OSC_POSITION</cite>, <cite>JOINT_POSITION</cite>, <cite>JOINT_VELOCITY</cite>, and <cite>JOINT_TORQUE</cite>.n”,
-“n”,
-“&lt;!– | Controller Name&lt;br /&gt;and Options |   Controller Typett | t  Action Dimension&lt;br&gt;(Gripper Not Included)    |  Format <a href="#id1"><span class="problematic" id="id2">|\n&quot;,
-&quot;|</span></a> :————-: | :——————-: | :————————————————-: | :—–: <a href="#id3"><span class="problematic" id="id4">|\n&quot;,
-&quot;|</span></a> OSC_POSE&lt;br /&gt;impedance_mode = fixed |   Operational Space Control (Position + Orientation)   | 6 | (x, y, z, ax, ay, az)    <a href="#id5"><span class="problematic" id="id6">|\n&quot;,
-&quot;|</span></a> OSC_POSE&lt;br /&gt;impedance_mode = variable_kp | Operational Space Control (Position + Orientation)&lt;br /&gt;with variable stiffness (critically damped) | 12 | (x, y, z, ax, ay, az)&lt;br /&gt;(kpx,kpy,kpz,kpax,kpay,kpaz) <a href="#id7"><span class="problematic" id="id8">|\n&quot;,
-&quot;|</span></a> OSC_POSE&lt;br /&gt;impedance_mode = variable | Operational Space Control (Position + Orientation)&lt;br /&gt;with variable impedance | 18 | (x, y, z, ax, ay, az)&lt;br /&gt;(kpx,kpy,kpz,kpax,kpay,kpaz)&lt;br /&gt;(kdx,kdy,kdz,kdax,kday,kdaz) <a href="#id9"><span class="problematic" id="id10">|\n&quot;,
-&quot;|</span></a> OSC_POSITION&lt;br /&gt;impedance_mode = fixed |   Operational Space Control (Position Only)      | 3 | (x, y, z)                <a href="#id11"><span class="problematic" id="id12">|\n&quot;,
-&quot;|</span></a> OSC_POSITION&lt;br /&gt;impedance_mode = variable_kp | Operational Space Control (Position Only)&lt;br /&gt;with variable stiffness (critically damped) | 6 | (x, y, z)&lt;br /&gt;(kpx,kpy,kpz) <a href="#id13"><span class="problematic" id="id14">|\n&quot;,
-&quot;|</span></a> OSC_POSITION&lt;br /&gt;impedance_mode = variable | Operational Space Control (Position Only)&lt;br /&gt;with variable impedance | 9 | (x, y, z)&lt;br /&gt;(kpx,kpy,kpz)&lt;br /&gt;(kdx,kdy,kdz) <a href="#id15"><span class="problematic" id="id16">|\n&quot;,
-&quot;|</span></a> IK_POSE         | Inverse Kinematics Control (Position + Orientation)  | 7 | (x, y, z, ax, ay, az)    <a href="#id17"><span class="problematic" id="id18">|\n&quot;,
-&quot;|</span></a> JOINT_POSITION&lt;br /&gt;impedance_mode = fixed |   Joint Position                                       | n | n robot joints           <a href="#id19"><span class="problematic" id="id20">|\n&quot;,
-&quot;|</span></a> JOINT_POSITION&lt;br /&gt;impedance_mode = variable_kp | Joint Position&lt;br /&gt;with variable stiffness (critically damped) | 2n | n robot joints and kp for each <a href="#id21"><span class="problematic" id="id22">|\n&quot;,
-&quot;|</span></a> JOINT_POSITION&lt;br /&gt;impedance_mode = variable | Joint Position&lt;br /&gt;with variable impedance | 3n | n robot joints and kp, kv for each <a href="#id23"><span class="problematic" id="id24">|\n&quot;,
-&quot;|</span></a> JOINT_VELOCITY  |   Joint Velocity                                       | n | n robot joints           <a href="#id25"><span class="problematic" id="id26">|\n&quot;,
-&quot;|</span></a> JOINT_TORQUE    |   Joint Torque                                         | n | n robot joints           | –&gt;n”,
-“n”,
-“For <cite>OSC_POSE</cite>, <cite>OSC_POSITION</cite>, and <cite>JOINT_POSITION</cite>, we include three variants that determine the action space. The most common variant is to use a predefined and constant set of impedance parameters; in that case, the action space only includes the desired pose, position, or joint configuration. We also include the option to specify either the stiffness values (and the damping will be automatically set to values that lead to a critically damped system), or all impedance parameters, both stiffness and damping, as part of the action at each step. These two variants lead to extended action spaces that can control the stiffness and damping behavior of the controller in a variable manner, providing full control to the policy/solution over the contact and dynamic behavior of the robot.n”,
-“n”,
-“When using any position-based control (<cite>OSC</cite>, <cite>IK</cite>, or <cite>JOINT_POSITION</cite> controllers), input actions are, by default,n”,
-“interpreted as delta values from the current state.n”,
-“n”,
-“When using any end-effector pose controller (<cite>IK</cite>, <cite>OSC_POSE</cite>), delta rotations from the current end-effector orientationn”,
-“in the form of axis-angle coordinates <cite>(ax, ay, az)</cite>, where the direction represents the axis and the magnituden”,
-“represents the angle (in radians). Note that for <cite>OSC</cite>, the rotation axes are taken relative to the global worldn”,
-“coordinate frame, whereas for <cite>IK</cite>, the rotation axes are taken relative to the end-effector origin, NOT the global world coordinate frame!n”,
-“n”,
-“## Controllersn”,
-“n”,
-“During runtime, the execution of the controllers is as follows. Controllers receive a desired configuration (reference value) and output joint torques that try to minimize the error between the current configuration and the desired one. Policies and solutions provide these desired configurations, elements of some action space, at what we call simulated policy frequency ($f_{p}$), e.g., 20Hz or 30Hz. <strong>robosuite</strong> will execute several iterations composed of a controller execution and a simulation step at simulation frequency, $f_s$ ($f_s = N\cdot f_p$), using the same reference signal until a new action is provided by the policy/solution. In these iterations, while the desired configuration is kept constant, the current state of the robot is changing, and thus, the error.n”,
-“n”,
-“In the following we summarize the options, variables, and the control laws (equations) that convert desired values from the policy/solution and current robot states into executable joint torques to minimize the difference.n”,
-“n”,
-“### Joint Space Control - Torquen”,
-“n”,
-“Controller Type: <cite>JOINT_TORQUE</cite>n”,
-“n”,
-“Action Dimensions (not including gripper): <cite>n</cite> (number of joints)n”,
-“n”,
-“Since our controllers transform the desired values from the policies/solutions into joint torques, if these values are already joint torques, there is a one-to-one mapping between the reference value from the policy/solution and the output value from the joint torque controller at each step: $\tau = \tau_d$n”,
-“\begin{equation}n”,
-“\tau = \tau_dn”,
-“\end{equation}n”,
-“n”,
-“### Joint Space Control - Velocityn”,
-“ n”,
-“Controller Type: <cite>JOINT_VELOCITY</cite>n”,
-“n”,
-“Action Dimensions (not including gripper): <cite>n</cite> (number of joints)n”,
-“n”,
-“To control joint velocities, we create a proportional (P) control law between the desired value provided by the policy/solution (interpreted as desired velocity of each joint) and the current joint velocity of the robot. This control law, parameterized by a proportional constant, $k_p$, generates joint torques to execute at each simulation step:n”,
-“n”,
-“\begin{equation}n”,
-“\tau = k_p (\dot{q}_d - \dot{q})n”,
-“\end{equation}n”,
-“n”,
-“### Joint Space Control - Position with Fixed Impedancen”,
-“n”,
-“Controller Type: <cite>JOINT_POSITION</cite>n”,
-“n”,
-“Impedance: fixedn”,
-“n”,
-“Action Dimensions (not including gripper): <cite>n</cite> (number of joints)n”,
-“n”,
-“In joint position control, we create a proportional-derivative (PD) control law between the desired value provided by the policy/solution (interpreted as desired configuration for each joint) and the current joint positions of the robot. The control law that generates the joint torques to execute is parameterized by proportional and derivative gains, $k_p$ and $k_v$, and defined asn”,
-“n”,
-“\begin{equation}n”,
-“\tau = \Lambda \left[k_p \Delta_q - k_d\dot{q}\right]n”,
-“\end{equation} n”,
-“n”,
-“where $\Delta_q  = q_d - q$ is the difference between current and desired joint configurations, and $\Lambda$ is the inertia matrix, that we use to scale the error to remove the dynamic effects of the mechanism. The stiffness and damping parameters, $k_p$ and $k_d$, are determined in construction and kept fixed.n”,
-“n”,
-“### Joint Space Control - Position with Variable Stiffnessn”,
-“n”,
-“Controller Type: <cite>JOINT_POSITION</cite>n”,
-“n”,
-“Impedance: variable_kpn”,
-“n”,
-“Action Dimensions (not including gripper): <cite>2n</cite> (number of joints)n”,
-“n”,
-“The control law is the same as for fixed impedance but, in this controller, $k_p$ can be determined by the policy/solution at each policy step.n”,
-“n”,
-“### Joint Space Control - Position with Variable Impedancen”,
-“n”,
-“Controller Type: <cite>JOINT_POSITION</cite>n”,
-“n”,
-“Impedance: variablen”,
-“n”,
-“Action Dimensions (not including gripper): <cite>3n</cite> (number of joints)n”,
-“n”,
-“Again, the control law is the same in the two previous control types, but now both the stiffness and damping parameters, $k_p$ and $k_d$, are controllable by the policy/solution and can be changed at each step.n”,
-“n”,
-“### Operational Space Control - Pose with Fixed Impedancen”,
-“n”,
-“Controller Type: <cite>OSC_POSE</cite>n”,
-“n”,
-“Impedance: fixedn”,
-“n”,
-“Action Dimensions (not including gripper): <cite>6</cite>n”,
-“n”,
-“In the <cite>OSC_POSE</cite> controller, the desired value is the 6D pose (position and orientation) of a controlled frame. We follow the formalism from [\[Khatib87\]](<a class="reference external" href="https://ieeexplore.ieee.org/document/1087068">https://ieeexplore.ieee.org/document/1087068</a>). Our control frame is always the <cite>eef_site</cite> defined in the [Gripper Model](../modeling/robot_model.html#gripper-model), placed at the end of the last link for robots without gripper or between the fingers for robots with gripper. The operational space control framework (OSC) computes the necessary joint torques to minimize the error between the desired and the current pose of the <cite>eef_site</cite> with the minimal kinematic energy. n”,
-“n”,
-“Given a desired pose $\mathbf{x}_{\mathit{des}}$ and the current end-effector pose, , we first compute the end-effector acceleration that would help minimize the error between both, assumed. PD (proportional-derivative) control schema to improve convergence and stability. For that, we first decompose into a desired position, $p_d \in \mathbb{R}^3$, and a desired orientation, $R_d \in \mathbb{SO}(3)$. The end-effector acceleration to minimize the error should increase with the difference between desired end-effector pose and current pose, $p$ and $R$ (proportional term), and decrease with the current end-effector velocity, $v$ and $\omega$ (derivative term).n”,
-“n”,
-“We then compute the robot actuation (joint torques) to achieve the desired end-effector space accelerations leveraging the kinematic and dynamic models of the robot with the dynamically-consistent operational space formulation in [\[Khatib1995a\]](<a class="reference external" href="https://journals.sagepub.com/doi/10.1177/027836499501400103">https://journals.sagepub.com/doi/10.1177/027836499501400103</a>). First, we compute the wrenches at the end-effector that corresponds to the desired accelerations, ${f}\in\mathbb{R}^{6}$.n”,
-“Then, we map the wrenches in end-effector space ${f}$ to joint torque commands with the end-effector Jacobian at the current joint configuration $J=J(q)$: $\tau = J^T{f}$. n”,
-“n”,
-“Thus, the function that maps end-effector space position and orientation to low-level robot commands is ($\textrm{ee} = \textrm{\it end-effector space}$):n”,
-“\begin{equation}n”,
-“\begin{aligned}n”,
-“\tau &amp;= J_p[\Lambda_p[k_p^p (p_d - p) - k_v^p v]] + J_R[\Lambda_R\left[k_p^R(R_d \ominus R) - k_d^R \omega \right]]n”,
-“\end{aligned}n”,
-“\end{equation}n”,
-“where $\Lambda_p$ and $\Lambda_R$ are the parts corresponding to position and orientation in $\Lambda \in \mathbb{R}^{6\times6}$, the inertial matrix in the end-effector frame that decouples the end-effector motions, $J_p$ and $J_R$ are the position and orientation parts of the end-effector Jacobian, and $\ominus$ corresponds to the subtraction in $\mathbb{SO}(3)$. The difference between current and desired position ($\Delta_p= p_d - p$) and between current and desired orientation ($\Delta_R = R_d \ominus R$) can be used as alternative policy action space, $\mathcal{A}$. $k_p^p$, $k_p^d$, $k_p^R$, and $k_d^R$ are vectors of proportional and derivative gains for position and orientation (parameters $\kappa$), respectively, set once at initialization and kept fixed.n”,
-“n”,
-“### Operational Space Control - Pose with Variable Stiffnessn”,
-“n”,
-“Controller Type: <cite>OSC_POSE</cite>n”,
-“n”,
-“Impedance: variable_kpn”,
-“n”,
-“Action Dimensions (not including gripper): <cite>12</cite>n”,
-“n”,
-“The control law is the same as <cite>OSC_POSE</cite> but, in this case, the stiffness of the controller, $k_p$, is part of the action space and can be controlled and changed at each time step by the policy/solution. The damping parameters, $k_d$, are set to maintain the critically damped behavior of the controller.n”,
-“n”,
-“### Operational Space Control - Pose with Variable Impedancen”,
-“n”,
-“Controller Type: <cite>OSC_POSE</cite>n”,
-“n”,
-“Impedance: variablen”,
-“n”,
-“Action Dimensions (not including gripper): <cite>18</cite>n”,
-“n”,
-“The control law is the same as in the to previous controllers, but now both the stiffness and the damping, $k_p$ and $k_d$, are part of the action space and can be controlled and changed at each time step by the policy/solution. n”,
-“n”,
-“n”,
-“## Configurationsn”,
-“The config directory (found within the [Controllers](../source/robosuite.controllers.html) module) provides a set of default configuration files that hold default examples of parameters relevant to individual controllers. Note that when creating your controller config templates of a certain type of controller, the listed parameters in the default example are required and should be specified accordingly.n”,
-“n”,
-“Note: Each robot has its own default controller configuration which is called by default unless a different controller config is called.n”,
-“n”,
-“Below, a brief overview and description of each subset of controller parameters are shown:n”,
-“n”,
-“#### Controller Settings  n”,
-“* <cite>type</cite>: Type of controller to control. Can be <cite>OSC_POSE</cite>, <cite>OSC_POSITION</cite>, <cite>IK_POSE</cite>, <cite>JOINT_POSITION</cite>, <cite>JOINT_VELOCITY</cite>, or <cite>JOINT_TORQUE</cite>n”,
-“* <cite>interpolation</cite>: If not <cite>null</cite>, specified type of interpolation to use between desired actions. Currently only <cite>linear</cite> is supported.n”,
-“* <cite>ramp_ratio</cite>: If using <cite>linear</cite> interpolation, specifies the proportion of allotted timesteps (value from [0, 1]) over which to execute the interpolated commands.n”,
-“* <cite>{…}_limits</cite>: Limits for that specific controller. E.g.: for a <cite>JOINT_POSITION</cite>, the relevant limits are its joint positions, <cite>qpos_limits</cite> . Can be either a 2-element list (same min/max limits across entire relevant space), or a list of lists (specific limits for each component)n”,
-“* <cite>ik_{pos, ori}_limit</cite>: Only applicable for IK controller. Limits the magnitude of the desired relative change in position / orientation.n”,
-“* <cite>{input,output}_{min,max}</cite>: Scaling ranges for mapping action space inputs into controller inputs. Settings these limits will automatically clip the action space input to be within the <cite>input_{min,max}</cite> before mapping the requested value into the specified <cite>output_{min,max}</cite> range. Can be either a scalar (same limits across entire action space), or a list (specific limits for each action component)n”,
-“* <cite>kp</cite>: Where relevant, specifies the proportional gain for the controller. Can be either be a scalar (same value for all controller dimensions), or a list (specific values for each dimension)n”,
-“* <cite>damping_ratio</cite>: Where relevant, specifies the damping ratio constant for the controller.n”,
-“* <cite>impedance_mode</cite>: For impedance-based controllers (<cite>OSC_*</cite>, <cite>JOINT_POSITION</cite>), determines the impedance mode for the controller, i.e. the nature of the impedance parameters. It can be <cite>fixed</cite>, <cite>variable</cite>, or <cite>variable_kp</cite> (kd is adjusted to provide critically damped behavior).n”,
-“* <cite>kp_limits, damping_ratio_limits</cite>: Only relevant if <cite>impedance_mode</cite> is set to <cite>variable</cite> or <cite>variable_kp</cite>. Sets the limits for the resulting action space for variable impedance gains.n”,
-“* <cite>control_delta</cite>: Only relevant for <cite>OSC_POSE</cite> or <cite>OSC_POSITION</cite> controllers. <cite>true</cite> interprets input actions as delta values from the current robot end-effector position. Otherwise, assumed to be absolute (global) valuesn”,
-“* <cite>uncouple_pos_ori</cite>: Only relevant for <cite>OSC_POSE</cite>. <cite>true</cite> decouples the desired position and orientation torques when executing the controllern”,
-“n”,
-“## Loading a Controllern”,
-“By default, if no controller configuration is specified during environment creation, then <cite>JOINT_VELOCITY</cite> controllers with robot-specific configurations will be used. n”,
-“n”,
-“#### Using a Default Controller Configurationn”,
-“Any controller can be used with its default configuration, and can be easily loaded into a given environment by calling its name as shown below (where <cite>controller_name</cite> is one of acceptable controller <cite>type</cite> strings):n”,
-“n”,
-“<code class="docutils literal notranslate"><span class="pre">`python\n&quot;,</span>
-<span class="pre">&quot;import</span> <span class="pre">robosuite</span> <span class="pre">as</span> <span class="pre">suite\n&quot;,</span>
-<span class="pre">&quot;from</span> <span class="pre">robosuite</span> <span class="pre">import</span> <span class="pre">load_part_controller_config\n&quot;,</span>
-<span class="pre">&quot;\n&quot;,</span>
-<span class="pre">&quot;#</span> <span class="pre">Load</span> <span class="pre">the</span> <span class="pre">desired</span> <span class="pre">controller's</span> <span class="pre">default</span> <span class="pre">config</span> <span class="pre">as</span> <span class="pre">a</span> <span class="pre">dict\n&quot;,</span>
-<span class="pre">&quot;config</span> <span class="pre">=</span> <span class="pre">load_part_controller_config(default_controller=controller_name)\n&quot;,</span>
-<span class="pre">&quot;\n&quot;,</span>
-<span class="pre">&quot;#</span> <span class="pre">Create</span> <span class="pre">environment\n&quot;,</span>
-<span class="pre">&quot;env</span> <span class="pre">=</span> <span class="pre">suite.make(\&quot;Lift\&quot;,</span> <span class="pre">robots=\&quot;Panda\&quot;,</span> <span class="pre">controller_configs=config,</span> <span class="pre">...</span> <span class="pre">)\n&quot;,</span>
-<span class="pre">&quot;`</span></code>n”,
-“n”,
-“#### Using a Custom Controller Configurationn”,
-“A custom controller configuration can also be used by simply creating a new config (<cite>.json</cite>) file with the relevant parameters as specified above. All robosuite environments have an optional <cite>controller_configs</cite> argument that can be used to pass in specific controller settings. Note that this is expected to be a <cite>dict</cite>, so the new configuration must be read in and parsed as a <cite>dict</cite> before passing it during the environment <cite>robosuite.make(…)</cite> call. A brief example script showing how to import a custom controller configuration is shown below.n”,
-“n”,
-“<code class="docutils literal notranslate"><span class="pre">`python\n&quot;,</span>
-<span class="pre">&quot;import</span> <span class="pre">robosuite</span> <span class="pre">as</span> <span class="pre">suite\n&quot;,</span>
-<span class="pre">&quot;from</span> <span class="pre">robosuite</span> <span class="pre">import</span> <span class="pre">load_part_controller_config\n&quot;,</span>
-<span class="pre">&quot;\n&quot;,</span>
-<span class="pre">&quot;#</span> <span class="pre">Path</span> <span class="pre">to</span> <span class="pre">config</span> <span class="pre">file\n&quot;,</span>
-<span class="pre">&quot;controller_fpath</span> <span class="pre">=</span> <span class="pre">\&quot;/your/custom/config/filepath/here/filename.json\&quot;\n&quot;,</span>
-<span class="pre">&quot;\n&quot;,</span>
-<span class="pre">&quot;#</span> <span class="pre">Import</span> <span class="pre">the</span> <span class="pre">file</span> <span class="pre">as</span> <span class="pre">a</span> <span class="pre">dict\n&quot;,</span>
-<span class="pre">&quot;config</span> <span class="pre">=</span> <span class="pre">load_part_controller_config(custom_fpath=controller_fpath)\n&quot;,</span>
-<span class="pre">&quot;\n&quot;,</span>
-<span class="pre">&quot;#</span> <span class="pre">Create</span> <span class="pre">environment\n&quot;,</span>
-<span class="pre">&quot;env</span> <span class="pre">=</span> <span class="pre">suite.make(\&quot;Lift\&quot;,</span> <span class="pre">robots=\&quot;Panda\&quot;,</span> <span class="pre">controller_configs=config,</span> <span class="pre">...</span> <span class="pre">)\n&quot;,</span>
-<span class="pre">&quot;`</span></code>”</p>
-</div></blockquote>
-<p>]</p>
-</dd>
-</dl>
-<p>}</p>
-</dd>
-</dl>
-<p>],
-“metadata”: {</p>
-<blockquote>
-<div><dl class="simple">
-<dt>“kernelspec”: {</dt><dd><p>“display_name”: “Python 3”,
-“language”: “python”,
-“name”: “python3”</p>
-</dd>
-</dl>
-<p>},
-“language_info”: {</p>
-<blockquote>
-<div><dl class="simple">
-<dt>“codemirror_mode”: {</dt><dd><p>“name”: “ipython”,
-“version”: 3</p>
-</dd>
-</dl>
-<p>},
-“file_extension”: “.py”,
-“mimetype”: “text/x-python”,
-“name”: “python”,
-“nbconvert_exporter”: “python”,
-“pygments_lexer”: “ipython3”,
-“version”: “3.5.4”</p>
-</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<p>},
-“nbformat”: 4,
-“nbformat_minor”: 4</p>
-</dd>
-</dl>
-<p>}</p>
+  <section id="controllers">
+<h1>Controllers<a class="headerlink" href="#controllers" title="Link to this heading">#</a></h1>
+<section id="composite-controllers">
+<h2>Composite Controllers<a class="headerlink" href="#composite-controllers" title="Link to this heading">#</a></h2>
+<p>Robosuite’s composite controllers assumes that a robot consists of multiple “body parts”, such as arms, torso, head, base, and legs, and that each body part has
+a “body part” controller (e.g., <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code>). The composite controller orchestrates these body part controllers.
+Composite controllers are controllers that are composed of multiple body-part controllers.
+They are used to control the entire robot, including all of its parts.</p>
+<p>When an action vector is commanded to the robot, the action will be split into multiple body-part actions, each of which will be sent to the corresponding body-part
+controller. To understand the action split, use the function <code class="docutils literal notranslate"><span class="pre">robosuite.robots.robot.print_action_info()</span></code>.
+To create the action easily, we also provide a helper function <code class="docutils literal notranslate"><span class="pre">robosuite.robots.robot.create_action_vector()</span></code> which takes the action dictionary as
+inputs and return the action vector with correct dimensions. For controller actions whose input dimentions does not match the robot’s degrees of freedoms,
+you need to write your own <code class="docutils literal notranslate"><span class="pre">create_action_vector()</span></code> function inside the custom composite controller so that the robot’s function can retrieve the information properly.</p>
+<section id="basic">
+<h3><strong>Basic</strong><a class="headerlink" href="#basic" title="Link to this heading">#</a></h3>
+<p>The “Basic” composite controller consists of individual part controllers that operate independently to control various parts of the robot, such as arms, torso, head, base, and legs.
+Each part can be assigned a specific controller type (e.g., <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code>) depending on the desired control behavior for that part.
+For example, arms may use <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code> for precise end-effector control, while the base may use JOINT_VELOCITY for movement across the ground.</p>
+</section>
+<section id="wholebodyik">
+<h3><strong>WholeBodyIK</strong><a class="headerlink" href="#wholebodyik" title="Link to this heading">#</a></h3>
+<p>The “WholeBodyIK” composite controller takes in end effector targets, and converts them into joint angle targets for the corresponding body parts’ joints.</p>
+</section>
+<section id="third-party-controllers">
+<h3><strong>Third-party Controllers</strong><a class="headerlink" href="#third-party-controllers" title="Link to this heading">#</a></h3>
+<p>Third-party controllers integrate custom or external control algorithms into robosuite. Examples include <a class="github reference external" href="https://github.com/kevinzakka/mink">kevinzakka/mink</a>. We provide
+an example of adding a third part controller in <a class="reference external" href="https://robosuite.ai/docs/tutorials/add_controller.html">https://robosuite.ai/docs/tutorials/add_controller.html</a>.</p>
+</section>
+<section id="workflow-of-loading-configs">
+<h3>Workflow of Loading Configs<a class="headerlink" href="#workflow-of-loading-configs" title="Link to this heading">#</a></h3>
+<p>Loading configs for composite controllers is critical for selecting the correct control mode with well-tuned parameters. We provide a list of default controller configs for the composite controllers, and also support easy specification of your custom controller config file. A config file is defined in a json file.</p>
+<p>An example of the controller config file is shown below (many parameters are omitted in <cite>…</cite> for brevity):</p>
+<div class="toggle docutils container">
+<p>Example for defining BASIC controller.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BASIC&quot;</span><span class="p">,</span>
+<span class="nt">&quot;body_parts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;arms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;right&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OSC_POSE&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;input_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;input_min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;output_max&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">],</span>
+<span class="w">            </span><span class="nt">&quot;output_min&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mf">-0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.5</span><span class="p">],</span>
+<span class="w">            </span><span class="nt">&quot;kp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="p">,</span>
+<span class="w">            </span><span class="err">...</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;left&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OSC_POSE&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="err">...</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;torso&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;JOINT_POSITION&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="err">...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;head&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;JOINT_POSITION&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="err">...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;base&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;JOINT_VELOCITY&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="err">...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;legs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;JOINT_POSITION&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="err">...</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="part-controllers">
+<h2>Part Controllers<a class="headerlink" href="#part-controllers" title="Link to this heading">#</a></h2>
+<p>Part controllers are used to determine the type of high-level control over a given robot arm. While all arms are directly controlled via their joint torques, the inputted action space for a given environment can vary depending on the type of desired control. Our controller options include <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code>, <code class="docutils literal notranslate"><span class="pre">OSC_POSITION</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT_VELOCITY</span></code>, and <code class="docutils literal notranslate"><span class="pre">JOINT_TORQUE</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code>, <code class="docutils literal notranslate"><span class="pre">OSC_POSITION</span></code>, and <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code>, we include three variants that determine the action space. The most common variant is to use a predefined and constant set of impedance parameters; in that case, the action space only includes the desired pose, position, or joint configuration. We also include the option to specify either the stiffness values (and the damping will be automatically set to values that lead to a critically damped system), or all impedance parameters, both stiffness and damping, as part of the action at each step. These two variants lead to extended action spaces that can control the stiffness and damping behavior of the controller in a variable manner, providing full control to the policy/solution over the contact and dynamic behavior of the robot.</p>
+<p>When using any position-based control (<code class="docutils literal notranslate"><span class="pre">OSC</span></code>, <code class="docutils literal notranslate"><span class="pre">IK</span></code>, or <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code> controllers), input actions are, by default,
+interpreted as delta values from the current state.</p>
+<p>When using any end-effector pose controller (<code class="docutils literal notranslate"><span class="pre">IK</span></code>, <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code>), delta rotations from the current end-effector orientation
+in the form of axis-angle coordinates <code class="docutils literal notranslate"><span class="pre">(ax,</span> <span class="pre">ay,</span> <span class="pre">az)</span></code>, where the direction represents the axis and the magnitude
+represents the angle (in radians). Note that for <code class="docutils literal notranslate"><span class="pre">OSC</span></code>, the rotation axes are taken relative to the global world
+coordinate frame, whereas for <code class="docutils literal notranslate"><span class="pre">IK</span></code>, the rotation axes are taken relative to the end-effector origin, NOT the global world coordinate frame!</p>
+<p>During runtime, the execution of the controllers is as follows. Controllers receive a desired configuration (reference value) and output joint torques that try to minimize the error between the current configuration and the desired one. Policies and solutions provide these desired configurations, elements of some action space, at what we call simulated policy frequency (<span class="math notranslate nohighlight">\(f_{p}\)</span>), e.g., 20Hz or 30Hz. <strong>robosuite</strong> will execute several iterations composed of a controller execution and a simulation step at simulation frequency, <span class="math notranslate nohighlight">\(f_s\)</span> (<span class="math notranslate nohighlight">\(f_s = N\cdot f_p\)</span>), using the same reference signal until a new action is provided by the policy/solution. In these iterations, while the desired configuration is kept constant, the current state of the robot is changing, and thus, the error.</p>
+<p>In the following we summarize the options, variables, and the control laws (equations) that convert desired values from the policy/solution and current robot states into executable joint torques to minimize the difference.</p>
+<section id="joint-space-control-torque">
+<h3>Joint Space Control - Torque<a class="headerlink" href="#joint-space-control-torque" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">JOINT_TORQUE</span></code></p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">n</span></code> (number of joints)</p>
+<p>Since our controllers transform the desired values from the policies/solutions into joint torques, if these values are already joint torques, there is a one-to-one mapping between the reference value from the policy/solution and the output value from the joint torque controller at each step: <span class="math notranslate nohighlight">\(\tau = \tau_d\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[\begin{equation}
+\tau = \tau_d
+\end{equation}\]</div>
+</section>
+<section id="joint-space-control-velocity">
+<h3>Joint Space Control - Velocity<a class="headerlink" href="#joint-space-control-velocity" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">JOINT_VELOCITY</span></code></p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">n</span></code> (number of joints)</p>
+<p>To control joint velocities, we create a proportional (P) control law between the desired value provided by the policy/solution (interpreted as desired velocity of each joint) and the current joint velocity of the robot. This control law, parameterized by a proportional constant, <span class="math notranslate nohighlight">\(k_p\)</span>, generates joint torques to execute at each simulation step:</p>
+<div class="math notranslate nohighlight">
+\[\tau = k_p (\dot{q}_d - \dot{q})\]</div>
+</section>
+<section id="joint-space-control-position-with-fixed-impedance">
+<h3>Joint Space Control - Position with Fixed Impedance<a class="headerlink" href="#joint-space-control-position-with-fixed-impedance" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code></p>
+<p>Impedance: fixed</p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">n</span></code> (number of joints)</p>
+<p>In joint position control, we create a proportional-derivative (PD) control law between the desired value provided by the policy/solution (interpreted as desired configuration for each joint) and the current joint positions of the robot. The control law that generates the joint torques to execute is parameterized by proportional and derivative gains, <span class="math notranslate nohighlight">\(k_p\)</span> and <span class="math notranslate nohighlight">\(k_v\)</span>, and defined as</p>
+<div class="math notranslate nohighlight">
+\[\begin{equation}
+\tau = \Lambda \left[k_p \Delta_q - k_d\dot{q}\right]
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Delta_q  = q_d - q\)</span> is the difference between current and desired joint configurations, and <span class="math notranslate nohighlight">\(\Lambda\)</span> is the inertia matrix, that we use to scale the error to remove the dynamic effects of the mechanism. The stiffness and damping parameters, <span class="math notranslate nohighlight">\(k_p\)</span> and <span class="math notranslate nohighlight">\(k_d\)</span>, are determined in construction and kept fixed.</p>
+</section>
+<section id="joint-space-control-position-with-variable-stiffness">
+<h3>Joint Space Control - Position with Variable Stiffness<a class="headerlink" href="#joint-space-control-position-with-variable-stiffness" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code></p>
+<p>Impedance: variable_kp</p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">2n</span></code> (number of joints)</p>
+<p>The control law is the same as for fixed impedance but, in this controller, <span class="math notranslate nohighlight">\(k_p`\)</span> can be determined by the policy/solution at each policy step.</p>
+</section>
+<section id="joint-space-control-position-with-variable-impedance">
+<h3>Joint Space Control - Position with Variable Impedance<a class="headerlink" href="#joint-space-control-position-with-variable-impedance" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code></p>
+<p>Impedance: variable</p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">3n</span></code> (number of joints)</p>
+<p>Again, the control law is the same in the two previous control types, but now both the stiffness and damping parameters, <span class="math notranslate nohighlight">\(k_p\)</span> and <span class="math notranslate nohighlight">\(k_d\)</span>, are controllable by the policy/solution and can be changed at each step.</p>
+</section>
+<section id="operational-space-control-pose-with-fixed-impedance">
+<h3>Operational Space Control - Pose with Fixed Impedance<a class="headerlink" href="#operational-space-control-pose-with-fixed-impedance" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code></p>
+<p>Impedance: fixed</p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">6</span></code></p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code> controller, the desired value is the 6D pose (position and orientation) of a controlled frame. We follow the formalism from <a class="reference external" href="https://ieeexplore.ieee.org/document/1087068">[Khatib87]</a>. Our control frame is always the <code class="docutils literal notranslate"><span class="pre">eef_site</span></code> defined in the <a class="reference external" href="https://robosuite.ai/docs/modeling/robot_model.html#gripper-model">Gripper Model</a>, placed at the end of the last link for robots without gripper or between the fingers for robots with gripper. The operational space control framework (OSC) computes the necessary joint torques to minimize the error between the desired and the current pose of the <code class="docutils literal notranslate"><span class="pre">eef_site</span></code> with the minimal kinematic energy.</p>
+<p>Given a desired pose <span class="math notranslate nohighlight">\(\mathbf{x}_{\mathit{des}}\)</span> and the current end-effector pose, , we first compute the end-effector acceleration that would help minimize the error between both, assumed. PD (proportional-derivative) control schema to improve convergence and stability. For that, we first decompose into a desired position, <span class="math notranslate nohighlight">\(p_d \in \mathbb{R}^3\)</span>, and a desired orientation, <span class="math notranslate nohighlight">\(R_d \in \mathbb{SO}(3)\)</span>. The end-effector acceleration to minimize the error should increase with the difference between desired end-effector pose and current pose, <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(R\)</span> (proportional term), and decrease with the current end-effector velocity, <span class="math notranslate nohighlight">\(v\)</span> and <span class="math notranslate nohighlight">\(\omega\)</span> (derivative term).</p>
+<p>We then compute the robot actuation (joint torques) to achieve the desired end-effector space accelerations leveraging the kinematic and dynamic models of the robot with the dynamically-consistent operational space formulation in <a class="reference external" href="https://journals.sagepub.com/doi/10.1177/027836499501400103">[Khatib1995a]</a>. First, we compute the wrenches at the end-effector that corresponds to the desired accelerations, <span class="math notranslate nohighlight">\({f}\in\mathbb{R}^{6}\)</span>.
+Then, we map the wrenches in end-effector space <span class="math notranslate nohighlight">\({f}\)</span> to joint torque commands with the end-effector Jacobian at the current joint configuration <span class="math notranslate nohighlight">\(J=J(q)\)</span>: <span class="math notranslate nohighlight">\(\tau = J^T{f}\)</span>.</p>
+<p>Thus, the function that maps end-effector space position and orientation to low-level robot commands is (<span class="math notranslate nohighlight">\(\textrm{ee} = \textrm{\it end-effector space}\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[\begin{equation}
+\begin{aligned}
+\tau &amp;= J_p[\Lambda_p[k_p^p (p_d - p) - k_v^p v]] + J_R[\Lambda_R\left[k_p^R(R_d \ominus R) - k_d^R \omega \right]]
+\end{aligned}
+\end{equation}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Lambda_p\)</span> and <span class="math notranslate nohighlight">\(\Lambda_R\)</span> are the parts corresponding to position and orientation in <span class="math notranslate nohighlight">\(\Lambda \in \mathbb{R}^{6\times6}\)</span>, the inertial matrix in the end-effector frame that decouples the end-effector motions, <span class="math notranslate nohighlight">\(J_p\)</span> and <span class="math notranslate nohighlight">\(J_R\)</span> are the position and orientation parts of the end-effector Jacobian, and <span class="math notranslate nohighlight">\(\ominus\)</span> corresponds to the subtraction in <span class="math notranslate nohighlight">\(\mathbb{SO}(3)\)</span>. The difference between current and desired position (<span class="math notranslate nohighlight">\(\Delta_p= p_d - p\)</span>) and between current and desired orientation (<span class="math notranslate nohighlight">\(\Delta_R = R_d \ominus R\)</span>) can be used as alternative policy action space, <span class="math notranslate nohighlight">\(\mathcal{A}\)</span>. <span class="math notranslate nohighlight">\(k_p^p\)</span>, <span class="math notranslate nohighlight">\(k_p^d\)</span>, <span class="math notranslate nohighlight">\(k_p^R\)</span>, and <span class="math notranslate nohighlight">\(k_d^R\)</span> are vectors of proportional and derivative gains for position and orientation (parameters <span class="math notranslate nohighlight">\(\kappa\)</span>), respectively, set once at initialization and kept fixed.</p>
+</section>
+<section id="operational-space-control-pose-with-variable-stiffness">
+<h3>Operational Space Control - Pose with Variable Stiffness<a class="headerlink" href="#operational-space-control-pose-with-variable-stiffness" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code></p>
+<p>Impedance: variable_kp</p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">12</span></code></p>
+<p>The control law is the same as <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code> but, in this case, the stiffness of the controller, <span class="math notranslate nohighlight">\(k_p\)</span>, is part of the action space and can be controlled and changed at each time step by the policy/solution. The damping parameters, <span class="math notranslate nohighlight">\(k_d\)</span>, are set to maintain the critically damped behavior of the controller.</p>
+</section>
+<section id="operational-space-control-pose-with-variable-impedance">
+<h3>Operational Space Control - Pose with Variable Impedance<a class="headerlink" href="#operational-space-control-pose-with-variable-impedance" title="Link to this heading">#</a></h3>
+<p>Controller Type: <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code></p>
+<p>Impedance: variable</p>
+<p>Action Dimensions (not including gripper): <code class="docutils literal notranslate"><span class="pre">18</span></code></p>
+<p>The control law is the same as in the to previous controllers, but now both the stiffness and the damping, <span class="math notranslate nohighlight">\(k_p\)</span> and <span class="math notranslate nohighlight">\(k_d\)</span>, are part of the action space and can be controlled and changed at each time step by the policy/solution.</p>
+</section>
+</section>
+<section id="configurations">
+<h2>Configurations<a class="headerlink" href="#configurations" title="Link to this heading">#</a></h2>
+<p>The <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/controllers/config">config directory</a> provides a set of default configuration files that hold default examples of parameters relevant to individual controllers. Note that when creating your controller config templates of a certain type of controller, the listed parameters in the default example are required and should be specified accordingly.</p>
+<p>Note: Each robot has its own default controller configuration which is called by default unless a different controller config is called.</p>
+<p>Below, a brief overview and description of each subset of controller parameters are shown:</p>
+<section id="controller-settings">
+<h3>Controller Settings<a class="headerlink" href="#controller-settings" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: Type of controller to control. Can be <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code>, <code class="docutils literal notranslate"><span class="pre">OSC_POSITION</span></code>, <code class="docutils literal notranslate"><span class="pre">IK_POSE</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT_VELOCITY</span></code>, or <code class="docutils literal notranslate"><span class="pre">JOINT_TORQUE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">interpolation</span></code>: If not <code class="docutils literal notranslate"><span class="pre">null</span></code>, specified type of interpolation to use between desired actions. Currently only <code class="docutils literal notranslate"><span class="pre">linear</span></code> is supported.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ramp_ratio</span></code>: If using <code class="docutils literal notranslate"><span class="pre">linear</span></code> interpolation, specifies the proportion of allotted timesteps (value from [0, 1]) over which to execute the interpolated commands.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{...}_limits</span></code>: Limits for that specific controller. E.g.: for a <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code>, the relevant limits are its joint positions, <code class="docutils literal notranslate"><span class="pre">qpos_limits</span></code> . Can be either a 2-element list (same min/max limits across entire relevant space), or a list of lists (specific limits for each component)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ik_{pos,</span> <span class="pre">ori}_limit</span></code>: Only applicable for IK controller. Limits the magnitude of the desired relative change in position / orientation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{input,output}_{min,max}</span></code>: Scaling ranges for mapping action space inputs into controller inputs. Settings these limits will automatically clip the action space input to be within the <code class="docutils literal notranslate"><span class="pre">input_{min,max}</span></code> before mapping the requested value into the specified <code class="docutils literal notranslate"><span class="pre">output_{min,max}</span></code> range. Can be either a scalar (same limits across entire action space), or a list (specific limits for each action component)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kp</span></code>: Where relevant, specifies the proportional gain for the controller. Can be either be a scalar (same value for all controller dimensions), or a list (specific values for each dimension)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">damping_ratio</span></code>: Where relevant, specifies the damping ratio constant for the controller.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">impedance_mode</span></code>: For impedance-based controllers (<code class="docutils literal notranslate"><span class="pre">OSC_*</span></code>, <code class="docutils literal notranslate"><span class="pre">JOINT_POSITION</span></code>), determines the impedance mode for the controller, i.e. the nature of the impedance parameters. It can be <code class="docutils literal notranslate"><span class="pre">fixed</span></code>, <code class="docutils literal notranslate"><span class="pre">variable</span></code>, or <code class="docutils literal notranslate"><span class="pre">variable_kp</span></code> (kd is adjusted to provide critically damped behavior).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kp_limits,</span> <span class="pre">damping_ratio_limits</span></code>: Only relevant if <code class="docutils literal notranslate"><span class="pre">impedance_mode</span></code> is set to <code class="docutils literal notranslate"><span class="pre">variable</span></code> or <code class="docutils literal notranslate"><span class="pre">variable_kp</span></code>. Sets the limits for the resulting action space for variable impedance gains.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">control_delta</span></code>: Only relevant for <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code> or <code class="docutils literal notranslate"><span class="pre">OSC_POSITION</span></code> controllers. <code class="docutils literal notranslate"><span class="pre">true</span></code> interprets input actions as delta values from the current robot end-effector position. Otherwise, assumed to be absolute (global) values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">uncouple_pos_ori</span></code>: Only relevant for <code class="docutils literal notranslate"><span class="pre">OSC_POSE</span></code>. <code class="docutils literal notranslate"><span class="pre">true</span></code> decouples the desired position and orientation torques when executing the controller</p></li>
+</ul>
+</section>
+</section>
+<section id="loading-a-controller">
+<h2>Loading a Controller<a class="headerlink" href="#loading-a-controller" title="Link to this heading">#</a></h2>
+<p>By default, user will use the <cite>load_composite_controller_config()</cite> method to create a controller configuration.</p>
+<section id="using-a-default-controller-configuration">
+<h3>Using a Default Controller Configuration<a class="headerlink" href="#using-a-default-controller-configuration" title="Link to this heading">#</a></h3>
+<p>Any controller can be used with its default configuration, and can be easily loaded into a given environment by calling its name as shown below (where <code class="docutils literal notranslate"><span class="pre">controller</span></code> is one of acceptable controller <code class="docutils literal notranslate"><span class="pre">type</span></code> strings):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
+<span class="kn">from</span> <span class="nn">robosuite</span> <span class="kn">import</span> <span class="n">load_composite_controller_config</span>
+
+<span class="c1"># Load the desired controller config with default Basic controller</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">load_composite_controller_config</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="s2">&quot;BASIC&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create environment</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">suite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;Lift&quot;</span><span class="p">,</span> <span class="n">robots</span><span class="o">=</span><span class="s2">&quot;Panda&quot;</span><span class="p">,</span> <span class="n">controller_configs</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="o">...</span> <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="using-a-custom-controller-configuration">
+<h3>Using a Custom Controller Configuration<a class="headerlink" href="#using-a-custom-controller-configuration" title="Link to this heading">#</a></h3>
+<p>A custom controller configuration can also be used by simply creating a new config (<code class="docutils literal notranslate"><span class="pre">.json</span></code>) file with the relevant parameters as specified above. All robosuite environments have an optional <code class="docutils literal notranslate"><span class="pre">controller_configs</span></code> argument that can be used to pass in specific controller settings. Note that this is expected to be a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, so the new configuration must be read in and parsed as a <code class="docutils literal notranslate"><span class="pre">dict</span></code> before passing it during the environment <code class="docutils literal notranslate"><span class="pre">robosuite.make(...)</span></code> call. A brief example script showing how to import a custom controller configuration is shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
+<span class="kn">from</span> <span class="nn">robosuite</span> <span class="kn">import</span> <span class="n">load_composite_controller_config</span>
+
+<span class="c1"># Path to config file</span>
+<span class="n">controller_fpath</span> <span class="o">=</span> <span class="s2">&quot;/your/custom/config/filepath/here/filename.json&quot;</span>
+
+<span class="c1"># Import the file as a dict</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">load_composite_controller_config</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">controller_fpath</span><span class="p">)</span>
+
+<span class="c1"># Create environment</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">suite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;Lift&quot;</span><span class="p">,</span> <span class="n">robots</span><span class="o">=</span><span class="s2">&quot;Panda&quot;</span><span class="p">,</span> <span class="n">controller_configs</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="o">...</span> <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
 
 
                 </article>
@@ -643,20 +657,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="robots.html"
+       href="renderers.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Robots</p>
+        <p class="prev-next-title">Renderers</p>
       </div>
     </a>
     <a class="right-next"
-       href="objects.html"
+       href="../tutorials/add_controller.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Objects</p>
+        <p class="prev-next-title">Adding Third Party Controllers</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -676,9 +690,35 @@
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav class="bd-toc-nav page-toc">
-    <ul class="simple visible nav section-nav flex-column">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#composite-controllers">Composite Controllers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic"><strong>Basic</strong></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wholebodyik"><strong>WholeBodyIK</strong></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#third-party-controllers"><strong>Third-party Controllers</strong></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-of-loading-configs">Workflow of Loading Configs</a></li>
 </ul>
-
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-controllers">Part Controllers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-torque">Joint Space Control - Torque</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-velocity">Joint Space Control - Velocity</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-position-with-fixed-impedance">Joint Space Control - Position with Fixed Impedance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-position-with-variable-stiffness">Joint Space Control - Position with Variable Stiffness</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-space-control-position-with-variable-impedance">Joint Space Control - Position with Variable Impedance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-space-control-pose-with-fixed-impedance">Operational Space Control - Pose with Fixed Impedance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-space-control-pose-with-variable-stiffness">Operational Space Control - Pose with Variable Stiffness</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-space-control-pose-with-variable-impedance">Operational Space Control - Pose with Variable Impedance</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configurations">Configurations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#controller-settings">Controller Settings</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-a-controller">Loading a Controller</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-default-controller-configuration">Using a Default Controller Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-custom-controller-configuration">Using a Custom Controller Configuration</a></li>
+</ul>
+</li>
+</ul>
   </nav></div>
 
 </div></div>
