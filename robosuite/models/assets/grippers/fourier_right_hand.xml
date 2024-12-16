@@ -78,7 +78,7 @@
   </asset>
 
   <worldbody>
-    <body name="right_hand" pos="0 0 0" quat="0.7071068 0 0 0.7071068">
+    <body name="right_hand" pos="0 0 0" quat="0.7071068 0.7071068 0 0">
       <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="1"/>
       <!-- <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/> -->
       <body name="eef" pos="0 0 0" quat="0.707 0. -0.707 0.">
@@ -91,6 +91,7 @@
       </body>
 
       <!-- Palm -->
+      <body quat="0.5 -0.5 0.5 0.5">
       <body name="r_palm" pos="0 0 0">
         <geom name="r_palm_vis" type="mesh" material="r_base_material" mesh="R_hand_base_link_vis" group="1" contype="0" conaffinity="0"/>
         <geom name="r_palm_col" type="mesh" mass="0.5" mesh="R_hand_base_link_col"/>
@@ -189,6 +190,7 @@
           </body>
         </body>
         <!-- End of Pinky -->
+      </body>
       </body>
       <!-- End of Palm -->
     </body>
