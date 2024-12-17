@@ -1,5 +1,6 @@
 import time
 
+from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 from robosuite.utils.input_utils import *
 
 MAX_FR = 25  # max frame rate for running simluation
@@ -40,6 +41,21 @@ if __name__ == "__main__":
     else:
         options["robots"] = choose_robots(exclude_bimanual=True)
 
+    # hardcoded GR1: TODO remove
+    options["robots"] = "GR1FixedLowerBody"
+    # Get controller config
+    controller_config = load_composite_controller_config(
+        controller="BASIC",
+    )
+
+    if controller_config["type"] == "WHOLE_BODY_MINK_IK":
+        # mink-speicific import. requires installing mink
+        from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
+
+    # Create argument configuration
+    options["controller_configs"] = controller_config
+    # hardcoded GR1: TODO remove
+
     # initialize the task
     env = suite.make(
         **options,
@@ -60,6 +76,7 @@ if __name__ == "__main__":
         start = time.time()
 
         action = np.random.uniform(low, high)
+        env.robots[0].print_action_info_dict()  # TODO(remove)
         obs, reward, done, _ = env.step(action)
         env.render()
 

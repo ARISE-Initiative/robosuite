@@ -107,6 +107,9 @@ class SimpleGripController(GripperController):
         # initialize
         self.goal_qvel = None
 
+        self.joint_names = self.joint_index  # joint_index is a list of strings for some reason, at least for GR1. #TODO
+
+
     def set_goal(self, action, set_qpos=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
