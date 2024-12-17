@@ -256,11 +256,17 @@ class OperationalSpaceController(Controller):
         if self.input_type == "delta":
             scaled_delta = self.scale_action(delta)
             self.goal_pos = self.compute_goal_pos(scaled_delta[0:3])
-            self.goal_ori = self.compute_goal_ori(scaled_delta[3:6])
+            if self.use_ori is True:
+                self.goal_ori = self.compute_goal_ori(scaled_delta[3:6])
+            else:
+                self.goal_ori = self.compute_goal_ori(np.zeros(3))
         # Else, interpret actions as absolute values
         elif self.input_type == "absolute":
             self.goal_pos = action[0:3]
-            self.goal_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
+            if self.use_ori is True:
+                self.goal_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
+            else:
+                self.goal_ori = self.compute_goal_ori(np.zeros(3))
         else:
             raise ValueError(f"Unsupport input_type {self.input_type}")
 
