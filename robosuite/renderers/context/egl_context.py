@@ -126,7 +126,7 @@ class EGLGLContext:
                     "required for creating a headless rendering context."
                 )
             atexit.register(EGL.eglTerminate, EGL_DISPLAY)
-        EGL.eglChooseConfig(EGL_DISPLAY, EGL_ATTRIBUTES, config_ptr, config_size, num_configs)
+        EGL.eglChooseConfig(EGL_DISPLAY, EGL_ATTRIBUTES, ctypes.pointer(config_ptr), config_size, num_configs)
         if num_configs.value < 1:
             raise RuntimeError(
                 "EGL failed to find a framebuffer configuration that matches the "
