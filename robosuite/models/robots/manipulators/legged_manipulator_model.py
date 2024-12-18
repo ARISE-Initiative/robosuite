@@ -41,6 +41,12 @@ class LeggedManipulatorModel(ManipulatorModel):
                     parent_body = find_parent(self.tendon, fixed)
                     parent_body.remove(fixed)
                     break
+        # remove joint in equality
+        for equality in self.equality.findall(".//joint"):
+            # If either joint1 or joint2 is the joint we want to remove
+            if part_name in equality.get("joint1") or part_name in equality.get("joint2"):
+                parent_body = find_parent(self.equality, equality)
+                parent_body.remove(equality)
 
     def _remove_free_joint(self):
         # remove freejoint
