@@ -19,6 +19,7 @@ For Linux support, you can find open-source Linux drivers and SDKs online.
 import threading
 import time
 from collections import namedtuple
+from typing import Dict, List, Optional  # for abstract base class definitions
 
 import numpy as np
 from pynput.keyboard import Controller, Key, Listener
@@ -101,37 +102,26 @@ def convert(b1, b2):
     return scale_to_control(to_int16(b1, b2))
 
 
-class SpaceMouse(Device):
+class SpaceMouseListener:
     """
-    A minimalistic driver class for SpaceMouse with HID library.
+    A wrapper for interfacing with SpaceMouse devices using the HID library.
 
-    Note: Use hid.enumerate() to view all USB human interface devices (HID).
-    Make sure SpaceMouse is detected before running the script.
-    You can look up its vendor/product id from this method.
+    This class provides methods to initialize the device, configure sensitivity settings,
+    handle 6-DOF input data, and run a listener thread to continuously receive input
+    from the SpaceMouse hardware.
 
     Args:
-        env (RobotEnv): The environment which contains the robot(s) to control
-                        using this device.
-        pos_sensitivity (float): Magnitude of input position command scaling
-        rot_sensitivity (float): Magnitude of scale input rotation commands scaling
+        product_id (int): The unique identifier for the SpaceMouse model.
+        device_path (str): Path to the device as detected by the HID library.
+        pos_sensitivity (float): Scaling factor for position commands.
+        rot_sensitivity (float): Scaling factor for rotational commands.
     """
 
-    def __init__(
-        self,
-        env,
-        vendor_id=macros.SPACEMOUSE_VENDOR_ID,
-        product_id=macros.SPACEMOUSE_PRODUCT_ID,
-        pos_sensitivity=1.0,
-        rot_sensitivity=1.0,
-    ):
-        super().__init__(env)
-
-        print("Opening SpaceMouse device")
-        self.vendor_id = vendor_id
+    def __init__(self, product_id, device_path, pos_sensitivity, rot_sensitivity):
         self.product_id = product_id
         self.device = hid.device()
         try:
-            self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
+            self.device.open_path(device_path)  # SpaceMouse
         except OSError as e:
             ROBOSUITE_DEFAULT_LOGGER.warning(
                 "Failed to open SpaceMouse device"
@@ -149,8 +139,6 @@ class SpaceMouse(Device):
         self.x, self.y, self.z = 0, 0, 0
         self.roll, self.pitch, self.yaw = 0, 0, 0
 
-        self._display_controls()
-
         self.single_click_and_hold = False
 
         self._control = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -163,41 +151,10 @@ class SpaceMouse(Device):
         self.thread.daemon = True
         self.thread.start()
 
-        # also add a keyboard for aux controls
-        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
-
-        # start listening
-        self.listener.start()
-
-    @staticmethod
-    def _display_controls():
-        """
-        Method to pretty print controls.
-        """
-
-        def print_command(char, info):
-            char += " " * (30 - len(char))
-            print("{}\t{}".format(char, info))
-
-        print("")
-        print_command("Control", "Command")
-        print_command("Right button", "reset simulation")
-        print_command("Left button (hold)", "close gripper")
-        print_command("Move mouse laterally", "move arm horizontally in x-y plane")
-        print_command("Move mouse vertically", "move arm vertically")
-        print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
-        print_command("Control+C", "quit")
-        print_command("b", "toggle arm/base mode (if applicable)")
-        print_command("s", "switch active arm (if multi-armed robot)")
-        print_command("=", "switch active robot (if multi-robot environment)")
-        print("")
-
     def _reset_internal_state(self):
         """
         Resets internal state of controller, except for the reset signal.
         """
-        super()._reset_internal_state()
-
         self.rotation = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
         # Reset 6-DOF variables
         self.x, self.y, self.z = 0, 0, 0
@@ -239,7 +196,6 @@ class SpaceMouse(Device):
             raw_drotation=np.array([roll, pitch, yaw]),
             grasp=self.control_gripper,
             reset=self._reset_state,
-            base_mode=int(self.base_mode),
         )
 
     def run(self):
@@ -310,8 +266,6 @@ class SpaceMouse(Device):
                     # right button is for reset
                     if d[1] == 2:
                         self._reset_state = 1
-                        self._enabled = False
-                        self._reset_internal_state()
 
     @property
     def control(self):
@@ -334,6 +288,140 @@ class SpaceMouse(Device):
         if self.single_click_and_hold:
             return 1.0
         return 0
+
+
+class SpaceMouse(Device):
+    """
+    A minimalistic driver class for SpaceMouse with HID library.
+
+    Note: Use hid.enumerate() to view all USB human interface devices (HID).
+    Make sure SpaceMouse is detected before running the script.
+    You can look up its vendor/product id from this method.
+
+    Args:
+        env (RobotEnv): The environment which contains the robot(s) to control
+                        using this device.
+        vendor_id (int): The vendor ID used to locate the device.
+        product_id (int): Currently unused. The product ID is retrieved from hid.enumerate().
+        pos_sensitivity (float): Magnitude of input position command scaling
+        rot_sensitivity (float): Magnitude of scale input rotation commands scaling
+    """
+
+    def __init__(
+        self,
+        env,
+        vendor_id=macros.SPACEMOUSE_VENDOR_ID,
+        product_id=macros.SPACEMOUSE_PRODUCT_ID,
+        pos_sensitivity=1.0,
+        rot_sensitivity=1.0,
+    ):
+        super().__init__(env)
+
+        print("Opening SpaceMouse device")
+        self.vendor_id = vendor_id
+        self.product_id = product_id
+
+        self._display_controls()
+
+        product_id_path_pairs = set()
+        for device in hid.enumerate():
+            if device["vendor_id"] == vendor_id:
+                product_id_path_pairs.add((device["product_id"], device["path"]))
+        product_id_path_pairs = sorted(list(product_id_path_pairs))
+
+        self.listeners = []
+        for product_id, path in product_id_path_pairs:
+            self.listeners.append(SpaceMouseListener(product_id, path, pos_sensitivity, rot_sensitivity))
+
+        # also add a keyboard for aux controls
+        self.listener = Listener(on_press=self.on_press, on_release=self.on_release)
+
+        # start listening
+        self.listener.start()
+
+    @staticmethod
+    def _display_controls():
+        """
+        Method to pretty print controls.
+        """
+
+        def print_command(char, info):
+            char += " " * (30 - len(char))
+            print("{}\t{}".format(char, info))
+
+        print("")
+        print_command("Control", "Command")
+        print_command("Right button", "reset simulation")
+        print_command("Left button (hold)", "close gripper")
+        print_command("Move mouse laterally", "move arm horizontally in x-y plane")
+        print_command("Move mouse vertically", "move arm vertically")
+        print_command("Twist mouse about an axis", "rotate arm about a corresponding axis")
+        print_command("Control+C", "quit")
+        print_command("b", "toggle arm/base mode (if applicable)")
+        print_command("s", "switch active arm (if multi-armed robot)")
+        print_command("=", "switch active robot (if multi-robot environment)")
+        print("")
+
+    def _reset_internal_state(self):
+        """
+        Resets internal state of controller, except for the reset signal.
+        """
+        super()._reset_internal_state()
+
+        for listener in self.listeners:
+            listener._reset_internal_state()
+
+    def start_control(self):
+        """
+        Method that should be called externally before controller can
+        start receiving commands.
+        """
+        self._reset_internal_state()
+        for listener in self.listeners:
+            listener.start_control()
+
+    def get_controller_state(self):
+        """
+        Grabs the current state of the 3D mouse.
+
+        Returns:
+            dict: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
+        """
+        controller_state = self.listeners[self.active_arm_index % len(self.listeners)].get_controller_state()
+        controller_state.update({"base_mode": int(self.base_mode)})
+        return controller_state
+
+    def input2action(self, mirror_actions=False) -> Optional[Dict]:
+        """
+        Processes input from all space mice and computes the final action for the robot.
+
+        Args:
+            mirror_actions (bool): Whether to mirror the actions for a mirrored setup.
+
+        Returns:
+            Optional[Dict]: A dictionary containing the computed actions for the active arm,
+            or None if a reset is triggered.
+        """
+        final_ac = None
+        original_arm_index = self.active_arm_index
+        for i in range(len(self.listeners)):
+            ac_dict = super().input2action(mirror_actions)
+            if ac_dict is None:  # reset from any space mouse
+                for listener in self.listeners:
+                    listener._reset_state = 1
+                    listener._enabled = False
+                self._reset_internal_state()
+                return None
+            elif final_ac is None:
+                final_ac = ac_dict
+            else:
+                active_arm = self.active_arm
+                final_ac[f"{active_arm}_abs"] = ac_dict[f"{active_arm}_abs"]
+                final_ac[f"{active_arm}_delta"] = ac_dict[f"{active_arm}_delta"]
+                final_ac[f"{active_arm}_gripper"] = ac_dict[f"{active_arm}_gripper"]
+            self.active_arm_index = (self.active_arm_index + 1) % len(self.all_robot_arms[self.active_robot])
+        self.active_arm_index = original_arm_index
+        return final_ac
 
     def on_press(self, key):
         """
@@ -372,8 +460,23 @@ class SpaceMouse(Device):
 
 
 if __name__ == "__main__":
+    vendor_id = macros.SPACEMOUSE_VENDOR_ID
+    pos_sensitivity = 1.0
+    rot_sensitivity = 1.0
 
-    space_mouse = SpaceMouse()
+    space_mice = []
+    device_pathes = set()
+    for device in hid.enumerate():
+        if device["vendor_id"] == vendor_id and device["path"] not in device_pathes:
+            space_mice.append(
+                SpaceMouseListener(device["product_id"], device["path"], pos_sensitivity, rot_sensitivity)
+            )
+            device_pathes.add(device["path"])
+
+    for space_mouse in space_mice:
+        space_mouse.start_control()
+
     for i in range(100):
-        print(space_mouse.control, space_mouse.control_gripper)
+        for i, space_mouse in enumerate(space_mice):
+            print(f"[Device {i}] {space_mouse.control} {space_mouse.control_gripper}")
         time.sleep(0.02)
