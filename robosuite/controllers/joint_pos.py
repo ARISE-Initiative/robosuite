@@ -76,6 +76,8 @@ class JointPositionController(Controller):
         interpolator (Interpolator): Interpolator object to be used for interpolating from the current joint position to
             the goal joint position during each timestep between inputted actions
 
+        control_delta (bool): Whether to control the robot using delta or absolute commands
+
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
 
@@ -101,6 +103,7 @@ class JointPositionController(Controller):
         policy_freq=20,
         qpos_limits=None,
         interpolator=None,
+        control_delta=True,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -110,6 +113,9 @@ class JointPositionController(Controller):
             joint_indexes,
             actuator_range,
         )
+
+        # Determine whether we want to use delta or absolute values as inputs
+        self.use_delta = control_delta
 
         # Control dimension
         self.control_dim = len(joint_indexes["joints"])
@@ -195,10 +201,14 @@ class JointPositionController(Controller):
         # Check to make sure delta is size self.joint_dim
         assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
 
-        if delta is not None:
-            scaled_delta = self.scale_action(delta)
+        if self.use_delta:
+            if delta is not None:
+                scaled_delta = self.scale_action(delta)
+            else:
+                scaled_delta = None
         else:
-            scaled_delta = None
+            set_qpos = delta[:]
+            scaled_delta = delta
 
         self.goal_qpos = set_goal_position(
             scaled_delta, self.joint_pos, position_limit=self.position_limits, set_pos=set_qpos
