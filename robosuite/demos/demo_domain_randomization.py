@@ -2,7 +2,7 @@
 Script to showcase domain randomization functionality.
 """
 
-import mujoco
+import time
 
 import robosuite.macros as macros
 from robosuite.utils.input_utils import *
@@ -12,7 +12,6 @@ from robosuite.wrappers import DomainRandomizationWrapper
 macros.USING_INSTANCE_RANDOMIZATION = True
 
 if __name__ == "__main__":
-    assert mujoco.__version__ == "3.1.1", "Script requires mujoco-py version 3.1.1 to run"
     # Create dict to hold options that will be passed to env creation call
     options = {}
 
@@ -57,9 +56,16 @@ if __name__ == "__main__":
         control_freq=20,
         hard_reset=False,  # TODO: Not setting this flag to False brings up a segfault on macos or glfw error on linux
     )
-    env = DomainRandomizationWrapper(env)
+    env = DomainRandomizationWrapper(
+        env,
+        randomize_color=False,  # randomize_color currently only works for mujoco==3.1.1
+        randomize_camera=False,  # less jarring when visualizing
+        randomize_dynamics=False,
+    )
     env.reset()
     env.viewer.set_camera(camera_id=0)
+
+    max_frame_rate = 20  # Set the desired maximum frame rate
 
     # Get action limits
     low, high = env.action_spec
@@ -69,3 +75,4 @@ if __name__ == "__main__":
         action = np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
         env.render()
+        time.sleep(1 / max_frame_rate)
