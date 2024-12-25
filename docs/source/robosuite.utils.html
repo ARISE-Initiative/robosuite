@@ -1220,6 +1220,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.FileFormatter.format"><code class="docutils literal notranslate"><span class="pre">FileFormatter.format()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.format_message"><code class="docutils literal notranslate"><span class="pre">format_message()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.rs_assert"><code class="docutils literal notranslate"><span class="pre">rs_assert()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.mjcf_utils">robosuite.utils.mjcf_utils module</a><ul class="nav section-nav flex-column">
@@ -6193,6 +6195,40 @@ Adapted from robomimic: <a class="github reference external" href="https://githu
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.log_utils.format_message">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">format_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#robosuite.utils.log_utils.format_message" title="Link to this definition">#</a></dt>
+<dd><p>Format a message with colors based on the level and include file and line number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>level</strong> (<em>str</em>) – The logging level (e.g., “DEBUG”, “INFO”, “WARNING”, “ERROR”, “CRITICAL”).</p></li>
+<li><p><strong>message</strong> (<em>str</em>) – The message to format.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The formatted message with file and line number.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.log_utils.rs_assert">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">rs_assert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">condition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.log_utils.rs_assert" title="Link to this definition">#</a></dt>
+<dd><p>Assert a condition and raise an error with a formatted message if the condition fails.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>condition</strong> (<em>bool</em>) – The condition to check.</p></li>
+<li><p><strong>message</strong> (<em>str</em>) – The error message to display if the assertion fails.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-robosuite.utils.mjcf_utils">
 <span id="robosuite-utils-mjcf-utils-module"></span><h2>robosuite.utils.mjcf_utils module<a class="headerlink" href="#module-robosuite.utils.mjcf_utils" title="Link to this heading">#</a></h2>
@@ -10298,6 +10334,8 @@ between 0 and 1.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.FileFormatter.format"><code class="docutils literal notranslate"><span class="pre">FileFormatter.format()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.format_message"><code class="docutils literal notranslate"><span class="pre">format_message()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.rs_assert"><code class="docutils literal notranslate"><span class="pre">rs_assert()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.mjcf_utils">robosuite.utils.mjcf_utils module</a><ul class="nav section-nav flex-column">
