@@ -23,6 +23,8 @@ MuJoCo exposes users to an OpenGL context supported by [mujoco](https://mujoco.r
 
 Users are also able to render using photorealistic methods through Isaac Sim. Specifically, we users are able to choose between two rendering modes: ray tracing and path tracing. For more information about Isaac Sim rendering options, please visit [here](https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer.html). Isaac renderers are only available to those who are running on a Linux or Windows machine.
 
+To install Isaac on your local system, please follow the instructions listed [here](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/pip_installation.html). Make sure to follow instructions to install both Isaac Sim and Isaac Lab. 
+
 ### Ray tracing
 ![Ray tracing](../images/gr1_cereal_ray_tracing.png "Ray tracing")
 
