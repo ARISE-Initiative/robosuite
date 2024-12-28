@@ -188,6 +188,10 @@ class LeggedRobot(MobileRobot):
             applied_action_high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 1]
             actuator_indexes = self._ref_actuators_indexes_dict[part_name]
             actuator_gears = self.sim.model.actuator_gear[actuator_indexes, 0]
+
+            # select only the joints that are actuated
+            actuated_joint_indexes = self._ref_actuator_to_joint_id[actuator_indexes]
+            applied_action = applied_action[actuated_joint_indexes]
             applied_action = np.clip(applied_action / actuator_gears, applied_action_low, applied_action_high)
             self.sim.data.ctrl[actuator_indexes] = applied_action
 

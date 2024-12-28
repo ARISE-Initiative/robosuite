@@ -266,6 +266,13 @@ class MobileRobot(Robot):
             self.sim.model.joint_name2id(joint) for joint in self.robot_model.head_joints
         ]
 
+        self._ref_actuator_to_joint_id = np.ones(self.sim.model.nu).astype(np.int32) * (-1)
+        for part_name, actuator_ids in self._ref_actuators_indexes_dict.items():
+            self._ref_actuator_to_joint_id[actuator_ids] = np.array([
+                self._ref_joints_indexes_dict[part_name].index(self.sim.model.actuator_trnid[i, 0])
+                for i in actuator_ids
+            ])
+
     def control(self, action, policy_step=False):
         """
         Actuate the robot with the
