@@ -527,6 +527,8 @@ please set shareable to be false.
         geom_name = mujoco.mj_id2name(self.model, geom.objtype, geom.objid)
         if not geom_name:
             geom_name = "None"
+        geom_name = geom_name.replace("-", "m_")
+        geom_name = geom_name.replace("+", "p_")
         geom_name += f"_id{geom.objid}"
 
         # adding additional naming information to differentiate
