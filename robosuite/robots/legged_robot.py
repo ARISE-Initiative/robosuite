@@ -8,6 +8,7 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory, load_part_controller_config
+from robosuite.controllers.parts.generic import JointPositionController, JointTorqueController, JointVelocityController
 from robosuite.models.bases.leg_base_model import LegBaseModel
 from robosuite.robots.mobile_robot import MobileRobot
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
@@ -189,9 +190,16 @@ class LeggedRobot(MobileRobot):
             actuator_indexes = self._ref_actuators_indexes_dict[part_name]
             actuator_gears = self.sim.model.actuator_gear[actuator_indexes, 0]
 
-            # select only the joints that are actuated
-            actuated_joint_indexes = self._ref_actuator_to_joint_id[actuator_indexes]
-            applied_action = applied_action[actuated_joint_indexes]
+            part_controllers = self.composite_controller.get_controller(part_name)
+            if (
+                isinstance(part_controllers, JointPositionController)
+                or isinstance(part_controllers, JointVelocityController)
+                or isinstance(part_controllers, JointTorqueController)
+            ):
+                # select only the joints that are actuated
+                actuated_joint_indexes = self._ref_actuator_to_joint_id[actuator_indexes]
+                applied_action = applied_action[actuated_joint_indexes]
+
             applied_action = np.clip(applied_action / actuator_gears, applied_action_low, applied_action_high)
             self.sim.data.ctrl[actuator_indexes] = applied_action
 
