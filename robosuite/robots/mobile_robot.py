@@ -268,10 +268,12 @@ class MobileRobot(Robot):
 
         self._ref_actuator_to_joint_id = np.ones(self.sim.model.nu).astype(np.int32) * (-1)
         for part_name, actuator_ids in self._ref_actuators_indexes_dict.items():
-            self._ref_actuator_to_joint_id[actuator_ids] = np.array([
-                self._ref_joints_indexes_dict[part_name].index(self.sim.model.actuator_trnid[i, 0])
-                for i in actuator_ids
-            ])
+            self._ref_actuator_to_joint_id[actuator_ids] = np.array(
+                [
+                    self._ref_joints_indexes_dict[part_name].index(self.sim.model.actuator_trnid[i, 0])
+                    for i in actuator_ids
+                ]
+            )
 
     def control(self, action, policy_step=False):
         """
