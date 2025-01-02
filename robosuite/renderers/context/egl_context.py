@@ -1,4 +1,4 @@
-# Modifications Copyright 2022 The robosuite Authors
+# Modifications Copyright 2025 The robosuite Authors
 # Original Copyright 2018 The dm_control Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
