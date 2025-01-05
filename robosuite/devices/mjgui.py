@@ -122,8 +122,8 @@ class MJGUI(Device):
         (i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
         from the controller itself.
 
-        TODO: unify this logic to be independent from controller type.
         """
+        # TODO: unify this logic to be independent from controller type.
         action: Dict[str, np.ndarray] = {}
         gripper_dof = self.env.robots[0].gripper[self.active_end_effector].dof
         site_names = self._get_site_names()

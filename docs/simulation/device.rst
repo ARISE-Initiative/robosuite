@@ -36,7 +36,7 @@ SpaceMouse Device
 
 MjGUI Device
 ------------
-.. autoclass:: robosuite.devices.mjgui.MjGUI
+.. autoclass:: robosuite.devices.mjgui.MJGUI
 
   .. automethod:: get_controller_state
   .. automethod:: input2action
