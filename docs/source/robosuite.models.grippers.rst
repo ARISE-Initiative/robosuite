@@ -4,6 +4,22 @@ robosuite.models.grippers package
 Submodules
 ----------
 
+robosuite.models.grippers.bd\_gripper module
+--------------------------------------------
+
+.. automodule:: robosuite.models.grippers.bd_gripper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.models.grippers.fourier\_hands module
+-----------------------------------------------
+
+.. automodule:: robosuite.models.grippers.fourier_hands
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.models.grippers.gripper\_factory module
 -------------------------------------------------
 
@@ -24,6 +40,14 @@ robosuite.models.grippers.gripper\_tester module
 ------------------------------------------------
 
 .. automodule:: robosuite.models.grippers.gripper_tester
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.models.grippers.inspire\_hands module
+-----------------------------------------------
+
+.. automodule:: robosuite.models.grippers.inspire_hands
    :members:
    :undoc-members:
    :show-inheritance:

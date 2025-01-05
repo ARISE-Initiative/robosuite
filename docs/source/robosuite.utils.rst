@@ -44,6 +44,14 @@ robosuite.utils.errors module
    :undoc-members:
    :show-inheritance:
 
+robosuite.utils.ik\_utils module
+--------------------------------
+
+.. automodule:: robosuite.utils.ik_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.utils.input\_utils module
 -----------------------------------
 
@@ -108,10 +116,34 @@ robosuite.utils.placement\_samplers module
    :undoc-members:
    :show-inheritance:
 
+robosuite.utils.robot\_composition\_utils module
+------------------------------------------------
+
+.. automodule:: robosuite.utils.robot_composition_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.utils.robot\_utils module
 -----------------------------------
 
 .. automodule:: robosuite.utils.robot_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.sim\_utils module
+---------------------------------
+
+.. automodule:: robosuite.utils.sim_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.utils.traj\_utils module
+----------------------------------
+
+.. automodule:: robosuite.utils.traj_utils
    :members:
    :undoc-members:
    :show-inheritance:

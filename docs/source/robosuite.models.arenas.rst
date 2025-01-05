@@ -28,6 +28,14 @@ robosuite.models.arenas.empty\_arena module
    :undoc-members:
    :show-inheritance:
 
+robosuite.models.arenas.multi\_table\_arena module
+--------------------------------------------------
+
+.. automodule:: robosuite.models.arenas.multi_table_arena
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.models.arenas.pegs\_arena module
 ------------------------------------------
 
