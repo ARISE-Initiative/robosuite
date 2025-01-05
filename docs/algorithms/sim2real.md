@@ -143,9 +143,7 @@ env.modify_observable(
 )
 
 # Take a single environment step with positive joint velocity actions
-arm_action = np.ones(env.robots[0].robot_model.dof) * 1.0
-gripper_action = [1]
-action = np.concatenate([arm_action, gripper_action])
+action = np.ones(env.robots[0].robot_model.dof) * 1.0
 env.step(action)
 
 # Now we can analyze what values were recorded

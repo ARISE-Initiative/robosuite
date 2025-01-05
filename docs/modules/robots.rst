@@ -1,13 +1,13 @@
 Robots
 =======
 
-.. figure:: ../images/robot_module.png
+.. figure:: ../images/robots_module_v15.png
 
-**Robots** are a key component in **robosuite**, and serve as the embodiment of a given agent as well as the central interaction point within an environment and key interface to MuJoCo for the robot-related state and control. **robosuite** captures this level of abstraction with the `Robot <../simulation/robot.html>`_-based classes, with support for both single-armed and bimanual variations. In turn, the Robot class is centrally defined by a `RobotModel <../modeling/robot_model.html>`_, `MountModel <../modeling/robot_model.html#mount-model>`_, and `Controller(s) <../simulation/controller.html>`_. Subclasses of the :class:`RobotModel` class may also include additional models as well; for example, the `ManipulatorModel <../modeling/robot_model.html#manipulator-model>`_ class also includes `GripperModel(s) <../modeling/robot_model.html#gripper-model>`_ (with no gripper being represented by a dummy class).
+**Robots** are a key component in **robosuite**, and serve as the embodiment of a given agent as well as the central interaction point within an environment and key interface to MuJoCo for the robot-related state and control. **robosuite** captures this level of abstraction with the `Robot <../simulation/robot>`_-based classes, with support for both single-armed and bimanual variations, as well as robots with mobile manipulation capabilities, including both legged and wheeled variants. In turn, the Robot class is centrally defined by a `RobotModel <../modeling/robot_model>`_, `RobotBaseModel <../modeling/robot_model.html#robot-base-model>`_, `GripperModel <../modeling/robot_model.html#gripper-model>`_, and `Controller(s) <../simulation/controller>`_. Subclasses of the ``RobotModel`` class may also include additional models as well; for example, the `ManipulatorModel <../modeling/robot_model.html#manipulator-model>`_ class also includes `GripperModel(s) <../modeling/robot_model.html#gripper-model>`_ (with no gripper being represented by a dummy class).
 
 The high-level features of **robosuite**'s robots are described as follows:
 
-* **Diverse and Realistic Models**: **robosuite** provides models for 8 commercially-available manipulator robots (including the bimanual Baxter robot), 7 grippers (including the popular Robotiq 140 / 85 models), and 6 controllers, with model properties either taken directly from the company website or raw spec sheets.
+* **Diverse and Realistic Models**: **robosuite** provides models for 10 commercially-available robots (including the humanoid GR1 Robot), 9 grippers (including the inspire dexterous hand model), 4 bases (including the Omron wheeled mobile base), and 6 body-part controllers, with model properties either taken directly from official product documentation or raw spec sheets. An additional 8 robots, 8 grippers, and 3 bases can be installed separately from the `robosuite-models <https://github.com/ARISE-Initiative/robosuite_models>`_ repository.
 
 * **Modularized Support**: Robots are designed to be plug-n-play -- any combinations of robots, models, and controllers can be used, assuming the given environment is intended for the desired robot configuration. Because each robot is assigned a unique ID number, multiple instances of identical robots can be instantiated within the simulation without error.
 
@@ -19,7 +19,7 @@ Below, we discuss the usage and functionality of the robots over the course of i
 
 Initialization
 --------------
-During environment creation (``suite.make(...)``), individual robots are both instantiated and initialized. The desired RobotModel, MountModel, and Controller(s) (where multiple and/or additional models may be specified, e.g. for manipulator bimanual robots) are loaded into each robot, with the models being passed into the environment to compose the final MuJoCo simulation object. Each robot is then set to its initial state.
+During environment creation (``suite.make(...)``), individual robots are both instantiated and initialized. The desired RobotModel, RobotBaseModel, and Controller(s) (where multiple and/or additional models may be specified, e.g. for manipulator bimanual robots) are loaded into each robot, with the models being passed into the environment to compose the final MuJoCo simulation object. Each robot is then set to its initial state.
 
 Runtime
 -------
