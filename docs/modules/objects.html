@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
@@ -413,8 +413,8 @@
 </section>
 <section id="the-mujocoobject-class">
 <h2>The MujocoObject class<a class="headerlink" href="#the-mujocoobject-class" title="Link to this heading">#</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MujocoObject</span><span class="p">(</span><span class="n">MujocoModel</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MujocoObject</span><span class="p">(</span><span class="n">MujocoModel</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
         
         <span class="o">...</span>
 
@@ -434,21 +434,21 @@
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">MujocoObject</span></code> is the base class of all objects. One must note that it is not a subclass of <code class="docutils literal notranslate"><span class="pre">MujocoXML</span></code>, but does extend from the unifying <code class="docutils literal notranslate"><span class="pre">MujocoModel</span></code> class from which all simulation models (including robots, grippers, etc.) should extend from. All of the attributes shown above prepended with a <code class="docutils literal notranslate"><span class="pre">_</span></code> are intended to be private variables and not accessed by external objects. Instead, any of these properties can be accessed via its public version, without the <code class="docutils literal notranslate"><span class="pre">_</span></code> (e.g.: to access all the object’s joints, call <code class="docutils literal notranslate"><span class="pre">obj.joints</span></code> instead of <code class="docutils literal notranslate"><span class="pre">obj._joints</span></code>). This is because all public attributes are automatically post-processed from their private counterparts and have naming prefixes appended to it.</p>
 <p>The XML of an object is generated once during initialization via the <code class="docutils literal notranslate"><span class="pre">_get_object_subtree</span></code> call, after which any external object can extract a reference to this XML via the <code class="docutils literal notranslate"><span class="pre">get_obj</span></code> call.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">_get_object_subtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span><span class="w"> </span><span class="nf">_get_object_subtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">get_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 </pre></div>
 </div>
 <p>Additionally, objects are usually placed relatively. For example, we want to put an object on a table or place a cube on top of another. Instance methods <code class="docutils literal notranslate"><span class="pre">get_bottom_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">get_top_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">get_horizontal_radius</span></code> provide the necessary information to place objects properly.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">get_bottom_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span><span class="w"> </span><span class="nf">get_bottom_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">get_top_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_top_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">get_horizontal_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_horizontal_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 </pre></div>
 </div>
@@ -463,8 +463,8 @@
 <section id="creating-a-xmlobject">
 <h2>Creating a XMLObject<a class="headerlink" href="#creating-a-xmlobject" title="Link to this heading">#</a></h2>
 <p>One can use MuJoCo MJCF XML to generate an object, either as a composition of primitive <a class="reference external" href="http://mujoco.org/book/modeling.html#geom">geoms</a> or imported from STL files of triangulated <a class="reference external" href="http://www.mujoco.org/book/modeling.html#mesh">meshes</a>. An example is <code class="docutils literal notranslate"><span class="pre">robosuite.models.objects.xml_objects.BreadObject</span></code>. Its <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/models/objects/xml_objects.py#L49">python definition</a> is short. Note that all <code class="docutils literal notranslate"><span class="pre">MujocoXMLObject</span></code> classes require both a <code class="docutils literal notranslate"><span class="pre">fname</span></code> and <code class="docutils literal notranslate"><span class="pre">name</span></code> argument, the former which specifies the filepath to the raw XML file and the latter which specifies the in-sim name of the object instantiated. The optional <code class="docutils literal notranslate"><span class="pre">joints</span></code> argument can also specify a custom set of joints to apply to the given object (defaults to “default”, which is a single free joint). This joint argument determines the DOF of the object as a whole and does not interfere with the joints already in the object. Additionally, the type of object created can be specified via the <code class="docutils literal notranslate"><span class="pre">obj_type</span></code> argument, and must be one of (<code class="docutils literal notranslate"><span class="pre">'collision'</span></code>, <code class="docutils literal notranslate"><span class="pre">'visual'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'all'</span></code>). Lastly, setting <code class="docutils literal notranslate"><span class="pre">duplicate_collision_geoms</span></code> makes sure that all collision geoms automatically have an associated visual geom as well. Generally, the normal use case is to define a single class corresponding to a specific XML file, as shown below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BreadObject</span><span class="p">(</span><span class="n">MujocoXMLObject</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BreadObject</span><span class="p">(</span><span class="n">MujocoXMLObject</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xml_path_completion</span><span class="p">(</span><span class="s2">&quot;objects/bread.xml&quot;</span><span class="p">),</span>
                          <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">joints</span><span class="o">=</span><span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">,</span> <span class="n">damping</span><span class="o">=</span><span class="s2">&quot;0.0005&quot;</span><span class="p">)],</span>
                          <span class="n">obj_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">duplicate_collision_geoms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -634,7 +634,7 @@ By the robosuite core team
 
   <p class="copyright">
     
-      © Copyright Stanford University and The University of Texas at Austin 2022.
+      © Copyright Stanford University and The University of Texas at Austin 2025.
       <br/>
     
   </p>

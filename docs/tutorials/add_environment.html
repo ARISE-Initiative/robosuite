@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
@@ -391,19 +391,19 @@
 <h1>Building Your Own Environments<a class="headerlink" href="#building-your-own-environments" title="Link to this heading">#</a></h1>
 <p><strong>robosuite</strong> offers great flexibility in creating your own environments. A <a class="reference external" href="modeling/task">task</a> typically involves the participation of a <a class="reference external" href="modeling/robot_model">robot</a> with <a class="reference external" href="modeling/robot_model.html#gripper-model">grippers</a> as its end-effectors, an <a class="reference external" href="modeling/arena">arena</a> (workspace), and <a class="reference external" href="modeling/object_model">objects</a> that the robot interacts with. For a detailed overview of our design architecture, please check out the <a class="reference external" href="modules/overview">Overview</a> page in Modules. Our Modeling APIs provide methods of composing these modularized elements into a scene, which can be loaded in MuJoCo for simulation. To build your own environments, we recommend you take a look at the <a class="reference external" href="simulation/environment">Environment classes</a> which have used these APIs to define robotics environments and tasks and the <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/environments">source code</a> of our standardized environments. Below we walk through a step-by-step example of building a new tabletop manipulation environment with our APIs.</p>
 <p><strong>Step 1: Creating the world.</strong> All mujoco object definitions are housed in an xml. We create a <a class="reference external" href="source/robosuite.models">MujocoWorldBase</a> class to do it.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">robosuite.models</span> <span class="kn">import</span> <span class="n">MujocoWorldBase</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">MujocoWorldBase</span>
 
 <span class="n">world</span> <span class="o">=</span> <span class="n">MujocoWorldBase</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><strong>Step 2: Creating the robot.</strong> The class housing the xml of a robot can be created as follows.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">robosuite.models.robots</span> <span class="kn">import</span> <span class="n">Panda</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models.robots</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panda</span>
 
 <span class="n">mujoco_robot</span> <span class="o">=</span> <span class="n">Panda</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>We can add a gripper to the robot by creating a gripper instance and calling the add_gripper method on a robot.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">robosuite.models.grippers</span> <span class="kn">import</span> <span class="n">gripper_factory</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models.grippers</span><span class="w"> </span><span class="kn">import</span> <span class="n">gripper_factory</span>
 
 <span class="n">gripper</span> <span class="o">=</span> <span class="n">gripper_factory</span><span class="p">(</span><span class="s1">&#39;PandaGripper&#39;</span><span class="p">)</span>
 <span class="n">mujoco_robot</span><span class="o">.</span><span class="n">add_gripper</span><span class="p">(</span><span class="n">gripper</span><span class="p">)</span>
@@ -415,7 +415,7 @@
 </pre></div>
 </div>
 <p><strong>Step 3: Creating the table.</strong> We can initialize the <a class="reference external" href="source/robosuite.models.arenas">TableArena</a> instance that creates a table and the floorplane</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">robosuite.models.arenas</span> <span class="kn">import</span> <span class="n">TableArena</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models.arenas</span><span class="w"> </span><span class="kn">import</span> <span class="n">TableArena</span>
 
 <span class="n">mujoco_arena</span> <span class="o">=</span> <span class="n">TableArena</span><span class="p">()</span>
 <span class="n">mujoco_arena</span><span class="o">.</span><span class="n">set_origin</span><span class="p">([</span><span class="mf">0.8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
@@ -423,8 +423,8 @@
 </pre></div>
 </div>
 <p><strong>Step 4: Adding the object.</strong> For details of <code class="docutils literal notranslate"><span class="pre">MujocoObject</span></code>, refer to the documentation about <a class="reference external" href="modeling/object_model">MujocoObject</a>, we can create a ball and add it to the world.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">robosuite.models.objects</span> <span class="kn">import</span> <span class="n">BallObject</span>
-<span class="kn">from</span> <span class="nn">robosuite.utils.mjcf_utils</span> <span class="kn">import</span> <span class="n">new_joint</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models.objects</span><span class="w"> </span><span class="kn">import</span> <span class="n">BallObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.utils.mjcf_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">new_joint</span>
 
 <span class="n">sphere</span> <span class="o">=</span> <span class="n">BallObject</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;sphere&quot;</span><span class="p">,</span>
@@ -439,7 +439,7 @@
 </pre></div>
 </div>
 <p>This is an <code class="docutils literal notranslate"><span class="pre">MjModel</span></code> instance that can then be used for simulation. For example,</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">mujoco</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">mujoco</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">mujoco</span><span class="o">.</span><span class="n">MjData</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="k">while</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -503,7 +503,7 @@ By the robosuite core team
 
   <p class="copyright">
     
-      © Copyright Stanford University and The University of Texas at Austin 2022.
+      © Copyright Stanford University and The University of Texas at Austin 2025.
       <br/>
     
   </p>

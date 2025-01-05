@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=81f6180a" />
@@ -385,7 +385,13 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-0">Version 1.5.0</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-1">Version 1.5.1</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-0">Version 1.5.0</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#improvements">Improvements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#migration">Migration</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -399,14 +405,63 @@
                   
   <section id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
+<section id="version-1-5-1">
+<h2>Version 1.5.1<a class="headerlink" href="#version-1-5-1" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Documentation Updates</strong>:</p>
+<ul>
+<li><p>Updated <code class="docutils literal notranslate"><span class="pre">basicusage.md</span></code>, overview page, demo docs, teleop usage info, devices, and related docs.</p></li>
+<li><p>Added a CI doc update workflow and <code class="docutils literal notranslate"><span class="pre">.nojekyll</span></code> fix.</p></li>
+<li><p>Simplified composite controller keywords and updated robots section and task images.</p></li>
+</ul>
+</li>
+<li><p><strong>Bug Fixes</strong>:</p>
+<ul>
+<li><p>Fixed segmentation demo, part controller demo, demo renderer, joint and actuator issues, equality removal, and orientation mismatch in Fourier hands.</p></li>
+</ul>
+</li>
+<li><p><strong>Features/Enhancements</strong>:</p>
+<ul>
+<li><p>Added GymWrapper support for both <code class="docutils literal notranslate"><span class="pre">gym</span></code> and <code class="docutils literal notranslate"><span class="pre">gymnasium</span></code> with <code class="docutils literal notranslate"><span class="pre">dict_obs</span></code>.</p></li>
+<li><p>Updated DexMimicGen assets and included a default whole-body Mink IK config.</p></li>
+<li><p>Improved CI to check all tests and print video save paths in demo recordings.</p></li>
+</ul>
+</li>
+<li><p><strong>Miscellaneous</strong>:</p>
+<ul>
+<li><p>Added troubleshooting for SpaceMouse failures and terminated <code class="docutils literal notranslate"><span class="pre">mjviewer</span></code> on resets.</p></li>
+<li><p>Adjusted OSC position fixes and updated part controller JSONs.</p></li>
+</ul>
+</li>
+</ul>
+</section>
 <section id="version-1-5-0">
 <h2>Version 1.5.0<a class="headerlink" href="#version-1-5-0" title="Link to this heading">#</a></h2>
-<div class="admonition warning">
-<p class="admonition-title">Breaking API changes</p>
-<div>
-    <ul>New controller design.</ul>
-</div>
-</div></section>
+<p>The 1.5 release of <strong>Robosuite</strong> introduces significant advancements to extend flexibility and realism in robotic simulations. Key highlights include support for diverse robot embodiments (e.g., humanoids), custom robot compositions, composite controllers (such as whole-body controllers), expanded teleoperation devices, and photorealistic rendering capabilities.</p>
+<section id="new-features">
+<h3>New Features<a class="headerlink" href="#new-features" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Diverse Robot Embodiments</strong>: Support for complex robots, including humanoids, allowing exploration of advanced manipulation and mobility tasks. Please see <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite_models">robosuite_models</a> for extra robosuite-compatible robot models.</p></li>
+<li><p><strong>Custom Robot Composition</strong>: Users can now build custom robots from modular components, offering extensive configuration options.</p></li>
+<li><p><strong>Composite Controllers</strong>: New controller abstraction includes whole-body controllers, and the ability to control robots with composed body parts, arms, and grippers.</p></li>
+<li><p><strong>Additional Teleoperation Devices</strong>: Expanded compatibility with teleoperation tools like drag-and-drop in the MuJoCo viewer and Apple Vision Pro.</p></li>
+<li><p><strong>Photorealistic Rendering</strong>: Integration of NVIDIA Isaac Sim for enhanced, real-time photorealistic visuals, bringing simulations closer to real-world fidelity.</p></li>
+</ul>
+</section>
+<section id="improvements">
+<h3>Improvements<a class="headerlink" href="#improvements" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Updated Documentation</strong>: New tutorials and expanded documentation on utilizing advanced controllers, teleoperation, and rendering options.</p></li>
+<li><p><strong>Simulation speed improvement</strong>: By default we set the <code class="docutils literal notranslate"><span class="pre">lite_physics</span></code> flag to True to skip redundant calls to <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/29e73bd41f9bc43ba88bb7d2573b868398905819/robosuite/environments/base.py#L444"><code class="docutils literal notranslate"><span class="pre">env.sim.step()</span></code></a></p></li>
+</ul>
+</section>
+<section id="migration">
+<h3>Migration<a class="headerlink" href="#migration" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Composite controller refactoring: please see example of <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/blob/29e73bd41f9bc43ba88bb7d2573b868398905819/robosuite/examples/third_party_controller/mink_controller.py#L421">usage</a></p></li>
+</ul>
+</section>
+</section>
 </section>
 
 
@@ -455,7 +510,13 @@
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-0">Version 1.5.0</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-1">Version 1.5.1</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-0">Version 1.5.0</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#improvements">Improvements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#migration">Migration</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
@@ -480,7 +541,7 @@ By the robosuite core team
 
   <p class="copyright">
     
-      © Copyright Stanford University and The University of Texas at Austin 2022.
+      © Copyright Stanford University and The University of Texas at Austin 2025.
       <br/>
     
   </p>

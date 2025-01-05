@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
@@ -432,8 +432,8 @@
 <section id="making-an-environment">
 <h2>Making an Environment<a class="headerlink" href="#making-an-environment" title="Link to this heading">#</a></h2>
 <p>Environments are created by calling <code class="docutils literal notranslate"><span class="pre">robosuite.make</span></code> with the name of the task and with a set of arguments that configure environment properties. We provide a few examples of different use cases below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span>
-<span class="kn">from</span> <span class="nn">robosuite.controllers</span> <span class="kn">import</span> <span class="n">load_composite_controller_config</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">robosuite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.controllers</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_composite_controller_config</span>
 
 <span class="c1"># BASIC controller: arms controlled using OSC, mobile base (if present) using JOINT_VELOCITY, other parts controlled using JOINT_POSITION </span>
 <span class="n">controller_config</span> <span class="o">=</span> <span class="n">load_composite_controller_config</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="s2">&quot;BASIC&quot;</span><span class="p">)</span>
@@ -507,9 +507,9 @@
 <section id="policy-loop">
 <h3>Policy Loop<a class="headerlink" href="#policy-loop" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># this example assumes an env has already been created, and performs one agent rollout</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="k">def</span> <span class="nf">get_policy_action</span><span class="p">(</span><span class="n">obs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_policy_action</span><span class="p">(</span><span class="n">obs</span><span class="p">):</span>
     <span class="c1"># a trained policy could be used here, but we choose a random action</span>
     <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spec</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
@@ -544,14 +544,14 @@
 <p>Importantly, <strong>robosuite</strong> environments do not terminate if a success criterion is reached, but always continue for a fixed number of timesteps, determined by the <code class="docutils literal notranslate"><span class="pre">horizon</span></code> argument. This is a standard design decision for reinforcement learning in robot manipulation domains.</p>
 <p>We provide an example via the reward function and success criteria for <code class="docutils literal notranslate"><span class="pre">TwoArmLift</span></code> below.  Note that for simplicity, we provide function aliases instead of actual implementation details so that the logic remains easy to follow:</p>
 <p>For the success criteria, we simply want to check if the pot is successfully lifted above a certain height threshold over the table, and return <code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code> accordingly.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_check_success</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_check_success</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">pot_height</span> <span class="o">=</span> <span class="n">get_pot_height</span><span class="p">()</span>
     <span class="n">table_height</span> <span class="o">=</span> <span class="n">get_table_height</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">pot_height</span> <span class="o">&gt;</span> <span class="n">table_height</span> <span class="o">+</span> <span class="mf">0.10</span>
 </pre></div>
 </div>
 <p>The reward function is a bit more involved. First, we initialize our reward variable to 0 and grab relevant sensory data from the environment, checking to see if the pot is tilted or not.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">pot_tilt</span> <span class="o">=</span> <span class="n">get_pot_tilt</span><span class="p">()</span>
 
@@ -794,7 +794,7 @@ By the robosuite core team
 
   <p class="copyright">
     
-      © Copyright Stanford University and The University of Texas at Austin 2022.
+      © Copyright Stanford University and The University of Texas at Austin 2025.
       <br/>
     
   </p>

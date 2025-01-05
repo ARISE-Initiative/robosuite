@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
@@ -455,9 +455,9 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">armature</span></code>: Gear inertia for this joint</p></li>
 </ul>
 <p>This <code class="docutils literal notranslate"><span class="pre">DynamicsModder</span></code> follows the same basic API as the other <code class="docutils literal notranslate"><span class="pre">Modder</span></code> classes, and allows per-parameter and per-group randomization enabling. Apart from randomization, this modder can also be instantiated to selectively modify values at runtime. A brief example is given below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
-<span class="kn">from</span> <span class="nn">robosuite.utils.mjmod</span> <span class="kn">import</span> <span class="n">DynamicsModder</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">robosuite</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">suite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.utils.mjmod</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicsModder</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="c1"># Create environment and modder</span>
 <span class="n">env</span> <span class="o">=</span> <span class="n">suite</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;Lift&quot;</span><span class="p">,</span> <span class="n">robots</span><span class="o">=</span><span class="s2">&quot;Panda&quot;</span><span class="p">)</span>
@@ -467,7 +467,7 @@
 <span class="n">cube_body_id</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">body_name2id</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">root_body</span><span class="p">)</span>
 <span class="n">cube_geom_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geom_name2id</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">contact_geoms</span><span class="p">]</span>
 
-<span class="k">def</span> <span class="nf">print_params</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_params</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cube mass: </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">body_mass</span><span class="p">[</span><span class="n">cube_body_id</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cube frictions: </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">geom_friction</span><span class="p">[</span><span class="n">cube_geom_ids</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">()</span>
@@ -513,9 +513,9 @@
 </div>
 <p>Note that for memory efficiency the <code class="docutils literal notranslate"><span class="pre">image-state</span></code> is not returned by default (this can be toggled in <code class="docutils literal notranslate"><span class="pre">robosuite/macros.py</span></code>).</p>
 <p>We showcase how the <code class="docutils literal notranslate"><span class="pre">Observable</span></code> functionality can be used to model sensor corruption and delay via <a class="reference external" href="../demos.html#sensor-realism">demo_sensor_corruption.py</a>. We also highlight that each of the <code class="docutils literal notranslate"><span class="pre">sensor</span></code>, <code class="docutils literal notranslate"><span class="pre">corrupter</span></code>, and <code class="docutils literal notranslate"><span class="pre">filter</span></code> functions can be arbitrarily specified to suit the end-user’s usage. For example, a common use case for these observables is to keep track of sampled values from a sensor operating at a higher frequency than the environment step (control) frequency. In this case, the <code class="docutils literal notranslate"><span class="pre">filter</span></code> function can be leveraged to keep track of the real-time sensor values as they’re being sampled. We provide a minimal script showcasing this ability below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">robosuite.utils.buffers</span> <span class="kn">import</span> <span class="n">RingBuffer</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">robosuite</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">suite</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.utils.buffers</span><span class="w"> </span><span class="kn">import</span> <span class="n">RingBuffer</span>
 
 <span class="c1"># Create env instance</span>
 <span class="n">control_freq</span> <span class="o">=</span> <span class="mi">10</span>
@@ -527,7 +527,7 @@
 <span class="c1"># Create a function that we&#39;ll use as the &quot;filter&quot; for the joint position Observable</span>
 <span class="c1"># This is a pass-through operation, but we record the value every time it gets called</span>
 <span class="c1"># As per the Observables API, this should take in an arbitrary numeric and return the same type / shape</span>
-<span class="k">def</span> <span class="nf">filter_fcn</span><span class="p">(</span><span class="n">corrupted_value</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">filter_fcn</span><span class="p">(</span><span class="n">corrupted_value</span><span class="p">):</span>
     <span class="c1"># Record the inputted value</span>
     <span class="n">buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">corrupted_value</span><span class="p">)</span>
     <span class="c1"># Return this value (no-op performed)</span>
@@ -644,7 +644,7 @@ By the robosuite core team
 
   <p class="copyright">
     
-      © Copyright Stanford University and The University of Texas at Austin 2022.
+      © Copyright Stanford University and The University of Texas at Austin 2025.
       <br/>
     
   </p>

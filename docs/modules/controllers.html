@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
@@ -619,8 +619,8 @@ Then, we map the wrenches in end-effector space <span class="math notranslate no
 <section id="using-a-default-controller-configuration">
 <h3>Using a Default Controller Configuration<a class="headerlink" href="#using-a-default-controller-configuration" title="Link to this heading">#</a></h3>
 <p>Any controller can be used with its default configuration, and can be easily loaded into a given environment by calling its name as shown below (where <code class="docutils literal notranslate"><span class="pre">controller</span></code> is one of acceptable controller <code class="docutils literal notranslate"><span class="pre">type</span></code> strings):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
-<span class="kn">from</span> <span class="nn">robosuite</span> <span class="kn">import</span> <span class="n">load_composite_controller_config</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">robosuite</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">suite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">robosuite</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_composite_controller_config</span>
 
 <span class="c1"># Load the desired controller config with default Basic controller</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">load_composite_controller_config</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="s2">&quot;BASIC&quot;</span><span class="p">)</span>
@@ -633,8 +633,8 @@ Then, we map the wrenches in end-effector space <span class="math notranslate no
 <section id="using-a-custom-controller-configuration">
 <h3>Using a Custom Controller Configuration<a class="headerlink" href="#using-a-custom-controller-configuration" title="Link to this heading">#</a></h3>
 <p>A custom controller configuration can also be used by simply creating a new config (<code class="docutils literal notranslate"><span class="pre">.json</span></code>) file with the relevant parameters as specified above. All robosuite environments have an optional <code class="docutils literal notranslate"><span class="pre">controller_configs</span></code> argument that can be used to pass in specific controller settings. Note that this is expected to be a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, so the new configuration must be read in and parsed as a <code class="docutils literal notranslate"><span class="pre">dict</span></code> before passing it during the environment <code class="docutils literal notranslate"><span class="pre">robosuite.make(...)</span></code> call. A brief example script showing how to import a custom controller configuration is shown below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">robosuite</span> <span class="k">as</span> <span class="nn">suite</span>
-<span class="kn">from</span> <span class="nn">robosuite</span> <span class="kn">import</span> <span class="n">load_composite_controller_config</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">robosuite</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">suite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">robosuite</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_composite_controller_config</span>
 
 <span class="c1"># Path to config file</span>
 <span class="n">controller_fpath</span> <span class="o">=</span> <span class="s2">&quot;/your/custom/config/filepath/here/filename.json&quot;</span>
@@ -747,7 +747,7 @@ By the robosuite core team
 
   <p class="copyright">
     
-      © Copyright Stanford University and The University of Texas at Austin 2022.
+      © Copyright Stanford University and The University of Texas at Austin 2025.
       <br/>
     
   </p>
