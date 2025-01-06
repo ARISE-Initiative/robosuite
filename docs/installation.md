@@ -23,7 +23,7 @@ The base installation requires the MuJoCo physics engine (with [mujoco](https://
    Mac users who wish to use the default mjviewer renderer need to prepend the "python" command with "mj": `mjpython ...`
    </div>
 
-### Install from source
+### Install from source (Pip)
 
 1. Clone the robosuite repository
    ```sh 
@@ -40,6 +40,38 @@ The base installation requires the MuJoCo physics engine (with [mujoco](https://
 3. (Optional) We also provide add-on functionalities, such as [OpenAI Gym](https://github.com/openai/gym) [interfaces](source/robosuite.wrappers), [inverse kinematics controllers](source/robosuite.controllers) powered by [PyBullet](http://bulletphysics.org), and [teleoperation](source/robosuite.devices) with [SpaceMouse](https://www.3dconnexion.com/products/spacemouse.html) devices. To enable these additional features, please install the extra dependencies by running
    ```sh
    $ pip3 install -r requirements-extra.txt
+   ```
+
+4. Test your installation with
+   ```sh
+   $ python robosuite/demos/demo_random_action.py
+   ```
+
+   <div class="admonition warning">
+   <p class="admonition-title">Attention Mac users!</p>
+
+   Mac users who wish to use the default mjviewer renderer need to prepend the "python" command with "mj": `mjpython ...`
+   </div>
+
+### Install from source (Conda)
+
+1. Clone the robosuite repository
+   ```sh 
+   $ git clone https://github.com/ARISE-Initiative/robosuite.git
+   $ cd robosuite
+   ```
+
+2. Install the base requirements with
+   ```sh
+   $ conda develop .
+   ```
+   This will also install our library as an editable package, such that local changes will be reflected elsewhere without having to reinstall the package.
+   
+   Note that `conda develop` is part of the `conda-build` package, which you can install with: `conda install conda-build`
+
+3. (Optional) We also provide add-on functionalities, such as [OpenAI Gym](https://github.com/openai/gym) [interfaces](source/robosuite.wrappers), [inverse kinematics controllers](source/robosuite.controllers) powered by [PyBullet](http://bulletphysics.org), and [teleoperation](source/robosuite.devices) with [SpaceMouse](https://www.3dconnexion.com/products/spacemouse.html) devices. To enable these additional features, please install the extra dependencies by running
+   ```sh
+   $ conda install --yes --file requirements-extra.txt
    ```
 
 4. Test your installation with
