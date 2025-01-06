@@ -56,7 +56,7 @@
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="robosuite.models.objects.primitive package" href="robosuite.models.objects.primitive.html" />
+    <link rel="next" title="robosuite.models.objects.group package" href="robosuite.models.objects.group.html" />
     <link rel="prev" title="robosuite.models.objects.composite package" href="robosuite.models.objects.composite.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
@@ -390,6 +402,10 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite_body.hinged_box.HingedBoxObject"><code class="docutils literal notranslate"><span class="pre">HingedBoxObject</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite_body.ratcheting_wrench">robosuite.models.objects.composite_body.ratcheting_wrench module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite_body.ratcheting_wrench.RatchetingWrenchObject"><code class="docutils literal notranslate"><span class="pre">RatchetingWrenchObject</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite_body">Module contents</a></li>
 </ul>
             </nav>
@@ -428,6 +444,42 @@ joined together by a hinge joint.</p>
 </dd></dl>
 
 </section>
+<section id="module-robosuite.models.objects.composite_body.ratcheting_wrench">
+<span id="robosuite-models-objects-composite-body-ratcheting-wrench-module"></span><h2>robosuite.models.objects.composite_body.ratcheting_wrench module<a class="headerlink" href="#module-robosuite.models.objects.composite_body.ratcheting_wrench" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite_body.ratcheting_wrench.RatchetingWrenchObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite_body.ratcheting_wrench.</span></span><span class="sig-name descname"><span class="pre">RatchetingWrenchObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.08,</span> <span class="pre">0.01,</span> <span class="pre">0.005)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer_radius_1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0425</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner_radius_1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer_radius_2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0425</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner_radius_2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngeoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grip_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.02,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solimp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.95,</span> <span class="pre">0.001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite_body.ratcheting_wrench.RatchetingWrenchObject" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeBodyObject" title="robosuite.models.objects.generated_objects.CompositeBodyObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeBodyObject</span></code></a></p>
+<p>A ratcheting wrench made out of mujoco primitives.
+:param name: Name of this object
+:type name: str
+:param handle_size: (L, W, H) half-sizes for the handle (center part of wrench)
+:type handle_size: [float]
+:param outer_radius_1: Outer radius of first end of wrench
+:type outer_radius_1: float
+:param inner_radius_1: Inner radius of first end of wrench
+:type inner_radius_1: float
+:param height_1: Height of first end of wrench
+:type height_1: float
+:param outer_radius_2: Outer radius of second end of wrench
+:type outer_radius_2: float
+:param inner_radius_2: Inner radius of second end of wrench
+:type inner_radius_2: float
+:param height_2: Height of second end of wrench
+:type height_2: float
+:param ngeoms: Number of box geoms used to approximate the ends of the wrench. Use</p>
+<blockquote>
+<div><p>more geoms to make the approximation better.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>grip_size</strong> (<em>[</em><em>float</em><em>]</em>) – (R, H) radius and half-height for the box grip. Set to None
+to not add a grip.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-robosuite.models.objects.composite_body">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.models.objects.composite_body" title="Link to this heading">#</a></h2>
 </section>
@@ -454,11 +506,11 @@ joined together by a hinge joint.</p>
       </div>
     </a>
     <a class="right-next"
-       href="robosuite.models.objects.primitive.html"
+       href="robosuite.models.objects.group.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">robosuite.models.objects.primitive package</p>
+        <p class="prev-next-title">robosuite.models.objects.group package</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -482,6 +534,10 @@ joined together by a hinge joint.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite_body.hinged_box">robosuite.models.objects.composite_body.hinged_box module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite_body.hinged_box.HingedBoxObject"><code class="docutils literal notranslate"><span class="pre">HingedBoxObject</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite_body.ratcheting_wrench">robosuite.models.objects.composite_body.ratcheting_wrench module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite_body.ratcheting_wrench.RatchetingWrenchObject"><code class="docutils literal notranslate"><span class="pre">RatchetingWrenchObject</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite_body">Module contents</a></li>

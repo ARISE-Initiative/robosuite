@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="source/robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="source/robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="source/robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="source/robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="source/robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source/robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="source/robosuite.robots.html">robosuite.robots package</a></li>
@@ -529,11 +541,7 @@ device sensitivity.</p>
 <p>Furthermore, please choose environment specifics with the following arguments:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--environment</span></code>: Task to perform, e.g., <code class="docutils literal notranslate"><span class="pre">Lift</span></code>, <code class="docutils literal notranslate"><span class="pre">TwoArmPegInHole</span></code>, <code class="docutils literal notranslate"><span class="pre">NutAssembly</span></code>, etc.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--robots</span></code>: Robot(s) with which to perform the task. Can be any in
-{<code class="docutils literal notranslate"><span class="pre">Panda</span></code>, <code class="docutils literal notranslate"><span class="pre">Sawyer</span></code>, <code class="docutils literal notranslate"><span class="pre">IIWA</span></code>, <code class="docutils literal notranslate"><span class="pre">Jaco</span></code>, <code class="docutils literal notranslate"><span class="pre">Kinova3</span></code>, <code class="docutils literal notranslate"><span class="pre">UR5e</span></code>, <code class="docutils literal notranslate"><span class="pre">Baxter</span></code>}. Note that the environments include sanity
-checks, such that a <code class="docutils literal notranslate"><span class="pre">TwoArm...</span></code> environment will only accept either a 2-tuple of robot names or a single
-bimanual robot name, according to the specified configuration (see below), and all other environments will
-only accept a single single-armed robot name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--robots</span></code>: Robot(s) with which to perform the task, e.g., <code class="docutils literal notranslate"><span class="pre">Tiago</span></code>, <code class="docutils literal notranslate"><span class="pre">Panda</span></code>, <code class="docutils literal notranslate"><span class="pre">GR1</span></code>, <code class="docutils literal notranslate"><span class="pre">Sawyer</span></code>, etc. Note that the environments include sanity checks, such that a <code class="docutils literal notranslate"><span class="pre">TwoArm...</span></code> environment will not accept configurations with a single, one-armed robot.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--config</span></code>: Exclusively applicable and only should be specified for <code class="docutils literal notranslate"><span class="pre">TwoArm...</span></code> environments. Specifies the robot
 configuration desired for the task when two robots are inputted. Options are {<code class="docutils literal notranslate"><span class="pre">parallel</span></code> and <code class="docutils literal notranslate"><span class="pre">opposed</span></code>}</p>
 <ul>
@@ -545,12 +553,6 @@ each other, facing each other from opposite directions. Expects a 2-tuple of rob
 to be specified in the <code class="docutils literal notranslate"><span class="pre">--robots</span></code> argument.</p></li>
 </ul>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--arm</span></code>: Exclusively applicable and only should be specified for <code class="docutils literal notranslate"><span class="pre">TwoArm...</span></code> environments. Specifies which of the
-multiple arm eef’s to control. The other (passive) arm will remain stationary. Options are {<code class="docutils literal notranslate"><span class="pre">right</span></code>, <code class="docutils literal notranslate"><span class="pre">left</span></code>}
-(from the point of view of the robot(s) facing against the viewer direction)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--switch-on-click</span></code>: Exclusively applicable and only should be specified for <code class="docutils literal notranslate"><span class="pre">TwoArm...</span></code> environments. If enabled,
-will switch the current arm being controlled every time the gripper input is pressed</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--toggle-camera-on-click</span></code>: If enabled, gripper input presses will cycle through the available camera angles</p></li>
 </ul>
 <p>Examples:</p>
 <ul class="simple">
@@ -562,7 +564,7 @@ will switch the current arm being controlled every time the gripper input is pre
 <ul class="simple">
 <li><p>For two-arm bimanual environment:</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python demo_device_control.py --environment TwoArmLift --robots Tiago
 </pre></div>
 </div>
 <ul class="simple">

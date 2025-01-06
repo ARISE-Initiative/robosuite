@@ -1,0 +1,1096 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>robosuite.controllers.parts.arm package &#8212; robosuite 1.5 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=81f6180a" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.controllers.parts.arm';</script>
+    <script src="../_static/js/custom.js?v=4441fbbd"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="robosuite.controllers.parts.generic package" href="robosuite.controllers.parts.generic.html" />
+    <link rel="prev" title="robosuite.controllers.parts package" href="robosuite.controllers.parts.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/robosuite_color.png" class="logo__image only-light" alt="robosuite 1.5 documentation - Home"/>
+    <img src="../_static/robosuite_color.png" class="logo__image only-dark pst-js-only" alt="robosuite 1.5 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demo Showcases</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/devices.html">I/O Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/renderers.html">Renderers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/controllers.html">Controllers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_controller.html">Adding Third Party Controllers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/add_environment.html">Building Your Own Environments</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Simulation API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/robot.html">Robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/environment.html">Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/device.html">Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/controller.html">Controller</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../modeling/mujoco_model.html">Mujoco Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/robot_model.html">Robot Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/object_model.html">Object Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/arena.html">Arena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling/task.html">Task</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Source API</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.environments.html">robosuite.environments package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.environments.manipulation.html">robosuite.environments.manipulation package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.robots.html">robosuite.models.robots package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.manipulators.html">robosuite.models.robots.manipulators package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html">robosuite.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.wrappers.html">robosuite.wrappers package</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Algorithms</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/demonstrations.html">Human Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sim2real.html">Sim-to-Real Transfer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Miscellaneous</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Projects using robosuite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">Acknowledgements</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/source/robosuite.controllers.parts.arm.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>robosuite.controllers.parts.arm package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.arm.ik">robosuite.controllers.parts.arm.ik module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.compute_joint_positions"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.compute_joint_positions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.control_limits"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.control_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.get_control"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.get_control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.name"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.reset_goal"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.reset_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.run_controller"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.run_controller()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.set_goal"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.set_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.update_initial_joints"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.update_initial_joints()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.arm.osc">robosuite.controllers.parts.arm.osc module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_ori"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.compute_goal_ori()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_pos"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.compute_goal_pos()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.control_limits"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.control_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.delta_to_abs_action"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.delta_to_abs_action()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.goal_origin_to_eef_pose"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.goal_origin_to_eef_pose()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.name"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.reset_goal"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.reset_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.run_controller"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.run_controller()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.set_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal_update_mode"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.set_goal_update_mode()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_initial_joints"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.update_initial_joints()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_origin"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.update_origin()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.world_to_origin_frame"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.world_to_origin_frame()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.arm">Module contents</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="robosuite-controllers-parts-arm-package">
+<h1>robosuite.controllers.parts.arm package<a class="headerlink" href="#robosuite-controllers-parts-arm-package" title="Link to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-robosuite.controllers.parts.arm.ik">
+<span id="robosuite-controllers-parts-arm-ik-module"></span><h2>robosuite.controllers.parts.arm.ik module<a class="headerlink" href="#module-robosuite.controllers.parts.arm.ik" title="Link to this heading">#</a></h2>
+<hr class="docutils" />
+<p>NOTE: IK is only supported for the following robots:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Baxter<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">Sawyer<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">Panda<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Attempting to run IK with any other robot will raise an error!</p>
+<hr class="docutils" />
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.arm.ik.</span></span><span class="sig-name descname"><span class="pre">InverseKinematicsController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eef_rot_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bullet_server_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_urdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ik_pos_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ik_ori_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator_pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator_ori</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converge_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.controllers.parts.generic.html#robosuite.controllers.parts.generic.joint_pos.JointPositionController" title="robosuite.controllers.parts.generic.joint_pos.JointPositionController"><code class="xref py py-class docutils literal notranslate"><span class="pre">JointPositionController</span></code></a></p>
+<p>Controller for controlling robot arm via inverse kinematics. Allows position and orientation control of the
+robot’s end effector.</p>
+<p>We use differential inverse kinematics with posture control in the null space
+to generate joint positions (see <a class="github reference external" href="https://github.com/kevinzakka/mjctrl">kevinzakka/mjctrl</a>) which are fed to the JointPositionController.</p>
+<p>NOTE: Control input actions are assumed to be relative to the current position / orientation of the end effector
+and are taken as the array (x_dpos, y_dpos, z_dpos, x_rot, y_rot, z_rot).</p>
+<p>However, confusingly, x_dpos, y_dpos, z_dpos are relative to the mujoco world frame, while x_rot, y_rot, z_rot are
+relative to the current end effector frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sim</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjSim" title="robosuite.utils.binding_utils.MjSim"><em>MjSim</em></a>) – Simulator instance this controller will pull robot state updates from</p></li>
+<li><p><strong>ref_name</strong> – Name of controlled robot arm’s end effector (from robot XML)</p></li>
+<li><p><strong>joint_indexes</strong> (<em>dict</em>) – <p>Each key contains sim reference indexes to relevant robot joint information, namely:</p>
+<dl class="field-list simple">
+<dt class="field-odd"><cite>’joints’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of indexes to relevant robot joints</p>
+</dd>
+<dt class="field-even"><cite>’qpos’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>list of indexes to relevant robot joint positions</p>
+</dd>
+<dt class="field-odd"><cite>’qvel’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of indexes to relevant robot joint velocities</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>robot_name</strong> (<em>str</em>) – Name of robot being controlled. Can be {“Sawyer”, “Panda”, or “Baxter”}</p></li>
+<li><p><strong>actuator_range</strong> (<em>2-tuple</em><em> of </em><em>array</em><em> of </em><em>float</em>) – 2-Tuple (low, high) representing the robot joint actuator range</p></li>
+<li><p><strong>eef_rot_offset</strong> (<em>4-array</em>) – Quaternion (x,y,z,w) representing rotational offset between the final
+robot arm link coordinate system and the end effector coordinate system (i.e: the gripper)</p></li>
+<li><p><strong>policy_freq</strong> (<em>int</em>) – Frequency at which actions from the robot policy are fed into this controller</p></li>
+<li><p><strong>ik_pos_limit</strong> (<em>float</em>) – Limit (meters) above which the magnitude of a given action’s
+positional inputs will be clipped</p></li>
+<li><p><strong>ik_ori_limit</strong> (<em>float</em>) – Limit (radians) above which the magnitude of a given action’s
+orientation inputs will be clipped</p></li>
+<li><p><strong>interpolator</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current state to
+the goal state during each timestep between inputted actions</p></li>
+<li><p><strong>converge_steps</strong> (<em>int</em>) – How many iterations to run the inverse kinematics solver to converge to a
+solution</p></li>
+<li><p><strong>**kwargs</strong> – Does nothing; placeholder to “sink” any additional arguments so that instantiating this controller
+via an argument dict that has additional extraneous arguments won’t raise an error</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Unsupported robot]</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.compute_joint_positions">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_joint_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim:</span> <span class="pre">~robosuite.utils.binding_utils.MjSim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_joint:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indices:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_name:</span> <span class="pre">~typing.List[str]</span> <span class="pre">|</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq:</span> <span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_limits:</span> <span class="pre">~numpy.ndarray</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_delta:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpos:</span> <span class="pre">~numpy.ndarray</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drot:</span> <span class="pre">~numpy.ndarray</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kn:</span> <span class="pre">~numpy.ndarray</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">array([10.</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">10.</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">10.</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">10.</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5.</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5.</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5.])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_pseudo_inv:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kpos:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kori:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jac:</span> <span class="pre">~numpy.ndarray</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_names:</span> <span class="pre">~typing.List[str]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nullspace_joint_weights:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float]</span> <span class="pre">=</span> <span class="pre">Field(name=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default=&lt;dataclasses._MISSING_TYPE</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_factory=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hash=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata=mappingproxy({})</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_field_type=None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_dt:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dq:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">4</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.compute_joint_positions" title="Link to this definition">#</a></dt>
+<dd><p>Returns joint positions to control the robot after the target end effector
+position and orientation are updated from arguments &#64;dpos and &#64;drot.
+If no arguments are provided, joint positions will be set as zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sim</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjSim" title="robosuite.utils.binding_utils.MjSim"><em>MjSim</em></a>) – The simulation object.</p></li>
+<li><p><strong>initial_joint</strong> (<em>np.array</em>) – Initial joint positions.</p></li>
+<li><p><strong>joint_indices</strong> (<em>np.array</em>) – Indices of the joints.</p></li>
+<li><p><strong>ref_name</strong> – Reference site name.</p></li>
+<li><p><strong>control_freq</strong> (<em>float</em>) – Control frequency.</p></li>
+<li><p><strong>velocity_limits</strong> (<em>np.array</em>) – Limits on joint velocities.</p></li>
+<li><p><strong>use_delta</strong> – Whether or not to use delta commands. If so, use dpos, drot to compute joint positions.
+If not, assume dpos, drot are absolute commands (in mujoco world frame).</p></li>
+<li><p><strong>dpos</strong> (<em>Optional</em><em>[</em><em>np.array</em><em>]</em>) – Desired change in end-effector position
+if use_delta=True, otherwise desired end-effector position.</p></li>
+<li><p><strong>drot</strong> (<em>Optional</em><em>[</em><em>np.array</em><em>]</em>) – Desired change in orientation for the reference site (e.g end effector)
+if use_delta=True, otherwise desired end-effector orientation.</p></li>
+<li><p><strong>update_targets</strong> (<em>bool</em>) – Whether to update ik target pos / ori attributes or not.</p></li>
+<li><p><strong>Kpos</strong> (<em>float</em>) – Position gain. Between 0 and 1.
+0 means no movement, 1 means move end effector to desired position in one integration step.</p></li>
+<li><p><strong>Kori</strong> (<em>float</em>) – Orientation gain. Between 0 and 1.</p></li>
+<li><p><strong>jac</strong> (<em>Optional</em><em>[</em><em>np.array</em><em>]</em>) – Precomputed jacobian matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A flat array of joint position commands to apply to try and achieve the desired input control.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.control_limits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.control_limits" title="Link to this definition">#</a></dt>
+<dd><p>The limits over this controller’s action space, as specified by self.ik_pos_limit and self.ik_ori_limit
+and overriding the superclass method</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>(np.array) minimum control values</p></li>
+<li><p>(np.array) maximum control values</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>2-tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.get_control">
+<span class="sig-name descname"><span class="pre">get_control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.get_control" title="Link to this definition">#</a></dt>
+<dd><p>Returns joint positions to control the robot after the target end effector
+position and orientation are updated from arguments &#64;dpos and &#64;rotation.
+If no arguments are provided, joint positions will be computed based
+on the previously recorded target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dpos</strong> (<em>np.array</em>) – a 3 dimensional array corresponding to the desired
+change in x, y, and z end effector position.</p></li>
+<li><p><strong>rotation</strong> (<em>np.array</em>) – a rotation matrix of shape (3, 3) corresponding
+to the desired rotation from the current orientation of the end effector.</p></li>
+<li><p><strong>update_targets</strong> (<em>bool</em>) – whether to update ik target pos / ori attributes or not</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a flat array of joint position commands to apply to try and achieve the desired input control.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.name" title="Link to this definition">#</a></dt>
+<dd><p>Name of this controller</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>controller name</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.reset_goal">
+<span class="sig-name descname"><span class="pre">reset_goal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.reset_goal" title="Link to this definition">#</a></dt>
+<dd><p>Resets the goal to the current pose of the robot</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.run_controller">
+<span class="sig-name descname"><span class="pre">run_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.run_controller" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the torques required to reach the desired setpoint</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Command torques</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.set_goal">
+<span class="sig-name descname"><span class="pre">set_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_ik</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.set_goal" title="Link to this definition">#</a></dt>
+<dd><p>Sets the internal goal state of this controller based on &#64;delta</p>
+<p>Note that this controller wraps a PositionController, and so determines the desired positions
+to achieve the inputted pose, and sets its internal setpoint in terms of joint positions</p>
+<p>TODO: Add feature so that using &#64;set_ik automatically sets the target values to these absolute values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delta</strong> (<em>Iterable</em>) – Desired relative position / orientation goal state</p></li>
+<li><p><strong>set_ik</strong> (<em>Iterable</em>) – If set, overrides &#64;delta and sets the desired global position / orientation goal state</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.ik.InverseKinematicsController.update_initial_joints">
+<span class="sig-name descname"><span class="pre">update_initial_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_joints</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.update_initial_joints" title="Link to this definition">#</a></dt>
+<dd><p>Updates the internal attribute self.initial_joints. This is useful for updating changes in controller-specific
+behavior, such as with OSC where self.initial_joints is used for determine nullspace actions</p>
+<p>This function can also be extended by subclassed controllers for additional controller-specific updates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>initial_joints</strong> (<em>Iterable</em>) – Array of joint position values to update the initial joints</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.controllers.parts.arm.osc">
+<span id="robosuite-controllers-parts-arm-osc-module"></span><h2>robosuite.controllers.parts.arm.osc module<a class="headerlink" href="#module-robosuite.controllers.parts.arm.osc" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.arm.osc.</span></span><span class="sig-name descname"><span class="pre">OperationalSpaceController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.05,</span> <span class="pre">0.05,</span> <span class="pre">0.05,</span> <span class="pre">0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-0.05,</span> <span class="pre">-0.05,</span> <span class="pre">-0.05,</span> <span class="pre">-0.5,</span> <span class="pre">-0.5,</span> <span class="pre">-0.5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">150</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impedance_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">300)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">100)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator_pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator_ori</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_ori</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'delta'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_ref_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'base'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncouple_pos_ori</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller" title="robosuite.controllers.parts.controller.Controller"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a></p>
+<p>Controller for controlling robot arm via operational space control. Allows position and / or orientation control
+of the robot’s end effector. For detailed information as to the mathematical foundation for this controller, please
+reference <a class="reference external" href="http://khatib.stanford.edu/publications/pdfs/Khatib_1987_RA.pdf">http://khatib.stanford.edu/publications/pdfs/Khatib_1987_RA.pdf</a></p>
+<p>NOTE: Control input actions can either be taken to be relative to the current position / orientation of the
+end effector or absolute values. In either case, a given action to this controller is assumed to be of the form:
+(x, y, z, ax, ay, az) if controlling pos and ori or simply (x, y, z) if only controlling pos</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sim</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjSim" title="robosuite.utils.binding_utils.MjSim"><em>MjSim</em></a>) – Simulator instance this controller will pull robot state updates from</p></li>
+<li><p><strong>joint_indexes</strong> (<em>dict</em>) – <p>Each key contains sim reference indexes to relevant robot joint information, namely:</p>
+<dl class="field-list simple">
+<dt class="field-odd"><cite>’joints’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of indexes to relevant robot joints</p>
+</dd>
+<dt class="field-even"><cite>’qpos’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>list of indexes to relevant robot joint positions</p>
+</dd>
+<dt class="field-odd"><cite>’qvel’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of indexes to relevant robot joint velocities</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>actuator_range</strong> (<em>2-tuple</em><em> of </em><em>array</em><em> of </em><em>float</em>) – 2-Tuple (low, high) representing the robot joint actuator range</p></li>
+<li><p><strong>input_max</strong> (<em>float</em><em> or </em><em>Iterable</em><em> of </em><em>float</em>) – Maximum above which an inputted action will be clipped. Can be either be
+a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
+latter, dimension should be the same as the control dimension for this controller</p></li>
+<li><p><strong>input_min</strong> (<em>float</em><em> or </em><em>Iterable</em><em> of </em><em>float</em>) – Minimum below which an inputted action will be clipped. Can be either be
+a scalar (same value for all action dimensions), or a list (specific values for each dimension). If the
+latter, dimension should be the same as the control dimension for this controller</p></li>
+<li><p><strong>output_max</strong> (<em>float</em><em> or </em><em>Iterable</em><em> of </em><em>float</em>) – Maximum which defines upper end of scaling range when scaling an input
+action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
+each dimension). If the latter, dimension should be the same as the control dimension for this controller</p></li>
+<li><p><strong>output_min</strong> (<em>float</em><em> or </em><em>Iterable</em><em> of </em><em>float</em>) – Minimum which defines upper end of scaling range when scaling an input
+action. Can be either be a scalar (same value for all action dimensions), or a list (specific values for
+each dimension). If the latter, dimension should be the same as the control dimension for this controller</p></li>
+<li><p><strong>kp</strong> (<em>float</em><em> or </em><em>Iterable</em><em> of </em><em>float</em>) – positional gain for determining desired torques based upon the pos / ori error.
+Can be either be a scalar (same value for all action dims), or a list (specific values for each dim)</p></li>
+<li><p><strong>damping_ratio</strong> (<em>float</em><em> or </em><em>Iterable</em><em> of </em><em>float</em>) – used in conjunction with kp to determine the velocity gain for
+determining desired torques based upon the joint pos errors. Can be either be a scalar (same value for all
+action dims), or a list (specific values for each dim)</p></li>
+<li><p><strong>impedance_mode</strong> (<em>str</em>) – Impedance mode with which to run this controller. Options are {“fixed”, “variable”,
+“variable_kp”}. If “fixed”, the controller will have fixed kp and damping_ratio values as specified by the
+&#64;kp and &#64;damping_ratio arguments. If “variable”, both kp and damping_ratio will now be part of the
+controller action space, resulting in a total action space of (6 or 3) + 6 * 2. If “variable_kp”, only kp
+will become variable, with damping_ratio fixed at 1 (critically damped). The resulting action space will
+then be (6 or 3) + 6.</p></li>
+<li><p><strong>kp_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>Iterable</em><em> of </em><em>floats</em>) – Only applicable if &#64;impedance_mode is set to either
+“variable” or “variable_kp”. This sets the corresponding min / max ranges of the controller action space
+for the varying kp values. Can be either be a 2-list (same min / max for all kp action dims), or a 2-list
+of list (specific min / max for each kp dim)</p></li>
+<li><p><strong>damping_ratio_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>Iterable</em><em> of </em><em>floats</em>) – Only applicable if &#64;impedance_mode is
+set to “variable”. This sets the corresponding min / max ranges of the controller action space for the
+varying damping_ratio values. Can be either be a 2-list (same min / max for all damping_ratio action dims),
+or a 2-list of list (specific min / max for each damping_ratio dim)</p></li>
+<li><p><strong>policy_freq</strong> (<em>int</em>) – Frequency at which actions from the robot policy are fed into this controller</p></li>
+<li><p><strong>position_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>Iterable</em><em> of </em><em>floats</em>) – Limits (m) below and above which the
+magnitude of a calculated goal eef position will be clipped. Can be either be a 2-list (same min/max value
+for all cartesian dims), or a 2-list of list (specific min/max values for each dim)</p></li>
+<li><p><strong>orientation_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>Iterable</em><em> of </em><em>floats</em>) – Limits (rad) below and above which the
+magnitude of a calculated goal eef orientation will be clipped. Can be either be a 2-list
+(same min/max value for all joint dims), or a 2-list of list (specific min/mx values for each dim)</p></li>
+<li><p><strong>interpolator_pos</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current position to
+the goal position during each timestep between inputted actions</p></li>
+<li><p><strong>interpolator_ori</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current orientation
+to the goal orientation during each timestep between inputted actions</p></li>
+<li><p><strong>control_ori</strong> (<em>bool</em>) – Whether inputted actions will control both pos and ori or exclusively pos</p></li>
+<li><p><strong>input_type</strong> (<em>str</em>) – Whether to control the robot using delta (“delta”) or absolute commands (“absolute”).
+This is wrt the contorller reference frame (see input_ref_frame field)</p></li>
+<li><p><strong>input_ref_frame</strong> (<em>str</em>) – Reference frame for controller. Current supported options are:
+“base”: actions are wrt to the robot body (i.e., the base)
+“world”: actions are wrt the world coordinate frame</p></li>
+<li><p><strong>uncouple_pos_ori</strong> (<em>bool</em>) – Whether to decouple torques meant to control pos and torques meant to control ori</p></li>
+<li><p><strong>lite_physics</strong> (<em>bool</em>) – Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+Set to False to preserve backward compatibility with datasets collected in robosuite &lt;= 1.4.1.</p></li>
+<li><p><strong>**kwargs</strong> – Does nothing; placeholder to “sink” any additional arguments so that instantiating this controller
+via an argument dict that has additional extraneous arguments won’t raise an error</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Invalid impedance mode]</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_ori">
+<span class="sig-name descname"><span class="pre">compute_goal_ori</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_ori" title="Link to this definition">#</a></dt>
+<dd><p>Compute new goal orientation, given a delta to update. Can either update the new goal based on
+current achieved position or current deisred goal. Updating based on current deisred goal can be useful
+if we want the robot to adhere with a sequence of target poses as closely as possible,
+without lagging or overshooting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delta</strong> (<em>np.array</em>) – Desired relative change in orientation, in axis-angle form [ax, ay, az]</p></li>
+<li><p><strong>goal_update_mode</strong> (<em>str</em>) – either “achieved” (achieved position) or “desired” (desired goal)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>updated goal orientation in the controller frame</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_pos">
+<span class="sig-name descname"><span class="pre">compute_goal_pos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_pos" title="Link to this definition">#</a></dt>
+<dd><p>Compute new goal position, given a delta to update. Can either update the new goal based on
+current achieved position or current deisred goal. Updating based on current deisred goal can be useful
+if we want the robot to adhere with a sequence of target poses as closely as possible,
+without lagging or overshooting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delta</strong> (<em>np.array</em>) – Desired relative change in position [x, y, z]</p></li>
+<li><p><strong>goal_update_mode</strong> (<em>str</em>) – either “achieved” (achieved position) or “desired” (desired goal)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>updated goal position in the controller frame</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.control_limits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.control_limits" title="Link to this definition">#</a></dt>
+<dd><p>Returns the limits over this controller’s action space, overrides the superclass property
+Returns the following (generalized for both high and low limits), based on the impedance mode:</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">Mode <cite>‘fixed’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>[joint pos command]</p>
+</dd>
+<dt class="field-even">Mode <cite>‘variable’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>[damping_ratio values, kp values, joint pos command]</p>
+</dd>
+<dt class="field-odd">Mode <cite>‘variable_kp’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>[kp values, joint pos command]</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>(np.array) minimum action values</p></li>
+<li><p>(np.array) maximum action values</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>2-tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.delta_to_abs_action">
+<span class="sig-name descname"><span class="pre">delta_to_abs_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta_ac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.delta_to_abs_action" title="Link to this definition">#</a></dt>
+<dd><p>helper function that converts delta action into absolute action</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.goal_origin_to_eef_pose">
+<span class="sig-name descname"><span class="pre">goal_origin_to_eef_pose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.goal_origin_to_eef_pose" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.name" title="Link to this definition">#</a></dt>
+<dd><p>Name of this controller</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>controller name</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.reset_goal">
+<span class="sig-name descname"><span class="pre">reset_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'achieved'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.reset_goal" title="Link to this definition">#</a></dt>
+<dd><p>Resets the goal to the current state of the robot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>goal_update_mode</strong> (<em>str</em>) – set mode for updating controller goals,
+either “achieved” (achieved position) or “desired” (desired goal).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.run_controller">
+<span class="sig-name descname"><span class="pre">run_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.run_controller" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the torques required to reach the desired setpoint.</p>
+<p>Executes Operational Space Control (OSC) – either position only or position and orientation.</p>
+<p>A detailed overview of derivation of OSC equations can be seen at:
+<a class="reference external" href="http://khatib.stanford.edu/publications/pdfs/Khatib_1987_RA.pdf">http://khatib.stanford.edu/publications/pdfs/Khatib_1987_RA.pdf</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Command torques</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal">
+<span class="sig-name descname"><span class="pre">set_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal" title="Link to this definition">#</a></dt>
+<dd><p>Sets goal based on input &#64;action. If self.impedance_mode is not “fixed”, then the input will be parsed into the
+delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
+internally before executing the proceeding control loop.</p>
+<p>Note that &#64;action expected to be in the following format, based on impedance mode!</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">Mode <cite>‘fixed’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>[joint pos command]</p>
+</dd>
+<dt class="field-even">Mode <cite>‘variable’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>[damping_ratio values, kp values, joint pos command]</p>
+</dd>
+<dt class="field-odd">Mode <cite>‘variable_kp’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>[kp values, joint pos command]</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>Iterable</em>) – Desired relative joint position goal state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal_update_mode">
+<span class="sig-name descname"><span class="pre">set_goal_update_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal_update_mode" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_initial_joints">
+<span class="sig-name descname"><span class="pre">update_initial_joints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_joints</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_initial_joints" title="Link to this definition">#</a></dt>
+<dd><p>Updates the internal attribute self.initial_joints. This is useful for updating changes in controller-specific
+behavior, such as with OSC where self.initial_joints is used for determine nullspace actions</p>
+<p>This function can also be extended by subclassed controllers for additional controller-specific updates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>initial_joints</strong> (<em>Iterable</em>) – Array of joint position values to update the initial joints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_origin">
+<span class="sig-name descname"><span class="pre">update_origin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_ori</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_origin" title="Link to this definition">#</a></dt>
+<dd><p>Optional function to implement in subclass controllers that will take in &#64;origin_pos and &#64;origin_ori and update
+internal configuration to account for changes in the respective states. Useful for controllers in which the origin
+is a frame of reference that is dynamically changing, e.g., adapting the arm to move along with a moving base.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>origin_pos</strong> (<em>3-tuple</em>) – x,y,z position of controller reference in mujoco world coordinates</p></li>
+<li><p><strong>origin_ori</strong> (<em>np.array</em>) – 3x3 rotation matrix orientation of controller reference in mujoco world coordinates</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.arm.osc.OperationalSpaceController.world_to_origin_frame">
+<span class="sig-name descname"><span class="pre">world_to_origin_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.world_to_origin_frame" title="Link to this definition">#</a></dt>
+<dd><p>transform vector from world to reference coordinate frame</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.controllers.parts.arm">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.controllers.parts.arm" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="robosuite.controllers.parts.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">robosuite.controllers.parts package</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="robosuite.controllers.parts.generic.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">robosuite.controllers.parts.generic package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.arm.ik">robosuite.controllers.parts.arm.ik module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.compute_joint_positions"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.compute_joint_positions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.control_limits"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.control_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.get_control"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.get_control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.name"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.reset_goal"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.reset_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.run_controller"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.run_controller()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.set_goal"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.set_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.ik.InverseKinematicsController.update_initial_joints"><code class="docutils literal notranslate"><span class="pre">InverseKinematicsController.update_initial_joints()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.arm.osc">robosuite.controllers.parts.arm.osc module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_ori"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.compute_goal_ori()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_pos"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.compute_goal_pos()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.control_limits"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.control_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.delta_to_abs_action"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.delta_to_abs_action()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.goal_origin_to_eef_pose"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.goal_origin_to_eef_pose()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.name"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.reset_goal"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.reset_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.run_controller"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.run_controller()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.set_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.set_goal_update_mode"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.set_goal_update_mode()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_initial_joints"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.update_initial_joints()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.update_origin"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.update_origin()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.arm.osc.OperationalSpaceController.world_to_origin_frame"><code class="docutils literal notranslate"><span class="pre">OperationalSpaceController.world_to_origin_frame()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.arm">Module contents</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By the robosuite core team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright Stanford University and The University of Texas at Austin 2025.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

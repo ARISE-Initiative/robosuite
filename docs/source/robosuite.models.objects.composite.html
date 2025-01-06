@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
@@ -386,6 +398,17 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.bin">robosuite.models.objects.composite.bin module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.bin.Bin"><code class="docutils literal notranslate"><span class="pre">Bin</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.bin.Bin.base_geoms"><code class="docutils literal notranslate"><span class="pre">Bin.base_geoms</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.cone">robosuite.models.objects.composite.cone module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.cone.ConeObject"><code class="docutils literal notranslate"><span class="pre">ConeObject</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hammer">robosuite.models.objects.composite.hammer module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject"><code class="docutils literal notranslate"><span class="pre">HammerObject</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.all_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.all_geoms</span></code></a></li>
@@ -401,6 +424,24 @@
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hollow_cylinder">robosuite.models.objects.composite.hollow_cylinder module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hollow_cylinder.HollowCylinderObject"><code class="docutils literal notranslate"><span class="pre">HollowCylinderObject</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hook_frame">robosuite.models.objects.composite.hook_frame module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hook_frame.HookFrame"><code class="docutils literal notranslate"><span class="pre">HookFrame</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hook_frame.HookFrame.init_quat"><code class="docutils literal notranslate"><span class="pre">HookFrame.init_quat</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.lid">robosuite.models.objects.composite.lid module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.lid.Lid"><code class="docutils literal notranslate"><span class="pre">Lid</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.lid.Lid.handle_geoms"><code class="docutils literal notranslate"><span class="pre">Lid.handle_geoms</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.pot_with_handles">robosuite.models.objects.composite.pot_with_handles module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.bottom_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.bottom_offset</span></code></a></li>
@@ -411,6 +452,14 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.horizontal_radius</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.important_sites"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.important_sites</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.top_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.stand_with_mount">robosuite.models.objects.composite.stand_with_mount module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount"><code class="docutils literal notranslate"><span class="pre">StandWithMount</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount.base_geoms"><code class="docutils literal notranslate"><span class="pre">StandWithMount.base_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount.init_quat"><code class="docutils literal notranslate"><span class="pre">StandWithMount.init_quat</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -431,6 +480,67 @@
 <h1>robosuite.models.objects.composite package<a class="headerlink" href="#robosuite-models-objects-composite-package" title="Link to this heading">#</a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-robosuite.models.objects.composite.bin">
+<span id="robosuite-models-objects-composite-bin-module"></span><h2>robosuite.models.objects.composite.bin module<a class="headerlink" href="#module-robosuite.models.objects.composite.bin" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.bin.Bin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.bin.</span></span><span class="sig-name descname"><span class="pre">Bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.3,</span> <span class="pre">0.3,</span> <span class="pre">0.15)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wall_thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transparent_walls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_texture</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.2,</span> <span class="pre">0.1,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.bin.Bin" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates a four-walled bin container with an open top.
+:param name: Name of this Bin object
+:type name: str
+:param bin_size: (x,y,z) full size of bin
+:type bin_size: 3-array
+:param wall_thickness: How thick to make walls of bin
+:type wall_thickness: float
+:param transparent_walls: If True, walls will be semi-translucent
+:type transparent_walls: bool
+:param friction: If specified, sets friction values for this bin. None results in default values
+:type friction: 3-array or None
+:param density: Density value to use for all geoms. Defaults to 1000
+:type density: float
+:param use_texture: If true, geoms will be defined by realistic textures and rgba values will be ignored
+:type use_texture: bool
+:param rgba: If specified, sets rgba values for all geoms. None results in default values
+:type rgba: 4-array or None</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.bin.Bin.base_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.bin.Bin.base_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to bin base</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.objects.composite.cone">
+<span id="robosuite-models-objects-composite-cone-module"></span><h2>robosuite.models.objects.composite.cone module<a class="headerlink" href="#module-robosuite.models.objects.composite.cone" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.cone.ConeObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.cone.</span></span><span class="sig-name descname"><span class="pre">ConeObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0425</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngeoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.02,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solimp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.95,</span> <span class="pre">0.001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.cone.ConeObject" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates an approximate cone object by using cylinder or box geoms.
+:param name: Name of this Cone object
+:type name: str
+:param outer_radius: Radius of cone base
+:type outer_radius: float
+:param inner_radius: Radius of cone tip (since everything is a cylinder or box)
+:type inner_radius: float
+:param height: Height of cone
+:type height: float
+:param ngeoms: Number of cylinder or box geoms used to approximate the cone. Use</p>
+<blockquote>
+<div><p>more geoms to make the approximation better.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>use_box</strong> (<em>bool</em>) – If true, use box geoms instead of cylinders, corresponding to a
+square pyramid shape instead of a conical shape.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-robosuite.models.objects.composite.hammer">
 <span id="robosuite-models-objects-composite-hammer-module"></span><h2>robosuite.models.objects.composite.hammer module<a class="headerlink" href="#module-robosuite.models.objects.composite.hammer" title="Link to this heading">#</a></h2>
@@ -560,6 +670,113 @@ Must be defined by subclass.</p>
 <dd class="field-even"><p>np.array</p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.objects.composite.hollow_cylinder">
+<span id="robosuite-models-objects-composite-hollow-cylinder-module"></span><h2>robosuite.models.objects.composite.hollow_cylinder module<a class="headerlink" href="#module-robosuite.models.objects.composite.hollow_cylinder" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hollow_cylinder.HollowCylinderObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.hollow_cylinder.</span></span><span class="sig-name descname"><span class="pre">HollowCylinderObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0425</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngeoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.02,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solimp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.95,</span> <span class="pre">0.001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_half</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.hollow_cylinder.HollowCylinderObject" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates an approximate hollow cylinder object by using box geoms.
+:param name: Name of this HollowCylinder object
+:type name: str
+:param outer_radius: Outer radius of hollow cylinder
+:type outer_radius: float
+:param inner_radius: Inner radius of hollow cylinder
+:type inner_radius: float
+:param height: Height of hollow cylinder
+:type height: float
+:param ngeoms: Number of box geoms used to approximate the cylindrical shell. Use</p>
+<blockquote>
+<div><p>more geoms to make the approximation better.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>make_half</strong> (<em>bool</em>) – If true, only make half of the shell.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.objects.composite.hook_frame">
+<span id="robosuite-models-objects-composite-hook-frame-module"></span><h2>robosuite.models.objects.composite.hook_frame module<a class="headerlink" href="#module-robosuite.models.objects.composite.hook_frame" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hook_frame.HookFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.hook_frame.</span></span><span class="sig-name descname"><span class="pre">HookFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.025</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grip_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grip_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.02,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solimp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.95,</span> <span class="pre">0.001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_texture</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.2,</span> <span class="pre">0.1,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.hook_frame.HookFrame" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates an upside down L-shaped frame (a “hook” shape), intended to be used with StandWithMount object.
+:param name: Name of this object
+:type name: str
+:param frame_length: How long the frame is
+:type frame_length: float
+:param frame_height: How tall the frame is
+:type frame_height: float
+:param frame_thickness: How thick the frame is
+:type frame_thickness: float
+:param hook_height: if not None, add a box geom at the edge of the hook with this height (not half-height)
+:type hook_height: float
+:param grip_location: if not None, adds a grip to passed location, relative to center of the rod corresponding to &#64;frame_height.
+:type grip_location: float
+:param grip_size: (R, H) radius and half-height for the cylindrical grip. Set to None</p>
+<blockquote>
+<div><p>to not add a grip.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tip_size</strong> (<em>[</em><em>float</em><em>]</em>) – if not None, adds a cone tip to the end of the hook for easier insertion, with the
+provided (CH, LR, UR, H) where CH is the base cylinder height, LR and UR are the lower and upper radius
+of the cone tip, and H is the half-height of the cone tip</p></li>
+<li><p><strong>friction</strong> (<em>3-array</em><em> or </em><em>None</em>) – If specified, sets friction values for this object. None results in default values</p></li>
+<li><p><strong>density</strong> (<em>float</em>) – Density value to use for all geoms. Defaults to 1000</p></li>
+<li><p><strong>use_texture</strong> (<em>bool</em>) – If true, geoms will be defined by realistic textures and rgba values will be ignored</p></li>
+<li><p><strong>rgba</strong> (<em>4-array</em><em> or </em><em>None</em>) – If specified, sets rgba values for all geoms. None results in default values</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.hook_frame.HookFrame.init_quat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_quat</span></span><a class="headerlink" href="#robosuite.models.objects.composite.hook_frame.HookFrame.init_quat" title="Link to this definition">#</a></dt>
+<dd><p>Rotate the frame on its side so it is flat
+:returns: (x, y, z, w) quaternion orientation for this object
+:rtype: np.array</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.objects.composite.lid">
+<span id="robosuite-models-objects-composite-lid-module"></span><h2>robosuite.models.objects.composite.lid module<a class="headerlink" href="#module-robosuite.models.objects.composite.lid" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.lid.Lid">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.lid.</span></span><span class="sig-name descname"><span class="pre">Lid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lid_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.3,</span> <span class="pre">0.3,</span> <span class="pre">0.01)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.02,</span> <span class="pre">0.08,</span> <span class="pre">0.03)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_texture</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.2,</span> <span class="pre">0.1,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.lid.Lid" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates a square lid with a simple handle.
+:param name: Name of this Lid object
+:type name: str
+:param lid_size: (length, width, thickness) of lid
+:type lid_size: 3-array
+:param handle_size: (thickness, length, height) of handle
+:type handle_size: 3-array
+:param transparent: If True, lid will be semi-translucent
+:type transparent: bool
+:param friction: If specified, sets friction values for this lid. None results in default values
+:type friction: 3-array or None
+:param density: Density value to use for all geoms. Defaults to 1000
+:type density: float
+:param use_texture: If true, geoms will be defined by realistic textures and rgba values will be ignored
+:type use_texture: bool
+:param rgba: If specified, sets rgba values for all geoms. None results in default values
+:type rgba: 4-array or None</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.lid.Lid.handle_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.lid.Lid.handle_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to lid handle</p>
 </dd></dl>
 
 </dd></dl>
@@ -695,6 +912,53 @@ Must be defined by subclass.</p>
 </dd></dl>
 
 </section>
+<section id="module-robosuite.models.objects.composite.stand_with_mount">
+<span id="robosuite-models-objects-composite-stand-with-mount-module"></span><h2>robosuite.models.objects.composite.stand_with_mount module<a class="headerlink" href="#module-robosuite.models.objects.composite.stand_with_mount" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.stand_with_mount.StandWithMount">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.composite.stand_with_mount.</span></span><span class="sig-name descname"><span class="pre">StandWithMount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.3,</span> <span class="pre">0.3,</span> <span class="pre">0.15)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wall_thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialize_on_side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_hole_vis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.02,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solimp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.95,</span> <span class="pre">0.001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_texture</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rgba</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.2,</span> <span class="pre">0.1,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject" title="robosuite.models.objects.generated_objects.CompositeObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeObject</span></code></a></p>
+<p>Generates a flat stand with a four-walled mount sticking out of the top.
+:param name: Name of this object
+:type name: str
+:param size: (x,y,z) full size of object
+:type size: 3-array
+:param mount_location: (x,y) location to place mount, relative to center of stand
+:type mount_location: 2-array
+:param mount_width: How wide mount is (measured from outside of walls!)
+:type mount_width: float
+:param wall_thickness: How thick to make walls of mount
+:type wall_thickness: float
+:param initialize_on_side: If True, will initialize this stand on its side (tipped over)
+:type initialize_on_side: bool
+:param add_hole_vis: If True, adds a rim around the top of the walls, to help make the hole more visually distinctive
+:type add_hole_vis: bool
+:param friction: If specified, sets friction values for this object. None results in default values
+:type friction: 3-array or None
+:param density: Density value to use for all geoms. Defaults to 1000
+:type density: float
+:param use_texture: If true, geoms will be defined by realistic textures and rgba values will be ignored
+:type use_texture: bool
+:param rgba: If specified, sets rgba values for all geoms. None results in default values
+:type rgba: 4-array or None</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.stand_with_mount.StandWithMount.base_geoms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_geoms</span></span><a class="headerlink" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount.base_geoms" title="Link to this definition">#</a></dt>
+<dd><p>Returns:
+list of str: geom names corresponding to base</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.models.objects.composite.stand_with_mount.StandWithMount.init_quat">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_quat</span></span><a class="headerlink" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount.init_quat" title="Link to this definition">#</a></dt>
+<dd><p>Optionally rotate the mount on its side so it is flat
+:returns: (x, y, z, w) quaternion orientation for this object
+:rtype: np.array</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="module-robosuite.models.objects.composite">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.models.objects.composite" title="Link to this heading">#</a></h2>
 </section>
@@ -747,6 +1011,17 @@ Must be defined by subclass.</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.bin">robosuite.models.objects.composite.bin module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.bin.Bin"><code class="docutils literal notranslate"><span class="pre">Bin</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.bin.Bin.base_geoms"><code class="docutils literal notranslate"><span class="pre">Bin.base_geoms</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.cone">robosuite.models.objects.composite.cone module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.cone.ConeObject"><code class="docutils literal notranslate"><span class="pre">ConeObject</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hammer">robosuite.models.objects.composite.hammer module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject"><code class="docutils literal notranslate"><span class="pre">HammerObject</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hammer.HammerObject.all_geoms"><code class="docutils literal notranslate"><span class="pre">HammerObject.all_geoms</span></code></a></li>
@@ -762,6 +1037,24 @@ Must be defined by subclass.</p>
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hollow_cylinder">robosuite.models.objects.composite.hollow_cylinder module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hollow_cylinder.HollowCylinderObject"><code class="docutils literal notranslate"><span class="pre">HollowCylinderObject</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.hook_frame">robosuite.models.objects.composite.hook_frame module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hook_frame.HookFrame"><code class="docutils literal notranslate"><span class="pre">HookFrame</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.hook_frame.HookFrame.init_quat"><code class="docutils literal notranslate"><span class="pre">HookFrame.init_quat</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.lid">robosuite.models.objects.composite.lid module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.lid.Lid"><code class="docutils literal notranslate"><span class="pre">Lid</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.lid.Lid.handle_geoms"><code class="docutils literal notranslate"><span class="pre">Lid.handle_geoms</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.pot_with_handles">robosuite.models.objects.composite.pot_with_handles module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.bottom_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.bottom_offset</span></code></a></li>
@@ -772,6 +1065,14 @@ Must be defined by subclass.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.horizontal_radius"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.horizontal_radius</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.important_sites"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.important_sites</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.pot_with_handles.PotWithHandlesObject.top_offset"><code class="docutils literal notranslate"><span class="pre">PotWithHandlesObject.top_offset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.objects.composite.stand_with_mount">robosuite.models.objects.composite.stand_with_mount module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount"><code class="docutils literal notranslate"><span class="pre">StandWithMount</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount.base_geoms"><code class="docutils literal notranslate"><span class="pre">StandWithMount.base_geoms</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.composite.stand_with_mount.StandWithMount.init_quat"><code class="docutils literal notranslate"><span class="pre">StandWithMount.init_quat</span></code></a></li>
 </ul>
 </li>
 </ul>

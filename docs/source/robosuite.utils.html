@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
@@ -1204,6 +1216,21 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.errors.robosuiteError"><code class="docutils literal notranslate"><span class="pre">robosuiteError</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.ik_utils">robosuite.utils.ik_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver"><code class="docutils literal notranslate"><span class="pre">IKSolver</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.action_split_indexes"><code class="docutils literal notranslate"><span class="pre">IKSolver.action_split_indexes()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.forward_kinematics"><code class="docutils literal notranslate"><span class="pre">IKSolver.forward_kinematics()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.get_targets"><code class="docutils literal notranslate"><span class="pre">IKSolver.get_targets()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.reset_to_initial_state"><code class="docutils literal notranslate"><span class="pre">IKSolver.reset_to_initial_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.set_target_positions"><code class="docutils literal notranslate"><span class="pre">IKSolver.set_target_positions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.set_target_rotations"><code class="docutils literal notranslate"><span class="pre">IKSolver.set_target_rotations()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.solve"><code class="docutils literal notranslate"><span class="pre">IKSolver.solve()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.transform_pose"><code class="docutils literal notranslate"><span class="pre">IKSolver.transform_pose()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.get_nullspace_gains"><code class="docutils literal notranslate"><span class="pre">get_nullspace_gains()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-utils-input-utils-module">robosuite.utils.input_utils module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.log_utils">robosuite.utils.log_utils module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.ConsoleFormatter"><code class="docutils literal notranslate"><span class="pre">ConsoleFormatter</span></code></a><ul class="nav section-nav flex-column">
@@ -1414,8 +1441,31 @@
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.robot_composition_utils">robosuite.utils.robot_composition_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.robot_composition_utils.create_composite_robot"><code class="docutils literal notranslate"><span class="pre">create_composite_robot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.robot_composition_utils.get_target_type"><code class="docutils literal notranslate"><span class="pre">get_target_type()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.robot_utils">robosuite.utils.robot_utils module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.robot_utils.check_bimanual"><code class="docutils literal notranslate"><span class="pre">check_bimanual()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.sim_utils">robosuite.utils.sim_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.sim_utils.check_contact"><code class="docutils literal notranslate"><span class="pre">check_contact()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.sim_utils.get_contacts"><code class="docutils literal notranslate"><span class="pre">get_contacts()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.traj_utils">robosuite.utils.traj_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.Interpolator"><code class="docutils literal notranslate"><span class="pre">Interpolator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.Interpolator.get_interpolated_goal"><code class="docutils literal notranslate"><span class="pre">Interpolator.get_interpolated_goal()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator.get_interpolated_goal"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.get_interpolated_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator.set_goal"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.set_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator.set_states"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.set_states()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.transform_utils">robosuite.utils.transform_utils module</a><ul class="nav section-nav flex-column">
@@ -6131,6 +6181,61 @@ specified to define a global goal position</p>
 </dd></dl>
 
 </section>
+<section id="module-robosuite.utils.ik_utils">
+<span id="robosuite-utils-ik-utils-module"></span><h2>robosuite.utils.ik_utils module<a class="headerlink" href="#module-robosuite.utils.ik_utils" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.utils.ik_utils.</span></span><span class="sig-name descname"><span class="pre">IKSolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MjModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MjData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dq_torso</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'keyboard'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mocap'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'pkl'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'keyboard'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_action_repr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'absolute'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'relative'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'relative_pose'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'absolute'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_rotation_repr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'quat_wxyz'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'axis_angle'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'axis_angle'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.action_split_indexes">
+<span class="sig-name descname"><span class="pre">action_split_indexes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.action_split_indexes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.forward_kinematics">
+<span class="sig-name descname"><span class="pre">forward_kinematics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qpos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.forward_kinematics" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.get_targets">
+<span class="sig-name descname"><span class="pre">get_targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.get_targets" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.reset_to_initial_state">
+<span class="sig-name descname"><span class="pre">reset_to_initial_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.reset_to_initial_state" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.set_target_positions">
+<span class="sig-name descname"><span class="pre">set_target_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.set_target_positions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.set_target_rotations">
+<span class="sig-name descname"><span class="pre">set_target_rotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_rotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.set_target_rotations" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kpos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kori</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.solve" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.IKSolver.transform_pose">
+<span class="sig-name descname"><span class="pre">transform_pose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_frame_pose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'world'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'base'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'world'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'base'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#robosuite.utils.ik_utils.IKSolver.transform_pose" title="Link to this definition">#</a></dt>
+<dd><p>Transforms src_frame_pose from src_frame to dst_frame.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.ik_utils.get_nullspace_gains">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.ik_utils.</span></span><span class="sig-name descname"><span class="pre">get_nullspace_gains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">joint_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#robosuite.utils.ik_utils.get_nullspace_gains" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
 <section id="robosuite-utils-input-utils-module">
 <h2>robosuite.utils.input_utils module<a class="headerlink" href="#robosuite-utils-input-utils-module" title="Link to this heading">#</a></h2>
 </section>
@@ -8703,6 +8808,21 @@ z-offset of the current sampled object’s bottom_offset + the reference object�
 </dd></dl>
 
 </section>
+<section id="module-robosuite.utils.robot_composition_utils">
+<span id="robosuite-utils-robot-composition-utils-module"></span><h2>robosuite.utils.robot_composition_utils module<a class="headerlink" href="#module-robosuite.utils.robot_composition_utils" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.robot_composition_utils.create_composite_robot">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.robot_composition_utils.</span></span><span class="sig-name descname"><span class="pre">create_composite_robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">robot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grippers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="robosuite.models.robots.html#robosuite.models.robots.robot_model.RobotModel" title="robosuite.models.robots.robot_model.RobotModel"><span class="pre">RobotModel</span></a></span></span><a class="headerlink" href="#robosuite.utils.robot_composition_utils.create_composite_robot" title="Link to this definition">#</a></dt>
+<dd><p>Factory function to create a composite robot</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.robot_composition_utils.get_target_type">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.robot_composition_utils.</span></span><span class="sig-name descname"><span class="pre">get_target_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#robosuite.utils.robot_composition_utils.get_target_type" title="Link to this definition">#</a></dt>
+<dd><p>Returns the target type of the robot</p>
+</dd></dl>
+
+</section>
 <section id="module-robosuite.utils.robot_utils">
 <span id="robosuite-utils-robot-utils-module"></span><h2>robosuite.utils.robot_utils module<a class="headerlink" href="#module-robosuite.utils.robot_utils" title="Link to this heading">#</a></h2>
 <dl class="py function">
@@ -8720,6 +8840,160 @@ z-offset of the current sampled object’s bottom_offset + the reference object�
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
+</dd></dl>
+
+</section>
+<section id="module-robosuite.utils.sim_utils">
+<span id="robosuite-utils-sim-utils-module"></span><h2>robosuite.utils.sim_utils module<a class="headerlink" href="#module-robosuite.utils.sim_utils" title="Link to this heading">#</a></h2>
+<p>Collection of useful simulation utilities</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.sim_utils.check_contact">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.sim_utils.</span></span><span class="sig-name descname"><span class="pre">check_contact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geoms_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geoms_2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.sim_utils.check_contact" title="Link to this definition">#</a></dt>
+<dd><p>Finds contact between two geom groups.
+:param sim: Current simulation object
+:type sim: MjSim
+:param geoms_1: an individual geom name or list of geom names or a model. If</p>
+<blockquote>
+<div><p>a MujocoModel is specified, the geoms checked will be its contact_geoms</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>geoms_2</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em> or </em><a class="reference internal" href="robosuite.models.html#robosuite.models.base.MujocoModel" title="robosuite.models.base.MujocoModel"><em>MujocoModel</em></a><em> or </em><em>None</em>) – another individual geom name or list of geom names.
+If a MujocoModel is specified, the geoms checked will be its contact_geoms. If None, will check
+any collision with &#64;geoms_1 to any other geom in the environment</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if any geom in &#64;geoms_1 is in contact with any geom in &#64;geoms_2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.sim_utils.get_contacts">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.sim_utils.</span></span><span class="sig-name descname"><span class="pre">get_contacts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.sim_utils.get_contacts" title="Link to this definition">#</a></dt>
+<dd><p>Checks for any contacts with &#64;model (as defined by &#64;model’s contact_geoms) and returns the set of
+geom names currently in contact with that model (excluding the geoms that are part of the model itself).
+:param sim: Current simulation model
+:type sim: MjSim
+:param model: Model to check contacts for.
+:type model: MujocoModel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Unique geoms that are actively in contact with this model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>set</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AssertionError</strong> – [Invalid input type]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-robosuite.utils.traj_utils">
+<span id="robosuite-utils-traj-utils-module"></span><h2>robosuite.utils.traj_utils module<a class="headerlink" href="#module-robosuite.utils.traj_utils" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.utils.traj_utils.Interpolator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.utils.traj_utils.</span></span><span class="sig-name descname"><span class="pre">Interpolator</span></span><a class="headerlink" href="#robosuite.utils.traj_utils.Interpolator" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>General interpolator interface.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.traj_utils.Interpolator.get_interpolated_goal">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_interpolated_goal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.traj_utils.Interpolator.get_interpolated_goal" title="Link to this definition">#</a></dt>
+<dd><p>Provides the next step in interpolation given the remaining steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Next interpolated step</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.utils.traj_utils.LinearInterpolator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.utils.traj_utils.</span></span><span class="sig-name descname"><span class="pre">LinearInterpolator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controller_freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ramp_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_delta_goal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ori_interpolate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.traj_utils.LinearInterpolator" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Interpolator</span></code></a></p>
+<p>Simple class for implementing a linear interpolator.</p>
+<p>Abstracted to interpolate n-dimensions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ndim</strong> (<em>int</em>) – Number of dimensions to interpolate</p></li>
+<li><p><strong>controller_freq</strong> (<em>float</em>) – Frequency (Hz) of the controller</p></li>
+<li><p><strong>policy_freq</strong> (<em>float</em>) – Frequency (Hz) of the policy model</p></li>
+<li><p><strong>ramp_ratio</strong> (<em>float</em>) – <p>Percentage of interpolation timesteps across which we will interpolate to a goal position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Num total interpolation steps will be equal to np.floor(ramp_ratio * controller_freq / policy_freq)
+i.e.: how many controller steps we get per action space update</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>ori_interpolate</strong> (<em>None</em><em> or </em><em>str</em>) – <p>If set, assumes that we are interpolating angles (orientation)
+Specified string determines assumed type of input:</p>
+<blockquote>
+<div><p><cite>’euler’</cite>: Euler orientation inputs
+<cite>‘quat’</cite>: Quaternion inputs</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.traj_utils.LinearInterpolator.get_interpolated_goal">
+<span class="sig-name descname"><span class="pre">get_interpolated_goal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.traj_utils.LinearInterpolator.get_interpolated_goal" title="Link to this definition">#</a></dt>
+<dd><p>Provides the next step in interpolation given the remaining steps.</p>
+<p>NOTE: If this interpolator is for orientation, it is assumed to be receiving either euler angles or quaternions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Next position in the interpolated trajectory</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.traj_utils.LinearInterpolator.set_goal">
+<span class="sig-name descname"><span class="pre">set_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.traj_utils.LinearInterpolator.set_goal" title="Link to this definition">#</a></dt>
+<dd><p>Takes a requested (absolute) goal and updates internal parameters for next interpolation step</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>np.array</strong> – Requested goal (absolute value). Should be same dimension as self.dim</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.utils.traj_utils.LinearInterpolator.set_states">
+<span class="sig-name descname"><span class="pre">set_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ori</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.traj_utils.LinearInterpolator.set_states" title="Link to this definition">#</a></dt>
+<dd><p>Updates self.dim and self.ori_interpolate.</p>
+<p>Initializes self.start and self.goal with correct dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ndim</strong> (<em>None</em><em> or </em><em>int</em>) – Number of dimensions to interpolate</p></li>
+<li><p><strong>ori_interpolate</strong> (<em>None</em><em> or </em><em>str</em>) – <p>If set, assumes that we are interpolating angles (orientation)
+Specified string determines assumed type of input:</p>
+<blockquote>
+<div><p><cite>’euler’</cite>: Euler orientation inputs
+<cite>‘quat’</cite>: Quaternion inputs</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -10318,6 +10592,21 @@ between 0 and 1.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.errors.robosuiteError"><code class="docutils literal notranslate"><span class="pre">robosuiteError</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.ik_utils">robosuite.utils.ik_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver"><code class="docutils literal notranslate"><span class="pre">IKSolver</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.action_split_indexes"><code class="docutils literal notranslate"><span class="pre">IKSolver.action_split_indexes()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.forward_kinematics"><code class="docutils literal notranslate"><span class="pre">IKSolver.forward_kinematics()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.get_targets"><code class="docutils literal notranslate"><span class="pre">IKSolver.get_targets()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.reset_to_initial_state"><code class="docutils literal notranslate"><span class="pre">IKSolver.reset_to_initial_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.set_target_positions"><code class="docutils literal notranslate"><span class="pre">IKSolver.set_target_positions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.set_target_rotations"><code class="docutils literal notranslate"><span class="pre">IKSolver.set_target_rotations()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.solve"><code class="docutils literal notranslate"><span class="pre">IKSolver.solve()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.IKSolver.transform_pose"><code class="docutils literal notranslate"><span class="pre">IKSolver.transform_pose()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.get_nullspace_gains"><code class="docutils literal notranslate"><span class="pre">get_nullspace_gains()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-utils-input-utils-module">robosuite.utils.input_utils module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.log_utils">robosuite.utils.log_utils module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.ConsoleFormatter"><code class="docutils literal notranslate"><span class="pre">ConsoleFormatter</span></code></a><ul class="nav section-nav flex-column">
@@ -10528,8 +10817,31 @@ between 0 and 1.</p>
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.robot_composition_utils">robosuite.utils.robot_composition_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.robot_composition_utils.create_composite_robot"><code class="docutils literal notranslate"><span class="pre">create_composite_robot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.robot_composition_utils.get_target_type"><code class="docutils literal notranslate"><span class="pre">get_target_type()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.robot_utils">robosuite.utils.robot_utils module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.robot_utils.check_bimanual"><code class="docutils literal notranslate"><span class="pre">check_bimanual()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.sim_utils">robosuite.utils.sim_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.sim_utils.check_contact"><code class="docutils literal notranslate"><span class="pre">check_contact()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.sim_utils.get_contacts"><code class="docutils literal notranslate"><span class="pre">get_contacts()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.traj_utils">robosuite.utils.traj_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.Interpolator"><code class="docutils literal notranslate"><span class="pre">Interpolator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.Interpolator.get_interpolated_goal"><code class="docutils literal notranslate"><span class="pre">Interpolator.get_interpolated_goal()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator.get_interpolated_goal"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.get_interpolated_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator.set_goal"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.set_goal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.traj_utils.LinearInterpolator.set_states"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.set_states()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.transform_utils">robosuite.utils.transform_utils module</a><ul class="nav section-nav flex-column">

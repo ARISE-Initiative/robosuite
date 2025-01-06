@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../source/robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../source/robosuite.robots.html">robosuite.robots package</a></li>
@@ -1068,7 +1080,7 @@ or a 2-list of list (specific min / max for each damping_ratio dim)</p></li>
 <li><p><strong>qpos_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>Iterable</em><em> of </em><em>floats</em>) – Limits (rad) below and above which the magnitude
 of a calculated goal joint position will be clipped. Can be either be a 2-list (same min/max value for all
 joint dims), or a 2-list of list (specific min/max values for each dim)</p></li>
-<li><p><strong>interpolator</strong> (<em>Interpolator</em>) – Interpolator object to be used for interpolating from the current joint position to
+<li><p><strong>interpolator</strong> (<a class="reference internal" href="../source/robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current joint position to
 the goal joint position during each timestep between inputted actions</p></li>
 <li><p><strong>**kwargs</strong> – Does nothing; placeholder to “sink” any additional arguments so that instantiating this controller
 via an argument dict that has additional extraneous arguments won’t raise an error</p></li>
@@ -1226,7 +1238,7 @@ Can be either be a scalar (same value for all action dims), or a list (specific 
 <li><p><strong>velocity_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>list</em><em> of </em><em>floats</em>) – Limits (m/s) below and above which the magnitude
 of a calculated goal joint velocity will be clipped. Can be either be a 2-list (same min/max value for all
 joint dims), or a 2-list of list (specific min/max values for each dim)</p></li>
-<li><p><strong>interpolator</strong> (<em>Interpolator</em>) – Interpolator object to be used for interpolating from the current joint velocities
+<li><p><strong>interpolator</strong> (<a class="reference internal" href="../source/robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current joint velocities
 to the goal joint velocities during each timestep between inputted actions</p></li>
 <li><p><strong>**kwargs</strong> – Does nothing; placeholder to “sink” any additional arguments so that instantiating this controller
 via an argument dict that has additional extraneous arguments won’t raise an error</p></li>
@@ -1331,7 +1343,7 @@ each dimension). If the latter, dimension should be the same as the control dime
 of a calculated goal joint torque will be clipped. Can be either be a 2-list (same min/max value for all
 joint dims), or a 2-list of list (specific min/max values for each dim)
 If not specified, will automatically set the limits to the actuator limits for this robot arm</p></li>
-<li><p><strong>interpolator</strong> (<em>Interpolator</em>) – Interpolator object to be used for interpolating from the current joint torques to
+<li><p><strong>interpolator</strong> (<a class="reference internal" href="../source/robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current joint torques to
 the goal joint torques during each timestep between inputted actions</p></li>
 <li><p><strong>**kwargs</strong> – Does nothing; placeholder to “sink” any additional arguments so that instantiating this controller
 via an argument dict that has additional extraneous arguments won’t raise an error</p></li>
@@ -1432,7 +1444,7 @@ robot arm link coordinate system and the end effector coordinate system (i.e: th
 positional inputs will be clipped</p></li>
 <li><p><strong>ik_ori_limit</strong> (<em>float</em>) – Limit (radians) above which the magnitude of a given action’s
 orientation inputs will be clipped</p></li>
-<li><p><strong>interpolator</strong> (<em>Interpolator</em>) – Interpolator object to be used for interpolating from the current state to
+<li><p><strong>interpolator</strong> (<a class="reference internal" href="../source/robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current state to
 the goal state during each timestep between inputted actions</p></li>
 <li><p><strong>converge_steps</strong> (<em>int</em>) – How many iterations to run the inverse kinematics solver to converge to a
 solution</p></li>
@@ -1922,7 +1934,7 @@ or a 2-list of list (specific min / max for each damping_ratio dim)</p></li>
 <li><p><strong>qpos_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>Iterable</em><em> of </em><em>floats</em>) – Limits (rad) below and above which the magnitude
 of a calculated goal joint position will be clipped. Can be either be a 2-list (same min/max value for all
 joint dims), or a 2-list of list (specific min/max values for each dim)</p></li>
-<li><p><strong>interpolator</strong> (<em>Interpolator</em>) – Interpolator object to be used for interpolating from the current joint position to
+<li><p><strong>interpolator</strong> (<a class="reference internal" href="../source/robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current joint position to
 the goal joint position during each timestep between inputted actions</p></li>
 <li><p><strong>**kwargs</strong> – Does nothing; placeholder to “sink” any additional arguments so that instantiating this controller
 via an argument dict that has additional extraneous arguments won’t raise an error</p></li>
@@ -2272,7 +2284,7 @@ each dimension). If the latter, dimension should be the same as the control dime
 <li><p><strong>qpos_limits</strong> (<em>2-list</em><em> of </em><em>float</em><em> or </em><em>2-list</em><em> of </em><em>Iterable</em><em> of </em><em>floats</em>) – Limits (rad) below and above which the magnitude
 of a calculated goal joint position will be clipped. Can be either be a 2-list (same min/max value for all
 joint dims), or a 2-list of list (specific min/max values for each dim)</p></li>
-<li><p><strong>interpolator</strong> (<em>Interpolator</em>) – Interpolator object to be used for interpolating from the current joint position to
+<li><p><strong>interpolator</strong> (<a class="reference internal" href="../source/robosuite.utils.html#robosuite.utils.traj_utils.Interpolator" title="robosuite.utils.traj_utils.Interpolator"><em>Interpolator</em></a>) – Interpolator object to be used for interpolating from the current joint position to
 the goal joint position during each timestep between inputted actions</p></li>
 <li><p><strong>**kwargs</strong> – Does nothing; placeholder to “sink” any additional arguments so that instantiating this controller
 via an argument dict that has additional extraneous arguments won’t raise an error</p></li>

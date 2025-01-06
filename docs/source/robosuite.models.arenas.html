@@ -56,7 +56,7 @@
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="robosuite.models.grippers package" href="robosuite.models.grippers.html" />
+    <link rel="next" title="robosuite.models.bases package" href="robosuite.models.bases.html" />
     <link rel="prev" title="robosuite.models package" href="robosuite.models.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
@@ -405,6 +417,13 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.empty_arena.EmptyArena"><code class="docutils literal notranslate"><span class="pre">EmptyArena</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.arenas.multi_table_arena">robosuite.models.arenas.multi_table_arena module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.multi_table_arena.MultiTableArena"><code class="docutils literal notranslate"><span class="pre">MultiTableArena</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.multi_table_arena.MultiTableArena.configure_location"><code class="docutils literal notranslate"><span class="pre">MultiTableArena.configure_location()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.arenas.pegs_arena">robosuite.models.arenas.pegs_arena module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.pegs_arena.PegsArena"><code class="docutils literal notranslate"><span class="pre">PegsArena</span></code></a></li>
 </ul>
@@ -514,6 +533,41 @@ See <a class="reference external" href="http://www.mujoco.org/book/XMLreference.
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.arenas.empty_arena.</span></span><span class="sig-name descname"><span class="pre">EmptyArena</span></span><a class="headerlink" href="#robosuite.models.arenas.empty_arena.EmptyArena" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.arenas.arena.Arena" title="robosuite.models.arenas.arena.Arena"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arena</span></code></a></p>
 <p>Empty workspace.</p>
+</dd></dl>
+
+</section>
+<section id="module-robosuite.models.arenas.multi_table_arena">
+<span id="robosuite-models-arenas-multi-table-arena-module"></span><h2>robosuite.models.arenas.multi_table_arena module<a class="headerlink" href="#module-robosuite.models.arenas.multi_table_arena" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.models.arenas.multi_table_arena.MultiTableArena">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.arenas.multi_table_arena.</span></span><span class="sig-name descname"><span class="pre">MultiTableArena</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_offsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_rots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_full_sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.8,</span> <span class="pre">0.8,</span> <span class="pre">0.05)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_frictions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">0.005,</span> <span class="pre">0.0001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_legs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xml</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'arenas/multi_table_arena.xml'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.arenas.multi_table_arena.MultiTableArena" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.models.arenas.arena.Arena" title="robosuite.models.arenas.arena.Arena"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arena</span></code></a></p>
+<p>Workspace that contains multiple tables.
+:param table_offsets: (x,y,z) offset from center of arena when placing each table.</p>
+<blockquote>
+<div><p>Note that the number of tables is inferred from the length of this list
+Note that the z value sets the upper limit of the table</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_rots</strong> (<em>float</em><em> or </em><em>list</em><em> of </em><em>float</em>) – z-rotation to apply to each table. If only a
+single value is given, it will be broadcasted according to the total number of tables</p></li>
+<li><p><strong>table_full_sizes</strong> (<em>3-array</em><em> or </em><em>list</em><em> of </em><em>3-array</em>) – (L,W,H) full dimensions of each table. If only a
+single value is given, it will be broadcasted according to the total number of tables</p></li>
+<li><p><strong>table_frictions</strong> (<em>3-array</em><em> or </em><em>list</em><em> of </em><em>3-array</em>) – (sliding, torsional, rolling) friction parameters of each table.</p></li>
+<li><p><strong>has_legs</strong> (<em>bool</em><em> or </em><em>list</em><em> of </em><em>bool</em>) – whether each table has legs or not. If only a
+single value is given, it will be broadcasted according to the total number of tables</p></li>
+<li><p><strong>xml</strong> (<em>str</em>) – xml file to load arena</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.arenas.multi_table_arena.MultiTableArena.configure_location">
+<span class="sig-name descname"><span class="pre">configure_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.arenas.multi_table_arena.MultiTableArena.configure_location" title="Link to this definition">#</a></dt>
+<dd><p>Configures correct locations for this arena</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -680,11 +734,11 @@ recent dirt position is defined by &#64;pos</p>
       </div>
     </a>
     <a class="right-next"
-       href="robosuite.models.grippers.html"
+       href="robosuite.models.bases.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">robosuite.models.grippers package</p>
+        <p class="prev-next-title">robosuite.models.bases package</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -723,6 +777,13 @@ recent dirt position is defined by &#64;pos</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.arenas.empty_arena">robosuite.models.arenas.empty_arena module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.empty_arena.EmptyArena"><code class="docutils literal notranslate"><span class="pre">EmptyArena</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.arenas.multi_table_arena">robosuite.models.arenas.multi_table_arena module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.multi_table_arena.MultiTableArena"><code class="docutils literal notranslate"><span class="pre">MultiTableArena</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.multi_table_arena.MultiTableArena.configure_location"><code class="docutils literal notranslate"><span class="pre">MultiTableArena.configure_location()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.models.arenas.pegs_arena">robosuite.models.arenas.pegs_arena module</a><ul class="nav section-nav flex-column">

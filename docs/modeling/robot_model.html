@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../source/robosuite.html">robosuite package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../source/robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../source/robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../source/robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="../source/robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../source/robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../source/robosuite.robots.html">robosuite.robots package</a></li>
@@ -516,18 +528,18 @@ exists for this value, it will be skipped</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_base">
-<span class="sig-name descname"><span class="pre">add_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="robosuite.models.bases.robot_base_model.RobotBaseModel"><span class="pre">RobotBaseModel</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_base" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../source/robosuite.models.bases.html#robosuite.models.bases.robot_base_model.RobotBaseModel" title="robosuite.models.bases.robot_base_model.RobotBaseModel"><span class="pre">RobotBaseModel</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_base" title="Link to this definition">#</a></dt>
 <dd><p>Mounts a base to the robot. Bases are defined in robosuite.models.bases</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_mount">
-<span class="sig-name descname"><span class="pre">add_mount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MountModel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_mount" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_mount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../source/robosuite.models.bases.html#robosuite.models.bases.mount_model.MountModel" title="robosuite.models.bases.mount_model.MountModel"><span class="pre">MountModel</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_mount" title="Link to this definition">#</a></dt>
 <dd><p>Mounts &#64;mount to arm.</p>
 <p>Throws error if robot already has a mount or if mount type is incorrect.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mount</strong> (<em>MountModel</em>) – mount MJCF model</p>
+<dd class="field-odd"><p><strong>mount</strong> (<a class="reference internal" href="../source/robosuite.models.bases.html#robosuite.models.bases.mount_model.MountModel" title="robosuite.models.bases.mount_model.MountModel"><em>MountModel</em></a>) – mount MJCF model</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – [mount already added]</p>
@@ -537,7 +549,7 @@ exists for this value, it will be skipped</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_mobile_base">
-<span class="sig-name descname"><span class="pre">add_mobile_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mobile_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MobileBaseModel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_mobile_base" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_mobile_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mobile_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../source/robosuite.models.bases.html#robosuite.models.bases.mobile_base_model.MobileBaseModel" title="robosuite.models.bases.mobile_base_model.MobileBaseModel"><span class="pre">MobileBaseModel</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_mobile_base" title="Link to this definition">#</a></dt>
 <dd><p>Mounts &#64;mobile_base to arm.</p>
 <p>Throws error if robot already has a mobile base or if mobile base type is incorrect.</p>
 <dl class="field-list simple">
@@ -552,7 +564,7 @@ exists for this value, it will be skipped</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.models.robots.robot_model.RobotModel.add_leg_base">
-<span class="sig-name descname"><span class="pre">add_leg_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leg_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LegBaseModel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_leg_base" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_leg_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">leg_base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../source/robosuite.models.bases.html#robosuite.models.bases.leg_base_model.LegBaseModel" title="robosuite.models.bases.leg_base_model.LegBaseModel"><span class="pre">LegBaseModel</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.robots.robot_model.RobotModel.add_leg_base" title="Link to this definition">#</a></dt>
 <dd><p>Mounts &#64;mobile_base to arm.</p>
 <p>Throws error if robot already has a mobile base or if mobile base type is incorrect.</p>
 <dl class="field-list simple">

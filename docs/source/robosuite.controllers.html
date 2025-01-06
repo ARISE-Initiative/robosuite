@@ -56,7 +56,7 @@
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="robosuite.controllers.interpolators package" href="robosuite.controllers.interpolators.html" />
+    <link rel="next" title="robosuite.controllers.composite package" href="robosuite.controllers.composite.html" />
     <link rel="prev" title="robosuite package" href="robosuite.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">robosuite.controllers package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
@@ -386,14 +398,6 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-base-controller-module">robosuite.controllers.base_controller module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.controller_factory">robosuite.controllers.controller_factory module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-ik-module">robosuite.controllers.ik module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-joint-pos-module">robosuite.controllers.joint_pos module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-joint-tor-module">robosuite.controllers.joint_tor module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-joint-vel-module">robosuite.controllers.joint_vel module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-osc-module">robosuite.controllers.osc module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers">Module contents</a></li>
 </ul>
             </nav>
@@ -412,39 +416,128 @@
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.interpolators.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.interpolators.html#robosuite-controllers-interpolators-base-interpolator-module">robosuite.controllers.interpolators.base_interpolator module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.interpolators.html#robosuite-controllers-interpolators-linear-interpolator-module">robosuite.controllers.interpolators.linear_interpolator module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.interpolators.html#module-contents">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.composite.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.composite.html#module-robosuite.controllers.composite.composite_controller">robosuite.controllers.composite.composite_controller module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController"><code class="docutils literal notranslate"><span class="pre">CompositeController</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.action_limits"><code class="docutils literal notranslate"><span class="pre">CompositeController.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_control_dim"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_control_dim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_controller"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_controller()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_controller_base_pose"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_controller_base_pose()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.load_controller_config"><code class="docutils literal notranslate"><span class="pre">CompositeController.load_controller_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.name"><code class="docutils literal notranslate"><span class="pre">CompositeController.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.reset"><code class="docutils literal notranslate"><span class="pre">CompositeController.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.run_controller"><code class="docutils literal notranslate"><span class="pre">CompositeController.run_controller()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.set_goal"><code class="docutils literal notranslate"><span class="pre">CompositeController.set_goal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.setup_action_split_idx"><code class="docutils literal notranslate"><span class="pre">CompositeController.setup_action_split_idx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.update_state"><code class="docutils literal notranslate"><span class="pre">CompositeController.update_state()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.HybridMobileBase"><code class="docutils literal notranslate"><span class="pre">HybridMobileBase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.action_limits"><code class="docutils literal notranslate"><span class="pre">HybridMobileBase.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.create_action_vector"><code class="docutils literal notranslate"><span class="pre">HybridMobileBase.create_action_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.name"><code class="docutils literal notranslate"><span class="pre">HybridMobileBase.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.set_goal"><code class="docutils literal notranslate"><span class="pre">HybridMobileBase.set_goal()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody"><code class="docutils literal notranslate"><span class="pre">WholeBody</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.action_limits"><code class="docutils literal notranslate"><span class="pre">WholeBody.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.create_action_vector"><code class="docutils literal notranslate"><span class="pre">WholeBody.create_action_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.name"><code class="docutils literal notranslate"><span class="pre">WholeBody.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info"><code class="docutils literal notranslate"><span class="pre">WholeBody.print_action_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info_dict"><code class="docutils literal notranslate"><span class="pre">WholeBody.print_action_info_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.set_goal"><code class="docutils literal notranslate"><span class="pre">WholeBody.set_goal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.setup_action_split_idx"><code class="docutils literal notranslate"><span class="pre">WholeBody.setup_action_split_idx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.setup_whole_body_controller_action_split_idx"><code class="docutils literal notranslate"><span class="pre">WholeBody.setup_whole_body_controller_action_split_idx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.update_state"><code class="docutils literal notranslate"><span class="pre">WholeBody.update_state()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBodyIK"><code class="docutils literal notranslate"><span class="pre">WholeBodyIK</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBodyIK.name"><code class="docutils literal notranslate"><span class="pre">WholeBodyIK.name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.register_composite_controller"><code class="docutils literal notranslate"><span class="pre">register_composite_controller()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.composite.html#module-robosuite.controllers.composite.composite_controller_factory">robosuite.controllers.composite.composite_controller_factory module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller_factory.is_part_controller_config"><code class="docutils literal notranslate"><span class="pre">is_part_controller_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller_factory.load_composite_controller_config"><code class="docutils literal notranslate"><span class="pre">load_composite_controller_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller_factory.refactor_composite_controller_config"><code class="docutils literal notranslate"><span class="pre">refactor_composite_controller_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller_factory.validate_composite_controller_config"><code class="docutils literal notranslate"><span class="pre">validate_composite_controller_config()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.composite.html#module-robosuite.controllers.composite">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.parts.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html#module-robosuite.controllers.parts.arm.ik">robosuite.controllers.parts.arm.ik module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html#module-robosuite.controllers.parts.arm.osc">robosuite.controllers.parts.arm.osc module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html#module-robosuite.controllers.parts.arm">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html#module-robosuite.controllers.parts.generic.joint_pos">robosuite.controllers.parts.generic.joint_pos module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html#module-robosuite.controllers.parts.generic.joint_tor">robosuite.controllers.parts.generic.joint_tor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html#module-robosuite.controllers.parts.generic.joint_vel">robosuite.controllers.parts.generic.joint_vel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html#module-robosuite.controllers.parts.generic">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html#module-robosuite.controllers.parts.gripper.gripper_controller">robosuite.controllers.parts.gripper.gripper_controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html#module-robosuite.controllers.parts.gripper.simple_grip">robosuite.controllers.parts.gripper.simple_grip module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html#module-robosuite.controllers.parts.gripper">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html#module-robosuite.controllers.parts.mobile_base.joint_vel">robosuite.controllers.parts.mobile_base.joint_vel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html#module-robosuite.controllers.parts.mobile_base.mobile_base_controller">robosuite.controllers.parts.mobile_base.mobile_base_controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html#module-robosuite.controllers.parts.mobile_base">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.parts.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.parts.html#module-robosuite.controllers.parts.controller">robosuite.controllers.parts.controller module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller"><code class="docutils literal notranslate"><span class="pre">Controller</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.actuator_limits"><code class="docutils literal notranslate"><span class="pre">Controller.actuator_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.clip_torques"><code class="docutils literal notranslate"><span class="pre">Controller.clip_torques()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.control_limits"><code class="docutils literal notranslate"><span class="pre">Controller.control_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.name"><code class="docutils literal notranslate"><span class="pre">Controller.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.nums2array"><code class="docutils literal notranslate"><span class="pre">Controller.nums2array()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.reset_goal"><code class="docutils literal notranslate"><span class="pre">Controller.reset_goal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.run_controller"><code class="docutils literal notranslate"><span class="pre">Controller.run_controller()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.scale_action"><code class="docutils literal notranslate"><span class="pre">Controller.scale_action()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.torque_compensation"><code class="docutils literal notranslate"><span class="pre">Controller.torque_compensation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.update"><code class="docutils literal notranslate"><span class="pre">Controller.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.update_initial_joints"><code class="docutils literal notranslate"><span class="pre">Controller.update_initial_joints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.update_origin"><code class="docutils literal notranslate"><span class="pre">Controller.update_origin()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller.Controller.update_reference_data"><code class="docutils literal notranslate"><span class="pre">Controller.update_reference_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.parts.html#module-robosuite.controllers.parts.controller_factory">robosuite.controllers.parts.controller_factory module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.arm_controller_factory"><code class="docutils literal notranslate"><span class="pre">arm_controller_factory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.controller_factory"><code class="docutils literal notranslate"><span class="pre">controller_factory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.gripper_controller_factory"><code class="docutils literal notranslate"><span class="pre">gripper_controller_factory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.head_controller_factory"><code class="docutils literal notranslate"><span class="pre">head_controller_factory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.legs_controller_factory"><code class="docutils literal notranslate"><span class="pre">legs_controller_factory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.load_part_controller_config"><code class="docutils literal notranslate"><span class="pre">load_part_controller_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.mobile_base_controller_factory"><code class="docutils literal notranslate"><span class="pre">mobile_base_controller_factory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html#robosuite.controllers.parts.controller_factory.torso_controller_factory"><code class="docutils literal notranslate"><span class="pre">torso_controller_factory()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.parts.html#module-robosuite.controllers.parts">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</section>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
-</section>
-<section id="robosuite-controllers-base-controller-module">
-<h2>robosuite.controllers.base_controller module<a class="headerlink" href="#robosuite-controllers-base-controller-module" title="Link to this heading">#</a></h2>
-</section>
-<section id="module-robosuite.controllers.controller_factory">
-<span id="robosuite-controllers-controller-factory-module"></span><h2>robosuite.controllers.controller_factory module<a class="headerlink" href="#module-robosuite.controllers.controller_factory" title="Link to this heading">#</a></h2>
-</section>
-<section id="robosuite-controllers-ik-module">
-<h2>robosuite.controllers.ik module<a class="headerlink" href="#robosuite-controllers-ik-module" title="Link to this heading">#</a></h2>
-</section>
-<section id="robosuite-controllers-joint-pos-module">
-<h2>robosuite.controllers.joint_pos module<a class="headerlink" href="#robosuite-controllers-joint-pos-module" title="Link to this heading">#</a></h2>
-</section>
-<section id="robosuite-controllers-joint-tor-module">
-<h2>robosuite.controllers.joint_tor module<a class="headerlink" href="#robosuite-controllers-joint-tor-module" title="Link to this heading">#</a></h2>
-</section>
-<section id="robosuite-controllers-joint-vel-module">
-<h2>robosuite.controllers.joint_vel module<a class="headerlink" href="#robosuite-controllers-joint-vel-module" title="Link to this heading">#</a></h2>
-</section>
-<section id="robosuite-controllers-osc-module">
-<h2>robosuite.controllers.osc module<a class="headerlink" href="#robosuite-controllers-osc-module" title="Link to this heading">#</a></h2>
 </section>
 <section id="module-robosuite.controllers">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.controllers" title="Link to this heading">#</a></h2>
@@ -472,11 +565,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="robosuite.controllers.interpolators.html"
+       href="robosuite.controllers.composite.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">robosuite.controllers.interpolators package</p>
+        <p class="prev-next-title">robosuite.controllers.composite package</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -498,14 +591,6 @@
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-base-controller-module">robosuite.controllers.base_controller module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.controller_factory">robosuite.controllers.controller_factory module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-ik-module">robosuite.controllers.ik module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-joint-pos-module">robosuite.controllers.joint_pos module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-joint-tor-module">robosuite.controllers.joint_tor module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-joint-vel-module">robosuite.controllers.joint_vel module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-controllers-osc-module">robosuite.controllers.osc module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers">Module contents</a></li>
 </ul>
   </nav></div>

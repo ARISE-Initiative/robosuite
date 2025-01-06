@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
@@ -388,6 +400,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.macros">robosuite.macros module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-macros-private-module">robosuite.macros_private module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite">Module contents</a></li>
 </ul>
             </nav>
@@ -408,23 +421,23 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.interpolators.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.interpolators.html#robosuite-controllers-interpolators-base-interpolator-module">robosuite.controllers.interpolators.base_interpolator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.interpolators.html#robosuite-controllers-interpolators-linear-interpolator-module">robosuite.controllers.interpolators.linear_interpolator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.interpolators.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#module-robosuite.controllers.composite.composite_controller">robosuite.controllers.composite.composite_controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#module-robosuite.controllers.composite.composite_controller_factory">robosuite.controllers.composite.composite_controller_factory module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#module-robosuite.controllers.composite">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#module-robosuite.controllers.parts.controller">robosuite.controllers.parts.controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#module-robosuite.controllers.parts.controller_factory">robosuite.controllers.parts.controller_factory module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.html#module-robosuite.controllers.parts">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#robosuite-controllers-base-controller-module">robosuite.controllers.base_controller module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#module-robosuite.controllers.controller_factory">robosuite.controllers.controller_factory module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#robosuite-controllers-ik-module">robosuite.controllers.ik module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#robosuite-controllers-joint-pos-module">robosuite.controllers.joint_pos module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#robosuite-controllers-joint-tor-module">robosuite.controllers.joint_tor module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#robosuite-controllers-joint-vel-module">robosuite.controllers.joint_vel module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#robosuite-controllers-osc-module">robosuite.controllers.osc module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.html#module-robosuite.controllers">Module contents</a></li>
 </ul>
 </li>
@@ -445,6 +458,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html#robosuite-devices-keyboard-module">robosuite.devices.keyboard module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html#robosuite-devices-mjgui-module">robosuite.devices.mjgui module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html#robosuite-devices-spacemouse-module">robosuite.devices.spacemouse module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html#module-contents">Module contents</a></li>
 </ul>
@@ -458,12 +472,13 @@
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.manipulation_env">robosuite.environments.manipulation.manipulation_env module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.nut_assembly">robosuite.environments.manipulation.nut_assembly module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.pick_place">robosuite.environments.manipulation.pick_place module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#robosuite-environments-manipulation-single-arm-env-module">robosuite.environments.manipulation.single_arm_env module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.stack">robosuite.environments.manipulation.stack module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.tool_hang">robosuite.environments.manipulation.tool_hang module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_env">robosuite.environments.manipulation.two_arm_env module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_handover">robosuite.environments.manipulation.two_arm_handover module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_lift">robosuite.environments.manipulation.two_arm_lift module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_peg_in_hole">robosuite.environments.manipulation.two_arm_peg_in_hole module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.two_arm_transport">robosuite.environments.manipulation.two_arm_transport module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation.wipe">robosuite.environments.manipulation.wipe module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.environments.manipulation.html#module-robosuite.environments.manipulation">Module contents</a></li>
 </ul>
@@ -529,17 +544,39 @@
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas.arena">robosuite.models.arenas.arena module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas.bins_arena">robosuite.models.arenas.bins_arena module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas.empty_arena">robosuite.models.arenas.empty_arena module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas.multi_table_arena">robosuite.models.arenas.multi_table_arena module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas.pegs_arena">robosuite.models.arenas.pegs_arena module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas.table_arena">robosuite.models.arenas.table_arena module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas.wipe_arena">robosuite.models.arenas.wipe_arena module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.arenas.html#module-robosuite.models.arenas">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.floating_legged_base">robosuite.models.bases.floating_legged_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.leg_base_model">robosuite.models.bases.leg_base_model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.mobile_base_model">robosuite.models.bases.mobile_base_model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.mount_model">robosuite.models.bases.mount_model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.no_actuation_base">robosuite.models.bases.no_actuation_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.null_mobile_base">robosuite.models.bases.null_mobile_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.null_mount">robosuite.models.bases.null_mount module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.omron_mobile_base">robosuite.models.bases.omron_mobile_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.rethink_minimal_mount">robosuite.models.bases.rethink_minimal_mount module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.rethink_mount">robosuite.models.bases.rethink_mount module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.robot_base_factory">robosuite.models.bases.robot_base_factory module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.robot_base_model">robosuite.models.bases.robot_base_model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases.spot_base">robosuite.models.bases.spot_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.bases.html#module-robosuite.models.bases">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.bd_gripper">robosuite.models.grippers.bd_gripper module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.fourier_hands">robosuite.models.grippers.fourier_hands module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.gripper_factory">robosuite.models.grippers.gripper_factory module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.gripper_model">robosuite.models.grippers.gripper_model module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.gripper_tester">robosuite.models.grippers.gripper_tester module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.inspire_hands">robosuite.models.grippers.inspire_hands module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.jaco_three_finger_gripper">robosuite.models.grippers.jaco_three_finger_gripper module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.null_gripper">robosuite.models.grippers.null_gripper module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers.panda_gripper">robosuite.models.grippers.panda_gripper module</a></li>
@@ -551,20 +588,11 @@
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.grippers.html#module-robosuite.models.grippers">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.models.mounts.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.models.mounts.html#robosuite-models-mounts-mount-factory-module">robosuite.models.mounts.mount_factory module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.models.mounts.html#robosuite-models-mounts-mount-model-module">robosuite.models.mounts.mount_model module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.models.mounts.html#robosuite-models-mounts-null-mount-module">robosuite.models.mounts.null_mount module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.models.mounts.html#robosuite-models-mounts-rethink-minimal-mount-module">robosuite.models.mounts.rethink_minimal_mount module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.models.mounts.html#robosuite-models-mounts-rethink-mount-module">robosuite.models.mounts.rethink_mount module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.models.mounts.html#module-contents">Module contents</a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.html#subpackages">Subpackages</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.html#module-robosuite.models.objects.generated_objects">robosuite.models.objects.generated_objects module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.html#module-robosuite.models.objects.object_groups">robosuite.models.objects.object_groups module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.html#module-robosuite.models.objects.objects">robosuite.models.objects.objects module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.html#module-robosuite.models.objects.xml_objects">robosuite.models.objects.xml_objects module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.html#module-robosuite.models.objects">Module contents</a></li>
@@ -573,6 +601,7 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.robots.html">robosuite.models.robots package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.html#subpackages">Subpackages</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.html#module-robosuite.models.robots.compositional">robosuite.models.robots.compositional module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.html#module-robosuite.models.robots.robot_model">robosuite.models.robots.robot_model module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.robots.html#module-robosuite.models.robots">Module contents</a></li>
 </ul>
@@ -654,7 +683,21 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.renderers.html#subpackages">Subpackages</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="robosuite.renderers.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.context.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.context.html#robosuite-renderers-context-egl-context-module">robosuite.renderers.context.egl_context module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.context.html#module-robosuite.renderers.context.glfw_context">robosuite.renderers.context.glfw_context module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.context.html#robosuite-renderers-context-osmesa-context-module">robosuite.renderers.context.osmesa_context module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.context.html#module-robosuite.renderers.context">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#module-robosuite.renderers.mjviewer.mjviewer_renderer">robosuite.renderers.mjviewer.mjviewer_renderer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#module-robosuite.renderers.mjviewer">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.renderers.html#submodules">Submodules</a></li>
@@ -685,8 +728,50 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#robosuite-robots-bimanual-module">robosuite.robots.bimanual module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#robosuite-robots-manipulator-module">robosuite.robots.manipulator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#module-robosuite.robots.fixed_base_robot">robosuite.robots.fixed_base_robot module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.control"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.control()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.is_mobile"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.is_mobile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.load_model"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.load_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.reset"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.setup_observables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#module-robosuite.robots.legged_robot">robosuite.robots.legged_robot module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot"><code class="docutils literal notranslate"><span class="pre">LeggedRobot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.control"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.control()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.is_legs_actuated</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.load_model"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.load_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.num_leg_joints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.reset"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.setup_observables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#module-robosuite.robots.mobile_robot">robosuite.robots.mobile_robot module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot"><code class="docutils literal notranslate"><span class="pre">MobileRobot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.base"><code class="docutils literal notranslate"><span class="pre">MobileRobot.base</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.control"><code class="docutils literal notranslate"><span class="pre">MobileRobot.control()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.enable_parts"><code class="docutils literal notranslate"><span class="pre">MobileRobot.enable_parts()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.head"><code class="docutils literal notranslate"><span class="pre">MobileRobot.head</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.is_mobile"><code class="docutils literal notranslate"><span class="pre">MobileRobot.is_mobile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.legs"><code class="docutils literal notranslate"><span class="pre">MobileRobot.legs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.load_model"><code class="docutils literal notranslate"><span class="pre">MobileRobot.load_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.reset"><code class="docutils literal notranslate"><span class="pre">MobileRobot.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">MobileRobot.setup_observables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">MobileRobot.setup_references()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.mobile_robot.MobileRobot.torso"><code class="docutils literal notranslate"><span class="pre">MobileRobot.torso</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#module-robosuite.robots.robot">robosuite.robots.robot module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot"><code class="docutils literal notranslate"><span class="pre">Robot</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.action_dim"><code class="docutils literal notranslate"><span class="pre">Robot.action_dim</span></code></a></li>
@@ -724,7 +809,18 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#robosuite-robots-single-arm-module">robosuite.robots.single_arm module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#module-robosuite.robots.wheeled_robot">robosuite.robots.wheeled_robot module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot"><code class="docutils literal notranslate"><span class="pre">WheeledRobot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot.control"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.control()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot.load_model"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.load_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot.reset"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.setup_observables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html#module-robosuite.robots">Module contents</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.register_robot_class"><code class="docutils literal notranslate"><span class="pre">register_robot_class()</span></code></a></li>
 </ul>
@@ -1551,6 +1647,21 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.errors.robosuiteError"><code class="docutils literal notranslate"><span class="pre">robosuiteError</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.ik_utils">robosuite.utils.ik_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver"><code class="docutils literal notranslate"><span class="pre">IKSolver</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.action_split_indexes"><code class="docutils literal notranslate"><span class="pre">IKSolver.action_split_indexes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.forward_kinematics"><code class="docutils literal notranslate"><span class="pre">IKSolver.forward_kinematics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.get_targets"><code class="docutils literal notranslate"><span class="pre">IKSolver.get_targets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.reset_to_initial_state"><code class="docutils literal notranslate"><span class="pre">IKSolver.reset_to_initial_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.set_target_positions"><code class="docutils literal notranslate"><span class="pre">IKSolver.set_target_positions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.set_target_rotations"><code class="docutils literal notranslate"><span class="pre">IKSolver.set_target_rotations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.solve"><code class="docutils literal notranslate"><span class="pre">IKSolver.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.transform_pose"><code class="docutils literal notranslate"><span class="pre">IKSolver.transform_pose()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.ik_utils.get_nullspace_gains"><code class="docutils literal notranslate"><span class="pre">get_nullspace_gains()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#robosuite-utils-input-utils-module">robosuite.utils.input_utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.log_utils">robosuite.utils.log_utils module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.log_utils.ConsoleFormatter"><code class="docutils literal notranslate"><span class="pre">ConsoleFormatter</span></code></a><ul>
@@ -1761,8 +1872,31 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.robot_composition_utils">robosuite.utils.robot_composition_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.robot_composition_utils.create_composite_robot"><code class="docutils literal notranslate"><span class="pre">create_composite_robot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.robot_composition_utils.get_target_type"><code class="docutils literal notranslate"><span class="pre">get_target_type()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.robot_utils">robosuite.utils.robot_utils module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.robot_utils.check_bimanual"><code class="docutils literal notranslate"><span class="pre">check_bimanual()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.sim_utils">robosuite.utils.sim_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.sim_utils.check_contact"><code class="docutils literal notranslate"><span class="pre">check_contact()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.sim_utils.get_contacts"><code class="docutils literal notranslate"><span class="pre">get_contacts()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.traj_utils">robosuite.utils.traj_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.Interpolator"><code class="docutils literal notranslate"><span class="pre">Interpolator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.Interpolator.get_interpolated_goal"><code class="docutils literal notranslate"><span class="pre">Interpolator.get_interpolated_goal()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.LinearInterpolator"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.LinearInterpolator.get_interpolated_goal"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.get_interpolated_goal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.LinearInterpolator.set_goal"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.set_goal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.traj_utils.LinearInterpolator.set_states"><code class="docutils literal notranslate"><span class="pre">LinearInterpolator.set_states()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.transform_utils">robosuite.utils.transform_utils module</a><ul>
@@ -1839,6 +1973,9 @@ for determining core functionality.</p>
 <p>To make sure global reference is maintained, should import these settings as:</p>
 <p><cite>import robosuite.macros as macros</cite></p>
 </section>
+<section id="robosuite-macros-private-module">
+<h2>robosuite.macros_private module<a class="headerlink" href="#robosuite-macros-private-module" title="Link to this heading">#</a></h2>
+</section>
 <section id="module-robosuite">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite" title="Link to this heading">#</a></h2>
 </section>
@@ -1893,6 +2030,7 @@ for determining core functionality.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.macros">robosuite.macros module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-macros-private-module">robosuite.macros_private module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite">Module contents</a></li>
 </ul>
   </nav></div>

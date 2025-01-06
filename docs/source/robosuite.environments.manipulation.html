@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.robots.html">robosuite.robots package</a></li>
@@ -434,12 +446,19 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.pick_place.PickPlaceSingle"><code class="docutils literal notranslate"><span class="pre">PickPlaceSingle</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-environments-manipulation-single-arm-env-module">robosuite.environments.manipulation.single_arm_env module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.stack">robosuite.environments.manipulation.stack module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack.reward"><code class="docutils literal notranslate"><span class="pre">Stack.reward()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack.staged_rewards"><code class="docutils literal notranslate"><span class="pre">Stack.staged_rewards()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack.visualize"><code class="docutils literal notranslate"><span class="pre">Stack.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.tool_hang">robosuite.environments.manipulation.tool_hang module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.tool_hang.ToolHang"><code class="docutils literal notranslate"><span class="pre">ToolHang</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.tool_hang.ToolHang.reward"><code class="docutils literal notranslate"><span class="pre">ToolHang.reward()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.tool_hang.ToolHang.visualize"><code class="docutils literal notranslate"><span class="pre">ToolHang.visualize()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -466,6 +485,13 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.two_arm_peg_in_hole">robosuite.environments.manipulation.two_arm_peg_in_hole module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_peg_in_hole.TwoArmPegInHole"><code class="docutils literal notranslate"><span class="pre">TwoArmPegInHole</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_peg_in_hole.TwoArmPegInHole.reward"><code class="docutils literal notranslate"><span class="pre">TwoArmPegInHole.reward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.two_arm_transport">robosuite.environments.manipulation.two_arm_transport module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_transport.TwoArmTransport"><code class="docutils literal notranslate"><span class="pre">TwoArmTransport</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_transport.TwoArmTransport.reward"><code class="docutils literal notranslate"><span class="pre">TwoArmTransport.reward()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1440,9 +1466,6 @@ A new object is sampled on every reset.</p>
 </dd></dl>
 
 </section>
-<section id="robosuite-environments-manipulation-single-arm-env-module">
-<h2>robosuite.environments.manipulation.single_arm_env module<a class="headerlink" href="#robosuite-environments-manipulation-single-arm-env-module" title="Link to this heading">#</a></h2>
-</section>
 <section id="module-robosuite.environments.manipulation.stack">
 <span id="robosuite-environments-manipulation-stack-module"></span><h2>robosuite.environments.manipulation.stack module<a class="headerlink" href="#module-robosuite.environments.manipulation.stack" title="Link to this heading">#</a></h2>
 <dl class="py class">
@@ -1626,6 +1649,153 @@ reward_scale / 2.0 as well so that the max score is equal to reward_scale</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.environments.manipulation.stack.Stack.visualize">
 <span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vis_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.manipulation.stack.Stack.visualize" title="Link to this definition">#</a></dt>
+<dd><p>In addition to super call, visualize gripper site proportional to the distance to the cube.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vis_settings</strong> (<em>dict</em>) – Visualization keywords mapped to T/F, determining whether that specific
+component should be visualized. Should have “grippers” keyword as well as any other relevant
+options specified.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.environments.manipulation.tool_hang">
+<span id="robosuite-environments-manipulation-tool-hang-module"></span><h2>robosuite.environments.manipulation.tool_hang module<a class="headerlink" href="#module-robosuite.environments.manipulation.tool_hang" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.environments.manipulation.tool_hang.ToolHang">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.environments.manipulation.tool_hang.</span></span><span class="sig-name descname"><span class="pre">ToolHang</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controller_configs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_full_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.8,</span> <span class="pre">0.8,</span> <span class="pre">0.05)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.005,</span> <span class="pre">0.0001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_camera_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_object_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_shaping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_offscreen_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frontview'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_collision_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_visual_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_gpu_device_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_done</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'agentview'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_heights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_widths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_depths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_segmentations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mjviewer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.manipulation.tool_hang.ToolHang" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.environments.manipulation.manipulation_env.ManipulationEnv" title="robosuite.environments.manipulation.manipulation_env.ManipulationEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManipulationEnv</span></code></a></p>
+<p>This class corresponds to the tool hang task for a single robot arm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robots</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – Specification for specific robot arm(s) to be instantiated within this env
+(e.g: “Sawyer” would generate one arm; [“Panda”, “Panda”, “Sawyer”] would generate three robot arms)
+Note: Must be a single single-arm robot!</p></li>
+<li><p><strong>env_configuration</strong> (<em>str</em>) – Specifies how to position the robots within the environment (default is “default”).
+For most single arm environments, this argument has no impact on the robot setup.</p></li>
+<li><p><strong>controller_configs</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>dict</em>) – If set, contains relevant controller parameters for creating a
+custom controller. Else, uses the default controller for this specific task. Should either be single
+dict if same controller is to be used for all robots or else it should be a list of the same length as
+“robots” param</p></li>
+<li><p><strong>gripper_types</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of gripper, used to instantiate
+gripper models from gripper factory. Default is “default”, which is the default grippers(s) associated
+with the robot(s) the ‘robots’ specification. None removes the gripper, and any other (valid) model
+overrides the default gripper. Should either be single str if same gripper type is to be used for all
+robots or else it should be a list of the same length as “robots” param</p></li>
+<li><p><strong>initialization_noise</strong> (<em>dict</em><em> or </em><em>list</em><em> of </em><em>dict</em>) – <p>Dict containing the initialization noise parameters.
+The expected keys and corresponding value types are specified below:</p>
+<dl class="field-list simple">
+<dt class="field-odd"><cite>’magnitude’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>The scale factor of uni-variate random noise applied to each of a robot’s given initial
+joint positions. Setting this value to <cite>None</cite> or 0.0 results in no noise being applied.
+If “gaussian” type of noise is applied then this magnitude scales the standard deviation applied,
+If “uniform” type of noise is applied then this magnitude sets the bounds of the sampling range</p>
+</dd>
+<dt class="field-even"><cite>’type’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Type of noise to apply. Can either specify “gaussian” or “uniform”</p>
+</dd>
+</dl>
+<p>Should either be single dict if same noise value is to be used for all robots or else it should be a
+list of the same length as “robots” param</p>
+<dl class="field-list simple">
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specifying “default” will automatically use the default noise settings.
+Specifying None will automatically create the required dict with “magnitude” set to 0.0.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>table_full_size</strong> (<em>3-tuple</em>) – x, y, and z dimensions of the table.</p></li>
+<li><p><strong>table_friction</strong> (<em>3-tuple</em>) – the three mujoco friction parameters for
+the table.</p></li>
+<li><p><strong>use_camera_obs</strong> (<em>bool</em>) – if True, every observation includes rendered image(s)</p></li>
+<li><p><strong>use_object_obs</strong> (<em>bool</em>) – if True, include object (cube) information in
+the observation.</p></li>
+<li><p><strong>reward_scale</strong> (<em>None</em><em> or </em><em>float</em>) – Scales the normalized reward function by the amount specified.
+If None, environment reward remains unnormalized</p></li>
+<li><p><strong>reward_shaping</strong> (<em>bool</em>) – if True, use dense rewards.</p></li>
+<li><p><strong>has_renderer</strong> (<em>bool</em>) – If true, render the simulation state in
+a viewer instead of headless mode.</p></li>
+<li><p><strong>has_offscreen_renderer</strong> (<em>bool</em>) – True if using off-screen rendering</p></li>
+<li><p><strong>render_camera</strong> (<em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
+will result in the default angle being applied, which is useful as it can be dragged / panned by
+the user using the mouse</p></li>
+<li><p><strong>render_collision_mesh</strong> (<em>bool</em>) – True if rendering collision meshes in camera. False otherwise.</p></li>
+<li><p><strong>render_visual_mesh</strong> (<em>bool</em>) – True if rendering visual meshes in camera. False otherwise.</p></li>
+<li><p><strong>render_gpu_device_id</strong> (<em>int</em>) – corresponds to the GPU device id to use for offscreen rendering.
+Defaults to -1, in which case the device will be inferred from environment variables
+(GPUS or CUDA_VISIBLE_DEVICES).</p></li>
+<li><p><strong>control_freq</strong> (<em>float</em>) – how many control signals to receive in every second. This sets the amount of
+simulation time that passes between every action input.</p></li>
+<li><p><strong>lite_physics</strong> (<em>bool</em>) – Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+Set to False to preserve backward compatibility with datasets collected in robosuite &lt;= 1.4.1.</p></li>
+<li><p><strong>horizon</strong> (<em>int</em>) – Every episode lasts for exactly &#64;horizon timesteps.</p></li>
+<li><p><strong>ignore_done</strong> (<em>bool</em>) – True if never terminating the environment (ignore &#64;horizon).</p></li>
+<li><p><strong>hard_reset</strong> (<em>bool</em>) – If True, re-loads model, sim, and render object upon a reset call, else,
+only calls sim.reset and resets all robosuite-internal variables</p></li>
+<li><p><strong>camera_names</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – <p>name of camera to be rendered. Should either be single str if
+same name is to be used for all cameras’ rendering or else it should be a list of cameras to render.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>At least one camera must be specified if &#64;use_camera_obs is True.</p>
+</dd>
+<dt class="field-even">Note<span class="colon">:</span></dt>
+<dd class="field-even"><p>To render all robots’ cameras of a certain type (e.g.: “robotview” or “eye_in_hand”), use the
+convention “all-{name}” (e.g.: “all-robotview”) to automatically render all camera images from each
+robot’s camera list).</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>camera_heights</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>int</em>) – height of camera frame. Should either be single int if
+same height is to be used for all cameras’ frames or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_widths</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>int</em>) – width of camera frame. Should either be single int if
+same width is to be used for all cameras’ frames or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_depths</strong> (<em>bool</em><em> or </em><em>list</em><em> of </em><em>bool</em>) – True if rendering RGB-D, and RGB otherwise. Should either be single
+bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_segmentations</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em> or </em><em>list</em><em> of </em><em>list</em><em> of </em><em>str</em>) – <p>Camera segmentation(s) to use
+for each camera. Valid options are:</p>
+<blockquote>
+<div><p><cite>None</cite>: no segmentation sensor used
+<cite>‘instance’</cite>: segmentation at the class-instance level
+<cite>‘class’</cite>: segmentation at the class level
+<cite>‘element’</cite>: segmentation at the per-geom level</p>
+</div></blockquote>
+<p>If not None, multiple types of segmentations can be specified. A [list of str / str or None] specifies
+[multiple / a single] segmentation(s) to use for all cameras. A list of list of str specifies per-camera
+segmentation setting(s) to use.</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Invalid number of robots specified]</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.manipulation.tool_hang.ToolHang.reward">
+<span class="sig-name descname"><span class="pre">reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.manipulation.tool_hang.ToolHang.reward" title="Link to this definition">#</a></dt>
+<dd><p>Reward function for the task.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>np array</em>) – [NOT USED]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>reward value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.manipulation.tool_hang.ToolHang.visualize">
+<span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vis_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.manipulation.tool_hang.ToolHang.visualize" title="Link to this definition">#</a></dt>
 <dd><p>In addition to super call, visualize gripper site proportional to the distance to the cube.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2157,6 +2327,171 @@ well so that the max score is equal to reward_scale</p>
 </dd></dl>
 
 </section>
+<section id="module-robosuite.environments.manipulation.two_arm_transport">
+<span id="robosuite-environments-manipulation-two-arm-transport-module"></span><h2>robosuite.environments.manipulation.two_arm_transport module<a class="headerlink" href="#module-robosuite.environments.manipulation.two_arm_transport" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.environments.manipulation.two_arm_transport.TwoArmTransport">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.environments.manipulation.two_arm_transport.</span></span><span class="sig-name descname"><span class="pre">TwoArmTransport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controller_configs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tables_boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.8,</span> <span class="pre">1.2,</span> <span class="pre">0.05)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_friction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.005,</span> <span class="pre">0.0001)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.3,</span> <span class="pre">0.3,</span> <span class="pre">0.15)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_camera_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_object_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_shaping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_offscreen_renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frontview'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_collision_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_visual_mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_gpu_device_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_done</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'agentview'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_heights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_widths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_depths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_segmentations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mjviewer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.manipulation.two_arm_transport.TwoArmTransport" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.environments.manipulation.two_arm_env.TwoArmEnv" title="robosuite.environments.manipulation.two_arm_env.TwoArmEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">TwoArmEnv</span></code></a></p>
+<p>This class corresponds to the transport task for two robot arms, requiring a payload to be transported from an
+initial bin into a target bin, while removing trash from the target bin to a trash bin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robots</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – Specification for specific robot(s)
+Note: Must be either 2 robots or 1 bimanual robot!</p></li>
+<li><p><strong>env_configuration</strong> (<em>str</em>) – <p>Specifies how to position the robots within the environment if two robots inputted. Can be either:</p>
+<dl class="field-list simple">
+<dt class="field-odd"><cite>’parallel’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Sets up the two robots next to each other on the -x side of the table</p>
+</dd>
+<dt class="field-even"><cite>’opposed’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Sets up the two robots opposed from each others on the opposite +/-y sides of the table.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>used.</strong> (<em>Note that &quot;default&quot; &quot;opposed&quot; if two robots are</em>)</p></li>
+<li><p><strong>controller_configs</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>dict</em>) – If set, contains relevant controller parameters for creating a
+custom controller. Else, uses the default controller for this specific task. Should either be single
+dict if same controller is to be used for all robots or else it should be a list of the same length as
+“robots” param</p></li>
+<li><p><strong>gripper_types</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of gripper, used to instantiate
+gripper models from gripper factory. Default is “default”, which is the default grippers(s) associated
+with the robot(s) the ‘robots’ specification. None removes the gripper, and any other (valid) model
+overrides the default gripper. Should either be single str if same gripper type is to be used for all
+robots or else it should be a list of the same length as “robots” param</p></li>
+<li><p><strong>initialization_noise</strong> (<em>dict</em><em> or </em><em>list</em><em> of </em><em>dict</em>) – <p>Dict containing the initialization noise parameters.
+The expected keys and corresponding value types are specified below:</p>
+<dl class="field-list simple">
+<dt class="field-odd"><cite>’magnitude’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>The scale factor of uni-variate random noise applied to each of a robot’s given initial
+joint positions. Setting this value to <cite>None</cite> or 0.0 results in no noise being applied.
+If “gaussian” type of noise is applied then this magnitude scales the standard deviation applied,
+If “uniform” type of noise is applied then this magnitude sets the bounds of the sampling range</p>
+</dd>
+<dt class="field-even"><cite>’type’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>Type of noise to apply. Can either specify “gaussian” or “uniform”</p>
+</dd>
+</dl>
+<p>Should either be single dict if same noise value is to be used for all robots or else it should be a
+list of the same length as “robots” param</p>
+<dl class="field-list simple">
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specifying “default” will automatically use the default noise settings.
+Specifying None will automatically create the required dict with “magnitude” set to 0.0.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>tables_boundary</strong> (<em>3-tuple</em>) – x, y, and z dimensions of the table bounds. Two tables will be created at the edges of
+this boundary</p></li>
+<li><p><strong>table_friction</strong> (<em>3-tuple</em>) – the three mujoco friction parameters for
+each table.</p></li>
+<li><p><strong>bin_size</strong> (<em>3-tuple</em>) – (x,y,z) dimensions of bins to use</p></li>
+<li><p><strong>use_camera_obs</strong> (<em>bool</em>) – if True, every observation includes rendered image(s)</p></li>
+<li><p><strong>use_object_obs</strong> (<em>bool</em>) – if True, include object (cube) information in
+the observation.</p></li>
+<li><p><strong>reward_scale</strong> (<em>None</em><em> or </em><em>float</em>) – Scales the normalized reward function by the amount specified.
+If None, environment reward remains unnormalized</p></li>
+<li><p><strong>reward_shaping</strong> (<em>bool</em>) – if True, use dense rewards.</p></li>
+<li><p><strong>has_renderer</strong> (<em>bool</em>) – If true, render the simulation state in
+a viewer instead of headless mode.</p></li>
+<li><p><strong>has_offscreen_renderer</strong> (<em>bool</em>) – True if using off-screen rendering</p></li>
+<li><p><strong>render_camera</strong> (<em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
+will result in the default angle being applied, which is useful as it can be dragged / panned by
+the user using the mouse</p></li>
+<li><p><strong>render_collision_mesh</strong> (<em>bool</em>) – True if rendering collision meshes in camera. False otherwise.</p></li>
+<li><p><strong>render_visual_mesh</strong> (<em>bool</em>) – True if rendering visual meshes in camera. False otherwise.</p></li>
+<li><p><strong>render_gpu_device_id</strong> (<em>int</em>) – corresponds to the GPU device id to use for offscreen rendering.
+Defaults to -1, in which case the device will be inferred from environment variables
+(GPUS or CUDA_VISIBLE_DEVICES).</p></li>
+<li><p><strong>control_freq</strong> (<em>float</em>) – how many control signals to receive in every second. This sets the amount of
+simulation time that passes between every action input.</p></li>
+<li><p><strong>lite_physics</strong> (<em>bool</em>) – Whether to optimize for mujoco forward and step calls to reduce total simulation overhead.
+Set to False to preserve backward compatibility with datasets collected in robosuite &lt;= 1.4.1.</p></li>
+<li><p><strong>horizon</strong> (<em>int</em>) – Every episode lasts for exactly &#64;horizon timesteps.</p></li>
+<li><p><strong>ignore_done</strong> (<em>bool</em>) – True if never terminating the environment (ignore &#64;horizon).</p></li>
+<li><p><strong>hard_reset</strong> (<em>bool</em>) – If True, re-loads model, sim, and render object upon a reset call, else,
+only calls sim.reset and resets all robosuite-internal variables</p></li>
+<li><p><strong>camera_names</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – <p>name of camera to be rendered. Should either be single str if
+same name is to be used for all cameras’ rendering or else it should be a list of cameras to render.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Note<span class="colon">:</span></dt>
+<dd class="field-odd"><p>At least one camera must be specified if &#64;use_camera_obs is True.</p>
+</dd>
+<dt class="field-even">Note<span class="colon">:</span></dt>
+<dd class="field-even"><p>To render all robots’ cameras of a certain type (e.g.: “robotview” or “eye_in_hand”), use the
+convention “all-{name}” (e.g.: “all-robotview”) to automatically render all camera images from each
+robot’s camera list).</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>camera_heights</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>int</em>) – height of camera frame. Should either be single int if
+same height is to be used for all cameras’ frames or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_widths</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>int</em>) – width of camera frame. Should either be single int if
+same width is to be used for all cameras’ frames or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_depths</strong> (<em>bool</em><em> or </em><em>list</em><em> of </em><em>bool</em>) – True if rendering RGB-D, and RGB otherwise. Should either be single
+bool if same depth setting is to be used for all cameras or else it should be a list of the same length as
+“camera names” param.</p></li>
+<li><p><strong>camera_segmentations</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em> or </em><em>list</em><em> of </em><em>list</em><em> of </em><em>str</em>) – <p>Camera segmentation(s) to use
+for each camera. Valid options are:</p>
+<blockquote>
+<div><p><cite>None</cite>: no segmentation sensor used
+<cite>‘instance’</cite>: segmentation at the class-instance level
+<cite>‘class’</cite>: segmentation at the class level
+<cite>‘element’</cite>: segmentation at the per-geom level</p>
+</div></blockquote>
+<p>If not None, multiple types of segmentations can be specified. A [list of str / str or None] specifies
+[multiple / a single] segmentation(s) to use for all cameras. A list of list of str specifies per-camera
+segmentation setting(s) to use.</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – [Invalid number of robots specified]</p></li>
+<li><p><strong>ValueError</strong> – [Invalid env configuration]</p></li>
+<li><p><strong>ValueError</strong> – [Invalid robots for specified env configuration]</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.environments.manipulation.two_arm_transport.TwoArmTransport.reward">
+<span class="sig-name descname"><span class="pre">reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.environments.manipulation.two_arm_transport.TwoArmTransport.reward" title="Link to this definition">#</a></dt>
+<dd><p>Reward function for the task.</p>
+<p>Sparse un-normalized reward:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>a discrete reward of 1.0 is provided when the payload is in the target bin and the trash is in the trash</dt><dd><p>bin</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Un-normalized max-wise components if using reward shaping:</p>
+<blockquote>
+<div><p># TODO!</p>
+</div></blockquote>
+<p>Note that the final reward is normalized and scaled by reward_scale / 1.0 as
+well so that the max score is equal to reward_scale</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>np array</em>) – [NOT USED]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>reward value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="module-robosuite.environments.manipulation.wipe">
 <span id="robosuite-environments-manipulation-wipe-module"></span><h2>robosuite.environments.manipulation.wipe module<a class="headerlink" href="#module-robosuite.environments.manipulation.wipe" title="Link to this heading">#</a></h2>
 <dl class="py class">
@@ -2418,12 +2753,19 @@ reward_scale * (horizon /
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.pick_place.PickPlaceSingle"><code class="docutils literal notranslate"><span class="pre">PickPlaceSingle</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-environments-manipulation-single-arm-env-module">robosuite.environments.manipulation.single_arm_env module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.stack">robosuite.environments.manipulation.stack module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack.reward"><code class="docutils literal notranslate"><span class="pre">Stack.reward()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack.staged_rewards"><code class="docutils literal notranslate"><span class="pre">Stack.staged_rewards()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.stack.Stack.visualize"><code class="docutils literal notranslate"><span class="pre">Stack.visualize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.tool_hang">robosuite.environments.manipulation.tool_hang module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.tool_hang.ToolHang"><code class="docutils literal notranslate"><span class="pre">ToolHang</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.tool_hang.ToolHang.reward"><code class="docutils literal notranslate"><span class="pre">ToolHang.reward()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.tool_hang.ToolHang.visualize"><code class="docutils literal notranslate"><span class="pre">ToolHang.visualize()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2450,6 +2792,13 @@ reward_scale * (horizon /
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.two_arm_peg_in_hole">robosuite.environments.manipulation.two_arm_peg_in_hole module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_peg_in_hole.TwoArmPegInHole"><code class="docutils literal notranslate"><span class="pre">TwoArmPegInHole</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_peg_in_hole.TwoArmPegInHole.reward"><code class="docutils literal notranslate"><span class="pre">TwoArmPegInHole.reward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.environments.manipulation.two_arm_transport">robosuite.environments.manipulation.two_arm_transport module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_transport.TwoArmTransport"><code class="docutils literal notranslate"><span class="pre">TwoArmTransport</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.environments.manipulation.two_arm_transport.TwoArmTransport.reward"><code class="docutils literal notranslate"><span class="pre">TwoArmTransport.reward()</span></code></a></li>
 </ul>
 </li>
 </ul>

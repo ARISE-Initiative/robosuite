@@ -57,7 +57,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="robosuite.utils package" href="robosuite.utils.html" />
-    <link rel="prev" title="robosuite.renderers package" href="robosuite.renderers.html" />
+    <link rel="prev" title="robosuite.renderers.mjviewer package" href="robosuite.renderers.mjviewer.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.5" />
@@ -164,6 +164,8 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../modules/overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/robots.html">Robots</a></li>
+
+
 <li class="toctree-l1"><a class="reference internal" href="../modules/objects.html">Objects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/environments.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/sensors.html">Sensors</a></li>
@@ -195,7 +197,14 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="robosuite.html">robosuite package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.controllers.html">robosuite.controllers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.interpolators.html">robosuite.controllers.interpolators package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html">robosuite.controllers.composite package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.controllers.parts.html">robosuite.controllers.parts package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.arm.html">robosuite.controllers.parts.arm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.generic.html">robosuite.controllers.parts.generic package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.gripper.html">robosuite.controllers.parts.gripper package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.parts.mobile_base.html">robosuite.controllers.parts.mobile_base package</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.devices.html">robosuite.devices package</a></li>
@@ -205,11 +214,12 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.models.html">robosuite.models package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.arenas.html">robosuite.models.arenas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.models.bases.html">robosuite.models.bases package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.grippers.html">robosuite.models.grippers package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.models.mounts.html">robosuite.models.mounts package</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="robosuite.models.objects.html">robosuite.models.objects package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite.html">robosuite.models.objects.composite package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.composite_body.html">robosuite.models.objects.composite_body package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.group.html">robosuite.models.objects.group package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.models.objects.primitive.html">robosuite.models.objects.primitive package</a></li>
 </ul>
 </details></li>
@@ -220,7 +230,9 @@
 <li class="toctree-l3"><a class="reference internal" href="robosuite.models.tasks.html">robosuite.models.tasks package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="robosuite.renderers.html">robosuite.renderers package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.context.html">robosuite.renderers.context package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">robosuite.robots package</a></li>
@@ -386,8 +398,50 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-robots-bimanual-module">robosuite.robots.bimanual module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-robots-manipulator-module">robosuite.robots.manipulator module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.fixed_base_robot">robosuite.robots.fixed_base_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.action_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.control"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.is_mobile"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.is_mobile</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.load_model"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.reset"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.legged_robot">robosuite.robots.legged_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot"><code class="docutils literal notranslate"><span class="pre">LeggedRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.action_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.control"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.is_legs_actuated</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.load_model"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.num_leg_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.reset"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.mobile_robot">robosuite.robots.mobile_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot"><code class="docutils literal notranslate"><span class="pre">MobileRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.base"><code class="docutils literal notranslate"><span class="pre">MobileRobot.base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.control"><code class="docutils literal notranslate"><span class="pre">MobileRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.enable_parts"><code class="docutils literal notranslate"><span class="pre">MobileRobot.enable_parts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.head"><code class="docutils literal notranslate"><span class="pre">MobileRobot.head</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.is_mobile"><code class="docutils literal notranslate"><span class="pre">MobileRobot.is_mobile</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.legs"><code class="docutils literal notranslate"><span class="pre">MobileRobot.legs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.load_model"><code class="docutils literal notranslate"><span class="pre">MobileRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.reset"><code class="docutils literal notranslate"><span class="pre">MobileRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">MobileRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">MobileRobot.setup_references()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.torso"><code class="docutils literal notranslate"><span class="pre">MobileRobot.torso</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.robot">robosuite.robots.robot module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.robot.Robot"><code class="docutils literal notranslate"><span class="pre">Robot</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.robot.Robot.action_dim"><code class="docutils literal notranslate"><span class="pre">Robot.action_dim</span></code></a></li>
@@ -425,7 +479,18 @@
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-robots-single-arm-module">robosuite.robots.single_arm module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.wheeled_robot">robosuite.robots.wheeled_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot"><code class="docutils literal notranslate"><span class="pre">WheeledRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.action_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.control"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.load_model"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.reset"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots">Module contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.register_robot_class"><code class="docutils literal notranslate"><span class="pre">register_robot_class()</span></code></a></li>
 </ul>
@@ -446,11 +511,314 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
 </section>
-<section id="robosuite-robots-bimanual-module">
-<h2>robosuite.robots.bimanual module<a class="headerlink" href="#robosuite-robots-bimanual-module" title="Link to this heading">#</a></h2>
+<section id="module-robosuite.robots.fixed_base_robot">
+<span id="robosuite-robots-fixed-base-robot-module"></span><h2>robosuite.robots.fixed_base_robot module<a class="headerlink" href="#module-robosuite.robots.fixed_base_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.fixed_base_robot.</span></span><span class="sig-name descname"><span class="pre">FixedBaseRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.robots.robot.Robot" title="robosuite.robots.robot.Robot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Robot</span></code></a></p>
+<p>Initializes a robot with a fixed base.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot.action_limits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.action_limits" title="Link to this definition">#</a></dt>
+<dd><p>Action lower/upper limits per dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>(np.array) minimum (low) action values</p></li>
+<li><p>(np.array) maximum (high) action values</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>2-tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot.control">
+<span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.control" title="Link to this definition">#</a></dt>
+<dd><p>Actuate the robot with the
+passed joint velocities and gripper control.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>np.array</em>) – <p>The control to apply to the robot. The first &#64;self.robot_model.dof dimensions should
+be the desired normalized joint velocities and if the robot has a gripper, the next &#64;self.gripper.dof
+dimensions should be actuation controls for the gripper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">NOTE<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Assumes inputted actions are of form:
+[right_arm_control, right_gripper_control, left_arm_control, left_gripper_control]</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>policy_step</strong> (<em>bool</em>) – Whether a new policy step (action) is being taken</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Invalid action dimension]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot.is_mobile">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.is_mobile" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.load_model" title="Link to this definition">#</a></dt>
+<dd><p>Loads robot and optionally add grippers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.reset" title="Link to this definition">#</a></dt>
+<dd><p>Sets initial pose of arm and grippers. Overrides gripper joint configuration if we’re using a
+deterministic reset (e.g.: hard reset from xml file)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>deterministic</strong> (<em>bool</em>) – If true, will not randomize initializations within the sim</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_observables">
+<span class="sig-name descname"><span class="pre">setup_observables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_observables" title="Link to this definition">#</a></dt>
+<dd><p>Sets up observables to be used for this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping observable names to its corresponding Observable object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderedDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_references">
+<span class="sig-name descname"><span class="pre">setup_references</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_references" title="Link to this definition">#</a></dt>
+<dd><p>Sets up necessary reference for robots, grippers, and objects.</p>
+<p>Note that this should get called during every reset from the environment</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="robosuite-robots-manipulator-module">
-<h2>robosuite.robots.manipulator module<a class="headerlink" href="#robosuite-robots-manipulator-module" title="Link to this heading">#</a></h2>
+<section id="module-robosuite.robots.legged_robot">
+<span id="robosuite-robots-legged-robot-module"></span><h2>robosuite.robots.legged_robot module<a class="headerlink" href="#module-robosuite.robots.legged_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.legged_robot.</span></span><span class="sig-name descname"><span class="pre">LeggedRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.robots.mobile_robot.MobileRobot" title="robosuite.robots.mobile_robot.MobileRobot"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileRobot</span></code></a></p>
+<p>Initializes a robot with a wheeled base.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.action_limits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.action_limits" title="Link to this definition">#</a></dt>
+<dd><p>Action lower/upper limits per dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>(np.array) minimum (low) action values</p></li>
+<li><p>(np.array) maximum (high) action values</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>2-tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.control">
+<span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.control" title="Link to this definition">#</a></dt>
+<dd><p>Actuate the robot with the
+passed joint velocities and gripper control.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>np.array</em>) – <p>The control to apply to the robot. The first &#64;self.robot_model.dof dimensions should
+be the desired normalized joint velocities and if the robot has a gripper, the next &#64;self.gripper.dof
+dimensions should be actuation controls for the gripper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">NOTE<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Assumes inputted actions are of form:
+[right_arm_control, right_gripper_control, left_arm_control, left_gripper_control]</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>policy_step</strong> (<em>bool</em>) – Whether a new policy step (action) is being taken</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Invalid action dimension]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_legs_actuated</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.load_model" title="Link to this definition">#</a></dt>
+<dd><p>Loads robot and optionally add grippers.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.num_leg_joints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_leg_joints</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.reset" title="Link to this definition">#</a></dt>
+<dd><p>Sets initial pose of arm and grippers. Overrides gripper joint configuration if we’re using a
+deterministic reset (e.g.: hard reset from xml file)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>deterministic</strong> (<em>bool</em>) – If true, will not randomize initializations within the sim</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.setup_observables">
+<span class="sig-name descname"><span class="pre">setup_observables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.setup_observables" title="Link to this definition">#</a></dt>
+<dd><p>Sets up observables to be used for this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping observable names to its corresponding Observable object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderedDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.setup_references">
+<span class="sig-name descname"><span class="pre">setup_references</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.setup_references" title="Link to this definition">#</a></dt>
+<dd><p>Sets up necessary reference for robots, grippers, and objects.</p>
+<p>Note that this should get called during every reset from the environment</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-robosuite.robots.mobile_robot">
+<span id="robosuite-robots-mobile-robot-module"></span><h2>robosuite.robots.mobile_robot module<a class="headerlink" href="#module-robosuite.robots.mobile_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.mobile_robot.</span></span><span class="sig-name descname"><span class="pre">MobileRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.robots.robot.Robot" title="robosuite.robots.robot.Robot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Robot</span></code></a></p>
+<p>Initializes a robot with a fixed base.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.base">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.base" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.control">
+<span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.control" title="Link to this definition">#</a></dt>
+<dd><p>Actuate the robot with the
+passed joint velocities and gripper control.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>np.array</em>) – <p>The control to apply to the robot. The first &#64;self.robot_model.dof dimensions should
+be the desired normalized joint velocities and if the robot has a gripper, the next &#64;self.gripper.dof
+dimensions should be actuation controls for the gripper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">NOTE<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Assumes inputted actions are of form:
+[right_arm_control, right_gripper_control, left_arm_control, left_gripper_control]</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>policy_step</strong> (<em>bool</em>) – Whether a new policy step (action) is being taken</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Invalid action dimension]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.enable_parts">
+<span class="sig-name descname"><span class="pre">enable_parts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torso</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.enable_parts" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.head">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.head" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.is_mobile">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.is_mobile" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.legs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">legs</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.legs" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.load_model" title="Link to this definition">#</a></dt>
+<dd><p>Loads robot and optionally add grippers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.reset" title="Link to this definition">#</a></dt>
+<dd><p>Sets initial pose of arm and grippers. Overrides gripper joint configuration if we’re using a
+deterministic reset (e.g.: hard reset from xml file)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>deterministic</strong> (<em>bool</em>) – If true, will not randomize initializations within the sim</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.setup_observables">
+<span class="sig-name descname"><span class="pre">setup_observables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.setup_observables" title="Link to this definition">#</a></dt>
+<dd><p>Sets up observables to be used for this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping observable names to its corresponding Observable object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderedDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.setup_references">
+<span class="sig-name descname"><span class="pre">setup_references</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.setup_references" title="Link to this definition">#</a></dt>
+<dd><p>Sets up necessary reference for robots, grippers, and objects.</p>
+<p>Note that this should get called during every reset from the environment</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.torso">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torso</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.torso" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-robosuite.robots.robot">
 <span id="robosuite-robots-robot-module"></span><h2>robosuite.robots.robot module<a class="headerlink" href="#module-robosuite.robots.robot" title="Link to this heading">#</a></h2>
@@ -785,8 +1153,99 @@ robot-specific options specified.</p>
 </dd></dl>
 
 </section>
-<section id="robosuite-robots-single-arm-module">
-<h2>robosuite.robots.single_arm module<a class="headerlink" href="#robosuite-robots-single-arm-module" title="Link to this heading">#</a></h2>
+<section id="module-robosuite.robots.wheeled_robot">
+<span id="robosuite-robots-wheeled-robot-module"></span><h2>robosuite.robots.wheeled_robot module<a class="headerlink" href="#module-robosuite.robots.wheeled_robot" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.wheeled_robot.</span></span><span class="sig-name descname"><span class="pre">WheeledRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.robots.mobile_robot.MobileRobot" title="robosuite.robots.mobile_robot.MobileRobot"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileRobot</span></code></a></p>
+<p>Initializes a robot with a wheeled base.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.action_limits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.action_limits" title="Link to this definition">#</a></dt>
+<dd><p>Action lower/upper limits per dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>(np.array) minimum (low) action values</p></li>
+<li><p>(np.array) maximum (high) action values</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>2-tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.control">
+<span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.control" title="Link to this definition">#</a></dt>
+<dd><p>Actuate the robot with the
+passed joint velocities and gripper control.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>np.array</em>) – <p>The control to apply to the robot. The first &#64;self.robot_model.dof dimensions should
+be the desired normalized joint velocities and if the robot has a gripper, the next &#64;self.gripper.dof
+dimensions should be actuation controls for the gripper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">NOTE<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Assumes inputted actions are of form:
+[right_arm_control, right_gripper_control, left_arm_control, left_gripper_control]</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>policy_step</strong> (<em>bool</em>) – Whether a new policy step (action) is being taken</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Invalid action dimension]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.load_model" title="Link to this definition">#</a></dt>
+<dd><p>Loads robot and optionally add grippers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.reset" title="Link to this definition">#</a></dt>
+<dd><p>Sets initial pose of arm and grippers. Overrides gripper joint configuration if we’re using a
+deterministic reset (e.g.: hard reset from xml file)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>deterministic</strong> (<em>bool</em>) – If true, will not randomize initializations within the sim</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.setup_observables">
+<span class="sig-name descname"><span class="pre">setup_observables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.setup_observables" title="Link to this definition">#</a></dt>
+<dd><p>Sets up observables to be used for this robot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping observable names to its corresponding Observable object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderedDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.setup_references">
+<span class="sig-name descname"><span class="pre">setup_references</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.setup_references" title="Link to this definition">#</a></dt>
+<dd><p>Sets up necessary reference for robots, grippers, and objects.</p>
+<p>Note that this should get called during every reset from the environment</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-robosuite.robots">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.robots" title="Link to this heading">#</a></h2>
@@ -810,12 +1269,12 @@ robot-specific options specified.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="robosuite.renderers.html"
+       href="robosuite.renderers.mjviewer.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">robosuite.renderers package</p>
+        <p class="prev-next-title">robosuite.renderers.mjviewer package</p>
       </div>
     </a>
     <a class="right-next"
@@ -845,8 +1304,50 @@ robot-specific options specified.</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-robots-bimanual-module">robosuite.robots.bimanual module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-robots-manipulator-module">robosuite.robots.manipulator module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.fixed_base_robot">robosuite.robots.fixed_base_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.action_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.control"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.is_mobile"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.is_mobile</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.load_model"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.reset"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">FixedBaseRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.legged_robot">robosuite.robots.legged_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot"><code class="docutils literal notranslate"><span class="pre">LeggedRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.action_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.control"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.is_legs_actuated</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.load_model"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.num_leg_joints</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.reset"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.legged_robot.LeggedRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">LeggedRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.mobile_robot">robosuite.robots.mobile_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot"><code class="docutils literal notranslate"><span class="pre">MobileRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.base"><code class="docutils literal notranslate"><span class="pre">MobileRobot.base</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.control"><code class="docutils literal notranslate"><span class="pre">MobileRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.enable_parts"><code class="docutils literal notranslate"><span class="pre">MobileRobot.enable_parts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.head"><code class="docutils literal notranslate"><span class="pre">MobileRobot.head</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.is_mobile"><code class="docutils literal notranslate"><span class="pre">MobileRobot.is_mobile</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.legs"><code class="docutils literal notranslate"><span class="pre">MobileRobot.legs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.load_model"><code class="docutils literal notranslate"><span class="pre">MobileRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.reset"><code class="docutils literal notranslate"><span class="pre">MobileRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">MobileRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">MobileRobot.setup_references()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.mobile_robot.MobileRobot.torso"><code class="docutils literal notranslate"><span class="pre">MobileRobot.torso</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.robot">robosuite.robots.robot module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.robot.Robot"><code class="docutils literal notranslate"><span class="pre">Robot</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.robot.Robot.action_dim"><code class="docutils literal notranslate"><span class="pre">Robot.action_dim</span></code></a></li>
@@ -884,7 +1385,18 @@ robot-specific options specified.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-robots-single-arm-module">robosuite.robots.single_arm module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots.wheeled_robot">robosuite.robots.wheeled_robot module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot"><code class="docutils literal notranslate"><span class="pre">WheeledRobot</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.action_limits"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.action_limits</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.control"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.load_model"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.reset"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.reset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.setup_observables"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.setup_observables()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.wheeled_robot.WheeledRobot.setup_references"><code class="docutils literal notranslate"><span class="pre">WheeledRobot.setup_references()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.robots">Module contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.robots.register_robot_class"><code class="docutils literal notranslate"><span class="pre">register_robot_class()</span></code></a></li>
 </ul>
