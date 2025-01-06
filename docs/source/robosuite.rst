@@ -27,6 +27,14 @@ robosuite.macros module
    :undoc-members:
    :show-inheritance:
 
+robosuite.macros\_private module
+--------------------------------
+
+.. automodule:: robosuite.macros_private
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

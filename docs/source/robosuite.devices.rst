@@ -20,6 +20,14 @@ robosuite.devices.keyboard module
    :undoc-members:
    :show-inheritance:
 
+robosuite.devices.mjgui module
+------------------------------
+
+.. automodule:: robosuite.devices.mjgui
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 robosuite.devices.spacemouse module
 -----------------------------------
 

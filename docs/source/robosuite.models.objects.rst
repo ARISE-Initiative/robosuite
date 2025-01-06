@@ -9,6 +9,7 @@ Subpackages
 
    robosuite.models.objects.composite
    robosuite.models.objects.composite_body
+   robosuite.models.objects.group
    robosuite.models.objects.primitive
 
 Submodules
@@ -18,6 +19,14 @@ robosuite.models.objects.generated\_objects module
 --------------------------------------------------
 
 .. automodule:: robosuite.models.objects.generated_objects
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+robosuite.models.objects.object\_groups module
+----------------------------------------------
+
+.. automodule:: robosuite.models.objects.object_groups
    :members:
    :undoc-members:
    :show-inheritance:

@@ -8,8 +8,8 @@ Subpackages
    :maxdepth: 4
 
    robosuite.models.arenas
+   robosuite.models.bases
    robosuite.models.grippers
-   robosuite.models.mounts
    robosuite.models.objects
    robosuite.models.robots
    robosuite.models.tasks

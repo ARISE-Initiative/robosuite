@@ -1,7 +1,7 @@
 Robot
 =====
 
-The ``Robot`` class defines a simulation object encapsulating a robot model, gripper model, and controller. Robosuite uses class extensions of this base class to model different robotic domains. The current release focuses on manipulation, and includes a ``Manipulator`` class, which itself is extended by ``SingleArm`` and ``Bimanual`` classes representing the two different types of supported robots.
+The ``Robot`` class defines a simulation object encapsulating a robot model, gripper model, base model, and controller. Robosuite uses class extensions of this base class to model different robotic domains. The current release focuses on manipulation and mobility, and includes a ``MobileRobot`` class, which itself is extended by ``WheeledRobot`` and ``LeggedRobot`` classes representing different types of mobile robots.
 
 Base Robot
 ----------
