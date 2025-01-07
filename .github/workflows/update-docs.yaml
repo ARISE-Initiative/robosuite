@@ -29,6 +29,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install sphinx sphinx_book_theme sphinx_markdown_tables recommonmark nbsphinx sphinx_togglebutton hidapi
+        sudo apt-get install xvfb
+        Xvfb :99 -screen 0 1024x768x24 &
+        export DISPLAY=:99
 
     # Build the documentation
     - name: Build Docs
