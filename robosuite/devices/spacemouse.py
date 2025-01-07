@@ -21,20 +21,21 @@ import time
 from collections import namedtuple
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
+try:
+    from pynput.keyboard import Controller, Key, Listener
+except ImportError as exc:
+    print(f"Unable to load module pynput, required to interface with SpaceMouse. Error: {exc}")
 
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 try:
     import hid
 except ModuleNotFoundError as exc:
-    raise ImportError(
+    print(
         "Unable to load module hid, required to interface with SpaceMouse. "
         "Only macOS is officially supported. Install the additional "
         "requirements with `pip install -r requirements-extra.txt`"
-    ) from exc
-
-from pynput.keyboard import Controller, Key, Listener
+    )
 
 import robosuite.macros as macros
 from robosuite.devices import Device
@@ -371,9 +372,9 @@ class SpaceMouse(Device):
         return dpos, drotation
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    space_mouse = SpaceMouse()
-    for i in range(100):
-        print(space_mouse.control, space_mouse.control_gripper)
-        time.sleep(0.02)
+    # space_mouse = SpaceMouse()
+    # for i in range(100):
+    #     print(space_mouse.control, space_mouse.control_gripper)
+    #     time.sleep(0.02)
