@@ -1231,7 +1231,13 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.get_nullspace_gains"><code class="docutils literal notranslate"><span class="pre">get_nullspace_gains()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-utils-input-utils-module">robosuite.utils.input_utils module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.input_utils">robosuite.utils.input_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_controller"><code class="docutils literal notranslate"><span class="pre">choose_controller()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_environment"><code class="docutils literal notranslate"><span class="pre">choose_environment()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_multi_arm_config"><code class="docutils literal notranslate"><span class="pre">choose_multi_arm_config()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_robots"><code class="docutils literal notranslate"><span class="pre">choose_robots()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.log_utils">robosuite.utils.log_utils module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.ConsoleFormatter"><code class="docutils literal notranslate"><span class="pre">ConsoleFormatter</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.ConsoleFormatter.FORMATS"><code class="docutils literal notranslate"><span class="pre">ConsoleFormatter.FORMATS</span></code></a></li>
@@ -6236,8 +6242,72 @@ specified to define a global goal position</p>
 <dd></dd></dl>
 
 </section>
-<section id="robosuite-utils-input-utils-module">
-<h2>robosuite.utils.input_utils module<a class="headerlink" href="#robosuite-utils-input-utils-module" title="Link to this heading">#</a></h2>
+<section id="module-robosuite.utils.input_utils">
+<span id="robosuite-utils-input-utils-module"></span><h2>robosuite.utils.input_utils module<a class="headerlink" href="#module-robosuite.utils.input_utils" title="Link to this heading">#</a></h2>
+<p>Utility functions for grabbing user inputs</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.input_utils.choose_controller">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.input_utils.</span></span><span class="sig-name descname"><span class="pre">choose_controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part_controllers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.input_utils.choose_controller" title="Link to this definition">#</a></dt>
+<dd><p>Prints out controller options, and returns the requested controller name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chosen controller name</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.input_utils.choose_environment">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.input_utils.</span></span><span class="sig-name descname"><span class="pre">choose_environment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.input_utils.choose_environment" title="Link to this definition">#</a></dt>
+<dd><p>Prints out environment options, and returns the selected env_name choice</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chosen environment name</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.input_utils.choose_multi_arm_config">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.input_utils.</span></span><span class="sig-name descname"><span class="pre">choose_multi_arm_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.input_utils.choose_multi_arm_config" title="Link to this definition">#</a></dt>
+<dd><p>Prints out multi-arm environment configuration options, and returns the requested config name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Requested multi-arm configuration name</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robosuite.utils.input_utils.choose_robots">
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.input_utils.</span></span><span class="sig-name descname"><span class="pre">choose_robots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exclude_bimanual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_humanoids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.input_utils.choose_robots" title="Link to this definition">#</a></dt>
+<dd><p>Prints out robot options, and returns the requested robot. Restricts options to single-armed robots if
+&#64;exclude_bimanual is set to True (False by default). Restrict options to humanoids if &#64;use_humanoids is set to True (Flase by default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exclude_bimanual</strong> (<em>bool</em>) – If set, excludes bimanual robots from the robot options</p></li>
+<li><p><strong>use_humanoids</strong> (<em>bool</em>) – If set, use humanoid robots</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Requested robot name</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-robosuite.utils.log_utils">
 <span id="robosuite-utils-log-utils-module"></span><h2>robosuite.utils.log_utils module<a class="headerlink" href="#module-robosuite.utils.log_utils" title="Link to this heading">#</a></h2>
@@ -10607,7 +10677,13 @@ between 0 and 1.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.ik_utils.get_nullspace_gains"><code class="docutils literal notranslate"><span class="pre">get_nullspace_gains()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-utils-input-utils-module">robosuite.utils.input_utils module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.input_utils">robosuite.utils.input_utils module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_controller"><code class="docutils literal notranslate"><span class="pre">choose_controller()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_environment"><code class="docutils literal notranslate"><span class="pre">choose_environment()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_multi_arm_config"><code class="docutils literal notranslate"><span class="pre">choose_multi_arm_config()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.input_utils.choose_robots"><code class="docutils literal notranslate"><span class="pre">choose_robots()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.utils.log_utils">robosuite.utils.log_utils module</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.ConsoleFormatter"><code class="docutils literal notranslate"><span class="pre">ConsoleFormatter</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.log_utils.ConsoleFormatter.FORMATS"><code class="docutils literal notranslate"><span class="pre">ConsoleFormatter.FORMATS</span></code></a></li>
