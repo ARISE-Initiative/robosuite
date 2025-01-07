@@ -28,7 +28,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install sphinx sphinx_book_theme sphinx_markdown_tables recommonmark nbsphinx sphinx_togglebutton
+        pip install sphinx sphinx_book_theme sphinx_markdown_tables recommonmark nbsphinx sphinx_togglebutton hidapi
 
     # Build the documentation
     - name: Build Docs
