@@ -35,13 +35,14 @@ jobs:
       run: |
         cd docs
         make clean html
+        mv _build ..
 
     # Deploy to GitHub Pages
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: docs/_build/html
+        publish_dir: _build/html
         destination_dir: docs
     
     # Remove .nojekyll from root directory if it exists
