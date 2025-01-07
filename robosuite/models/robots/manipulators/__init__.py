@@ -8,4 +8,5 @@ from .iiwa_robot import IIWA
 from .ur5e_robot import UR5e
 from .spot_arm import SpotArm
 from .tiago_robot import Tiago
+from .aubo_i10_robot import Aubo_I10
 from .gr1_robot import GR1, GR1FixedLowerBody, GR1ArmsOnly, GR1FloatingBody
