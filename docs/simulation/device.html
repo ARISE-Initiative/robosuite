@@ -397,44 +397,10 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-device">Base Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device"><code class="docutils literal notranslate"><span class="pre">Device</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.start_control"><code class="docutils literal notranslate"><span class="pre">Device.start_control()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Device.get_controller_state()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-device">Keyboard Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard"><code class="docutils literal notranslate"><span class="pre">Keyboard</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Keyboard.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard.on_press"><code class="docutils literal notranslate"><span class="pre">Keyboard.on_press()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard.on_release"><code class="docutils literal notranslate"><span class="pre">Keyboard.on_release()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard._display_controls"><code class="docutils literal notranslate"><span class="pre">Keyboard._display_controls()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spacemouse-device">SpaceMouse Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse"><code class="docutils literal notranslate"><span class="pre">SpaceMouse</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.get_controller_state"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.run"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.run()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.control"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.control()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.control_gripper"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.control_gripper()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse._display_controls"><code class="docutils literal notranslate"><span class="pre">SpaceMouse._display_controls()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mjgui-device">MjGUI Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI"><code class="docutils literal notranslate"><span class="pre">MJGUI</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.get_controller_state"><code class="docutils literal notranslate"><span class="pre">MJGUI.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.input2action"><code class="docutils literal notranslate"><span class="pre">MJGUI.input2action()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI._display_controls"><code class="docutils literal notranslate"><span class="pre">MJGUI._display_controls()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-device">Base Device</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-device">Keyboard Device</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spacemouse-device">SpaceMouse Device</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mjgui-device">MjGUI Device</a></li>
 </ul>
             </nav>
         </div>
@@ -451,115 +417,15 @@
 <p>Devices allow for direct real-time interfacing with the MuJoCo simulation. The currently supported devices are <code class="docutils literal notranslate"><span class="pre">Keyboard</span></code>. <code class="docutils literal notranslate"><span class="pre">SpaceMouse</span></code> and <code class="docutils literal notranslate"><span class="pre">MjGUI</span></code>.</p>
 <section id="base-device">
 <h2>Base Device<a class="headerlink" href="#base-device" title="Link to this heading">#</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="robosuite.devices.device.Device">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.device.</span></span><span class="sig-name descname"><span class="pre">Device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.device.Device" title="Link to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.device.Device.start_control">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_control</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.device.Device.start_control" title="Link to this definition">#</a></dt>
-<dd><p>Method that should be called externally before controller can
-start receiving commands.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.device.Device.get_controller_state">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#robosuite.devices.device.Device.get_controller_state" title="Link to this definition">#</a></dt>
-<dd><p>Returns the current state of the device, a dictionary of pos, orn, grasp, and reset.</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 <section id="keyboard-device">
 <h2>Keyboard Device<a class="headerlink" href="#keyboard-device" title="Link to this heading">#</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="robosuite.devices.keyboard.Keyboard">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.keyboard.</span></span><span class="sig-name descname"><span class="pre">Keyboard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.keyboard.Keyboard" title="Link to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.keyboard.Keyboard.get_controller_state">
-<span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.keyboard.Keyboard.get_controller_state" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.keyboard.Keyboard.on_press">
-<span class="sig-name descname"><span class="pre">on_press</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.keyboard.Keyboard.on_press" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.keyboard.Keyboard.on_release">
-<span class="sig-name descname"><span class="pre">on_release</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.keyboard.Keyboard.on_release" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.keyboard.Keyboard._display_controls">
-<span class="sig-name descname"><span class="pre">_display_controls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.keyboard.Keyboard._display_controls" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 </section>
 <section id="spacemouse-device">
 <h2>SpaceMouse Device<a class="headerlink" href="#spacemouse-device" title="Link to this heading">#</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="robosuite.devices.spacemouse.SpaceMouse">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.spacemouse.</span></span><span class="sig-name descname"><span class="pre">SpaceMouse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.spacemouse.SpaceMouse" title="Link to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.spacemouse.SpaceMouse.get_controller_state">
-<span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.spacemouse.SpaceMouse.get_controller_state" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.spacemouse.SpaceMouse.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.spacemouse.SpaceMouse.run" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.spacemouse.SpaceMouse.control">
-<span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.spacemouse.SpaceMouse.control" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.spacemouse.SpaceMouse.control_gripper">
-<span class="sig-name descname"><span class="pre">control_gripper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.spacemouse.SpaceMouse.control_gripper" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.spacemouse.SpaceMouse._display_controls">
-<span class="sig-name descname"><span class="pre">_display_controls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.spacemouse.SpaceMouse._display_controls" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 </section>
 <section id="mjgui-device">
 <h2>MjGUI Device<a class="headerlink" href="#mjgui-device" title="Link to this heading">#</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.mjgui.</span></span><span class="sig-name descname"><span class="pre">MJGUI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI" title="Link to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI.get_controller_state">
-<span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.get_controller_state" title="Link to this definition">#</a></dt>
-<dd><p>Grabs the current state of the keyboard.
-:returns: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
-:rtype: dict</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI.input2action">
-<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.input2action" title="Link to this definition">#</a></dt>
-<dd><p>Uses mocap body poses to determine action for robot. Obtain input_type
-(i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
-from the controller itself.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI._display_controls">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_display_controls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI._display_controls" title="Link to this definition">#</a></dt>
-<dd><p>Method to pretty print controls.</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 
@@ -609,44 +475,10 @@ from the controller itself.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-device">Base Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device"><code class="docutils literal notranslate"><span class="pre">Device</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.start_control"><code class="docutils literal notranslate"><span class="pre">Device.start_control()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Device.get_controller_state()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-device">Keyboard Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard"><code class="docutils literal notranslate"><span class="pre">Keyboard</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Keyboard.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard.on_press"><code class="docutils literal notranslate"><span class="pre">Keyboard.on_press()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard.on_release"><code class="docutils literal notranslate"><span class="pre">Keyboard.on_release()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.keyboard.Keyboard._display_controls"><code class="docutils literal notranslate"><span class="pre">Keyboard._display_controls()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spacemouse-device">SpaceMouse Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse"><code class="docutils literal notranslate"><span class="pre">SpaceMouse</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.get_controller_state"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.run"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.run()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.control"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.control()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.control_gripper"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.control_gripper()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse._display_controls"><code class="docutils literal notranslate"><span class="pre">SpaceMouse._display_controls()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mjgui-device">MjGUI Device</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI"><code class="docutils literal notranslate"><span class="pre">MJGUI</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.get_controller_state"><code class="docutils literal notranslate"><span class="pre">MJGUI.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.input2action"><code class="docutils literal notranslate"><span class="pre">MJGUI.input2action()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI._display_controls"><code class="docutils literal notranslate"><span class="pre">MJGUI._display_controls()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-device">Base Device</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-device">Keyboard Device</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spacemouse-device">SpaceMouse Device</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mjgui-device">MjGUI Device</a></li>
 </ul>
   </nav></div>
 

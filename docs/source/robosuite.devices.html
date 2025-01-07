@@ -412,20 +412,10 @@
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices.keyboard">robosuite.devices.keyboard module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices.mjgui">robosuite.devices.mjgui module</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI"><code class="docutils literal notranslate"><span class="pre">MJGUI</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.get_controller_state"><code class="docutils literal notranslate"><span class="pre">MJGUI.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.input2action"><code class="docutils literal notranslate"><span class="pre">MJGUI.input2action()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.start_control"><code class="docutils literal notranslate"><span class="pre">MJGUI.start_control()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.get_mocap_pose"><code class="docutils literal notranslate"><span class="pre">get_mocap_pose()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.set_mocap_pose"><code class="docutils literal notranslate"><span class="pre">set_mocap_pose()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices.spacemouse">robosuite.devices.spacemouse module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices">Module contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-devices-keyboard-module">robosuite.devices.keyboard module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-devices-mjgui-module">robosuite.devices.mjgui module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-devices-spacemouse-module">robosuite.devices.spacemouse module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module contents</a></li>
 </ul>
             </nav>
         </div>
@@ -515,63 +505,17 @@ start receiving commands.</p>
 </dd></dl>
 
 </section>
-<section id="module-robosuite.devices.keyboard">
-<span id="robosuite-devices-keyboard-module"></span><h2>robosuite.devices.keyboard module<a class="headerlink" href="#module-robosuite.devices.keyboard" title="Link to this heading">#</a></h2>
+<section id="robosuite-devices-keyboard-module">
+<h2>robosuite.devices.keyboard module<a class="headerlink" href="#robosuite-devices-keyboard-module" title="Link to this heading">#</a></h2>
 </section>
-<section id="module-robosuite.devices.mjgui">
-<span id="robosuite-devices-mjgui-module"></span><h2>robosuite.devices.mjgui module<a class="headerlink" href="#module-robosuite.devices.mjgui" title="Link to this heading">#</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.mjgui.</span></span><span class="sig-name descname"><span class="pre">MJGUI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#robosuite.devices.device.Device" title="robosuite.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a></p>
-<p>Class for ‘device’ involving mujoco viewer and mocap bodies being dragged by user’s mouse.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>env</strong> (<a class="reference internal" href="robosuite.environments.html#robosuite.environments.robot_env.RobotEnv" title="robosuite.environments.robot_env.RobotEnv"><em>RobotEnv</em></a>) – The environment which contains the robot(s) to control
-using this device.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI.get_controller_state">
-<span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.get_controller_state" title="Link to this definition">#</a></dt>
-<dd><p>Grabs the current state of the keyboard.
-:returns: A dictionary containing dpos, orn, unmodified orn, grasp, and reset
-:rtype: dict</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI.input2action">
-<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.input2action" title="Link to this definition">#</a></dt>
-<dd><p>Uses mocap body poses to determine action for robot. Obtain input_type
-(i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
-from the controller itself.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI.start_control">
-<span class="sig-name descname"><span class="pre">start_control</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.start_control" title="Link to this definition">#</a></dt>
-<dd><p>Method that should be called externally before controller can
-start receiving commands.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.get_mocap_pose">
-<span class="sig-prename descclassname"><span class="pre">robosuite.devices.mjgui.</span></span><span class="sig-name descname"><span class="pre">get_mocap_pose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mocap_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'target'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.devices.mjgui.get_mocap_pose" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="robosuite.devices.mjgui.set_mocap_pose">
-<span class="sig-prename descclassname"><span class="pre">robosuite.devices.mjgui.</span></span><span class="sig-name descname"><span class="pre">set_mocap_pose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_mat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mocap_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'target'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.set_mocap_pose" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
+<section id="robosuite-devices-mjgui-module">
+<h2>robosuite.devices.mjgui module<a class="headerlink" href="#robosuite-devices-mjgui-module" title="Link to this heading">#</a></h2>
 </section>
-<section id="module-robosuite.devices.spacemouse">
-<span id="robosuite-devices-spacemouse-module"></span><h2>robosuite.devices.spacemouse module<a class="headerlink" href="#module-robosuite.devices.spacemouse" title="Link to this heading">#</a></h2>
+<section id="robosuite-devices-spacemouse-module">
+<h2>robosuite.devices.spacemouse module<a class="headerlink" href="#robosuite-devices-spacemouse-module" title="Link to this heading">#</a></h2>
 </section>
-<section id="module-robosuite.devices">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-robosuite.devices" title="Link to this heading">#</a></h2>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 </section>
 </section>
 
@@ -636,20 +580,10 @@ start receiving commands.</p>
 </li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices.keyboard">robosuite.devices.keyboard module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices.mjgui">robosuite.devices.mjgui module</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI"><code class="docutils literal notranslate"><span class="pre">MJGUI</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.get_controller_state"><code class="docutils literal notranslate"><span class="pre">MJGUI.get_controller_state()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.input2action"><code class="docutils literal notranslate"><span class="pre">MJGUI.input2action()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.start_control"><code class="docutils literal notranslate"><span class="pre">MJGUI.start_control()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.get_mocap_pose"><code class="docutils literal notranslate"><span class="pre">get_mocap_pose()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.set_mocap_pose"><code class="docutils literal notranslate"><span class="pre">set_mocap_pose()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices.spacemouse">robosuite.devices.spacemouse module</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.devices">Module contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-devices-keyboard-module">robosuite.devices.keyboard module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-devices-mjgui-module">robosuite.devices.mjgui module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite-devices-spacemouse-module">robosuite.devices.spacemouse module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module contents</a></li>
 </ul>
   </nav></div>
 
