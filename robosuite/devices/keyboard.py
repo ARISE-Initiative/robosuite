@@ -3,7 +3,13 @@ Driver class for Keyboard controller.
 """
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
+
+try:
+    from pynput.keyboard import Controller, Key, Listener
+except ModuleNotFoundError as exc:
+    raise ImportError(
+        "Unable to load module pynput, required to interface with Keyboard. "
+    ) from exc
 
 from robosuite.devices import Device
 from robosuite.utils.transform_utils import rotation_matrix

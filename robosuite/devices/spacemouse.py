@@ -21,7 +21,12 @@ import time
 from collections import namedtuple
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
+try:
+    from pynput.keyboard import Controller, Key, Listener
+except ModuleNotFoundError as exc:
+    raise ImportError(
+        "Unable to load module pynput, required to interface with Keyboard. "
+    ) from exc
 
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 

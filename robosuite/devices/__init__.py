@@ -1,5 +1,11 @@
 from .device import Device
-from .keyboard import Keyboard
+
+try:
+    from .keyboard import Keyboard
+except ModuleNotFoundError as exc:
+    raise ImportError(
+        "Unable to load module pynput, required to interface with Keyboard. "
+    ) from exc
 
 try:
     from .spacemouse import SpaceMouse
