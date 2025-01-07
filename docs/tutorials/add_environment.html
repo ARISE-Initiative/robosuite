@@ -401,8 +401,8 @@
                   
   <section id="building-your-own-environments">
 <h1>Building Your Own Environments<a class="headerlink" href="#building-your-own-environments" title="Link to this heading">#</a></h1>
-<p><strong>robosuite</strong> offers great flexibility in creating your own environments. A <a class="reference external" href="modeling/task">task</a> typically involves the participation of a <a class="reference external" href="modeling/robot_model">robot</a> with <a class="reference external" href="modeling/robot_model.html#gripper-model">grippers</a> as its end-effectors, an <a class="reference external" href="modeling/arena">arena</a> (workspace), and <a class="reference external" href="modeling/object_model">objects</a> that the robot interacts with. For a detailed overview of our design architecture, please check out the <a class="reference external" href="modules/overview">Overview</a> page in Modules. Our Modeling APIs provide methods of composing these modularized elements into a scene, which can be loaded in MuJoCo for simulation. To build your own environments, we recommend you take a look at the <a class="reference external" href="simulation/environment">Environment classes</a> which have used these APIs to define robotics environments and tasks and the <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/environments">source code</a> of our standardized environments. Below we walk through a step-by-step example of building a new tabletop manipulation environment with our APIs.</p>
-<p><strong>Step 1: Creating the world.</strong> All mujoco object definitions are housed in an xml. We create a <a class="reference external" href="source/robosuite.models">MujocoWorldBase</a> class to do it.</p>
+<p><strong>robosuite</strong> offers great flexibility in creating your own environments. A <a class="reference internal" href="../modeling/task.html"><span class="doc">task</span></a> typically involves the participation of a <a class="reference internal" href="../modeling/robot_model.html"><span class="doc">robot</span></a> with <a class="reference external" href="../modeling/robot_model.html#gripper-model">grippers</a> as its end-effectors, an <a class="reference internal" href="../modeling/arena.html"><span class="doc">arena</span></a> (workspace), and <a class="reference internal" href="../modeling/object_model.html"><span class="doc">objects</span></a> that the robot interacts with. For a detailed overview of our design architecture, please check out the <a class="reference internal" href="../modules/overview.html"><span class="doc">Overview</span></a> page in Modules. Our Modeling APIs provide methods of composing these modularized elements into a scene, which can be loaded in MuJoCo for simulation. To build your own environments, we recommend you take a look at the <a class="reference internal" href="../simulation/environment.html"><span class="doc">Environment classes</span></a> which have used these APIs to define robotics environments and tasks and the <a class="reference external" href="https://github.com/ARISE-Initiative/robosuite/tree/master/robosuite/environments">source code</a> of our standardized environments. Below we walk through a step-by-step example of building a new tabletop manipulation environment with our APIs.</p>
+<p><strong>Step 1: Creating the world.</strong> All mujoco object definitions are housed in an xml. We create a <a class="reference internal" href="../source/robosuite.models.html"><span class="doc">MujocoWorldBase</span></a> class to do it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">MujocoWorldBase</span>
 
 <span class="n">world</span> <span class="o">=</span> <span class="n">MujocoWorldBase</span><span class="p">()</span>
@@ -426,7 +426,7 @@
 <span class="n">world</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">mujoco_robot</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Step 3: Creating the table.</strong> We can initialize the <a class="reference external" href="source/robosuite.models.arenas">TableArena</a> instance that creates a table and the floorplane</p>
+<p><strong>Step 3: Creating the table.</strong> We can initialize the <a class="reference internal" href="../source/robosuite.models.arenas.html"><span class="doc">TableArena</span></a> instance that creates a table and the floorplane</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models.arenas</span><span class="w"> </span><span class="kn">import</span> <span class="n">TableArena</span>
 
 <span class="n">mujoco_arena</span> <span class="o">=</span> <span class="n">TableArena</span><span class="p">()</span>
@@ -434,7 +434,7 @@
 <span class="n">world</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">mujoco_arena</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Step 4: Adding the object.</strong> For details of <code class="docutils literal notranslate"><span class="pre">MujocoObject</span></code>, refer to the documentation about <a class="reference external" href="modeling/object_model">MujocoObject</a>, we can create a ball and add it to the world.</p>
+<p><strong>Step 4: Adding the object.</strong> For details of <code class="docutils literal notranslate"><span class="pre">MujocoObject</span></code>, refer to the documentation about <a class="reference internal" href="../modeling/object_model.html"><span class="doc">MujocoObject</span></a>, we can create a ball and add it to the world.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.models.objects</span><span class="w"> </span><span class="kn">import</span> <span class="n">BallObject</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">robosuite.utils.mjcf_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">new_joint</span>
 
@@ -446,7 +446,7 @@
 <span class="n">world</span><span class="o">.</span><span class="n">worldbody</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sphere</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Step 5: Running Simulation.</strong> Once we have created the object, we can obtain a <code class="docutils literal notranslate"><span class="pre">mujoco_py</span></code> model by running</p>
+<p><strong>Step 5: Running Simulation.</strong> Once we have created the object, we can obtain a <code class="docutils literal notranslate"><span class="pre">mujoco.MjModel</span></code> model by running</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">world</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;mujoco&quot;</span><span class="p">)</span>
 </pre></div>
 </div>

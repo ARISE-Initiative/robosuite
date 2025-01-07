@@ -33,7 +33,7 @@ The "WholeBodyIK" composite controller takes in end effector targets, and conver
 ***********************
 
 Third-party controllers integrate custom or external control algorithms into robosuite. Examples include https://github.com/kevinzakka/mink. We provide 
-an example of adding a third part controller in https://robosuite.ai/docs/tutorials/add_controller.html.
+an example of adding a third-party controller in https://robosuite.ai/docs/tutorials/add_controller.html.
 
 
 Workflow of Loading Configs
