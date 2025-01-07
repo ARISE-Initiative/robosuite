@@ -189,5 +189,8 @@ texinfo_documents = [
 ]
 
 autodoc_mock_imports = [
-    "robosuite.devices.mjgui", "robosuite.devices.spacemouse", "robosuite.devices.keyboard", "robosuite.devices.device",
+    "robosuite.devices.mjgui",
+    "robosuite.devices.spacemouse",
+    "robosuite.devices.keyboard",
+    "robosuite.devices.device",
 ]
