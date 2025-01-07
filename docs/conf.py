@@ -187,3 +187,10 @@ man_pages = [(master_doc, "robosuite", "robosuite Documentation", [author], 1)]
 texinfo_documents = [
     (master_doc, "robosuite", "robosuite Documentation", author, "robosuite", "ARISE", "Miscellaneous"),
 ]
+
+autodoc_mock_imports = [
+    "robosuite.devices.mjgui",
+    "robosuite.devices.spacemouse",
+    "robosuite.devices.keyboard",
+    "robosuite.devices.device",
+]
