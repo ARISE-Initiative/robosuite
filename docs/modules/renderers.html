@@ -401,6 +401,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#isaac-rendering">Isaac Rendering</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ray-tracing">Ray tracing</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-tracing">Path tracing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-speed">Rendering Speed</a></li>
 </ul>
 </li>
@@ -434,6 +435,7 @@ occur by class, instance, or geom, and is set during environment construction wi
 <section id="isaac-rendering">
 <h2>Isaac Rendering<a class="headerlink" href="#isaac-rendering" title="Link to this heading">#</a></h2>
 <p>Users are also able to render using photorealistic methods through Isaac Sim. Specifically, we users are able to choose between two rendering modes: ray tracing and path tracing. For more information about Isaac Sim rendering options, please visit <a class="reference external" href="https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer.html">here</a>. Isaac renderers are only available to those who are running on a Linux or Windows machine.</p>
+<p>To install Isaac on your local system, please follow the instructions listed <a class="reference external" href="https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/pip_installation.html">here</a>. Make sure to follow instructions to install both Isaac Sim and Isaac Lab.</p>
 <section id="ray-tracing">
 <h3>Ray tracing<a class="headerlink" href="#ray-tracing" title="Link to this heading">#</a></h3>
 <p><img alt="Ray tracing" src="../_images/gr1_cereal_ray_tracing.png" /></p>
@@ -443,6 +445,33 @@ occur by class, instance, or geom, and is set during environment construction wi
 <h3>Path tracing<a class="headerlink" href="#path-tracing" title="Link to this heading">#</a></h3>
 <p><img alt="Path tracing" src="../_images/gr1_cereal_path_tracing.png" /></p>
 <p>Path tracing typically offers higher quality and is ideal for offline learning. If you have the time to collect data and plan to train algorithms using offline data, we recommend using path tracing for its photorealistic results.</p>
+</section>
+<section id="basic-usage">
+<h3>Basic usage<a class="headerlink" href="#basic-usage" title="Link to this heading">#</a></h3>
+<p>Once all dependecies for Isaac rendering have been installed, users can run the <code class="docutils literal notranslate"><span class="pre">robosuite/scripts/render_dataset_with_omniverse.py</span></code> to render previously collected demonstrations using either ray tracing or path tracining. Below we highlight the arguments that can be passed into the script.</p>
+<ul class="simple">
+<li><p><strong>dataset</strong>: Path to hdf5 dataset with the demonstrations to render.</p></li>
+<li><p><strong>ds_format</strong>: Dataset format (options include <code class="docutils literal notranslate"><span class="pre">robosuite</span></code> and <code class="docutils literal notranslate"><span class="pre">robomimic</span></code> depending on if the dataset was collected using robosuite or robomimic, respectively).</p></li>
+<li><p><strong>episode</strong>: Episode/demonstration to render. If no episode is provided, all demonstrations will be rendered.</p></li>
+<li><p><strong>output_directory</strong>: Directory to store outputs from Isaac rendering and USD generation.</p></li>
+<li><p><strong>cameras</strong>: List of cameras to render images. Cameras must be defined in robosuite.</p></li>
+<li><p><strong>width</strong>: Width of the rendered output.</p></li>
+<li><p><strong>height</strong>: Height of the rendered output.</p></li>
+<li><p><strong>renderer</strong>: Renderer mode to use (options include <code class="docutils literal notranslate"><span class="pre">RayTracedLighting</span></code> or <code class="docutils literal notranslate"><span class="pre">PathTracing</span></code>).</p></li>
+<li><p><strong>save_video</strong>: Whether to save the outputs renderings as a video.</p></li>
+<li><p><strong>online</strong>: Enables online rendering and will not save the USD for future rendering offline.</p></li>
+<li><p><strong>skip_frames</strong>: Renders every nth frame.</p></li>
+<li><p><strong>hide_sites</strong>: Hides all sites in the scene.</p></li>
+<li><p><strong>reload_model</strong>: Reloads the model from the Mujoco XML file.</p></li>
+<li><p><strong>keep_models</strong>: List of names of models to keep from the original Mujoco XML file.</p></li>
+<li><p><strong>rgb</strong>: Render with the RGB modality. If no other modality is selected, we default to rendering with RGB.</p></li>
+<li><p><strong>normals</strong>: Render with normals.</p></li>
+<li><p><strong>semantic_segmentation</strong>: Render with semantic segmentation.</p></li>
+</ul>
+<p>Here is an example command to render an video of a demonstration using ray tracing with the RGB and normal modality.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>robosuite/scripts/render_dataset_with_omniverse.py<span class="w"> </span>--dataset<span class="w"> </span>/home/abhishek/Documents/research/rpl/robosuite/robosuite/models/assets/demonstrations_private/1734107564_9898326/demo.hdf5<span class="w"> </span>--ds_format<span class="w"> </span>robosuite<span class="w"> </span>--episode<span class="w"> </span><span class="m">1</span><span class="w"> </span>--camera<span class="w"> </span>agentview<span class="w"> </span>frontview<span class="w"> </span>--width<span class="w"> </span><span class="m">1920</span><span class="w"> </span>--height<span class="w"> </span><span class="m">1080</span><span class="w"> </span>--renderer<span class="w"> </span>RayTracedLighting<span class="w"> </span>--save_video<span class="w"> </span>--hide_sites<span class="w"> </span>--rgb<span class="w"> </span>--normals
+</pre></div>
+</div>
 </section>
 <section id="rendering-speed">
 <h3>Rendering Speed<a class="headerlink" href="#rendering-speed" title="Link to this heading">#</a></h3>
@@ -522,6 +551,7 @@ occur by class, instance, or geom, and is set during environment construction wi
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#isaac-rendering">Isaac Rendering</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ray-tracing">Ray tracing</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-tracing">Path tracing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-speed">Rendering Speed</a></li>
 </ul>
 </li>
