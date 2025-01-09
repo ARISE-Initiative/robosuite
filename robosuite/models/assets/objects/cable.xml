@@ -1,0 +1,29 @@
+<mujoco model="Cable">
+
+  <compiler angle="radian" inertiagrouprange="0 1" autolimits="true"/>
+
+  <extension>
+    <plugin plugin="mujoco.elasticity.cable"/>
+  </extension>
+
+  <worldbody>
+    <body>
+      <body name="object">
+        <composite type="cable" curve="s" count="41 1 1" size="1" initial="none">
+          <plugin plugin="mujoco.elasticity.cable">
+            <!-- Units are in Pa (SI) -->
+            <config key="twist" value="1e7"/>
+            <config key="bend" value="4e6"/>
+            <config key="vmax" value="0.05"/>
+          </plugin>
+          <joint kind="main" damping="0.015"/>
+          <geom type="capsule" density="1000" size="0.01" rgba="0 0 1 1" condim="1" group="1"/>
+        </composite>
+        <!-- <flexcomp name="cable" type="circle" count="40 1 1" spacing=".15 1 1" dim="1"
+              radius="0.02" pos="0 0 1" rgba="1 0 0 1">
+          <edge equality="true"/>
+        </flexcomp> -->
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

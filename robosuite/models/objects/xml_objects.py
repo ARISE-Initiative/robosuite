@@ -60,6 +60,22 @@ class MilkObject(MujocoXMLObject):
         )
 
 
+class CableObject(MujocoXMLObject):
+    """
+    Cable object (used in Cable Manipulation)
+    """
+
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/cable.xml"),
+            name=name,
+            joints=[dict(type="free", damping="0.0005")],
+            obj_type="all",
+            duplicate_collision_geoms=False,
+        )
+
+
+
 class BreadObject(MujocoXMLObject):
     """
     Bread loaf object (used in PickPlace)
