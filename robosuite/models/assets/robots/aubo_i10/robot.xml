@@ -8,6 +8,21 @@
     <mesh name="link4" file="meshes/link4.STL"/>
     <mesh name="link5" file="meshes/link5.STL"/>
     <mesh name="link6" file="meshes/link6.STL"/>
+
+    <material name="MaterialFBXASC032FBXASC03528" specular="0.0" shininess="0.25" rgba="0.411765 0.411765 0.411765 1.000000"/>
+    <material name="MaterialFBXASC032FBXASC03529" specular="0.0" shininess="0.25" rgba="0.909804 0.513726 0.000000 1.000000"/>
+    <mesh name="link0_vis" file="obj_meshes/link0/link0.obj"/>
+    <mesh name="link1_0_vis" file="obj_meshes/link1/link1_0.obj"/>
+    <mesh name="link1_1_vis" file="obj_meshes/link1/link1_1.obj"/>
+    <mesh name="link2_0_vis" file="obj_meshes/link2/link2_0.obj"/>
+    <mesh name="link2_1_vis" file="obj_meshes/link2/link2_1.obj"/>
+    <mesh name="link3_0_vis" file="obj_meshes/link3/link3_0.obj"/>
+    <mesh name="link3_1_vis" file="obj_meshes/link3/link3_1.obj"/>
+    <mesh name="link4_0_vis" file="obj_meshes/link4/link4_0.obj"/>
+    <mesh name="link4_1_vis" file="obj_meshes/link4/link4_1.obj"/>
+    <mesh name="link5_0_vis" file="obj_meshes/link5/link5_0.obj"/>
+    <mesh name="link5_1_vis" file="obj_meshes/link5/link5_1.obj"/>
+    <mesh name="link6_vis" file="obj_meshes/link6/link6.obj"/>
   </asset>
   
   <actuator>
@@ -25,30 +40,42 @@
     <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
     <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
     <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 0.545 0 1" mesh="link0"/>
+    <geom type="mesh" material="MaterialFBXASC032FBXASC03528" contype="0" conaffinity="0" group="1" mesh="link0_vis" quat="0.707 0.707 0 0"/>
     <body name="shoulder_Link" pos="0 0 0.1632" quat="0 0 0 1">
       <inertial pos="-4e-06 0.005112 -0.026275" quat="0.997565 -0.0697219 -1.82331e-05 0.00151628" mass="10.1801" diaginertia="0.043326 0.0424812 0.0296538"/>
       <joint name="shoulder_joint" pos="0 0 0" axis="0 0 1" range="-6.28319 6.28319" actuatorfrcrange="-267 267" damping="0.1"/>
-      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 0.545 0 1" mesh="link1"/>
+      <geom type="mesh" contype="0" conaffinity="0" group="0" density="0" rgba="1 0.545 0 1" mesh="link1"/>
+      <geom type="mesh" material="MaterialFBXASC032FBXASC03529" contype="0" conaffinity="0" group="1" mesh="link1_0_vis" quat="0.707 0.707 0 0"/>
+      <geom type="mesh" material="MaterialFBXASC032FBXASC03528" contype="0" conaffinity="0" group="1" mesh="link1_1_vis" quat="0.707 0.707 0 0"/>
       <body name="upperArm_Link" pos="0 0.2013 0" quat="0.5 -0.5 -0.5 -0.5">
         <inertial pos="0.231117 -1.3e-05 -0.022852" quat="0.505617 0.49432 0.493921 0.506005" mass="18.0964" diaginertia="1.52462 1.50645 0.0641157"/>
         <joint name="upperArm_joint" pos="0 0 0" axis="0 0 1" range="-6.28319 6.28319" actuatorfrcrange="-267 267" damping="0.1"/>
-        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 0.545 0 1" mesh="link2"/>
+        <geom type="mesh" contype="0" conaffinity="0" group="0" density="0" rgba="1 0.545 0 1" mesh="link2"/>
+        <geom type="mesh" material="MaterialFBXASC032FBXASC03529" contype="0" conaffinity="0" group="1" mesh="link2_0_vis" quat="0.707 0.707 0 0"/>
+        <geom type="mesh" material="MaterialFBXASC032FBXASC03528" contype="0" conaffinity="0" group="1" mesh="link2_1_vis" quat="0.707 0.707 0 0"/>
         <body name="foreArm_Link" pos="0.647 0 0" quat="0 -1 0 0">
           <inertial pos="0.41956 -1.9e-05 0.118053" quat="0.494817 0.505196 0.503176 0.496737" mass="4.44809" diaginertia="0.246194 0.244857 0.00673165"/>
           <joint name="foreArm_joint" pos="0 0 0" axis="0 0 1" range="-6.28319 6.28319" actuatorfrcrange="-133 133" damping="0.1"/>
-          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 0.545 0 1" mesh="link3"/>
+          <geom type="mesh" contype="0" conaffinity="0" group="0" density="0" rgba="1 0.545 0 1" mesh="link3"/>
+          <geom type="mesh" material="MaterialFBXASC032FBXASC03528" contype="0" conaffinity="0" group="1" mesh="link3_0_vis" quat="0.707 0.707 0 0"/>
+          <geom type="mesh" material="MaterialFBXASC032FBXASC03529" contype="0" conaffinity="0" group="1" mesh="link3_1_vis" quat="0.707 0.707 0 0"/>
           <body name="wrist1_Link" pos="0.6005 0 0" quat="0 0.707107 0.707107 0">
             <inertial pos="4.7e-05 0.009773 -0.005726" quat="0.634287 0.773094 0.00115623 0.00203894" mass="1.79166" diaginertia="0.00245702 0.0022075 0.00156548"/>
             <joint name="wrist1_joint" pos="0 0 0" axis="0 0 1" range="-6.28319 6.28319" actuatorfrcrange="-49 49" damping="0.01"/>
-            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 0.545 0 1" mesh="link4"/>
+            <geom type="mesh" contype="0" conaffinity="0" group="0" density="0" rgba="1 0.545 0 1" mesh="link4"/>
+            <geom type="mesh" material="MaterialFBXASC032FBXASC03528" contype="0" conaffinity="0" group="1" mesh="link4_0_vis" quat="0.707 0.707 0 0"/>
+            <geom type="mesh" material="MaterialFBXASC032FBXASC03529" contype="0" conaffinity="0" group="1" mesh="link4_1_vis" quat="0.707 0.707 0 0"/>
             <body name="wrist2_Link" pos="0 0.1025 0" quat="0.707107 -0.707107 0 0">
               <inertial pos="-3.8e-05 -0.011278 -0.001539" quat="0.725716 0.68759 0.0175555 -0.0157544" mass="1.62802" diaginertia="0.00195105 0.00193322 0.00115172"/>
               <joint name="wrist2_joint" pos="0 0 0" axis="0 0 1" range="-6.28319 6.28319" actuatorfrcrange="-13.5 13.5" damping="0.01"/>
-              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 0.545 0 1" mesh="link5"/>
+              <geom type="mesh" contype="0" conaffinity="0" group="0" density="0" rgba="1 0.545 0 1" mesh="link5"/>
+              <geom type="mesh" material="MaterialFBXASC032FBXASC03528" contype="0" conaffinity="0" group="1" mesh="link5_0_vis" quat="0.707 0.707 0 0"/>
+              <geom type="mesh" material="MaterialFBXASC032FBXASC03529" contype="0" conaffinity="0" group="1" mesh="link5_1_vis" quat="0.707 0.707 0 0"/>
               <body name="wrist3_Link" pos="0 -0.094 0" quat="0.707107 0.707107 0 0">
                 <inertial pos="2.2e-05 0.0006 -0.017081" quat="0.503459 0.496517 -0.496517 0.503459" mass="0.1978" diaginertia="0.000184014 0.000118 0.000111986"/>
                 <joint name="wrist3_joint" pos="0 0 0" axis="0 0 1" range="-6.28319 6.28319" actuatorfrcrange="-13.5 13.5" damping="0.01"/>
-                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 0.545 0 1" mesh="link6"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="0" density="0" rgba="1 0.545 0 1" mesh="link6"/>
+                <geom type="mesh" material="MaterialFBXASC032FBXASC03529" contype="0" conaffinity="0" group="1" mesh="link6_vis" quat="0.707 0.707 0 0"/>
                   <body name="right_hand" pos="0 0 0" quat="0 0 0 1">
                     <site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
 			              <site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
