@@ -38,7 +38,7 @@ if __name__ == "__main__":
         options["robots"] = choose_robots(use_humanoids=True)
     # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
-        options["robots"] = choose_robots(exclude_bimanual=True)
+        options["robots"] = choose_robots(exclude_bimanual=True, use_humanoids=True)
 
     # initialize the task
     env = suite.make(
@@ -52,14 +52,10 @@ if __name__ == "__main__":
     env.reset()
     env.viewer.set_camera(camera_id=0)
 
-    # Get action limits
-    low, high = env.action_spec
-
     # do visualization
     for i in range(10000):
         start = time.time()
-
-        action = np.random.uniform(low, high)
+        action = np.random.randn(*env.action_spec[0].shape) * 0.1
         obs, reward, done, _ = env.step(action)
         env.render()
 

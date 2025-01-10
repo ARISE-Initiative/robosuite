@@ -6,7 +6,8 @@ import numpy as np
 
 import robosuite as suite
 import robosuite.utils.transform_utils as T
-from robosuite.devices import *
+
+# from robosuite.devices import *
 from robosuite.models.robots import *
 from robosuite.robots import *
 
@@ -120,9 +121,10 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False):
     if not exclude_bimanual:
         robots.add("Baxter")
         robots.add("GR1")
-        robots.add("GR1UpperBody")
+        robots.add("GR1ArmsOnly")
     if use_humanoids:
-        robots = {"GR1", "GR1UpperBody"}
+        robots.add("GR1")
+        robots.add("GR1ArmsOnly")
 
     # Make sure set is deterministically sorted
     robots = sorted(robots)

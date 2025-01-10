@@ -5,6 +5,7 @@ from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
 from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot, MobileRobot
+from robosuite.robots.legged_robot import LeggedRobot
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -486,5 +487,5 @@ class ManipulationEnv(RobotEnv):
             robots = [robots]
         for robot in robots:
             assert issubclass(ROBOT_CLASS_MAPPING[robot], FixedBaseRobot) or issubclass(
-                ROBOT_CLASS_MAPPING[robot], MobileRobot
+                ROBOT_CLASS_MAPPING[robot], MobileRobot or issubclass(ROBOT_CLASS_MAPPING[robot], LeggedRobot)
             ), f"Only manipulator robots supported for manipulation environment! Got {ROBOT_CLASS_MAPPING[robot]}"
