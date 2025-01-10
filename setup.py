@@ -25,7 +25,7 @@ setup(
         "pynput",
         "termcolor",
         "pytest",
-        "tqdm"
+        "tqdm",
     ],
     eager_resources=["*"],
     include_package_data=True,
