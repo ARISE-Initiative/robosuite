@@ -36,9 +36,8 @@ if __name__ == "__main__":
     # If a humanoid environment has been chosen, choose humanoid robots
     elif "Humanoid" in options["env_name"]:
         options["robots"] = choose_robots(use_humanoids=True)
-    # Else, we simply choose a single (single-armed) robot to instantiate in the environment
     else:
-        options["robots"] = choose_robots(exclude_bimanual=True, use_humanoids=True)
+        options["robots"] = choose_robots(exclude_bimanual=False, use_humanoids=True)
 
     # initialize the task
     env = suite.make(

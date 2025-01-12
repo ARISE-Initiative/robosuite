@@ -115,13 +115,14 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False):
         str: Requested robot name
     """
     # Get the list of robots
-    robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e"}
+    robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e", "SpotWithArm"}
 
     # Add Baxter if bimanual robots are not excluded
     if not exclude_bimanual:
         robots.add("Baxter")
         robots.add("GR1")
         robots.add("GR1ArmsOnly")
+        robots.add("Tiago")
     if use_humanoids:
         robots.add("GR1")
         robots.add("GR1ArmsOnly")
