@@ -21,20 +21,23 @@ import time
 from collections import namedtuple
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
 
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 
 try:
     import hid
-except ModuleNotFoundError as exc:
-    raise ImportError(
-        "Unable to load module hid, required to interface with SpaceMouse. "
+except ModuleNotFoundError as e:
+    ROBOSUITE_DEFAULT_LOGGER.error(
+        f"Unable to load module hid, required to interface with SpaceMouse. "
         "Only macOS is officially supported. Install the additional "
-        "requirements with `pip install -r requirements-extra.txt`"
-    ) from exc
+        "requirements with `pip install -r requirements-extra.txt` "
+        f"Error: {e}."
+    )
 
-from pynput.keyboard import Controller, Key, Listener
+try:
+    from pynput.keyboard import Listener
+except ImportError as e:
+    ROBOSUITE_DEFAULT_LOGGER.error(f"Failed to import pynput. Error: {e}.")
 
 import robosuite.macros as macros
 from robosuite.devices import Device
