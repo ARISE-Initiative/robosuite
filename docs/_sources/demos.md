@@ -174,7 +174,7 @@ The `demo_renderers.py` script shows how to use different renderers with the sim
 ```sh
 $ python demo_renderers.py --renderer default
 ```
-The `--renderer` flag can be set to `mujoco` or `default(default)
+The `--renderer` flag can be set to `mujoco` or `default`
 
 ### Exporting to USD
 Exporting to USD allows users to render **robosuite** trajectories in external renderers such as NVIDIA Omniverse and Blender. In order to export to USD you must install the required dependencies for the exporter.
