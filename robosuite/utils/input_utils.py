@@ -120,11 +120,9 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False):
     # Add Baxter if bimanual robots are not excluded
     if not exclude_bimanual:
         robots.add("Baxter")
-        robots.add("GR1")
         robots.add("GR1ArmsOnly")
         robots.add("Tiago")
     if use_humanoids:
-        robots.add("GR1")
         robots.add("GR1ArmsOnly")
 
     # Make sure set is deterministically sorted
