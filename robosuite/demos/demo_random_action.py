@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # do visualization
     for i in range(10000):
         start = time.time()
-        action = np.random.randn(*env.action_spec[0].shape) * 0.1
+        action = np.random.randn(*env.action_spec[0].shape)
         obs, reward, done, _ = env.step(action)
         env.render()
 
