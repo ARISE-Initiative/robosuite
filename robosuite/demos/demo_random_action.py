@@ -1,7 +1,7 @@
 import time
 
-from robosuite.utils.input_utils import *
 from robosuite.robots import MobileRobot
+from robosuite.utils.input_utils import *
 
 MAX_FR = 25  # max frame rate for running simluation
 
