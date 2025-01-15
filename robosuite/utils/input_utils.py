@@ -79,6 +79,7 @@ def choose_multi_arm_config():
     env_configs = {
         "Opposed": "opposed",
         "Parallel": "parallel",
+        "Single-Robot": "single-robot",
     }
 
     # Select environment configuration
@@ -102,7 +103,7 @@ def choose_multi_arm_config():
     return list(env_configs.values())[k]
 
 
-def choose_robots(exclude_bimanual=False, use_humanoids=False):
+def choose_robots(exclude_bimanual=False, use_humanoids=False, exclude_single_arm=False):
     """
     Prints out robot options, and returns the requested robot. Restricts options to single-armed robots if
     @exclude_bimanual is set to True (False by default). Restrict options to humanoids if @use_humanoids is set to True (Flase by default).
@@ -115,7 +116,10 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False):
         str: Requested robot name
     """
     # Get the list of robots
-    robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e", "SpotWithArmFloating"}
+    if exclude_single_arm:
+        robots = set()
+    else:
+        robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e", "SpotWithArmFloating"}
 
     # Add Baxter if bimanual robots are not excluded
     if not exclude_bimanual:
